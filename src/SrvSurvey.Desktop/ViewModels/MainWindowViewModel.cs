@@ -90,6 +90,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     // helpers. The analyzers cannot follow the delegated cleanup calls.
 #pragma warning disable CA2213, S2930
     private readonly CancellationTokenSource firstFootfallInferenceCancellation = new();
+    private readonly SemaphoreSlim journalUpdateGate = new(1, 1);
+    private readonly Lock journalUpdateLifetime = new();
+    private int journalUpdateUsers;
+    private TaskCompletionSource? journalUpdatesDrained;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
@@ -278,6 +282,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
         var rollback = new MainWindowViewModelConstructionRollback(resolvedApplicationLogService);
         rollback.Add(firstFootfallInferenceCancellation.Dispose);
+        rollback.Add(journalUpdateGate.Dispose);
         rollback.Add(frontierProfile);
         rollback.Add(overlayInteraction);
         rollback.Add(resolvedFirstFootfallInferenceService);
@@ -1939,8 +1944,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 await companionTimelineStore.CleanupAsync(CancellationToken.None);
             }
 
-            JournalMonitorUpdate update = await journalMonitor.PollAsync(CancellationToken.None);
-            await ApplyMonitorUpdateAsync(update, isManualRefresh: true, CancellationToken.None);
+            await PollAndApplyMonitorUpdateAsync(isManualRefresh: true, CancellationToken.None);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -1964,11 +1968,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TimeSpan interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
         try
         {
-            while (true)
+            while (!Volatile.Read(ref disposed))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                JournalMonitorUpdate update = await journalMonitor.PollAsync(cancellationToken);
-                await ApplyMonitorUpdateAsync(update, isManualRefresh: false, cancellationToken);
+                await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
                 await Task.Delay(interval, cancellationToken);
             }
         }
@@ -2493,6 +2496,46 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + $"{snapshot.RecognizedEventCount} bootstrap events recognized"
             + malformedSuffix
             + ".";
+    }
+
+    /// <summary>Keeps each journal poll and its asynchronous projection together so event-time maps remain valid.</summary>
+    private async Task PollAndApplyMonitorUpdateAsync(bool isManualRefresh, CancellationToken cancellationToken)
+    {
+        lock (journalUpdateLifetime)
+        {
+            if (disposed)
+            {
+                return;
+            }
+            journalUpdateUsers++;
+        }
+        try
+        {
+            await journalUpdateGate.WaitAsync(cancellationToken);
+            try
+            {
+                if (!Volatile.Read(ref disposed))
+                {
+                    JournalMonitorUpdate update = await journalMonitor!.PollAsync(cancellationToken);
+                    await ApplyMonitorUpdateAsync(update, isManualRefresh, cancellationToken);
+                }
+            }
+            finally
+            {
+                journalUpdateGate.Release();
+            }
+        }
+        finally
+        {
+            lock (journalUpdateLifetime)
+            {
+                journalUpdateUsers--;
+                if (journalUpdateUsers == 0)
+                {
+                    journalUpdatesDrained?.TrySetResult();
+                }
+            }
+        }
     }
 
     /// <summary>Projects monitor updates and services retained Raven work even when the journal poll is idle.</summary>
@@ -4358,12 +4401,25 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public async ValueTask DisposeAsync()
     {
-        if (disposed)
+        Task drain;
+        lock (journalUpdateLifetime)
         {
-            return;
+            if (disposed)
+            {
+                return;
+            }
+            Volatile.Write(ref disposed, true);
+            if (journalUpdateUsers == 0)
+            {
+                drain = Task.CompletedTask;
+            }
+            else
+            {
+                journalUpdatesDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                drain = journalUpdatesDrained.Task;
+            }
         }
-
-        Volatile.Write(ref disposed, true);
+        await drain;
         List<Exception> failures = [];
 
         void TryDispose(Action cleanup)
@@ -4390,6 +4446,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             }
         }
 
+        TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);

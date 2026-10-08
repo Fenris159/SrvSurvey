@@ -725,6 +725,8 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             return FleetCarrierResponse;
         }
 
+        public Task<ColonizationFleetCarrier>? PublishCarrierTask { get; set; }
+
         public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
             ColonizationFleetCarrierRegistration carrier,
             string apiKey,
@@ -732,6 +734,10 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         )
         {
             PublishCarrierCount++;
+            if (PublishCarrierTask is { } pending)
+            {
+                return pending;
+            }
             LastCarrierRegistration = carrier;
             if (PublishFailure is not null)
             {
@@ -775,6 +781,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         }
 
         /// <summary>Records relative cargo adjustments and injects transport or service failures for reconciliation tests.</summary>
+        public Task<IReadOnlyDictionary<string, int>>? AdjustmentResponseTask { get; set; }
+        public ManualResetEventSlim? EnteredAdjustment { get; set; }
+
         public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargoChanges,
@@ -788,6 +797,11 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                     new Dictionary<string, int>(cargoChanges, StringComparer.OrdinalIgnoreCase)
                 )
             );
+            EnteredAdjustment?.Set();
+            if (AdjustmentResponseTask is { } response)
+            {
+                return response;
+            }
             if (AdjustmentFailures.TryDequeue(out Exception? failure))
             {
                 return Task.FromException<IReadOnlyDictionary<string, int>>(failure);
