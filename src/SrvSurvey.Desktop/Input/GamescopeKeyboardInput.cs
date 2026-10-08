@@ -113,11 +113,35 @@ internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
     private async Task PollAsync()
     {
         using var timer = new PeriodicTimer(PollInterval);
+        bool failureReported = false;
         try
         {
             while (await timer.WaitForNextTickAsync(pollCancellation.Token).ConfigureAwait(false))
             {
-                Deliver(ReadEvents(enabled));
+                try
+                {
+                    Deliver(ReadEvents(enabled));
+                    failureReported = false;
+                }
+                catch (Exception exception)
+                    when (exception is not OperationCanceledException || !pollCancellation.IsCancellationRequested)
+                {
+                    keys.Clear();
+                    gameForeground = false;
+                    try
+                    {
+                        sink?.ReleaseSelection(KeyboardInputSource.NestedDisplay);
+                    }
+                    catch (Exception)
+                    {
+                        // A failing observer must not prevent the next poll from recovering.
+                    }
+                    if (!failureReported)
+                    {
+                        failureReported = true;
+                        Trace.TraceWarning("Game keyboard polling failed: {0}", exception.Message);
+                    }
+                }
             }
         }
         catch (OperationCanceledException) when (pollCancellation.IsCancellationRequested)

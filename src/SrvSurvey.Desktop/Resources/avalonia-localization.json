@@ -10829,6 +10829,10 @@
       "translation": "Spielanzeige {0}."
     },
     {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Die Abfrage der Spieltastatur ist fehlgeschlagen: {0}"
+    },
+    {
       "source": "Game keyboard recording failed: {0}",
       "translation": "Die Aufnahme der Spieltastatur ist fehlgeschlagen: {0}"
     },
@@ -45997,6 +46001,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Pantalla de juego {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Error en el sondeo del teclado del juego: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -81169,6 +81177,10 @@
       "translation": "Affichage du jeu {0}."
     },
     {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Échec de l'interrogation du clavier de jeu : {0}"
+    },
+    {
       "source": "Game keyboard recording failed: {0}",
       "translation": "Échec de l'enregistrement du clavier du jeu : {0}"
     },
@@ -116337,6 +116349,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Exibição do jogo {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Falha na pesquisa do teclado do jogo: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -151509,6 +151525,10 @@
       "translation": "Игровой дисплей {0}."
     },
     {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Ошибка опроса игровой клавиатуры: {0}"
+    },
+    {
       "source": "Game keyboard recording failed: {0}",
       "translation": "Не удалось записать игровую клавиатуру: {0}"
     },
@@ -186679,6 +186699,10 @@
       "translation": "游戏显示{0}。"
     },
     {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "游戏键盘轮询失败：{0}"
+    },
+    {
       "source": "Game keyboard recording failed: {0}",
       "translation": "游戏键盘录制失败：{0}"
     },
@@ -221847,6 +221871,10 @@
     {
       "source": "Game display {0}.",
       "translation": "* GAME DISPLAY {0}. >>>!"
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "* GAME KEYBOARD POLLING FAILED: {0} >>>!"
     },
     {
       "source": "Game keyboard recording failed: {0}",
