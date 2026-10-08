@@ -160,6 +160,71 @@ public sealed class GamescopeKeyboardInputTests
         Assert.False(input.State.IsRunning);
     }
 
+    /// <summary>A transient discovery, native-read, focus, or activation failure never kills shortcut polling.</summary>
+    [Theory]
+    [InlineData("bridge")]
+    [InlineData("record")]
+    [InlineData("tracker")]
+    [InlineData("focus")]
+    [InlineData("activation")]
+    [InlineData("cancellation")]
+    public async Task PollingRecoversAfterTransientFailures(string failure)
+    {
+        int attempts = 0;
+        void FailOnce()
+        {
+            if (Interlocked.Increment(ref attempts) == 1)
+            {
+                if (failure == "cancellation")
+                {
+                    throw new OperationCanceledException("Unrelated operation canceled");
+                }
+                throw new InvalidOperationException("Transient poll failure");
+            }
+        }
+        var recorder = new FakeRecord();
+        var tracker = new TestGameWindowTracker { Focused = true };
+        var sink = new RecordingKeyboardSink();
+        if (failure is "record" or "cancellation")
+        {
+            recorder.BeforeRead = FailOnce;
+        }
+        if (failure == "tracker")
+        {
+            tracker.BeforeSnapshot = FailOnce;
+        }
+        if (failure == "focus")
+        {
+            sink.BeforeFocus = FailOnce;
+        }
+        if (failure == "activation")
+        {
+            sink.BeforeActivation = FailOnce;
+        }
+        await using var input = new GamescopeKeyboardInput(
+            () =>
+            {
+                if (failure == "bridge")
+                {
+                    FailOnce();
+                }
+                return null;
+            },
+            _ => recorder,
+            ":0",
+            () => new EliteKeyboardDisplay(123, ":2"),
+            _ => tracker
+        );
+        input.Attach(sink);
+        recorder.Enqueue(KeyEvent(KeyCode.VcO, true, 100));
+        recorder.Enqueue(KeyEvent(KeyCode.VcO, true, 200));
+        input.Start(GlobalInputSettings.Default with { KeyboardEnabled = true });
+        await WaitForAsync(() => !sink.Activations.IsEmpty);
+        Assert.True(Volatile.Read(ref attempts) >= 2);
+        Assert.Equal("O", Assert.Single(sink.Activations).Chord);
+        Assert.True(input.State.IsGameForeground);
+    }
+
     /// <summary>Checks nested keys use independent modifier state and honor disable/re-enable and context gating.</summary>
     [Theory]
     [InlineData(OverlayHostKind.LinuxXWayland)]
@@ -256,6 +321,7 @@ public sealed class GamescopeKeyboardInputTests
     {
         private readonly Queue<UioHookEvent[]> pending = new();
 
+        public Action? BeforeRead { get; set; }
         public bool HasFailed { get; set; }
         public UioHookEvent[] Events { get; set; } = [];
         public int Disposals { get; private set; }
@@ -283,6 +349,7 @@ public sealed class GamescopeKeyboardInputTests
         /// <summary>Returns the assigned events, or one queued batch per poll.</summary>
         public IReadOnlyList<UioHookEvent> ReadEvents()
         {
+            BeforeRead?.Invoke();
             UioHookEvent[] result = Events;
             Events = [];
             lock (pending)

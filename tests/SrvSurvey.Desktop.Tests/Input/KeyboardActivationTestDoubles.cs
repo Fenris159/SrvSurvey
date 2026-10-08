@@ -70,6 +70,8 @@ internal sealed class FakeKeyboardSource(KeyboardInputSource kind) : IKeyboardAc
 /// <summary>Records what a keyboard source reports and answers focus queries with a controllable clock.</summary>
 internal sealed class RecordingKeyboardSink : IKeyboardActivationSink
 {
+    public Action? BeforeFocus { get; set; }
+    public Action? BeforeActivation { get; set; }
     public long Clock { get; set; }
     public bool AllowsShortcuts { get; set; } = true;
     public ConcurrentQueue<KeyboardActivation> Activations { get; } = new();
@@ -82,11 +84,16 @@ internal sealed class RecordingKeyboardSink : IKeyboardActivationSink
 
     public KeyboardFocus SampleFocus(KeyboardFocusEvidence evidence)
     {
+        BeforeFocus?.Invoke();
         Evidence.Enqueue(evidence);
         return new KeyboardFocus(Clock, false, AllowsShortcuts, AllowsShortcuts);
     }
 
-    public void Activate(KeyboardActivation activation) => Activations.Enqueue(activation);
+    public void Activate(KeyboardActivation activation)
+    {
+        BeforeActivation?.Invoke();
+        Activations.Enqueue(activation);
+    }
 
     public void ReportStatus(string message, string? expectedStatus = null)
     {
@@ -124,8 +131,11 @@ internal sealed class TestGameWindowTracker : IGameWindowTracker
 
     public void AllowSnapshot() => allowSnapshot.Set();
 
+    public Action? BeforeSnapshot { get; set; }
+
     public GameWindowSnapshot GetSnapshot()
     {
+        BeforeSnapshot?.Invoke();
         ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (blocking && !allowSnapshot.IsSet)
         {

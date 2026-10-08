@@ -21759,6 +21759,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
+    "Text": "Game keyboard polling failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
+  },
+  {
     "Text": "Game keyboard recording failed: {0}",
     "IsFormat": true,
     "SourceKinds": [
