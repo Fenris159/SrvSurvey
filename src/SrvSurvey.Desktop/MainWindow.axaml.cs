@@ -432,6 +432,11 @@ public sealed partial class MainWindow : Window
             && point.Y >= candidate.Bounds.Y
             && point.Y < candidate.Bounds.Y + candidate.Bounds.Height
         );
+        if (monitor is null && Screens.ScreenFromWindow(this) is { } screen)
+        {
+            string screenId = MainWindowPlacement.DescribeScreens([screen])[0].Id;
+            monitor = applicationMonitors.FirstOrDefault(candidate => candidate.Id == screenId);
+        }
         return monitor is null ? null : new ApplicationWindowPosition(point.X, point.Y, monitor.Id);
     }
 

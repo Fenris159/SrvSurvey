@@ -1,4 +1,5 @@
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -38,10 +39,14 @@ public sealed class MainWindowGeometryTests
     }
 
     [AvaloniaTheory]
-    [InlineData(WindowState.Normal)]
-    [InlineData(WindowState.Maximized)]
-    [InlineData(WindowState.Minimized)]
-    public void UserSizeAndStateSurviveRestart(WindowState state)
+    [InlineData(WindowState.Normal, 0, 0)]
+    [InlineData(WindowState.Maximized, 0, 0)]
+    [InlineData(WindowState.Minimized, 0, 0)]
+    [InlineData(WindowState.Normal, -10, 100)]
+    [InlineData(WindowState.Maximized, -10, 100)]
+    [InlineData(WindowState.Normal, 100, -10)]
+    [InlineData(WindowState.Maximized, 100, -10)]
+    public void UserSizeAndStateSurviveRestart(WindowState state, int x, int y)
     {
         string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-window-geometry-{Guid.NewGuid():N}");
         var store = new DesktopBehaviorSettingsStore(Path.Combine(directory, "ui-settings.json"));
@@ -56,6 +61,7 @@ public sealed class MainWindowGeometryTests
             first.Width = 1370;
             first.Height = 870;
             Layout(first);
+            first.Position = new PixelPoint(x, y);
             first.WindowState = state;
             first.RememberCurrentPositionForShutdown();
         }
