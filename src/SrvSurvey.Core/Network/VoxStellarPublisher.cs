@@ -101,13 +101,13 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             uploads = Channel.CreateBounded<QueuedUpload>(
                 new BoundedChannelOptions(4096)
                 {
-                    SingleReader = true,
+                    SingleReader = false,
                     SingleWriter = false,
                     FullMode = BoundedChannelFullMode.Wait,
                     AllowSynchronousContinuations = false,
                 }
             );
-            workerTask = RunWorkerAsync();
+            workerTask = Task.Run(RunWorkerAsync, lifetimeCancellation.Token);
         }
     }
 
@@ -126,6 +126,11 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             if (!enabled)
             {
                 consentGeneration++;
+                // Consent revocation also frees bounded queue capacity for a later opt-in.
+                while (uploads?.Reader.TryRead(out _) == true)
+                {
+                    // Discard revoked uploads; the worker rechecks any event it already took.
+                }
             }
         }
     }
@@ -187,16 +192,27 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         var queued = new List<string>(matchingEvents.Length);
         var warnings = new List<string>();
+        int dropped = 0;
         foreach (JournalEventEnvelope? journalEvent in matchingEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
             byte[] body = SerializeBody(commanderName, journalEvent.Payload);
-            if (uploads.Writer.TryWrite(new QueuedUpload(generation, body)))
+            lock (sync)
             {
-                queued.Add(journalEvent.EventName);
+                if (disposed || stopping || !enabled || consentGeneration != generation)
+                {
+                    break;
+                }
+                if (uploads.Writer.TryWrite(new QueuedUpload(generation, body)))
+                {
+                    queued.Add(journalEvent.EventName);
+                }
+                else
+                {
+                    dropped++;
+                }
             }
         }
-        int dropped = matchingEvents.Length - queued.Count;
         if (dropped > 0)
         {
             warnings.Add($"VoxStellar could not queue {dropped} event(s) because its in-memory upload queue is full.");
@@ -216,6 +232,10 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         {
             await foreach (QueuedUpload first in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
             {
+                if (!IsAuthorized(first))
+                {
+                    continue;
+                }
                 try
                 {
                     await Task.Delay(batchInterval, timeProvider, batchingCancellation.Token);
@@ -225,17 +245,41 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
                     // Closing the queue flushes buffered events without waiting another interval.
                 }
 
-                var batch = new List<QueuedUpload>(MaximumBatchSize) { first };
-                while (batch.Count < MaximumBatchSize && uploads.Reader.TryRead(out QueuedUpload? next))
+                List<QueuedUpload> batch = TakeAuthorizedBatch(first, uploads.Reader);
+                if (batch.Count > 0)
                 {
-                    batch.Add(next);
+                    await SendBatchAsync(batch, lifetimeCancellation.Token);
                 }
-                await SendBatchAsync(batch, lifetimeCancellation.Token);
             }
         }
         catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
         {
             // Cancellation is the expected worker result during shutdown.
+        }
+    }
+
+    private List<QueuedUpload> TakeAuthorizedBatch(QueuedUpload first, ChannelReader<QueuedUpload> reader)
+    {
+        var batch = new List<QueuedUpload>(MaximumBatchSize);
+        if (IsAuthorized(first))
+        {
+            batch.Add(first);
+        }
+        while (batch.Count < MaximumBatchSize && reader.TryRead(out QueuedUpload? next))
+        {
+            if (IsAuthorized(next))
+            {
+                batch.Add(next);
+            }
+        }
+        return batch;
+    }
+
+    private bool IsAuthorized(QueuedUpload upload)
+    {
+        lock (sync)
+        {
+            return !disposed && enabled && consentGeneration == upload.ConsentGeneration;
         }
     }
 

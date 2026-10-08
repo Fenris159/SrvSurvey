@@ -436,6 +436,73 @@ public sealed class VoxStellarPublisherTests
     }
 
     [Fact]
+    public void ShutdownFlushesWithoutPumpingTheConstructionContext()
+    {
+        var handler = new RecordingHandler();
+        using var client = new HttpClient(handler);
+        SynchronizationContext? previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(new NonPumpingContext());
+        try
+        {
+            using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client);
+            Assert.True(
+                publisher
+                    .ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]))
+                    .IsCompletedSuccessfully
+            );
+            publisher.Dispose();
+            Assert.Equal(2, handler.Requests.Count);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+    }
+
+    [Fact]
+    public async Task RevokingAFullBacklogLeavesRoomForFreshEventsWithoutExtraIntervals()
+    {
+        var clock = new BatchClock();
+        var handler = new RecordingHandler();
+        using var client = new HttpClient(handler);
+        var summary = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var publisher = new VoxStellarPublisher(
+            "1.0.0",
+            "test-key",
+            client,
+            log: message => summary.TrySetResult(message),
+            timeProvider: clock
+        );
+        JournalEventEnvelope old = Parse("""{"event":"Scan","BodyID":1}""");
+        await publisher.ApplyAsync(CreateRequest([old]));
+        ManualTimer timer = await clock.NextTimerAsync();
+        VoxStellarPublicationResult oldBacklog = await publisher.ApplyAsync(
+            CreateRequest(Enumerable.Repeat(old, 4096).ToArray())
+        );
+        Assert.Equal(4096, oldBacklog.QueuedEventNames.Count);
+        publisher.SetEnabled(false);
+        VoxStellarPublicationResult fresh = await publisher.ApplyAsync(
+            CreateRequest([Parse("""{"event":"Scan","BodyID":2}""")])
+        );
+        Assert.Empty(fresh.Warnings);
+        Assert.Single(fresh.QueuedEventNames);
+        timer.Fire();
+        Task winner = await Task.WhenAny(summary.Task, clock.SecondTimerCreated.Task)
+            .WaitAsync(TimeSpan.FromSeconds(2));
+        Assert.Same(summary.Task, winner);
+        using var body = JsonDocument.Parse(Assert.Single(handler.Requests).Body);
+        Assert.Equal(2, body.RootElement.GetProperty("data").GetProperty("BodyID").GetInt32());
+    }
+
+    private sealed class NonPumpingContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            // A blocked UI thread cannot dispatch queued worker continuations during synchronous disposal.
+        }
+    }
+
+    [Fact]
     public void NegativeBatchIntervalIsRejected()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -458,12 +525,19 @@ public sealed class VoxStellarPublisherTests
     private sealed class BatchClock : TimeProvider
     {
         private readonly Channel<ManualTimer> timers = Channel.CreateUnbounded<ManualTimer>();
+        private int timerCount;
+        public TaskCompletionSource SecondTimerCreated { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
         {
             Assert.Equal(VoxStellarPublisher.SendInterval, dueTime);
             var timer = new ManualTimer(callback, state);
             timers.Writer.TryWrite(timer);
+            if (Interlocked.Increment(ref timerCount) == 2)
+            {
+                SecondTimerCreated.TrySetResult();
+            }
             return timer;
         }
 
