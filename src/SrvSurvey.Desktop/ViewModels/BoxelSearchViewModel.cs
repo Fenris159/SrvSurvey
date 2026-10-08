@@ -16,6 +16,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private const int LargeAuditConfirmationThreshold = 1_000;
 
     private readonly IBoxelSearchSession session;
+    private readonly TimeProvider timeProvider;
     private readonly ISystemNameSuggestionClient? systemNameSuggestionClient;
     private readonly TimeSpan systemSuggestionDelay;
     private readonly KnownSystemAddressCatalog knownSystems;
@@ -53,6 +54,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private bool sortDescending;
     private bool showOnlyDeferred;
     private bool suppressOptionPersistence;
+    private bool isNewSearchConfiguration;
+    private bool hasSearchTopologyDraft;
+    private bool isSwitchingProfile;
+    private SearchStartDateOrigin searchStartDateOrigin;
+    private SetBoxelCompletionRules? pendingCompletionRules;
     private bool isBusy;
     private bool isAuditing;
     private bool confirmLargeAudit;
@@ -112,10 +118,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         KnownSystemAddressCatalog? knownSystems = null,
         ISystemNameSuggestionClient? systemNameSuggestionClient = null,
         TimeSpan? systemSuggestionDelay = null,
-        BoxelSurveyStatsCoordinator? surveyStats = null
+        BoxelSurveyStatsCoordinator? surveyStats = null,
+        TimeProvider? timeProvider = null
     )
     {
         this.session = session ?? throw new ArgumentNullException(nameof(session));
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         searchState = session.Current.Search;
         this.session.Changed += OnSessionChanged;
         this.surveyStats = surveyStats;
@@ -160,6 +168,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         cancelAuditCommand = new AsyncCommand(CancelAuditAsync, () => IsAuditing);
         CancelAuditCommand = cancelAuditCommand;
         ApplySessionSnapshot(session.Current);
+        BeginNewSearchConfiguration(resetExplicitDate: true);
         UpdateDisplay();
     }
 
@@ -174,6 +183,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         {
             if (SetField(ref topBoxelText, value))
             {
+                if (!suppressOptionPersistence)
+                {
+                    BeginNewSearchConfiguration();
+                }
                 if (!string.Equals(value?.Trim(), selectedSystemName, StringComparison.OrdinalIgnoreCase))
                 {
                     selectedSystemName = null;
@@ -226,6 +239,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         {
             if (SetField(ref lowMassCode, value))
             {
+                if (!suppressOptionPersistence)
+                {
+                    BeginNewSearchConfiguration();
+                }
                 UpdateSearchSize();
             }
         }
@@ -238,6 +255,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         {
             if (SetField(ref startedOn, value))
             {
+                if (!suppressOptionPersistence)
+                {
+                    searchStartDateOrigin = SearchStartDateOrigin.Explicit;
+                }
                 UpdateCompletionRules();
             }
         }
@@ -281,19 +302,62 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateCompletionRules()
     {
-        if (suppressOptionPersistence || searchState.TopBoxel is null)
+        if (
+            suppressOptionPersistence
+            || isSwitchingProfile
+            || hasSearchTopologyDraft
+            || (isNewSearchConfiguration && !searchState.IsActive)
+            || searchState.TopBoxel is null
+        )
         {
             return;
         }
 
-        RunSessionAction(
-            new SetBoxelCompletionRules(
-                StartedOn,
-                SkipAlreadyVisited,
-                SkipKnownToSpansh,
-                CompleteOnFssAllBodies ? BoxelCompletionMode.FssAllBodies : BoxelCompletionMode.EnterSystem
-            )
+        isNewSearchConfiguration = false;
+        pendingCompletionRules = new SetBoxelCompletionRules(
+            StartedOn,
+            SkipAlreadyVisited,
+            SkipKnownToSpansh,
+            CompleteOnFssAllBodies ? BoxelCompletionMode.FssAllBodies : BoxelCompletionMode.EnterSystem
         );
+        RunSessionAction(pendingCompletionRules);
+    }
+
+    private void BeginNewSearchConfiguration(bool resetExplicitDate = false)
+    {
+        isNewSearchConfiguration = true;
+        hasSearchTopologyDraft = !resetExplicitDate;
+        if (
+            resetExplicitDate
+            || searchStartDateOrigin is SearchStartDateOrigin.ExplicitActivated or SearchStartDateOrigin.Resumed
+        )
+        {
+            searchStartDateOrigin = SearchStartDateOrigin.Default;
+        }
+        RefreshDefaultSearchStartDate();
+    }
+
+    public void RefreshDefaultSearchStartDate()
+    {
+        if (searchStartDateOrigin == SearchStartDateOrigin.Default)
+        {
+            isNewSearchConfiguration = true;
+            SetField(ref startedOn, GetCurrentLocalDate(), nameof(StartedOn));
+        }
+    }
+
+    private enum SearchStartDateOrigin
+    {
+        Default,
+        Explicit,
+        ExplicitActivated,
+        Resumed,
+    }
+
+    private DateTimeOffset GetCurrentLocalDate()
+    {
+        DateTime today = timeProvider.GetLocalNow().Date;
+        return new DateTimeOffset(today, timeProvider.LocalTimeZone.GetUtcOffset(today));
     }
 
     public bool AutoCopy
@@ -801,17 +865,34 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         BoxelSearchSnapshot snapshot
     )
     {
-        BoxelSearchOutcome outcome = await SwitchSessionProfileAsync(
-            new BoxelSearchProfile(profileFrontierId, profileCommanderName, profileIsOdyssey, snapshot)
-        );
-        ApplyOutcome(outcome);
+        isSwitchingProfile = true;
+        try
+        {
+            BoxelSearchOutcome outcome = await SwitchSessionProfileAsync(
+                new BoxelSearchProfile(profileFrontierId, profileCommanderName, profileIsOdyssey, snapshot)
+            );
+            ApplyOutcome(outcome);
+            BeginNewSearchConfiguration(resetExplicitDate: true);
+        }
+        finally
+        {
+            isSwitchingProfile = false;
+        }
     }
 
     public async Task SetProfileErrorAsync(string message)
     {
-        await ClearSessionProfileAsync();
-        ApplySessionSnapshot(session.Current);
-        StatusMessage = message;
+        isSwitchingProfile = true;
+        try
+        {
+            await ClearSessionProfileAsync();
+            ApplySessionSnapshot(session.Current);
+            StatusMessage = message;
+        }
+        finally
+        {
+            isSwitchingProfile = false;
+        }
     }
 
     public void ReportSaveProgressFailure(string message)
@@ -879,6 +960,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task ActivateAsync()
     {
+        RefreshDefaultSearchStartDate();
         if (!TryParseBoxelInput(TopBoxelText, out BoxelAddress? topBoxel))
         {
             StatusMessage = "Enter a valid generated system or boxel name.";
@@ -908,6 +990,15 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 )
             );
 
+            if (outcome.Kind is not (BoxelSearchOutcomeKind.Rejected or BoxelSearchOutcomeKind.Cancelled))
+            {
+                isNewSearchConfiguration = false;
+                hasSearchTopologyDraft = false;
+                if (searchStartDateOrigin == SearchStartDateOrigin.Explicit)
+                {
+                    searchStartDateOrigin = SearchStartDateOrigin.ExplicitActivated;
+                }
+            }
             ApplySessionSnapshot(session.Current);
             SetField(ref lastSystemAvailable, FormatLastSystemAvailable(), nameof(LastSystemAvailable));
             ApplyOutcome(outcome);
@@ -922,6 +1013,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         SetLastSystemAvailableEditState(false);
         ApplyOutcome(await ExecuteSessionActionAsync(StopBoxelSearch.Instance));
+        BeginNewSearchConfiguration(resetExplicitDate: true);
     }
 
     public async Task<SaveBoxelProgressResult> SaveProgressAsync(string? name = null, string? notes = null)
@@ -972,6 +1064,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(new ResumeSavedBoxelSearch(fileName));
         ApplyOutcome(outcome);
         ThrowForRejectedLibraryOutcome(outcome);
+        isNewSearchConfiguration = false;
+        hasSearchTopologyDraft = false;
+        searchStartDateOrigin = SearchStartDateOrigin.Resumed;
+        ApplySearchConfiguration(session.Current.Search.Persistence, force: true);
     }
 
     public async Task DisableAutoCopyForCompetingRouteAsync()
@@ -1056,7 +1152,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         appliedSessionVersion = snapshot.Version;
         long profileGeneration = snapshot.Context.Profile?.Generation ?? -1;
-        if (profileGeneration != appliedProfileGeneration)
+        bool profileChanged = profileGeneration != appliedProfileGeneration;
+        if (profileChanged)
         {
             navigationOptions.Clear();
             appliedProfileGeneration = profileGeneration;
@@ -1080,7 +1177,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         if (searchChanged)
         {
-            ApplySearchConfiguration(snapshot.Search.Persistence);
+            ApplySearchConfiguration(snapshot.Search.Persistence, force: profileChanged);
             UpdateDisplay();
         }
         else
@@ -1111,21 +1208,31 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplySearchConfiguration(BoxelSearchSnapshot snapshot)
+    private void ApplySearchConfiguration(BoxelSearchSnapshot snapshot, bool force = false)
     {
         suppressOptionPersistence = true;
         try
         {
-            DismissSystemSuggestions();
-            selectedSystemName = snapshot.TopBoxel?.Name;
-            selectedSystemAddress = snapshot.TopBoxel?.SystemAddress > 0 ? snapshot.TopBoxel.SystemAddress : 0;
-            TopBoxelText = selectedSystemName ?? string.Empty;
-            LowMassCode = snapshot.LowMassCode.ToString();
-            StartedOn =
-                snapshot.StartedOn == DateTimeOffset.MinValue ? new DateTimeOffset(DateTime.Today) : snapshot.StartedOn;
-            SkipAlreadyVisited = snapshot.SkipAlreadyVisited;
-            SkipKnownToSpansh = snapshot.SkipKnownToSpansh;
-            CompleteOnFssAllBodies = snapshot.CompletionMode == BoxelCompletionMode.FssAllBodies;
+            if (force || !isNewSearchConfiguration)
+            {
+                DismissSystemSuggestions();
+                selectedSystemName = snapshot.TopBoxel?.Name;
+                selectedSystemAddress = snapshot.TopBoxel?.SystemAddress > 0 ? snapshot.TopBoxel.SystemAddress : 0;
+                TopBoxelText = selectedSystemName ?? string.Empty;
+                LowMassCode = snapshot.LowMassCode.ToString();
+                StartedOn =
+                    pendingCompletionRules?.StartedOn
+                    ?? (
+                        snapshot.StartedOn == DateTimeOffset.MinValue
+                            ? new DateTimeOffset(DateTime.Today)
+                            : snapshot.StartedOn
+                    );
+                SkipAlreadyVisited = pendingCompletionRules?.SkipAlreadyVisited ?? snapshot.SkipAlreadyVisited;
+                SkipKnownToSpansh = pendingCompletionRules?.SkipKnownToSpansh ?? snapshot.SkipKnownToSpansh;
+                CompleteOnFssAllBodies =
+                    (pendingCompletionRules?.CompletionMode ?? snapshot.CompletionMode)
+                    == BoxelCompletionMode.FssAllBodies;
+            }
             SetField(ref autoCopy, snapshot.AutoCopy, nameof(AutoCopy));
             SetField(ref sortDescending, snapshot.SortDescending, nameof(SortDescending));
         }
@@ -1266,6 +1373,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void RunSessionAction(IBoxelSearchAction action)
     {
+        if (isSwitchingProfile)
+        {
+            return;
+        }
         pendingOptionUpdate = RunSessionActionAsync(pendingOptionUpdate, action);
     }
 
@@ -1313,6 +1424,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             StatusMessage = "The boxel search option could not be saved: " + exception.Message;
+        }
+        finally
+        {
+            if (ReferenceEquals(action, pendingCompletionRules))
+            {
+                pendingCompletionRules = null;
+            }
         }
     }
 
@@ -1614,13 +1732,15 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         else if (lastDestination is { Body: 0 } destination)
         {
             bool resolved =
-                destination.System > 0
-                    ? BoxelAddress.TryFromSystemAddress(
+                TryParseBoxelInput(destination.Name ?? string.Empty, out destinationBoxel)
+                || (
+                    destination.System > 0
+                    && BoxelAddress.TryFromSystemAddress(
                         destination.System,
                         destination.Name ?? string.Empty,
                         out destinationBoxel
                     )
-                    : BoxelAddress.TryParse(destination.Name, out destinationBoxel);
+                );
             if (!resolved)
             {
                 destinationBoxel = null;

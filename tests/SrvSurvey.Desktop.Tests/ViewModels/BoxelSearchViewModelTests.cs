@@ -165,6 +165,263 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.True(viewModel.StartedOn == before || viewModel.StartedOn == after);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RememberedProfileUsesTodayForNewSearchesAndRetainsItThroughRefresh(bool active)
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, new StubResolver([]));
+        var originalStart = new DateTimeOffset(2026, 8, 18, 0, 0, 0, TimeSpan.Zero);
+        var before = new DateTimeOffset(DateTime.Today);
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            new BoxelSearchSnapshot
+            {
+                Active = active,
+                TopBoxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                Current = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                CurrentCount = 31,
+                StartedOn = originalStart,
+            }
+        );
+        var after = new DateTimeOffset(DateTime.Today);
+        Assert.True(viewModel.StartedOn == before || viewModel.StartedOn == after);
+        DateTimeOffset freshStart = viewModel.StartedOn;
+        await viewModel.RefreshCurrentAsync();
+        Assert.Equal(freshStart, viewModel.StartedOn);
+
+        await viewModel.ActivateAsync();
+        await viewModel.DisableAsync();
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        await viewModel.ActivateAsync();
+
+        Assert.Equal(freshStart, viewModel.StartedOn);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal(freshStart, saved.Data?.BoxelSearch.StartedOn);
+    }
+
+    [Fact]
+    public async Task PreparingAnotherBoxelRetainsItsDraftAndExplicitStartDateThroughRuleEditsAndRefresh()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, new StubResolver([]));
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        await viewModel.ActivateAsync();
+        viewModel.TopBoxelText = "Praea Euq IL-P d5-0";
+        viewModel.LowMassCode = "b";
+        var customStart = new DateTimeOffset(2026, 9, 22, 0, 0, 0, TimeSpan.Zero);
+        viewModel.StartedOn = customStart;
+        viewModel.SkipKnownToSpansh = true;
+        viewModel.SkipAlreadyVisited = true;
+        viewModel.CompleteOnFssAllBodies = true;
+
+        await viewModel.RefreshCurrentAsync();
+
+        Assert.Equal("Praea Euq IL-P d5-0", viewModel.TopBoxelText);
+        Assert.Equal("b", viewModel.LowMassCode);
+        Assert.Equal(customStart, viewModel.StartedOn);
+        CommanderProfileLoadResult prior = await profileStore.LoadAsync("F123", true);
+        Assert.Equal("Col 359 Sector NR-T c4-0", prior.Data?.BoxelSearch.TopBoxel?.Name);
+        Assert.False(prior.Data?.BoxelSearch.SkipKnownToSpansh);
+        await viewModel.ActivateAsync();
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal("Praea Euq IL-P d5-0", saved.Data?.BoxelSearch.TopBoxel?.Name);
+        Assert.Equal(customStart, saved.Data?.BoxelSearch.StartedOn);
+        Assert.True(saved.Data?.BoxelSearch.SkipKnownToSpansh);
+        Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
+        Assert.Equal(BoxelCompletionMode.FssAllBodies, saved.Data?.BoxelSearch.CompletionMode);
+    }
+
+    [AvaloniaFact]
+    public async Task InterleavedCompletionRuleEditsRetainTheLatestDesiredOptions()
+    {
+        var profileStore = new DelayedProfileStore();
+        var session = new BoxelSearchSession(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new SavedBoxelSearchStore(temporaryDirectory),
+            new StubResolver([])
+        );
+        sessions.Add(session);
+        var viewModel = new BoxelSearchViewModel(session);
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        await viewModel.ActivateAsync();
+        profileStore.BlockWrites = true;
+        try
+        {
+            viewModel.SkipAlreadyVisited = true;
+            await profileStore.FirstWriteEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            viewModel.SkipKnownToSpansh = true;
+            profileStore.ReleaseFirstWrite.TrySetResult();
+            await profileStore.SecondWriteEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            viewModel.CompleteOnFssAllBodies = true;
+            profileStore.ReleaseSecondWrite.TrySetResult();
+            await viewModel.RefreshCurrentAsync();
+
+            Assert.True(viewModel.SkipAlreadyVisited);
+            Assert.True(viewModel.SkipKnownToSpansh);
+            Assert.True(viewModel.CompleteOnFssAllBodies);
+            Assert.True(session.Current.Search.Persistence.SkipKnownToSpansh);
+        }
+        finally
+        {
+            profileStore.ReleaseFirstWrite.TrySetResult();
+            profileStore.ReleaseSecondWrite.TrySetResult();
+            viewModel.CancelPendingOperations();
+        }
+    }
+
+    [Fact]
+    public async Task LoadedActiveSearchAppliesCompletionRulesWithoutReactivation()
+    {
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([Observation("Col 359 Sector NR-T c4-0", 83517084434)])
+        );
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            new BoxelSearchSnapshot
+            {
+                Active = true,
+                TopBoxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                Current = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                CurrentCount = 31,
+                StartedOn = new DateTimeOffset(2026, 8, 18, 0, 0, 0, TimeSpan.Zero),
+            }
+        );
+        Assert.False(viewModel.Systems[0].IsComplete);
+
+        viewModel.SkipKnownToSpansh = true;
+        await viewModel.RefreshCurrentAsync();
+
+        Assert.True(viewModel.Systems[0].IsComplete);
+        Assert.Equal("Col 359 Sector NR-T c4-1", viewModel.NextSystem);
+        Assert.Equal("30", viewModel.LastSystemAvailable);
+    }
+
+    [Fact]
+    public async Task StartingAfterMidnightRefreshesOnlyAnImplicitSearchStartDate()
+    {
+        var clock = new MutableTimeProvider { Now = new DateTimeOffset(2026, 10, 7, 23, 59, 0, TimeSpan.Zero) };
+        var session = new BoxelSearchSession(
+            new CommanderProfileStore(temporaryDirectory),
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new SavedBoxelSearchStore(temporaryDirectory),
+            new StubResolver([])
+        );
+        sessions.Add(session);
+        var viewModel = new BoxelSearchViewModel(session, timeProvider: clock);
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        clock.Now = clock.Now.AddMinutes(2);
+        viewModel.RefreshDefaultSearchStartDate();
+        Assert.Equal(clock.Now.Date, viewModel.StartedOn.Date);
+        clock.Now = clock.Now.AddDays(1);
+
+        await viewModel.ActivateAsync();
+
+        Assert.Equal(clock.Now.Date, viewModel.StartedOn.Date);
+        Assert.Equal(viewModel.StartedOn, session.Current.Search.Persistence.StartedOn);
+        await viewModel.DisableAsync();
+        var customDate = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
+        viewModel.StartedOn = customDate;
+        clock.Now = clock.Now.AddDays(1);
+        await viewModel.ActivateAsync();
+        Assert.Equal(customDate, viewModel.StartedOn);
+        viewModel.RefreshDefaultSearchStartDate();
+        Assert.Equal(customDate, viewModel.StartedOn);
+        await viewModel.ActivateAsync();
+        Assert.Equal(customDate, viewModel.StartedOn);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        Assert.Equal(clock.Now.Date, viewModel.StartedOn.Date);
+    }
+
+    [AvaloniaFact]
+    public async Task EditsDuringProfileSwitchCannotOverwriteTheNewCommandersRules()
+    {
+        var profileStore = new DelayedProfileStore();
+        var session = new BoxelSearchSession(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new SavedBoxelSearchStore(temporaryDirectory),
+            new StubResolver([])
+        );
+        sessions.Add(session);
+        var viewModel = new BoxelSearchViewModel(session);
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        await viewModel.ActivateAsync();
+        profileStore.BlockWrites = true;
+        try
+        {
+            viewModel.SkipAlreadyVisited = true;
+            await profileStore.FirstWriteEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Task profileSwitch = viewModel.LoadProfileAsync(
+                "F456",
+                "Other",
+                true,
+                new BoxelSearchSnapshot
+                {
+                    Active = true,
+                    TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                    Current = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
+                    CurrentCount = 2,
+                    StartedOn = new DateTimeOffset(2026, 9, 10, 0, 0, 0, TimeSpan.Zero),
+                }
+            );
+            viewModel.SkipKnownToSpansh = true;
+            profileStore.ReleaseFirstWrite.TrySetResult();
+            profileStore.ReleaseSecondWrite.TrySetResult();
+            await profileSwitch;
+            await viewModel.RefreshCurrentAsync();
+
+            Assert.Equal("F456", session.Current.Context.Profile?.FrontierId);
+            Assert.False(session.Current.Search.Persistence.SkipAlreadyVisited);
+            Assert.False(session.Current.Search.Persistence.SkipKnownToSpansh);
+            Assert.False(viewModel.SkipAlreadyVisited);
+            Assert.False(viewModel.SkipKnownToSpansh);
+        }
+        finally
+        {
+            profileStore.ReleaseFirstWrite.TrySetResult();
+            profileStore.ReleaseSecondWrite.TrySetResult();
+            viewModel.CancelPendingOperations();
+        }
+    }
+
+    [Fact]
+    public async Task StatusOnlyDestinationRetainsNamedSectorIdentity()
+    {
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        await viewModel.ActivateAsync();
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination { System = 358394991378, Name = "Col 359 Sector NR-T c4-1" },
+            },
+            allowAutoCopy: false
+        );
+
+        Assert.True(viewModel.IsDestinationValid);
+        Assert.Contains("Col 359 Sector NR-T c4-1", viewModel.DestinationStatus);
+    }
+
     [Fact]
     public async Task ResumingSavedProgressRestoresItsOriginalSearchStartDate()
     {
@@ -199,7 +456,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         await resumed.ResumeSavedSearchAsync(saved.FileName);
 
+        resumed.RefreshDefaultSearchStartDate();
         Assert.Equal(originalStart, resumed.StartedOn);
+        resumed.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        Assert.Equal(DateTime.Today, resumed.StartedOn.Date);
     }
 
     [Fact]
@@ -1517,6 +1777,54 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             total,
             Warnings: warnings
         );
+    }
+
+    private sealed class MutableTimeProvider : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; }
+
+        public override DateTimeOffset GetUtcNow() => Now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+
+    private sealed class DelayedProfileStore : IBoxelSearchProfileStore
+    {
+        private int blockedWriteCount;
+        public bool BlockWrites { get; set; }
+        public TaskCompletionSource FirstWriteEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource SecondWriteEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseFirstWrite { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseSecondWrite { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task SaveBoxelSearchAsync(
+            string frontierId,
+            string? commanderName,
+            bool isOdyssey,
+            BoxelSearchSnapshot boxelSearch,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!BlockWrites)
+            {
+                return;
+            }
+            int write = ++blockedWriteCount;
+            if (write == 1)
+            {
+                FirstWriteEntered.TrySetResult();
+                await ReleaseFirstWrite.Task.WaitAsync(cancellationToken);
+            }
+            else if (write == 2)
+            {
+                SecondWriteEntered.TrySetResult();
+                await ReleaseSecondWrite.Task.WaitAsync(cancellationToken);
+            }
+        }
     }
 
     private sealed class ProgrammableSession : IBoxelSearchSession

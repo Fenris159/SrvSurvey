@@ -672,6 +672,37 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void UpdatingRulesRetainsManualEmptyMarkersWithoutFreshObservations()
+    {
+        var startedOn = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        var state = new BoxelSearchState();
+        Assert.True(
+            state.TryActivate(
+                new BoxelSearchActivationRequest
+                {
+                    TopBoxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                    LowMassCode = 'c',
+                    StartedOn = startedOn,
+                },
+                out _
+            )
+        );
+        state.MergeSpanshSystems([Observation("Col 359 Sector NR-T c4-0", spansh: startedOn.AddDays(-1))]);
+        state.SetExpectedSystemCount(3);
+        Assert.True(state.TrySetSystemEmpty("Col 359 Sector NR-T c4-0", true, out _));
+
+        Assert.True(
+            state.SetCompletionRules(
+                new SetBoxelCompletionRules(startedOn.AddDays(1), true, true, BoxelCompletionMode.FssAllBodies)
+            )
+        );
+
+        Assert.True(state.IsSystemEmpty("Col 359 Sector NR-T c4-0"));
+        Assert.False(Assert.Single(state.Systems).IsComplete);
+        Assert.Equal("Col 359 Sector NR-T c4-1", state.NextSystem);
+    }
+
+    [Fact]
     public void UpdatingRulesDoesNotReuseFullFssFromAnEarlierVisitForANewVisit()
     {
         var startedOn = DateTimeOffset.Parse(

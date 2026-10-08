@@ -1302,6 +1302,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             {
                 value.IsSelected = true;
                 ExpandNavigationGroupFor(value.Key);
+                if (value.Key == "boxel")
+                {
+                    BoxelSearch.RefreshDefaultSearchStartDate();
+                }
             }
 
             if (value is not null)

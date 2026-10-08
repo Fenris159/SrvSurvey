@@ -356,18 +356,34 @@ public sealed class BoxelSearchState
         SkipAlreadyVisited = rules.SkipAlreadyVisited;
         SkipKnownToSpansh = rules.SkipKnownToSpansh;
         CompletionMode = rules.CompletionMode;
-        BoxelSystemObservation[] observations = systems
-            .Values.Select(system => new BoxelSystemObservation(
-                system.Boxel,
-                system.Position,
-                system.VisitedAt,
-                system.SpanshUpdatedAt,
-                system.HasKnownBodies,
-                system.FssAllBodiesAt is not null && system.FssAllBodiesAt == system.VisitedAt
-            ))
-            .ToArray();
-        MergeLocalSystems(observations);
-        MergeSpanshSystems(observations);
+        foreach (BoxelSystemState system in systems.Values.ToArray())
+        {
+            string generatedName = system.Boxel.GeneratedName;
+            if (system.IsComplete || emptySystems.Contains(generatedName))
+            {
+                continue;
+            }
+
+            bool isComplete =
+                IsLocalVisitComplete(
+                    system.VisitedAt,
+                    system.FssAllBodiesAt is not null && system.FssAllBodiesAt == system.VisitedAt,
+                    StartedOn,
+                    SkipAlreadyVisited,
+                    CompletionMode
+                ) || (SkipKnownToSpansh && system.HasKnownBodies && system.SpanshUpdatedAt < StartedOn);
+            if (!isComplete)
+            {
+                continue;
+            }
+
+            systems[generatedName] = system with { IsComplete = true };
+            RemoveDeferredSystem(system.Boxel);
+            ExcludeFromDeferredRange(system.Boxel);
+            AddCompletedSystem(generatedName);
+        }
+        UpdateCurrentCompletion();
+        SetNextSystem();
         Version++;
         return true;
     }
