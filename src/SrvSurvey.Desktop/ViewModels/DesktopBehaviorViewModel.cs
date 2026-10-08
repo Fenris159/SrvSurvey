@@ -96,6 +96,8 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
     public ApplicationWindowPosition? LastApplicationWindowPosition => preferences.LastApplicationWindowPosition;
 
+    public ApplicationWindowGeometry? LastApplicationWindowGeometry => preferences.LastApplicationWindowGeometry;
+
     public string StatusMessage
     {
         get => statusMessage;
@@ -147,6 +149,16 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(position);
         Update(preferences with { LastApplicationWindowPosition = position });
+    }
+
+    public void RememberApplicationWindowGeometry(
+        ApplicationWindowPosition position,
+        ApplicationWindowGeometry geometry
+    )
+    {
+        ArgumentNullException.ThrowIfNull(position);
+        ArgumentNullException.ThrowIfNull(geometry);
+        Update(preferences with { LastApplicationWindowPosition = position, LastApplicationWindowGeometry = geometry });
     }
 
     public void ReportTrayUnavailable(string reason)
@@ -220,6 +232,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedApplicationWindowScale));
         OnPropertyChanged(nameof(ApplicationWindowScalePercent));
         OnPropertyChanged(nameof(LastApplicationWindowPosition));
+        OnPropertyChanged(nameof(LastApplicationWindowGeometry));
         if (applicationWindowPreferencesChanged)
         {
             ApplicationWindowPreferencesChanged?.Invoke(this, EventArgs.Empty);

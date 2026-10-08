@@ -81,6 +81,26 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     }
 
     [Fact]
+    public void RememberingGeometryPersistsWithoutReapplyingPlacement()
+    {
+        DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
+        int changes = 0;
+        viewModel.ApplicationWindowPreferencesChanged += (_, _) => changes++;
+        var position = new ApplicationWindowPosition(20, 30, "DISPLAY1");
+        var geometry = new ApplicationWindowGeometry(1370, 870, true, 100, 1, 1920, 1080);
+        viewModel.RememberApplicationWindowGeometry(position, geometry);
+        viewModel.RememberApplicationWindowGeometry(position, geometry);
+        Assert.Equal(0, changes);
+        Assert.Equal(position, viewModel.LastApplicationWindowPosition);
+        Assert.Equal(geometry, viewModel.LastApplicationWindowGeometry);
+        DesktopBehaviorPreferences saved = new DesktopBehaviorSettingsStore(
+            Path.Combine(temporaryDirectory, "ui-settings.json")
+        ).Load();
+        Assert.Equal(position, saved.LastApplicationWindowPosition);
+        Assert.Equal(geometry, saved.LastApplicationWindowGeometry);
+    }
+
+    [Fact]
     public void ReducedMotionPreferencePersistsWithoutPlacementNotification()
     {
         DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
