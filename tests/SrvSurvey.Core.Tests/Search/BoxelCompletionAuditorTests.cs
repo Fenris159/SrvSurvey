@@ -206,7 +206,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
                 DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
-                true,
+                false,
                 false,
                 BoxelCompletionMode.FssAllBodies,
                 []
@@ -215,6 +215,36 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
 
         Assert.False(result.Entries[0].IsComplete);
         Assert.True(result.Entries[1].IsComplete);
+    }
+
+    [Fact]
+    public async Task FssAuditStillAppliesTheEarlierVisitRule()
+    {
+        var boxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0");
+        await WriteLocalSystemAsync(
+            boxel,
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var auditor = new BoxelCompletionAuditor(
+            new LegacySystemDataReader(temporaryDirectory),
+            new StubResolver(_ => [])
+        );
+
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
+            new BoxelCompletionAuditRequest(
+                "F123",
+                [boxel],
+                new HashSet<string>(StringComparer.Ordinal),
+                null,
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                true,
+                false,
+                BoxelCompletionMode.FssAllBodies,
+                []
+            )
+        );
+
+        Assert.True(Assert.Single(result.Entries).IsComplete);
     }
 
     [Fact]

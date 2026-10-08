@@ -42,10 +42,11 @@ public sealed class LegacySystemDataReader(string dataDirectory) : IBoxelLocalSy
         {
             cancellationToken.ThrowIfCancellationRequested();
             LegacySystemData? data = await ReadSystemAsync(path, errors, cancellationToken).ConfigureAwait(false);
-            bool resolved =
-                data?.Address > 0
-                    ? BoxelAddress.TryFromSystemAddress(data.Address, data.Name, out BoxelAddress? systemBoxel)
-                    : BoxelAddress.TryParse(data?.Name, out systemBoxel);
+            bool resolved = BoxelAddress.TryResolveSearchSystem(
+                data?.Name,
+                data?.Address ?? 0,
+                out BoxelAddress? systemBoxel
+            );
             if (data is null || !resolved || systemBoxel is null)
             {
                 continue;

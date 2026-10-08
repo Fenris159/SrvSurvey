@@ -59,10 +59,11 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
 
             foreach (SpanshSystem result in results)
             {
-                bool resolved =
-                    result.Id64 > 0
-                        ? BoxelAddress.TryFromSystemAddress(result.Id64, result.Name, out BoxelAddress? resultBoxel)
-                        : BoxelAddress.TryParse(result.Name, out resultBoxel);
+                bool resolved = BoxelAddress.TryResolveSearchSystem(
+                    result.Name,
+                    result.Id64,
+                    out BoxelAddress? resultBoxel
+                );
                 if (
                     !resolved
                     || resultBoxel is null
