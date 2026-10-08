@@ -289,37 +289,43 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         int rejected = 0;
         int failed = 0;
         var details = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (QueuedUpload upload in batch)
+        try
         {
-            try
+            foreach (QueuedUpload upload in batch)
             {
-                int? status = await SendAsync(upload, cancellationToken);
-                if (status == 200)
+                try
                 {
-                    accepted++;
+                    int? status = await SendAsync(upload, cancellationToken);
+                    if (status == 200)
+                    {
+                        accepted++;
+                    }
+                    else if (status is { } code)
+                    {
+                        rejected++;
+                        AddOutcome(details, $"HTTP {code}");
+                    }
                 }
-                else if (status is { } code)
+                catch (Exception exception)
+                    when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
                 {
-                    rejected++;
-                    AddOutcome(details, $"HTTP {code}");
+                    failed++;
+                    AddOutcome(details, exception.GetType().Name);
                 }
-            }
-            catch (Exception exception)
-                when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-            {
-                failed++;
-                AddOutcome(details, exception.GetType().Name);
             }
         }
-        if (accepted + rejected + failed > 0)
+        finally
         {
-            string detailText =
-                details.Count == 0
-                    ? string.Empty
-                    : " " + string.Join(", ", details.Select(pair => $"{pair.Key}: {pair.Value}")) + ".";
-            WriteLog(
-                $"VoxStellar upload batch: {accepted} accepted, {rejected} rejected, {failed} failed." + detailText
-            );
+            if (accepted + rejected + failed > 0)
+            {
+                string detailText =
+                    details.Count == 0
+                        ? string.Empty
+                        : " " + string.Join(", ", details.Select(pair => $"{pair.Key}: {pair.Value}")) + ".";
+                WriteLog(
+                    $"VoxStellar upload batch: {accepted} accepted, {rejected} rejected, {failed} failed." + detailText
+                );
+            }
         }
     }
 

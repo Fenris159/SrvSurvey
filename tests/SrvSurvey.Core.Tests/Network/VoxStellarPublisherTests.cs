@@ -409,7 +409,30 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
-    private sealed class CancellationHandler : HttpMessageHandler
+    [Fact]
+    public async Task ShutdownRetainsCompletedOutcomesFromAnInterruptedBatch()
+    {
+        var clock = new BatchClock();
+        var handler = new CancellationHandler(acceptFirstRequest: true);
+        using var client = new HttpClient(handler);
+        var logs = new ConcurrentQueue<string>();
+        using var publisher = new VoxStellarPublisher(
+            "1.0.0",
+            "test-key",
+            client,
+            log: logs.Enqueue,
+            timeProvider: clock
+        );
+        await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
+        (await clock.NextTimerAsync()).Fire();
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(handler.Cancelled.Task.IsCompleted);
+        Assert.Equal(2, handler.CallCount);
+        Assert.Contains("1 accepted", Assert.Single(logs), StringComparison.Ordinal);
+    }
+
+    private sealed class CancellationHandler(bool acceptFirstRequest = false) : HttpMessageHandler
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -421,6 +444,10 @@ public sealed class VoxStellarPublisherTests
         )
         {
             CallCount++;
+            if (acceptFirstRequest && CallCount == 1)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
             Started.TrySetResult();
             try
             {
