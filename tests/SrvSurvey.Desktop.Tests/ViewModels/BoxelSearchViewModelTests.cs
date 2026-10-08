@@ -150,6 +150,42 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.Equal(BoxelCompletionMode.FssAllBodies, saved.Data?.BoxelSearch.CompletionMode);
     }
 
+    /// <summary>Legacy searches without a start date use the injected local clock; persisted dates remain authoritative.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ResumingSearchWithoutDateUsesInjectedLocalClock(bool hasSavedDate)
+    {
+        var clock = new MutableTimeProvider { Now = new DateTimeOffset(2031, 2, 12, 23, 0, 0, TimeSpan.Zero) };
+        var savedDate = new DateTimeOffset(2026, 9, 22, 0, 0, 0, TimeSpan.Zero);
+        var session = new ProgrammableSession
+        {
+            Current = BoxelSearchSessionSnapshot.Empty with
+            {
+                Search = BoxelSearchSessionSearchSnapshot.Empty with
+                {
+                    Persistence = BoxelSearchSnapshot.Empty with
+                    {
+                        StartedOn = hasSavedDate ? savedDate : DateTimeOffset.MinValue,
+                    },
+                },
+            },
+        };
+        var viewModel = new BoxelSearchViewModel(session, timeProvider: clock);
+        try
+        {
+            await viewModel.ResumeSavedSearchAsync("legacy-search.json");
+            Assert.Equal(
+                hasSavedDate ? savedDate : new DateTimeOffset(clock.Now.Date, TimeSpan.Zero),
+                viewModel.StartedOn
+            );
+        }
+        finally
+        {
+            viewModel.CancelPendingOperations();
+        }
+    }
+
     [Fact]
     public async Task EmptyProfileDefaultsSearchStartToCurrentLocalDate()
     {
