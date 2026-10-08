@@ -5,6 +5,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
@@ -131,6 +132,56 @@ public sealed class MainWindowGeometryTests
             );
             Assert.Equal(1475, window.Width);
             Assert.Equal(950, window.Height);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(WindowState.Normal)]
+    [InlineData(WindowState.Maximized)]
+    public void ChangedWorkingAreaKeepsWindowMinimizedUntilRestored(WindowState restoreState)
+    {
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var window = new MainWindow(viewModel);
+        try
+        {
+            window.Show();
+            window.Width = 1370;
+            window.Height = 870;
+            Layout(window);
+            window.WindowState = restoreState;
+            window.WindowState = WindowState.Minimized;
+            FieldInfo field = typeof(MainWindow).GetField(
+                "applicationMonitors",
+                BindingFlags.Instance | BindingFlags.NonPublic
+            )!;
+            var monitors = (IReadOnlyList<MainWindowMonitor>)field.GetValue(window)!;
+            // A native taskbar/working-area notification changes cached screen data without changing resolution.
+            field.SetValue(
+                window,
+                monitors
+                    .Select(monitor =>
+                        monitor with
+                        {
+                            WorkingArea = new PixelRect(
+                                monitor.WorkingArea.X,
+                                monitor.WorkingArea.Y,
+                                monitor.WorkingArea.Width,
+                                monitor.WorkingArea.Height - 1
+                            ),
+                        }
+                    )
+                    .ToArray()
+            );
+            NotifyScreensChanged(window);
+            Assert.Equal(WindowState.Minimized, window.WindowState);
+            window.RestoreAndActivate();
+            Assert.Equal(restoreState, window.WindowState);
+            Assert.Equal(1370, window.Width);
+            Assert.Equal(870, window.Height);
         }
         finally
         {
