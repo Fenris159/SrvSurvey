@@ -134,14 +134,21 @@ public sealed partial class ColonizationDeliveryRecovery
         && (
             (follows && !(depot.Timestamp < recordedAt))
             || depot.Timestamp > recordedAt
-            || (depot.Timestamp == recordedAt && DepotReflectsUnpublishedProgress(baseline, depotRemaining!))
+            || (depot.Timestamp == recordedAt && DepotReflectsUnpublishedProgress(depot, baseline, depotRemaining!))
         );
 
+    /// <summary>Explicit completion is progress even when Raven's remaining commodity amounts are already zero.</summary>
     private static bool DepotReflectsUnpublishedProgress(
+        ColonizationConstructionDepotSnapshot snapshot,
         Dictionary<string, int> baseline,
         Dictionary<string, int> depot
     )
     {
+        if (snapshot.IsComplete)
+        {
+            return true;
+        }
+
         Dictionary<string, int> known = ColonizationCommodityMaps.NormalizeNeedMap(
             baseline.Where(commodity => commodity.Value >= 0)
         );

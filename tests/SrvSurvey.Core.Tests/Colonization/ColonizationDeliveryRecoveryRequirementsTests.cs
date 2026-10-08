@@ -504,6 +504,68 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.True(Assert.Single(store.LoadPendingContributions()).CreditAcknowledged);
     }
 
+    /// <summary>A preceding same-time completed depot remains durable even when Raven already records zero need.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ZeroNeedCompletionSurvivesUndockAndRestart(bool rejectCredit, bool loseCreditAcknowledgement)
+    {
+        RecordingRavenClient client = RequirementsClient();
+        client.Workspace = new([Project("build-1", "Port", 0, 10, 20)], [], null, []);
+        client.ProjectCompletionFailures.Enqueue(RejectedCredit());
+        if (rejectCredit || loseCreditAcknowledgement)
+        {
+            client.ContributionFailures.Enqueue(
+                rejectCredit ? RejectedCredit() : new HttpRequestException("credit acknowledgement lost")
+            );
+        }
+        else
+        {
+            client.ProjectCompletionFailures.Enqueue(new HttpRequestException("completion acknowledgement lost"));
+        }
+        var creditGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.ContributionGate = creditGate.Task;
+        ColonizationDeliveryRecovery recovery = Create(client);
+        JournalEventEnvelope contribution = Contribution(25);
+        Task<IReadOnlyList<ColonizationDeliveryNotice>> upload = ApplyAndSynchronizeAsync(
+            recovery,
+            ConstructionDock(),
+            Depot(100, 100, true),
+            contribution,
+            Event("Undocked", "")
+        );
+        ColonizationPendingContribution beforeCredit = Assert.Single(store.LoadPendingContributions());
+        creditGate.SetResult();
+        await upload;
+
+        Assert.Null(recovery.CreateConstructionSnapshot().CurrentDepot);
+        Assert.Equal(0, beforeCredit.Requirements!.Commodities["steel"]);
+        Assert.True(beforeCredit.Requirements.Depot?.IsComplete);
+        ColonizationPendingContribution retained = Assert.Single(store.LoadPendingContributions());
+        Assert.True(retained.Requirements!.Depot?.IsComplete);
+        Assert.Equal(!rejectCredit && !loseCreditAcknowledgement, retained.CreditAcknowledged);
+
+        ColonizationDeliveryRecovery restarted = Create(client);
+        if (loseCreditAcknowledgement)
+        {
+            AssertNotice(
+                await restarted.RetryPendingWritesAsync(),
+                ColonizationDeliveryNoticeKind.ContributionOutcomeUncertain
+            );
+            Assert.Single(client.Contributions);
+            restarted.DismissVerifiedContributions([contribution.RawJson]);
+            now = now.AddSeconds(6);
+        }
+        await restarted.RetryPendingWritesAsync();
+
+        Assert.Equal(rejectCredit ? 2 : 1, client.Contributions.Count);
+        Assert.Equal(rejectCredit || loseCreditAcknowledgement ? 2 : 3, client.MarkCompleteCount);
+        Assert.True(Assert.Single(restarted.Projects).IsComplete);
+        Assert.Empty(client.ProjectUpdates);
+        Assert.Empty(store.LoadPendingContributions());
+    }
+
     private static RecordingRavenClient RequirementsClient() =>
         new() { Workspace = new([Project("build-1", "Port", 100, 10, 20)], [], null, []) };
 
