@@ -622,9 +622,10 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     {
         if (tick.CargoChanged && state.LatestCargo is not null)
         {
+            // Cargo.json is the current snapshot even during bootstrap; historical journal writes stay suppressed.
             await dependencies.Colonization.UpdateCargoAsync(
                 state.LatestCargo,
-                publishCurrentShipCargo: tick.AllowLiveEffects && context.Update.Cargo is not null
+                publishCurrentShipCargo: !tick.IsCancellationDrain && context.Update.Cargo is not null
             );
         }
     }
