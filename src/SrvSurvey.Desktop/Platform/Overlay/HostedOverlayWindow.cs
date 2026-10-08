@@ -180,6 +180,7 @@ internal sealed class HostedOverlayWindow : IDisposable
     private int failureResetRequested;
     private bool isPresenting;
     private bool isVisible;
+    private bool preparationFailureReported;
 
     public HostedOverlayWindow(
         PassiveOverlayWindowDefinition definition,
@@ -436,12 +437,13 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void ReconcileCore()
     {
-        if (
-            Interlocked.Exchange(ref failureResetRequested, 0) != 0
-            && Health is OverlayHostHealth.PassivePreparationFailed or OverlayHostHealth.Faulted
-        )
+        if (Interlocked.Exchange(ref failureResetRequested, 0) != 0)
         {
-            Health = OverlayHostHealth.Healthy;
+            preparationFailureReported = false;
+            if (Health is OverlayHostHealth.PassivePreparationFailed or OverlayHostHealth.Faulted)
+            {
+                Health = OverlayHostHealth.Healthy;
+            }
         }
 
         if (
@@ -538,13 +540,23 @@ internal sealed class HostedOverlayWindow : IDisposable
         if (!preparation.IsClickThrough)
         {
             Health = OverlayHostHealth.PassivePreparationFailed;
-            TryReportDiagnostic(
-                new OverlayHostDiagnostic(definition.PlotterName, OverlayHostPhase.Opening, Health, preparation.Status)
-            );
+            if (!preparationFailureReported)
+            {
+                preparationFailureReported = true;
+                TryReportDiagnostic(
+                    new OverlayHostDiagnostic(
+                        definition.PlotterName,
+                        OverlayHostPhase.Opening,
+                        Health,
+                        preparation.Status
+                    )
+                );
+            }
             CloseWindow();
             return;
         }
 
+        preparationFailureReported = false;
         SetVisible(opened.IsVisible);
     }
 

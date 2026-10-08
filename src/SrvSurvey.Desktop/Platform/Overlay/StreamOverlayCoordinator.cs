@@ -98,7 +98,11 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
 
         hostedWindow.Reconcile(viewModel.Enabled);
-        if (!viewModel.Enabled || hostedWindow.IsVisible)
+        if (
+            !viewModel.Enabled
+            || hostedWindow.IsVisible
+            || hostedWindow.Health == OverlayHostHealth.PassivePreparationFailed
+        )
         {
             return;
         }
