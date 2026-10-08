@@ -1222,11 +1222,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 LowMassCode = snapshot.LowMassCode.ToString();
                 StartedOn =
                     pendingCompletionRules?.StartedOn
-                    ?? (
-                        snapshot.StartedOn == DateTimeOffset.MinValue
-                            ? new DateTimeOffset(DateTime.Today)
-                            : snapshot.StartedOn
-                    );
+                    ?? (snapshot.StartedOn == DateTimeOffset.MinValue ? GetCurrentLocalDate() : snapshot.StartedOn);
                 SkipAlreadyVisited = pendingCompletionRules?.SkipAlreadyVisited ?? snapshot.SkipAlreadyVisited;
                 SkipKnownToSpansh = pendingCompletionRules?.SkipKnownToSpansh ?? snapshot.SkipKnownToSpansh;
                 CompleteOnFssAllBodies =
