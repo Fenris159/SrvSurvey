@@ -42,7 +42,8 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
             "\\\\.\\DISPLAY2",
             125,
             new ApplicationWindowPosition(2140, 86, "\\\\.\\DISPLAY2"),
-            ReduceMotion: true
+            ReduceMotion: true,
+            LastApplicationWindowGeometry: new ApplicationWindowGeometry(1370, 870, true, 125, 1, 2560, 1440)
         );
 
         store.Save(expected);
@@ -71,6 +72,22 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
         );
 
         Assert.Equal(100, new DesktopBehaviorSettingsStore(path).Load().ApplicationWindowScalePercent);
+    }
+
+    [Theory]
+    [InlineData("{\"Width\":\"broken\"}")]
+    [InlineData("42")]
+    public void CorruptGeometryLeavesOtherPreferencesReadable(string geometry)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(
+            path,
+            "{\"DesktopBehavior\":{\"FocusGameOnStart\":false,\"ApplicationWindowGeometry\":" + geometry + "}}"
+        );
+        DesktopBehaviorPreferences saved = new DesktopBehaviorSettingsStore(path).Load();
+        Assert.False(saved.FocusGameOnStart);
+        Assert.Null(saved.LastApplicationWindowGeometry);
     }
 
     public void Dispose()

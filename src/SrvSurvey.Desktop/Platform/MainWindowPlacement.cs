@@ -24,7 +24,8 @@ internal static class MainWindowPlacement
         string? preferredMonitorId,
         int applicationScalePercent,
         string? automaticMonitorId = null,
-        ApplicationWindowPosition? lastPosition = null
+        ApplicationWindowPosition? lastPosition = null,
+        ApplicationWindowGeometry? lastGeometry = null
     )
     {
         ArgumentNullException.ThrowIfNull(monitors);
@@ -55,12 +56,25 @@ internal static class MainWindowPlacement
         double availableHeight = (workingArea.Height / screenScale) - (WorkingAreaMargin * 2);
         double fitScale = Math.Min(availableWidth / DefaultWidth, availableHeight / DefaultHeight);
         double effectiveScale = fitScale > 0 ? Math.Min(requestedScale, fitScale) : requestedScale;
+        bool restoreGeometry =
+            (lastPosition is null || savedMonitor is not null)
+            && CanRestoreGeometry(
+                lastGeometry,
+                targetMonitor,
+                applicationScalePercent,
+                effectiveScale,
+                screenScale,
+                workingArea
+            );
+        double width = restoreGeometry ? lastGeometry!.Width : DefaultWidth * effectiveScale;
+        double height = restoreGeometry ? lastGeometry!.Height : DefaultHeight * effectiveScale;
         PixelPoint? position = ResolvePosition(
             shouldPosition,
             savedMonitor,
             lastPosition,
             workingArea,
-            effectiveScale,
+            width,
+            height,
             screenScale
         );
 
@@ -68,9 +82,32 @@ internal static class MainWindowPlacement
             effectiveScale,
             targetMonitor,
             position,
-            preferredMonitor is not null && ReferenceEquals(targetMonitor, preferredMonitor)
+            preferredMonitor is not null && ReferenceEquals(targetMonitor, preferredMonitor),
+            width,
+            height,
+            restoreGeometry && lastGeometry!.Maximized
         );
     }
+
+    private static bool CanRestoreGeometry(
+        ApplicationWindowGeometry? geometry,
+        MainWindowMonitor monitor,
+        int applicationScalePercent,
+        double applicationScale,
+        double screenScale,
+        PixelRect workingArea
+    ) =>
+        geometry is not null
+        && geometry.ApplicationScalePercent == applicationScalePercent
+        && Math.Abs(geometry.ScreenScale - screenScale) < 0.001
+        && geometry.ScreenWidth == monitor.Bounds.Width
+        && geometry.ScreenHeight == monitor.Bounds.Height
+        && double.IsFinite(geometry.Width)
+        && double.IsFinite(geometry.Height)
+        && geometry.Width >= DefaultMinimumWidth * applicationScale
+        && geometry.Height >= DefaultMinimumHeight * applicationScale
+        && geometry.Width <= workingArea.Width / screenScale
+        && geometry.Height <= workingArea.Height / screenScale;
 
     private static MainWindowMonitor? ResolveSavedMonitor(
         IReadOnlyList<MainWindowMonitor> monitors,
@@ -96,7 +133,8 @@ internal static class MainWindowPlacement
         MainWindowMonitor? savedMonitor,
         ApplicationWindowPosition? lastPosition,
         PixelRect workingArea,
-        double effectiveScale,
+        double width,
+        double height,
         double screenScale
     )
     {
@@ -105,8 +143,8 @@ internal static class MainWindowPlacement
             return null;
         }
 
-        int widthInPixels = (int)Math.Round(DefaultWidth * effectiveScale * screenScale);
-        int heightInPixels = (int)Math.Round(DefaultHeight * effectiveScale * screenScale);
+        int widthInPixels = (int)Math.Round(width * screenScale);
+        int heightInPixels = (int)Math.Round(height * screenScale);
         return savedMonitor is not null
             ? ClampPosition(new PixelPoint(lastPosition!.X, lastPosition.Y), workingArea, widthInPixels, heightInPixels)
             : new PixelPoint(
@@ -119,18 +157,22 @@ internal static class MainWindowPlacement
         double scale,
         MainWindowMonitor? monitor,
         PixelPoint? position,
-        bool usedPreferredMonitor
+        bool usedPreferredMonitor,
+        double? width = null,
+        double? height = null,
+        bool maximized = false
     )
     {
         return new MainWindowPlacementResult(
-            DefaultWidth * scale,
-            DefaultHeight * scale,
+            width ?? DefaultWidth * scale,
+            height ?? DefaultHeight * scale,
             DefaultMinimumWidth * scale,
             DefaultMinimumHeight * scale,
             scale,
             monitor,
             position,
-            usedPreferredMonitor
+            usedPreferredMonitor,
+            maximized
         );
     }
 
@@ -212,5 +254,6 @@ internal sealed record MainWindowPlacementResult(
     double ApplicationScale,
     MainWindowMonitor? Monitor,
     PixelPoint? Position,
-    bool UsedPreferredMonitor
+    bool UsedPreferredMonitor,
+    bool Maximized = false
 );

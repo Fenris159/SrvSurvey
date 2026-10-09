@@ -136,6 +136,90 @@ public sealed class MainWindowPlacementTests
         Assert.True(result.Height < MainWindowPlacement.DefaultHeight);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ValidSavedGeometryRestoresSizeAndClampsUsingItsActualDimensions(bool maximized)
+    {
+        MainWindowPlacementResult result = ResolveGeometry(
+            new ApplicationWindowGeometry(1370, 870, maximized, 100, 1, 1920, 1080)
+        );
+        Assert.Equal(1370, result.Width);
+        Assert.Equal(870, result.Height);
+        Assert.Equal(new PixelPoint(550, 170), result.Position);
+        Assert.Equal(maximized, result.Maximized);
+    }
+
+    [Theory]
+    [InlineData(125, 1, 1920, 1080)]
+    [InlineData(100, 1.25, 1920, 1080)]
+    [InlineData(100, 1, 2560, 1080)]
+    [InlineData(100, 1, 1920, 1440)]
+    public void ChangedScaleOrResolutionFallsBackToNormalDefault(int scale, double dpi, int width, int height)
+    {
+        MainWindowPlacementResult result = ResolveGeometry(
+            new ApplicationWindowGeometry(1370, 870, true, scale, dpi, width, height)
+        );
+        AssertDefaults(result);
+    }
+
+    [Theory]
+    [InlineData(double.NaN, 870)]
+    [InlineData(1370, double.PositiveInfinity)]
+    [InlineData(-1, 870)]
+    [InlineData(1370, 0)]
+    [InlineData(700, 870)]
+    [InlineData(1370, 500)]
+    [InlineData(2000, 870)]
+    [InlineData(1370, 1100)]
+    public void UnusableSavedSizeFallsBackToDefault(double width, double height)
+    {
+        AssertDefaults(ResolveGeometry(new ApplicationWindowGeometry(width, height, true, 100, 1, 1920, 1080)));
+    }
+
+    [Fact]
+    public void DisconnectedMonitorInvalidatesSavedGeometry()
+    {
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
+            [Primary],
+            null,
+            100,
+            lastPosition: new ApplicationWindowPosition(100, 100, "Disconnected"),
+            lastGeometry: new ApplicationWindowGeometry(1370, 870, true, 100, 1, 1920, 1080)
+        );
+        AssertDefaults(result);
+    }
+
+    [Fact]
+    public void ExplicitMonitorChangeCanKeepAValidShape()
+    {
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
+            [Primary],
+            "DISPLAY1",
+            100,
+            lastGeometry: new ApplicationWindowGeometry(1370, 870, true, 100, 1, 1920, 1080)
+        );
+        Assert.Equal(1370, result.Width);
+        Assert.True(result.Maximized);
+        Assert.Equal(new PixelPoint(275, 85), result.Position);
+    }
+
+    private static MainWindowPlacementResult ResolveGeometry(ApplicationWindowGeometry geometry) =>
+        MainWindowPlacement.Resolve(
+            [Primary],
+            null,
+            100,
+            lastPosition: new ApplicationWindowPosition(1800, 1000, "DISPLAY1"),
+            lastGeometry: geometry
+        );
+
+    private static void AssertDefaults(MainWindowPlacementResult result)
+    {
+        Assert.Equal(MainWindowPlacement.DefaultWidth, result.Width);
+        Assert.Equal(MainWindowPlacement.DefaultHeight, result.Height);
+        Assert.False(result.Maximized);
+    }
+
     [Fact]
     public void MissingScreenDataStillAppliesRequestedApplicationScale()
     {

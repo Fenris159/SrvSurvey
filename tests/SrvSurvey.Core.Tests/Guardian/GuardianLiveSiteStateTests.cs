@@ -210,6 +210,61 @@ public sealed class GuardianLiveSiteStateTests
         Assert.Equal(2, state.CurrentSite?.Index);
     }
 
+    [Theory]
+    [InlineData(-91, 0)]
+    [InlineData(91, 0)]
+    [InlineData(double.NaN, 0)]
+    [InlineData(double.NegativeInfinity, 0)]
+    [InlineData(double.PositiveInfinity, 0)]
+    [InlineData(0, -181)]
+    [InlineData(0, 181)]
+    [InlineData(0, double.NaN)]
+    [InlineData(0, double.NegativeInfinity)]
+    [InlineData(0, double.PositiveInfinity)]
+    public void MalformedCoordinatesFollowMissingCoordinatePolicyWithoutLosingProximityState(
+        double latitude,
+        double longitude
+    )
+    {
+        var state = new GuardianLiveSiteState(
+            new GuardianSiteCatalog([CreateReference(1, 0), CreateReference(2, 0.02)])
+        );
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        EliteStatus malformed = SurfaceStatus(latitude) with { Longitude = longitude };
+        EliteStatus missingCoordinates = malformed with { Flags = StatusFlags.InSrv };
+        Assert.False(state.SynchronizeProximity(missingCoordinates, retainDuringGlide: false));
+        Assert.Null(state.CurrentSite);
+        Assert.False(state.SynchronizeProximity(malformed, retainDuringGlide: false));
+        Assert.Null(state.CurrentSite);
+
+        Assert.True(state.SynchronizeProximity(SurfaceStatus(0.001), retainDuringGlide: false));
+        GuardianLiveSiteSnapshot? previous = state.CurrentSite;
+        Assert.False(state.SynchronizeProximity(missingCoordinates, retainDuringGlide: false));
+        Assert.Same(previous, state.CurrentSite);
+        Assert.False(state.SynchronizeProximity(malformed, retainDuringGlide: false));
+        Assert.Same(previous, state.CurrentSite);
+        Assert.True(state.SynchronizeProximity(malformed with { Altitude = 4_001 }, retainDuringGlide: false));
+        Assert.Null(state.CurrentSite);
+
+        Assert.True(state.SynchronizeProximity(SurfaceStatus(0.019), retainDuringGlide: false));
+        Assert.Equal(2, state.CurrentSite?.Index);
+    }
+
+    [Theory]
+    [InlineData(-90, -180)]
+    [InlineData(90, 180)]
+    public void CoordinateBoundariesStillRestoreCatalogSites(double latitude, double longitude)
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([CreateReference(1, 0)]));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+
+        Assert.True(
+            state.SynchronizeProximity(SurfaceStatus(latitude) with { Longitude = longitude }, retainDuringGlide: false)
+        );
+
+        Assert.Equal(1, state.CurrentSite?.Index);
+    }
+
     [Fact]
     public void GlideRetainsSiteAndHumanSettlementClearsIt()
     {

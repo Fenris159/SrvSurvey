@@ -50,6 +50,8 @@ internal sealed class X11OverlayPlatformService
         {
             SupportsClickThrough = context.ShapeAvailable,
             SupportsGameWindowTracking = true,
+            // BeginMoveDrag is already the managed drag, which applies the monitor lock itself.
+            UsesManagedDragForMonitorLock = false,
         };
     }
 
