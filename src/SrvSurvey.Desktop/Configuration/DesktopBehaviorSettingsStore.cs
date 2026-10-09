@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Configuration;
@@ -24,7 +25,8 @@ public sealed class DesktopBehaviorSettingsStore
                 GetInt32(settings, "ApplicationWindowScalePercent", ApplicationWindowScaleCatalog.DefaultPercent)
             ),
             GetApplicationWindowPosition(settings),
-            GetBoolean(settings, "ReduceMotion", false)
+            GetBoolean(settings, "ReduceMotion", false),
+            GetApplicationWindowGeometry(settings)
         );
     }
 
@@ -58,6 +60,14 @@ public sealed class DesktopBehaviorSettingsStore
                 preferences.ApplicationWindowScalePercent
             );
             settings["ReduceMotion"] = preferences.ReduceMotion;
+            if (preferences.LastApplicationWindowGeometry is { } geometry)
+            {
+                settings[nameof(ApplicationWindowGeometry)] = JsonSerializer.SerializeToNode(geometry);
+            }
+            else
+            {
+                settings.Remove(nameof(ApplicationWindowGeometry));
+            }
             if (preferences.LastApplicationWindowPosition is not { } position)
             {
                 settings.Remove("ApplicationWindowPosition");
@@ -100,6 +110,18 @@ public sealed class DesktopBehaviorSettingsStore
         return result.Trim();
     }
 
+    private static ApplicationWindowGeometry? GetApplicationWindowGeometry(JsonObject? settings)
+    {
+        try
+        {
+            return settings?[nameof(ApplicationWindowGeometry)]?.Deserialize<ApplicationWindowGeometry>();
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
     private static ApplicationWindowPosition? GetApplicationWindowPosition(JsonObject? settings)
     {
         if (
@@ -125,7 +147,18 @@ public sealed record DesktopBehaviorPreferences(
     string? PreferredMonitorId = null,
     int ApplicationWindowScalePercent = ApplicationWindowScaleCatalog.DefaultPercent,
     ApplicationWindowPosition? LastApplicationWindowPosition = null,
-    bool ReduceMotion = false
+    bool ReduceMotion = false,
+    ApplicationWindowGeometry? LastApplicationWindowGeometry = null
 );
 
 public sealed record ApplicationWindowPosition(int X, int Y, string? MonitorId);
+
+public sealed record ApplicationWindowGeometry(
+    double Width,
+    double Height,
+    bool Maximized,
+    int ApplicationScalePercent,
+    double ScreenScale,
+    int ScreenWidth,
+    int ScreenHeight
+);
