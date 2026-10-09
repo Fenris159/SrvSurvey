@@ -16,6 +16,10 @@ _Avoid_: Overlay Companion, Cross-Platform
 An in-game surface that presents live gameplay context and is the primary feedback surface while playing.
 _Avoid_: Main-window panel, dashboard panel
 
+**Hosted overlay window**:
+The shared overlay-panel lifecycle that shows, hides, prepares, and places a passive overlay panel from a "should show" intent.
+_Avoid_: Overlay coordinator window loop, SynchronizeWindow
+
 **Main window**:
 The desktop surface used briefly for configuration, search, and utility workflows outside the primary gameplay feedback loop.
 _Avoid_: Gameplay dashboard, commander console

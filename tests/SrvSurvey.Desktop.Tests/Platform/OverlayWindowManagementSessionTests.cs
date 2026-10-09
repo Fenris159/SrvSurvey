@@ -82,6 +82,51 @@ public sealed class OverlayWindowManagementSessionTests
         Assert.Contains(messages, message => message.Contains("unavailable", StringComparison.Ordinal));
     }
 
+    [AvaloniaFact]
+    public void SharedNativePlatformPreservesBypassCursorAndDragUntilSessionDisposal()
+    {
+        var registry = new OverlayWindowRegistry();
+        var native = new FakeWindowManagement();
+        using var presentation = OverlayPresentationSession.CreateWithSharedPlatform(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Shared native test"),
+            new OverlayPresentationSessionDependencies(
+                () => native,
+                () => new UnavailableGameWindowTracker(),
+                _ => throw new InvalidOperationException("No timer is needed."),
+                LegacyOverlayLayout.Empty,
+                WindowRegistry: registry
+            )
+        );
+        presentation.ConfigureWindowManagement(true);
+        var window = new Window { Width = 100, Height = 100 };
+        try
+        {
+            using (IOverlayPlatformService lease = presentation.CreatePlatformService())
+            {
+                registry.Register(window, "PlotJumpInfo");
+                Assert.Equal([window], native.Prepared);
+                Assert.True(lease.PrepareInteractiveWindow(window).IsInteractive);
+                Assert.Null(lease.BeginVisibleCursorSession(window));
+                Assert.Same(window, native.CursorWindow);
+                window.PointerPressed += (_, args) => lease.BeginMoveDrag(window, args);
+                window.Show();
+                window.MouseDown(new Point(10, 10), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+                Assert.Equal(1, native.DragCalls);
+                Assert.Contains(window, native.Raised);
+            }
+            Assert.Equal(0, native.DisposeCount);
+            presentation.Dispose();
+            Assert.Equal(1, native.DisposeCount);
+            int raises = native.Raised.Count;
+            window.Position = new PixelPoint(10, 20);
+            Assert.Equal(raises, native.Raised.Count);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>Creates a presentation with an isolated live-window registry and injected native backend.</summary>
     private static OverlayPresentationSession CreatePresentation(
         OverlayWindowRegistry registry,
@@ -339,6 +384,17 @@ public sealed class OverlayWindowManagementSessionTests
         }
 
         /// <summary>Records native lifetime ownership.</summary>
+        internal Window? CursorWindow { get; private set; }
+        internal int DragCalls { get; private set; }
+
+        public IDisposable? BeginVisibleCursorSession(Window window)
+        {
+            CursorWindow = window;
+            return null;
+        }
+
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs) => DragCalls++;
+
         public void Dispose() => DisposeCount++;
     }
 

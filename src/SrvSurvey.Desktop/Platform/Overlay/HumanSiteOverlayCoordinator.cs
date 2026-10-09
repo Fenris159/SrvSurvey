@@ -1,49 +1,42 @@
 using System.ComponentModel;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class HumanSiteOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotHumanSite";
-
     private readonly HumanSiteViewModel humanSite;
     private readonly HumanSiteOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private HumanSiteOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
     private bool disposed;
 
-    public HumanSiteOverlayCoordinator(
-        HumanSiteViewModel humanSite,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
-    )
+    public HumanSiteOverlayCoordinator(HumanSiteViewModel humanSite, OverlayPresentationSession presentationSession)
     {
         this.humanSite = humanSite ?? throw new ArgumentNullException(nameof(humanSite));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new HumanSiteOverlayViewModel(humanSite, platform.Capabilities);
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotHumanSite",
+                _ => CreateWindow(),
+                (gameBounds, windowSize) => OverlayWindowPlacement.MiddleLeft(gameBounds, windowSize, margin: 8),
+                ApplyPreparation
+            )
+            {
+                Tick = SynchronizeIntent,
+                Placement = SizeAndPlace,
+            }
+        );
+        viewModel = new HumanSiteOverlayViewModel(humanSite, hostedWindow.Capabilities);
+        hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         humanSite.PropertyChanged += OnHumanSitePropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public void SetSuppressed(bool value)
     {
@@ -53,7 +46,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public bool AdjustZoom(bool zoomIn)
@@ -86,7 +79,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         humanSite.ToggleHuge();
-        SynchronizeWindow();
+        SynchronizeIntent();
         return true;
     }
 
@@ -98,17 +91,9 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         humanSite.PropertyChanged -= OnHumanSitePropertyChanged;
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindow();
+        hostedWindow.VisibilityChanged -= OnHostedVisibilityChanged;
+        hostedWindow.Dispose();
     }
 
     private void OnHumanSitePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -121,103 +106,40 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
                 or nameof(HumanSiteViewModel.PreferredHeight)
         )
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (
-            isSuppressed
-            || !humanSite.ShouldShow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            SizeAndPositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new HumanSiteOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            SizeAndPositionWindow(overlay, gameWindow.ClientBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            viewModel.ApplyPreparation(preparation);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        window = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+        hostedWindow.Reconcile(!isSuppressed && humanSite.ShouldShow);
     }
 
-    private void SizeAndPositionWindow(Window overlay, PixelRect gameBounds)
+    private HumanSiteOverlayWindow CreateWindow() => new(viewModel);
+
+    private void ApplyPreparation(OverlayPreparationResult preparation)
     {
-        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        Screen? screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
+        viewModel.ApplyPreparation(preparation);
+    }
 
-        double logicalWidth = humanSite.IsHuge ? gameBounds.Width * 0.4 / screen.Scaling : humanSite.PreferredWidth;
-        double logicalHeight = humanSite.IsHuge ? gameBounds.Height * 0.9 / screen.Scaling : humanSite.PreferredHeight;
-        OverlayThemeResources.SetBaseSize(overlay, overlayLayout, logicalWidth, logicalHeight);
-
-        PixelSize pixelSize = OverlayWindowMetrics.PrepareForPlacement(
-            overlay,
-            overlayLayout,
-            PlotterName,
-            screen.Scaling
+    private PixelPoint SizeAndPlace(HostedOverlayPlacement placement)
+    {
+        PixelRect gameBounds = placement.GameBounds;
+        double scaling = placement.Screen.Scaling;
+        placement.SetBaseSize(
+            humanSite.IsHuge ? gameBounds.Width * 0.4 / scaling : humanSite.PreferredWidth,
+            humanSite.IsHuge ? gameBounds.Height * 0.9 / scaling : humanSite.PreferredHeight
         );
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameBounds, pixelSize)
-            ?? OverlayWindowPlacement.MiddleLeft(gameBounds, pixelSize, margin: 8);
-        if (overlay.Position != position)
-        {
-            overlay.Position = position;
-        }
+        return placement.GetPosition(placement.PrepareSize());
     }
 
-    private void CloseWindow()
+    private void OnHostedVisibilityChanged(object? sender, EventArgs eventArgs)
     {
-        HumanSiteOverlayWindow? overlay = window;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        window = null;
-        overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }

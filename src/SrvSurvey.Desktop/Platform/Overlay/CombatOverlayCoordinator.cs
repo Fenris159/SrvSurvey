@@ -1,8 +1,4 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -11,42 +7,48 @@ public sealed class CombatOverlayCoordinator : IDisposable
 {
     private readonly CombatViewModel combat;
     private readonly CombatOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private FootCombatOverlayWindow? footCombatWindow;
-    private MassacreMissionsOverlayWindow? massacreWindow;
+    private readonly HostedOverlayWindow footCombatWindow;
+    private readonly HostedOverlayWindow massacreWindow;
     private bool isSuppressed;
     private bool disposed;
 
-    public CombatOverlayCoordinator(
-        CombatViewModel combat,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
-    )
+    public CombatOverlayCoordinator(CombatViewModel combat, OverlayPresentationSession presentationSession)
     {
         this.combat = combat ?? throw new ArgumentNullException(nameof(combat));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new CombatOverlayViewModel(combat, platform.Capabilities);
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        footCombatWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotFootCombat",
+                _ => CreateFootCombatWindow(),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopLeft(gameBounds, windowSize, 8),
+                ApplyPreparation
+            )
+            {
+                Tick = SynchronizeIntent,
+            }
+        );
+        massacreWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotMassacre",
+                _ => CreateMassacreWindow(),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, 8),
+                ApplyPreparation
+            )
+        );
+        viewModel = new CombatOverlayViewModel(combat, footCombatWindow.Capabilities);
+        footCombatWindow.VisibilityChanged += OnHostedVisibilityChanged;
+        massacreWindow.VisibilityChanged += OnHostedVisibilityChanged;
         combat.PropertyChanged += OnCombatPropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindows();
+        SynchronizeIntent();
     }
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible => footCombatWindow is not null || massacreWindow is not null;
+    public bool IsVisible => IsFootCombatVisible || IsMassacreVisible;
 
-    public bool IsFootCombatVisible => footCombatWindow is not null;
+    public bool IsFootCombatVisible => footCombatWindow.IsVisible;
 
-    public bool IsMassacreVisible => massacreWindow is not null;
+    public bool IsMassacreVisible => massacreWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -58,7 +60,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindows();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -69,18 +71,11 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         combat.PropertyChanged -= OnCombatPropertyChanged;
-        CloseFootCombatWindow();
-        CloseMassacreWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindows();
+        footCombatWindow.VisibilityChanged -= OnHostedVisibilityChanged;
+        massacreWindow.VisibilityChanged -= OnHostedVisibilityChanged;
+        footCombatWindow.Dispose();
+        massacreWindow.Dispose();
     }
 
     private void OnCombatPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -91,160 +86,32 @@ public sealed class CombatOverlayCoordinator : IDisposable
                 or nameof(CombatViewModel.ShouldShowMassacreMissions)
         )
         {
-            SynchronizeWindows();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindows()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        bool platformReady =
-            !isSuppressed
-            && platform.Capabilities.SupportsPassiveOverlay
-            && platform.Capabilities.SupportsClickThrough
-            && platform.Capabilities.SupportsGameWindowTracking
-            && gameWindow.IsAvailable
-            && gameWindow.IsVisible
-            && gameWindow.IsForeground;
-
-        SynchronizeFootCombatWindow(platformReady && combat.ShouldShowFootCombat);
-        SynchronizeMassacreWindow(platformReady && combat.ShouldShowMassacreMissions);
+        footCombatWindow.Reconcile(!isSuppressed && combat.ShouldShowFootCombat);
+        massacreWindow.Reconcile(!isSuppressed && combat.ShouldShowMassacreMissions);
     }
 
-    private void SynchronizeFootCombatWindow(bool shouldShow)
+    private FootCombatOverlayWindow CreateFootCombatWindow() => new(viewModel);
+
+    private MassacreMissionsOverlayWindow CreateMassacreWindow() => new(viewModel);
+
+    private void ApplyPreparation(OverlayPreparationResult preparation)
     {
-        if (!shouldShow)
-        {
-            CloseFootCombatWindow();
-            return;
-        }
-
-        if (footCombatWindow is not null)
-        {
-            PositionTopLeft(footCombatWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new FootCombatOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFootCombat");
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopLeft);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(footCombatWindow, overlay))
-            {
-                footCombatWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        footCombatWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeMassacreWindow(bool shouldShow)
-    {
-        if (!shouldShow)
-        {
-            CloseMassacreWindow();
-            return;
-        }
-
-        if (massacreWindow is not null)
-        {
-            PositionTopRight(massacreWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new MassacreMissionsOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMassacre");
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopRight);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(massacreWindow, overlay))
-            {
-                massacreWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        massacreWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void PrepareWindow(Window window, Action<Window, PixelRect> position)
-    {
-        position(window, gameWindow.ClientBounds);
-        OverlayPreparationResult preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
-        if (!preparation.IsClickThrough)
-        {
-            isSuppressed = true;
-            CloseFootCombatWindow();
-            CloseMassacreWindow();
-        }
     }
 
-    private void PositionTopLeft(Window window, PixelRect gameBounds)
+    private void OnHostedVisibilityChanged(object? sender, EventArgs eventArgs)
     {
-        PositionWindow(window, gameBounds, "PlotFootCombat", OverlayWindowPlacement.TopLeft);
-    }
-
-    private void PositionTopRight(Window window, PixelRect gameBounds)
-    {
-        PositionWindow(window, gameBounds, "PlotMassacre", OverlayWindowPlacement.TopRight);
-    }
-
-    private void PositionWindow(
-        Window window,
-        PixelRect gameBounds,
-        string plotterName,
-        Func<PixelRect, PixelSize, int, PixelPoint> placement
-    )
-    {
-        OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, 8);
-        if (window.Position != position)
-        {
-            window.Position = position;
-        }
-    }
-
-    private void CloseFootCombatWindow()
-    {
-        FootCombatOverlayWindow? overlay = footCombatWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        footCombatWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseMassacreWindow()
-    {
-        MassacreMissionsOverlayWindow? overlay = massacreWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        massacreWindow = null;
-        overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -32588,22 +32588,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "No legacy top-center layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
-  },
-  {
-    "Text": "No legacy top-left layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
-  },
-  {
     "Text": "No live Guardian site detected",
     "IsFormat": false,
     "SourceKinds": [
@@ -49987,6 +49971,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "SrvSurveyWindowOne",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
   },
   {
     "Text": "SrvSurveyWindowOne overlay",
