@@ -1,12 +1,21 @@
-# SrvSurvey-XP 2.1.3.0-rc.59
+# SrvSurvey-XP 2.1.3.0-rc.59.1
+
+RC.59.1 is a quick patch for Linux keyboard shortcut setup and repeated log
+messages. It includes all the RC.59 improvements listed below.
 
 This preview improves window sizing, overlays, keyboard shortcuts, mining and
 Boxel searches, and background uploads. It focuses on keeping your chosen
 settings and work intact when searches overlap, connections fail, or the
 application restarts.
 
-## What's changed since RC.58.22
+## What's changed in RC.59.1 and RC.59
 
+- **RC.59.1 quick patch: Linux keyboard shortcuts.** SrvSurvey registers with
+  the desktop shortcut service when launched directly from an AppImage, fixing
+  the reported "App info not found" error. Unsupported or rejected shortcut
+  setup stops retrying and filling the log. Temporary connection failures still
+  recover automatically; after repairing desktop setup, restart SrvSurvey or
+  turn key chords off and back on to retry.
 - **Your window keeps its shape.** SrvSurvey remembers the main window's size,
   position, and maximized state between sessions. Switching applications,
   receiving an unchanged display notification, or restoring from the tray no
@@ -82,16 +91,16 @@ application restarts.
 
 ## Update channel and packages
 
-RC.59 is a development preview on the schema-2 `xp2-v` update channel. Existing
+RC.59.1 is a development preview on the schema-2 `xp2-v` update channel. Existing
 update-channel choices are preserved, and RC51 remains the compatibility bridge
 for older installations. Windows and Linux packages remain self-contained.
 
-- Version: `2.1.3.0-rc.59`
-- Tag: `xp2-v2.1.3.0-rc.59`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.59-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.59-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.59-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.59-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.59.1`
+- Tag: `xp2-v2.1.3.0-rc.59.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.59.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.59.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.59.1-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.59.1-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
