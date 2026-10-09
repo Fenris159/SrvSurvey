@@ -489,7 +489,6 @@ jobs:
           set -euo pipefail
 
           release_args=(
-            --generate-notes
             --notes-file "$RUNNER_TEMP/srvsurvey-release-notes.md"
             --title "SrvSurvey-XP $RELEASE_VERSION"
             --latest=false
@@ -551,6 +550,7 @@ jobs:
           fi
           gh release edit "$RELEASE_TAG" \
             --draft=false \
+            --notes-file "$RUNNER_TEMP/srvsurvey-release-notes.md" \
             --title "SrvSurvey-XP $RELEASE_VERSION" \
             --prerelease="$IS_PRERELEASE" \
             --latest="$publish_latest"
