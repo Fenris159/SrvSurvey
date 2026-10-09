@@ -467,6 +467,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             StopBoxelSearch => StopLocked(),
             SetBoxelAutoCopy set => SetAutoCopyLocked(set.Enabled),
             SetBoxelSortDirection set => SetSortLocked(set.Descending),
+            SetBoxelCompletionRules rules => SetCompletionRulesLocked(rules),
             SetExpectedSystemCount set => SetExpectedSystemCountLocked(set.Count),
             MarkNextBoxelSystemEmpty => MarkNextEmptyLocked(),
             CompleteBoxelSystem complete => CompleteSystemLocked(complete.SystemName),
@@ -1031,6 +1032,20 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             BoxelSearchOutcomeKind.Success,
             BoxelSearchMessageCode.ExpectedSystemCountChanged,
             Count: count - 1
+        );
+    }
+
+    private ActionResult SetCompletionRulesLocked(SetBoxelCompletionRules rules)
+    {
+        if (state.TopBoxel is null)
+        {
+            return new ActionResult(BoxelSearchOutcomeKind.Rejected, BoxelSearchMessageCode.SearchNotConfigured);
+        }
+
+        bool changed = state.SetCompletionRules(rules);
+        return new ActionResult(
+            changed ? BoxelSearchOutcomeKind.Success : BoxelSearchOutcomeKind.NoChange,
+            BoxelSearchMessageCode.CompletionRulesChanged
         );
     }
 

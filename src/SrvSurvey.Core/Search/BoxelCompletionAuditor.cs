@@ -142,10 +142,13 @@ public sealed class BoxelCompletionAuditor
             bool isComplete = existing?.IsComplete ?? false;
             if (source == AuditObservationSource.LocalProfile)
             {
-                isComplete |=
-                    request.CompletionMode == BoxelCompletionMode.FssAllBodies
-                        ? observation.FssAllBodies && observation.VisitedAt > request.StartedOn
-                        : observation.VisitedAt > request.StartedOn || request.SkipAlreadyVisited;
+                isComplete |= BoxelSearchState.IsLocalVisitComplete(
+                    observation.VisitedAt,
+                    observation.FssAllBodies,
+                    request.StartedOn,
+                    request.SkipAlreadyVisited,
+                    request.CompletionMode
+                );
             }
             else if (source == AuditObservationSource.Spansh && observation.HasKnownBodies && request.SkipKnownToSpansh)
             {

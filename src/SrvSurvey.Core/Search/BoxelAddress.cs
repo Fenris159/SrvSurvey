@@ -189,6 +189,22 @@ public sealed partial record BoxelAddress(
         return true;
     }
 
+    internal static bool TryResolveSearchSystem(string? name, long systemAddress, out BoxelAddress? boxel)
+    {
+        if (TryParse(name, out boxel) && boxel is not null)
+        {
+            // Named sectors have their own generated prefixes. Keep that search
+            // identity while retaining the authoritative journal/API address.
+            boxel = boxel with
+            {
+                SystemAddress = systemAddress > 0 ? systemAddress : boxel.SystemAddress,
+            };
+            return true;
+        }
+
+        return TryFromSystemAddress(systemAddress, name, out boxel);
+    }
+
     /// <summary>
     /// Returns an authoritative address supplied by the journal or known-system
     /// catalog, or calculates the procedural system address when one is absent.

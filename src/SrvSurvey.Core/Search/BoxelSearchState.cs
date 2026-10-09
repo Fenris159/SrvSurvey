@@ -340,6 +340,54 @@ public sealed class BoxelSearchState
         Version++;
     }
 
+    public bool SetCompletionRules(SetBoxelCompletionRules rules)
+    {
+        if (
+            StartedOn == rules.StartedOn
+            && SkipAlreadyVisited == rules.SkipAlreadyVisited
+            && SkipKnownToSpansh == rules.SkipKnownToSpansh
+            && CompletionMode == rules.CompletionMode
+        )
+        {
+            return false;
+        }
+
+        StartedOn = rules.StartedOn;
+        SkipAlreadyVisited = rules.SkipAlreadyVisited;
+        SkipKnownToSpansh = rules.SkipKnownToSpansh;
+        CompletionMode = rules.CompletionMode;
+        foreach (BoxelSystemState system in systems.Values.ToArray())
+        {
+            string generatedName = system.Boxel.GeneratedName;
+            if (system.IsComplete || emptySystems.Contains(generatedName))
+            {
+                continue;
+            }
+
+            bool isComplete =
+                IsLocalVisitComplete(
+                    system.VisitedAt,
+                    system.FssAllBodiesAt is not null && system.FssAllBodiesAt == system.VisitedAt,
+                    StartedOn,
+                    SkipAlreadyVisited,
+                    CompletionMode
+                ) || (SkipKnownToSpansh && system.HasKnownBodies && system.SpanshUpdatedAt < StartedOn);
+            if (!isComplete)
+            {
+                continue;
+            }
+
+            systems[generatedName] = system with { IsComplete = true };
+            RemoveDeferredSystem(system.Boxel);
+            ExcludeFromDeferredRange(system.Boxel);
+            AddCompletedSystem(generatedName);
+        }
+        UpdateCurrentCompletion();
+        SetNextSystem();
+        Version++;
+        return true;
+    }
+
     public void SetSavedSearchFileName(string? fileName)
     {
         SavedSearchFileName = NormalizeSavedSearchFileName(fileName);
@@ -741,10 +789,7 @@ public sealed class BoxelSearchState
         string nameProperty = allBodiesFound ? "SystemName" : "StarSystem";
         string? systemName = GetString(root, nameProperty);
         long systemAddress = GetInt64(root, "SystemAddress") ?? 0;
-        bool resolved =
-            systemAddress > 0
-                ? BoxelAddress.TryFromSystemAddress(systemAddress, systemName, out BoxelAddress? boxel)
-                : BoxelAddress.TryParse(systemName, out boxel);
+        bool resolved = BoxelAddress.TryResolveSearchSystem(systemName, systemAddress, out BoxelAddress? boxel);
         if (
             !resolved
             || boxel is null
@@ -815,7 +860,8 @@ public sealed class BoxelSearchState
             observation.Position ?? existing?.Position,
             Max(existing?.VisitedAt, observation.VisitedAt),
             Max(existing?.SpanshUpdatedAt, observation.SpanshUpdatedAt),
-            observation.HasKnownBodies || existing?.HasKnownBodies == true
+            observation.HasKnownBodies || existing?.HasKnownBodies == true,
+            Max(existing?.FssAllBodiesAt, observation.FssAllBodies ? observation.VisitedAt : null)
         );
         if (isComplete)
         {
@@ -841,10 +887,12 @@ public sealed class BoxelSearchState
         if (source == BoxelObservationSource.LocalProfile)
         {
             return isComplete
-                || (
-                    CompletionMode == BoxelCompletionMode.FssAllBodies
-                        ? observation.FssAllBodies && observation.VisitedAt > StartedOn
-                        : observation.VisitedAt > StartedOn || SkipAlreadyVisited
+                || IsLocalVisitComplete(
+                    observation.VisitedAt,
+                    observation.FssAllBodies,
+                    StartedOn,
+                    SkipAlreadyVisited,
+                    CompletionMode
                 );
         }
 
@@ -855,6 +903,18 @@ public sealed class BoxelSearchState
                 && SkipKnownToSpansh
                 && observation.SpanshUpdatedAt < StartedOn
             );
+    }
+
+    internal static bool IsLocalVisitComplete(
+        DateTimeOffset? visitedAt,
+        bool fssAllBodies,
+        DateTimeOffset startedOn,
+        bool skipAlreadyVisited,
+        BoxelCompletionMode completionMode
+    )
+    {
+        return visitedAt < startedOn && skipAlreadyVisited
+            || visitedAt > startedOn && (completionMode == BoxelCompletionMode.EnterSystem || fssAllBodies);
     }
 
     private static BoxelAddress MergeObservedBoxel(BoxelAddress observed, BoxelSystemState? existing)
@@ -1455,7 +1515,8 @@ public sealed record BoxelSystemState(
     GalacticCoordinate? Position,
     DateTimeOffset? VisitedAt,
     DateTimeOffset? SpanshUpdatedAt,
-    bool HasKnownBodies
+    bool HasKnownBodies,
+    DateTimeOffset? FssAllBodiesAt = null
 );
 
 public readonly record struct BoxelProgress(

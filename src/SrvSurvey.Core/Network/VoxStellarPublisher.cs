@@ -38,10 +38,13 @@ public interface IVoxStellarPublisher
 /// <summary>
 /// Sends the exploration events accepted by EDMC-VoxStellar to VoxStellar's
 /// signed journal webhook. Publication is memory-only and ordered; disabling
-/// consent invalidates work that has not started sending.
+/// consent invalidates work that has not started sending. Bounded timed batches
+/// share connections and produce one outcome summary without changing the wire format.
 /// </summary>
 public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 {
+    public static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(5);
+    internal const int MaximumBatchSize = 100;
     private static readonly HashSet<string> AllowedEvents = new(StringComparer.Ordinal)
     {
         "Scan",
@@ -63,20 +66,29 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
     private readonly Action<string> log;
     private readonly Channel<QueuedUpload>? uploads;
     private readonly CancellationTokenSource lifetimeCancellation = new();
+    private readonly CancellationTokenSource batchingCancellation = new();
+    private readonly TimeProvider timeProvider;
+    private readonly TimeSpan batchInterval;
     private readonly Task? workerTask;
     private bool enabled;
     private long consentGeneration;
     private bool disposed;
+    private bool stopping;
 
     public VoxStellarPublisher(
         string softwareVersion,
         string? sharedKey,
         HttpClient? client = null,
         Uri? endpoint = null,
-        Action<string>? log = null
+        Action<string>? log = null,
+        TimeProvider? timeProvider = null,
+        TimeSpan? batchInterval = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
+        this.batchInterval = batchInterval ?? SendInterval;
+        ArgumentOutOfRangeException.ThrowIfLessThan(this.batchInterval, TimeSpan.Zero);
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         this.client = client ?? CreateSharedClient();
         ownsClient = client is null;
         this.endpoint = endpoint ?? WellKnownUris.VoxStellarWebhook;
@@ -89,13 +101,13 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             uploads = Channel.CreateBounded<QueuedUpload>(
                 new BoundedChannelOptions(4096)
                 {
-                    SingleReader = true,
+                    SingleReader = false,
                     SingleWriter = false,
                     FullMode = BoundedChannelFullMode.Wait,
                     AllowSynchronousContinuations = false,
                 }
             );
-            workerTask = RunWorkerAsync();
+            workerTask = Task.Run(RunWorkerAsync, lifetimeCancellation.Token);
         }
     }
 
@@ -105,7 +117,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
     {
         lock (sync)
         {
-            if (disposed || this.enabled == enabled)
+            if (disposed || (stopping && enabled) || this.enabled == enabled)
             {
                 return;
             }
@@ -114,6 +126,11 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             if (!enabled)
             {
                 consentGeneration++;
+                // Consent revocation also frees bounded queue capacity for a later opt-in.
+                while (uploads?.Reader.TryRead(out _) == true)
+                {
+                    // Discard revoked uploads; the worker rechecks any event it already took.
+                }
             }
         }
     }
@@ -165,7 +182,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         long generation;
         lock (sync)
         {
-            if (disposed || !enabled)
+            if (disposed || stopping || !enabled)
             {
                 return Task.FromResult(VoxStellarPublicationResult.Empty);
             }
@@ -173,25 +190,48 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             generation = consentGeneration;
         }
 
+        return Task.FromResult(
+            QueueEvents(uploads.Writer, generation, commanderName, matchingEvents, cancellationToken)
+        );
+    }
+
+    private VoxStellarPublicationResult QueueEvents(
+        ChannelWriter<QueuedUpload> writer,
+        long generation,
+        string commanderName,
+        JournalEventEnvelope[] matchingEvents,
+        CancellationToken cancellationToken
+    )
+    {
         var queued = new List<string>(matchingEvents.Length);
         var warnings = new List<string>();
+        int dropped = 0;
         foreach (JournalEventEnvelope? journalEvent in matchingEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
             byte[] body = SerializeBody(commanderName, journalEvent.Payload);
-            if (uploads.Writer.TryWrite(new QueuedUpload(generation, journalEvent.EventName, body)))
+            lock (sync)
             {
-                queued.Add(journalEvent.EventName);
-            }
-            else
-            {
-                warnings.Add(
-                    $"VoxStellar could not queue {journalEvent.EventName} because its in-memory upload queue is full."
-                );
+                if (disposed || stopping || !enabled || consentGeneration != generation)
+                {
+                    break;
+                }
+                if (writer.TryWrite(new QueuedUpload(generation, body)))
+                {
+                    queued.Add(journalEvent.EventName);
+                }
+                else
+                {
+                    dropped++;
+                }
             }
         }
+        if (dropped > 0)
+        {
+            warnings.Add($"VoxStellar could not queue {dropped} event(s) because its in-memory upload queue is full.");
+        }
 
-        return Task.FromResult(new VoxStellarPublicationResult(queued, warnings));
+        return new VoxStellarPublicationResult(queued, warnings);
     }
 
     private async Task RunWorkerAsync()
@@ -203,20 +243,25 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         try
         {
-            await foreach (QueuedUpload upload in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
+            await foreach (QueuedUpload first in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
             {
+                if (!IsAuthorized(first))
+                {
+                    continue;
+                }
                 try
                 {
-                    await SendAsync(upload, lifetimeCancellation.Token);
+                    await Task.Delay(batchInterval, timeProvider, batchingCancellation.Token);
                 }
-                catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
+                catch (OperationCanceledException) when (batchingCancellation.IsCancellationRequested)
                 {
-                    return;
+                    // Closing the queue flushes buffered events without waiting another interval.
                 }
-                catch (Exception exception)
-                    when (exception is not OperationCanceledException || !lifetimeCancellation.IsCancellationRequested)
+
+                List<QueuedUpload> batch = TakeAuthorizedBatch(first, uploads.Reader);
+                if (batch.Count > 0)
                 {
-                    WriteLog($"VoxStellar upload for {upload.EventName} failed: {exception.Message}");
+                    await SendBatchAsync(batch, lifetimeCancellation.Token);
                 }
             }
         }
@@ -226,7 +271,84 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
-    private async Task SendAsync(QueuedUpload upload, CancellationToken cancellationToken)
+    private List<QueuedUpload> TakeAuthorizedBatch(QueuedUpload first, ChannelReader<QueuedUpload> reader)
+    {
+        var batch = new List<QueuedUpload>(MaximumBatchSize);
+        if (IsAuthorized(first))
+        {
+            batch.Add(first);
+        }
+        while (batch.Count < MaximumBatchSize && reader.TryRead(out QueuedUpload? next))
+        {
+            if (IsAuthorized(next))
+            {
+                batch.Add(next);
+            }
+        }
+        return batch;
+    }
+
+    private bool IsAuthorized(QueuedUpload upload)
+    {
+        lock (sync)
+        {
+            return !disposed && enabled && consentGeneration == upload.ConsentGeneration;
+        }
+    }
+
+    private async Task SendBatchAsync(IReadOnlyList<QueuedUpload> batch, CancellationToken cancellationToken)
+    {
+        int accepted = 0;
+        int rejected = 0;
+        int failed = 0;
+        var details = new Dictionary<string, int>(StringComparer.Ordinal);
+        try
+        {
+            foreach (QueuedUpload upload in batch)
+            {
+                try
+                {
+                    int? status = await SendAsync(upload, cancellationToken);
+                    if (status == 200)
+                    {
+                        accepted++;
+                    }
+                    else if (status is { } code)
+                    {
+                        rejected++;
+                        AddOutcome(details, $"HTTP {code}");
+                    }
+                }
+                catch (Exception exception)
+                    when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+                {
+                    failed++;
+                    AddOutcome(details, exception.GetType().Name);
+                }
+            }
+        }
+        finally
+        {
+            if (accepted + rejected + failed > 0)
+            {
+                string detailText =
+                    details.Count == 0
+                        ? string.Empty
+                        : " " + string.Join(", ", details.Select(pair => $"{pair.Key}: {pair.Value}")) + ".";
+                WriteLog(
+                    $"VoxStellar upload batch: {accepted} accepted, {rejected} rejected, {failed} failed." + detailText
+                );
+            }
+        }
+    }
+
+    private static void AddOutcome(Dictionary<string, int> outcomes, string outcome)
+    {
+        outcomes.TryGetValue(outcome, out int count);
+        outcomes[outcome] = count + 1;
+    }
+
+    private async Task<int?> SendAsync(QueuedUpload upload, CancellationToken cancellationToken)
     {
         string signature = Convert.ToHexString(HMACSHA256.HashData(signingKey, upload.Body)).ToLowerInvariant();
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
@@ -236,7 +358,6 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         request.Headers.UserAgent.Add(userAgent);
         request.Headers.TryAddWithoutValidation("Signature", signature);
-        request.Headers.ConnectionClose = true;
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
         Task<HttpResponseMessage> sendTask;
@@ -244,21 +365,15 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         {
             if (disposed || !enabled || consentGeneration != upload.ConsentGeneration)
             {
-                return;
+                return null;
             }
 
-            sendTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            // Read the response before reusing the connection, under HttpClient's request timeout.
+            sendTask = client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
         }
 
         using HttpResponseMessage response = await sendTask;
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            WriteLog($"VoxStellar accepted {upload.EventName}.");
-        }
-        else
-        {
-            WriteLog($"VoxStellar rejected {upload.EventName} with HTTP {(int)response.StatusCode}.");
-        }
+        return (int)response.StatusCode;
     }
 
     private static byte[] SerializeBody(string commanderName, JsonElement payload)
@@ -284,7 +399,8 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         );
     }
 
-    private static HttpClient CreateSharedClient() => new() { Timeout = TimeSpan.FromSeconds(15) };
+    private static HttpClient CreateSharedClient() =>
+        new() { Timeout = TimeSpan.FromSeconds(15), MaxResponseContentBufferSize = 65536 };
 
     private void WriteLog(string message)
     {
@@ -302,18 +418,36 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
     {
         lock (sync)
         {
-            if (disposed)
+            if (disposed || stopping)
             {
                 return;
             }
+            stopping = true;
+        }
 
+        // Consent remains authoritative while a bounded shutdown flush drains queued work.
+        uploads?.Writer.TryComplete();
+        batchingCancellation.Cancel();
+        WaitForWorker();
+        lock (sync)
+        {
             disposed = true;
             enabled = false;
             consentGeneration++;
         }
-
-        uploads?.Writer.TryComplete();
         lifetimeCancellation.Cancel();
+        WaitForWorker();
+        batchingCancellation.Dispose();
+        lifetimeCancellation.Dispose();
+        CryptographicOperations.ZeroMemory(signingKey);
+        if (ownsClient)
+        {
+            client.Dispose();
+        }
+    }
+
+    private void WaitForWorker()
+    {
         try
         {
             workerTask?.Wait(TimeSpan.FromSeconds(2), CancellationToken.None);
@@ -323,14 +457,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         {
             // Cancellation is the expected worker result during disposal.
         }
-
-        lifetimeCancellation.Dispose();
-        CryptographicOperations.ZeroMemory(signingKey);
-        if (ownsClient)
-        {
-            client.Dispose();
-        }
     }
 
-    private sealed record QueuedUpload(long ConsentGeneration, string EventName, byte[] Body);
+    private sealed record QueuedUpload(long ConsentGeneration, byte[] Body);
 }
