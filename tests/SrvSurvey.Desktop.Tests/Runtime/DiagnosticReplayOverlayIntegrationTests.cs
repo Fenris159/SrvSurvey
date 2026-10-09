@@ -7,6 +7,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.Tests.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
@@ -51,13 +52,8 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
             time
         );
         var registry = new OverlayWindowRegistry();
-        var platform = new RecordingOverlayPlatform();
-        using var coordinator = new NotificationOverlayCoordinator(
-            notification,
-            platform,
-            context.CreateGameWindowTracker(),
-            registry: registry
-        );
+        using var overlays = new HostedOverlayTestHarness(registry, context.CreateGameWindowTracker);
+        using var coordinator = new NotificationOverlayCoordinator(notification, overlays.Session);
 
         Assert.True(await player.StepAsync(CancellationToken.None));
         Assert.True(await player.StepAsync(CancellationToken.None));
@@ -74,7 +70,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
 
         Assert.False(live.IsBootstrapRead);
         Assert.True(coordinator.IsVisible);
-        Window replayWindow = Assert.Single(platform.PreparedWindows);
+        Window replayWindow = Assert.Single(overlays.PreparedWindows);
         Assert.NotNull(replayWindow.CaptureRenderedFrame());
         Assert.True(Assert.Single(registry.Snapshot()).IsVisible);
 
@@ -119,7 +115,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
             Assert.True(coordinator.IsVisible);
 
             time.Advance(TimeSpan.FromSeconds(6));
-            notification.Refresh();
+            overlays.Tick();
 
             Assert.False(coordinator.IsVisible);
             Assert.Empty(notification.Messages);
@@ -164,24 +160,5 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
         {
             value += duration;
         }
-    }
-
-    private sealed class RecordingOverlayPlatform : IOverlayPlatformService
-    {
-        public OverlayPlatformCapabilities Capabilities { get; } =
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
-
-        public List<Window> PreparedWindows { get; } = [];
-
-        public OverlayPreparationResult PreparePassiveWindow(Window window)
-        {
-            PreparedWindows.Add(window);
-            return new OverlayPreparationResult(true, true, "Prepared");
-        }
-
-        public OverlayInteractionResult SetInteractive(Window window, bool interactive) =>
-            new(true, interactive, "Prepared");
-
-        public void Dispose() { }
     }
 }

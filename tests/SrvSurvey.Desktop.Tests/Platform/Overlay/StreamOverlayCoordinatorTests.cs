@@ -15,33 +15,33 @@ public sealed class StreamOverlayCoordinatorTests
     {
         using var context = new TestContext(isForeground: false);
 
-        Assert.Empty(context.Platform.PreparedWindows);
+        Assert.Empty(context.Harness.PreparedWindows);
     }
 
     [AvaloniaFact]
     public void FocusLossClosesWindowAndReturningToEliteRestoresTopmostWindow()
     {
         using var context = new TestContext(isForeground: true);
-        Window original = Assert.Single(context.Platform.PreparedWindows);
+        Window original = Assert.Single(context.Harness.PreparedWindows);
         bool closed = false;
         original.Closed += (_, _) => closed = true;
         Assert.True(original.IsVisible);
         Assert.True(original.Topmost);
 
-        context.Tracker.Snapshot = context.Tracker.Snapshot with { IsForeground = false };
+        context.Harness.GameWindow = context.Harness.GameWindow with { IsForeground = false };
         context.Synchronize();
 
         Assert.True(closed);
         Assert.False(original.IsVisible);
         Assert.True(context.ViewModel.Enabled);
         context.Synchronize();
-        Assert.Single(context.Platform.PreparedWindows);
+        Assert.Single(context.Harness.PreparedWindows);
 
-        context.Tracker.Snapshot = context.Tracker.Snapshot with { IsForeground = true };
+        context.Harness.GameWindow = context.Harness.GameWindow with { IsForeground = true };
         context.Synchronize();
 
-        Assert.Equal(2, context.Platform.PreparedWindows.Count);
-        Window restored = context.Platform.PreparedWindows[1];
+        Assert.Equal(2, context.Harness.PreparedWindows.Count);
+        Window restored = context.Harness.PreparedWindows[1];
         Assert.True(restored.IsVisible);
         Assert.True(restored.Topmost);
     }
@@ -50,7 +50,7 @@ public sealed class StreamOverlayCoordinatorTests
     public void SuppliedTrackerOverrideKeepsWindowUntilOverrideEndsButCannotShowMinimizedGame()
     {
         using var context = new TestContext(isForeground: false, keepVisible: true);
-        Window window = Assert.Single(context.Platform.PreparedWindows);
+        Window window = Assert.Single(context.Harness.PreparedWindows);
         Assert.True(window.IsVisible);
         Assert.True(window.Topmost);
 
@@ -60,11 +60,11 @@ public sealed class StreamOverlayCoordinatorTests
 
         context.KeepVisible = true;
         context.Synchronize();
-        Assert.Equal(2, context.Platform.PreparedWindows.Count);
-        Window restored = context.Platform.PreparedWindows[1];
+        Assert.Equal(2, context.Harness.PreparedWindows.Count);
+        Window restored = context.Harness.PreparedWindows[1];
         Assert.True(restored.IsVisible);
 
-        context.Tracker.Snapshot = context.Tracker.Snapshot with { IsVisible = false };
+        context.Harness.GameWindow = context.Harness.GameWindow with { IsVisible = false };
         context.Synchronize();
         Assert.False(restored.IsVisible);
     }
@@ -78,69 +78,50 @@ public sealed class StreamOverlayCoordinatorTests
         public TestContext(bool isForeground, bool keepVisible = false)
         {
             KeepVisible = keepVisible;
-            Tracker = new StubTracker(
-                new GameWindowSnapshot(
+            Harness = new HostedOverlayTestHarness(
+                registry,
+                () => new OverlayGameWindowTracker(new SnapshotTracker(this), () => KeepVisible)
+            )
+            {
+                GameWindow = new GameWindowSnapshot(
                     (nint)42,
                     123,
                     new PixelRect(0, 0, 1920, 1080),
                     IsVisible: true,
                     IsForeground: isForeground
-                )
-            );
+                ),
+            };
             ViewModel = new StreamOverlayViewModel(new StreamOverlaySettingsStore(Path.Combine(root, "settings.json")))
             {
                 Enabled = true,
             };
-            coordinator = new StreamOverlayCoordinator(
-                ViewModel,
-                Platform,
-                new OverlayGameWindowTracker(Tracker, () => KeepVisible),
-                registry
-            );
+            coordinator = new StreamOverlayCoordinator(ViewModel, Harness.Session);
         }
 
         public bool KeepVisible { get; set; }
-        public StubTracker Tracker { get; }
-        public StubPlatform Platform { get; } = new();
+
+        public HostedOverlayTestHarness Harness { get; }
+
         public StreamOverlayViewModel ViewModel { get; }
 
         public void Synchronize()
         {
-            // Drive the coordinator through its registry notification, without timer delays.
             registry.SetGalaxyMapContextActive(!registry.IsGalaxyMapContextActive);
+            Harness.Tick();
         }
 
         public void Dispose()
         {
             coordinator.Dispose();
+            Harness.Dispose();
             Directory.Delete(root, recursive: true);
         }
-    }
 
-    private sealed class StubTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
-    {
-        public GameWindowSnapshot Snapshot { get; set; } = snapshot;
-
-        public GameWindowSnapshot GetSnapshot() => Snapshot;
-
-        public void Dispose() { }
-    }
-
-    private sealed class StubPlatform : IOverlayPlatformService
-    {
-        public OverlayPlatformCapabilities Capabilities { get; } =
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
-        public List<Window> PreparedWindows { get; } = [];
-
-        public OverlayPreparationResult PreparePassiveWindow(Window window)
+        private sealed class SnapshotTracker(TestContext context) : IGameWindowTracker
         {
-            PreparedWindows.Add(window);
-            return new OverlayPreparationResult(true, true, "Prepared");
+            public GameWindowSnapshot GetSnapshot() => context.Harness.GameWindow;
+
+            public void Dispose() { }
         }
-
-        public OverlayInteractionResult SetInteractive(Window window, bool interactive) =>
-            new(true, interactive, "Prepared");
-
-        public void Dispose() { }
     }
 }

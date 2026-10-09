@@ -56,65 +56,12 @@ internal sealed class X11KeyboardRecord : IX11KeyboardRecord
     {
         foreach (KeyCode key in Enum.GetValues<KeyCode>())
         {
-            byte code = native.ResolveKeyCode(GetKeysymName(key));
+            byte code = native.ResolveKeyCode(KeysymNames.Get(key));
             if (code != 0)
             {
                 keyCodes.TryAdd(code, key);
             }
         }
-    }
-
-    /// <summary>Translates SharpHook key names into X11's standard keysym names.</summary>
-    internal static string GetKeysymName(KeyCode key) =>
-        key switch
-        {
-            KeyCode.VcLeftAlt => "Alt_L",
-            KeyCode.VcRightAlt => "Alt_R",
-            KeyCode.VcLeftControl => "Control_L",
-            KeyCode.VcRightControl => "Control_R",
-            KeyCode.VcLeftShift => "Shift_L",
-            KeyCode.VcRightShift => "Shift_R",
-            KeyCode.VcLeftMeta => "Super_L",
-            KeyCode.VcRightMeta => "Super_R",
-            KeyCode.VcEnter => "Return",
-            KeyCode.VcBackspace => "BackSpace",
-            KeyCode.VcCapsLock => "Caps_Lock",
-            KeyCode.VcNumLock => "Num_Lock",
-            KeyCode.VcScrollLock => "Scroll_Lock",
-            KeyCode.VcPageUp => "Prior",
-            KeyCode.VcPageDown => "Next",
-            KeyCode.VcPrintScreen => "Print",
-            KeyCode.VcSpace => "space",
-            KeyCode.VcMinus => "minus",
-            KeyCode.VcEquals => "equal",
-            KeyCode.VcBackQuote => "grave",
-            KeyCode.VcOpenBracket => "bracketleft",
-            KeyCode.VcCloseBracket => "bracketright",
-            KeyCode.VcBackslash => "backslash",
-            KeyCode.VcSemicolon => "semicolon",
-            KeyCode.VcQuote => "apostrophe",
-            KeyCode.VcComma => "comma",
-            KeyCode.VcPeriod => "period",
-            KeyCode.VcSlash => "slash",
-            KeyCode.VcNumPadEnter => "KP_Enter",
-            KeyCode.VcNumPadDivide => "KP_Divide",
-            KeyCode.VcNumPadMultiply => "KP_Multiply",
-            KeyCode.VcNumPadSubtract => "KP_Subtract",
-            KeyCode.VcNumPadAdd => "KP_Add",
-            KeyCode.VcNumPadDecimal => "KP_Decimal",
-            KeyCode.VcNumPadSeparator => "KP_Separator",
-            _ => DefaultKeysymName(key),
-        };
-
-    /// <summary>Handles letters, digits, function keys, navigation keys and numeric keypad digits.</summary>
-    private static string DefaultKeysymName(KeyCode key)
-    {
-        string name = key.ToString()[2..];
-        if (name.Length == 1)
-        {
-            return name.ToLowerInvariant();
-        }
-        return name.StartsWith("NumPad", StringComparison.Ordinal) ? "KP_" + name[6..] : name;
     }
 
     /// <summary>Copies native keyboard packets into managed events without invoking application callbacks.</summary>

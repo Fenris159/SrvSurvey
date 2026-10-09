@@ -163,13 +163,38 @@ public sealed class OverlayPositionEditSession
             Horizontal = defaults.Horizontal,
             Vertical = definition.MoveVerticalAnchor,
         };
-        LegacyOverlayPlacement centered = OverlayInteractionViewModel.CreatePlacement(
-            reanchored,
-            position,
-            previewSize,
-            hostBounds
-        );
+        LegacyOverlayPlacement centered = CreatePlacement(reanchored, position, previewSize, hostBounds);
         return workingLayout.SetPlacement(plotterName, centered);
+    }
+
+    internal static LegacyOverlayPlacement CreatePlacement(
+        LegacyOverlayPlacement original,
+        PixelPoint position,
+        PixelSize overlaySize,
+        PixelRect gameBounds
+    )
+    {
+        ArgumentNullException.ThrowIfNull(original);
+        int horizontalOffset = original.Horizontal switch
+        {
+            LegacyHorizontalAnchor.Left => position.X - gameBounds.X,
+            LegacyHorizontalAnchor.Center => position.X - (gameBounds.X + ((gameBounds.Width - overlaySize.Width) / 2)),
+            LegacyHorizontalAnchor.Right => gameBounds.Right - overlaySize.Width - position.X,
+            _ => position.X,
+        };
+        int verticalOffset = original.Vertical switch
+        {
+            LegacyVerticalAnchor.Top => position.Y - gameBounds.Y,
+            LegacyVerticalAnchor.Middle => position.Y - (gameBounds.Y + ((gameBounds.Height - overlaySize.Height) / 2)),
+            LegacyVerticalAnchor.Bottom => gameBounds.Bottom - overlaySize.Height - position.Y,
+            _ => position.Y,
+        };
+        return original with
+        {
+            HorizontalOffset = horizontalOffset,
+            VerticalOffset = verticalOffset,
+            PositionReference = new OverlayPositionReference(gameBounds.Width, gameBounds.Height),
+        };
     }
 
     public void SetScaleIndex(int index)

@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -11,30 +10,33 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public sealed class StreamOverlayCoordinator : IDisposable
 {
     private readonly StreamOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
     private readonly OverlayWindowRegistry registry;
-    private readonly OverlayDispatcherTimer timer;
-    private StreamOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool disposed;
 
-    public StreamOverlayCoordinator(
-        StreamOverlayViewModel viewModel,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        OverlayWindowRegistry? registry = null
-    )
+    public StreamOverlayCoordinator(StreamOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.registry = registry ?? OverlayWindowRegistry.Shared;
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        registry = presentationSession.WindowRegistry;
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "SrvSurveyWindowOne",
+                _ => new StreamOverlayWindow(),
+                (gameBounds, _) => gameBounds.Position
+            )
+            {
+                Tick = OnTick,
+                Placement = PlaceOverGame,
+                ObservePreparation = ObservePreparation,
+                RequiresLayoutCatalog = false,
+                ApplyLayoutTheme = false,
+                RetryPassivePreparationOnPoll = true,
+            }
+        );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        this.registry.Changed += OnRegistryChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        Synchronize();
+        registry.Changed += OnRegistryChanged;
+        SynchronizeIntent();
     }
 
     public bool Toggle()
@@ -45,7 +47,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
 
         viewModel.Toggle();
-        Synchronize();
+        SynchronizeIntent();
         return true;
     }
 
@@ -57,110 +59,84 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         registry.Changed -= OnRegistryChanged;
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
+        hostedWindow.Dispose();
     }
 
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    private void OnTick()
     {
-        Synchronize();
+        SynchronizeIntent();
+        if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
+        {
+            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+        }
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)
     {
-        Synchronize();
+        SynchronizeIntent();
+        if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
+        {
+            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+        }
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(StreamOverlayViewModel.Enabled))
         {
-            Synchronize();
+            SynchronizeIntent();
         }
     }
 
-    private void Synchronize()
+    private void SynchronizeIntent()
     {
-        if (disposed || !viewModel.Enabled)
+        if (disposed)
         {
-            CloseWindow();
             return;
         }
 
+        hostedWindow.Reconcile(viewModel.Enabled);
         if (
-            !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
+            !viewModel.Enabled
+            || hostedWindow.IsVisible
+            || hostedWindow.Health == OverlayHostHealth.PassivePreparationFailed
         )
         {
-            CloseWindow();
-            viewModel.StatusMessage = platform.Capabilities.StatusText;
             return;
         }
 
-        GameWindowSnapshot gameWindow = gameWindowTracker.GetSnapshot();
-        if (!gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
+        OverlayPlatformCapabilities capabilities = hostedWindow.Capabilities;
+        if (
+            !capabilities.SupportsPassiveOverlay
+            || !capabilities.SupportsClickThrough
+            || !capabilities.SupportsGameWindowTracking
+        )
         {
-            CloseWindow();
-            viewModel.StatusMessage = "Waiting for the Elite window before composing overlays.";
+            viewModel.StatusMessage = capabilities.StatusText;
             return;
         }
 
-        EnsureWindow(gameWindow.ClientBounds);
-        if (window is null)
-        {
-            return;
-        }
-
-        PositionWindow(window, gameWindow.ClientBounds);
-        RenderFrames(window, gameWindow.ClientBounds);
+        viewModel.StatusMessage = "Waiting for the Elite window before composing overlays.";
     }
 
-    private void EnsureWindow(PixelRect gameBounds)
+    private void ObservePreparation(OverlayPreparationResult preparation)
     {
-        if (window is not null)
+        if (!preparation.IsClickThrough)
         {
-            return;
+            viewModel.StatusMessage = preparation.Status;
         }
-
-        var overlay = new StreamOverlayWindow();
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            if (!preparation.IsClickThrough)
-            {
-                viewModel.StatusMessage = preparation.Status;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
     }
 
-    private static void PositionWindow(Window target, PixelRect gameBounds)
+    private static PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
     {
-        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        target.Position = gameBounds.Position;
+        PixelRect gameBounds = placement.GameBounds;
+        Screen screen = placement.Screen;
+        Window target = placement.Window;
         target.Width = gameBounds.Width / screen.Scaling;
         target.Height = gameBounds.Height / screen.Scaling;
+        return gameBounds.Position;
     }
 
     private void RenderFrames(StreamOverlayWindow target, PixelRect gameBounds)
@@ -229,17 +205,5 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
             viewModel.StatusMessage = $"The joined stream overlay could not update: {exception.Message}";
         }
-    }
-
-    private void CloseWindow()
-    {
-        StreamOverlayWindow? overlay = window;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        window = null;
-        overlay.Close();
     }
 }
