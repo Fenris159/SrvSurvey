@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
@@ -13,6 +14,82 @@ internal sealed record PassiveOverlayWindowDefinition(
 )
 {
     public TimeSpan PollInterval { get; init; } = TimeSpan.FromMilliseconds(250);
+
+    /// <summary>Runs before each poll; a reconciliation it requests replaces that poll's own pass.</summary>
+    public Action? Tick { get; init; }
+
+    /// <summary>Runs before the window is created; returning false abandons this opening.</summary>
+    public Func<bool>? BeginPresentation { get; init; }
+
+    /// <summary>Runs once for every <see cref="BeginPresentation"/> call after its window is gone.</summary>
+    public Action? EndPresentation { get; init; }
+
+    /// <summary>Runs after overlay theme resources are applied and before the window is shown.</summary>
+    public Action<Window>? ConfigureWindow { get; init; }
+
+    /// <summary>Replaces standard sizing and placement while the window is eligible.</summary>
+    public Func<HostedOverlayPlacement, PixelPoint>? Placement { get; init; }
+
+    /// <summary>
+    /// Replaces the default available/visible/foreground gate. Capability support is still required.
+    /// </summary>
+    public Func<GameWindowSnapshot, bool>? IsGameWindowEligible { get; init; }
+
+    /// <summary>When false, the plotter name is only a host identity and need not be in the layout catalog.</summary>
+    public bool RequiresLayoutCatalog { get; init; } = true;
+
+    /// <summary>When false, skip theme, opacity, and registry registration so compositor hosts can remain unlisted.</summary>
+    public bool ApplyLayoutTheme { get; init; } = true;
+
+    /// <summary>Allows stream composition to retry click-through preparation on its next poll.</summary>
+    public bool RetryPassivePreparationOnPoll { get; init; }
+}
+
+internal sealed class HostedOverlayPlacement
+{
+    private readonly LegacyOverlayLayout overlayLayout;
+    private readonly PassiveOverlayWindowDefinition definition;
+
+    internal HostedOverlayPlacement(
+        Window window,
+        Screen screen,
+        PixelRect gameBounds,
+        LegacyOverlayLayout overlayLayout,
+        PassiveOverlayWindowDefinition definition
+    )
+    {
+        Window = window;
+        Screen = screen;
+        GameBounds = gameBounds;
+        this.overlayLayout = overlayLayout;
+        this.definition = definition;
+    }
+
+    public Window Window { get; }
+
+    public Screen Screen { get; }
+
+    public PixelRect GameBounds { get; }
+
+    public void SetBaseSize(double width, double height)
+    {
+        OverlayThemeResources.SetBaseSize(Window, overlayLayout, width, height);
+    }
+
+    public PixelSize PrepareSize()
+    {
+        return OverlayWindowMetrics.PrepareForPlacement(Window, overlayLayout, definition.PlotterName, Screen.Scaling);
+    }
+
+    public PixelPoint GetPosition(PixelSize size)
+    {
+        return TryGetLayoutPosition(size) ?? definition.FallbackPlacement(GameBounds, size);
+    }
+
+    public PixelPoint? TryGetLayoutPosition(PixelSize size)
+    {
+        return overlayLayout.GetPosition(definition.PlotterName, GameBounds, size);
+    }
 }
 
 internal enum OverlayHostHealth
@@ -99,7 +176,11 @@ internal sealed class HostedOverlayWindow : IDisposable
     private bool reconciliationPosted;
     private bool isReconciling;
     private bool reconcileAgain;
+    private int reconciliationCount;
+    private int failureResetRequested;
+    private bool isPresenting;
     private bool isVisible;
+    private bool preparationFailureReported;
 
     public HostedOverlayWindow(
         PassiveOverlayWindowDefinition definition,
@@ -172,7 +253,11 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     public bool IsVisible => isVisible;
 
+    public OverlayPlatformCapabilities Capabilities => platform.Capabilities;
+
     internal Window? CurrentWindow => window;
+
+    internal GameWindowSnapshot GameWindow => gameWindow;
 
     public OverlayHostHealth Health { get; private set; } = OverlayHostHealth.Healthy;
 
@@ -184,6 +269,10 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         this.wantsWindow = wantsWindow;
+        if (!wantsWindow)
+        {
+            Interlocked.Exchange(ref failureResetRequested, 1);
+        }
         if (Dispatcher.UIThread.CheckAccess())
         {
             ReconcileOnUiThread();
@@ -212,14 +301,32 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
-        CloseWindow();
-        timer.Dispose();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
+        Exception? disposalFailure = null;
+        Release(() => timer.Stop(), ref disposalFailure);
+        Release(() => timer.Tick -= OnTimerTick, ref disposalFailure);
+        Release(CloseWindow, ref disposalFailure);
+        Release(() => timer.Dispose(), ref disposalFailure);
+        Release(() => gameWindowTracker.Dispose(), ref disposalFailure);
+        Release(() => platform.Dispose(), ref disposalFailure);
         Health = OverlayHostHealth.Disposed;
         removeFromSession(this);
+        if (disposalFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(disposalFailure).Throw();
+        }
+    }
+
+    /// <summary>Preserves the first shutdown failure while releasing every lease owned by this module.</summary>
+    private static void Release(Action release, ref Exception? failure)
+    {
+        try
+        {
+            release();
+        }
+        catch (Exception exception)
+        {
+            failure ??= exception;
+        }
     }
 
     private static PassiveOverlayWindowDefinition Validate(PassiveOverlayWindowDefinition definition)
@@ -236,7 +343,11 @@ internal sealed class HostedOverlayWindow : IDisposable
             );
         }
 
-        _ = OverlayLayoutCatalog.GetRequired(definition.PlotterName);
+        if (definition.RequiresLayoutCatalog)
+        {
+            _ = OverlayLayoutCatalog.GetRequired(definition.PlotterName);
+        }
+
         return definition;
     }
 
@@ -254,7 +365,17 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
-        ReconcileOnUiThread();
+        if (definition.RetryPassivePreparationOnPoll && Health == OverlayHostHealth.PassivePreparationFailed)
+        {
+            Health = OverlayHostHealth.Healthy;
+        }
+
+        int reconciliationsBeforeTick = reconciliationCount;
+        definition.Tick?.Invoke();
+        if (reconciliationCount == reconciliationsBeforeTick)
+        {
+            ReconcileOnUiThread();
+        }
     }
 
     private void RunPostedReconciliation()
@@ -278,6 +399,7 @@ internal sealed class HostedOverlayWindow : IDisposable
             return;
         }
 
+        reconciliationCount = unchecked(reconciliationCount + 1);
         if (isReconciling)
         {
             reconcileAgain = true;
@@ -315,6 +437,15 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void ReconcileCore()
     {
+        if (Interlocked.Exchange(ref failureResetRequested, 0) != 0)
+        {
+            preparationFailureReported = false;
+            if (Health is OverlayHostHealth.PassivePreparationFailed or OverlayHostHealth.Faulted)
+            {
+                Health = OverlayHostHealth.Healthy;
+            }
+        }
+
         if (
             disposed
             || Health
@@ -342,13 +473,17 @@ internal sealed class HostedOverlayWindow : IDisposable
                     platform.Capabilities.StatusText
                 )
             );
-            timer.Stop();
+            if (definition.Tick is null)
+            {
+                timer.Stop();
+            }
+
             CloseWindow();
             return;
         }
 
         Health = OverlayHostHealth.Healthy;
-        if (!wantsWindow || !gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
+        if (!wantsWindow || !IsGameWindowEligible(gameWindow))
         {
             CloseWindow();
             return;
@@ -366,10 +501,26 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void OpenWindow()
     {
+        if (definition.BeginPresentation is { } beginPresentation)
+        {
+            bool proceed = beginPresentation();
+            isPresenting = true;
+            if (!proceed)
+            {
+                EndPresentation();
+                return;
+            }
+        }
+
         Window overlay =
             definition.CreateWindow(platform.Capabilities)
             ?? throw new InvalidOperationException($"The {definition.PlotterName} window factory returned null.");
-        OverlayThemeResources.Apply(overlay, overlayLayout, definition.PlotterName, windowRegistry);
+        if (definition.ApplyLayoutTheme)
+        {
+            OverlayThemeResources.Apply(overlay, overlayLayout, definition.PlotterName, windowRegistry);
+        }
+
+        definition.ConfigureWindow?.Invoke(overlay);
         overlay.Opened += OnWindowOpened;
         overlay.Closed += OnWindowClosed;
         window = overlay;
@@ -389,13 +540,23 @@ internal sealed class HostedOverlayWindow : IDisposable
         if (!preparation.IsClickThrough)
         {
             Health = OverlayHostHealth.PassivePreparationFailed;
-            TryReportDiagnostic(
-                new OverlayHostDiagnostic(definition.PlotterName, OverlayHostPhase.Opening, Health, preparation.Status)
-            );
+            if (!preparationFailureReported)
+            {
+                preparationFailureReported = true;
+                TryReportDiagnostic(
+                    new OverlayHostDiagnostic(
+                        definition.PlotterName,
+                        OverlayHostPhase.Opening,
+                        Health,
+                        preparation.Status
+                    )
+                );
+            }
             CloseWindow();
             return;
         }
 
+        preparationFailureReported = false;
         SetVisible(opened.IsVisible);
     }
 
@@ -407,27 +568,30 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         window = null;
+        EndPresentation();
         SetVisible(false);
+    }
+
+    private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
+    {
+        return definition.IsGameWindowEligible?.Invoke(snapshot)
+            ?? (snapshot.IsAvailable && snapshot.IsVisible && snapshot.IsForeground);
     }
 
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(target, overlayLayout, definition.PlotterName);
+        if (definition.ApplyLayoutTheme)
+        {
+            OverlayThemeResources.ApplyOpacity(target, overlayLayout, definition.PlotterName);
+        }
         Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(
-            target,
-            overlayLayout,
-            definition.PlotterName,
-            screen.Scaling
-        );
-        PixelPoint position =
-            overlayLayout.GetPosition(definition.PlotterName, gameBounds, size)
-            ?? definition.FallbackPlacement(gameBounds, size);
+        var placement = new HostedOverlayPlacement(target, screen, gameBounds, overlayLayout, definition);
+        PixelPoint position = definition.Placement?.Invoke(placement) ?? placement.GetPosition(placement.PrepareSize());
         if (target.Position != position)
         {
             target.Position = position;
@@ -439,6 +603,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         Window? closing = window;
         if (closing is null)
         {
+            EndPresentation();
             return;
         }
 
@@ -446,7 +611,19 @@ internal sealed class HostedOverlayWindow : IDisposable
         closing.Opened -= OnWindowOpened;
         closing.Closed -= OnWindowClosed;
         closing.Close();
+        EndPresentation();
         SetVisible(false);
+    }
+
+    private void EndPresentation()
+    {
+        if (!isPresenting)
+        {
+            return;
+        }
+
+        isPresenting = false;
+        definition.EndPresentation?.Invoke();
     }
 
     private void SetVisible(bool value)

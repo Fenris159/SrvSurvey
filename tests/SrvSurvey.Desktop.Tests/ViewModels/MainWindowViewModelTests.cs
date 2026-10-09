@@ -1,7 +1,10 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
@@ -26,6 +29,171 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MainWindowViewModelTests
 {
+    /// <summary>Startup publishes only the current Cargo.json snapshot, honoring opt-in, ownership, and cancellation.</summary>
+    [Theory]
+    [InlineData(true, 1, true, false)]
+    [InlineData(false, 1, true, false)]
+    [InlineData(true, 2, true, false)]
+    [InlineData(true, 1, false, false)]
+    [InlineData(true, 1, true, true)]
+    public async Task BootstrapPublishesCurrentShipCargoWithoutReplayingHistoricalWrites(
+        bool optedIn,
+        int gameWindowCount,
+        bool hasCurrentCargo,
+        bool cancelBeforeCargo
+    )
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-bootstrap-raven-cargo-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-10-07T120000.01.log"),
+                """
+                {"timestamp":"2026-10-07T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-10-07T12:00:01Z","event":"Commander","Name":"Probe","FID":"F123"}
+                {"timestamp":"2026-10-07T12:00:02Z","event":"Loadout","Ship":"anaconda","ShipName":"Hauler","CargoCapacity":64}
+                {"timestamp":"2026-10-07T12:00:03Z","event":"ColonisationContribution","MarketID":10,"Contributions":[{"Name":"$steel_name;","Amount":1}]}
+                {"timestamp":"2026-10-07T12:00:04Z","event":"Cargo","Vessel":"Ship","Count":1,"Inventory":[{"Name":"steel","Count":1,"Stolen":0}]}
+
+                """
+            );
+            string cargoPath = Path.Combine(journals, CargoFileReader.FileName);
+            if (hasCurrentCargo)
+            {
+                await File.WriteAllTextAsync(
+                    cargoPath,
+                    """{"timestamp":"2026-10-07T12:00:05Z","event":"Cargo","Vessel":"Ship","Count":7,"Inventory":[{"Name":"steel","Count":7,"Stolen":0}]}"""
+                );
+            }
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            var settings = new ColonizationSettingsStore(paths.UiSettingsPath);
+            settings.SaveEnabled(true);
+            settings.SaveShipCargoPublishingEnabled(optedIn);
+            await new CommanderProfileStore(paths.DataDirectory).SaveRavenColonialApiKeyAsync(
+                "F123",
+                "Probe",
+                true,
+                "test-raven-key"
+            );
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var handler = new StartupRavenCargoHandler();
+            if (cancelBeforeCargo)
+            {
+                handler.OnWorkspaceRead = cancellation.Cancel;
+            }
+            using var network = new HttpClient(handler);
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithExternalNetworkClient(network)
+                        .WithGameWindowSwitcher(
+                            new MutableGameWindowSwitcher { AvailableWindowCount = gameWindowCount }
+                        )
+            );
+
+            if (cancelBeforeCargo)
+            {
+                await viewModel.MonitorAsync(cancellationToken: cancellation.Token);
+                Assert.True(cancellation.IsCancellationRequested);
+            }
+            else
+            {
+                await viewModel.RefreshAsync();
+            }
+
+            Assert.True(viewModel.Colonization.HasStoredRavenApiKey);
+            Assert.True(viewModel.Colonization.HasProjects);
+            bool shouldPublish = optedIn && gameWindowCount == 1 && hasCurrentCargo && !cancelBeforeCargo;
+            Assert.Equal(shouldPublish ? 1 : 0, handler.Ships.Count);
+            if (!shouldPublish)
+            {
+                Assert.Empty(handler.Mutations);
+                return;
+            }
+            ColonizationCurrentShip ship = Assert.Single(handler.Ships);
+            Assert.Equal("Probe", ship.CommanderName);
+            Assert.Equal("anaconda", ship.Type);
+            Assert.Equal("Hauler", ship.Name);
+            Assert.Equal(64, ship.MaximumCargo);
+            Assert.Equal(7, Assert.Single(ship.Cargo).Value);
+            Assert.Equal(["/api/cmdr/currentShip"], handler.Mutations);
+
+            await viewModel.RefreshAsync();
+            Assert.Single(handler.Ships);
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """{"timestamp":"2026-10-07T12:01:00Z","event":"Cargo","Vessel":"Ship","Count":9,"Inventory":[{"Name":"steel","Count":9,"Stolen":0}]}"""
+            );
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(2, handler.Ships.Count);
+            Assert.Equal(9, handler.Ships[1].Cargo["steel"]);
+            Assert.All(handler.Mutations, path => Assert.Equal("/api/cmdr/currentShip", path));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    private sealed class StartupRavenCargoHandler : HttpMessageHandler
+    {
+        public List<ColonizationCurrentShip> Ships { get; } = [];
+
+        public List<string> Mutations { get; } = [];
+
+        public Action? OnWorkspaceRead { get; set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string path = request.RequestUri!.AbsolutePath;
+            if (request.Method != HttpMethod.Get && path.StartsWith("/api/", StringComparison.Ordinal))
+            {
+                Mutations.Add(path);
+            }
+            if (request.Method == HttpMethod.Post && path == "/api/cmdr/currentShip")
+            {
+                Ships.Add((await request.Content!.ReadFromJsonAsync<ColonizationCurrentShip>(cancellationToken))!);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+            string? payload = path switch
+            {
+                "/api/cmdr/Probe/active" =>
+                    """[{"buildId":"build-1","buildType":"no_truss","buildName":"Port","marketId":10,"systemAddress":42,"maxNeed":100,"sumNeed":100,"commodities":{"steel":100}}]""",
+                "/api/cmdr/Probe/hiddenIDs" or "/api/cmdr/Probe/fc/all" => "[]",
+                "/api/cmdr/Probe/primary" => "null",
+                _ => null,
+            };
+            if (payload is null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+            }
+            if (path == "/api/cmdr/Probe/active")
+            {
+                OnWorkspaceRead?.Invoke();
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json"),
+            };
+        }
+    }
+
     /// <summary>Checks startup history never starts a mining survey, even before a commander profile exists.</summary>
     [Fact]
     public async Task FirstCommanderBootstrapDoesNotExecuteOldMiningSurveyCommand()
@@ -3570,6 +3738,108 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CanceledMonitorPersistsConsumedExplorationAndExobiologyBeforeStoppingPublication(
+        bool cancelBeforeReducers
+    )
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-canceled-journal-projection-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            string profile = Path.Combine(root, "profile");
+            string screenshots = Path.Combine(root, "screenshots");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(Path.Combine(screenshots, "Test"));
+            string journalPath = Path.Combine(journals, "Journal.2026-10-07T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-10-07T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-10-07T12:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+                {"timestamp":"2026-10-07T12:00:02Z","event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[1,2,3],"Population":0}
+
+                """
+            );
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var inference = new StubFirstFootfallInferenceService(
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Detected, 0.004, 2, null),
+                whenDetected: cancelBeforeReducers ? null : cancellation.Cancel
+            );
+            var publisher = new RecordingEddnPublisher();
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Save(
+                ScreenshotProcessingPreferences.CreateDefaults() with
+                {
+                    TargetFolder = screenshots,
+                }
+            );
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithFirstFootfallInferenceService(inference)
+                        .WithEddnPublisher(publisher)
+            );
+            viewModel.SetJournalCommandPlatformServices(
+                _ =>
+                {
+                    if (cancelBeforeReducers)
+                    {
+                        cancellation.Cancel();
+                    }
+                    return Task.FromResult(true);
+                },
+                null,
+                null
+            );
+            await viewModel.RefreshAsync();
+            int publicationsBefore = publisher.Calls.Count;
+            await File.AppendAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-10-07T12:00:03Z","event":"SendText","Message":".imgs"}
+                {"timestamp":"2026-10-07T12:00:03Z","event":"StartJump","JumpType":"Hyperspace"}
+                {"timestamp":"2026-10-07T12:00:04Z","event":"FSDJump","StarSystem":"Test","SystemAddress":42,"StarPos":[1,2,3],"JumpDist":5.25,"Population":0}
+                {"timestamp":"2026-10-07T12:00:05Z","event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","Landable":true,"Radius":1000}
+                {"timestamp":"2026-10-07T12:00:06Z","event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}
+                {"timestamp":"2026-10-07T12:00:07Z","event":"ScanOrganic","ScanType":"Log","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":1}
+                {"timestamp":"2026-10-07T12:00:08Z","event":"ScanOrganic","ScanType":"Sample","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":1}
+                {"timestamp":"2026-10-07T12:00:09Z","event":"ScanOrganic","ScanType":"Analyse","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":1}
+
+                """
+            );
+
+            await viewModel.MonitorAsync(cancellationToken: cancellation.Token);
+
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.Equal(cancelBeforeReducers ? 0 : 1, inference.CallCount);
+            CommanderProfileLoadResult saved = await new CommanderProfileStore(profile).LoadAsync("F123", true);
+            Assert.Equal(1, saved.Data!.Exploration.JumpCount);
+            Assert.Equal(5.25, saved.Data.Exploration.DistanceTravelled);
+            Assert.NotEmpty(saved.Data.Exobiology.ScannedBioEntryIds);
+            Assert.Equal(publicationsBefore, publisher.Calls.Count);
+            string systemPath = Assert.Single(
+                Directory.GetFiles(Path.Combine(profile, "systems"), "*.json", SearchOption.AllDirectories)
+            );
+            JsonObject system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
+            JsonArray bodies = system["bodies"]!.AsArray();
+            Assert.Equal(2, bodies.Count);
+            Assert.Equal(!cancelBeforeReducers, bodies[0]!["firstFootFall"]!.GetValue<bool>());
+            Assert.Equal("Test 2", bodies[1]!["name"]!.GetValue<string>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task BootstrapReplayNeverRunsFirstFootfallInference()
     {
@@ -4202,8 +4472,12 @@ public sealed class MainWindowViewModelTests
         }
     }
 
-    [Fact]
-    public async Task MineMapContextRejectsInvalidSurfaceCoordinates()
+    [Theory]
+    [InlineData(-91, 2)]
+    [InlineData(91, 2)]
+    [InlineData(1, -181)]
+    [InlineData(1, 181)]
+    public async Task MonitorKeepsProjectingAfterMalformedSurfaceStatus(double latitude, double longitude)
     {
         string root = Path.Combine(
             Path.GetTempPath(),
@@ -4228,35 +4502,57 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            bool stopAfterPublication = false;
+            var publisher = new RecordingEddnPublisher(() =>
+            {
+                if (stopAfterPublication)
+                {
+                    cancellation.Cancel();
+                }
+            });
             using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                builder => builder.WithAppDataPaths(paths)
+                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
             );
-
             await viewModel.RefreshAsync();
-            FieldInfo? statusField = typeof(MainWindowViewModel).GetField(
-                "latestStatus",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+            int publicationsBefore = publisher.Calls.Count;
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                JsonSerializer.Serialize(
+                    new EliteStatus
+                    {
+                        Flags = (StatusFlags)69206016,
+                        Latitude = latitude,
+                        Longitude = longitude,
+                        BodyName = "Test System 1",
+                        PlanetRadius = 1000,
+                    }
+                )
             );
-            Assert.NotNull(statusField);
-            statusField.SetValue(
-                viewModel,
-                new EliteStatus
-                {
-                    Flags = (StatusFlags)69206016,
-                    Latitude = 91,
-                    Longitude = 2,
-                    BodyName = "Test System 1",
-                    PlanetRadius = 1000,
-                }
-            );
-            MethodInfo? createContext = typeof(MainWindowViewModel).GetMethod(
-                "CreateMineMapCommandContext",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
-            );
-            Assert.NotNull(createContext);
+            await File.AppendAllTextAsync(
+                Path.Combine(root, "Journal.2026-09-11T010000.01.log"),
+                """
+                {"timestamp":"2026-09-11T01:00:59Z","event":"StartJump","JumpType":"Hyperspace"}
+                {"timestamp":"2026-09-11T01:01:00Z","event":"FSDJump","StarSystem":"Test System","SystemAddress":42,"StarPos":[1,2,3],"JumpDist":2.5}
+                {"timestamp":"2026-09-11T01:01:01Z","event":"SendText","Message":".mining survey"}
 
-            Assert.Null(createContext.Invoke(viewModel, null));
+                """
+            );
+            stopAfterPublication = true;
+
+            await viewModel.MonitorAsync(cancellationToken: cancellation.Token);
+
+            Assert.True(publisher.Calls.Count > publicationsBefore);
+            Assert.Contains("SendText", publisher.Calls[^1].Events.Select(journalEvent => journalEvent.EventName));
+            Assert.Null(viewModel.MineMap.ActiveLiveSurvey);
+            Assert.Contains("surface position are required", viewModel.MineMap.StatusText, StringComparison.Ordinal);
+            CommanderProfileLoadResult saved = await new CommanderProfileStore(paths.DataDirectory).LoadAsync(
+                "F123",
+                true
+            );
+            Assert.Equal(1, saved.Data!.Exploration.JumpCount);
+            Assert.Equal(2.5, saved.Data.Exploration.DistanceTravelled);
         }
         finally
         {
@@ -4566,7 +4862,7 @@ public sealed class MainWindowViewModelTests
         public void Dispose() { }
     }
 
-    private sealed class RecordingEddnPublisher : IEddnPublisher
+    private sealed class RecordingEddnPublisher(Action? whenApplied = null) : IEddnPublisher
     {
         public List<EddnCall> Calls { get; } = [];
 
@@ -4601,6 +4897,7 @@ public sealed class MainWindowViewModelTests
                         ),
                     ]
                     : [];
+            whenApplied?.Invoke();
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
 
@@ -4690,7 +4987,8 @@ public sealed class MainWindowViewModelTests
 
     private sealed class StubFirstFootfallInferenceService(
         FirstFootfallInferenceResult result,
-        Exception? disposeException = null
+        Exception? disposeException = null,
+        Action? whenDetected = null
     ) : IFirstFootfallInferenceService
     {
         public int CallCount { get; private set; }
@@ -4705,6 +5003,7 @@ public sealed class MainWindowViewModelTests
         )
         {
             CallCount++;
+            whenDetected?.Invoke();
             return Task.FromResult(result);
         }
 

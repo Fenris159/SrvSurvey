@@ -21,12 +21,8 @@ public sealed class GuardianOverlayCoordinatorTests
         try
         {
             using GuardianViewModel guardian = await CreateLiveGuardianAsync(root);
-            var platform = new FakeOverlayPlatform(zoomClickThrough: true, zoomInteractive: true);
-            using var coordinator = new GuardianOverlayCoordinator(
-                guardian,
-                platform,
-                new FakeGameWindowTracker(AvailableGameWindow)
-            );
+            using HostedOverlayTestHarness overlays = CreateOverlays(zoomClickThrough: true, zoomInteractive: true);
+            using var coordinator = new GuardianOverlayCoordinator(guardian, overlays.Session);
 
             RegisteredOverlayWindow[] guardianRegistrations = OverlayWindowRegistry
                 .Shared.Snapshot()
@@ -35,8 +31,8 @@ public sealed class GuardianOverlayCoordinatorTests
                 )
                 .ToArray();
 
-            Assert.Contains(platform.PreparedWindows, window => window is GuardianZoomOverlayWindow);
-            Assert.Contains(platform.InteractiveWindows, window => window is GuardianZoomOverlayWindow);
+            Assert.Contains(overlays.PreparedWindows, window => window is GuardianZoomOverlayWindow);
+            Assert.Contains(overlays.InteractiveWindows, window => window is GuardianZoomOverlayWindow);
             Assert.Contains(guardianRegistrations, registration => registration.Window is GuardianOverlayWindow);
             Assert.Contains(guardianRegistrations, registration => registration.Window is GuardianZoomOverlayWindow);
             Assert.Single(guardianRegistrations, registration => registration.ParticipatesInPlacement);
@@ -65,21 +61,17 @@ public sealed class GuardianOverlayCoordinatorTests
         try
         {
             using GuardianViewModel guardian = await CreateLiveGuardianAsync(root);
-            var platform = new FakeOverlayPlatform(zoomClickThrough, zoomInteractive);
-            using var coordinator = new GuardianOverlayCoordinator(
-                guardian,
-                platform,
-                new FakeGameWindowTracker(AvailableGameWindow)
-            );
+            using HostedOverlayTestHarness overlays = CreateOverlays(zoomClickThrough, zoomInteractive);
+            using var coordinator = new GuardianOverlayCoordinator(guardian, overlays.Session);
 
             Assert.True(coordinator.IsLiveSiteVisible);
-            Assert.Equal(1, platform.ZoomPreparationCount);
+            Assert.Equal(1, overlays.PreparedWindows.Count(window => window is GuardianZoomOverlayWindow));
 
             coordinator.SetSuppressed(true);
             coordinator.SetSuppressed(false);
 
             Assert.True(coordinator.IsLiveSiteVisible);
-            Assert.Equal(1, platform.ZoomPreparationCount);
+            Assert.Equal(1, overlays.PreparedWindows.Count(window => window is GuardianZoomOverlayWindow));
             Assert.DoesNotContain(
                 OverlayWindowRegistry.Shared.Snapshot(),
                 registration => registration.Window is GuardianZoomOverlayWindow
@@ -91,14 +83,30 @@ public sealed class GuardianOverlayCoordinatorTests
         }
     }
 
-    private static GameWindowSnapshot AvailableGameWindow { get; } =
-        new(
-            NativeHandle: (nint)1,
-            ProcessId: 42,
-            ClientBounds: new PixelRect(0, 0, 1920, 1080),
-            IsVisible: true,
-            IsForeground: true
-        );
+    private static HostedOverlayTestHarness CreateOverlays(bool zoomClickThrough, bool zoomInteractive)
+    {
+        return new HostedOverlayTestHarness
+        {
+            Prepare = window =>
+            {
+                bool succeeded = window is not GuardianZoomOverlayWindow || zoomClickThrough;
+                return new OverlayPreparationResult(
+                    IsPrepared: succeeded,
+                    IsClickThrough: succeeded,
+                    Status: succeeded ? "Prepared" : "Unavailable"
+                );
+            },
+            SetInteractive = (window, interactive) =>
+            {
+                bool succeeded = window is not GuardianZoomOverlayWindow || zoomInteractive;
+                return new OverlayInteractionResult(
+                    IsPrepared: succeeded,
+                    IsInteractive: interactive && succeeded,
+                    Status: succeeded ? "Prepared" : "Unavailable"
+                );
+            },
+        };
+    }
 
     private static async Task<GuardianViewModel> CreateLiveGuardianAsync(string root)
     {
@@ -150,57 +158,5 @@ public sealed class GuardianOverlayCoordinatorTests
         {
             Directory.Delete(path, recursive: true);
         }
-    }
-
-    private sealed class FakeOverlayPlatform(bool zoomClickThrough, bool zoomInteractive) : IOverlayPlatformService
-    {
-        public OverlayPlatformCapabilities Capabilities { get; } =
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
-
-        public List<Window> PreparedWindows { get; } = [];
-
-        public List<Window> InteractiveWindows { get; } = [];
-
-        public int ZoomPreparationCount { get; private set; }
-
-        public OverlayPreparationResult PreparePassiveWindow(Window window)
-        {
-            PreparedWindows.Add(window);
-            if (window is not GuardianZoomOverlayWindow)
-            {
-                return new OverlayPreparationResult(true, true, "Prepared");
-            }
-
-            ZoomPreparationCount++;
-            return new OverlayPreparationResult(
-                IsPrepared: zoomClickThrough,
-                IsClickThrough: zoomClickThrough,
-                Status: zoomClickThrough ? "Prepared" : "Unavailable"
-            );
-        }
-
-        public OverlayInteractionResult SetInteractive(Window window, bool interactive)
-        {
-            if (interactive)
-            {
-                InteractiveWindows.Add(window);
-            }
-
-            bool succeeded = window is not GuardianZoomOverlayWindow || zoomInteractive;
-            return new OverlayInteractionResult(
-                IsPrepared: succeeded,
-                IsInteractive: interactive && succeeded,
-                Status: succeeded ? "Prepared" : "Unavailable"
-            );
-        }
-
-        public void Dispose() { }
-    }
-
-    private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
-    {
-        public GameWindowSnapshot GetSnapshot() => snapshot;
-
-        public void Dispose() { }
     }
 }

@@ -1,9 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Desktop.Configuration;
 
-public sealed class ColonizationSettingsStore
+public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoveryStore
 {
     private const string ColonizationSectionKey = "Colonization";
     private const string VersionKey = "Version";
@@ -216,6 +217,10 @@ public sealed class ColonizationSettingsStore
                 && !string.IsNullOrWhiteSpace(entry.Commander)
                 && !string.IsNullOrWhiteSpace(entry.EventId)
                 && entry.Cargo is not null
+                && (
+                    entry.Requirements is null
+                    || (entry.Requirements.MarketId >= 0 && entry.Requirements.Commodities is not null)
+                )
         );
     }
 
@@ -226,7 +231,9 @@ public sealed class ColonizationSettingsStore
         {
             JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
             root[ColonizationSectionKey] = section;
-            section["PendingContributions"] = JsonSerializer.SerializeToNode(contributions);
+            section["PendingContributions"] = JsonSerializer.SerializeToNode(
+                contributions.Select(entry => entry.CreditAcknowledged ? entry with { OutcomeUnknown = true } : entry)
+            );
         });
     }
 
@@ -285,8 +292,6 @@ public sealed class ColonizationSettingsStore
     }
 }
 
-public sealed record ColonizationBuildSiteRepairVisit(long MarketId, string StationKey);
-
 public sealed record ColonizationOverlayPreferences(
     bool AutoShow,
     bool ShowOnRightPanel,
@@ -310,24 +315,3 @@ public sealed record ColonizationOverlayPreferences(
             UseCompactScrollingCommoditiesList: false
         );
 }
-
-/// <summary>A retained delivery belongs to its originating commander profile and records whether replay needs user verification.</summary>
-public sealed record ColonizationPendingContribution(
-    string Owner,
-    string BuildId,
-    string Commander,
-    Dictionary<string, int> Cargo,
-    string EventId,
-    bool OutcomeUnknown
-);
-
-/// <summary>An ordered carrier delta retains its baseline and journal event time; null time prevents retirement by a market timestamp.</summary>
-public sealed record ColonizationPendingCargoAdjustment(
-    string Owner,
-    long MarketId,
-    Dictionary<string, int> Delta,
-    DateTimeOffset? RecordedAt,
-    Dictionary<string, int>? Before,
-    bool Attempted = true,
-    bool OutcomeUnknown = true
-);

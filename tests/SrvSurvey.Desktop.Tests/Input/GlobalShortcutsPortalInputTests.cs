@@ -6,6 +6,8 @@ namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class GlobalShortcutsPortalInputTests
 {
+    private readonly RecordingKeyboardSink sink = new();
+
     /// <summary>Repeated clicks open legacy desktop settings when approved bindings are restored without an approval dialog.</summary>
     [Fact]
     public async Task ReopensLegacyDesktopSettingsWithoutRebinding()
@@ -27,11 +29,11 @@ public sealed class GlobalShortcutsPortalInputTests
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
         Assert.Equal(0, settingsOpened);
-        await input.OpenSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
-        await input.OpenSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
+        await input.OpenDesktopShortcutSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
+        await input.OpenDesktopShortcutSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
         Assert.Equal(2, settingsOpened);
         Assert.Equal(1, sessionsOpened);
-        Assert.True(input.IsRunning);
+        Assert.True(input.State.IsRunning);
     }
 
     /// <summary>A failed legacy settings launch keeps the active session and allows the user to retry the button.</summary>
@@ -45,19 +47,34 @@ public sealed class GlobalShortcutsPortalInputTests
         );
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        await input.OpenSettingsAsync();
-        Assert.Contains("could not open", input.SettingsStatus);
-        Assert.True(input.CanOpenSettings);
-        Assert.True(input.IsRunning);
+        await input.OpenDesktopShortcutSettingsAsync();
+        Assert.Contains("could not open", ShortcutUi(input).Status);
+        Assert.True(ShortcutUi(input).CanOpen);
+        Assert.True(input.State.IsRunning);
         Assert.False(session.Disposed);
     }
 
     /// <summary>Supplies isolated portal and desktop settings dependencies so tests cannot open host windows.</summary>
-    private static GlobalShortcutsPortalInput CreateInput(
+    private GlobalShortcutsPortalInput CreateInput(
         Func<CancellationToken, Task<IPortalShortcutSession>> openSession,
         TimeSpan? retryDelay = null,
         Func<CancellationToken, Task<bool>>? openLegacySettings = null
-    ) => new(openSession, retryDelay, openLegacySettings ?? (_ => Task.FromResult(false)));
+    )
+    {
+        var input = new GlobalShortcutsPortalInput(
+            openSession,
+            retryDelay,
+            openLegacySettings ?? (_ => Task.FromResult(false))
+        );
+        input.Attach(sink);
+        return input;
+    }
+
+    private static DesktopShortcutSettingsState ShortcutUi(GlobalShortcutsPortalInput input)
+    {
+        Assert.NotNull(input.State.DesktopShortcutSettings);
+        return input.State.DesktopShortcutSettings;
+    }
 
     /// <summary>Startup may restore approval but must never authorize the desktop to open a shortcut dialog.</summary>
     [Theory]
@@ -82,25 +99,23 @@ public sealed class GlobalShortcutsPortalInputTests
         await using GlobalShortcutsPortalInput input = CreateInput(_ =>
             Task.FromResult<IPortalShortcutSession>(session)
         );
-        int received = 0;
-        input.ActionTriggered += (_, _) => received++;
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.True(input.CanHandleAllBindings);
+        Assert.True(input.State.CanServeAllBindings);
         session.ChangeBindings();
-        Assert.False(input.IsRunning);
-        Assert.False(input.CanHandleAllBindings);
+        Assert.False(input.State.IsRunning);
+        Assert.False(input.State.CanServeAllBindings);
         session.Emit("toggleOverlayInteraction");
-        Assert.Equal(0, received);
+        Assert.Empty(sink.Activations);
         session.ChangeBindings("toggleOverlayInteraction", "unrelated");
-        Assert.True(input.IsRunning);
-        Assert.True(input.CanHandleAllBindings);
+        Assert.True(input.State.IsRunning);
+        Assert.True(input.State.CanServeAllBindings);
         session.Emit("toggleOverlayInteraction");
-        Assert.Equal(1, received);
+        Assert.Single(sink.Activations);
         input.Update(Settings("O") with { KeyboardEnabled = false });
         await WaitAsync(() => session.Disposed);
         session.ChangeBindings("toggleOverlayInteraction");
-        Assert.False(input.IsRunning);
+        Assert.False(input.State.IsRunning);
     }
 
     /// <summary>Maps application key names to standard XKB triggers and rejects controller or invalid bindings.</summary>
@@ -153,27 +168,29 @@ public sealed class GlobalShortcutsPortalInputTests
             },
             TimeSpan.FromMilliseconds(10)
         );
-        var actions = new ConcurrentQueue<GlobalInputAction>();
-        input.ActionTriggered += (_, args) => actions.Enqueue(args.Action);
         input.Update(Settings("O"));
-        await WaitAsync(() => input.IsRunning);
+        await WaitAsync(() => input.State.IsRunning);
         Assert.True(sessions.TryPeek(out FakeSession? first));
         first.Emit("unknown");
         first.Emit("toggleOverlayInteraction");
-        Assert.Equal(GlobalInputAction.ToggleOverlayInteraction, Assert.Single(actions));
+        KeyboardActivation activation = Assert.Single(sink.Activations);
+        Assert.Equal(KeyboardInputSource.Portal, activation.Source);
+        Assert.Equal(GlobalInputAction.ToggleOverlayInteraction, activation.Action);
+        Assert.Equal("O", activation.Chord);
+        Assert.Equal([KeyboardFocusEvidence.Untracked], sink.Evidence);
         input.Update(Settings("O") with { ControllerEnabled = true });
         Assert.Single(sessions);
         first.Closed.TrySetResult();
-        await WaitAsync(() => sessions.Count == 2 && input.IsRunning);
+        await WaitAsync(() => sessions.Count == 2 && input.State.IsRunning);
         Assert.True(first.Disposed);
         input.Update(Settings("X"));
-        await WaitAsync(() => sessions.Count == 3 && input.IsRunning);
+        await WaitAsync(() => sessions.Count == 3 && input.State.IsRunning);
         FakeSession latest = sessions.Last();
         Assert.True(latest.ForceBind);
         input.Update(Settings("X") with { KeyboardEnabled = false });
         await WaitAsync(() => latest.Disposed);
         latest.Emit("toggleOverlayInteraction");
-        Assert.Single(actions);
+        Assert.Single(sink.Activations);
         await input.DisposeAsync();
         await input.DisposeAsync();
         Assert.Throws<ObjectDisposedException>(() => input.Update(Settings("O")));
@@ -184,7 +201,6 @@ public sealed class GlobalShortcutsPortalInputTests
     public async Task RetriesServiceFailureButStopsAfterPermissionDeclined()
     {
         int attempts = 0;
-        var statuses = new ConcurrentQueue<string>();
         await using GlobalShortcutsPortalInput input = CreateInput(
             _ =>
             {
@@ -197,14 +213,13 @@ public sealed class GlobalShortcutsPortalInputTests
             },
             TimeSpan.FromMilliseconds(10)
         );
-        input.StatusChanged += (message, _) => statuses.Enqueue(message);
         input.Update(Settings("O"));
         await WaitAsync(() =>
-            statuses.Any(message => message.Contains("approval is needed", StringComparison.Ordinal))
+            sink.Statuses.Any(message => message.Contains("approval is needed", StringComparison.Ordinal))
         );
         await Task.Delay(40);
         Assert.Equal(2, Volatile.Read(ref attempts));
-        Assert.False(input.IsRunning);
+        Assert.False(input.State.IsRunning);
         Assert.True(input.StartupReady.IsCompletedSuccessfully);
     }
 
@@ -225,7 +240,7 @@ public sealed class GlobalShortcutsPortalInputTests
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
         await Task.Delay(40);
         Assert.Equal(1, attempts);
-        Assert.False(input.IsRunning);
+        Assert.False(input.State.IsRunning);
     }
 
     /// <summary>Waits for silent restoration before focus handoff and reconnects or changes bindings without permission dialogs.</summary>
@@ -249,12 +264,12 @@ public sealed class GlobalShortcutsPortalInputTests
         Assert.False(input.StartupReady.IsCompleted);
         first.Approved.TrySetResult();
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.True(input.CanHandleAllBindings);
+        Assert.True(input.State.CanServeAllBindings);
         first.Closed.TrySetResult();
-        await WaitAsync(() => sessions.Count == 2 && input.IsRunning);
+        await WaitAsync(() => sessions.Count == 2 && input.State.IsRunning);
         Assert.False(sessions.Last().AllowPermissionPrompt);
         input.Update(Settings("X"));
-        await WaitAsync(() => sessions.Count == 3 && input.IsRunning);
+        await WaitAsync(() => sessions.Count == 3 && input.State.IsRunning);
         Assert.False(sessions.Last().AllowPermissionPrompt);
     }
 
@@ -275,8 +290,8 @@ public sealed class GlobalShortcutsPortalInputTests
             }
         );
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.False(input.IsRunning);
-        Assert.False(input.CanHandleAllBindings);
+        Assert.False(input.State.IsRunning);
+        Assert.False(input.State.CanServeAllBindings);
     }
 
     /// <summary>Cancels an outstanding authorization request and prevents stale session signals after rebinding.</summary>
@@ -291,7 +306,7 @@ public sealed class GlobalShortcutsPortalInputTests
         await WaitAsync(() => session.Started);
         input.Update(Settings("O") with { KeyboardEnabled = false });
         await WaitAsync(() => session.Disposed);
-        Assert.False(input.IsRunning);
+        Assert.False(input.State.IsRunning);
     }
 
     /// <summary>Explicit configuration keeps active version-two bindings and shows desktop keys without changing requested keys.</summary>
@@ -309,22 +324,21 @@ public sealed class GlobalShortcutsPortalInputTests
             opened++;
             return Task.FromResult<IPortalShortcutSession>(session);
         });
-        var statuses = new ConcurrentQueue<string>();
-        input.StatusChanged += (message, _) => statuses.Enqueue(message);
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.True(input.CanOpenSettings);
-        Assert.DoesNotContain(statuses, message => message.Contains('\n'));
+        Assert.True(ShortcutUi(input).CanOpen);
+        Assert.DoesNotContain(sink.Statuses, message => message.Contains('\n'));
         Assert.Equal(0, session.ConfigureCalls);
-        Assert.Contains("Super+P", input.SettingsStatus);
-        await input.OpenSettingsAsync();
+        Assert.Contains("Toggle live overlay interaction: Super+P", ShortcutUi(input).ApprovedShortcuts);
+        await input.OpenDesktopShortcutSettingsAsync();
         Assert.Equal(1, opened);
         Assert.Equal(1, session.ConfigureCalls);
         Assert.False(session.AllowPermissionPrompt);
-        Assert.True(input.IsRunning);
+        Assert.True(input.State.IsRunning);
         session.TriggerDescriptions = new Dictionary<string, string> { ["toggleOverlayInteraction"] = "Ctrl+X" };
         session.ChangeBindings("toggleOverlayInteraction");
-        Assert.Contains("Ctrl+X", input.SettingsStatus);
+        Assert.Contains("Toggle live overlay interaction: Ctrl+X", ShortcutUi(input).ApprovedShortcuts);
+        Assert.Equal("Desktop shortcuts: active (1 of 1 bindings).", ShortcutUi(input).Status);
     }
 
     /// <summary>Missing approval is requested only by the button, and a repeated click cannot create a second dialog.</summary>
@@ -339,18 +353,18 @@ public sealed class GlobalShortcutsPortalInputTests
         );
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.True(input.CanOpenSettings);
-        Assert.Contains("approval is needed", input.SettingsStatus);
-        Task opening = input.OpenSettingsAsync();
+        Assert.True(ShortcutUi(input).CanOpen);
+        Assert.Contains("approval is needed", ShortcutUi(input).Status);
+        Task opening = input.OpenDesktopShortcutSettingsAsync();
         await WaitAsync(() => second.Started);
         Assert.True(second.AllowPermissionPrompt);
         Assert.True(second.ForceBind);
-        Assert.False(input.CanOpenSettings);
-        Assert.Same(opening, input.OpenSettingsAsync());
+        Assert.False(ShortcutUi(input).CanOpen);
+        Assert.Same(opening, input.OpenDesktopShortcutSettingsAsync());
         second.Approved.TrySetResult();
         await opening.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.True(input.IsRunning);
-        Assert.True(input.CanOpenSettings);
+        Assert.True(input.State.IsRunning);
+        Assert.True(ShortcutUi(input).CanOpen);
         Assert.True(first.Disposed);
     }
 
@@ -367,12 +381,12 @@ public sealed class GlobalShortcutsPortalInputTests
         });
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        await input.OpenSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
+        await input.OpenDesktopShortcutSettingsAsync().WaitAsync(TimeSpan.FromSeconds(3));
         Assert.Equal(2, sessions.Count);
         Assert.True(sessions.First().Disposed);
         Assert.Equal(1, sessions.First().ConfigureCalls);
         Assert.True(sessions.Last().AllowPermissionPrompt);
-        Assert.True(input.IsRunning);
+        Assert.True(input.State.IsRunning);
     }
 
     /// <summary>Disabling input cancels both explicit approval and configuration without enabling a stale menu.</summary>
@@ -394,14 +408,14 @@ public sealed class GlobalShortcutsPortalInputTests
         );
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Task opening = input.OpenSettingsAsync();
+        Task opening = input.OpenDesktopShortcutSettingsAsync();
         await WaitAsync(() => existingSession ? first.ConfigureCalls == 1 : pending.Started);
         input.Update(Settings("O") with { KeyboardEnabled = false });
         await opening.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.False(input.CanOpenSettings);
-        Assert.Equal("Desktop shortcuts: off.", input.SettingsStatus);
-        await input.OpenSettingsAsync();
-        Assert.False(input.IsRunning);
+        Assert.False(ShortcutUi(input).CanOpen);
+        Assert.Equal("Desktop shortcuts: off.", ShortcutUi(input).Status);
+        await input.OpenDesktopShortcutSettingsAsync();
+        Assert.False(input.State.IsRunning);
     }
 
     /// <summary>Explicit refusals are not retried; protocol failures do not fall through to another permission request.</summary>
@@ -422,14 +436,14 @@ public sealed class GlobalShortcutsPortalInputTests
         );
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        await input.OpenSettingsAsync();
+        await input.OpenDesktopShortcutSettingsAsync();
         await Task.Delay(40);
         Assert.Equal(configureFailure ? 1 : 2, attempts);
-        Assert.Contains(configureFailure ? "could not open" : "declined", input.SettingsStatus);
-        Assert.True(input.CanOpenSettings);
+        Assert.Contains(configureFailure ? "could not open" : "declined", ShortcutUi(input).Status);
+        Assert.True(ShortcutUi(input).CanOpen);
         await input.DisposeAsync();
-        Assert.False(input.CanOpenSettings);
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => input.OpenSettingsAsync());
+        Assert.False(ShortcutUi(input).CanOpen);
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => input.OpenDesktopShortcutSettingsAsync());
     }
 
     /// <summary>An unavailable portal cannot open configuration and does not prevent other listeners from running.</summary>
@@ -439,9 +453,9 @@ public sealed class GlobalShortcutsPortalInputTests
         await using GlobalShortcutsPortalInput input = CreateInput(_ => throw new IOException("absent"));
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
-        Assert.False(input.CanOpenSettings);
-        await input.OpenSettingsAsync();
-        Assert.Contains("unavailable", input.SettingsStatus);
+        Assert.False(ShortcutUi(input).CanOpen);
+        await input.OpenDesktopShortcutSettingsAsync();
+        Assert.Contains("unavailable", ShortcutUi(input).Status);
     }
 
     /// <summary>Unsupported services stop polling and leave the ordinary desktop-hook status visible.</summary>
@@ -452,7 +466,6 @@ public sealed class GlobalShortcutsPortalInputTests
     public async Task UnsupportedPortalStopsRetriesWithoutReplacingHookStatus(string error)
     {
         int attempts = 0;
-        var statuses = new ConcurrentQueue<string>();
         await using GlobalShortcutsPortalInput input = CreateInput(
             _ =>
             {
@@ -463,21 +476,19 @@ public sealed class GlobalShortcutsPortalInputTests
             },
             TimeSpan.FromMilliseconds(10)
         );
-        input.StatusChanged += (message, _) => statuses.Enqueue(message);
         input.Update(Settings("O"));
         await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
         await Task.Delay(40);
         Assert.Equal(1, attempts);
-        Assert.False(input.CanOpenSettings);
-        Assert.Contains("unavailable", input.SettingsStatus);
-        Assert.All(statuses, Assert.Empty);
+        Assert.False(ShortcutUi(input).CanOpen);
+        Assert.Contains("unavailable", ShortcutUi(input).Status);
+        Assert.All(sink.Statuses, Assert.Empty);
     }
 
     /// <summary>Transient failures reconnect silently without obscuring the working desktop listener.</summary>
     [Fact]
     public async Task TransientPortalFailurePreservesHookStatus()
     {
-        var statuses = new ConcurrentQueue<string>();
         int attempts = 0;
         await using GlobalShortcutsPortalInput input = CreateInput(
             _ =>
@@ -487,11 +498,10 @@ public sealed class GlobalShortcutsPortalInputTests
             },
             TimeSpan.FromMilliseconds(10)
         );
-        input.StatusChanged += (message, _) => statuses.Enqueue(message);
         input.Update(Settings("O"));
         await WaitAsync(() => Volatile.Read(ref attempts) >= 2);
-        Assert.All(statuses, Assert.Empty);
-        Assert.Contains("unavailable", input.SettingsStatus);
+        Assert.All(sink.Statuses, Assert.Empty);
+        Assert.Contains("unavailable", ShortcutUi(input).Status);
     }
 
     /// <summary>Creates one enabled test binding.</summary>

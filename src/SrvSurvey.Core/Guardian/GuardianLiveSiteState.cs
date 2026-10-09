@@ -82,7 +82,7 @@ public sealed class GuardianLiveSiteState
         }
 
         double radius = (double)status.PlanetRadius;
-        if (!status.HasLatitudeLongitude || !double.IsFinite(radius) || radius <= 0 || status.Altitude > 4_000)
+        if (!HasUsableCoordinates(status) || !double.IsFinite(radius) || radius <= 0 || status.Altitude > 4_000)
         {
             CurrentSite = status.Altitude > 4_000 ? null : CurrentSite;
             return !Equals(previous, CurrentSite);
@@ -136,6 +136,14 @@ public sealed class GuardianLiveSiteState
         CurrentSite = nearest;
         return !Equals(previous, CurrentSite);
     }
+
+    private static bool HasUsableCoordinates(EliteStatus status) =>
+        status.HasLatitudeLongitude
+        && IsValidCoordinate(status.Latitude, 90)
+        && IsValidCoordinate(status.Longitude, 180);
+
+    private static bool IsValidCoordinate(double value, double limit) =>
+        double.IsFinite(value) && value >= -limit && value <= limit;
 
     public GuardianCommanderSiteSurvey CreateOrUpdateSurvey(
         string commanderName,

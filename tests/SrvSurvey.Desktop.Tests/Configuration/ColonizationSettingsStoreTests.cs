@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
@@ -166,6 +167,9 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
     [InlineData(
         "{\"Owner\":\"owner\",\"BuildId\":\"build\",\"Commander\":\"cmdr\",\"Cargo\":null,\"EventId\":\"event\"}"
     )]
+    [InlineData(
+        "{\"Owner\":\"owner\",\"BuildId\":\"build\",\"Commander\":\"cmdr\",\"Cargo\":{},\"EventId\":\"event\",\"Requirements\":{\"MarketId\":42,\"Commodities\":null}}"
+    )]
     public void PendingDeliveriesSkipOnlyInvalidEntry(string invalid)
     {
         var first = new ColonizationPendingContribution(
@@ -184,6 +188,52 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal(["first", "second"], loaded.Select(item => item.EventId));
         store.SavePendingContributions(loaded);
         Assert.Equal(["first", "second"], store.LoadPendingContributions().Select(item => item.EventId));
+    }
+
+    /// <summary>Legacy six-field deliveries remain readable alongside acknowledged absolute requirement recovery.</summary>
+    [Theory]
+    [InlineData(42)]
+    [InlineData(0)]
+    public void PendingDeliveryPhasesRoundTripWithoutChangingOtherSettings(long marketId)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "phases.json");
+        File.WriteAllText(
+            path,
+            """
+            {"Version":1,"Unrelated":{"Keep":true},"Colonization":{"Enabled":true,"PendingContributions":[
+                {"Owner":"owner","BuildId":"build","Commander":"cmdr","Cargo":{"steel":25},"EventId":"legacy","OutcomeUnknown":true}
+            ]}}
+            """
+        );
+        var settings = new ColonizationSettingsStore(path);
+        ColonizationPendingContribution legacy = Assert.Single(settings.LoadPendingContributions());
+        Assert.Null(legacy.Requirements);
+        Assert.False(legacy.CreditAcknowledged);
+        ColonizationPendingContribution acknowledged = legacy with
+        {
+            EventId = "acknowledged",
+            CreditAcknowledged = true,
+            OutcomeUnknown = false,
+            Requirements = new(
+                marketId,
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", System.Globalization.CultureInfo.InvariantCulture),
+                new() { ["steel"] = 75 }
+            ),
+        };
+
+        settings.SavePendingContributions([legacy, acknowledged]);
+
+        var restarted = new ColonizationSettingsStore(path);
+        ColonizationPendingContribution recovered = Assert.Single(
+            restarted.LoadPendingContributions(),
+            item => item.CreditAcknowledged
+        );
+        Assert.True(recovered.OutcomeUnknown);
+        Assert.Equal(marketId, recovered.Requirements!.MarketId);
+        Assert.Equal(75, recovered.Requirements.Commodities["steel"]);
+        Assert.True(restarted.LoadEnabled());
+        Assert.True(JsonNode.Parse(File.ReadAllText(path))!["Unrelated"]!["Keep"]!.GetValue<bool>());
     }
 
     /// <summary>Preserves cargo write order when one persisted entry has an invalid shape or missing required data.</summary>
