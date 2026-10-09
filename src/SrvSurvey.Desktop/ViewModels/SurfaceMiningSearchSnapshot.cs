@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Search;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed record SurfaceMiningSearchSnapshot(

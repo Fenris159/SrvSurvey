@@ -1,46 +1,40 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class QuestIndicatorOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotQuestMini";
-
     private readonly QuestIndicatorViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private QuestIndicatorOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
     private bool disposed;
 
     public QuestIndicatorOverlayCoordinator(
         QuestIndicatorViewModel viewModel,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
+        OverlayPresentationSession presentationSession
     )
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotQuestMini",
+                _ => new QuestIndicatorOverlayWindow(viewModel),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, margin: 8)
+            )
+            {
+                Tick = SynchronizeIntent,
+            }
+        );
+        hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -52,7 +46,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -63,112 +57,31 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindow();
+        hostedWindow.VisibilityChanged -= OnHostedVisibilityChanged;
+        hostedWindow.Dispose();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(QuestIndicatorViewModel.ShouldShow))
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        bool shouldShow =
-            !isSuppressed
-            && viewModel.ShouldShow
-            && platform.Capabilities.SupportsPassiveOverlay
-            && platform.Capabilities.SupportsClickThrough
-            && platform.Capabilities.SupportsGameWindowTracking
-            && gameWindow.IsAvailable
-            && gameWindow.IsVisible
-            && gameWindow.IsForeground;
-        if (!shouldShow)
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window);
-            return;
-        }
-
-        var overlay = new QuestIndicatorOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) => PrepareWindow(overlay);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        window = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+        hostedWindow.Reconcile(!isSuppressed && viewModel.ShouldShow);
     }
 
-    private void PrepareWindow(QuestIndicatorOverlayWindow overlay)
+    private void OnHostedVisibilityChanged(object? sender, EventArgs eventArgs)
     {
-        PositionWindow(overlay);
-        OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-        if (!preparation.IsClickThrough)
-        {
-            isSuppressed = true;
-            CloseWindow();
-        }
-    }
-
-    private void PositionWindow(QuestIndicatorOverlayWindow overlay)
-    {
-        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
-            ?? OverlayWindowPlacement.TopRight(gameWindow.ClientBounds, size, margin: 8);
-        if (overlay.Position != position)
-        {
-            overlay.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        QuestIndicatorOverlayWindow? overlay = window;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        window = null;
-        overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }

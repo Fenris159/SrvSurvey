@@ -117,7 +117,7 @@ public sealed partial class GamescopeKeyboardIntegrationTests
                 Marshal.FreeCoTaskMem(name);
             }
             Assert.NotEqual(nint.Zero, display);
-            using var nestedInput = new GamescopeKeyboardInput(
+            var nestedInput = new GamescopeKeyboardInput(
                 () =>
                     withBridge
                         ? new GamescopeGameWindowBridge(
@@ -128,7 +128,7 @@ public sealed partial class GamescopeKeyboardIntegrationTests
                         : null,
                 desktopDisplay: ":desktop-test",
                 readDisplay: () => new EliteKeyboardDisplay(Environment.ProcessId, displayName),
-                createTracker: _ => new ForegroundGameTracker()
+                createTracker: _ => new TestGameWindowTracker { Focused = true }
             );
             Assert.True(nestedInput.ReadEvents(true).Reset);
             using var desktopHook = new TestGlobalHook(TestThreadingMode.Simple);
@@ -137,11 +137,9 @@ public sealed partial class GamescopeKeyboardIntegrationTests
                 {
                     KeyboardEnabled = true,
                 },
-                OverlayHostKind.LinuxXWayland,
-                withBridge ? new ForegroundGameTracker() : new UnavailableGameWindowTracker(),
-                () => false,
-                () => desktopHook,
-                additionalInput: new(GameKeyboardInput: nestedInput)
+                [nestedInput, new DesktopKeyboardHookSource(OverlayHostKind.LinuxXWayland, () => desktopHook)],
+                new TestGameWindowTracker { Focused = withBridge },
+                () => false
             );
             var triggered = new TaskCompletionSource<GlobalInputAction>(
                 TaskCreationOptions.RunContinuationsAsynchronously
@@ -178,16 +176,6 @@ public sealed partial class GamescopeKeyboardIntegrationTests
     /// <summary>Bounds the event wait so a broken listener fails without hanging the test host.</summary>
     private static async Task<bool> CompletesWithinAsync(Task task) =>
         await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(2))) == task;
-
-    /// <summary>Models a tracked foreground game on the nested display.</summary>
-    private sealed class ForegroundGameTracker : IGameWindowTracker
-    {
-        /// <summary>Returns the game's visible foreground snapshot.</summary>
-        public GameWindowSnapshot GetSnapshot() => new((nint)1, null, new PixelRect(0, 0, 640, 480), true, true);
-
-        /// <summary>Releases this stateless test tracker.</summary>
-        public void Dispose() { }
-    }
 
     /// <summary>Sends test keys only to the isolated nested X server.</summary>
     [LibraryImport("libXtst.so.6")]
