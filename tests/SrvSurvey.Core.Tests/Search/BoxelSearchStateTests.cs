@@ -16,6 +16,55 @@ public sealed class BoxelSearchStateTests
         Assert.True(state.StartedOn == before || state.StartedOn == after);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FreshActivationDoesNotReuseCompletionOrDeferredProgress(bool differentRoot)
+    {
+        var previous = BoxelAddress.Parse("Col 359 Sector NR-T c4-1");
+        var state = new BoxelSearchState(
+            new BoxelSearchSnapshot
+            {
+                Active = true,
+                TopBoxel = previous,
+                Current = previous.WithSystemNumber(0),
+                CurrentCount = 31,
+                CompletedPrefixes = [previous.Prefix],
+                CompletedSystems = [previous.GeneratedName],
+                EmptySystems = [previous.WithSystemNumber(2).GeneratedName],
+                DeferredSystems = [previous.WithSystemNumber(3).GeneratedName],
+                DeferredRanges = [new BoxelDeferredRangeSnapshot { Prefix = previous.Prefix, StartSystemNumber = 5 }],
+                SavedSearchFileName = "existing-search.json",
+            }
+        );
+        BoxelAddress next = differentRoot ? BoxelAddress.Parse("Praea Euq IL-P c5-1") : previous;
+
+        Assert.True(
+            state.TryActivate(
+                new BoxelSearchActivationRequest
+                {
+                    TopBoxel = next,
+                    LowMassCode = 'c',
+                    StartedOn = new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero),
+                },
+                out _
+            )
+        );
+        state.MergeSpanshSystems([Observation(next.WithSystemNumber(0).Name), Observation(next.Name)]);
+
+        Assert.Equal(next.WithSystemNumber(0).Name, state.NextSystem);
+        Assert.Equal(2, state.CurrentCount);
+        Assert.Equal(0, state.TotalCompletedSystemCount);
+        Assert.All(state.Systems, system => Assert.False(system.IsComplete));
+        BoxelSearchSnapshot snapshot = state.CreateSnapshot();
+        Assert.Empty(snapshot.CompletedPrefixes);
+        Assert.Empty(snapshot.CompletedSystems);
+        Assert.Empty(snapshot.EmptySystems);
+        Assert.Empty(snapshot.DeferredSystems);
+        Assert.Empty(snapshot.DeferredRanges);
+        Assert.Null(snapshot.SavedSearchFileName);
+    }
+
     [Fact]
     public void ActivationUsesEnteredSystemSuffixAsInitialExpectedCount()
     {
