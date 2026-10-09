@@ -6,6 +6,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
 

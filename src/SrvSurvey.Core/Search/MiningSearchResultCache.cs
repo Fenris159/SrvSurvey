@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace SrvSurvey.Core.Search;
 
 /// <summary>Stores completed mining search presentations by their complete filter key.</summary>
-public sealed class MiningSearchResultCache(string dataDirectory)
+public sealed class MiningSearchResultCache(string dataDirectory) : IMiningSearchResultStore
 {
     private const int SchemaVersion = 1;
     private static readonly ConcurrentDictionary<string, MiningSearchResultCache> SharedCaches = new(

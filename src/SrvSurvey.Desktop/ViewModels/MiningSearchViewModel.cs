@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
@@ -17,19 +16,6 @@ public sealed class MiningSearchViewModel(
     MiningCommunityCache? community = null
 ) : WorkspaceObservable, IDisposable
 {
-    private sealed class AcquireMarketCursor(MiningSystemResult[] supporters, GalacticCoordinate? origin)
-    {
-        public MiningSystemResult[] Supporters { get; } = supporters;
-        public GalacticCoordinate? Origin { get; } = origin;
-        public Queue<(MiningSystemResult Target, MiningSystemResult Supporter, bool FromCache)> Targets { get; } =
-            new();
-        public HashSet<string> Seen { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public int SupporterIndex { get; set; }
-        public MiningSystemResult? CurrentSupporter { get; set; }
-        public int BubblePage { get; set; }
-        public bool ReferenceChecked { get; set; }
-    }
-
     private const string AllSystems = "All systems";
     private const string PlatinumMineral = "Platinum";
     private const string ReinforceObjective = "Reinforce";
@@ -46,14 +32,12 @@ public sealed class MiningSearchViewModel(
     private const string HotspotRing = "Hotspots";
     private const string WithoutHotspotsRing = "Without Hotspots";
     private const string IdleStatus = "Choose a reference system to search.";
-    private MiningSearchResultCache? resultCache;
-    private bool restoringCachedSearch;
+    private const string PowerplayWorkspace = "powerplay";
+    private MiningSearchSession<PowerplaySearchSnapshot>? searchSession;
     private bool restoredPowerplaySearch;
-    private bool preserveRestoredReference;
     private bool preserveRestoredPower;
     private bool planetaryStatusHooked;
     public SurfaceMiningSearchViewModel PlanetarySearch { get; } = new(client, 30);
-    private CancellationTokenSource? pending;
     private string status = IdleStatus;
     private MiningSearchPreferences options = new();
     private IReadOnlyList<MiningRing> rings = [];
@@ -64,7 +48,6 @@ public sealed class MiningSearchViewModel(
     private MiningMarketResult? selectedMarket;
     private MiningSystemResult? selectedSystem;
     private PlatinumSpotRowViewModel? selectedPlatinumSpot;
-    private bool busy;
     private readonly WorkspaceTableSorter ringSorter = new();
     private readonly WorkspaceTableSorter marketSorter = new();
     private readonly WorkspaceTableSorter traderSorter = new();
@@ -218,24 +201,12 @@ public sealed class MiningSearchViewModel(
         get => options.Reference;
         set
         {
-            if (!restoringCachedSearch)
-            {
-                preserveRestoredReference = false;
-            }
-
-            string next = value ?? "";
-            if (next.Length == 0 && currentSystem.Length > 0)
-            {
-                next = currentSystem;
-            }
-
-            bool restored = string.IsNullOrEmpty(value) && next.Length > 0;
-            referenceTracksCommander = next.Equals(currentSystem, StringComparison.OrdinalIgnoreCase);
+            string next = Session.Reference.Edit(value, out bool refilled);
             if (Set(ref options, options with { Reference = next }))
             {
                 Changed(nameof(PowerplaySummary));
             }
-            else if (restored)
+            else if (refilled)
             {
                 Changed(nameof(Reference));
             }
@@ -526,46 +497,38 @@ public sealed class MiningSearchViewModel(
     private string planningTarget = "";
     private string planningObjective = "";
     private string miningOrigin = "";
-    private string currentSystem = "";
-    private bool referenceTracksCommander;
     private bool powerplayPrepared;
-    public string CurrentSystem => currentSystem;
+    public string CurrentSystem => Session.Reference.CurrentSystem;
     public bool HasPlan => planningTarget.Length > 0;
     public string PlanningContext =>
         planningTarget.Length == 0 ? "" : $"{planningObjective} destination: {planningTarget} · Mining: {miningOrigin}";
 
     public void UpdateCurrentLocation(string system)
     {
-        string next = system ?? "";
-        string previous = currentSystem;
-        Set(ref currentSystem, next, nameof(CurrentSystem));
-        if (next.Length == 0 || preserveRestoredReference)
+        string previous = CurrentSystem;
+        bool follow = Session.Reference.Move(system, Reference, out string next);
+        if (!previous.Equals(next, StringComparison.Ordinal))
         {
-            return;
+            Changed(nameof(CurrentSystem));
         }
 
-        if (
-            referenceTracksCommander
-            || Reference.Length == 0
-            || Reference.Equals(previous, StringComparison.OrdinalIgnoreCase)
-        )
+        if (follow)
         {
-            referenceTracksCommander = true;
             Reference = next;
         }
     }
 
     public void UseCurrentLocation()
     {
-        if (currentSystem.Length == 0)
+        if (CurrentSystem.Length == 0)
         {
             Status = "Current system is not available from the journal yet.";
             return;
         }
 
-        Reference = currentSystem;
+        Reference = CurrentSystem;
         Page = 0;
-        Status = $"Reference system set to {currentSystem}.";
+        Status = $"Reference system set to {CurrentSystem}.";
     }
 
     public void PreparePowerplay()
@@ -587,10 +550,10 @@ public sealed class MiningSearchViewModel(
             Mineral = AnyPower;
         }
 
-        if (currentSystem.Length > 0)
+        if (CurrentSystem.Length > 0)
         {
-            referenceTracksCommander = true;
-            Reference = currentSystem;
+            Session.Reference.Follow();
+            Reference = CurrentSystem;
         }
     }
 
@@ -670,7 +633,7 @@ public sealed class MiningSearchViewModel(
         get => pledgedPower;
         set
         {
-            if (!restoringCachedSearch)
+            if (!Session.IsRestoring)
             {
                 preserveRestoredPower = false;
             }
@@ -1079,11 +1042,7 @@ public sealed class MiningSearchViewModel(
     }
 
     public bool ShowSearchStatus => status.Length > 0 && status != IdleStatus;
-    public bool IsBusy
-    {
-        get => busy;
-        private set => Set(ref busy, value);
-    }
+    public bool IsBusy => Session.IsBusy;
     public ICommand SortCommand =>
         sortCommand ??= new WorkspaceParameterCommand(parameter =>
         {
@@ -1172,7 +1131,7 @@ public sealed class MiningSearchViewModel(
                         )
                     );
                 }
-                catch (Exception ex) when (Source == "Both" && IsProviderFailure(ex))
+                catch (Exception ex) when (Source == "Both" && MiningProviderFailure.Is(ex))
                 {
                     offline = true;
                 }
@@ -1228,7 +1187,7 @@ public sealed class MiningSearchViewModel(
                         )
                     );
                 }
-                catch (Exception ex) when (Source == "Both" && IsProviderFailure(ex))
+                catch (Exception ex) when (Source == "Both" && MiningProviderFailure.Is(ex))
                 {
                     offline = true;
                 }
@@ -1353,7 +1312,7 @@ public sealed class MiningSearchViewModel(
                 .FirstOrDefault(s => Same(s.Name, Reference))
                 ?.Position;
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             return null;
         } // Unknown coordinates must not be interpreted as zero distance.
@@ -1377,6 +1336,27 @@ public sealed class MiningSearchViewModel(
     private bool MatchesPowerplaySystem(MiningSystemResult system) =>
         PowerplayPlan.Matches(Objective, system, PledgedPower, OpposingPower)
         && PowerplayPlan.MatchesOppositionCount(Objective, OpposingPower, system, PledgedPower);
+
+    private PowerplaySearchFilters PowerplayFilters() =>
+        new(Reference, Objective, PledgedPower, OpposingPower)
+        {
+            PowerState = PowerState,
+            Security = Security,
+            Allegiance = Allegiance,
+            Government = Government,
+            State = State,
+            Economy = Economy,
+            MinimumPopulation = MinimumPopulation,
+            States = StateChips.Selected.ToArray(),
+            ForceIncludeReference = ForceIncludeReference,
+            ResultLimit = ResultLimit,
+            MinimumDemand = MinimumDemand,
+            MaximumDemand = MaximumDemand,
+            MarketFreshness = MarketFreshness,
+            PadSize = PadSize,
+        };
+
+    private PowerplayAcquireSearch Acquire() => new(client, PowerplayFilters());
 
     private MiningSystemResult[] SystemsWithRings(
         IReadOnlyList<MiningSystemResult> known,
@@ -1600,9 +1580,6 @@ public sealed class MiningSearchViewModel(
 
     private static bool Same(string left, string right) => left.Equals(right, StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsProviderFailure(Exception ex) =>
-        ex is HttpRequestException or System.Text.Json.JsonException or IOException or InvalidDataException;
-
     public Task SearchAllMarketsAsync()
     {
         SystemOnly = false;
@@ -1719,12 +1696,9 @@ public sealed class MiningSearchViewModel(
 
     private async Task SearchAcquisitionTargetsAsync(CancellationToken token)
     {
-        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync(FortifiedState, token, galaxyWide: true))
-            .Concat(await CollectPowerSystemsAsync(StrongholdState, token, galaxyWide: true))
-            .Where(system => system.Position is not null)
-            .OrderBy(system => system.Distance ?? double.MaxValue)
-            .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        PowerplayAcquireSearch acquire = Acquire();
+        MiningSystemResult[] supporters = await acquire.SupportersAsync(requirePosition: true, token);
+        token.ThrowIfCancellationRequested();
         if (supporters.Length == 0)
         {
             Systems = [];
@@ -1736,11 +1710,11 @@ public sealed class MiningSearchViewModel(
         var pairs = new List<(MiningSystemResult Target, MiningSystemResult Miner)>();
         int candidateLimit = Math.Min(30, ResultLimit * 3);
         int evaluatedPairCount = -1;
-        await AddViableReferenceAcquisitionPairsAsync(supporters, pairs, token);
+        await AddViableReferenceAcquisitionPairsAsync(acquire, supporters, pairs, token);
         foreach (MiningSystemResult supporter in supporters)
         {
             token.ThrowIfCancellationRequested();
-            await AddAcquisitionPairsForSupporterAsync(supporter, origin, pairs, token);
+            AddAcquisitionPairs(supporter, await acquire.BubbleTargetsAsync(supporter, token), origin, pairs);
 
             if (
                 pairs.Count == evaluatedPairCount
@@ -1765,6 +1739,7 @@ public sealed class MiningSearchViewModel(
             await PublishAcquisitionCandidatesAsync(pairs, int.MaxValue, token);
         }
 
+        token.ThrowIfCancellationRequested();
         if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
         {
             Status =
@@ -1800,50 +1775,23 @@ public sealed class MiningSearchViewModel(
         );
     }
 
-    private async Task AddAcquisitionPairsForSupporterAsync(
+    private static void AddAcquisitionPairs(
         MiningSystemResult supporter,
+        IReadOnlyList<MiningSystemResult> targets,
         GalacticCoordinate? origin,
-        List<(MiningSystemResult Target, MiningSystemResult Miner)> pairs,
-        CancellationToken token
+        List<(MiningSystemResult Target, MiningSystemResult Miner)> pairs
     )
     {
-        var query = new MiningSystemQuery(
-            supporter.System,
-            PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
-            Security.Trim(),
-            Allegiance.Trim(),
-            Government.Trim(),
-            IsAny(State) ? "" : State.Trim(),
-            Economy.Trim(),
-            "",
-            "",
-            MinimumPopulation,
-            0,
-            PowerplayPlan.Acquire
-        );
-        int pageIndex = 0;
-        bool hasMore = true;
-        while (hasMore)
+        foreach (MiningSystemResult candidate in targets)
         {
-            MiningSystemPage bubble = await LoadAcquireBubbleAsync(query with { Page = pageIndex }, token);
-            foreach (
-                MiningSystemResult candidate in bubble.Systems.Where(candidate =>
-                    PowerplayPlan.IsAcquisitionTarget(candidate, PowerState)
-                )
-            )
+            if (ContainsAcquisitionPair(pairs, candidate.System, supporter.System))
             {
-                if (ContainsAcquisitionPair(pairs, candidate.System, supporter.System))
-                {
-                    continue;
-                }
-
-                pairs.Add(
-                    (candidate with { Distance = PowerplayPlan.TravelDistance(origin, candidate.Position) }, supporter)
-                );
+                continue;
             }
 
-            hasMore = bubble.HasMore;
-            pageIndex++;
+            pairs.Add(
+                (candidate with { Distance = PowerplayPlan.TravelDistance(origin, candidate.Position) }, supporter)
+            );
         }
     }
 
@@ -1854,6 +1802,7 @@ public sealed class MiningSearchViewModel(
     ) => pairs.Any(pair => Same(pair.Target.System, target) && Same(pair.Miner.System, miner));
 
     private async Task AddViableReferenceAcquisitionPairsAsync(
+        PowerplayAcquireSearch acquire,
         IReadOnlyList<MiningSystemResult> supporters,
         List<(MiningSystemResult Target, MiningSystemResult Miner)> pairs,
         CancellationToken token
@@ -1864,12 +1813,7 @@ public sealed class MiningSearchViewModel(
             return;
         }
 
-        IReadOnlyList<MiningSystemResult> found = await client.FindSystemsByNameAsync(Reference, [Reference], token);
-        MiningSystemResult? target = found.FirstOrDefault(system =>
-            Same(system.System, Reference)
-            && PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-            && MatchesForcedAcquisitionFilters(system)
-        );
+        MiningSystemResult? target = await acquire.ForcedReferenceTargetAsync(token);
         if (target?.Position is not { } position)
         {
             return;
@@ -1890,7 +1834,7 @@ public sealed class MiningSearchViewModel(
             SelectedMinerals.Length > 0
                 ? SelectedMinerals
                 : PowerplayMinerals.Where(PlanetaryMiningPlan.IsEdpmCommodity).ToArray();
-        MiningMarketResult[] imports = await AcquireImportsAsync(target.System, materials, token);
+        MiningMarketResult[] imports = await acquire.ImportsAsync(target.System, materials, token);
         if (imports.Length == 0)
         {
             return;
@@ -1989,7 +1933,7 @@ public sealed class MiningSearchViewModel(
                 )
                 .ToArray();
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             // Missing live progress must not discard otherwise valid acquisition pairs.
         }
@@ -2026,11 +1970,12 @@ public sealed class MiningSearchViewModel(
                 token
             );
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
-            Status = RequestFailed;
+            Session.Publish(() => Status = RequestFailed, token);
         }
 
+        token.ThrowIfCancellationRequested();
         AcquireRows = pairs
             .GroupBy(pair => pair.Target.System, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
@@ -2192,14 +2137,15 @@ public sealed class MiningSearchViewModel(
         string[] materials =
             named.Length > 0 ? named : PowerplayMinerals.Where(PlanetaryMiningPlan.IsEdpmCommodity).ToArray();
         int stationLimit = MiningMaterialSelection.StationLimit(MineralChips.Selected, acquire: true);
+        PowerplayAcquireSearch acquire = Acquire();
         foreach (string system in systems.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             try
             {
-                IReadOnlyList<MiningMarketResult> imports = await AcquireImportsAsync(system, materials, token);
+                IReadOnlyList<MiningMarketResult> imports = await acquire.ImportsAsync(system, materials, token);
                 quotes.AddRange(FilterStationQuotes(imports, named, stationLimit));
             }
-            catch (Exception ex) when (IsProviderFailure(ex))
+            catch (Exception ex) when (MiningProviderFailure.Is(ex))
             {
                 Status = RequestFailed;
             }
@@ -2233,38 +2179,6 @@ public sealed class MiningSearchViewModel(
                     .DistinctBy(market => MiningCommodityName.Key(market.Commodity), StringComparer.Ordinal)
                     .Take(stationLimit)
             );
-
-    private async Task<IReadOnlyList<MiningSystemResult>> CollectPowerSystemsAsync(
-        string state,
-        CancellationToken token,
-        bool galaxyWide = false
-    )
-    {
-        if (galaxyWide)
-        {
-            return await client.FindAcquireSupportersAsync(Reference, PledgedPower, state, token);
-        }
-
-        var all = new List<MiningSystemResult>();
-        int pageIndex = 0;
-        bool hasMore = true;
-        while (hasMore)
-        {
-            MiningSystemPage resultPage = await client.FindSystemPageAsync(
-                new MiningSystemQuery(Reference, Radius, Power: PledgedPower, PowerState: state, Page: pageIndex),
-                token
-            );
-            all.AddRange(
-                resultPage.Systems.Where(system =>
-                    PowerplayPlan.SamePower(system.Power, PledgedPower) && Same(system.PowerState, state)
-                )
-            );
-            hasMore = resultPage.HasMore;
-            pageIndex++;
-        }
-
-        return all;
-    }
 
     public Task SearchSystemsAsync() =>
         Run(
@@ -2321,7 +2235,9 @@ public sealed class MiningSearchViewModel(
                 result = await IncludeReferenceSystemIfEligibleAsync(result, query, token);
                 token.ThrowIfCancellationRequested();
                 Systems = result;
+                token.ThrowIfCancellationRequested();
                 await PublishMeritRowsAsync(token);
+                token.ThrowIfCancellationRequested();
                 Status = MeritRows.Count + " locations, best sell price first. " + source + ". " + Status;
             },
             cacheSearch: true
@@ -2417,15 +2333,22 @@ public sealed class MiningSearchViewModel(
             );
             if (ForceIncludeReference && !radiusMarkets.Any(market => Same(market.System, Reference)))
             {
-                MiningMarketResult[] referenceQuotes = await AcquireImportsAsync(Reference, pricedCommodities, token);
+                MiningMarketResult[] referenceQuotes = await Acquire()
+                    .ImportsAsync(Reference, pricedCommodities, token);
                 radiusMarkets = radiusMarkets
                     .Concat(referenceQuotes.Select(quote => quote with { Distance = 0 }))
                     .ToArray();
             }
             (IReadOnlyList<MiningRing> foundRings, IReadOnlyList<MiningMarketResult> foundMarkets) =
                 await RingsForBestPricesAsync(hotspotMinerals, radiusMarkets, token);
-            Systems = await CompleteSystemRecordsAsync(SystemsWithRings(Systems, foundRings), token);
-            MeritRows = await PresentRowsAsync(
+            MiningSystemResult[] completedSystems = await CompleteSystemRecordsAsync(
+                SystemsWithRings(Systems, foundRings),
+                token
+            );
+            token.ThrowIfCancellationRequested();
+            Systems = completedSystems;
+            token.ThrowIfCancellationRequested();
+            MeritSystemRowViewModel[] presented = await PresentRowsAsync(
                 PowerplayMeritRank.Compose(
                     Systems,
                     foundRings,
@@ -2436,6 +2359,9 @@ public sealed class MiningSearchViewModel(
                 commodity,
                 token
             );
+            token.ThrowIfCancellationRequested();
+            MeritRows = presented;
+            token.ThrowIfCancellationRequested();
             Status =
                 priceSource
                 + " prices for "
@@ -2443,10 +2369,10 @@ public sealed class MiningSearchViewModel(
                 + "."
                 + PriceMarkNote;
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
-            MeritRows = [];
-            Status = RequestFailed;
+            Session.Publish(() => MeritRows = [], token);
+            Session.Publish(() => Status = RequestFailed, token);
         }
     }
 
@@ -2492,22 +2418,12 @@ public sealed class MiningSearchViewModel(
             Objective == AcquireObjective
                 ? "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked."
                 : "No sell station has a matching surface mining body within the distance.";
-        var acquisitionSources = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        var sellSystemDetails = new Dictionary<string, SurfaceSellSystemDetails>(StringComparer.OrdinalIgnoreCase);
-        PlanetarySearch.SellSystemDetailsFor = system => sellSystemDetails.GetValueOrDefault(system);
-        PlanetarySearch.MiningSystemsForSell = system =>
-            Objective == AcquireObjective
-                ? acquisitionSources.GetValueOrDefault(system) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                : new HashSet<string>([system], StringComparer.OrdinalIgnoreCase);
-        PlanetarySearch.EligibleSellSystemsAsync = async (systems, filterToken) =>
-            await EligiblePlanetarySellSystemsAsync(systems, acquisitionSources, sellSystemDetails, filterToken);
-        PlanetarySearch.AdditionalMarketQuotesAsync = null;
-        if (acquire)
-        {
-            AcquireMarketCursor cursor = await CreateAcquireMarketCursorAsync(token);
-            PlanetarySearch.AdditionalMarketQuotesAsync = (wanted, filterToken) =>
-                FindPlanetaryAcquireQuotesAsync(cursor, wanted, acquisitionSources, sellSystemDetails, filterToken);
-        }
+        SurfaceSellMarketRules rules = await new PowerplayPlanetarySellMarkets(client, PowerplayFilters()).RulesAsync(
+            ResolveOriginAsync,
+            token
+        );
+        token.ThrowIfCancellationRequested();
+        PlanetarySearch.SellMarketRules = rules;
         PlanetarySearch.Materials.Selected.Clear();
         foreach (string material in SelectedPlanetaryMaterials())
         {
@@ -2515,484 +2431,8 @@ public sealed class MiningSearchViewModel(
         }
 
         await PlanetarySearch.SearchAsync(token);
+        token.ThrowIfCancellationRequested();
         Status = PlanetarySearch.Status;
-    }
-
-    private async Task<IReadOnlyList<MiningMarketResult>> FindPlanetaryAcquireQuotesAsync(
-        AcquireMarketCursor cursor,
-        IReadOnlyList<string> materials,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        if (ForceIncludeReference && !cursor.ReferenceChecked)
-        {
-            cursor.ReferenceChecked = true;
-            IReadOnlyList<MiningMarketResult> forced = await FindForcedAcquireReferenceQuotesAsync(
-                cursor,
-                materials,
-                acquisitionSources,
-                sellSystemDetails,
-                token
-            );
-            if (forced.Count > 0)
-            {
-                return forced;
-            }
-        }
-
-        return await FindAdditionalAcquireMarketsAsync(cursor, materials, acquisitionSources, sellSystemDetails, token);
-    }
-
-    private async Task<AcquireMarketCursor> CreateAcquireMarketCursorAsync(CancellationToken token)
-    {
-        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync(FortifiedState, token, galaxyWide: true))
-            .Concat(await CollectPowerSystemsAsync(StrongholdState, token, galaxyWide: true))
-            .OrderBy(system => system.Distance ?? double.MaxValue)
-            .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        GalacticCoordinate? origin = await ResolveOriginAsync(token);
-        if (origin is null)
-        {
-            IReadOnlyList<MiningSystemResult> reference = await client.FindSystemsByNameAsync(
-                Reference,
-                [Reference],
-                token
-            );
-            origin = reference.FirstOrDefault(system => Same(system.System, Reference))?.Position;
-        }
-
-        return new AcquireMarketCursor(supporters, origin);
-    }
-
-    private async Task<IReadOnlyList<MiningMarketResult>> FindForcedAcquireReferenceQuotesAsync(
-        AcquireMarketCursor cursor,
-        IReadOnlyList<string> materials,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        IReadOnlyList<MiningSystemResult> found = await client.FindSystemsByNameAsync(Reference, [Reference], token);
-        MiningSystemResult? target = found.FirstOrDefault(system =>
-            Same(system.System, Reference)
-            && PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-            && MatchesForcedAcquisitionFilters(system)
-        );
-        if (target is null)
-        {
-            return [];
-        }
-
-        HashSet<string> sources = await FindNearbyAcquisitionSourcesAsync(target.System, token);
-        if (sources.Count == 0)
-        {
-            return [];
-        }
-
-        MiningMarketResult[] imports = await AcquireImportsAsync(target.System, materials, token);
-        if (imports.Length == 0)
-        {
-            return [];
-        }
-
-        acquisitionSources[target.System] = sources;
-        sellSystemDetails[target.System] = new SurfaceSellSystemDetails(
-            target.PowerState,
-            target.State,
-            target.NearbyPowers.Count > 0 ? target.NearbyPowers : [target.Power],
-            0
-        )
-        {
-            Conflict = target.Conflict,
-            ControllingPower = target.Power,
-            ControlProgress = target.ControlProgress,
-        };
-        cursor.Seen.Add(target.System);
-        return imports.Select(quote => quote with { Distance = 0 }).ToArray();
-    }
-
-    private async Task<IReadOnlyList<MiningMarketResult>> FindAdditionalAcquireMarketsAsync(
-        AcquireMarketCursor cursor,
-        IReadOnlyList<string> materials,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        List<MiningMarketResult> quotes;
-        do
-        {
-            IReadOnlyList<MiningSystemResult> candidates = await CollectAcquireMarketBatchAsync(
-                cursor,
-                acquisitionSources,
-                sellSystemDetails,
-                token
-            );
-            if (candidates.Count == 0)
-            {
-                return [];
-            }
-
-            quotes = [];
-            foreach (string system in candidates.Select(target => target.System))
-            {
-                MiningMarketResult[] imports = await AcquireImportsAsync(system, materials, token);
-                double? distance = sellSystemDetails[system].DistanceLy;
-                quotes.AddRange(imports.Select(quote => quote with { Distance = distance }));
-            }
-        } while (quotes.Count == 0);
-
-        return quotes;
-    }
-
-    private async Task<IReadOnlyList<MiningSystemResult>> CollectAcquireMarketBatchAsync(
-        AcquireMarketCursor cursor,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        var candidates = new List<MiningSystemResult>();
-        var cachedCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (candidates.Count < ResultLimit && await FillAcquireTargetQueueAsync(cursor, token))
-        {
-            (MiningSystemResult target, MiningSystemResult supporter, bool fromCache) = cursor.Targets.Dequeue();
-            if (!MatchesSelectedAcquisitionStates(target))
-            {
-                continue;
-            }
-
-            var sources = cursor
-                .Supporters.Where(source =>
-                    source.Position is { } origin
-                    && target.Position is { } position
-                    && origin.DistanceTo(position) <= PowerplayPlan.AcquisitionReachLy(source.PowerState)
-                )
-                .Select(source => source.System)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            sources.Add(supporter.System);
-            acquisitionSources[target.System] = sources;
-            double? distance = PowerplayPlan.TravelDistance(cursor.Origin, target.Position);
-            if (distance is null)
-            {
-                IReadOnlyList<MiningSystemResult> located = await client.FindSystemsByNameAsync(
-                    Reference,
-                    [target.System],
-                    token
-                );
-                distance = located.FirstOrDefault(system => Same(system.System, target.System))?.Distance;
-            }
-
-            sellSystemDetails[target.System] = new SurfaceSellSystemDetails(
-                target.PowerState,
-                target.State,
-                target.NearbyPowers.Count > 0 ? target.NearbyPowers : [target.Power],
-                distance
-            )
-            {
-                Conflict = target.Conflict,
-                ControllingPower = target.Power,
-                ControlProgress = target.ControlProgress,
-            };
-            candidates.Add(target);
-            if (fromCache)
-            {
-                cachedCandidates.Add(target.System);
-            }
-        }
-
-        await RefreshAcquireCandidatesAsync(candidates, cachedCandidates, acquisitionSources, sellSystemDetails, token);
-        return candidates;
-    }
-
-    private async Task RefreshAcquireCandidatesAsync(
-        List<MiningSystemResult> candidates,
-        HashSet<string> cachedCandidates,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        if (cachedCandidates.Count == 0)
-        {
-            return;
-        }
-
-        try
-        {
-            IReadOnlyList<MiningSystemResult> live = await client.FindSystemsByNameAsync(
-                Reference,
-                cachedCandidates.ToArray(),
-                token
-            );
-            var liveByName = live.ToDictionary(system => system.System, StringComparer.OrdinalIgnoreCase);
-            for (int index = candidates.Count - 1; index >= 0; index--)
-            {
-                MiningSystemResult candidate = candidates[index];
-                if (!liveByName.TryGetValue(candidate.System, out MiningSystemResult? current))
-                {
-                    continue;
-                }
-
-                if (!PowerplayPlan.IsAcquisitionTarget(current, PowerState))
-                {
-                    acquisitionSources.Remove(candidate.System);
-                    sellSystemDetails.Remove(candidate.System);
-                    candidates.RemoveAt(index);
-                    continue;
-                }
-
-                candidates[index] = current with { Distance = candidate.Distance };
-                SurfaceSellSystemDetails details = sellSystemDetails[candidate.System];
-                sellSystemDetails[candidate.System] = details with
-                {
-                    PowerState = current.PowerState,
-                    FactionState = current.State,
-                    Powers = current.NearbyPowers.Count > 0 ? current.NearbyPowers : [current.Power],
-                    Conflict = current.Conflict,
-                    ControllingPower = current.Power,
-                    ControlProgress = current.ControlProgress,
-                };
-            }
-        }
-        catch (Exception ex) when (IsProviderFailure(ex))
-        {
-            // Candidate geometry remains useful when a live progress lookup fails.
-        }
-    }
-
-    private bool MatchesSelectedAcquisitionStates(MiningSystemResult target) =>
-        !StateChips.Selected.Any(state => !IsAny(state)) || StateChips.Selected.Any(state => Same(state, target.State));
-
-    private bool MatchesForcedAcquisitionFilters(MiningSystemResult target) =>
-        MatchesSelectedAcquisitionStates(target)
-        && MatchesOptional(Security, target.Security)
-        && MatchesOptional(Allegiance, target.Allegiance)
-        && MatchesOptional(Government, target.Government)
-        && MatchesOptional(Economy, target.Economy)
-        && target.Population >= MinimumPopulation;
-
-    private async Task<bool> FillAcquireTargetQueueAsync(AcquireMarketCursor cursor, CancellationToken token)
-    {
-        while (cursor.Targets.Count == 0)
-        {
-            if (cursor.CurrentSupporter is null)
-            {
-                if (cursor.SupporterIndex >= cursor.Supporters.Length)
-                {
-                    return false;
-                }
-
-                cursor.CurrentSupporter = cursor.Supporters[cursor.SupporterIndex++];
-                cursor.BubblePage = 0;
-            }
-
-            MiningSystemResult supporter = cursor.CurrentSupporter;
-            var query = new MiningSystemQuery(
-                supporter.System,
-                PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
-                Security.Trim(),
-                Allegiance.Trim(),
-                Government.Trim(),
-                IsAny(State) ? "" : State.Trim(),
-                Economy.Trim(),
-                "",
-                "",
-                MinimumPopulation,
-                cursor.BubblePage,
-                AcquireObjective
-            );
-            MiningSystemPage bubble = await LoadAcquireBubbleAsync(query, token);
-            foreach (
-                MiningSystemResult target in bubble.Systems.Where(target =>
-                    PowerplayPlan.IsAcquisitionTarget(target, PowerState)
-                    && (PowerplayPlan.TravelDistance(supporter.Position, target.Position) ?? target.Distance)
-                        <= PowerplayPlan.AcquisitionReachLy(supporter.PowerState)
-                    && cursor.Seen.Add(target.System)
-                )
-            )
-            {
-                cursor.Targets.Enqueue((target, supporter, bubble.FromCache));
-            }
-
-            cursor.BubblePage++;
-            if (!bubble.HasMore)
-            {
-                cursor.CurrentSupporter = null;
-            }
-        }
-
-        return true;
-    }
-
-    private Task<MiningSystemPage> LoadAcquireBubbleAsync(MiningSystemQuery query, CancellationToken token) =>
-        IsAny(PowerState) && !StateChips.Selected.Any(state => !IsAny(state))
-            ? client.FindAcquireCandidatePageAsync(query, token)
-            : client.FindSystemPageAsync(query, token);
-
-    private async Task<MiningMarketResult[]> AcquireImportsAsync(
-        string system,
-        IReadOnlyList<string> materials,
-        CancellationToken token
-    )
-    {
-        var query = new MiningMarketQuery(
-            system,
-            "Any",
-            false,
-            ExcludeCarriers: true,
-            SystemOnly: true,
-            MinimumDemand: MinimumDemand,
-            MaximumDemand: MaximumDemand,
-            MaximumAge: MarketFreshness,
-            PadSize: PadSize
-        );
-        IReadOnlyList<MiningMarketResult> imports;
-        try
-        {
-            imports = await client.FindSystemImportsAsync(system, query, token);
-        }
-        catch (Exception ex) when (IsProviderFailure(ex))
-        {
-            imports = [];
-        }
-
-        MiningMarketResult[] matching = imports
-            .Where(quote => materials.Any(material => MiningCommodityName.Same(material, quote.Commodity)))
-            .ToArray();
-        if (matching.Length > 0)
-        {
-            return matching;
-        }
-
-        IReadOnlyList<MiningMarketResult> fallback = await client.FindSpanshSystemCommoditiesAsync(
-            Reference,
-            system,
-            token
-        );
-        return fallback
-            .Where(quote =>
-                materials.Any(material => MiningCommodityName.Same(material, quote.Commodity))
-                && quote.Demand >= MinimumDemand
-                && (MaximumDemand == 0 || quote.Demand <= MaximumDemand)
-                && (MarketFreshness is null || quote.Updated >= DateTimeOffset.UtcNow - MarketFreshness)
-                && MatchesAcquirePad(quote)
-            )
-            .ToArray();
-    }
-
-    private bool MatchesAcquirePad(MiningMarketResult quote) =>
-        PadSize switch
-        {
-            "L" => quote.LargePad == true,
-            "M" => quote.QuotedPad is "Medium",
-            "S" => quote.QuotedPad is "Small",
-            _ => true,
-        };
-
-    private async Task<IReadOnlySet<string>> EligiblePlanetarySellSystemsAsync(
-        IReadOnlyList<string> names,
-        Dictionary<string, HashSet<string>> acquisitionSources,
-        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
-        CancellationToken token
-    )
-    {
-        var eligible = names.Where(sellSystemDetails.ContainsKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        string[] unresolved = names.Where(name => !eligible.Contains(name)).ToArray();
-        if (unresolved.Length == 0)
-        {
-            return eligible;
-        }
-
-        IReadOnlyList<MiningSystemResult> found = await client.FindSystemsByNameAsync(Reference, unresolved, token);
-        string[] states = StateChips.Selected.Where(state => !IsAny(state)).ToArray();
-        foreach (MiningSystemResult system in found)
-        {
-            if (
-                Objective == AcquireObjective
-                && PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-                && !acquisitionSources.ContainsKey(system.System)
-            )
-            {
-                HashSet<string> sources = await FindNearbyAcquisitionSourcesAsync(system.System, token);
-                if (sources.Count > 0)
-                {
-                    acquisitionSources[system.System] = sources;
-                }
-            }
-
-            if (!IsEligiblePlanetarySellSystem(system, states, acquisitionSources))
-            {
-                continue;
-            }
-
-            eligible.Add(system.System);
-            sellSystemDetails[system.System] = new SurfaceSellSystemDetails(
-                system.PowerState,
-                system.State,
-                system.NearbyPowers.Count > 0 ? system.NearbyPowers : [system.Power],
-                system.Distance
-            )
-            {
-                Conflict = system.Conflict,
-                ControllingPower = system.Power,
-                ControlProgress = system.ControlProgress,
-            };
-        }
-
-        return eligible;
-    }
-
-    private bool IsEligiblePlanetarySellSystem(
-        MiningSystemResult system,
-        string[] states,
-        Dictionary<string, HashSet<string>> acquisitionSources
-    )
-    {
-        if (states.Length > 0 && !states.Any(state => Same(state, system.State)))
-        {
-            return false;
-        }
-
-        if (Objective == AcquireObjective)
-        {
-            return PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-                && acquisitionSources.ContainsKey(system.System);
-        }
-
-        return MatchesPowerplaySystem(system) && (IsAny(PowerState) || Same(system.PowerState, PowerState));
-    }
-
-    private async Task<HashSet<string>> FindNearbyAcquisitionSourcesAsync(string target, CancellationToken token)
-    {
-        var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        int pageIndex = 0;
-        bool hasMore = true;
-        while (hasMore)
-        {
-            MiningSystemPage nearby = await client.FindSystemPageAsync(
-                new MiningSystemQuery(target, PowerplayPlan.StrongholdReachLy, Power: PledgedPower, Page: pageIndex),
-                token
-            );
-            foreach (MiningSystemResult supporter in nearby.Systems)
-            {
-                if (
-                    PowerplayPlan.SamePower(supporter.Power, PledgedPower)
-                    && supporter.PowerState is FortifiedState or StrongholdState
-                    && supporter.Distance <= PowerplayPlan.AcquisitionReachLy(supporter.PowerState)
-                )
-                {
-                    sources.Add(supporter.System);
-                }
-            }
-
-            hasMore = nearby.HasMore;
-            pageIndex++;
-        }
-
-        return sources;
     }
 
     private async Task<MeritSystemRowViewModel[]> PresentRowsAsync(
@@ -3025,7 +2465,7 @@ public sealed class MiningSearchViewModel(
         {
             return await client.AverageSellPricesAsync(token);
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             return new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         }
@@ -3087,7 +2527,7 @@ public sealed class MiningSearchViewModel(
                 .ToArray();
             return extra.Length == 0 ? row : row with { Stations = extra };
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+        catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             return row;
         }
@@ -3233,7 +2673,7 @@ public sealed class MiningSearchViewModel(
                     token
                 );
             }
-            catch (Exception ex) when (IsProviderFailure(ex))
+            catch (Exception ex) when (MiningProviderFailure.Is(ex))
             {
                 missing.Add(commodity);
                 continue;
@@ -3271,7 +2711,7 @@ public sealed class MiningSearchViewModel(
                 token
             );
         }
-        catch (Exception ex) when (IsProviderFailure(ex) && reported.Count > 0)
+        catch (Exception ex) when (MiningProviderFailure.Is(ex) && reported.Count > 0)
         {
             return (reported, "Ardent; Spansh fallback unavailable");
         }
@@ -3585,7 +3025,7 @@ public sealed class MiningSearchViewModel(
         ResultLimit = 30;
         ForceIncludeReference = false;
         restoredPowerplaySearch = false;
-        preserveRestoredReference = false;
+        Session.Reference.Unpin();
         preserveRestoredPower = false;
         Page = 0;
         SystemOnly = false;
@@ -3618,10 +3058,10 @@ public sealed class MiningSearchViewModel(
 
     public MiningSearchPreferences SaveOptions() => options with { RingSearchMineral = SelectedRingMineral };
 
-    public void ConfigureResultCache(MiningSearchResultCache cache)
+    public void ConfigureResultCache(IMiningSearchResultStore cache)
     {
-        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
-        resultCache = cache;
+        Session.Store?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
+        Session.UseStore(cache, PowerplayWorkspace);
         cache.HideIrrelevantMaterialTagsChanged += SyncHideIrrelevantTags;
         PlanetarySearch.HideIrrelevantTagsChanged = value => cache.HideIrrelevantMaterialTags = value;
         PlanetarySearch.HideIrrelevantMaterialTags = cache.HideIrrelevantMaterialTags;
@@ -3634,7 +3074,7 @@ public sealed class MiningSearchViewModel(
 
     public void RestoreLastCompletedPowerplaySearch()
     {
-        if (resultCache?.LoadLast<PowerplaySearchSnapshot>("powerplay") is { } last)
+        if (Session.LoadLast() is { } last)
         {
             RestorePowerplaySnapshot(last, restoreFilters: true);
         }
@@ -3642,24 +3082,22 @@ public sealed class MiningSearchViewModel(
 
     private void SyncHideIrrelevantTags(bool value) => PlanetarySearch.HideIrrelevantMaterialTags = value;
 
-    internal string PowerplayCacheKey() =>
-        JsonSerializer.Serialize(
-            new
+    internal string PowerplayCacheKey() => Session.FilterKey();
+
+    private object PowerplayCacheFilters() =>
+        new
+        {
+            Options = options with
             {
-                Options = options with
-                {
-                    Reference = Reference.Trim().ToUpperInvariant(),
-                    PledgedPower = PledgedPower,
-                },
-                PledgedPower,
-                Objective,
-                MiningTypes = MiningTypeChips
-                    .Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
-                    .ToArray(),
-                Minerals = MineralChips.Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase).ToArray(),
-                States = StateChips.Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase).ToArray(),
-            }
-        );
+                Reference = Reference.Trim().ToUpperInvariant(),
+                PledgedPower = PledgedPower,
+            },
+            PledgedPower,
+            Objective,
+            MiningTypes = MiningTypeChips.Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase).ToArray(),
+            Minerals = MineralChips.Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase).ToArray(),
+            States = StateChips.Selected.OrderBy(item => item, StringComparer.OrdinalIgnoreCase).ToArray(),
+        };
 
     private PowerplaySearchSnapshot ExportPowerplaySnapshot() =>
         new(
@@ -3678,10 +3116,8 @@ public sealed class MiningSearchViewModel(
             PledgedPower = PledgedPower,
         };
 
-    private void RestorePowerplaySnapshot(PowerplaySearchSnapshot snapshot, bool restoreFilters)
-    {
-        restoringCachedSearch = true;
-        try
+    private void RestorePowerplaySnapshot(PowerplaySearchSnapshot snapshot, bool restoreFilters) =>
+        Session.Restore(() =>
         {
             if (restoreFilters)
             {
@@ -3703,12 +3139,7 @@ public sealed class MiningSearchViewModel(
             {
                 PlanetarySearch.ClearResults();
             }
-            Status = snapshot.SavedAt is { } savedAt
-                ? snapshot.Status
-                    + " Saved "
-                    + savedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
-                    + "; press Search to refresh."
-                : snapshot.Status;
+            Status = MiningSearchStatusText.Saved(snapshot.Status, snapshot.SavedAt);
             Changed(nameof(HasMeritRows));
             Changed(nameof(HasAcquireRows));
             Changed(nameof(IsPlanetaryAcquire));
@@ -3716,16 +3147,10 @@ public sealed class MiningSearchViewModel(
             if (restoreFilters)
             {
                 restoredPowerplaySearch = true;
-                preserveRestoredReference = true;
+                Session.Reference.Pin();
                 preserveRestoredPower = true;
-                referenceTracksCommander = false;
             }
-        }
-        finally
-        {
-            restoringCachedSearch = false;
-        }
-    }
+        });
 
     private static void RestoreSelections(MiningChipBoxViewModel chips, IReadOnlyList<string> selected)
     {
@@ -3770,32 +3195,23 @@ public sealed class MiningSearchViewModel(
         }
     }
 
-    private void TryRestorePowerplaySearch()
-    {
-        if (restoringCachedSearch || IsBusy || resultCache is null)
-        {
-            return;
-        }
-
-        if (resultCache.Load<PowerplaySearchSnapshot>("powerplay", PowerplayCacheKey()) is { } saved)
-        {
-            RestorePowerplaySnapshot(saved, restoreFilters: false);
-        }
-        else
-        {
-            MeritRows = [];
-            AcquireRows = [];
-            PlanetarySearch.ClearResults();
-        }
-    }
+    private void TryRestorePowerplaySearch() =>
+        Session.RestoreSaved(
+            saved => RestorePowerplaySnapshot(saved, restoreFilters: false),
+            () =>
+            {
+                MeritRows = [];
+                AcquireRows = [];
+                PlanetarySearch.ClearResults();
+            }
+        );
 
     public void LoadOptions(MiningSearchPreferences values)
     {
-        pending?.Cancel();
-        pending = null;
+        Session.Cancel();
         detectedPower = "";
         PledgedPower = AnyPower;
-        IsBusy = false;
+        Session.Abandon();
         Rings = [];
         Markets = [];
         Systems = [];
@@ -3806,7 +3222,7 @@ public sealed class MiningSearchViewModel(
         SystemOnly = false;
         powerplayPrepared = false;
         restoredPowerplaySearch = false;
-        preserveRestoredReference = false;
+        Session.Reference.Unpin();
         preserveRestoredPower = false;
         Objective = AllSystems;
         SelectedRing = null;
@@ -3899,79 +3315,69 @@ public sealed class MiningSearchViewModel(
 
     public void Cancel()
     {
-        pending?.Cancel();
+        Session.Cancel();
         PlanetarySearch.Cancel();
     }
 
     public void Dispose()
     {
-        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
-        pending?.Cancel();
-        pending?.Dispose();
-        pending = null;
+        Session.Store?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
+        searchSession?.Dispose();
         PlanetarySearch.Dispose();
         client.Dispose();
     }
 
-    private async Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false)
-    {
-        CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource(SearchTimeout());
-        pending = current;
-        IsBusy = true;
-        Status = "Searching…";
-        client.ResetDiagnostics();
-        CancellationToken token = current.Token;
-        try
-        {
-            if (previous is not null)
-            {
-                await previous.CancelAsync();
-            }
+    private MiningSearchSession<PowerplaySearchSnapshot> Session => searchSession ??= CreateSession();
 
-            token.ThrowIfCancellationRequested();
-            await action(token);
-            if (
-                cacheSearch
-                && pending == current
-                && resultCache is not null
-                && !Status.Contains(RequestFailed, StringComparison.Ordinal)
-            )
+    private MiningSearchSession<PowerplaySearchSnapshot> CreateSession()
+    {
+        var session = new MiningSearchSession<PowerplaySearchSnapshot>(
+            client,
+            PowerplayWorkspace,
+            PowerplayCacheFilters
+        );
+        session.BusyChanged += () => Changed(nameof(IsBusy));
+        return session;
+    }
+
+    private Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false) =>
+        Session.RunAsync(
+            token =>
             {
-                resultCache.Save("powerplay", PowerplayCacheKey(), ExportPowerplaySnapshot());
-                powerplayPrepared = true;
-            }
-        }
-        catch (OperationCanceledException)
+                token.ThrowIfCancellationRequested();
+                return action(token);
+            },
+            outcome => ReportSearch(outcome, cacheSearch),
+            new MiningSearchRunOptions(SearchTimeout(), InvalidOperationFails: true)
+        );
+
+    private void ReportSearch(MiningSearchOutcome outcome, bool cacheSearch)
+    {
+        switch (outcome.Kind)
         {
-            if (pending == current)
-            {
+            case MiningSearchOutcomeKind.Started:
+                Status = "Searching…";
+                break;
+            case MiningSearchOutcomeKind.Completed:
+                if (
+                    cacheSearch
+                    && Session.Store is not null
+                    && !Status.Contains(RequestFailed, StringComparison.Ordinal)
+                )
+                {
+                    Session.Save(ExportPowerplaySnapshot());
+                    powerplayPrepared = true;
+                }
+                break;
+            case MiningSearchOutcomeKind.Canceled:
                 Status = "Search canceled or timed out.";
-            }
-        }
-        catch (Exception ex)
-            when (ex
-                    is HttpRequestException
-                        or System.Text.Json.JsonException
-                        or ArgumentException
-                        or InvalidOperationException
-                        or IOException
-                        or InvalidDataException
-            )
-        {
-            if (pending == current)
-            {
-                Status = ex is ArgumentException ? ex.Message : RequestFailed;
-            }
-        }
-        finally
-        {
-            client.FlushDiagnostics();
-            if (pending == current)
-            {
-                pending = null;
-                IsBusy = false;
-            }
+                break;
+            case MiningSearchOutcomeKind.Failed:
+                Status = RequestFailed;
+                break;
+            default:
+                Status = outcome.Message;
+                break;
         }
     }
 
