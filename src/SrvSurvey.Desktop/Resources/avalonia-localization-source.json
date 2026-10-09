@@ -5353,7 +5353,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
@@ -6178,7 +6178,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Background",
@@ -15210,7 +15210,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Desktop overlay placement and VR calibration are stored independently.",
@@ -15251,14 +15251,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Desktop shortcut settings are unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
@@ -21756,7 +21748,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Game display {0}.",
@@ -21765,6 +21757,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Game keyboard polling failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
   },
   {
     "Text": "Game keyboard recording failed: {0}",
@@ -21957,7 +21957,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input is active.",
@@ -21965,7 +21965,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input is disabled.",
@@ -21989,7 +21989,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input stopped.",
@@ -21997,7 +21997,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input stopped: {0}",
@@ -22005,7 +22005,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input: listening on Elite display {0}.",
@@ -31656,7 +31656,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Next Elite window",
@@ -32586,22 +32586,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "No legacy top-center layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
-  },
-  {
-    "Text": "No legacy top-left layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
   },
   {
     "Text": "No live Guardian site detected",
@@ -37992,7 +37976,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Prior",
@@ -38000,7 +37984,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Prior colour \u0027{0}\u0027 referenced by \u0027{1}\u0027 was not found.",
@@ -42109,7 +42093,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Requires proper technique; hard impacts common",
@@ -42645,7 +42629,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Return a completed or empty system to the active survey.",
@@ -49989,6 +49973,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "SrvSurveyWindowOne",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
+  },
+  {
     "Text": "SrvSurveyWindowOne overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -50394,7 +50386,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Starting verified package download...",
@@ -59846,7 +59838,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
@@ -59862,7 +59854,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -61201,7 +61193,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Wayland portal",
@@ -61209,7 +61201,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Wayland screen capture",
@@ -62459,7 +62451,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "app",
@@ -62651,7 +62643,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "badge",
@@ -63035,7 +63027,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "bracketright",
@@ -63043,7 +63035,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "break",
@@ -63419,7 +63411,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "commander journal publication upload credential api key flight log",
@@ -64019,7 +64011,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "error",
@@ -64611,7 +64603,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "green",
@@ -65595,7 +65587,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "missile",
@@ -66187,7 +66179,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "pilots-federation",
@@ -66755,7 +66747,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "sensor",
@@ -66963,7 +66955,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "slot",
@@ -67003,7 +66995,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "spansh.co.uk",
@@ -68732,7 +68724,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "{0} Win32 error {1}.",
