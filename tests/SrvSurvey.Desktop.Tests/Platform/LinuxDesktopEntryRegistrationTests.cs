@@ -2,10 +2,12 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+/// <summary>Verifies host application identity without modifying the real desktop's launchers.</summary>
 public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
 {
     private readonly string root = Directory.CreateTempSubdirectory("SrvSurvey-desktop-identity-").FullName;
 
+    /// <summary>Honors absolute XDG data directories and falls back when an override is absent or relative.</summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -23,6 +25,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         );
     }
 
+    /// <summary>Keeps launchers usable after an AppImage mount disappears, with a process-path fallback.</summary>
     [Fact]
     public void LauncherUsesTheStableAppImageInsteadOfItsTemporaryMount()
     {
@@ -40,6 +43,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         );
     }
 
+    /// <summary>Rejects missing paths and line breaks that could inject desktop-entry fields.</summary>
     [Theory]
     [InlineData(null)]
     [InlineData(" ")]
@@ -50,6 +54,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         Assert.Throws<InvalidDataException>(() => LinuxDesktopEntryRegistration.ResolveExecutable(null, executable));
     }
 
+    /// <summary>Reuses an installed system launcher without hiding it behind a user-level entry.</summary>
     [Fact]
     public async Task ExistingSystemLauncherIsNotHiddenByAUserOverride()
     {
@@ -63,6 +68,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         Assert.Equal(metadata, await File.ReadAllTextAsync(systemFile));
     }
 
+    /// <summary>Preserves unowned user launchers, including wrapper commands and custom metadata.</summary>
     [Fact]
     public async Task ExistingUserLauncherKeepsItsCustomLaunchCommand()
     {
@@ -80,6 +86,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         Assert.Equal(metadata, await File.ReadAllTextAsync(launcher));
     }
 
+    /// <summary>Refreshes managed launch paths while retaining metadata and avoiding unchanged rewrites.</summary>
     [Fact]
     public async Task MovedAppImageKeepsExistingLauncherMetadataAndAvoidsRedundantWrites()
     {
@@ -104,6 +111,7 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         Assert.Empty(Directory.GetFiles(user, "*.tmp"));
     }
 
+    /// <summary>Leaves the original entry intact when validation fails or an update is canceled.</summary>
     [Fact]
     public async Task CancellationAndInvalidMetadataPreserveTheExistingEntry()
     {
@@ -126,5 +134,6 @@ public sealed class LinuxDesktopEntryRegistrationTests : IDisposable
         Assert.Empty(Directory.GetFiles(user, "*.tmp"));
     }
 
+    /// <summary>Removes the isolated application directory after each test.</summary>
     public void Dispose() => Directory.Delete(root, recursive: true);
 }

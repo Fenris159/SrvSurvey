@@ -257,15 +257,20 @@ public sealed class DbusGlobalShortcutSessionTests
         Assert.Equal(sandboxed ? 0 : 1, preparationCalls);
     }
 
+    /// <summary>Classifies file, permission and malformed-entry failures as permanent setup errors while preserving cancellation.</summary>
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DesktopEntryFailureIsReportedBeforeAnyPortalRequest(bool denied)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task DesktopEntryFailureIsReportedBeforeAnyPortalRequest(int failureKind)
     {
         var registry = new FakeRegistry(null);
-        Exception cause = denied
-            ? new UnauthorizedAccessException("read-only data directory")
-            : new IOException("desktop entry unavailable");
+        Exception cause = failureKind switch
+        {
+            0 => new IOException("desktop entry unavailable"),
+            1 => new UnauthorizedAccessException("read-only data directory"),
+            _ => new InvalidDataException("desktop entry has no Desktop Entry section"),
+        };
         PortalShortcutRegistrationException failure = await Assert.ThrowsAsync<PortalShortcutRegistrationException>(
             () =>
                 DbusGlobalShortcutSession.RegisterApplicationAsync(

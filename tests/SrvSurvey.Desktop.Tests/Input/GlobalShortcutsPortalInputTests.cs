@@ -569,12 +569,15 @@ public sealed class GlobalShortcutsPortalInputTests
         }
     }
 
+    /// <summary>Captures only the diagnostics belonging to one isolated outage test.</summary>
     private sealed class FailureLogRecorder(string detail) : TraceListener
     {
         public ConcurrentQueue<string> Entries { get; } = new();
 
+        /// <summary>Ignores partial messages so captured failures represent complete diagnostics.</summary>
         public override void Write(string? message) { }
 
+        /// <summary>Records complete messages containing this test's unique failure identifier.</summary>
         public override void WriteLine(string? message)
         {
             if (message?.Contains(detail, StringComparison.Ordinal) == true)

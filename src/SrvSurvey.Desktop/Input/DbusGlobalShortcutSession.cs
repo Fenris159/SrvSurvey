@@ -102,7 +102,8 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
         {
             await (ensureDesktopEntry ?? LinuxDesktopEntryRegistration.EnsureCurrentAsync)(token).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             throw new PortalShortcutRegistrationException(exception);
         }

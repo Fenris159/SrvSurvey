@@ -323,6 +323,7 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
         }
     }
 
+    /// <summary>Stops reconnects for application setup failures or unavailable shortcut capabilities.</summary>
     private static bool IsPermanentPortalFailure(Exception exception) =>
         IsMissingApplicationRegistration(exception) || IsUnsupportedPortal(exception);
 
