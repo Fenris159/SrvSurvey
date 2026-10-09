@@ -53528,14 +53528,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "The active overlay layout is unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
     "Text": "The active settlement changed, so its unexported authoring draft was discarded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55294,14 +55286,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
-  },
-  {
-    "Text": "The overlay layout store is unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "The overlay layout was not changed: {0}",

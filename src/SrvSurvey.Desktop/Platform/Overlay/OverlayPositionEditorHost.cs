@@ -745,7 +745,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         };
         session.SetPlacement(
             definition.Name,
-            OverlayInteractionViewModel.CreatePlacement(placement, panelPosition, referenceSize, bounds)
+            OverlayPositionEditSession.CreatePlacement(placement, panelPosition, referenceSize, bounds)
         );
     }
 
