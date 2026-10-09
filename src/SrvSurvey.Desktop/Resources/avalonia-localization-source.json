@@ -47346,14 +47346,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Ship cargo was not published because no visible colonization projects are active.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
     "Text": "Ship cargo was not published: {0}",
     "IsFormat": true,
     "SourceKinds": [

@@ -23605,10 +23605,6 @@
       "translation": "Die Schiffsfracht wartet auf ein Loadout-Tagebuchereignis."
     },
     {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "Die Schiffsladung wurde nicht veröffentlicht, da keine sichtbaren Kolonisierungsprojekte aktiv sind."
-    },
-    {
       "source": "Ship cargo was not published: {0}",
       "translation": "Schiffsladung wurde nicht veröffentlicht: {0}"
     },
@@ -58801,10 +58797,6 @@
     {
       "source": "Ship cargo is waiting for a Loadout journal event.",
       "translation": "La carga del barco está esperando un evento del diario de carga."
-    },
-    {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "La carga de los barcos no se publicó porque no hay ningún proyecto de colonización activo visible."
     },
     {
       "source": "Ship cargo was not published: {0}",
@@ -94001,10 +93993,6 @@
       "translation": "La cargaison du navire attend un événement du journal Loadout."
     },
     {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "La cargaison des navires n’a pas été publiée car aucun projet de colonisation visible n’est actif."
-    },
-    {
       "source": "Ship cargo was not published: {0}",
       "translation": "La cargaison du navire n'a pas été publiée : {0}"
     },
@@ -129197,10 +129185,6 @@
     {
       "source": "Ship cargo is waiting for a Loadout journal event.",
       "translation": "A carga do navio está aguardando um evento do diário Loadout."
-    },
-    {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "A carga do navio não foi publicada porque nenhum projeto de colonização visível está ativo."
     },
     {
       "source": "Ship cargo was not published: {0}",
@@ -164397,10 +164381,6 @@
       "translation": "Корабельный груз ожидает события в журнале выгрузки."
     },
     {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "Груз корабля не был опубликован, поскольку никаких видимых проектов колонизации не ведется."
-    },
-    {
       "source": "Ship cargo was not published: {0}",
       "translation": "Груз корабля не опубликован: {0}"
     },
@@ -199595,10 +199575,6 @@
       "translation": "船舶货物正在等待装载日志事件。"
     },
     {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "船舶货物未公布，因为没有明显的殖民项目正在进行。"
-    },
-    {
       "source": "Ship cargo was not published: {0}",
       "translation": "船舶货物未发布：{0}"
     },
@@ -234791,10 +234767,6 @@
     {
       "source": "Ship cargo is waiting for a Loadout journal event.",
       "translation": "* SHIP CARGO IS WAITING FOR A LOADOUT JOURNAL EVENT. >>>!"
-    },
-    {
-      "source": "Ship cargo was not published because no visible colonization projects are active.",
-      "translation": "* SHIP CARGO WAS NOT PUBLISHED BECAUSE NO VISIBLE COLONIZATION PROJECTS ARE ACTIVE. >>>!"
     },
     {
       "source": "Ship cargo was not published: {0}",
