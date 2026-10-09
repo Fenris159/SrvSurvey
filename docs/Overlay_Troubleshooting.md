@@ -126,6 +126,29 @@ Application text entry continues to suppress shortcut actions. A restricted
 nested display with no accessible process metadata or X11 connection requires
 portal support. See the [Global Shortcuts portal specification](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html).
 
+Portal support depends on the desktop backend, rather than the Linux distribution
+name. A message saying `Could not register app ID: App info not found for
+'io.github.fenris159.SrvSurvey'` means the portal could not discover SrvSurvey's
+desktop entry; it does not establish that Global Shortcuts is unsupported.
+Host registration requires an installed `io.github.fenris159.SrvSurvey.desktop`
+entry. A desktop file inside an AppImage alone is not an installed entry visible
+to the portal service. See the [host Registry specification](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.host.portal.Registry.html).
+
+SrvSurvey prepares its host desktop identity before requesting portal shortcuts,
+independently of Frontier account linking. An unintegrated AppImage uses a hidden
+entry in the current user's XDG applications directory, with the stable AppImage
+path rather than its temporary mount. Existing launcher visibility, icons, actions,
+and MIME associations are preserved. Shortcut discovery does not change default
+protocol handlers or require `desktop-file-utils`.
+
+Missing application metadata and unsupported shortcut interfaces stop automatic
+retries and leave the other keyboard listeners available. Repair desktop
+integration, then restart SrvSurvey or disable and re-enable key chords to retry.
+Temporary portal outages still reconnect automatically, with one diagnostic per
+outage rather than a repeated message on every reconnect attempt. Restoring a
+session does not open an approval dialog during gameplay; new approval continues
+to require an explicit settings request.
+
 The helper [PublishGamescopeGameWindowBridge.sh](../scripts/PublishGamescopeGameWindowBridge.sh)
 writes this marker atomically. A native Wayland Gamescope launch wrapper should
 call it **after** it knows the Gamescope PID and nested X11 `DISPLAY`, pass the

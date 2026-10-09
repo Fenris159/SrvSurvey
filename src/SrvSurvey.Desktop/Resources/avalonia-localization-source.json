@@ -4188,6 +4188,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "App info not found",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
     "Text": "AppImage manual update",
     "IsFormat": false,
     "SourceKinds": [
@@ -15245,6 +15253,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
+    "Text": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
     "Text": "Desktop shortcuts: checking availability.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18268,7 +18284,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "Executable releases and reference catalogs are checked and activated independently.",
@@ -21862,6 +21878,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "Global Shortcuts portal unavailable on this desktop.",
@@ -29799,7 +29823,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "Min. demand",
@@ -49197,6 +49221,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey could not determine a usable desktop launcher path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
+  },
+  {
     "Text": "SrvSurvey could not determine its executable path for Frontier authorization.",
     "IsFormat": false,
     "SourceKinds": [
@@ -49251,6 +49283,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey desktop application registration is unavailable: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -53261,7 +53301,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "The SrvSurvey issue tracker could not be opened.",
@@ -57912,7 +57952,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "Tubus",
@@ -66747,7 +66787,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "shell\\open\\command",
@@ -70020,7 +70060,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "{0}% complete",
@@ -70045,6 +70085,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}.desktop",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
     "Text": "{0}: approved by desktop (key not reported)",

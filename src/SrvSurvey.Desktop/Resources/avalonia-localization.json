@@ -2093,6 +2093,10 @@
       "translation": "Jedes Oberflächenmaterial"
     },
     {
+      "source": "App info not found",
+      "translation": "App-Informationen nicht gefunden"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Manuelle Aktualisierung von AppImage"
     },
@@ -7605,6 +7609,10 @@
       "translation": "Desktop-Verknüpfungen: aktiv ({0} oder {1}-Bindungen). {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "Desktop-Verknüpfungen: Anwendungsregistrierung nicht verfügbar. Starten Sie SrvSurvey neu, nachdem Sie den Desktop-Eintrag repariert haben."
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "Desktop-Verknüpfungen: Verfügbarkeit prüfen."
     },
@@ -10903,6 +10911,10 @@
     {
       "source": "Glide approach",
       "translation": "Gleitflug-Ansatz"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "Registrierung der Global Shortcuts-Anwendung nicht möglich; Automatische Wiederholungsversuche gestoppt: {0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -24529,6 +24541,10 @@
       "translation": "SrvSurvey Baustoff-Overlay"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey konnte keinen verwendbaren Desktop-Launcher-Pfad ermitteln."
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey konnte seinen ausführbaren Pfad für die Frontier-Autorisierung nicht ermitteln."
     },
@@ -24555,6 +24571,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey konnte nicht überprüfen, ob eine andere Instanz ausgeführt wird: {0}"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey Desktop-Anwendungsregistrierung ist nicht verfügbar: {0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -34941,6 +34961,10 @@
       "translation": "{0}% verbleibend"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0}: vom Desktop genehmigt (Schlüssel nicht gemeldet)"
     },
@@ -37265,6 +37289,10 @@
     {
       "source": "Any surface material",
       "translation": "Cualquier material de superficie"
+    },
+    {
+      "source": "App info not found",
+      "translation": "Información de la aplicación no encontrada"
     },
     {
       "source": "AppImage manual update",
@@ -42779,6 +42807,10 @@
       "translation": "Accesos directos de escritorio: activos ({0} de enlaces {1}). {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "Atajos de escritorio: registro de aplicaciones no disponible. Reinicie SrvSurvey después de reparar la entrada del escritorio."
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "Atajos de escritorio: comprobar disponibilidad."
     },
@@ -46077,6 +46109,10 @@
     {
       "source": "Glide approach",
       "translation": "Aproximación de planeo"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "El registro de la aplicación Global Shortcuts no está disponible; Reintentos automáticos detenidos: {0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -59703,6 +59739,10 @@
       "translation": "SrvSurvey superposición de productos de construcción"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey no pudo determinar una ruta de inicio de escritorio utilizable."
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey no pudo determinar su ruta ejecutable para la autorización Frontier."
     },
@@ -59729,6 +59769,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey no pudo verificar si se está ejecutando otra instancia: {0}"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey el registro de la aplicación de escritorio no está disponible: {0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -70115,6 +70159,10 @@
       "translation": "{0}% restante"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0}: aprobado por el escritorio (clave no informada)"
     },
@@ -72439,6 +72487,10 @@
     {
       "source": "Any surface material",
       "translation": "Tout matériau de surface"
+    },
+    {
+      "source": "App info not found",
+      "translation": "Informations sur l'application introuvables"
     },
     {
       "source": "AppImage manual update",
@@ -77953,6 +78005,10 @@
       "translation": "Raccourcis du bureau : actifs (liaisons {0} ou {1}). {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "Raccourcis du bureau : enregistrement de l'application indisponible. Redémarrez SrvSurvey après avoir réparé son entrée de bureau."
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "Raccourcis sur le bureau : vérification de la disponibilité."
     },
@@ -81251,6 +81307,10 @@
     {
       "source": "Glide approach",
       "translation": "Approche planée"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "L'enregistrement de l'application Global Shortcuts n'est pas disponible ; tentatives automatiques arrêtées : {0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -94877,6 +94937,10 @@
       "translation": "SrvSurvey superposition de produits de construction"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey n'a pas pu déterminer un chemin de lancement de bureau utilisable."
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey n'a pas pu déterminer son chemin d'accès exécutable pour l'autorisation Frontier."
     },
@@ -94903,6 +94967,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey n'a pas pu vérifier si une autre instance est en cours d'exécution : {0}"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey l'enregistrement de l'application de bureau n'est pas disponible : {0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -105289,6 +105357,10 @@
       "translation": "{0}% restant"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0} : approuvé par le bureau (clé non signalée)"
     },
@@ -107613,6 +107685,10 @@
     {
       "source": "Any surface material",
       "translation": "Qualquer material de superfície"
+    },
+    {
+      "source": "App info not found",
+      "translation": "Informações do aplicativo não encontradas"
     },
     {
       "source": "AppImage manual update",
@@ -113127,6 +113203,10 @@
       "translation": "Atalhos da área de trabalho: ativos ({0} de ligações {1}). {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "Atalhos na área de trabalho: registro de aplicativos indisponível. Reinicie SrvSurvey após reparar seu acesso à área de trabalho."
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "Atalhos na área de trabalho: verificando a disponibilidade."
     },
@@ -116425,6 +116505,10 @@
     {
       "source": "Glide approach",
       "translation": "Abordagem de deslizamento"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "Registro do aplicativo Global Shortcuts indisponível; tentativas automáticas interrompidas: {0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -130051,6 +130135,10 @@
       "translation": "SrvSurvey sobreposição de commodities de construção"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey não foi possível determinar um caminho de inicialização da área de trabalho utilizável."
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey não conseguiu determinar seu caminho executável para autorização de Frontier."
     },
@@ -130077,6 +130165,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey não foi possível verificar se outra instância está em execução: {0}"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey o registro do aplicativo de desktop não está disponível: {0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -140463,6 +140555,10 @@
       "translation": "{0}% restante"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0}: aprovado pelo desktop (chave não informada)"
     },
@@ -142787,6 +142883,10 @@
     {
       "source": "Any surface material",
       "translation": "Любой материал поверхности"
+    },
+    {
+      "source": "App info not found",
+      "translation": "Информация о приложении не найдена"
     },
     {
       "source": "AppImage manual update",
@@ -148301,6 +148401,10 @@
       "translation": "Ярлыки на рабочем столе: активны (привязки {0} из {1}). {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "Ярлыки на рабочем столе: регистрация приложения недоступна. Перезапустите SrvSurvey после восстановления записи на рабочем столе."
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "Ярлыки на рабочем столе: проверка доступности."
     },
@@ -151599,6 +151703,10 @@
     {
       "source": "Glide approach",
       "translation": "Скользящий подход"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "Регистрация приложения Global Shortcuts недоступна; автоматические повторные попытки остановлены: {0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -165225,6 +165333,10 @@
       "translation": "SrvSurvey наложение строительных товаров"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey не удалось определить удобный путь запуска программы запуска на рабочем столе."
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey не удалось определить путь к исполняемому файлу для авторизации Frontier."
     },
@@ -165251,6 +165363,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey не удалось проверить, запущен ли другой экземпляр: {0}."
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey регистрация настольного приложения недоступна: {0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -175637,6 +175753,10 @@
       "translation": "Осталось {0}%"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0}: одобрено настольным компьютером (ключ не указан)"
     },
@@ -177961,6 +178081,10 @@
     {
       "source": "Any surface material",
       "translation": "任何表面材质"
+    },
+    {
+      "source": "App info not found",
+      "translation": "找不到应用程序信息"
     },
     {
       "source": "AppImage manual update",
@@ -183475,6 +183599,10 @@
       "translation": "桌面快捷方式：活动（{1} 绑定的 {0}）。 {2}"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "桌面快捷方式：应用程序注册不可用。修复其桌面条目后重新启动SrvSurvey。"
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "桌面快捷方式：检查可用性。"
     },
@@ -186773,6 +186901,10 @@
     {
       "source": "Glide approach",
       "translation": "滑翔进近"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "全局快捷方式申请注册不可用；自动重试已停止：{0}"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -200399,6 +200531,10 @@
       "translation": "SrvSurvey 建筑商品叠加"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "SrvSurvey 无法确定可用的桌面启动器路径。"
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "SrvSurvey 无法确定 Frontier 授权的可执行路径。"
     },
@@ -200425,6 +200561,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "SrvSurvey 无法验证另一个实例是否正在运行：{0}"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "SrvSurvey 桌面应用程序注册不可用：{0}"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -210811,6 +210951,10 @@
       "translation": "{0} 剩余%"
     },
     {
+      "source": "{0}.desktop",
+      "translation": "{0}.desktop"
+    },
+    {
       "source": "{0}: approved by desktop (key not reported)",
       "translation": "{0}：经桌面批准（密钥未报告）"
     },
@@ -213135,6 +213279,10 @@
     {
       "source": "Any surface material",
       "translation": "* ANY SURFACE MATERIAL >>>!"
+    },
+    {
+      "source": "App info not found",
+      "translation": "* APP INFO NOT FOUND >>>!"
     },
     {
       "source": "AppImage manual update",
@@ -218649,6 +218797,10 @@
       "translation": "* DESKTOP SHORTCUTS: ACTIVE ({0} OF {1} BINDINGS). {2} >>>!"
     },
     {
+      "source": "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+      "translation": "* DESKTOP SHORTCUTS: APPLICATION REGISTRATION UNAVAILABLE. RESTART SRVSURVEY AFTER REPAIRING ITS DESKTOP ENTRY. >>>!"
+    },
+    {
       "source": "Desktop shortcuts: checking availability.",
       "translation": "* DESKTOP SHORTCUTS: CHECKING AVAILABILITY. >>>!"
     },
@@ -221947,6 +222099,10 @@
     {
       "source": "Glide approach",
       "translation": "* GLIDE APPROACH >>>!"
+    },
+    {
+      "source": "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+      "translation": "* GLOBAL SHORTCUTS APPLICATION REGISTRATION UNAVAILABLE; AUTOMATIC RETRIES STOPPED: {0} >>>!"
     },
     {
       "source": "Global Shortcuts portal unavailable on this desktop.",
@@ -235573,6 +235729,10 @@
       "translation": "* SRVSURVEY CONSTRUCTION COMMODITIES OVERLAY >>>!"
     },
     {
+      "source": "SrvSurvey could not determine a usable desktop launcher path.",
+      "translation": "* SRVSURVEY COULD NOT DETERMINE A USABLE DESKTOP LAUNCHER PATH. >>>!"
+    },
+    {
       "source": "SrvSurvey could not determine its executable path for Frontier authorization.",
       "translation": "* SRVSURVEY COULD NOT DETERMINE ITS EXECUTABLE PATH FOR FRONTIER AUTHORIZATION. >>>!"
     },
@@ -235599,6 +235759,10 @@
     {
       "source": "SrvSurvey could not verify whether another instance is running: {0}",
       "translation": "* SRVSURVEY COULD NOT VERIFY WHETHER ANOTHER INSTANCE IS RUNNING: {0} >>>!"
+    },
+    {
+      "source": "SrvSurvey desktop application registration is unavailable: {0}",
+      "translation": "* SRVSURVEY DESKTOP APPLICATION REGISTRATION IS UNAVAILABLE: {0} >>>!"
     },
     {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
@@ -245983,6 +246147,10 @@
     {
       "source": "{0}% remaining",
       "translation": "* {0}% REMAINING >>>!"
+    },
+    {
+      "source": "{0}.desktop",
+      "translation": "* {0}.DESKTOP >>>!"
     },
     {
       "source": "{0}: approved by desktop (key not reported)",

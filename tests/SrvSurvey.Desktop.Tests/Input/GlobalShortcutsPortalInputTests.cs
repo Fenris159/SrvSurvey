@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using SrvSurvey.Desktop.Input;
 using Tmds.DBus;
 
@@ -463,6 +464,7 @@ public sealed class GlobalShortcutsPortalInputTests
     [InlineData("unsupported")]
     [InlineData("org.freedesktop.DBus.Error.ServiceUnknown")]
     [InlineData("org.freedesktop.DBus.Error.UnknownInterface")]
+    [InlineData("org.freedesktop.DBus.Error.UnknownMethod")]
     public async Task UnsupportedPortalStopsRetriesWithoutReplacingHookStatus(string error)
     {
         int attempts = 0;
@@ -502,6 +504,123 @@ public sealed class GlobalShortcutsPortalInputTests
         await WaitAsync(() => Volatile.Read(ref attempts) >= 2);
         Assert.All(sink.Statuses, Assert.Empty);
         Assert.Contains("unavailable", ShortcutUi(input).Status);
+    }
+
+    /// <summary>A missing host app registration cannot recover by repeating the same portal call.</summary>
+    [Fact]
+    public async Task MissingApplicationRegistrationStopsAutomaticRetries()
+    {
+        int attempts = 0;
+        await using GlobalShortcutsPortalInput input = CreateInput(
+            _ =>
+            {
+                Interlocked.Increment(ref attempts);
+                throw new DBusException(
+                    "org.freedesktop.portal.Error.Failed",
+                    "Could not register app ID: App info not found for 'io.github.fenris159.SrvSurvey'"
+                );
+            },
+            TimeSpan.FromMilliseconds(10)
+        );
+        input.Update(Settings("O"));
+        await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
+        await Task.Delay(80);
+        Assert.Equal(1, Volatile.Read(ref attempts));
+        Assert.False(input.State.IsRunning);
+        Assert.All(sink.Statuses, Assert.Empty);
+    }
+
+    /// <summary>Temporary outages remain recoverable but report one diagnostic per disconnected episode.</summary>
+    [Fact]
+    public async Task RepeatedFailuresLogOnceUntilThePortalRecovers()
+    {
+        string detail = "temporary shortcut portal failure " + Guid.NewGuid().ToString("N");
+        using var recorder = new FailureLogRecorder(detail);
+        Trace.Listeners.Add(recorder);
+        try
+        {
+            int attempts = 0;
+            var sessions = new ConcurrentQueue<FakeSession>();
+            await using GlobalShortcutsPortalInput input = CreateInput(
+                _ =>
+                {
+                    if (Interlocked.Increment(ref attempts) % 4 != 0)
+                    {
+                        throw new DBusException("org.freedesktop.portal.Error.Failed", detail);
+                    }
+                    var session = new FakeSession();
+                    sessions.Enqueue(session);
+                    return Task.FromResult<IPortalShortcutSession>(session);
+                },
+                TimeSpan.FromMilliseconds(10)
+            );
+            input.Update(Settings("O"));
+            await WaitAsync(() => input.State.IsRunning);
+            Assert.Equal(4, Volatile.Read(ref attempts));
+            Assert.Single(recorder.Entries);
+            sessions.Single().Closed.TrySetResult();
+            await WaitAsync(() => sessions.Count == 2 && input.State.IsRunning);
+            Assert.Equal(8, Volatile.Read(ref attempts));
+            Assert.Equal(2, recorder.Entries.Count);
+        }
+        finally
+        {
+            Trace.Listeners.Remove(recorder);
+        }
+    }
+
+    /// <summary>Captures only the diagnostics belonging to one isolated outage test.</summary>
+    private sealed class FailureLogRecorder(string detail) : TraceListener
+    {
+        public ConcurrentQueue<string> Entries { get; } = new();
+
+        /// <summary>Ignores partial messages so captured failures represent complete diagnostics.</summary>
+        public override void Write(string? message) { }
+
+        /// <summary>Records complete messages containing this test's unique failure identifier.</summary>
+        public override void WriteLine(string? message)
+        {
+            if (message?.Contains(detail, StringComparison.Ordinal) == true)
+            {
+                Entries.Enqueue(message);
+            }
+        }
+    }
+
+    /// <summary>Local setup failures stop retries, but repairing setup and re-enabling input can restore the session.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReenableRetriesApplicationRegistrationAfterRepair(bool localFailure)
+    {
+        int attempts = 0;
+        await using GlobalShortcutsPortalInput input = CreateInput(
+            _ =>
+            {
+                if (Interlocked.Increment(ref attempts) == 1)
+                {
+                    throw localFailure
+                        ? new PortalShortcutRegistrationException(new IOException("desktop entry unavailable"))
+                        : new DBusException(
+                            "org.freedesktop.portal.Error.Failed",
+                            "App info not found for 'io.github.fenris159.SrvSurvey'"
+                        );
+                }
+                return Task.FromResult<IPortalShortcutSession>(new FakeSession());
+            },
+            TimeSpan.FromMilliseconds(10)
+        );
+        input.Update(Settings("O"));
+        await input.StartupReady.WaitAsync(TimeSpan.FromSeconds(3));
+        await Task.Delay(80);
+        Assert.Equal(1, Volatile.Read(ref attempts));
+        Assert.False(ShortcutUi(input).CanOpen);
+        Assert.Contains("registration unavailable", ShortcutUi(input).Status);
+        input.Update(Settings("O") with { KeyboardEnabled = false });
+        input.Update(Settings("O"));
+        await WaitAsync(() => input.State.IsRunning);
+        Assert.Equal(2, Volatile.Read(ref attempts));
+        Assert.True(input.State.CanServeAllBindings);
     }
 
     /// <summary>Creates one enabled test binding.</summary>

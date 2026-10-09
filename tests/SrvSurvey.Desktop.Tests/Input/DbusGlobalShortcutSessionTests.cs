@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using Tmds.DBus;
 
@@ -237,12 +238,92 @@ public sealed class DbusGlobalShortcutSessionTests
     public async Task RegistersHostIdentityWithCompatibleFallbacks(string? error, bool accepted, bool sandboxed)
     {
         var registry = new FakeRegistry(error);
+        int preparationCalls = 0;
         Exception? failure = await Record.ExceptionAsync(() =>
-            DbusGlobalShortcutSession.RegisterApplicationAsync(registry, CancellationToken.None, sandboxed)
+            DbusGlobalShortcutSession.RegisterApplicationAsync(
+                registry,
+                CancellationToken.None,
+                sandboxed,
+                _ =>
+                {
+                    preparationCalls++;
+                    return Task.CompletedTask;
+                }
+            )
         );
         Assert.Equal(sandboxed ? null : "io.github.fenris159.SrvSurvey", registry.AppId);
         Assert.True(registry.Options is null || registry.Options.Count == 0);
         Assert.Equal(accepted, failure is null);
+        Assert.Equal(sandboxed ? 0 : 1, preparationCalls);
+    }
+
+    /// <summary>Classifies file, permission and malformed-entry failures as permanent setup errors while preserving cancellation.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task DesktopEntryFailureIsReportedBeforeAnyPortalRequest(int failureKind)
+    {
+        var registry = new FakeRegistry(null);
+        Exception cause = failureKind switch
+        {
+            0 => new IOException("desktop entry unavailable"),
+            1 => new UnauthorizedAccessException("read-only data directory"),
+            _ => new InvalidDataException("desktop entry has no Desktop Entry section"),
+        };
+        PortalShortcutRegistrationException failure = await Assert.ThrowsAsync<PortalShortcutRegistrationException>(
+            () =>
+                DbusGlobalShortcutSession.RegisterApplicationAsync(
+                    registry,
+                    CancellationToken.None,
+                    ensureDesktopEntry: _ => throw cause
+                )
+        );
+        Assert.Same(cause, failure.InnerException);
+        Assert.Null(registry.AppId);
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            DbusGlobalShortcutSession.RegisterApplicationAsync(
+                registry,
+                canceled.Token,
+                ensureDesktopEntry: token => Task.FromCanceled(token)
+            )
+        );
+        Assert.Null(registry.AppId);
+    }
+
+    /// <summary>An unintegrated AppImage has a discoverable identity before its host portal registration.</summary>
+    [Fact]
+    public async Task CreatesDesktopIdentityBeforeRegisteringWithPortal()
+    {
+        string root = Directory.CreateTempSubdirectory("SrvSurvey-portal-identity-").FullName;
+        try
+        {
+            string applications = Path.Combine(root, "applications");
+            string desktopFile = Path.Combine(applications, LinuxDesktopEntryRegistration.DesktopFileName);
+            var registry = new FakeRegistry(null, desktopFile);
+            await DbusGlobalShortcutSession.RegisterApplicationAsync(
+                registry,
+                CancellationToken.None,
+                ensureDesktopEntry: token =>
+                    LinuxDesktopEntryRegistration.EnsureAsync(
+                        applications,
+                        "/Applications/SrvSurvey.AppImage",
+                        [],
+                        token
+                    )
+            );
+            Assert.Equal(LinuxDesktopEntryRegistration.ApplicationId, registry.AppId);
+            string launcher = await File.ReadAllTextAsync(desktopFile);
+            Assert.Contains("NoDisplay=true", launcher, StringComparison.Ordinal);
+            Assert.Contains("TryExec=/Applications/SrvSurvey.AppImage", launcher, StringComparison.Ordinal);
+            Assert.DoesNotContain("MimeType=", launcher, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     /// <summary>Checks version-one registration, session filtering, hold-repeat suppression, and closure.</summary>
@@ -383,7 +464,7 @@ public sealed class DbusGlobalShortcutSessionTests
     }
 
     /// <summary>Captures the connection identity request and emulates desktop compatibility failures.</summary>
-    private sealed class FakeRegistry(string? error) : IHostPortalRegistry
+    private sealed class FakeRegistry(string? error, string? requiredDesktopFile = null) : IHostPortalRegistry
     {
         public ObjectPath ObjectPath => new("/org/freedesktop/portal/desktop");
         public string? AppId { get; private set; }
@@ -392,6 +473,13 @@ public sealed class DbusGlobalShortcutSessionTests
         /// <summary>Checks the application ID and supplies a requested D-Bus error.</summary>
         public Task RegisterAsync(string appId, IDictionary<string, object> options)
         {
+            if (requiredDesktopFile is not null && !File.Exists(requiredDesktopFile))
+            {
+                throw new DBusException(
+                    "org.freedesktop.portal.Error.Failed",
+                    "Could not register app ID: App info not found for 'io.github.fenris159.SrvSurvey'"
+                );
+            }
             AppId = appId;
             Options = options;
             return error is null ? Task.CompletedTask : Task.FromException(new DBusException(error, "registration"));
