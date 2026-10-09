@@ -373,14 +373,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 return;
             }
 
-            SetField(ref autoCopy, value);
-            RaiseOverlayProperties();
-            if (searchState.TopBoxel is null)
+            autoCopy = value;
+            // Queue persistence before notifying bindings so the getter exposes the accepted value.
+            if (searchState.TopBoxel is not null)
             {
-                return;
+                RunSessionAction(new SetBoxelAutoCopy(value));
             }
-
-            RunSessionAction(new SetBoxelAutoCopy(value));
+            OnPropertyChanged(nameof(AutoCopy));
+            RaiseOverlayProperties();
         }
     }
 
@@ -1861,7 +1861,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                     new BoxelSystemRowOptions
                     {
                         Name = boxel.Name,
-                        IsComplete = system?.IsComplete == true,
+                        IsComplete =
+                            system?.IsComplete
+                            ?? (
+                                searchState.Persistence.CompletedSystems.Contains(
+                                    boxel.GeneratedName,
+                                    StringComparer.Ordinal
+                                )
+                                || searchState.Persistence.CompletedPrefixes.Contains(
+                                    boxel.Prefix,
+                                    StringComparer.Ordinal
+                                )
+                            ),
                         IsKnown = system is not null,
                         IsEmpty = searchState.EmptySystems.Contains(boxel.GeneratedName),
                         IsDeferred = searchState.IsSystemDeferred(boxel.Prefix, boxel.N2),

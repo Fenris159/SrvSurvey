@@ -1,4 +1,8 @@
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Headless.XUnit;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -133,6 +137,93 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.False(carrierSaved.Route!.AutoCopy);
     }
 
+    [AvaloniaFact]
+    public async Task BoundBoxelControlsAndRouteSelectionsKeepOneGalaxyMapClipboardOwner()
+    {
+        var writes = new List<string>();
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        standard.SetClipboardWriter(text => RecordCopyAsync("Route Manager", text));
+        carrier.SetClipboardWriter(text => RecordCopyAsync("FC Routes", text));
+        BoxelSearchViewModel boxel = await CreateConfiguredBoxelAsync(
+            autoCopy: false,
+            active: true,
+            clipboardWriter: text => RecordCopyAsync("Boxel", text)
+        );
+        await boxel.UpdateCurrentSystemAsync("Praea Euq IL-P c5-0", new GalacticCoordinate(1, 2, 3));
+        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, boxel.Session);
+        await coordinator.ReconcileAsync();
+        var workspaceToggle = new CheckBox();
+        var overlayToggle = new CheckBox();
+        using IDisposable workspaceBinding = workspaceToggle.Bind(
+            ToggleButton.IsCheckedProperty,
+            new Binding(nameof(BoxelSearchViewModel.AutoCopy)) { Source = boxel, Mode = BindingMode.TwoWay }
+        );
+        using IDisposable overlayBinding = overlayToggle.Bind(
+            ToggleButton.IsCheckedProperty,
+            new Binding(nameof(BoxelSearchViewModel.AutoCopy)) { Source = boxel, Mode = BindingMode.TwoWay }
+        );
+
+        overlayToggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+        await boxel.RefreshCurrentAsync();
+        await coordinator.ClaimAsync(boxel.Session);
+        Assert.True(workspaceToggle.IsChecked);
+        Assert.True(overlayToggle.IsChecked);
+        Assert.False(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        await AssertOwnerWritesAsync("Boxel:Praea Euq IL-P c5-0");
+
+        await standard.SetAutoCopyAsync(true);
+        await coordinator.ClaimAsync(standard);
+        await WaitUntilAsync(() => workspaceToggle.IsChecked == false && overlayToggle.IsChecked == false);
+        Assert.False(workspaceToggle.IsChecked);
+        Assert.False(overlayToggle.IsChecked);
+        Assert.True(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        await AssertOwnerWritesAsync("Route Manager:Achenar");
+
+        await carrier.SetAutoCopyAsync(true);
+        await coordinator.ClaimAsync(carrier);
+        await WaitUntilAsync(() => workspaceToggle.IsChecked == false && overlayToggle.IsChecked == false);
+        Assert.False(workspaceToggle.IsChecked);
+        Assert.False(overlayToggle.IsChecked);
+        Assert.False(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+        await AssertOwnerWritesAsync("FC Routes:Achenar");
+
+        workspaceToggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+        await boxel.RefreshCurrentAsync();
+        await coordinator.ClaimAsync(boxel.Session);
+        Assert.True(workspaceToggle.IsChecked);
+        Assert.True(overlayToggle.IsChecked);
+        Assert.False(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        await AssertOwnerWritesAsync("Boxel:Praea Euq IL-P c5-0");
+
+        Task RecordCopyAsync(string source, string text)
+        {
+            writes.Add(source + ":" + text);
+            return Task.CompletedTask;
+        }
+
+        async Task AssertOwnerWritesAsync(string expected)
+        {
+            var closed = new EliteStatus { GuiFocus = GuiFocus.NoFocus };
+            await standard.UpdateStatusAsync(closed);
+            await carrier.UpdateStatusAsync(closed);
+            await boxel.UpdateStatusAsync(closed);
+            writes.Clear();
+            var open = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+            await standard.UpdateStatusAsync(open);
+            await carrier.UpdateStatusAsync(open);
+            await boxel.UpdateStatusAsync(
+                open,
+                allowAutoCopy: !standard.ShouldAutoCopyNextHop && !carrier.ShouldAutoCopyNextHop
+            );
+            Assert.Equal(expected, Assert.Single(writes));
+        }
+    }
+
     [Fact]
     public async Task ReconcileClearsImplicitSelectionsWithoutSavedRoutes()
     {
@@ -191,22 +282,27 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         return workspace;
     }
 
-    private BoxelSearchViewModel CreateInactiveBoxel()
+    private BoxelSearchViewModel CreateInactiveBoxel(Func<string, Task>? clipboardWriter = null)
     {
         BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             new EmptyBoxelResolver(),
-            out BoxelSearchSession? session
+            out BoxelSearchSession? session,
+            clipboardWriter
         );
         sessions.Add(session);
         return viewModel;
     }
 
-    private async Task<BoxelSearchViewModel> CreateConfiguredBoxelAsync(bool autoCopy, bool active = false)
+    private async Task<BoxelSearchViewModel> CreateConfiguredBoxelAsync(
+        bool autoCopy,
+        bool active = false,
+        Func<string, Task>? clipboardWriter = null
+    )
     {
-        BoxelSearchViewModel boxel = CreateInactiveBoxel();
+        BoxelSearchViewModel boxel = CreateInactiveBoxel(clipboardWriter);
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
         await boxel.LoadProfileAsync(
             "F123",

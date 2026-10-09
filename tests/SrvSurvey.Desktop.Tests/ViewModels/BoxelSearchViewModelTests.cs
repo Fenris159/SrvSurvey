@@ -1,4 +1,7 @@
 using System.Net;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -28,6 +31,154 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
 
         Assert.False(viewModel.AutoCopy);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task NewSearchWithCompletionRulesDisabledDoesNotReusePreviousCompletion(bool localVisit)
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        const string name = "Col 359 Sector NR-T c4-1";
+        if (localVisit)
+        {
+            string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+            Directory.CreateDirectory(systemDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(systemDirectory, "Col 359 Sector NR-T c4-1_83517084435.json"),
+                """{"name":"Col 359 Sector NR-T c4-1","address":83517084435,"starPos":[-205,112.15625,309.53125],"lastVisited":"2026-06-01T00:00:00Z"}"""
+            );
+        }
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver(localVisit ? [] : [Observation(name, 83517084435)])
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = name;
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero);
+        viewModel.SkipAlreadyVisited = localVisit;
+        viewModel.SkipKnownToSpansh = !localVisit;
+        await viewModel.ActivateAsync();
+        Assert.True(viewModel.Systems.Single(row => row.Name == name).IsComplete);
+
+        viewModel.SkipAlreadyVisited = false;
+        viewModel.SkipKnownToSpansh = false;
+        await viewModel.RefreshCurrentAsync();
+        Assert.True(viewModel.Systems.Single(row => row.Name == name).IsComplete);
+        await viewModel.DisableAsync();
+        await viewModel.ActivateAsync();
+
+        Assert.False(viewModel.Systems.Single(row => row.Name == name).IsComplete);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
+        Assert.Empty(saved.Data!.BoxelSearch.CompletedSystems);
+        Assert.False(saved.Data.BoxelSearch.SkipAlreadyVisited);
+        Assert.False(saved.Data.BoxelSearch.SkipKnownToSpansh);
+    }
+
+    [Fact]
+    public async Task ActiveAndLibraryResumesRetainCompletionWithRulesDisabledButFreshSearchDoesNot()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
+        const string name = "Col 359 Sector NR-T c4-1";
+        var resolver = new StubResolver([Observation(name, 83517084435)]);
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, resolver);
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = name;
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero);
+        viewModel.SkipKnownToSpansh = true;
+        await viewModel.ActivateAsync();
+        viewModel.SkipKnownToSpansh = false;
+        await viewModel.RefreshCurrentAsync();
+        Assert.True(viewModel.Systems.Single(row => row.Name == name).IsComplete);
+        Assert.Equal(SaveBoxelProgressResult.Saved, await viewModel.SaveProgressAsync("Existing progress"));
+        SavedBoxelSearchCatalogEntry saved = Assert.Single(await savedStore.ListAsync("F123"));
+        CommanderProfileLoadResult activeProfile = await profileStore.LoadAsync("F123", true);
+
+        BoxelSearchViewModel reopened = CreateViewModel(profileStore, resolver);
+        await reopened.LoadProfileAsync("F123", "Drew", true, activeProfile.Data!.BoxelSearch);
+        Assert.True(reopened.Systems.Single(row => row.Name == name).IsComplete);
+        Assert.False(reopened.SkipKnownToSpansh);
+        await reopened.DisableAsync();
+        await reopened.ActivateAsync();
+        Assert.False(reopened.Systems.Single(row => row.Name == name).IsComplete);
+        Assert.False(reopened.IsSavedToLibrary);
+        Assert.Contains(name, (await savedStore.LoadAsync("F123", saved.FileName)).Search.CompletedSystems);
+
+        await reopened.ResumeSavedSearchAsync(saved.FileName);
+        Assert.Contains(name, reopened.Session.Current.Search.Persistence.CompletedSystems);
+        Assert.True(reopened.Systems.Single(row => row.Name == name).IsComplete);
+        Assert.False(reopened.SkipKnownToSpansh);
+        Assert.True(reopened.IsSavedToLibrary);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LibraryResumeShowsRecordedCompletionBeforeSystemDataIsLoaded(bool completedPrefix)
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Col 359 Sector NR-T c4-1");
+        SavedBoxelSearchDocument saved = await savedStore.CreateAsync(
+            "F123",
+            "Retained progress",
+            null,
+            new BoxelSearchSnapshot
+            {
+                TopBoxel = top,
+                Current = top.WithSystemNumber(0),
+                CurrentCount = 2,
+                LowMassCode = 'c',
+                ProgressByPrefix = new Dictionary<string, int>(StringComparer.Ordinal) { [top.Prefix] = 2 },
+                CompletedPrefixes = completedPrefix ? [top.Prefix] : [],
+                CompletedSystems = completedPrefix ? [] : [top.GeneratedName],
+            }
+        );
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, new StubResolver([]));
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+
+        await viewModel.ResumeSavedSearchAsync(saved.FileName);
+
+        Assert.Equal(completedPrefix, viewModel.Systems[0].IsComplete);
+        Assert.True(viewModel.Systems[1].IsComplete);
+        Assert.Equal(completedPrefix ? 2 : 1, viewModel.Session.Current.Search.TotalCompletedSystemCount);
+    }
+
+    [AvaloniaFact]
+    public async Task BothBoundAutoCopyControlsMirrorSelectionInEitherDirection()
+    {
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-1";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        var workspaceToggle = new CheckBox();
+        var overlayToggle = new CheckBox();
+        using IDisposable workspaceBinding = workspaceToggle.Bind(
+            ToggleButton.IsCheckedProperty,
+            new Binding(nameof(BoxelSearchViewModel.AutoCopy)) { Source = viewModel, Mode = BindingMode.TwoWay }
+        );
+        using IDisposable overlayBinding = overlayToggle.Bind(
+            ToggleButton.IsCheckedProperty,
+            new Binding(nameof(BoxelSearchViewModel.AutoCopy)) { Source = viewModel, Mode = BindingMode.TwoWay }
+        );
+
+        workspaceToggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+        await viewModel.RefreshCurrentAsync();
+        Assert.True(workspaceToggle.IsChecked);
+        Assert.True(overlayToggle.IsChecked);
+
+        overlayToggle.SetCurrentValue(ToggleButton.IsCheckedProperty, false);
+        await viewModel.RefreshCurrentAsync();
+        Assert.False(workspaceToggle.IsChecked);
+        Assert.False(overlayToggle.IsChecked);
+        Assert.False(viewModel.Session.Current.Search.AutoCopy);
     }
 
     [Theory]

@@ -60,6 +60,16 @@ application restarts.
   complete, and next-target selection skips them. Requiring a full FSS scan no
   longer lets an old scan complete a later unscanned visit. Manual empty markers,
   deferred systems, and a forced last-system value remain intact.
+- **Starting a fresh Boxel search gives you a fresh set of results.** Completion,
+  empty-system markers, and deferred systems from a previous search no longer
+  carry into a new one. The new search uses the completion rules you choose.
+  Continuing the active search or resuming one from the library keeps its recorded
+  progress, with saved completion marks visible before system data finishes loading.
+- **Boxel auto-copy controls stay in sync.** Changing “Auto-copy next system in
+  Galaxy Map” in overlay settings also updates the Boxel workspace control, and
+  vice versa. Boxel search, Route Manager, and FC Routes share one destination
+  source: enabling auto-copy for one turns it off for the others, so each Galaxy
+  Map entry copies a single destination.
 - **New Boxel searches start with today's date.** The default refreshes when
   entering the workspace or preparing a new search, including after midnight.
   Dates you deliberately choose are preserved, and explicitly resumed progress

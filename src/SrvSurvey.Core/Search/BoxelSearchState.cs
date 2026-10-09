@@ -284,6 +284,15 @@ public sealed class BoxelSearchState
             return false;
         }
 
+        // Profile and library resumes use Reset; activation starts an independent search.
+        completed.Clear();
+        retainedCompleted.Clear();
+        completedSystems.Clear();
+        completedSystemCounts.Clear();
+        emptySystems.Clear();
+        deferredRanges.Clear();
+        deferredSystems.Clear();
+        deferredSystemNumbers.Clear();
         TopBoxel = topBoxel;
         Current = topBoxel.WithSystemNumber(0);
         LowMassCode = lowMassCode;
