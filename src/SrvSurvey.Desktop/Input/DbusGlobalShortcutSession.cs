@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using Tmds.DBus;
 
@@ -89,12 +90,21 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
     internal static async Task RegisterApplicationAsync(
         IHostPortalRegistry registry,
         CancellationToken token,
-        bool sandboxed = false
+        bool sandboxed = false,
+        Func<CancellationToken, Task>? ensureDesktopEntry = null
     )
     {
         if (sandboxed)
         {
             return;
+        }
+        try
+        {
+            await (ensureDesktopEntry ?? LinuxDesktopEntryRegistration.EnsureCurrentAsync)(token).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            throw new PortalShortcutRegistrationException(exception);
         }
         try
         {

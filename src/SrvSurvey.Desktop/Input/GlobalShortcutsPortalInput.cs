@@ -222,6 +222,7 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
     )
     {
         await previous.ConfigureAwait(false);
+        bool failureReported = false;
         while (requested.Count > 0 && !token.IsCancellationRequested)
         {
             try
@@ -231,6 +232,7 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
                     .BindAsync(requested, forceBind, token, allowPermissionPrompt)
                     .ConfigureAwait(false);
                 ActivateSession(session, token);
+                failureReported = false;
                 forceBind = false;
                 await ObserveBoundSessionAsync(session, requested, accepted, ready, token).ConfigureAwait(false);
             }
@@ -256,6 +258,20 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
             {
                 break;
             }
+            catch (Exception exception) when (IsMissingApplicationRegistration(exception))
+            {
+                Trace.TraceInformation(
+                    "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
+                    exception.Message
+                );
+                SetSessionSettingsStatus(
+                    "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
+                    false,
+                    token,
+                    reportStatus: false
+                );
+                break;
+            }
             catch (Exception exception) when (IsUnsupportedPortal(exception))
             {
                 Trace.TraceInformation("Global Shortcuts portal unsupported: {0}", exception.Message);
@@ -269,7 +285,11 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
             }
             catch (Exception exception)
             {
-                Trace.TraceInformation("Global Shortcuts portal unavailable: {0}", exception.Message);
+                if (!failureReported)
+                {
+                    failureReported = true;
+                    Trace.TraceInformation("Global Shortcuts portal unavailable: {0}", exception.Message);
+                }
                 SetSessionSettingsStatus(
                     "Global Shortcuts portal unavailable; using existing keyboard listeners.",
                     false,
@@ -316,7 +336,16 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
                 {
                     ErrorName: "org.freedesktop.DBus.Error.ServiceUnknown"
                         or "org.freedesktop.DBus.Error.UnknownInterface"
+                        or "org.freedesktop.DBus.Error.UnknownMethod"
                 };
+
+    /// <summary>The host registry's missing app metadata is a setup failure, rather than a disconnected service.</summary>
+    private static bool IsMissingApplicationRegistration(Exception exception) =>
+        exception is PortalShortcutRegistrationException
+        || (
+            exception is DBusException { ErrorName: "org.freedesktop.portal.Error.Failed" }
+            && exception.Message.Contains("App info not found", StringComparison.Ordinal)
+        );
 
     /// <summary>Clears a closed session and reports reconnecting without overwriting approval or disabled status.</summary>
     private void ReleaseSession(CancellationToken token)
@@ -484,3 +513,7 @@ public sealed class PortalShortcutPermissionException : Exception;
 
 /// <summary>Defers new desktop approval until an explicit settings request.</summary>
 public sealed class PortalShortcutPermissionDeferredException : Exception;
+
+/// <summary>Requires repairing local application metadata before the portal can accept its identity.</summary>
+public sealed class PortalShortcutRegistrationException(Exception cause)
+    : Exception("SrvSurvey desktop application registration is unavailable: " + cause.Message, cause);
