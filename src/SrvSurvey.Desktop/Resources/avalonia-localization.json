@@ -7609,10 +7609,6 @@
       "translation": "Einstellungen für Desktop-Verknüpfungen"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Desktop-Verknüpfungseinstellungen sind nicht verfügbar."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Die Desktop-Verknüpfungseinstellungen konnten nicht geöffnet werden. Versuchen Sie es erneut, wenn das Desktop-Portal verfügbar ist."
     },
@@ -10855,6 +10851,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Spielanzeige {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Die Abfrage der Spieltastatur ist fehlgeschlagen: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -42827,10 +42827,6 @@
       "translation": "Configuración de accesos directos en el escritorio"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "La configuración de accesos directos del escritorio no está disponible."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "No se pudo abrir la configuración de acceso directo del escritorio. Vuelva a intentarlo cuando el portal de escritorio esté disponible."
     },
@@ -46073,6 +46069,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Pantalla de juego {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Error en el sondeo del teclado del juego: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -78045,10 +78045,6 @@
       "translation": "Paramètres de raccourci sur le bureau"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Les paramètres de raccourci sur le bureau ne sont pas disponibles."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Les paramètres de raccourci sur le bureau n'ont pas pu s'ouvrir. Réessayez lorsque le portail de bureau sera disponible."
     },
@@ -81291,6 +81287,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Affichage du jeu {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Échec de l'interrogation du clavier de jeu : {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -113263,10 +113263,6 @@
       "translation": "Configurações de atalho na área de trabalho"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "As configurações de atalho na área de trabalho não estão disponíveis."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "As configurações de atalho da área de trabalho não puderam ser abertas. Tente novamente quando o portal da área de trabalho estiver disponível."
     },
@@ -116509,6 +116505,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Exibição do jogo {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Falha na pesquisa do teclado do jogo: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -148481,10 +148481,6 @@
       "translation": "Настройки ярлыка на рабочем столе"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Настройки ярлыков на рабочем столе недоступны."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Не удалось открыть настройки ярлыка на рабочем столе. Повторите попытку, когда портал для настольных компьютеров станет доступен."
     },
@@ -151727,6 +151723,10 @@
     {
       "source": "Game display {0}.",
       "translation": "Игровой дисплей {0}."
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "Ошибка опроса игровой клавиатуры: {0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -183699,10 +183699,6 @@
       "translation": "桌面快捷方式设置"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "桌面快捷方式设置不可用。"
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "桌面快捷方式设置无法打开。当桌面门户可用时重试。"
     },
@@ -186945,6 +186941,10 @@
     {
       "source": "Game display {0}.",
       "translation": "游戏显示{0}。"
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "游戏键盘轮询失败：{0}"
     },
     {
       "source": "Game keyboard recording failed: {0}",
@@ -218917,10 +218917,6 @@
       "translation": "* DESKTOP SHORTCUT SETTINGS >>>!"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "* DESKTOP SHORTCUT SETTINGS ARE UNAVAILABLE. >>>!"
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "* DESKTOP SHORTCUT SETTINGS COULD NOT OPEN. TRY AGAIN WHEN THE DESKTOP PORTAL IS AVAILABLE. >>>!"
     },
@@ -222163,6 +222159,10 @@
     {
       "source": "Game display {0}.",
       "translation": "* GAME DISPLAY {0}. >>>!"
+    },
+    {
+      "source": "Game keyboard polling failed: {0}",
+      "translation": "* GAME KEYBOARD POLLING FAILED: {0} >>>!"
     },
     {
       "source": "Game keyboard recording failed: {0}",

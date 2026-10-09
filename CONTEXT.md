@@ -39,3 +39,7 @@ _Avoid_: Complete overlay catalog, category overlay settings
 **Overlay category shortcut**:
 A navigation control that opens a lean, category-filtered overlay configuration window without routing through a complete settings catalog.
 _Avoid_: Overlay gear, complete overlay settings
+
+**Keyboard activation**:
+A configured shortcut candidate from the desktop hook, the game display, or the Wayland portal, after focus evidence has been sampled.
+_Avoid_: Global keyboard hook event, raw key press
