@@ -1,48 +1,40 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class GalaxyMapOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotGalMap";
-
     private readonly GalaxyMapOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
     private readonly OverlayWindowRegistry registry;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private GalaxyMapOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
     private bool disposed;
 
     public GalaxyMapOverlayCoordinator(
         GalaxyMapOverlayViewModel viewModel,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
+        OverlayPresentationSession presentationSession
     )
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        ArgumentNullException.ThrowIfNull(presentationSession);
         registry = OverlayWindowRegistry.Shared;
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotGalMap",
+                _ => new GalaxyMapOverlayWindow(viewModel),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopLeft(gameBounds, windowSize, 8)
+            )
+            {
+                Tick = SynchronizeIntent,
+            }
+        );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         registry.SetGalaxyMapContextActive(viewModel.IsGalaxyMapOpen);
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -54,7 +46,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -65,18 +57,9 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         registry.SetGalaxyMapContextActive(false);
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindow();
+        hostedWindow.Dispose();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -95,85 +78,17 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
                 or nameof(GalaxyMapOverlayViewModel.Factions)
         )
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (
-            isSuppressed
-            || !viewModel.ShouldShow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new GalaxyMapOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
-    }
-
-    private void PositionWindow(Window window, PixelRect gameBounds)
-    {
-        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
-        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameBounds, size)
-            ?? OverlayWindowPlacement.TopLeft(gameBounds, size, 8);
-        if (window.Position != position)
-        {
-            window.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        GalaxyMapOverlayWindow? overlay = window;
-        window = null;
-        overlay?.Close();
+        hostedWindow.Reconcile(!isSuppressed && viewModel.ShouldShow);
     }
 }
