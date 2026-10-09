@@ -258,38 +258,15 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
             {
                 break;
             }
-            catch (Exception exception) when (IsMissingApplicationRegistration(exception))
+            catch (Exception exception) when (IsPermanentPortalFailure(exception))
             {
-                Trace.TraceInformation(
-                    "Global Shortcuts application registration unavailable; automatic retries stopped: {0}",
-                    exception.Message
-                );
-                SetSessionSettingsStatus(
-                    "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry.",
-                    false,
-                    token,
-                    reportStatus: false
-                );
-                break;
-            }
-            catch (Exception exception) when (IsUnsupportedPortal(exception))
-            {
-                Trace.TraceInformation("Global Shortcuts portal unsupported: {0}", exception.Message);
-                SetSessionSettingsStatus(
-                    "Global Shortcuts portal unavailable on this desktop.",
-                    false,
-                    token,
-                    reportStatus: false
-                );
+                ReportPermanentPortalFailure(exception, token);
                 break;
             }
             catch (Exception exception)
             {
-                if (!failureReported)
-                {
-                    failureReported = true;
-                    Trace.TraceInformation("Global Shortcuts portal unavailable: {0}", exception.Message);
-                }
+                LogTransientPortalFailure(exception, failureReported);
+                failureReported = true;
                 SetSessionSettingsStatus(
                     "Global Shortcuts portal unavailable; using existing keyboard listeners.",
                     false,
@@ -316,6 +293,38 @@ internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
         startupReady.TrySetResult();
         ready?.TrySetResult();
     }
+
+    /// <summary>Reports permanent setup and capability failures once before the session stops retrying.</summary>
+    private void ReportPermanentPortalFailure(Exception exception, CancellationToken token)
+    {
+        bool missingRegistration = IsMissingApplicationRegistration(exception);
+        Trace.TraceInformation(
+            missingRegistration
+                ? "Global Shortcuts application registration unavailable; automatic retries stopped: {0}"
+                : "Global Shortcuts portal unsupported: {0}",
+            exception.Message
+        );
+        SetSessionSettingsStatus(
+            missingRegistration
+                ? "Desktop shortcuts: application registration unavailable. Restart SrvSurvey after repairing its desktop entry."
+                : "Global Shortcuts portal unavailable on this desktop.",
+            false,
+            token,
+            reportStatus: false
+        );
+    }
+
+    /// <summary>Logs only the first failure in a transient outage while retaining automatic reconnection.</summary>
+    private static void LogTransientPortalFailure(Exception exception, bool failureReported)
+    {
+        if (!failureReported)
+        {
+            Trace.TraceInformation("Global Shortcuts portal unavailable: {0}", exception.Message);
+        }
+    }
+
+    private static bool IsPermanentPortalFailure(Exception exception) =>
+        IsMissingApplicationRegistration(exception) || IsUnsupportedPortal(exception);
 
     /// <summary>Publishes only a current binding session and clears its pending registration change atomically.</summary>
     private void ActivateSession(IPortalShortcutSession session, CancellationToken token)
