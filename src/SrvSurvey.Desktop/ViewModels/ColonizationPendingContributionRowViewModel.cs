@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Desktop.ViewModels;
 

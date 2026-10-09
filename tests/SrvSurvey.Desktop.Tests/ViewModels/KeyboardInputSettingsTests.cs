@@ -126,6 +126,11 @@ public sealed class KeyboardInputSettingsTests : IDisposable
             OverlayPlatformCapabilities.ForHost(host),
             new EmptyControllers()
         );
+        Assert.Equal(supported, viewModel.IsDesktopShortcutSettingsVisible);
+        Assert.Equal(
+            supported ? "Desktop shortcuts: checking availability." : string.Empty,
+            viewModel.DesktopShortcutSettingsStatus
+        );
         int opened = 0;
         viewModel.SetDesktopShortcutSettingsHandler(() =>
         {
@@ -133,10 +138,11 @@ public sealed class KeyboardInputSettingsTests : IDisposable
             return Task.CompletedTask;
         });
         viewModel.UpdateKeyboardDiagnostics(
-            new(null, true, false, false, "", "", "")
+            KeyboardInputHost.InitialDiagnostics(host) with
             {
-                CanOpenDesktopShortcutSettings = true,
-                DesktopShortcutSettingsStatus = "Approval needed.\nOverlay interaction: Super+O",
+                DesktopShortcutSettings = supported
+                    ? new DesktopShortcutSettingsState(true, "Approval needed.", ["Overlay interaction: Super+O"])
+                    : null,
             }
         );
         Assert.Equal(0, opened);
@@ -147,9 +153,9 @@ public sealed class KeyboardInputSettingsTests : IDisposable
         Assert.Equal(supported, viewModel.DesktopShortcutSettingsCommand.CanExecute(null));
         viewModel.DesktopShortcutSettingsCommand.Execute(null);
         Assert.Equal(supported ? 1 : 0, opened);
-        Assert.Equal("Approval needed.", viewModel.DesktopShortcutSettingsStatus);
-        Assert.Equal("Overlay interaction: Super+O", viewModel.ApprovedDesktopShortcuts);
-        Assert.True(viewModel.HasApprovedDesktopShortcuts);
+        Assert.Equal(supported ? "Approval needed." : string.Empty, viewModel.DesktopShortcutSettingsStatus);
+        Assert.Equal(supported ? "Overlay interaction: Super+O" : string.Empty, viewModel.ApprovedDesktopShortcuts);
+        Assert.Equal(supported, viewModel.HasApprovedDesktopShortcuts);
         viewModel.SetDesktopShortcutSettingsHandler(null);
         Assert.False(viewModel.CanOpenDesktopShortcutSettings);
     }
@@ -168,10 +174,14 @@ public sealed class KeyboardInputSettingsTests : IDisposable
         viewModel.UpdateKeyboardDiagnostics(
             new(null, true, false, true, "", "", "")
             {
-                CanOpenDesktopShortcutSettings = true,
-                DesktopShortcutSettingsStatus = "Active.",
+                DesktopShortcutSettings = new DesktopShortcutSettingsState(
+                    true,
+                    "Active.",
+                    ["Overlay interaction: Super+O", "Map zoom in: Ctrl+Plus"]
+                ),
             }
         );
+        Assert.Equal("Overlay interaction: Super+O\nMap zoom in: Ctrl+Plus", viewModel.ApprovedDesktopShortcuts);
         Task opening = viewModel.OpenDesktopShortcutSettingsAsync();
         Assert.False(viewModel.CanOpenDesktopShortcutSettings);
         await viewModel.OpenDesktopShortcutSettingsAsync();
@@ -194,7 +204,24 @@ public sealed class KeyboardInputSettingsTests : IDisposable
             viewModel.DesktopShortcutSettingsStatus.Contains("could not open", StringComparison.Ordinal)
         );
         viewModel.UpdateKeyboardDiagnostics(
-            new(null, true, false, false, "", "", "") { DesktopShortcutSettingsStatus = "Unavailable." }
+            new(null, true, false, true, "", "", "")
+            {
+                DesktopShortcutSettings = new DesktopShortcutSettingsState(
+                    true,
+                    "Active.",
+                    ["Overlay interaction: Super+O", "Map zoom in: Ctrl+Plus"]
+                ),
+            }
+        );
+        Assert.Equal(
+            outcome == "error",
+            viewModel.DesktopShortcutSettingsStatus.Contains("could not open", StringComparison.Ordinal)
+        );
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, false, false, "", "", "")
+            {
+                DesktopShortcutSettings = new DesktopShortcutSettingsState(false, "Unavailable.", []),
+            }
         );
         Assert.Equal("Unavailable.", viewModel.DesktopShortcutSettingsStatus);
         Assert.False(viewModel.HasApprovedDesktopShortcuts);

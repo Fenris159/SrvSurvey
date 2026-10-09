@@ -269,11 +269,9 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         var accounts = new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
         foreach (string frontierId in state.Accounts.Keys)
         {
-            StoredAccount? account = PreferredAccount(storedAccounts, frontierId, state.KeyringRevision);
-            if (account is null)
-            {
-                throw new InvalidDataException(InvalidKeyringMessage);
-            }
+            StoredAccount account =
+                PreferredAccount(storedAccounts, frontierId, state.KeyringRevision)
+                ?? throw new InvalidDataException(InvalidKeyringMessage);
 
             accounts[frontierId] = account.Credential;
         }

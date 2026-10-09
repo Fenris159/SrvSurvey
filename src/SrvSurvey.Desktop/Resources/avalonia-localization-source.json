@@ -1485,7 +1485,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "A cooperative instance shutdown request failed: {0}",
@@ -3772,14 +3772,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
   },
   {
-    "Text": "Amount",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
     "Text": "An AppImage update requires the APPIMAGE launch path.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5353,7 +5345,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
@@ -6178,7 +6170,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Background",
@@ -9203,7 +9195,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Cargo: 72 / 128 t \u00B7 Limpets: 34",
@@ -9243,7 +9235,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "CargoType",
@@ -9675,7 +9667,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Checking...",
@@ -11087,38 +11079,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
-  },
-  {
-    "Text": "ColonisationBeaconDeployed",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "ColonisationConstructionDepot",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "ColonisationContribution",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "ColonisationShip",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "ColoniseDeficit",
@@ -12843,7 +12803,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
@@ -12851,7 +12811,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Construction failed",
@@ -12948,14 +12908,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
-  },
-  {
-    "Text": "Contributions",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Contributor count not supplied",
@@ -15052,6 +15004,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
   },
   {
+    "Text": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
     "Text": "Demand:",
     "IsFormat": false,
     "SourceKinds": [
@@ -15210,7 +15170,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Desktop overlay placement and VR calibration are stored independently.",
@@ -15251,14 +15211,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Desktop shortcut settings are unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
@@ -16262,7 +16214,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Docking access",
@@ -16319,14 +16271,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
-  },
-  {
-    "Text": "DockingGranted",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Dodec",
@@ -20355,7 +20299,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet Carrier cargo was not updated: {0}",
@@ -20363,7 +20307,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet Carrier cargo will sync from matching Market.json updates.",
@@ -20379,7 +20323,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet Carrier loading",
@@ -20419,7 +20363,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet Carrier updates remain pending: {0}",
@@ -20427,7 +20371,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
@@ -20435,7 +20379,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Fleet carrier itinerary",
@@ -20883,7 +20827,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Frontier Developments",
@@ -21756,7 +21700,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Game display {0}.",
@@ -21765,6 +21709,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Game keyboard polling failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
   },
   {
     "Text": "Game keyboard recording failed: {0}",
@@ -21957,7 +21909,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input is active.",
@@ -21965,7 +21917,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input is disabled.",
@@ -21989,7 +21941,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input stopped.",
@@ -21997,7 +21949,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input stopped: {0}",
@@ -22005,7 +21957,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Global keyboard input: listening on Elite display {0}.",
@@ -27302,7 +27254,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
@@ -27654,7 +27606,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Loaded and selected the one {0} Raven site.",
@@ -27798,7 +27750,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Loaded {0} active Raven Colonial projects.",
@@ -29115,7 +29067,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Marked empty",
@@ -29252,7 +29204,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "MarketID",
@@ -29260,7 +29212,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "MarketId",
@@ -29276,7 +29228,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Markets",
@@ -31656,7 +31608,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Next Elite window",
@@ -32586,22 +32538,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "No legacy top-center layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
-  },
-  {
-    "Text": "No legacy top-left layout maps to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
   },
   {
     "Text": "No live Guardian site detected",
@@ -37992,7 +37928,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Prior",
@@ -38000,7 +37936,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Prior colour \u0027{0}\u0027 referenced by \u0027{1}\u0027 was not found.",
@@ -38402,7 +38338,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Published and linked {0}. Open its commodity market to synchronize cargo.",
@@ -38410,7 +38346,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Published and linked {0}; its cargo is already current.",
@@ -38418,7 +38354,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Published development quest: {0}",
@@ -38458,7 +38394,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Published {0} historical Green Gas Giant candidate(s).{1}{2}",
@@ -38530,7 +38466,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Pulse overlay preference changed for this session but could not be saved: {0}",
@@ -38851,7 +38787,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
@@ -38875,7 +38811,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Queued {0} Inara event(s); {1} waiting for the next batch.",
@@ -38923,7 +38859,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Quick statistics",
@@ -39628,7 +39564,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven Colonial projects",
@@ -39660,7 +39596,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven architect update was not sent because this commander has no saved API key.",
@@ -39668,7 +39604,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven changed after review. Reload and review conflicting edits before publishing.",
@@ -39684,7 +39620,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven did not identify a project for the recorded construction contribution.",
@@ -39692,7 +39628,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven has no body catalog for this system",
@@ -39724,7 +39660,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven project sync skipped squadron cargo diff: {0}",
@@ -39732,7 +39668,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven project sync skipped {0} in {1}: {2}",
@@ -39740,7 +39676,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven project sync skipped {0}: {1}",
@@ -39748,7 +39684,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Raven rejected this API key. The saved key was not changed.",
@@ -41421,7 +41357,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Reinforce",
@@ -41909,7 +41845,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Repaired the Raven site name for {0}.",
@@ -41917,7 +41853,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
@@ -42109,7 +42045,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Requires proper technique; hard impacts common",
@@ -42645,7 +42581,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "Return a completed or empty system to the active survey.",
@@ -46067,7 +46003,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Select Adjust overlays or press the configured Adjust VR overlay shortcut while the runtime is connected.",
@@ -49989,6 +49925,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "SrvSurveyWindowOne",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
+  },
+  {
     "Text": "SrvSurveyWindowOne overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -50394,7 +50338,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Starting verified package download...",
@@ -50533,22 +50477,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
-  },
-  {
-    "Text": "StationName",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "StationType",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Stations",
@@ -52041,7 +51969,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "SystemControlBackgroundChromeMediumLowBrush",
@@ -53021,7 +52949,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "The Fleet Carrier was not published: {0}",
@@ -53029,7 +52957,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "The Frontier authorization stored in the Linux keyring is invalid.",
@@ -53534,14 +53462,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "The active overlay layout is unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "The active settlement changed, so its unexported authoring draft was discarded.",
@@ -54957,7 +54877,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "The measured point is too close to {0}; no raw point was added.",
@@ -55302,14 +55222,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
-  },
-  {
-    "Text": "The overlay layout store is unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "The overlay layout was not changed: {0}",
@@ -56990,7 +56902,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "This construction site is not in the active project list.",
@@ -58655,6 +58567,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Unknown delivery notice.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
     "Text": "Unknown faction",
     "IsFormat": false,
     "SourceKinds": [
@@ -59052,7 +58972,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Updated Raven project metadata for {0}.",
@@ -59060,7 +58980,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Updated Raven remaining cargo after contribution for {0}.",
@@ -59068,7 +58988,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Updated master-template point {0}.",
@@ -59092,7 +59012,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
@@ -59100,7 +59020,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Updated {0}. A verified state backup was retained.",
@@ -59165,7 +59085,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "Upload GGG candidates",
@@ -59862,7 +59782,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
@@ -59878,7 +59798,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -61217,7 +61137,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
   },
   {
     "Text": "Wayland portal",
@@ -61225,7 +61145,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "Wayland screen capture",
@@ -62475,7 +62395,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "app",
@@ -62667,7 +62587,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "badge",
@@ -63051,7 +62971,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "bracketright",
@@ -63059,7 +62979,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "break",
@@ -63435,7 +63355,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "commander journal publication upload credential api key flight log",
@@ -64035,7 +63955,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "error",
@@ -64627,7 +64547,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "green",
@@ -65611,7 +65531,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "missile",
@@ -66203,7 +66123,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "pilots-federation",
@@ -66396,14 +66316,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
-  },
-  {
-    "Text": "queued dock baseline",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "radar",
@@ -66771,7 +66683,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "sensor",
@@ -66979,7 +66891,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "slot",
@@ -67019,7 +66931,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
     "Text": "spansh.co.uk",
@@ -67044,14 +66956,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "squadron cargo diff",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "squid",
@@ -68708,7 +68612,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "{0} SrvSurvey instances are currently running.",
@@ -68748,7 +68652,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
   },
   {
     "Text": "{0} Win32 error {1}.",
@@ -68900,7 +68804,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
     "Text": "{0} commanders",

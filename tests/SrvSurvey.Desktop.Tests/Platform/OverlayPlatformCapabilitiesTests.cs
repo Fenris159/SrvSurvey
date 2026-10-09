@@ -78,4 +78,26 @@ public sealed class OverlayPlatformCapabilitiesTests
         Assert.False(capabilities.SupportsPassiveOverlay);
         Assert.Contains("unavailable", capabilities.StatusText);
     }
+
+    [Theory]
+    [InlineData(OverlayHostKind.Windows, true)]
+    [InlineData(OverlayHostKind.LinuxX11, false)]
+    [InlineData(OverlayHostKind.LinuxXWayland, false)]
+    [InlineData(OverlayHostKind.LinuxWayland, false)]
+    [InlineData(OverlayHostKind.Other, false)]
+    public void OnlyWindowsNativeMoveDragNeedsTheManagedDragForMonitorLock(OverlayHostKind host, bool expected)
+    {
+        Assert.Equal(expected, OverlayPlatformCapabilities.ForHost(host).UsesManagedDragForMonitorLock);
+    }
+
+    [Theory]
+    [InlineData(OverlayHostKind.Windows)]
+    [InlineData(OverlayHostKind.LinuxWayland)]
+    public void PortablePlatformNeverReplacesItsMoveDragForMonitorLock(OverlayHostKind host)
+    {
+        using var platform = new PortableOverlayPlatformService(OverlayPlatformCapabilities.ForHost(host));
+
+        Assert.False(platform.Capabilities.UsesManagedDragForMonitorLock);
+        Assert.Equal(host, platform.Capabilities.Host);
+    }
 }
