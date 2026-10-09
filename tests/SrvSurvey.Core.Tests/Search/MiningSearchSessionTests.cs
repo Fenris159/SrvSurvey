@@ -484,6 +484,51 @@ public sealed class MiningSearchSessionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task AbandonAndDisposeKeepCancellationUsableUntilTheSearchFinishes(bool dispose)
+    {
+        var provider = new StubMiningSearchProvider();
+        using MiningSearchSession<Snapshot> session = Create(provider);
+        var outcomes = new List<MiningSearchOutcomeKind>();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken searchToken = default;
+        Task search = session.RunAsync(
+            token =>
+            {
+                searchToken = token;
+                return release.Task;
+            },
+            outcome => outcomes.Add(outcome.Kind)
+        );
+
+        try
+        {
+            if (dispose)
+            {
+                session.Dispose();
+            }
+            else
+            {
+                session.Abandon();
+            }
+
+            Assert.True(searchToken.IsCancellationRequested);
+            Assert.True(searchToken.WaitHandle.WaitOne(0));
+            Assert.False(session.IsBusy);
+        }
+        finally
+        {
+            release.SetResult();
+            await search;
+        }
+
+        Assert.Throws<ObjectDisposedException>(() => searchToken.WaitHandle);
+        Assert.Equal([MiningSearchOutcomeKind.Started], outcomes);
+        Assert.Equal(1, provider.DiagnosticFlushes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task AbandonAndDisposeInvalidateTheSearchBeforeInlineCancellationCompletes(bool dispose)
     {
         using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());

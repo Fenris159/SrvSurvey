@@ -42,8 +42,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
 {
     private readonly IMiningSearchProvider provider;
     private readonly Func<object> filters;
-    private CancellationTokenSource? pending;
-    private string? pendingFilterKey;
+    private PendingSearch? pending;
     private bool busy;
 
     public MiningSearchSession(IMiningSearchProvider provider, string workspace, Func<object> filters)
@@ -79,7 +78,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     public void Save(TSnapshot snapshot)
     {
         string key = FilterKey();
-        if (pending is not null && (pending.IsCancellationRequested || key != pendingFilterKey))
+        if (pending is { } current && (current.Cancellation.IsCancellationRequested || key != current.FilterKey))
         {
             return;
         }
@@ -90,7 +89,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     /// <summary>Applies presentation progress or results only while their search is still current.</summary>
     public void Publish(Action apply, CancellationToken token)
     {
-        if (pending is { IsCancellationRequested: false } current && current.Token == token)
+        if (pending is { Cancellation.IsCancellationRequested: false } current && current.Cancellation.Token == token)
         {
             apply();
         }
@@ -137,24 +136,24 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     {
         options ??= MiningSearchRunOptions.Default;
         string key = FilterKey();
-        CancellationTokenSource? previous = pending;
-        using var current = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        PendingSearch? previous = pending;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var current = new PendingSearch(cancellation, key);
         if (options.Timeout is { } timeout)
         {
-            current.CancelAfter(timeout);
+            cancellation.CancelAfter(timeout);
         }
 
         pending = current;
-        pendingFilterKey = key;
         SetBusy(true);
         report(MiningSearchOutcome.Started);
         using IDisposable diagnosticScope = provider.BeginDiagnostics();
-        CancellationToken token = current.Token;
+        CancellationToken token = cancellation.Token;
         try
         {
             if (previous is not null)
             {
-                await previous.CancelAsync();
+                await previous.Cancellation.CancelAsync();
             }
 
             token.ThrowIfCancellationRequested();
@@ -192,25 +191,32 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
             if (pending == current)
             {
                 pending = null;
-                pendingFilterKey = null;
                 SetBusy(false);
             }
         }
     }
 
-    public void Cancel() => pending?.Cancel();
+    public void Cancel() => pending?.Cancellation.Cancel();
 
     /// <summary>Cancels the in-flight search so that it can no longer report or release the busy state.</summary>
     public void Abandon()
     {
-        CancellationTokenSource? abandoned = pending;
+        PendingSearch? abandoned = pending;
         pending = null;
-        pendingFilterKey = null;
-        abandoned?.Cancel();
+        abandoned?.Cancellation.Cancel();
         SetBusy(false);
     }
 
     public void Dispose() => Abandon();
+
+    // The session only tracks the active run. RunAsync owns the cancellation source
+    // and disposes it after the search work finishes.
+    private sealed class PendingSearch(CancellationTokenSource cancellation, string filterKey)
+    {
+        public CancellationTokenSource Cancellation { get; } = cancellation;
+
+        public string FilterKey { get; } = filterKey;
+    }
 
     private void SetBusy(bool value)
     {
