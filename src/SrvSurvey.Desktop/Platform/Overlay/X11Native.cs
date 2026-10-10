@@ -691,7 +691,7 @@ internal static partial class X11Native
 
     /// <summary>Completes control requests before enabling the data stream.</summary>
     [LibraryImport("libX11.so.6")]
-    private static partial int XSync(nint display, int discard);
+    internal static partial int XSync(nint display, int discard);
 
     /// <summary>Looks up a standard X11 keysym.</summary>
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]

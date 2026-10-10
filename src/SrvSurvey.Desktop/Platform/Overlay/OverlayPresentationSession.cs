@@ -184,15 +184,11 @@ public sealed class OverlayPresentationSession : IDisposable
         );
     }
 
-    /// <summary>Applies one startup bypass preference to separate X11 live panels and their position editor.</summary>
+    /// <summary>Classifies separate X11 overlays before mapping and applies their startup bypass preference.</summary>
     internal void ConfigureWindowManagement(bool bypassWindowManagement, Action<string>? log = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (
-            !bypassWindowManagement
-            || Decision.Mode != OverlayPresentationMode.MultipleWindows
-            || windowManagementSession is not null
-        )
+        if (Decision.Mode != OverlayPresentationMode.MultipleWindows || windowManagementSession is not null)
         {
             return;
         }
@@ -203,9 +199,15 @@ public sealed class OverlayPresentationSession : IDisposable
             windowManagementSession = new OverlayWindowManagementSession(
                 hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared,
                 ownedPlatform is null ? native : new BorrowedWindowManagement(native),
-                log
+                log,
+                bypassWindowManagement
             );
-            log?.Invoke("Window management bypass is enabled for X11/XWayland live panels and the position editor.");
+            if (bypassWindowManagement)
+            {
+                log?.Invoke(
+                    "Window management bypass is enabled for X11/XWayland live panels and the position editor."
+                );
+            }
         }
         else
         {
@@ -213,7 +215,12 @@ public sealed class OverlayPresentationSession : IDisposable
             {
                 platform.Dispose();
             }
-            log?.Invoke("Window management bypass is unavailable on this display backend; using normal management.");
+            if (bypassWindowManagement)
+            {
+                log?.Invoke(
+                    "Window management bypass is unavailable on this display backend; using normal management."
+                );
+            }
         }
     }
 
@@ -323,6 +330,9 @@ public sealed class OverlayPresentationSession : IDisposable
 
     private sealed class BorrowedWindowManagement(IOverlayWindowManagement native) : IOverlayWindowManagement
     {
+        /// <summary>Forwards pre-map classification while the presentation session owns the native connection.</summary>
+        public void PrepareOverlayWindow(Window window) => native.PrepareOverlayWindow(window);
+
         public bool TryBypassWindowManagement(Window window) => native.TryBypassWindowManagement(window);
 
         public void RaiseUnmanagedWindow(Window window, bool activate = false) =>

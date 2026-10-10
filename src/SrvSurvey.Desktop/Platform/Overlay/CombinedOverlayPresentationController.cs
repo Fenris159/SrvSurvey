@@ -207,6 +207,10 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
         var window = new CombinedOverlayWindow();
         OverlayThemeResources.Apply(window);
+        if (nativePlatform is IOverlayWindowManagement nativeManagement)
+        {
+            nativeManagement.PrepareOverlayWindow(window);
+        }
         window.Opened += OnHostOpened;
         host = window;
     }

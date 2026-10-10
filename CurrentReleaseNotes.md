@@ -38,6 +38,11 @@ application restarts.
   controls the shopping plan and overlay; the publishing help text now makes this
   clear. Raven access, credentials, ship readiness, and the multiple-game-window
   safeguard remain required.
+- **KDE overlays stay steady with notification effects enabled.** Live panels
+  and position-editor previews use a tool window type before appearing, avoiding
+  notification sliding and standard popup animations with Bypass Window Management
+  either on or off. You can leave Plasma's notification effects enabled while
+  moving overlays. KDE's fullscreen stacking rules still apply when bypass is off.
 - **RC.59.2 quick patch: overlay dragging.** Live overlays and position-editor
   previews use the current mouse position on X11/XWayland, fixing stale drag
   positions that could leave panels trailing behind the pointer. Fast direction

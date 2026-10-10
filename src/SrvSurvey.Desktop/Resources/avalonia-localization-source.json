@@ -35636,14 +35636,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs"
   },
   {
-    "Text": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
-  },
-  {
     "Text": "Overlay edit mode is active through the X11 input region.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53834,6 +53826,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "The X11 overlay utility-window type could not be applied.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
     "Text": "The active bootstrap source and the locations checked on this platform.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62248,15 +62248,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
   },
   {
-    "Text": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
-  },
-  {
-    "Text": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
+    "Text": "X11 overlay window policy: utility windows with standard topmost stacking.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

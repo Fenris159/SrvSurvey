@@ -22,29 +22,25 @@ internal sealed class X11OverlayPlatformService
     private static readonly ConcurrentDictionary<nint, byte> ErrorHandledDisplays = new();
     private static readonly X11ExpectedErrorLogLimiter ExpectedErrorLogLimiter = new(TimeSpan.FromSeconds(30));
     private static readonly X11ExpectedErrorLogLimiter UnexpectedErrorLogLimiter = new(TimeSpan.FromMinutes(1));
-    private static readonly X11StackingPolicyLogLimiter StackingPolicyLogLimiter = new();
+    private static int windowPolicyReported;
     private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
     private nint display;
     private readonly HashSet<nuint> interactiveWindowHandles = [];
     private readonly bool shapeAvailable;
-    private readonly X11OverlayStackingMode stackingMode;
     private readonly nuint atomType;
     private readonly nuint windowTypeAtom;
-    private readonly nuint kdeOnScreenDisplayAtom;
-    private readonly nuint notificationWindowAtom;
+    private readonly nuint utilityWindowAtom;
     private readonly nuint normalWindowAtom;
 
     private X11OverlayPlatformService(X11OverlayPlatformContext context)
     {
         display = context.Display;
         shapeAvailable = context.ShapeAvailable;
-        stackingMode = context.StackingMode;
         atomType = context.AtomType;
         windowTypeAtom = context.WindowTypeAtom;
-        kdeOnScreenDisplayAtom = context.KdeOnScreenDisplayAtom;
-        notificationWindowAtom = context.NotificationWindowAtom;
+        utilityWindowAtom = context.UtilityWindowAtom;
         normalWindowAtom = context.NormalWindowAtom;
         Capabilities = OverlayPlatformCapabilities.ForHost(context.Host) with
         {
@@ -63,15 +59,11 @@ internal sealed class X11OverlayPlatformService
 
         public OverlayHostKind Host { get; init; }
 
-        public X11OverlayStackingMode StackingMode { get; init; }
-
         public nuint AtomType { get; init; }
 
         public nuint WindowTypeAtom { get; init; }
 
-        public nuint KdeOnScreenDisplayAtom { get; init; }
-
-        public nuint NotificationWindowAtom { get; init; }
+        public nuint UtilityWindowAtom { get; init; }
 
         public nuint NormalWindowAtom { get; init; }
     }
@@ -117,10 +109,8 @@ internal sealed class X11OverlayPlatformService
 
         nuint atomType = 0;
         nuint windowTypeAtom = 0;
-        nuint kdeOnScreenDisplayAtom = 0;
-        nuint notificationWindowAtom = 0;
+        nuint utilityWindowAtom = 0;
         nuint normalWindowAtom = 0;
-        X11OverlayStackingMode stackingMode = X11OverlayStackingMode.StandardTopmost;
         try
         {
             atomType = X11Native.XInternAtom(display, "ATOM", onlyIfExists: 1);
@@ -129,14 +119,9 @@ internal sealed class X11OverlayPlatformService
                 X11OverlayWindowManagerPolicy.WindowTypeAtomName,
                 onlyIfExists: 0
             );
-            kdeOnScreenDisplayAtom = X11Native.XInternAtom(
+            utilityWindowAtom = X11Native.XInternAtom(
                 display,
-                X11OverlayWindowManagerPolicy.KdeOnScreenDisplayAtomName,
-                onlyIfExists: 1
-            );
-            notificationWindowAtom = X11Native.XInternAtom(
-                display,
-                X11OverlayWindowManagerPolicy.NotificationWindowAtomName,
+                X11OverlayWindowManagerPolicy.UtilityWindowAtomName,
                 onlyIfExists: 0
             );
             normalWindowAtom = X11Native.XInternAtom(
@@ -144,25 +129,19 @@ internal sealed class X11OverlayPlatformService
                 X11OverlayWindowManagerPolicy.NormalWindowAtomName,
                 onlyIfExists: 0
             );
-            nuint[] supportedAtoms = ReadSupportedAtoms(display, atomType);
-            stackingMode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom, supportedAtoms);
         }
         catch (Exception exception)
             when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             Trace.TraceWarning(
-                "X11 window-manager capabilities could not be queried; "
+                "X11 overlay window types could not be initialized; "
                     + $"using standard topmost overlays: {exception.Message}"
             );
         }
 
-        if (StackingPolicyLogLimiter.ShouldLog(stackingMode))
+        if (Interlocked.Exchange(ref windowPolicyReported, 1) == 0)
         {
-            Trace.TraceInformation(
-                stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
-                    ? "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager)."
-                    : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised)."
-            );
+            Trace.TraceInformation("X11 overlay window policy: utility windows with standard topmost stacking.");
         }
 
         return new X11OverlayPlatformService(
@@ -171,14 +150,31 @@ internal sealed class X11OverlayPlatformService
                 Display = display,
                 ShapeAvailable = shapeAvailable,
                 Host = host,
-                StackingMode = stackingMode,
                 AtomType = atomType,
                 WindowTypeAtom = windowTypeAtom,
-                KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
-                NotificationWindowAtom = notificationWindowAtom,
+                UtilityWindowAtom = utilityWindowAtom,
                 NormalWindowAtom = normalWindowAtom,
             }
         );
+    }
+
+    /// <summary>Sets the overlay tool classification before Avalonia maps through its separate X11 connection.</summary>
+    public void PrepareOverlayWindow(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        lock (displaySync)
+        {
+            if (handle != nint.Zero && TryGetDisplay(out nint currentDisplay))
+            {
+                if (!ApplyWindowType(currentDisplay, handle))
+                {
+                    Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
+                }
+                // Wait for this connection's property update before Avalonia shows the window.
+                _ = X11Native.XSync(currentDisplay, 0);
+            }
+        }
     }
 
     /// <summary>Opts an overlay or position-editor window into direct X11 management before its first map.</summary>
@@ -949,15 +945,10 @@ internal sealed class X11OverlayPlatformService
 
     private bool ApplyWindowType(nint currentDisplay, nint handle)
     {
-        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
-            stackingMode,
-            kdeOnScreenDisplayAtom,
-            notificationWindowAtom,
-            normalWindowAtom
-        );
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(utilityWindowAtom, normalWindowAtom);
         if (windowTypes.Length == 0)
         {
-            return stackingMode == X11OverlayStackingMode.StandardTopmost;
+            return false;
         }
 
         if (atomType == 0 || windowTypeAtom == 0)
@@ -995,7 +986,7 @@ internal sealed class X11OverlayPlatformService
     {
         if (!stackingApplied)
         {
-            return "The KDE on-screen-display stacking hint could not be applied; the overlay is using standard topmost behavior.";
+            return "The overlay utility-window type could not be applied; the overlay is using standard topmost behavior.";
         }
 
         if (!interactive)
@@ -1003,8 +994,6 @@ internal sealed class X11OverlayPlatformService
             return Capabilities.StatusText;
         }
 
-        return stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
-            ? "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking."
-            : "Overlay edit mode is active through the X11 input region.";
+        return "Overlay edit mode is active through the X11 input region.";
     }
 }

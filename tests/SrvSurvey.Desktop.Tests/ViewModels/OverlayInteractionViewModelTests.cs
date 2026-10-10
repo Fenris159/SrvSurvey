@@ -349,6 +349,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             Assert.True(controller.PreparePassiveWindow(window).IsPrepared);
             Assert.True(controller.SetInteractive(window, true).IsInteractive);
             CombinedOverlayWindow host = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(panel));
+            Assert.Equal([host], platform.ClassifiedWindows);
+            Assert.False(platform.ClassifiedWhileVisible);
             using WriteableBitmap? frame = host.CaptureRenderedFrame();
             Control target = scrollbar ? Assert.Single(scroll.GetVisualDescendants().OfType<Thumb>()) : button;
             Point start = Assert.IsType<Point>(
@@ -1015,12 +1017,34 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
-    private sealed class FakeOverlayPlatform : IOverlayPlatformService, ICombinedOverlayNativeService
+    private sealed class FakeOverlayPlatform
+        : IOverlayPlatformService,
+            ICombinedOverlayNativeService,
+            IOverlayWindowManagement
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         public List<bool> InteractiveStates { get; } = [];
+
+        /// <summary>Records native classification separately from showing or bypassing the combined host.</summary>
+        public List<Window> ClassifiedWindows { get; } = [];
+
+        /// <summary>Detects a classification applied too late to prevent opening animations.</summary>
+        public bool ClassifiedWhileVisible { get; private set; }
+
+        /// <summary>Records classification and whether the host was already visible.</summary>
+        public void PrepareOverlayWindow(Window window)
+        {
+            ClassifiedWindows.Add(window);
+            ClassifiedWhileVisible |= window.IsVisible;
+        }
+
+        /// <summary>The combined presenter must not change its host's management mode.</summary>
+        public bool TryBypassWindowManagement(Window window) => throw new InvalidOperationException();
+
+        /// <summary>The combined presenter retains its existing native stacking lifecycle.</summary>
+        public void RaiseUnmanagedWindow(Window window, bool activate = false) => throw new InvalidOperationException();
 
         public int MoveDragStarts { get; private set; }
 
