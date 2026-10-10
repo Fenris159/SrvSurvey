@@ -48,13 +48,26 @@
                 <TextBlock Classes="muted" Text="{Binding DeficitTrips}" TextWrapping="Wrap" />
               </StackPanel>
             </Grid>
-            <TextBlock Classes="card-title" Text="{Binding ProgressText}" />
-            <ProgressBar x:Name="DeliveredProgress" Minimum="0" Maximum="100" Value="{Binding Progress}" Height="12" />
-            <TextBlock Classes="muted" Text="Delivered" />
-            <TextBlock Text="{Binding DeliveredText}" />
-            <ProgressBar Minimum="0" Maximum="100" Value="{Binding ReadyProgress}" Height="8" />
-            <TextBlock Classes="muted" Text="Ready on fleet carriers" />
-            <TextBlock Text="{Binding ReadyText}" />
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="card-title" Text="{Binding ProgressText}" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding DeliveredText}" />
+                  <TextBlock Classes="muted" Text="tonnes" />
+                </StackPanel>
+              </Grid>
+              <ProgressBar x:Name="DeliveredProgress" Minimum="0" Maximum="100" Value="{Binding Progress}" Height="12" />
+            </StackPanel>
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="card-title" Text="Ready on fleet carriers" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding ReadyText}" />
+                  <TextBlock Classes="muted" Text="tonnes" />
+                </StackPanel>
+              </Grid>
+              <ProgressBar Minimum="0" Maximum="100" Value="{Binding ReadyProgress}" Height="12" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <Border Classes="card">

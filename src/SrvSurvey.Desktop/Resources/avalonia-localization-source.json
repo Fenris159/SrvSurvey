@@ -15076,14 +15076,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Delivered",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
-  },
-  {
     "Text": "Delivery and local storage",
     "IsFormat": false,
     "SourceKinds": [
@@ -67837,6 +67829,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
+  },
+  {
+    "Text": "tonnes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "top",

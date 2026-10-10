@@ -7521,10 +7521,6 @@
       "translation": "Liefern Sie {0}: {1} verbleibende Einheiten"
     },
     {
-      "source": "Delivered",
-      "translation": "Geliefert"
-    },
-    {
       "source": "Delivery and local storage",
       "translation": "Lieferung und lokale Lagerung"
     },
@@ -33837,6 +33833,10 @@
       "translation": "Zu"
     },
     {
+      "source": "tonnes",
+      "translation": "Tonnen"
+    },
+    {
       "source": "top",
       "translation": "oben"
     },
@@ -42885,10 +42885,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "Entregar {0}: {1} unidades restantes"
-    },
-    {
-      "source": "Delivered",
-      "translation": "Entregado"
     },
     {
       "source": "Delivery and local storage",
@@ -69203,6 +69199,10 @@
       "translation": "a"
     },
     {
+      "source": "tonnes",
+      "translation": "toneladas"
+    },
+    {
       "source": "top",
       "translation": "arriba"
     },
@@ -78251,10 +78251,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "Livrer {0} : {1} unités restantes"
-    },
-    {
-      "source": "Delivered",
-      "translation": "Livré"
     },
     {
       "source": "Delivery and local storage",
@@ -104569,6 +104565,10 @@
       "translation": "à"
     },
     {
+      "source": "tonnes",
+      "translation": "tonnes"
+    },
+    {
       "source": "top",
       "translation": "haut"
     },
@@ -113617,10 +113617,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "Entregar {0}: {1} unidades restantes"
-    },
-    {
-      "source": "Delivered",
-      "translation": "Entregue"
     },
     {
       "source": "Delivery and local storage",
@@ -139935,6 +139931,10 @@
       "translation": "para"
     },
     {
+      "source": "tonnes",
+      "translation": "toneladas"
+    },
+    {
       "source": "top",
       "translation": "topo"
     },
@@ -148983,10 +148983,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "Доставьте {0}: осталось {1} единиц."
-    },
-    {
-      "source": "Delivered",
-      "translation": "Доставленный"
     },
     {
       "source": "Delivery and local storage",
@@ -175301,6 +175297,10 @@
       "translation": "к"
     },
     {
+      "source": "tonnes",
+      "translation": "тонны"
+    },
+    {
       "source": "top",
       "translation": "топ"
     },
@@ -184349,10 +184349,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "交付 {0}：剩余 {1} 单位"
-    },
-    {
-      "source": "Delivered",
-      "translation": "发表"
     },
     {
       "source": "Delivery and local storage",
@@ -210667,6 +210663,10 @@
       "translation": "到"
     },
     {
+      "source": "tonnes",
+      "translation": "吨"
+    },
+    {
       "source": "top",
       "translation": "顶部"
     },
@@ -219715,10 +219715,6 @@
     {
       "source": "Deliver {0}: {1} units remaining",
       "translation": "* DELIVER {0}: {1} UNITS REMAINING >>>!"
-    },
-    {
-      "source": "Delivered",
-      "translation": "* DELIVERED >>>!"
     },
     {
       "source": "Delivery and local storage",
@@ -246031,6 +246027,10 @@
     {
       "source": "to",
       "translation": "* TO >>>!"
+    },
+    {
+      "source": "tonnes",
+      "translation": "* TONNES >>>!"
     },
     {
       "source": "top",
