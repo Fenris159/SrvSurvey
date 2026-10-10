@@ -28609,10 +28609,6 @@
       "translation": "Diese Plattform bietet keine Ordnerauswahl für Exporte."
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "Dadurch werden Schiffsname, -typ, -kapazität und Cargo.json-Anzahl nur veröffentlicht, solange sichtbare Kolonisierungsprojekte aktiv sind."
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "Dadurch werden alle Besuchsstatistiken aus dem Startjournal neu erstellt. Ältere Notiz- und Screenshot-Tags in der Reisezeitleiste werden entfernt, während die zugrunde liegenden Systemnotizen und PNG-Dateien unberührt bleiben."
     },
@@ -30829,6 +30825,10 @@
       "translation": "Wenn diese Option aktiviert ist, werden nur bei einem neuen Live-Andocken oder einer manuellen Ausrichtung die Siedlungsidentität, die Koordinaten, das Pad-Layout, die Position des Kommandanten, der Schiffstyp und der berechnete Kurs hochgeladen. Importierte Daten, Startverlauf und Canonn-Suchen werden nie erneut veröffentlicht."
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "Wenn diese Option aktiviert ist, werden Schiffsname, Schiffstyp, Frachtkapazität und die Frachtmengen aus Cargo.json an Raven Colonial übermittelt, auch wenn alle Kolonisierungsprojekte ausgeblendet sind oder keines geladen ist."
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "Wenn mehrere Kommandanten einen Ordner teilen, bestätigen Sie die bevorzugte Frontier-ID und das aktive Elite-Fenster."
     },
@@ -32931,6 +32931,10 @@
     {
       "source": "native",
       "translation": "einheimisch"
+    },
+    {
+      "source": "native button-up",
+      "translation": "nativer Knopfverschluss"
     },
     {
       "source": "navigation",
@@ -64015,10 +64019,6 @@
       "translation": "Esta plataforma no proporciona un selector de carpetas para exportaciones."
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "Esto publica el nombre del barco, el tipo, la capacidad y los recuentos Cargo.json solo mientras los proyectos de colonización visibles estén activos."
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "Esto reconstruye todas las estadísticas de visitas del diario inicial. Las etiquetas de notas y capturas de pantalla heredadas en la línea de tiempo del viaje se eliminan, mientras que las notas del sistema subyacentes y los archivos PNG permanecen intactos."
     },
@@ -66235,6 +66235,10 @@
       "translation": "Cuando está habilitado, solo un nuevo acoplamiento en vivo o una alineación manual carga la identidad del asentamiento, las coordenadas, el diseño de la plataforma, la posición del comandante, el tipo de barco y el rumbo calculado. Los datos importados, el historial de inicio y las búsquedas Canonn nunca se vuelven a publicar."
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "Al activar esta opción, se publican en Raven Colonial el nombre, tipo y capacidad de la nave y las cantidades de Cargo.json, incluso si todos los proyectos de colonización están ocultos o no hay ninguno cargado."
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "Cuando varios comandantes comparten una carpeta, confirma el Frontier ID preferido y la ventana Elite activa."
     },
@@ -68337,6 +68341,10 @@
     {
       "source": "native",
       "translation": "nativo"
+    },
+    {
+      "source": "native button-up",
+      "translation": "botones nativos"
     },
     {
       "source": "navigation",
@@ -99421,10 +99429,6 @@
       "translation": "Cette plateforme ne fournit pas de sélecteur de dossiers pour les exportations."
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "Celui-ci publie le nom, le type, la capacité et le nombre Cargo.json du navire uniquement lorsque les projets de colonisation visibles sont actifs."
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "Cela reconstruit toutes les statistiques de visite du journal de départ. Les anciennes balises de note et de capture d'écran dans la chronologie du voyage sont supprimées, tandis que les notes système sous-jacentes et les fichiers PNG restent intacts."
     },
@@ -101641,6 +101645,10 @@
       "translation": "Lorsqu'il est activé, seul un nouvel amarrage en direct ou un alignement manuel télécharge l'identité de la colonie, les coordonnées, la disposition du terrain, la position du commandant, le type de navire et le cap calculé. Les données importées, l'historique de démarrage et les recherches Canonn ne sont jamais republiées."
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "Lorsque cette option est activée, le nom, le type et la capacité du vaisseau ainsi que les quantités de Cargo.json sont envoyés à Raven Colonial, même si tous les projets de colonisation sont masqués ou qu'aucun n'est chargé."
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "Lorsque plusieurs commandants partagent un dossier, confirmez l'ID Frontier préféré et la fenêtre Elite active."
     },
@@ -103743,6 +103751,10 @@
     {
       "source": "native",
       "translation": "indigène"
+    },
+    {
+      "source": "native button-up",
+      "translation": "bouton natif"
     },
     {
       "source": "navigation",
@@ -134827,10 +134839,6 @@
       "translation": "Esta plataforma não fornece um seletor de pastas para exportações."
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "Isso publica o nome do navio, tipo, capacidade e contagens Cargo.json somente enquanto projetos de colonização visíveis estiverem ativos."
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "Isso reconstrói todas as estatísticas de visitas do diário inicial. Notas legadas e tags de captura de tela na linha do tempo da jornada são removidas, enquanto as notas do sistema subjacentes e os arquivos PNG permanecem intactos."
     },
@@ -137047,6 +137055,10 @@
       "translation": "Quando ativado, apenas uma nova ancoragem ao vivo ou alinhamento manual carrega a identidade do assentamento, coordenadas, layout do bloco, posição do comandante, tipo de navio e rumo calculado. Dados importados, histórico de inicialização e pesquisas Canonn nunca são republicados."
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "Quando esta opção está ativada, o nome, o tipo e a capacidade da nave e as quantidades de Cargo.json são enviados ao Raven Colonial, mesmo quando todos os projetos de colonização estão ocultos ou nenhum está carregado."
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "Quando vários comandantes compartilham uma pasta, confirme o ID Frontier preferido e a janela Elite ativa."
     },
@@ -139149,6 +139161,10 @@
     {
       "source": "native",
       "translation": "nativo"
+    },
+    {
+      "source": "native button-up",
+      "translation": "botão nativo"
     },
     {
       "source": "navigation",
@@ -170233,10 +170249,6 @@
       "translation": "Эта платформа не предоставляет средство выбора папок для экспорта."
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "Здесь публикуются название, тип, вместимость и Cargo.json корабля только тогда, когда активны видимые проекты колонизации."
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "При этом восстанавливается вся статистика посещений из начального журнала. Теги устаревших заметок и снимков экрана на временной шкале путешествия удаляются, а базовые системные заметки и файлы PNG остаются нетронутыми."
     },
@@ -172453,6 +172465,10 @@
       "translation": "Если этот параметр включен, только новая стыковка в реальном времени или ручное выравнивание загружают идентификацию поселения, координаты, расположение площадок, положение командира, тип корабля и расчетный курс. Импортированные данные, история запуска и запросы Canonn никогда не публикуются повторно."
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "Если эта опция включена, название, тип и грузовместимость корабля, а также количества грузов из Cargo.json отправляются в Raven Colonial, даже если все проекты колонизации скрыты или ни один не загружен."
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "Если несколько командиров используют одну папку, подтвердите предпочтительный идентификатор Frontier и активное окно Elite."
     },
@@ -174555,6 +174571,10 @@
     {
       "source": "native",
       "translation": "родной"
+    },
+    {
+      "source": "native button-up",
+      "translation": "родная застежка на пуговицах"
     },
     {
       "source": "navigation",
@@ -205639,10 +205659,6 @@
       "translation": "该平台不提供用于导出的文件夹选择器。"
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "仅当可见殖民项目处于活动状态时，才会发布船舶名称、类型、容量和 Cargo.json 计数。"
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "这会从起始日志重建所有访问统计数据。旅程时间线中的旧注释和屏幕截图标签将被删除，而底层系统注释和 PNG 文件保持不变。"
     },
@@ -207859,6 +207875,10 @@
       "translation": "启用后，只有新的实时对接或手动对齐才会上传定居点标识、坐标、平台布局、指挥官位置、船舶类型和计算的航向。导入的数据、启动历史记录和 Canonn 查找永远不会重新发布。"
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "启用此选项后，即使所有殖民项目都已隐藏或未加载任何项目，也会向 Raven Colonial 发布飞船名称、类型、货舱容量和 Cargo.json 中的货物数量。"
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "当多个指挥官共享一个文件夹时，请确认首选的 Frontier ID 和活动精英窗口。"
     },
@@ -209961,6 +209981,10 @@
     {
       "source": "native",
       "translation": "本国的"
+    },
+    {
+      "source": "native button-up",
+      "translation": "原生按钮向上"
     },
     {
       "source": "navigation",
@@ -241045,10 +241069,6 @@
       "translation": "* THIS PLATFORM DOES NOT PROVIDE A FOLDER PICKER FOR EXPORTS. >>>!"
     },
     {
-      "source": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-      "translation": "* THIS PUBLISHES THE SHIP NAME, TYPE, CAPACITY, AND CARGO.JSON COUNTS ONLY WHILE VISIBLE COLONIZATION PROJECTS ARE ACTIVE. >>>!"
-    },
-    {
       "source": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
       "translation": "* THIS REBUILDS ALL VISIT STATISTICS FROM THE STARTING JOURNAL. LEGACY NOTE AND SCREENSHOT TAGS IN THE JOURNEY TIMELINE ARE REMOVED, WHILE THE UNDERLYING SYSTEM NOTES AND PNG FILES REMAIN UNTOUCHED. >>>!"
     },
@@ -243265,6 +243285,10 @@
       "translation": "* WHEN ENABLED, ONLY A NEW LIVE DOCKING OR MANUAL ALIGNMENT UPLOADS THE SETTLEMENT IDENTITY, COORDINATES, PAD LAYOUT, COMMANDER POSITION, SHIP TYPE, AND CALCULATED HEADING. IMPORTED DATA, STARTUP HISTORY, AND CANONN LOOKUPS ARE NEVER REPUBLISHED. >>>!"
     },
     {
+      "source": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+      "translation": "* WHEN ENABLED, THIS PUBLISHES THE SHIP NAME, TYPE, CAPACITY, AND CARGO.JSON COUNTS TO RAVEN COLONIAL, EVEN WHEN ALL COLONIZATION PROJECTS ARE HIDDEN OR NONE ARE LOADED. >>>!"
+    },
+    {
       "source": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
       "translation": "* WHEN MULTIPLE COMMANDERS SHARE A FOLDER, CONFIRM THE PREFERRED FRONTIER ID AND ACTIVE ELITE WINDOW. >>>!"
     },
@@ -245367,6 +245391,10 @@
     {
       "source": "native",
       "translation": "* NATIVE >>>!"
+    },
+    {
+      "source": "native button-up",
+      "translation": "* NATIVE BUTTON-UP >>>!"
     },
     {
       "source": "navigation",

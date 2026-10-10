@@ -57372,14 +57372,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
-    "Text": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61823,6 +61815,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66030,6 +66030,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
+    "Text": "native button-up",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
   },
   {
     "Text": "navigation",

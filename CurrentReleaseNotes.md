@@ -1,15 +1,46 @@
-# SrvSurvey-XP 2.1.3.0-rc.59.1
+# SrvSurvey-XP 2.1.3.0-rc.60
 
-RC.59.1 is a quick patch for Linux keyboard shortcut setup and repeated log
-messages. It includes all the RC.59 improvements listed below.
+RC.60 adds live Raven build previews, a combined cargo report, and spreadsheet
+exports. Opted-in ship-cargo uploads now continue when builds are hidden or none
+are loaded. It includes the RC.59.2 overlay-dragging patch, the RC.59.1 keyboard
+shortcut patch, and the earlier RC.59 improvements below.
 
 This preview improves window sizing, overlays, keyboard shortcuts, mining and
 Boxel searches, and background uploads. It focuses on keeping your chosen
 settings and work intact when searches overlap, connections fail, or the
 application restarts.
 
-## What's changed in RC.59.1 and RC.59
+## What's changed in RC.60 and the RC.59 previews
 
+- **Inspect a Raven build inside SrvSurvey.** Click a project name in
+  Colonization → My build projects to open its own read-only window. See cargo
+  requirements, delivered progress, carrier stock and deficits, trip estimates,
+  linked commanders and carriers, system effects, and delivery history.
+- **Plan cargo across all your builds.** Combined Build Report, beside Open
+  Raven builds, opens an aggregate report for every workspace project, including
+  hidden builds. It combines requirements, delivery progress, ship and carrier
+  cargo planning, and linked participants, with system effects grouped by system.
+  Shared carrier stock counts once so shortages are not understated.
+- **Reports stay up to date while open.** Individual previews and combined
+  reports refresh automatically 30 seconds after each read cycle, with a Refresh
+  button for an immediate update. Failed refreshes keep the last complete report;
+  closing a window stops its requests.
+- **Export a build report to a spreadsheet.** Export CSV saves the displayed
+  individual or combined report in compact labelled tables with cargo quantities
+  in tonnes. Empty sections are omitted, and Excel-compatible exports include
+  build details or report membership, carrier totals, system effects, and history.
+- **Hidden builds no longer stop ship-cargo uploads.** When automatic publishing
+  is enabled, the ship name, type, capacity, and current Cargo.json counts continue
+  to publish to Raven even with all builds hidden or no projects loaded. Show
+  controls the shopping plan and overlay; the publishing help text now makes this
+  clear. Raven access, credentials, ship readiness, and the multiple-game-window
+  safeguard remain required.
+- **RC.59.2 quick patch: overlay dragging.** Live overlays and position-editor
+  previews use the current mouse position on X11/XWayland, fixing stale drag
+  positions that could leave panels trailing behind the pointer. Fast direction
+  changes no longer skip a move while the desktop is reporting an earlier
+  position, and releasing the mouse ends the drag cleanly. The selected-monitor
+  lock continues to keep panels within the chosen display.
 - **RC.59.1 quick patch: Linux keyboard shortcuts.** SrvSurvey registers with
   the desktop shortcut service when launched directly from an AppImage, fixing
   the reported "App info not found" error. Unsupported or rejected shortcut
@@ -91,16 +122,16 @@ application restarts.
 
 ## Update channel and packages
 
-RC.59.1 is a development preview on the schema-2 `xp2-v` update channel. Existing
+RC.60 is a development preview on the schema-2 `xp2-v` update channel. Existing
 update-channel choices are preserved, and RC51 remains the compatibility bridge
 for older installations. Windows and Linux packages remain self-contained.
 
-- Version: `2.1.3.0-rc.59.1`
-- Tag: `xp2-v2.1.3.0-rc.59.1`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.59.1-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.59.1-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.59.1-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.59.1-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.60`
+- Tag: `xp2-v2.1.3.0-rc.60`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.60-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.60-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.60-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.60-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

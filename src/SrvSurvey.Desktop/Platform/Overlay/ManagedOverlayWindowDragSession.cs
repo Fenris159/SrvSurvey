@@ -20,8 +20,10 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
     private readonly OverlayDragOptions options;
     private readonly OverlayDragDiagnostics diagnostics;
     private PixelPoint latestPointerPosition;
+    private PixelPoint lastRequestedPosition;
     private bool stopped;
 
+    /// <summary>Captures a fixed drag origin and coalesces motion using current native screen coordinates when available.</summary>
     private ManagedOverlayWindowDragSession(
         Window window,
         PointerPressedEventArgs eventArgs,
@@ -31,6 +33,7 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         this.window = window;
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
+        lastRequestedPosition = initialWindowPosition;
         initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
         latestPointerPosition = initialPointerPosition;
         options = OverlayDragPolicy.GetOptions(window);
@@ -38,11 +41,23 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         pendingMove = new PendingWindowMove(
             position =>
             {
-                diagnostics.Observe(latestPointerPosition);
-                if (window.Position != position)
+                OverlayDragPointerSample? native = diagnostics.Observe(latestPointerPosition);
+                // A button-up sample can belong to free movement after a queued release.
+                if (native is { LeftButtonPressed: true } && !stopped)
                 {
+                    position = CalculatePosition(initialWindowPosition, initialPointerPosition, native.Position);
+                    position = options.ConstrainPosition?.Invoke(position) ?? position;
+                }
+                if (lastRequestedPosition != position)
+                {
+                    lastRequestedPosition = position;
                     window.Position = position;
-                    positionApplied?.Invoke(window.Position);
+                    // X11 reports the previous position until its configure event is processed.
+                    positionApplied?.Invoke(position);
+                }
+                if (native is { LeftButtonPressed: false } && !stopped)
+                {
+                    Stop(releasePointer: true, reason: "native button-up");
                 }
             },
             callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
@@ -114,6 +129,7 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         );
     }
 
+    /// <summary>Coalesces held-button motion and ends the gesture when an event reports release.</summary>
     private void OnPointerMoved(object? sender, PointerEventArgs eventArgs)
     {
         if (stopped || !ReferenceEquals(eventArgs.Pointer, pointer))
@@ -129,16 +145,24 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         }
 
         PixelPoint currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
-        latestPointerPosition = currentPointerPosition;
-        PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
-        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
+        UpdatePendingPosition(currentPointerPosition);
         eventArgs.Handled = true;
     }
 
+    /// <summary>Queues a gesture position while preserving the fixed press origin and monitor constraint.</summary>
+    private void UpdatePendingPosition(PixelPoint pointerPosition)
+    {
+        latestPointerPosition = pointerPosition;
+        PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, pointerPosition);
+        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
+    }
+
+    /// <summary>Finishes at the release event's position rather than sampling a pointer that may already be elsewhere.</summary>
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs eventArgs)
     {
         if (ReferenceEquals(eventArgs.Pointer, pointer))
         {
+            UpdatePendingPosition(window.PointToScreen(eventArgs.GetPosition(window)));
             Stop(releasePointer: true, reason: "released");
         }
     }

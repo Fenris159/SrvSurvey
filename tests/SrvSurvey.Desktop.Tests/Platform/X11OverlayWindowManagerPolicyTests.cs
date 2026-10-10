@@ -236,6 +236,168 @@ public sealed class X11OverlayWindowManagerPolicyTests
         }
     }
 
+    /// <summary>Keeps a delayed release at its recorded position after the free pointer has moved elsewhere.</summary>
+    [AvaloniaTheory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void ReleasedDragIgnoresNativeMovementAfterButtonUp(bool nativeButtonPressed, bool hasPendingMotion)
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        var probe = new DragPointerProbe(new PixelPoint(4028, 1491));
+        OverlayDragPolicy.SetOptionsFactory(window, () => new OverlayDragOptions { PointerProbe = probe });
+        window.PointerPressed += (_, args) => ManagedOverlayWindowDragSession.Begin(window, args);
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(3904, 1472);
+            window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            if (hasPendingMotion)
+            {
+                window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            }
+            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), nativeButtonPressed);
+            window.MouseUp(new Point(144, 24), MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal(new PixelPoint(3924, 1477), window.Position);
+            window.MouseMove(new Point(500, 19), RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(3924, 1477), window.Position);
+            Assert.Equal(1, probe.Disposals);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Uses fresh held-button samples, but ignores free pointer movement when a scheduled update discovers release.</summary>
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ScheduledDragUsesCurrentPointerAndHonorsItsButtonState(bool nativeButtonPressed)
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        var probe = new DragPointerProbe(new PixelPoint(4048, 1491));
+        var applied = new TaskCompletionSource<PixelPoint>(TaskCreationOptions.RunContinuationsAsynchronously);
+        OverlayDragPolicy.SetOptionsFactory(window, () => new OverlayDragOptions { PointerProbe = probe });
+        window.PointerPressed += (_, args) =>
+            ManagedOverlayWindowDragSession.Begin(window, args, position => applied.TrySetResult(position));
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(3904, 1472);
+            window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), nativeButtonPressed);
+
+            var expected = new PixelPoint(nativeButtonPressed ? 4104 : 3920, 1472);
+            Assert.Equal(expected, await applied.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            if (!nativeButtonPressed)
+            {
+                Assert.Equal(1, probe.Disposals);
+                window.MouseMove(new Point(500, 19), RawInputModifiers.LeftMouseButton);
+            }
+            window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(expected, window.Position);
+            Assert.Equal(1, probe.Disposals);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Keeps fresh native coordinates within the captured monitor and falls back safely when sampling is unavailable.</summary>
+    [AvaloniaTheory]
+    [InlineData(10000, 10000, 4920, 2400)]
+    [InlineData(-10000, -10000, 0, 1080)]
+    [InlineData(4028, 1491, 3904, 1472)]
+    [InlineData(null, null, 3920, 1472)]
+    public async Task NativeDragPreservesMonitorLockAndEventFallback(int? x, int? y, int expectedX, int expectedY)
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        var probe = new DragPointerProbe(new PixelPoint(4028, 1491));
+        var boundary = new PixelRect(0, 1080, 5120, 1440);
+        var sampled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        OverlayDragPolicy.SetOptionsFactory(
+            window,
+            () =>
+                new OverlayDragOptions
+                {
+                    PointerProbe = probe,
+                    MonitorBounds = boundary,
+                    ConstrainPosition = position =>
+                        OverlayDragPolicy.ClampPanel(position, new PixelSize(200, 120), default, boundary),
+                }
+        );
+        window.PointerPressed += (_, args) => ManagedOverlayWindowDragSession.Begin(window, args);
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(3904, 1472);
+            window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            probe.Sample =
+                x is { } nativeX && y is { } nativeY
+                    ? new OverlayDragPointerSample(new PixelPoint(nativeX, nativeY), true)
+                    : null;
+            probe.Sampled = () => sampled.TrySetResult();
+            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            await sampled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal(new PixelPoint(expectedX, expectedY), window.Position);
+            Assert.Equal(1, probe.Disposals);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Does not drop a return move when the desktop still reports the position from before the previous request.</summary>
+    [AvaloniaFact]
+    public async Task DragBackToReportedPositionStillUpdatesTheRequestedPlacement()
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        var origin = new PixelPoint(3904, 1472);
+        var probe = new DragPointerProbe(new PixelPoint(4028, 1491));
+        var applied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requests = new List<PixelPoint>();
+        OverlayDragPolicy.SetOptionsFactory(window, () => new OverlayDragOptions { PointerProbe = probe });
+        window.PointerPressed += (_, args) =>
+            ManagedOverlayWindowDragSession.Begin(
+                window,
+                args,
+                position =>
+                {
+                    requests.Add(position);
+                    // Model an X11 configure acknowledgement still reporting the original position.
+                    window.Position = origin;
+                    applied.TrySetResult();
+                }
+            );
+        try
+        {
+            window.Show();
+            window.Position = origin;
+            window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), true);
+            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            await applied.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4028, 1491), false);
+            window.MouseMove(new Point(124, 19), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal([new PixelPoint(4104, 1472), origin], requests);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void ManagedDragRetainsMonitorBoundaryForTheGestureAndCancelFlushesItsLastValidMove()
     {
@@ -291,5 +453,23 @@ public sealed class X11OverlayWindowManagerPolicyTests
         {
             IsDisposed = true;
         }
+    }
+
+    /// <summary>Supplies current screen coordinates independently of queued local motion packets.</summary>
+    private sealed class DragPointerProbe(PixelPoint initialPosition) : IOverlayDragPointerProbe
+    {
+        internal OverlayDragPointerSample? Sample { get; set; } = new(initialPosition, true);
+        internal int Disposals { get; private set; }
+        internal Action? Sampled { get; set; }
+
+        /// <summary>Returns the most recent desktop sample without consuming queued local events.</summary>
+        public OverlayDragPointerSample? Read()
+        {
+            Sampled?.Invoke();
+            return Sample;
+        }
+
+        /// <summary>Records when the gesture releases ownership of the pointer source.</summary>
+        public void Dispose() => Disposals++;
     }
 }

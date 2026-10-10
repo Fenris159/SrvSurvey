@@ -167,7 +167,7 @@
                       Content="Track and publish cargo on ship (Needs API Key)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active." />
+                       Text="When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded." />
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        TextWrapping="Wrap"
                        Text="{Binding Colonization.ShipCargoPublishingStatus}" />
