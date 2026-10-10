@@ -463,3 +463,148 @@ CSharpier, scoped Sonar checks, and localization freshness across all seven
 catalogs and the strict solution build (zero warnings/errors) passed. Both
 committed interaction smoke-runner variants passed on
 the isolated local compositor.
+
+## Desktop SrvSurvey outside Gamescope follow-up, 2026-10-10
+
+Researched 2026-10-10. Upstream Gamescope source below is pinned to 3.16.29,
+`8f212644c46460549035971ab914421180f61a7c`. This note covers the Ubuntu desktop
+case where native SrvSurvey stays on the desktop's X11/XWayland display while
+Elite/Proton runs inside Gamescope. It is distinct from drawing SrvSurvey's
+external canvas on Gamescope's primary server in Steam Deck Gaming Mode.
+
+### The two displays and the missing host evidence
+
+Gamescope replaces its child's `DISPLAY` with its nested XWayland server. Its
+own outer surface remains on the desktop backend. When the ordinary desktop
+tracker does not recognize the outer title, the bridge matches the verified
+Elite process's nested display to that outer window. SDL can inherit the focused
+game title, so some launches are already tracked through the ordinary title
+path. [Child display setup](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L1074-L1096),
+[nested host title](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L5509-L5519).
+
+The existing SrvSurvey bridge supplies the outer client rectangle but originally
+returned the nested game's `IsForeground` unchanged. A nested X11 active window
+can remain selected while another desktop application is active. The outer
+desktop window's activation must also gate tracked foreground when that window
+is available. Gamescope itself handles host activation separately: SDL keeps
+`g_bWindowFocused`; the native Wayland input thread keeps `m_bKeyboardEntered`
+and clears held keys on leave. Its inner focus properties describe Gamescope's
+selection, not another compositor's desktop activation.
+[SDL host focus](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/SDLBackend.cpp#L855-L863),
+[Wayland host keyboard enter/leave](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/WaylandBackend.cpp#L3239-L3287),
+[bridge/tracker source](../../src/SrvSurvey.Desktop/Platform/Overlay/GamescopeGameWindowTracker.cs).
+
+Actual 3.16.29 process ancestry exposed a second discovery failure: the game is
+below `gamescopereaper`, while the real compositor process leader's `comm` is
+`gamescope-wl`. The earlier exact `comm == "gamescope"` check missed it. The
+watchdog is a separate executable, and the real compositor renames its leader
+when entering the Wayland server loop. Do not mistake the immediate game-launch
+parent for the outer window's owner.
+[Watchdog spawning](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Utils/Process.cpp#L507-L521),
+[leader rename](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/wlserver.cpp#L2396-L2400).
+
+Mapped state also needs the desktop window manager's hidden state. EWMH defines
+`_NET_WM_STATE_HIDDEN` as invisible even on its active desktop/viewport, with
+minimization the canonical case. A mapped fixture with that state remained
+available and visible until the desktop inventory filter was added.
+[EWMH window state](https://specifications.freedesktop.org/wm/latest/ar01s05.html#id-1.6.8).
+
+### Geometry: preserve the verified outer rectangle, state the limits
+
+The current desktop bridge maps to the complete outer **client** rectangle in
+desktop X11 coordinates, updating when it moves/resizes. This does not establish
+the exact game viewport when aspect ratios differ. Gamescope scales and centers
+the committed game surface; `fit`, `fill`, `stretch`, integer scaling, maximum
+scale, zoom, and popup fitting can change the visible rectangle. SDL distinguishes
+window points from drawable pixels; native Wayland converts logical size using
+its negotiated scale. Desktop XWayland geometry should not be silently equated
+with Gamescope's physical output size.
+[Scaling and centering](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L1954-L2008),
+[SDL drawable size](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/SDLBackend.cpp#L622-L633),
+[Wayland configure and scale](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/WaylandBackend.cpp#L1725-L1747).
+
+`GAMESCOPE_NEW_SCALING_SCALER` is a command property consumed on PropertyNotify,
+not authoritative published state. A CLI `-S` setting can take effect while the
+property is absent; requests on one XWayland root are not replicated to others.
+Global focus feedback is written only to `root_ctx`. In ordinary one-server
+nesting the game display is server 0; with multiple servers its root need not
+contain the global feedback or compositor output dimensions. Reading the game
+root alone is insufficient for general viewport reconstruction.
+[Scaler request](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L7328-L7341),
+[primary focus feedback](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L5442-L5470),
+[CLI scaler](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L755-L763).
+
+### Native Wayland outer surface and concrete existing routes
+
+There is no portable protocol in the inspected core Wayland/xdg-shell interfaces
+for SrvSurvey to query another client's global toplevel position and activation.
+`xdg_toplevel.configure` reports size/state to the owning client;
+`set_window_geometry` uses surface-local coordinates. The standard foreign
+toplevel list deliberately supplies minimal identifiers/title/app-id, leaving
+extra state to extension protocols. This is an interface-level conclusion, not
+a claim that every compositor-specific extension is unavailable.
+[xdg-shell specification](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/1.44/stable/xdg-shell/xdg-shell.xml)
+([source mirror inspected](https://github.com/wayland-mirror/wayland-protocols/blob/1.44/stable/xdg-shell/xdg-shell.xml)),
+[foreign toplevel list specification](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/1.44/staging/ext-foreign-toplevel-list/ext-foreign-toplevel-list-v1.xml)
+([source mirror inspected](https://github.com/wayland-mirror/wayland-protocols/blob/1.44/staging/ext-foreign-toplevel-list/ext-foreign-toplevel-list-v1.xml)).
+
+For normal Steam on a Wayland desktop, the concrete X11 outer-window fallback is:
+
+```text
+SDL_VIDEODRIVER=x11 gamescope --backend sdl [your existing Gamescope options] -- %command%
+```
+
+The bracketed words are explanatory placeholders, not literal launch arguments.
+Gamescope 3.16.29 supports `--backend sdl`; it has no `--backend x11` option.
+Its automatic backend chooses native Wayland when the original Wayland display
+is present, so requesting SDL alone does not necessarily select X11. SDL
+explicitly supports `SDL_VIDEODRIVER=x11` on Wayland desktops, set before SDL
+initialization. Retest this fallback on the actual desktop GPU/compositor.
+[Gamescope backend parsing/default](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L419-L461),
+[official SDL2 driver setting](https://wiki.libsdl.org/SDL2/SDL_HINT_VIDEODRIVER).
+
+For the existing native Wayland route, install
+`scripts/EliteGamescopeWayland.sh` and `scripts/PublishGamescopeGameWindowBridge.sh`
+with the documented Gamescope patches. The wrapper publishes a live PID/start
+time, nested display, and selected monitor's desktop **XWayland** rectangle,
+then removes the marker on exit. It assumes fullscreen coverage of that monitor.
+It provides placement, not global native Wayland activation evidence; preserving
+unknown-host-focus marker compatibility should be stated explicitly.
+[Existing Ubuntu setup and example](../UBUNTU_26_GAMESCOPE.md#native-wayland-launch-template),
+[marker helper](../../scripts/PublishGamescopeGameWindowBridge.sh),
+[bridge format](../Overlay_Troubleshooting.md#srvsurvey-on-the-desktop-with-native-wayland-gamescope).
+
+### Reproducible private evidence and remaining validation
+
+The [committed desktop tracking harness](../../tests/SrvSurvey.GamescopeSmoke/README.md#desktop-srvsurvey-with-nested-gamescope) uses `run-desktop.py`
+with sibling `native/desktop-host.c` and the smoke DLL's
+`--desktop-tracking` interface. It opens private Xvfb, keeps one actual production
+tracker lease, launches two real headless Gamescope sessions, and creates
+synthetic outer windows owned by the compositor's real `GAMESCOPE_PID`. Their
+title deliberately does not match Elite, exercising the bridge fallback.
+The desktop service remains ordinary X11 (`external=false capture=true`).
+
+Recorded ancestry: `driver → gamescopereaper → gamescope-wl`, with the final
+process matching Gamescope's published PID. The pre-fix automatic route returned
+unavailable while the live marker worked. After ancestry/focus fixes, foreground
+gated correctly; move/resize, unmap/remap, duplicate-window ambiguity, and restart
+worked. The mapped WM-hidden case then failed its explicit regression assertion.
+After the scoped visibility filter, the committed harness passed:
+`/tmp/srvsurvey-desktop-bridge-committed.log` and the sibling artifact directory
+contain all snapshots, two Gamescope logs, root properties, and ancestry.
+These are actual production **tracking** observations; synthetic outer surfaces
+do not prove SDL presentation, letterboxing, native Wayland geometry, pixel
+scaling, or keyboard event delivery.
+
+Validate the actual desktop with equal and unequal game/output aspect ratios,
+fractional scaling, windowed/fullscreen moves across monitors, minimized state,
+Steam menus, Alt-Tab, hotkeys/controllers, and both plain Gamescope/Proton and
+mini-ed-launcher. Native Wayland marker activation remains unknown. The keyboard
+listener's separate nested-display evidence and portal corroboration require
+their own input tests; this tracker probe does not establish those routes.
+
+The desktop follow-up quality gate passed with 3,325 desktop tests, three
+platform-specific skips, all 19 localization tests, and 91.6% changed-production
+coverage (672 of 734 line and branch points). CSharpier, scoped Sonar checks,
+and localization freshness across all seven catalogs passed. The strict
+solution build completed with zero warnings/errors.

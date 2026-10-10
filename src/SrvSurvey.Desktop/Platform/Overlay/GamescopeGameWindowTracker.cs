@@ -8,6 +8,9 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
 {
     internal const string MarkerPrefix = nameof(GamescopeGameWindowBridge) + ".";
 
+    /// <summary>Desktop focus, when the outer compositor window is visible to X11.</summary>
+    internal bool? IsHostForeground { get; init; }
+
     /// <summary>Returns the latest validated bridge for existing overlay placement.</summary>
     public static GamescopeGameWindowBridge? TryReadCurrent()
     {
@@ -34,6 +37,9 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
             .ToArray();
         return game is not null && matches.Length == 1
             ? new GamescopeGameWindowBridge(parent!.Value, game.Display, matches[0].ClientBounds)
+            {
+                IsHostForeground = matches[0].IsForeground,
+            }
             : null;
     }
 
@@ -171,6 +177,7 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
             ? nestedSnapshot with
             {
                 ClientBounds = bridge.HostBounds,
+                IsForeground = nestedSnapshot.IsForeground && bridge.IsHostForeground != false,
             }
             : hostSnapshot;
     }

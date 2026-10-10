@@ -28,7 +28,10 @@ public sealed class GamescopeGameWindowTrackerTests
             GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
             GameWindowSnapshot window = new(42, 20, new PixelRect(1920, 10, 1280, 800), true, true);
             var bridge = GamescopeGameWindowBridge.Discover(root, [window]);
-            Assert.Equal(new GamescopeGameWindowBridge(20, ":7", window.ClientBounds), bridge);
+            Assert.Equal(
+                new GamescopeGameWindowBridge(20, ":7", window.ClientBounds) { IsHostForeground = true },
+                bridge
+            );
             Assert.Null(GamescopeGameWindowBridge.Discover(root, []));
             Assert.Null(GamescopeGameWindowBridge.Discover(root, [window with { IsVisible = false }]));
             Assert.Null(GamescopeGameWindowBridge.Discover(root, [window, window with { NativeHandle = 43 }]));
@@ -41,6 +44,137 @@ public sealed class GamescopeGameWindowTrackerTests
         {
             Directory.Delete(root, true);
         }
+    }
+
+    [Fact]
+    public void DesktopFocusOverridesNestedFocusForNormalSteamLaunch()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, false);
+            var nested = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+            using var tracker = new GamescopeGameWindowTracker(
+                new StubTracker(GameWindowSnapshot.Unavailable),
+                () => GamescopeGameWindowBridge.Discover(root, [outer]),
+                _ => nested
+            );
+            GameWindowSnapshot background = tracker.GetSnapshot();
+            Assert.True(background.IsVisible);
+            Assert.False(background.IsForeground);
+            outer = outer with { IsForeground = true };
+            Assert.True(tracker.GetSnapshot().IsForeground);
+            outer = outer with { IsVisible = false };
+            Assert.False(tracker.GetSnapshot().IsVisible);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void FindsRenamedWaylandCompositorThroughLaunchWrappers()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "20",
+                "1000",
+                "gamescopereaper",
+                "/usr/bin/gamescopereaper",
+                ":0",
+                30
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "30", "1000", "gamescope-wl", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot window = new(42, 30, new PixelRect(100, 80, 1280, 800), true, true);
+
+            var bridge = GamescopeGameWindowBridge.Discover(root, [window]);
+
+            Assert.NotNull(bridge);
+            Assert.Equal(30, bridge.ProcessId);
+            Assert.Equal(":7", bridge.Display);
+            Assert.Equal(window.ClientBounds, bridge.HostBounds);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, false)]
+    [InlineData(null, true, true)]
+    [InlineData(null, false, false)]
+    public void ForegroundRequiresBothKnownDesktopAndNestedGameFocus(
+        bool? hostForeground,
+        bool nestedForeground,
+        bool expected
+    )
+    {
+        var nested = new StubTracker(
+            new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, nestedForeground)
+        );
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = hostForeground,
+        };
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => nested
+        );
+
+        Assert.Equal(expected, tracker.GetSnapshot().IsForeground);
+    }
+
+    [Fact]
+    public void FollowsDesktopMoveAndResizeWithoutReconnectingNestedTracker()
+    {
+        var nested = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700));
+        int connections = 0;
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ =>
+            {
+                connections++;
+                return nested;
+            }
+        );
+        Assert.Equal(bridge.HostBounds, tracker.GetSnapshot().ClientBounds);
+
+        bridge = bridge with { HostBounds = new PixelRect(1920, 200, 1280, 800) };
+        Assert.Equal(bridge.HostBounds, tracker.GetSnapshot().ClientBounds);
+        Assert.Equal(1, connections);
+        Assert.False(nested.Disposed);
     }
 
     /// <summary>Verifies that losing a nested X server leaves the game tracker usable.</summary>

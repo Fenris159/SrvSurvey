@@ -59,24 +59,52 @@ external-overlay session because only one canvas can occupy that slot.
 
 ### Desktop Mode, including normal Steam/Proton launches
 
-Without Gamescope, the existing desktop overlay path applies. When Elite runs
-inside nested Gamescope on an X11/XWayland desktop, SrvSurvey can discover its
-display and map it through the visible desktop window owned by its Gamescope
-ancestor. This does not require mini-ed-launcher or a bridge file. SrvSurvey
-keeps its UI on the desktop so it survives the nested compositor closing.
-Multiple ambiguous outer windows are not guessed. For a native Wayland outer
-window with no X11 geometry, the bridge described below is still required.
+SrvSurvey started on the ordinary desktop keeps its desktop overlay path,
+including when Elite runs inside nested Gamescope through Steam/Proton. It can
+discover Elite's nested display and map it through the visible X11/XWayland
+outer window owned by its Gamescope ancestor. This does not require
+mini-ed-launcher or a bridge file. SrvSurvey keeps its UI on the desktop so it
+survives the nested compositor closing.
 
-Check the application log for either `Overlay presentation: CombinedWindow` or
-`Overlay presentation: MultipleWindows`. If Gamescope detection is missing,
-launch SrvSurvey in the same Gamescope environment as Elite or test explicitly:
+The outer window supplies desktop position, size, visibility, and focus.
+Switching to another desktop app makes Elite background even if Gamescope's
+internal focus stays on Elite. Moving or resizing the outer window updates
+overlay placement; hiding it removes the tracked game until it is visible
+again. Multiple ambiguous outer windows are not guessed.
+
+This path maps panels to the **outer client rectangle**. Use matching game and
+output aspect ratios so Elite fills that rectangle. Letterboxing, cropping,
+and custom Gamescope scaling need separate validation here; the SteamOS
+output-viewport projection does not establish desktop placement correctness.
+For a native Wayland outer window with no X11 geometry, the bridge described
+below is still required.
+
+To make the outer window visible to desktop X11 tracking on a Wayland desktop,
+a Gamescope build with the SDL backend can use this Steam launch option:
+
+```text
+SDL_VIDEODRIVER=x11 gamescope --backend sdl -f -- %command%
+```
+
+Keep any required resolution or mouse options before `--`. This selects
+X11/XWayland for the outer SDL window while Elite still runs through Proton
+inside Gamescope. It leaves SrvSurvey on the desktop. SDL2 documents
+[`SDL_VIDEODRIVER=x11`](https://wiki.libsdl.org/SDL2/SDL_HINT_VIDEODRIVER), and
+Gamescope defines the [`sdl` backend](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L419-L461).
+The [Ubuntu guide](UBUNTU_26_GAMESCOPE.md) records an existing SDL/X11 setup;
+installed backend availability and graphics-driver behavior still need testing.
+
+For an ordinary desktop launch, `Overlay presentation: MultipleWindows` is the
+expected default even while Elite uses Gamescope. To test combined desktop
+presentation explicitly:
 
 ```bash
 SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
 ```
 
 Outside a verified external-overlay session, diagnose a compositor regression with
-`SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
+`SRVSURVEY_OVERLAY_HOST=separate`. These presentation overrides are read at
+startup; native Wayland geometry still requires the bridge.
 
 ### SrvSurvey on the desktop with native Wayland Gamescope
 
@@ -96,6 +124,11 @@ process before using the marker. It then tracks Elite on the nested display
 while placing its ordinary, separately interactive overlay windows on the
 desktop display. If there is no valid marker, SrvSurvey keeps using its normal
 desktop game-window tracker.
+
+The marker supplies geometry, not desktop activation. It retains the existing
+nested-focus behavior; it cannot apply the automatic X11 outer-window focus
+check to a native Wayland surface. Prefer the SDL/X11 outer-window route above
+when automatic desktop focus tracking is required.
 
 Keyboard shortcuts also follow this bridge. SrvSurvey listens for game keys on
 the nested display alongside its desktop keyboard listener, so shortcuts work

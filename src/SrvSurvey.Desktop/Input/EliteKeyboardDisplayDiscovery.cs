@@ -180,7 +180,7 @@ internal static class EliteKeyboardDisplayDiscovery
             while (processId > 1 && visited.Add(processId))
             {
                 string directory = Path.Combine(procDirectory, processId.ToString(CultureInfo.InvariantCulture));
-                if (File.ReadAllText(Path.Combine(directory, "comm")).Trim() == "gamescope")
+                if (File.ReadAllText(Path.Combine(directory, "comm")).Trim() is "gamescope" or "gamescope-wl")
                 {
                     return processId;
                 }

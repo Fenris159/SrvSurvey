@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -16,12 +17,60 @@ internal static class Program
     {
         _ = X11Native.TryInitializeThreading();
         GamescopeOverlaySession.InitializeCurrent(Console.WriteLine);
+        if (args.Contains("--desktop-tracking", StringComparer.Ordinal))
+        {
+            RunDesktopTracking();
+            return;
+        }
         AppBuilder
             .Configure<SmokeApplication>()
             .UsePlatformDetect()
             .With(SrvSurvey.Desktop.Program.CreateX11Options(useSoftwareRendering: true))
             .LogToTrace()
             .StartWithClassicDesktopLifetime(args);
+    }
+
+    /// <summary>Samples the actual desktop tracker without starting a Gamescope overlay session.</summary>
+    private static void RunDesktopTracking()
+    {
+        using IOverlayPlatformService platform = OverlayPlatformService.CreateCurrent();
+        using IGameScreenCapture capture = GameScreenCapture.CreateCurrent();
+        if (
+            GamescopeOverlaySession.Current is not null
+            || platform.Capabilities.UsesGamescopeExternalOverlay
+            || !capture.IsAvailable
+        )
+        {
+            throw new InvalidOperationException(
+                "The desktop probe requires the ordinary X11 overlay and capture path."
+            );
+        }
+        using IGameWindowTracker tracker = GameWindowTracker.CreateCurrent();
+        Console.WriteLine("DESKTOP_READY external=false capture=true");
+        while (Console.ReadLine() is { } command)
+        {
+            if (command != "snapshot")
+            {
+                throw new InvalidOperationException("Only snapshot commands are supported.");
+            }
+            GameWindowSnapshot game = tracker.GetSnapshot();
+            Console.WriteLine(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        Available = game.IsAvailable,
+                        Visible = game.IsVisible,
+                        Foreground = game.IsForeground,
+                        game.ProcessId,
+                        NativeHandle = (long)game.NativeHandle,
+                        game.ClientBounds.X,
+                        game.ClientBounds.Y,
+                        game.ClientBounds.Width,
+                        game.ClientBounds.Height,
+                    }
+                )
+            );
+        }
     }
 }
 

@@ -74,3 +74,34 @@ exercise the production routing contract without mini-ed-launcher. They do not
 validate real Steam client policies, Proton/Elite, physical Deck devices, or
 SteamOS version differences. The test never injects events into the user's
 desktop; each run owns a private compositor and runtime directory.
+
+## Desktop SrvSurvey with nested Gamescope
+
+This tracking probe keeps SrvSurvey on a private Xvfb desktop while a synthetic
+Elite client runs inside two successive real headless Gamescope sessions. The
+same production `GameWindowTracker.CreateCurrent` lease must survive both.
+Synthetic outer windows use the compositor's actual `GAMESCOPE_PID`, including
+its `gamescope-wl` process name and intervening launch/reaper processes.
+
+Additional requirements: Xvfb, `xprop`, `pkg-config`, a C compiler, and X11
+development libraries. This probe only needs Gamescope's headless backend;
+the screenshot protocol and libei are not used.
+
+```sh
+dotnet build tests/SrvSurvey.GamescopeSmoke/SrvSurvey.GamescopeSmoke.csproj
+python3 tests/SrvSurvey.GamescopeSmoke/run-desktop.py \
+  --dll tests/SrvSurvey.GamescopeSmoke/bin/Debug/net10.0/SrvSurvey.GamescopeSmoke.dll \
+  --gamescope /path/to/gamescope \
+  --output /tmp/srvsurvey-desktop-gamescope
+```
+
+Assertions cover foreground/background switching, movement, resizing, unmap
+and WM-hidden state, duplicate outer-window ambiguity, game/compositor exit,
+and reconnection after restart. Existing manual marker behavior retains its
+unknown desktop-focus semantics. Startup also verifies the ordinary desktop
+overlay path and capture-backend availability. The runner retains JSON
+snapshots, process ancestry, native properties, and compositor/error logs.
+
+The outer windows are synthetic geometry and focus fixtures. This evidence
+covers production tracking; real SDL/Wayland presentation, HUD pixel placement,
+letterboxing/custom scaling, and keyboard delivery still need desktop testing.

@@ -32409,6 +32409,10 @@
       "translation": "Gamescope"
     },
     {
+      "source": "gamescope-wl",
+      "translation": "gamescope-wl"
+    },
+    {
       "source": "gamma",
       "translation": "Gamma"
     },
@@ -67889,6 +67893,10 @@
     {
       "source": "gamescope",
       "translation": "visor de juego"
+    },
+    {
+      "source": "gamescope-wl",
+      "translation": "gamescope-wl"
     },
     {
       "source": "gamma",
@@ -103373,6 +103381,10 @@
       "translation": "champ de jeu"
     },
     {
+      "source": "gamescope-wl",
+      "translation": "gamescope-wl"
+    },
+    {
       "source": "gamma",
       "translation": "gamma"
     },
@@ -138853,6 +138865,10 @@
     {
       "source": "gamescope",
       "translation": "gamescópio"
+    },
+    {
+      "source": "gamescope-wl",
+      "translation": "gamescope-wl"
     },
     {
       "source": "gamma",
@@ -174337,6 +174353,10 @@
       "translation": "игровой прицел"
     },
     {
+      "source": "gamescope-wl",
+      "translation": "gamescope-wl"
+    },
+    {
       "source": "gamma",
       "translation": "гамма"
     },
@@ -209819,6 +209839,10 @@
       "translation": "游戏范围"
     },
     {
+      "source": "gamescope-wl",
+      "translation": "游戏范围-wl"
+    },
+    {
       "source": "gamma",
       "translation": "伽玛"
     },
@@ -245299,6 +245323,10 @@
     {
       "source": "gamescope",
       "translation": "* GAMESCOPE >>>!"
+    },
+    {
+      "source": "gamescope-wl",
+      "translation": "* GAMESCOPE-WL >>>!"
     },
     {
       "source": "gamma",
