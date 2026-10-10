@@ -206,9 +206,9 @@ if ! run_smoke_until_logs \
     "$smoke_root/data" \
     "$smoke_deadline_seconds" \
     "Display host: LinuxXWayland" \
-    "X11 overlay stacking policy: standard topmost" \
+    "X11 overlay window policy: utility windows with standard topmost stacking." \
     "Overlay presentation: MultipleWindows"; then
-    echo "The AppImage did not use the safe overlay fallback when no window manager advertised KDE OSD support." >&2
+    echo "The AppImage did not initialize utility-window overlays with standard topmost stacking." >&2
     exit 1
 fi
 
