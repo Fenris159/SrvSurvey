@@ -461,6 +461,11 @@
                          Text="Selected projects appear in aggregate cargo requirements. Changes are sent only when you choose Save selection." />
             </StackPanel>
             <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+            <Button x:Name="CombinedBuildReportButton" Margin="0,0,8,0"
+                    Classes="secondary"
+                    IsEnabled="{Binding Colonization.HasProjects}"
+                    Click="CombinedBuildReport_Click"
+                    Content="Combined Build Report" />
             <Button Margin="0,0,8,0"
                     Classes="secondary"
                     Click="OpenRavenBuilds_Click"

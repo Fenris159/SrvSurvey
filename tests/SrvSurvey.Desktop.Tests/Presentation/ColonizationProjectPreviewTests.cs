@@ -17,6 +17,67 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ColonizationProjectPreviewTests
 {
+    private static readonly string[] CombinedBuildNames = ["First build", "Second build"];
+
+    /// <summary>The combined report uses the same native layout, export toolbar, and refresh lifecycle.</summary>
+    [AvaloniaFact]
+    public void RendersCombinedReportWithBuildMembershipAndDeduplicatedCarriers()
+    {
+        using var model = new ColonizationProjectPreviewViewModel(
+            new ColonizationProjectPreviewViewModelTests.Reader(
+                (id, _) =>
+                {
+                    ColonizationProjectPreviewData data = ColonizationProjectPreviewViewModelTests.Data();
+                    return Task.FromResult<ColonizationProjectPreviewData?>(
+                        data with
+                        {
+                            Project = data.Project with { BuildId = id, BuildName = id },
+                        }
+                    );
+                }
+            ),
+            () => CombinedBuildNames
+        );
+        var window = new ColonizationProjectPreviewWindow(model);
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            Assert.Equal("Combined Build Report - Raven build preview", window.Title);
+            Assert.Equal(50, window.FindControl<ProgressBar>("DeliveredProgress")!.Value);
+            Assert.True(window.FindControl<Button>("ExportCsvButton")!.IsEnabled);
+            Assert.Single(model.CarrierHeaders);
+            Assert.Equal("400", model.RemainingText);
+            Assert.Equal(2, model.Details.Count);
+            string? directory = Environment.GetEnvironmentVariable("SRVSURVEY_BUILD_PREVIEW_RENDER_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+                frame.Save(Path.Combine(directory, "combined-build-report.png"), PngBitmapEncoderOptions.Default);
+            }
+            ScrollViewer body = Assert.Single(
+                window.GetVisualDescendants().OfType<ScrollViewer>(),
+                scroll => scroll.Parent is Grid
+            );
+            body.ScrollToEnd();
+            using WriteableBitmap? details = window.CaptureRenderedFrame();
+            Assert.NotNull(details);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                details.Save(
+                    Path.Combine(directory, "combined-build-report-details.png"),
+                    PngBitmapEncoderOptions.Default
+                );
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+        Assert.False(model.CanExport);
+    }
+
     /// <summary>Verifies compiled native bindings, refresh interaction, narrow-window scrolling, and readable preview rendering.</summary>
     [AvaloniaTheory]
     [InlineData(1180)]
@@ -96,10 +157,20 @@ public sealed class ColonizationProjectPreviewTests
         {
             owner.Show();
             ColonizationProject project = ColonizationProjectPreviewViewModelTests.Data().Project;
+            model.OpenCombinedReport();
             model.OpenProjectPreview(project);
             Assert.Empty(coordinator.Windows);
             model.IsEnabled = true;
             await model.SetCommanderAsync("Example Cmdr");
+            Assert.Single(model.Projects).IsShown = false;
+            model.OpenCombinedReport();
+            ColonizationProjectPreviewWindow report = Assert.Single(coordinator.Windows);
+            report.WindowState = WindowState.Minimized;
+            model.OpenCombinedReport();
+            Assert.Equal(WindowState.Normal, report.WindowState);
+            Assert.Same(report, Assert.Single(coordinator.Windows));
+            Assert.Equal("200", ((ColonizationProjectPreviewViewModel)report.DataContext!).RemainingText);
+            report.Close();
             model.OpenProjectPreview(project);
             ColonizationProjectPreviewWindow first = Assert.Single(coordinator.Windows);
             first.WindowState = WindowState.Minimized;
@@ -125,6 +196,7 @@ public sealed class ColonizationProjectPreviewTests
             Assert.Empty(coordinator.Windows);
             coordinator.Dispose();
             coordinator.ShowOrActivate(project);
+            coordinator.ShowCombinedReport();
             Assert.Empty(coordinator.Windows);
             Assert.False(model.HasUnsavedProjectVisibility);
         }
@@ -175,6 +247,8 @@ public sealed class ColonizationProjectPreviewTests
         ColonizationProjectRowViewModel row = Assert.Single(main.Colonization.Projects);
         row.IsShown = false;
         int opened = 0;
+        int reportsOpened = 0;
+        main.Colonization.SetCombinedReportOpener(() => reportsOpened++);
         main.Colonization.SetProjectPreviewOpener(project =>
         {
             Assert.Same(row.Project, project);
@@ -191,6 +265,11 @@ public sealed class ColonizationProjectPreviewTests
         {
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
+            Button reportButton = view.FindControl<Button>("CombinedBuildReportButton")!;
+            Assert.True(reportButton.IsEnabled);
+            reportButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.Equal(1, reportsOpened);
+            Assert.Equal("Combined Build Report", reportButton.Content);
             Button link = Assert.Single(
                 view.GetVisualDescendants().OfType<Button>(),
                 button => button.Content is TextBlock { Text: "Example build" }
@@ -203,6 +282,9 @@ public sealed class ColonizationProjectPreviewTests
             link.DataContext = null;
             link.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.Equal(1, opened);
+            view.DataContext = null;
+            reportButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.Equal(1, reportsOpened);
         }
         finally
         {

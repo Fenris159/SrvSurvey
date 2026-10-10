@@ -328,6 +328,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 build project",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "1 geological signal unidentified",
     "IsFormat": false,
     "SourceKinds": [
@@ -366,6 +374,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "1 system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "1 to 1000",
@@ -1398,6 +1414,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A build is no longer available. Refresh the workspace project list.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -7795,6 +7819,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "Build projects in this report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "BuildSiteRepairVisits",
     "IsFormat": false,
     "SourceKinds": [
@@ -11369,6 +11401,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Combined Build Report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Combined overlay edit mode is active on Windows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11391,6 +11432,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -13535,7 +13584,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
-    "Text": "Could not load this build. Choose Refresh to try again.",
+    "Text": "Could not load this report. Choose Refresh to try again.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -32404,6 +32453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "No build projects are available in the workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "No child boxel statistics are recorded inside {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -38384,9 +38441,9 @@
     "Text": "Project details",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Project name",
@@ -41234,9 +41291,9 @@
     "Text": "Reference effects for this build type. Actual system totals depend on other sites and links.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Reference image available \u00B7 type .show",
@@ -63671,6 +63728,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
   },
   {
+    "Text": "combined-report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ColonizationProjectPreviewWindowCoordinator.cs"
+  },
+  {
     "Text": "comm",
     "IsFormat": false,
     "SourceKinds": [
@@ -69144,6 +69209,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "{0} build projects",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "{0} cargo is already current.",
     "IsFormat": true,
     "SourceKinds": [
@@ -70072,6 +70145,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "{0} systems",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "{0} t",
     "IsFormat": true,
     "SourceKinds": [
@@ -70350,6 +70431,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 {1} \u00B7 includes all projects regardless of Show selection",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 {1} \u00B7 {2} km border",

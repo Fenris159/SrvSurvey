@@ -8,7 +8,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly IRavenColonialProjectReader reader;
-    private readonly string buildId;
+    private readonly Func<IReadOnlyList<string>> buildIds;
+    private readonly bool isCombined;
     private readonly Func<bool> isEnabled;
     private readonly Func<int> currentShipCapacity;
     private readonly Func<TimeSpan, CancellationToken, Task> delayAsync;
@@ -27,10 +28,34 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
         Func<int>? currentShipCapacity = null,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null
     )
+        : this(reader, () => [buildId], false, isEnabled, currentShipCapacity, delayAsync)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
+    }
+
+    /// <summary>Reports every current workspace build independently of Show selection, refreshing membership along with live data.</summary>
+    public ColonizationProjectPreviewViewModel(
+        IRavenColonialProjectReader reader,
+        Func<IReadOnlyList<string>> buildIds,
+        Func<bool>? isEnabled = null,
+        Func<int>? currentShipCapacity = null,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null
+    )
+        : this(reader, buildIds, true, isEnabled, currentShipCapacity, delayAsync) { }
+
+    /// <summary>Shares consent, timing, and cancellation between individual and combined reports.</summary>
+    private ColonizationProjectPreviewViewModel(
+        IRavenColonialProjectReader reader,
+        Func<IReadOnlyList<string>> buildIds,
+        bool isCombined,
+        Func<bool>? isEnabled,
+        Func<int>? currentShipCapacity,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync
+    )
     {
         this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
-        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
-        this.buildId = buildId;
+        this.buildIds = buildIds ?? throw new ArgumentNullException(nameof(buildIds));
+        this.isCombined = isCombined;
         this.isEnabled = isEnabled ?? (() => true);
         this.currentShipCapacity = currentShipCapacity ?? (() => 0);
         this.delayAsync = delayAsync ?? Task.Delay;
@@ -41,13 +66,51 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     public ColonizationProjectPreview? Snapshot { get; private set; }
     public bool IsBusy { get; private set; }
     public bool CanExport => Snapshot is not null && !isExporting && !disposed;
-    public string Title =>
-        Snapshot?.Project.BuildName is { } name && !string.IsNullOrWhiteSpace(name) ? name : "Build preview";
+    public string Title
+    {
+        get
+        {
+            if (isCombined)
+            {
+                return "Combined Build Report";
+            }
+            return Snapshot?.Project.BuildName is { } name && !string.IsNullOrWhiteSpace(name) ? name : "Build preview";
+        }
+    }
     public string WindowTitle => $"{Title} - Raven build preview";
-    public string Subtitle =>
-        Snapshot is { } snapshot
-            ? $"{snapshot.Project.SystemName} · {snapshot.Effects?.Name ?? snapshot.Project.BuildType} ({snapshot.Project.BuildType})"
-            : "Loading live Raven build data…";
+    public bool IsCombinedReport => isCombined;
+    public string DetailsTitle => isCombined ? "Build projects in this report" : "Project details";
+    public string EffectsDescription =>
+        isCombined
+            ? "Combined reference effects, grouped by system. Actual system totals depend on other sites and links."
+            : "Reference effects for this build type. Actual system totals depend on other sites and links.";
+    public string Subtitle
+    {
+        get
+        {
+            if (Snapshot is not { } snapshot)
+            {
+                return "Loading live Raven build data…";
+            }
+            return isCombined
+                ? CombinedSubtitle(snapshot)
+                : $"{snapshot.Project.SystemName} · {snapshot.Effects?.Name ?? snapshot.Project.BuildType} ({snapshot.Project.BuildType})";
+        }
+    }
+
+    /// <summary>States aggregate membership independently of overlay selection, with readable singular counts.</summary>
+    private static string CombinedSubtitle(ColonizationProjectPreview snapshot)
+    {
+        string projectsText =
+            snapshot.Projects.Count == 1 ? "1 build project" : $"{snapshot.Projects.Count:N0} build projects";
+        int systems = snapshot
+            .Projects.Select(project => project.SystemName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+        string systemsText = systems == 1 ? "1 system" : $"{systems:N0} systems";
+        return $"{projectsText} · {systemsText} · includes all projects regardless of Show selection";
+    }
+
     public string Status { get; private set; } = "Loading live Raven build data…";
     public string ExportStatus { get; private set; } = string.Empty;
     public string RefreshedAt =>
@@ -67,11 +130,12 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     public string ProgressText =>
         Snapshot?.Progress is { } progress ? $"{progress:0}% delivered" : "Progress unavailable";
     public double ReadyProgress =>
-        Snapshot?.Project.MaximumRequired > 0 && Snapshot.ReadyOnCarriers is { } ready
-            ? 100d * ready / Snapshot.Project.MaximumRequired
+        Snapshot?.MaximumRequired > 0 && Snapshot.ReadyOnCarriers is { } ready
+            ? 100d * ready / Snapshot.MaximumRequired
             : 0;
     public IReadOnlyList<PreviewField> Details { get; private set; } = [];
     public IReadOnlyList<PreviewField> Effects { get; private set; } = [];
+    public IReadOnlyList<PreviewEffectGroup> EffectGroups { get; private set; } = [];
     public IReadOnlyList<PreviewField> Commanders { get; private set; } = [];
     public IReadOnlyList<PreviewField> CarrierDetails { get; private set; } = [];
     public IReadOnlyList<PreviewField> DeliveryTotals { get; private set; } = [];
@@ -129,21 +193,23 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
         Notify();
         try
         {
-            ColonizationProjectPreviewData? data = await reader.ReadProjectPreviewAsync(buildId, lifetimeToken);
+            ColonizationProjectPreview? snapshot = await ReadSnapshotAsync();
             if (disposed)
             {
                 return;
             }
-            if (data is null)
+            if (snapshot is null)
             {
                 Snapshot = null;
                 ClearRows();
-                Status = "This build is no longer available on Raven Colonial.";
+                Status = isCombined
+                    ? "No build projects are available in the workspace."
+                    : "This build is no longer available on Raven Colonial.";
                 return;
             }
-            Snapshot = new ColonizationProjectPreview(data, DateTimeOffset.UtcNow);
+            Snapshot = snapshot;
             ApplySnapshot(Snapshot);
-            Status = (Snapshot.CarrierDeficit, data.Statistics) switch
+            Status = (Snapshot.CarrierDeficit, Snapshot.Statistics) switch
             {
                 (null, _) => "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
                 (_, null) => "Cargo updated. Delivery history unavailable.",
@@ -159,7 +225,7 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
             )
         {
             Status = Snapshot is null
-                ? "Could not load this build. Choose Refresh to try again."
+                ? "Could not load this report. Choose Refresh to try again."
                 : "Refresh failed. Showing the last successful snapshot.";
         }
         finally
@@ -167,6 +233,35 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
             IsBusy = false;
             Notify();
         }
+    }
+
+    /// <summary>Reads distinct builds sequentially to bound request bursts and commits only a complete report snapshot.</summary>
+    private async Task<ColonizationProjectPreview?> ReadSnapshotAsync()
+    {
+        var data = new List<ColonizationProjectPreviewData>();
+        foreach (string id in buildIds().Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            lifetimeToken.ThrowIfCancellationRequested();
+            ColonizationProjectPreviewData? build = await reader.ReadProjectPreviewAsync(id, lifetimeToken);
+            if (build is null)
+            {
+                if (isCombined)
+                {
+                    throw new InvalidDataException(
+                        "A build is no longer available. Refresh the workspace project list."
+                    );
+                }
+                return null;
+            }
+            data.Add(build);
+        }
+        if (data.Count == 0)
+        {
+            return null;
+        }
+        return isCombined
+            ? ColonizationProjectPreview.CreateCombined(data, DateTimeOffset.UtcNow)
+            : new ColonizationProjectPreview(data[0], DateTimeOffset.UtcNow);
     }
 
     /// <summary>Exports the captured displayed snapshot, allowing a refresh during the save picker without changing the file's content.</summary>
@@ -225,20 +320,42 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     {
         shipCapacity = Math.Max(0, currentShipCapacity());
         CarrierHeaders = snapshot.Carriers.Select(carrier => carrier.Name).ToArray();
-        Details = ColonizationProjectCsvExporter
-            .Details(snapshot)
-            .Take(8)
-            .Concat([KeyValuePair.Create("Notes", snapshot.Project.Notes ?? string.Empty)])
-            .Select(pair => new PreviewField(pair.Key, pair.Value))
-            .ToArray();
-        Effects = snapshot.Effects is { } effects
+        Details = snapshot.IsCombined
             ? ColonizationProjectCsvExporter
-                .EffectDetails(effects)
+                .BuildDetails(snapshot)
                 .Select(pair => new PreviewField(pair.Key, pair.Value))
                 .ToArray()
-            : [new PreviewField("System effects", "Not available for this build type.")];
+            : ColonizationProjectCsvExporter
+                .Details(snapshot)
+                .Take(8)
+                .Concat([KeyValuePair.Create("Notes", snapshot.Project.Notes ?? string.Empty)])
+                .Select(pair => new PreviewField(pair.Key, pair.Value))
+                .ToArray();
+        if (snapshot.IsCombined)
+        {
+            EffectGroups = ColonizationProjectCsvExporter
+                .SystemEffectGroups(snapshot)
+                .Select(system => new PreviewEffectGroup(
+                    system.Name,
+                    system.Fields.Select(pair => new PreviewField(pair.Key, pair.Value)).ToArray()
+                ))
+                .ToArray();
+            Effects = ColonizationProjectCsvExporter
+                .CombinedEffectDetails(snapshot)
+                .Select(pair => new PreviewField(pair.Key, pair.Value))
+                .ToArray();
+        }
+        else
+        {
+            Effects = snapshot.Effects is { } effects
+                ? ColonizationProjectCsvExporter
+                    .EffectDetails(effects)
+                    .Select(pair => new PreviewField(pair.Key, pair.Value))
+                    .ToArray()
+                : [new PreviewField("System effects", "Not available for this build type.")];
+        }
         Commanders = snapshot
-            .Project.Commanders.Select(pair => new PreviewField(
+            .Commanders.Select(pair => new PreviewField(
                 pair.Key,
                 pair.Value.Count == 0 ? "No commodity assignments" : string.Join(", ", pair.Value)
             ))
@@ -285,6 +402,7 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     {
         shipCapacity = 0;
         Details = Effects = Commanders = CarrierDetails = DeliveryTotals = [];
+        EffectGroups = [];
         Rows = [];
         CarrierHeaders = [];
         DeliveryHistory = [];
@@ -303,6 +421,9 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
 
 /// <summary>A label and public value rendered in read-only project cards.</summary>
 public sealed record PreviewField(string Label, string Value);
+
+/// <summary>A system heading with short effect rows so combined reports remain readable across long system names.</summary>
+public sealed record PreviewEffectGroup(string Name, IReadOnlyList<PreviewField> Fields);
 
 /// <summary>A commodity row whose carrier cells stay aligned with the linked carrier headers.</summary>
 public sealed record PreviewCommodityRow(

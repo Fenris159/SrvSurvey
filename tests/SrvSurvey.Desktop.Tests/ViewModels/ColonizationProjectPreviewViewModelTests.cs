@@ -5,6 +5,129 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationProjectPreviewViewModelTests
 {
+    private static readonly string[] CombinedBuildIds = ["first", "second"];
+
+    /// <summary>Refreshes all distinct workspace builds, aggregating progress, carrier stock, linked commanders, and export sections.</summary>
+    [Fact]
+    public async Task RefreshesCombinedReportAndTracksWorkspaceMembership()
+    {
+        IReadOnlyList<string> ids = ["first", "SECOND", "First"];
+        var reads = new List<string>();
+        using var model = new ColonizationProjectPreviewViewModel(
+            new Reader(
+                (id, _) =>
+                {
+                    reads.Add(id);
+                    ColonizationProjectPreviewData data = Data();
+                    return Task.FromResult<ColonizationProjectPreviewData?>(
+                        data with
+                        {
+                            Project = data.Project with { BuildId = id, BuildName = id },
+                        }
+                    );
+                }
+            ),
+            () => ids,
+            currentShipCapacity: () => 128
+        );
+        await model.RefreshAsync();
+        Assert.Equal(2, reads.Count);
+        Assert.Equal("Combined Build Report", model.Title);
+        Assert.Equal("Build projects in this report", model.DetailsTitle);
+        Assert.Contains("grouped by system", model.EffectsDescription);
+        Assert.Contains("2 build projects", model.Subtitle);
+        Assert.Equal("400", model.RemainingText);
+        Assert.Equal("300", model.DeficitText);
+        Assert.Equal("100", model.ReadyText);
+        Assert.Equal("400", model.DeliveredText);
+        Assert.Equal(12.5, model.ReadyProgress);
+        Assert.Equal(2, model.Details.Count);
+        Assert.Single(model.Commanders);
+        Assert.Single(model.CarrierDetails);
+        Assert.True(model.IsCombinedReport);
+        Assert.Contains(
+            Assert.Single(model.EffectGroups).Fields,
+            field => field.Label == "Security" && field.Value == "+20"
+        );
+        Assert.Equal("60", Assert.Single(model.DeliveryHistory).Cargo);
+        Assert.Contains(
+            model.Effects,
+            field => field.Label.EndsWith("Security", StringComparison.Ordinal) && field.Value == "+20"
+        );
+        await model.ExportAsync(
+            (name, csv) =>
+            {
+                Assert.StartsWith("Raven-combined-build-report-", name);
+                Assert.Contains("\"Current ship trips\",\"4\"", csv);
+                return Task.FromResult(true);
+            }
+        );
+        ids = ["second"];
+        await model.RefreshAsync();
+        Assert.Single(model.Details);
+        Assert.Equal("200", model.RemainingText);
+        ids = [];
+        await model.RefreshAsync();
+        Assert.Null(model.Snapshot);
+        Assert.False(model.CanExport);
+        Assert.Contains("No build projects", model.Status);
+    }
+
+    /// <summary>A missing member never silently reduces an aggregate total; failures retain the complete prior snapshot.</summary>
+    [Fact]
+    public async Task RetainsEntireReportWhenOneMemberFailsAndCancelsSequentialReads()
+    {
+        bool missing = false;
+        int reads = 0;
+        var model = new ColonizationProjectPreviewViewModel(
+            new Reader(
+                (id, _) =>
+                {
+                    reads++;
+                    return Task.FromResult<ColonizationProjectPreviewData?>(
+                        missing && id == "second"
+                            ? null
+                            : Data() with
+                            {
+                                Project = Data().Project with { BuildId = id },
+                            }
+                    );
+                }
+            ),
+            () => CombinedBuildIds
+        );
+        await model.RefreshAsync();
+        ColonizationProjectPreview? snapshot = model.Snapshot;
+        missing = true;
+        await model.RefreshAsync();
+        Assert.Same(snapshot, model.Snapshot);
+        Assert.Contains("last successful snapshot", model.Status);
+        Assert.Equal(4, reads);
+        model.Dispose();
+        await model.RefreshAsync();
+        Assert.Equal(4, reads);
+        var completion = new TaskCompletionSource<ColonizationProjectPreviewData?>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        reads = 0;
+        model = new ColonizationProjectPreviewViewModel(
+            new Reader(
+                (_, _) =>
+                {
+                    reads++;
+                    return completion.Task;
+                }
+            ),
+            () => CombinedBuildIds
+        );
+        Task refresh = model.RefreshAsync();
+        model.Dispose();
+        completion.SetResult(Data());
+        await refresh;
+        Assert.Equal(1, reads);
+        Assert.Null(model.Snapshot);
+    }
+
     /// <summary>Displays live project details, assignments, carrier quantities, effects, trip estimates, and delivery history.</summary>
     [Fact]
     public async Task RefreshesClickedProjectAndPublicProgressData()

@@ -14,7 +14,7 @@ public sealed record ColonizationProjectPreviewData(
 public sealed record ColonizationProjectStatistics
 {
     public long TotalCargo { get; init; }
-    public int TotalDeliveries { get; init; }
+    public long TotalDeliveries { get; init; }
     public DateTimeOffset? Start { get; init; }
     public DateTimeOffset? End { get; init; }
     public Dictionary<string, long> Cmdrs { get; init; } = [];
@@ -65,7 +65,7 @@ public sealed record ColonizationPreviewCommodity(
     string Key,
     string Name,
     string Category,
-    int Need,
+    long Need,
     IReadOnlyList<int?> CarrierQuantities
 )
 {
@@ -75,8 +75,8 @@ public sealed record ColonizationPreviewCommodity(
             : CarrierQuantities.Sum(value => (long)value!.Value) - Need;
 }
 
-/// <summary>Calculates an independent, immutable display snapshot for one build, never applying primary or Show selection filters.</summary>
-public sealed class ColonizationProjectPreview
+/// <summary>Calculates independent build report snapshots without applying primary or Show selection filters.</summary>
+public sealed partial class ColonizationProjectPreview
 {
     public const int LargeShipCapacity = 794;
     public const int MediumShipCapacity = 400;
@@ -94,6 +94,8 @@ public sealed class ColonizationProjectPreview
     {
         ArgumentNullException.ThrowIfNull(data);
         Project = data.Project;
+        Projects = [Project];
+        MaximumRequired = Math.Max(0, Project.MaximumRequired);
         Statistics = data.Statistics;
         FetchedAt = fetchedAt;
         Effects = ResolveEffects(Project.BuildType);
@@ -109,28 +111,56 @@ public sealed class ColonizationProjectPreview
                     : null
             ))
             .ToArray();
-        Dictionary<string, int> needs = Normalize(Project.Commodities);
+        var needs = Normalize(Project.Commodities).ToDictionary(pair => pair.Key, pair => (long)pair.Value);
+        Rows = CreateRows(needs, Carriers);
+        Remaining = Rows.Sum(row => row.Need);
+        CarrierDeficit = CalculateDeficit(Rows, Carriers);
+        Delivered = Math.Clamp(MaximumRequired - Remaining, 0, MaximumRequired);
+    }
+
+    /// <summary>Aligns normalized requirements and unique carrier stock into one consistent cargo table.</summary>
+    private static ColonizationPreviewCommodity[] CreateRows(
+        Dictionary<string, long> needs,
+        IReadOnlyList<ColonizationPreviewCarrier> carriers
+    )
+    {
         IEnumerable<string> keys = needs
-            .Keys.Concat(Carriers.SelectMany(carrier => carrier.Cargo?.Keys ?? []).Where(CommodityNames.ContainsKey))
+            .Keys.Concat(carriers.SelectMany(carrier => carrier.Cargo?.Keys ?? []).Where(CommodityNames.ContainsKey))
             .Distinct(StringComparer.OrdinalIgnoreCase);
-        Rows = keys.Select(key => new ColonizationPreviewCommodity(
+        return keys.Select(key => new ColonizationPreviewCommodity(
                 key,
                 CommodityNames.GetValueOrDefault(key)?.Name ?? key,
                 CommodityNames.GetValueOrDefault(key)?.Category ?? "Other",
                 needs.GetValueOrDefault(key),
-                Carriers.Select(carrier => carrier.Cargo?.GetValueOrDefault(key)).ToArray()
+                carriers.Select(carrier => carrier.Cargo?.GetValueOrDefault(key)).ToArray()
             ))
             .OrderBy(row => row.Category, StringComparer.OrdinalIgnoreCase)
             .ThenBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        Remaining = Rows.Sum(row => (long)row.Need);
-        CarrierDeficit = Carriers.All(carrier => carrier.Cargo is not null)
-            ? Rows.Sum(row => Math.Max(0, -row.CarrierDifference!.Value))
-            : null;
-        Delivered = Math.Clamp((long)Project.MaximumRequired - Remaining, 0, Math.Max(0, Project.MaximumRequired));
     }
 
+    /// <summary>Leaves deficits unknown if any linked carrier's stock is unavailable.</summary>
+    private static long? CalculateDeficit(
+        IReadOnlyList<ColonizationPreviewCommodity> rows,
+        IReadOnlyList<ColonizationPreviewCarrier> carriers
+    ) =>
+        carriers.All(carrier => carrier.Cargo is not null)
+            ? rows.Sum(row => Math.Max(0, -row.CarrierDifference!.Value))
+            : null;
+
     public ColonizationProject Project { get; }
+    public IReadOnlyList<ColonizationProject> Projects { get; }
+    public bool IsCombined { get; }
+    public long MaximumRequired { get; }
+    public IReadOnlyDictionary<string, HashSet<string>> Commanders =>
+        Projects
+            .SelectMany(project => project.Commanders)
+            .GroupBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.SelectMany(pair => pair.Value).ToHashSet(StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase
+            );
     public ColonizationProjectStatistics? Statistics { get; }
     public ColonizationBuildEffects? Effects { get; }
     public DateTimeOffset FetchedAt { get; }
@@ -140,7 +170,10 @@ public sealed class ColonizationProjectPreview
     public long Delivered { get; }
     public long? CarrierDeficit { get; }
     public long? ReadyOnCarriers => Remaining - CarrierDeficit;
-    public double? Progress => Project.MaximumRequired > 0 ? 100d * Delivered / Project.MaximumRequired : null;
+    public double? Progress =>
+        MaximumRequired > 0 && Projects.All(project => project.MaximumRequired > 0)
+            ? 100d * Delivered / MaximumRequired
+            : null;
 
     /// <summary>Calculates rounded-up trips only when both the quantity and ship capacity are known.</summary>
     public static long? Trips(long? quantity, int capacity)
@@ -149,7 +182,7 @@ public sealed class ColonizationProjectPreview
     }
 
     /// <summary>Combines Raven effects with layout-specific pad counts and the commodity catalog's current reference haul.</summary>
-    private static ColonizationBuildEffects? ResolveEffects(string buildType)
+    internal static ColonizationBuildEffects? ResolveEffects(string buildType)
     {
         string layout = ColonizationBuildCatalog.NormalizeSiteBuildTypeKey(buildType).ToLowerInvariant();
         ColonizationBuildEffects? effects = BuildEffects.FirstOrDefault(build =>

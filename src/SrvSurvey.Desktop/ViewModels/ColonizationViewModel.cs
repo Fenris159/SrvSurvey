@@ -20,6 +20,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private readonly IRavenColonialClient client;
     private Action<ColonizationProject>? projectPreviewOpener;
+    private Action? combinedReportOpener;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
     private readonly CommanderProfileStore? commanderProfileStore;
@@ -137,6 +138,28 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>Connects the native read-only build popout without coupling project rows to a desktop window.</summary>
     internal void SetProjectPreviewOpener(Action<ColonizationProject>? opener) => projectPreviewOpener = opener;
+
+    /// <summary>Connects the combined report to the same native popout lifecycle as individual previews.</summary>
+    internal void SetCombinedReportOpener(Action? opener) => combinedReportOpener = opener;
+
+    /// <summary>Opens all workspace projects without changing their Show or primary selection.</summary>
+    public void OpenCombinedReport()
+    {
+        if (IsEnabled && HasProjects)
+        {
+            combinedReportOpener?.Invoke();
+        }
+    }
+
+    /// <summary>Creates a report whose membership follows every workspace build and whose trips use the current ship.</summary>
+    internal ColonizationProjectPreviewViewModel CreateCombinedReport() =>
+        new(
+            client as IRavenColonialProjectReader
+                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            () => Projects.Select(row => row.Project.BuildId).ToArray(),
+            () => IsEnabled,
+            () => recovery.ShipCargoCapacity
+        );
 
     /// <summary>Opens the clicked build independently of its Show checkbox and current primary project.</summary>
     public void OpenProjectPreview(ColonizationProject project)

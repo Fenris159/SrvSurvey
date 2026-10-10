@@ -4,7 +4,7 @@ using System.Text;
 namespace SrvSurvey.Core.Colonization;
 
 /// <summary>Exports compact CSV tables for build details, cargo, effects, and delivery history without credentials or editing controls.</summary>
-public static class ColonizationProjectCsvExporter
+public static partial class ColonizationProjectCsvExporter
 {
     /// <summary>Replaces a selected file with an Excel-compatible UTF-8 CSV while leaving stream ownership with the caller.</summary>
     public static async Task WriteUtf8Async(Stream stream, string csv)
@@ -26,12 +26,41 @@ public static class ColonizationProjectCsvExporter
         var csv = new StringBuilder();
         AppendTable(
             csv,
-            "Project details",
+            preview.IsCombined ? "Combined report" : "Project details",
             ["Field", "Value"],
             Details(preview)
                 .Concat(CurrentShipDetails(preview, currentShipCapacity))
                 .Select(pair => new[] { Text(pair.Key), Text(pair.Value) })
         );
+        if (preview.IsCombined)
+        {
+            AppendTable(
+                csv,
+                "Build projects",
+                ["Project", "Build type", "System", "Build ID"],
+                preview.Projects.Select(project =>
+                    new[]
+                    {
+                        Text(project.BuildName),
+                        Text(BuildTypeName(project)),
+                        Text(project.SystemName),
+                        Text(project.BuildId),
+                    }
+                )
+            );
+            AppendTable(
+                csv,
+                "Linked commanders",
+                ["Commander", "Commodity assignments"],
+                preview.Commanders.Select(pair => new[] { Text(pair.Key), Text(string.Join("; ", pair.Value)) })
+            );
+            AppendTable(
+                csv,
+                "System effects",
+                ["Field", "Value"],
+                CombinedEffectDetails(preview).Select(pair => new[] { Text(pair.Key), Text(pair.Value) })
+            );
+        }
         AppendTable(
             csv,
             "Cargo requirements (tonnes)",
@@ -125,12 +154,31 @@ public static class ColonizationProjectCsvExporter
     /// <summary>Includes the build identity and refresh time so exports remain distinct and valid on supported desktops.</summary>
     public static string SuggestedFileName(ColonizationProjectPreview preview)
     {
+        if (preview.IsCombined)
+        {
+            return $"Raven-combined-build-report-{preview.FetchedAt:yyyyMMdd-HHmmss}.csv";
+        }
         return $"Raven-build-{string.Concat(preview.Project.BuildId.Select(character => char.IsAsciiLetterOrDigit(character) || character == '-' ? character : '_'))}-{preview.FetchedAt:yyyyMMdd-HHmmss}.csv";
     }
 
     /// <summary>Lists the public project and summary fields shared by the preview and export.</summary>
     public static IEnumerable<KeyValuePair<string, string>> Details(ColonizationProjectPreview preview)
     {
+        if (preview.IsCombined)
+        {
+            return new Dictionary<string, string>
+            {
+                ["Build projects"] = Number(preview.Projects.Count),
+                ["Systems"] = Number(
+                    preview
+                        .Projects.Select(project => project.SystemName)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Count()
+                ),
+                ["Linked fleet carriers"] = string.Join("; ", preview.Carriers.Select(carrier => carrier.Label)),
+                ["Linked commanders"] = string.Join("; ", preview.Commanders.Keys),
+            }.Concat(SummaryDetails(preview));
+        }
         ColonizationProject project = preview.Project;
         return new Dictionary<string, string>
         {
@@ -151,7 +199,14 @@ public static class ColonizationProjectCsvExporter
             ["Linked fleet carriers"] = string.Join("; ", preview.Carriers.Select(carrier => carrier.Label)),
             ["Notes"] = project.Notes ?? string.Empty,
             ["Discord"] = project.DiscordLink ?? string.Empty,
-            ["Maximum required"] = Number(project.MaximumRequired),
+        }.Concat(SummaryDetails(preview));
+    }
+
+    /// <summary>Exports the same cargo, progress, trips, and availability fields for individual and combined reports.</summary>
+    private static Dictionary<string, string> SummaryDetails(ColonizationProjectPreview preview) =>
+        new()
+        {
+            ["Maximum required"] = Number(preview.MaximumRequired),
             ["Delivered"] = Number(preview.Delivered),
             ["Progress (%)"] = preview.Progress?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty,
             ["Remaining cargo"] = Number(preview.Remaining),
@@ -181,7 +236,6 @@ public static class ColonizationProjectCsvExporter
             ["Carrier stock status"] = preview.CarrierDeficit is null ? "Unavailable" : "Available",
             ["Delivery history status"] = preview.Statistics is null ? "Unavailable" : "Available",
         };
-    }
 
     /// <summary>Lists Raven's static system effects, prerequisites, unlocks, and tier points.</summary>
     public static IEnumerable<KeyValuePair<string, string>> EffectDetails(ColonizationBuildEffects effects)

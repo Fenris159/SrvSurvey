@@ -21,6 +21,7 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         viewModel.SetProjectPreviewOpener(ShowOrActivate);
+        viewModel.SetCombinedReportOpener(ShowCombinedReport);
         viewModel.PropertyChanged += OnContextChanged;
         owner.Closed += OnOwnerClosed;
     }
@@ -34,7 +35,22 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         {
             return;
         }
-        if (windows.TryGetValue(project.BuildId, out ColonizationProjectPreviewWindow? existing))
+        ShowWindow(project.BuildId, () => viewModel.CreateProjectPreview(project.BuildId));
+    }
+
+    /// <summary>Maintains one combined report alongside any independent build popouts.</summary>
+    internal void ShowCombinedReport()
+    {
+        if (!disposed && viewModel.IsEnabled && viewModel.HasProjects)
+        {
+            ShowWindow("combined-report", viewModel.CreateCombinedReport);
+        }
+    }
+
+    /// <summary>Restores an existing popout or starts its isolated refresh loop with the shared owner.</summary>
+    private void ShowWindow(string key, Func<ColonizationProjectPreviewViewModel> createPreview)
+    {
+        if (windows.TryGetValue(key, out ColonizationProjectPreviewWindow? existing))
         {
             if (existing.WindowState == WindowState.Minimized)
             {
@@ -45,8 +61,8 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         }
         try
         {
-            var window = new ColonizationProjectPreviewWindow(viewModel.CreateProjectPreview(project.BuildId));
-            windows.Add(project.BuildId, window);
+            var window = new ColonizationProjectPreviewWindow(createPreview());
+            windows.Add(key, window);
             window.Closed += OnPreviewClosed;
             window.Show(owner);
         }
@@ -65,6 +81,7 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         }
         disposed = true;
         viewModel.SetProjectPreviewOpener(null);
+        viewModel.SetCombinedReportOpener(null);
         viewModel.PropertyChanged -= OnContextChanged;
         owner.Closed -= OnOwnerClosed;
         CloseAll();

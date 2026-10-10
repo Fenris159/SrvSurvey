@@ -30,6 +30,15 @@ public sealed partial class ColonizationView : UserControl
         }
     }
 
+    /// <summary>Opens the combined live report without saving or changing the current project selection.</summary>
+    private void CombinedBuildReport_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.Colonization.OpenCombinedReport();
+        }
+    }
+
     private async void OpenRavenApiKeyPage_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is not MainWindowViewModel viewModel)

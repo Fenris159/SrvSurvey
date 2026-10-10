@@ -165,6 +165,10 @@
       "translation": "1 Körper übrig"
     },
     {
+      "source": "1 build project",
+      "translation": "1 Bauprojekt"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 geologisches Signal nicht identifiziert"
     },
@@ -183,6 +187,10 @@
     {
       "source": "1 organism",
       "translation": "1 Organismus"
+    },
+    {
+      "source": "1 system",
+      "translation": "1 System"
     },
     {
       "source": "1 to 1000",
@@ -699,6 +707,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "Ein Boxel ist ein kubischer Teilsektor eines prozedural erzeugten Raums. Systeme in einem Boxel verwenden dasselbe Präfix für generierte Namen und verwenden ein numerisches Suffix als Sequenz innerhalb dieses Boxels."
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "Ein Build ist nicht mehr verfügbar. Aktualisieren Sie die Projektliste des Arbeitsbereichs."
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -3893,6 +3905,10 @@
       "translation": "Build-Vorschau"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "Erstellen Sie Projekte in diesem Bericht"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "BuildSiteRepairVisits"
     },
@@ -5673,6 +5689,10 @@
       "translation": "Kombinieren Sie SrvSurvey die integrierte Ringreferenz, Kommandantenentdeckungen, Live-Beobachtungen EDDN und Spansh API-Ergebnisse. Spots++ priorisiert kartierte RES-Standorte, Überlappungen, Multi-Hotspot-Ringe und unberührte Reserven, ohne dass ein heruntergeladener Galaxien-Dump erforderlich ist."
     },
     {
+      "source": "Combined Build Report",
+      "translation": "Kombinierter Build-Bericht"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Der kombinierte Overlay-Bearbeitungsmodus ist unter Windows aktiv."
     },
@@ -5683,6 +5703,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "Der kombinierte Overlay-Bearbeitungsmodus ist aktiv, aber der bevorzugte Stapelhinweis konnte nicht angewendet werden."
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "Kombinierte Referenzeffekte, gruppiert nach System. Die tatsächlichen Systemsummen hängen von anderen Websites und Links ab."
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -6753,8 +6777,8 @@
       "translation": "CSV konnte nicht exportiert werden. Überprüfen Sie das Ziel und versuchen Sie es erneut."
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "Dieser Build konnte nicht geladen werden. Wählen Sie „Aktualisieren“, um es erneut zu versuchen."
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "Dieser Bericht konnte nicht geladen werden. Wählen Sie „Aktualisieren“, um es erneut zu versuchen."
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -16151,6 +16175,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "Es liegen noch keine Boxelstatistiken vor."
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "Im Arbeitsbereich sind keine Build-Projekte verfügbar."
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -31753,6 +31781,10 @@
       "translation": "kombiniert"
     },
     {
+      "source": "combined-report",
+      "translation": "Kombinierter Bericht"
+    },
+    {
       "source": "comm",
       "translation": "Komm"
     },
@@ -34489,6 +34521,10 @@
       "translation": "{0} Boxel{1} vom Massencode {2} bis {3}."
     },
     {
+      "source": "{0} build projects",
+      "translation": "{0} Build-Projekte"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "{0} Ladung ist bereits aktuell."
     },
@@ -34953,6 +34989,10 @@
       "translation": "{0} Systemvorschlag{1} von {2}."
     },
     {
+      "source": "{0} systems",
+      "translation": "{0}-Systeme"
+    },
+    {
       "source": "{0} t",
       "translation": "{0} t"
     },
@@ -35091,6 +35131,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} versendet · {2} Module · aktualisiert {3}"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · umfasst alle Projekte unabhängig von der Auswahl „Anzeigen“."
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -35531,6 +35575,10 @@
       "translation": "1 cuerpo restante"
     },
     {
+      "source": "1 build project",
+      "translation": "1 proyecto de construcción"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 señal geológica no identificada"
     },
@@ -35549,6 +35597,10 @@
     {
       "source": "1 organism",
       "translation": "1 organismo"
+    },
+    {
+      "source": "1 system",
+      "translation": "1 sistema"
     },
     {
       "source": "1 to 1000",
@@ -36065,6 +36117,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "Un boxel es un subsector cúbico de espacio generado procedimentalmente. Los sistemas en un cuadro comparten el mismo prefijo de nombre generado y usan un sufijo numérico como secuencia dentro de ese cuadro."
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "Una compilación ya no está disponible. Actualiza la lista de proyectos del espacio de trabajo."
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -39259,6 +39315,10 @@
       "translation": "Vista previa de compilación"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "Construya proyectos en este informe"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "Visitas de reparación del sitio de construcción"
     },
@@ -41039,6 +41099,10 @@
       "translation": "Combine la referencia de anillo incorporada de SrvSurvey, los descubrimientos de comandantes, las observaciones en vivo EDDN y los resultados de API Spansh. Spots++ prioriza sitios RES mapeados, superposiciones, anillos de puntos múltiples y reservas prístinas sin necesidad de descargar un volcado de galaxias."
     },
     {
+      "source": "Combined Build Report",
+      "translation": "Informe de construcción combinado"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "El modo de edición de superposición combinada está activo en Windows."
     },
@@ -41049,6 +41113,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "El modo de edición de superposición combinada está activo, pero no se pudo aplicar la sugerencia de apilamiento preferida."
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "Efectos de referencia combinados, agrupados por sistema. Los totales reales del sistema dependen de otros sitios y enlaces."
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -42119,8 +42187,8 @@
       "translation": "No se pudo exportar CSV. Comprueba el destino y vuelve a intentarlo."
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "No se pudo cargar esta compilación. Elija Actualizar para intentarlo de nuevo."
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "No se pudo cargar este informe. Elija Actualizar para intentarlo de nuevo."
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -51517,6 +51585,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "Aún no se registran estadísticas de boxel."
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "No hay proyectos de compilación disponibles en el espacio de trabajo."
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -67119,6 +67191,10 @@
       "translation": "combinado"
     },
     {
+      "source": "combined-report",
+      "translation": "informe combinado"
+    },
+    {
       "source": "comm",
       "translation": "comunicación"
     },
@@ -69855,6 +69931,10 @@
       "translation": "{0} boxel{1} desde el código masivo {2} hasta {3}."
     },
     {
+      "source": "{0} build projects",
+      "translation": "Proyectos de construcción {0}"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "{0} la carga ya está vigente."
     },
@@ -70319,6 +70399,10 @@
       "translation": "{0} sugerencia del sistema{1} de {2}."
     },
     {
+      "source": "{0} systems",
+      "translation": "Sistemas {0}"
+    },
+    {
       "source": "{0} t",
       "translation": "{0}t"
     },
@@ -70457,6 +70541,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} barcos · {2} módulos · actualizado {3}"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · incluye todos los proyectos independientemente de la selección de Mostrar"
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -70897,6 +70985,10 @@
       "translation": "1 corps restant"
     },
     {
+      "source": "1 build project",
+      "translation": "1 projet de construction"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 signal géologique non identifié"
     },
@@ -70915,6 +71007,10 @@
     {
       "source": "1 organism",
       "translation": "1 organisme"
+    },
+    {
+      "source": "1 system",
+      "translation": "1 système"
     },
     {
       "source": "1 to 1000",
@@ -71431,6 +71527,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "Un boxel est un sous-secteur cubique d’espace généré de manière procédurale. Les systèmes d'un boxel partagent le même préfixe de nom généré et utilisent un suffixe numérique comme séquence dans ce boxel."
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "Une version n'est plus disponible. Actualisez la liste des projets de l'espace de travail."
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -74625,6 +74725,10 @@
       "translation": "Aperçu de la construction"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "Créer des projets dans ce rapport"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "Visites de réparation de site de construction"
     },
@@ -76405,6 +76509,10 @@
       "translation": "Combinez la référence d'anneau intégrée de SrvSurvey, les découvertes du commandant, les observations en direct EDDN et les résultats de l'API Spansh. Spots++ donne la priorité aux sites RES cartographiés, aux chevauchements, aux anneaux multi-hotspots et aux réserves vierges sans nécessiter de téléchargement de vidage de galaxie."
     },
     {
+      "source": "Combined Build Report",
+      "translation": "Rapport de construction combiné"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Le mode d’édition de superposition combinée est actif sous Windows."
     },
@@ -76415,6 +76523,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "Le mode d'édition de superposition combinée est actif, mais l'astuce d'empilement préférée n'a pas pu être appliquée."
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "Effets de référence combinés, regroupés par système. Les totaux réels du système dépendent d’autres sites et liens."
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -77485,8 +77597,8 @@
       "translation": "Impossible d'exporter au format CSV. Vérifiez la destination et réessayez."
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "Impossible de charger cette version. Choisissez Actualiser pour réessayer."
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "Impossible de charger ce rapport. Choisissez Actualiser pour réessayer."
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -86883,6 +86995,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "Aucune statistique de boxel n’est encore enregistrée."
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "Aucun projet de build n'est disponible dans l'espace de travail."
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -102485,6 +102601,10 @@
       "translation": "combiné"
     },
     {
+      "source": "combined-report",
+      "translation": "rapport-combiné"
+    },
+    {
       "source": "comm",
       "translation": "communication"
     },
@@ -105221,6 +105341,10 @@
       "translation": "{0} boxel{1} du code de masse {2} à {3}."
     },
     {
+      "source": "{0} build projects",
+      "translation": "Projets de construction {0}"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "La cargaison {0} est déjà à jour."
     },
@@ -105685,6 +105809,10 @@
       "translation": "{0} suggestion système{1} de {2}."
     },
     {
+      "source": "{0} systems",
+      "translation": "Systèmes {0}"
+    },
+    {
       "source": "{0} t",
       "translation": "{0}"
     },
@@ -105823,6 +105951,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} navires · {2} modules · {3} mis à jour"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · inclut tous les projets, quelle que soit la sélection Afficher"
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -106263,6 +106395,10 @@
       "translation": "1 corpo restante"
     },
     {
+      "source": "1 build project",
+      "translation": "1 projeto de construção"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 sinal geológico não identificado"
     },
@@ -106281,6 +106417,10 @@
     {
       "source": "1 organism",
       "translation": "1 organismo"
+    },
+    {
+      "source": "1 system",
+      "translation": "1 sistema"
     },
     {
       "source": "1 to 1000",
@@ -106797,6 +106937,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "Um boxel é um subsetor cúbico de espaço gerado processualmente. Os sistemas em um boxel compartilham o mesmo prefixo de nome gerado e usam um sufixo numérico como sequência dentro desse boxel."
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "Uma compilação não está mais disponível. Atualize a lista de projetos do espaço de trabalho."
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -109991,6 +110135,10 @@
       "translation": "Pré-visualização da versão"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "Crie projetos neste relatório"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "BuildSiteRepairVisitas"
     },
@@ -111771,6 +111919,10 @@
       "translation": "Combine a referência de anel integrada de SrvSurvey, descobertas de comandante, observações ao vivo EDDN e resultados de API Spansh. Spots++ prioriza locais RES mapeados, sobreposições, anéis de múltiplos pontos de acesso e reservas intocadas sem a necessidade de download de um despejo de galáxia."
     },
     {
+      "source": "Combined Build Report",
+      "translation": "Relatório de construção combinado"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "O modo de edição de sobreposição combinada está ativo no Windows."
     },
@@ -111781,6 +111933,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "O modo de edição de sobreposição combinada está ativo, mas a dica de empilhamento preferencial não pôde ser aplicada."
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "Efeitos de referência combinados, agrupados por sistema. Os totais reais do sistema dependem de outros sites e links."
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -112851,8 +113007,8 @@
       "translation": "Não foi possível exportar CSV. Verifique o destino e tente novamente."
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "Não foi possível carregar esta compilação. Escolha Atualizar para tentar novamente."
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "Não foi possível carregar este relatório. Escolha Atualizar para tentar novamente."
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -122249,6 +122405,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "Nenhuma estatística de boxel foi registrada ainda."
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "Nenhum projeto de construção está disponível no espaço de trabalho."
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -137851,6 +138011,10 @@
       "translation": "combinado"
     },
     {
+      "source": "combined-report",
+      "translation": "relatório combinado"
+    },
+    {
       "source": "comm",
       "translation": "comunicação"
     },
@@ -140587,6 +140751,10 @@
       "translation": "{0} boxel{1} do código de massa {2} até {3}."
     },
     {
+      "source": "{0} build projects",
+      "translation": "Projetos de construção {0}"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "{0} carga já está atual."
     },
@@ -141051,6 +141219,10 @@
       "translation": "{0} sugestão de sistema{1} de {2}."
     },
     {
+      "source": "{0} systems",
+      "translation": "Sistemas {0}"
+    },
+    {
       "source": "{0} t",
       "translation": "{0} t"
     },
@@ -141189,6 +141361,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} enviado · {2} módulos · atualizado {3}"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · inclui todos os projetos, independentemente da seleção do Show"
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -141629,6 +141805,10 @@
       "translation": "осталось 1 тело"
     },
     {
+      "source": "1 build project",
+      "translation": "1 строительный проект"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 неопознанный геологический сигнал"
     },
@@ -141647,6 +141827,10 @@
     {
       "source": "1 organism",
       "translation": "1 организм"
+    },
+    {
+      "source": "1 system",
+      "translation": "1 система"
     },
     {
       "source": "1 to 1000",
@@ -142163,6 +142347,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "Боксель — это кубический подсектор процедурно генерируемого пространства. Системы в одном боксе имеют один и тот же префикс сгенерированного имени и используют числовой суффикс в качестве последовательности внутри этого бокса."
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "Сборка больше не доступна. Обновите список проектов рабочей области."
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -145357,6 +145545,10 @@
       "translation": "Предварительный просмотр сборки"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "Стройте проекты в этом отчете"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "СборкаРемонт сайтаПосещения"
     },
@@ -147137,6 +147329,10 @@
       "translation": "Объедините встроенную кольцевую ссылку SrvSurvey, открытия командира, наблюдения в реальном времени EDDN и результаты API Spansh. Spots++ отдает приоритет нанесенным на карту объектам ВИЭ, перекрытиям, кольцам с несколькими горячими точками и нетронутым резервам, не требуя загрузки дампа галактики."
     },
     {
+      "source": "Combined Build Report",
+      "translation": "Комбинированный отчет о сборке"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Режим редактирования комбинированного наложения активен в Windows."
     },
@@ -147147,6 +147343,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "Режим редактирования комбинированного наложения активен, но применить предпочтительную подсказку по наложению не удалось."
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "Комбинированные эталонные эффекты, сгруппированные по системе. Фактические итоговые показатели системы зависят от других сайтов и ссылок."
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -148217,8 +148417,8 @@
       "translation": "Не удалось экспортировать CSV. Проверьте пункт назначения и повторите попытку."
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "Не удалось загрузить эту сборку. Выберите «Обновить», чтобы повторить попытку."
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "Не удалось загрузить этот отчет. Выберите «Обновить», чтобы повторить попытку."
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -157615,6 +157815,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "Статистика по боксу пока не ведется."
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "В рабочей области нет проектов сборки."
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -173217,6 +173421,10 @@
       "translation": "комбинированный"
     },
     {
+      "source": "combined-report",
+      "translation": "комбинированный отчет"
+    },
+    {
       "source": "comm",
       "translation": "связь"
     },
@@ -175953,6 +176161,10 @@
       "translation": "{0} бокс{1} от массового кода от {2} до {3}."
     },
     {
+      "source": "{0} build projects",
+      "translation": "{0} проекты сборки"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "{0} груз уже текущий."
     },
@@ -176417,6 +176629,10 @@
       "translation": "{0} системное предложение{1} от {2}."
     },
     {
+      "source": "{0} systems",
+      "translation": "Системы {0}"
+    },
+    {
       "source": "{0} t",
       "translation": "{0} т"
     },
@@ -176555,6 +176771,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} корабли · модули {2} · обновлено {3}"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · включает все проекты независимо от выбора «Показать»."
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -176995,6 +177215,10 @@
       "translation": "剩余 1 具尸体"
     },
     {
+      "source": "1 build project",
+      "translation": "1 构建项目"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1个地质信号不明"
     },
@@ -177013,6 +177237,10 @@
     {
       "source": "1 organism",
       "translation": "1 生物体"
+    },
+    {
+      "source": "1 system",
+      "translation": "1个系统"
     },
     {
       "source": "1 to 1000",
@@ -177529,6 +177757,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "盒子是程序生成的空间的立方子扇区。一个盒子中的系统共享相同的生成名称前缀，并使用数字后缀作为它们在该盒子中的序列。"
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "构建不再可用。刷新工作区项目列表。"
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -180723,6 +180955,10 @@
       "translation": "构建预览"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "构建本报告中的项目"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "建造现场修复访问"
     },
@@ -182503,6 +182739,10 @@
       "translation": "结合 SrvSurvey 的内置环参考、指挥官发现、实时 EDDN 观察结果和 Spansh API 结果。 Spots++ 优先考虑映射的 RES 站点、重叠、多热点环和原始储备，无需下载星系转储。"
     },
     {
+      "source": "Combined Build Report",
+      "translation": "组合构建报告"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "组合覆盖编辑模式在 Windows 上处于活动状态。"
     },
@@ -182513,6 +182753,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "组合叠加编辑模式已激活，但无法应用首选堆叠提示。"
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "组合参考效果，按系统分组。实际系统总数取决于其他站点和链接。"
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -183583,8 +183827,8 @@
       "translation": "无法导出 CSV。检查目的地并重试。"
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "无法加载此版本。选择刷新重试。"
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "无法加载此报告。选择刷新重试。"
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -192981,6 +193225,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "尚未记录任何 Boxel 统计数据。"
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "工作区中没有可用的构建项目。"
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -208583,6 +208831,10 @@
       "translation": "合并的"
     },
     {
+      "source": "combined-report",
+      "translation": "合并报告"
+    },
+    {
       "source": "comm",
       "translation": "通讯"
     },
@@ -211319,6 +211571,10 @@
       "translation": "{0} boxel{1} 从质量代码 {2} 到 {3}。"
     },
     {
+      "source": "{0} build projects",
+      "translation": "{0} 构建项目"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "{0} 货物已经是最新的。"
     },
@@ -211783,6 +212039,10 @@
       "translation": "{0}系统建议{1}来自{2}。"
     },
     {
+      "source": "{0} systems",
+      "translation": "{0}系统"
+    },
+    {
       "source": "{0} t",
       "translation": "{0} t"
     },
@@ -211921,6 +212181,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "{0} · {1} 舰 · {2} 模块 · 更新 {3}"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "{0} · {1} · 包括所有项目，无论显示选择如何"
     },
     {
       "source": "{0} · {1} · {2} km border",
@@ -212361,6 +212625,10 @@
       "translation": "* 1 BODY REMAINING >>>!"
     },
     {
+      "source": "1 build project",
+      "translation": "* 1 BUILD PROJECT >>>!"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "* 1 GEOLOGICAL SIGNAL UNIDENTIFIED >>>!"
     },
@@ -212379,6 +212647,10 @@
     {
       "source": "1 organism",
       "translation": "* 1 ORGANISM >>>!"
+    },
+    {
+      "source": "1 system",
+      "translation": "* 1 SYSTEM >>>!"
     },
     {
       "source": "1 to 1000",
@@ -212895,6 +213167,10 @@
     {
       "source": "A boxel is a cubic subsector of procedurally generated space. Systems in one boxel share the same generated-name prefix and use a numeric suffix as their sequence within that boxel.",
       "translation": "* A BOXEL IS A CUBIC SUBSECTOR OF PROCEDURALLY GENERATED SPACE. SYSTEMS IN ONE BOXEL SHARE THE SAME GENERATED-NAME PREFIX AND USE A NUMERIC SUFFIX AS THEIR SEQUENCE WITHIN THAT BOXEL. >>>!"
+    },
+    {
+      "source": "A build is no longer available. Refresh the workspace project list.",
+      "translation": "* A BUILD IS NO LONGER AVAILABLE. REFRESH THE WORKSPACE PROJECT LIST. >>>!"
     },
     {
       "source": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -216089,6 +216365,10 @@
       "translation": "* BUILD PREVIEW >>>!"
     },
     {
+      "source": "Build projects in this report",
+      "translation": "* BUILD PROJECTS IN THIS REPORT >>>!"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "* BUILDSITEREPAIRVISITS >>>!"
     },
@@ -217869,6 +218149,10 @@
       "translation": "* COMBINE SRVSURVEY'S BUILT-IN RING REFERENCE, COMMANDER DISCOVERIES, LIVE EDDN OBSERVATIONS, AND SPANSH API RESULTS. SPOTS++ PRIORITIZES MAPPED RES SITES, OVERLAPS, MULTI-HOTSPOT RINGS, AND PRISTINE RESERVES WITHOUT REQUIRING A DOWNLOADED GALAXY DUMP. >>>!"
     },
     {
+      "source": "Combined Build Report",
+      "translation": "* COMBINED BUILD REPORT >>>!"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "* COMBINED OVERLAY EDIT MODE IS ACTIVE ON WINDOWS. >>>!"
     },
@@ -217879,6 +218163,10 @@
     {
       "source": "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.",
       "translation": "* COMBINED OVERLAY EDIT MODE IS ACTIVE, BUT THE PREFERRED STACKING HINT COULD NOT BE APPLIED. >>>!"
+    },
+    {
+      "source": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+      "translation": "* COMBINED REFERENCE EFFECTS, GROUPED BY SYSTEM. ACTUAL SYSTEM TOTALS DEPEND ON OTHER SITES AND LINKS. >>>!"
     },
     {
       "source": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -218949,8 +219237,8 @@
       "translation": "* COULD NOT EXPORT CSV. CHECK THE DESTINATION AND TRY AGAIN. >>>!"
     },
     {
-      "source": "Could not load this build. Choose Refresh to try again.",
-      "translation": "* COULD NOT LOAD THIS BUILD. CHOOSE REFRESH TO TRY AGAIN. >>>!"
+      "source": "Could not load this report. Choose Refresh to try again.",
+      "translation": "* COULD NOT LOAD THIS REPORT. CHOOSE REFRESH TO TRY AGAIN. >>>!"
     },
     {
       "source": "Could not open VoxStellar: {0}",
@@ -228347,6 +228635,10 @@
     {
       "source": "No boxel statistics are recorded yet.",
       "translation": "* NO BOXEL STATISTICS ARE RECORDED YET. >>>!"
+    },
+    {
+      "source": "No build projects are available in the workspace.",
+      "translation": "* NO BUILD PROJECTS ARE AVAILABLE IN THE WORKSPACE. >>>!"
     },
     {
       "source": "No child boxel statistics are recorded inside {0}.",
@@ -243949,6 +244241,10 @@
       "translation": "* COMBINED >>>!"
     },
     {
+      "source": "combined-report",
+      "translation": "* COMBINED-REPORT >>>!"
+    },
+    {
       "source": "comm",
       "translation": "* COMM >>>!"
     },
@@ -246685,6 +246981,10 @@
       "translation": "* {0} BOXEL{1} FROM MASS CODE {2} THROUGH {3}. >>>!"
     },
     {
+      "source": "{0} build projects",
+      "translation": "* {0} BUILD PROJECTS >>>!"
+    },
+    {
       "source": "{0} cargo is already current.",
       "translation": "* {0} CARGO IS ALREADY CURRENT. >>>!"
     },
@@ -247149,6 +247449,10 @@
       "translation": "* {0} SYSTEM SUGGESTION{1} FROM {2}. >>>!"
     },
     {
+      "source": "{0} systems",
+      "translation": "* {0} SYSTEMS >>>!"
+    },
+    {
       "source": "{0} t",
       "translation": "* {0} T >>>!"
     },
@@ -247287,6 +247591,10 @@
     {
       "source": "{0} · {1} ships · {2} modules · updated {3}",
       "translation": "* {0} · {1} SHIPS · {2} MODULES · UPDATED {3} >>>!"
+    },
+    {
+      "source": "{0} · {1} · includes all projects regardless of Show selection",
+      "translation": "* {0} · {1} · INCLUDES ALL PROJECTS REGARDLESS OF SHOW SELECTION >>>!"
     },
     {
       "source": "{0} · {1} · {2} km border",

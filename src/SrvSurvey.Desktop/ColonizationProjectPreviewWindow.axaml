@@ -112,7 +112,7 @@
           <StackPanel Spacing="18">
             <Border Classes="card">
               <StackPanel Spacing="10">
-                <TextBlock Classes="card-title" Text="Project details" />
+                <TextBlock Classes="card-title" Text="{Binding DetailsTitle}" />
                 <ItemsControl ItemsSource="{Binding Details}" />
               </StackPanel>
             </Border>
@@ -128,8 +128,18 @@
           <Border Grid.Column="1" Classes="card" VerticalAlignment="Top">
             <StackPanel Spacing="10">
               <TextBlock Classes="card-title" Text="System effects" />
-              <TextBlock Classes="muted" Text="Reference effects for this build type. Actual system totals depend on other sites and links." TextWrapping="Wrap" />
-              <ItemsControl ItemsSource="{Binding Effects}" />
+              <TextBlock Classes="muted" Text="{Binding EffectsDescription}" TextWrapping="Wrap" />
+              <ItemsControl ItemsSource="{Binding Effects}" IsVisible="{Binding !IsCombinedReport}" />
+              <ItemsControl ItemsSource="{Binding EffectGroups}" IsVisible="{Binding IsCombinedReport}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PreviewEffectGroup">
+                    <StackPanel Spacing="6" Margin="0,0,0,12">
+                      <TextBlock Classes="card-title" Text="{Binding Name}" TextWrapping="Wrap" />
+                      <ItemsControl ItemsSource="{Binding Fields}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
           </Border>
         </Grid>
