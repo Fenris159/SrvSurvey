@@ -36,6 +36,10 @@
                       LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
     <EmbeddedResource Include="Resources\ReferenceData\colonization-costs2.json"
                       LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\colonization-effects.json"
+                      LogicalName="SrvSurvey.Core.Resources.colonization-effects.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\colonization-commodity-names.json"
+                      LogicalName="SrvSurvey.Core.Resources.colonization-commodity-names.json" />
     <EmbeddedResource Include="Resources\ReferenceData\ggg.json"
                       LogicalName="SrvSurvey.Core.Resources.ggg.json" />
     <EmbeddedResource Include="Resources\ReferenceData\well-known-uris.json"

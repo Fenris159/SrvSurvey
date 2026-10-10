@@ -1,0 +1,1849 @@
+[
+  {
+    "Name": "Unknown",
+    "Layouts": [
+      ""
+    ],
+    "Score": null,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {},
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 0,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Installation?",
+    "Layouts": [
+      "installation"
+    ],
+    "Score": null,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {},
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 0,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Outpost?",
+    "Layouts": [
+      "outpost"
+    ],
+    "Score": null,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {},
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 0,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Settlement?",
+    "Layouts": [
+      "settlement"
+    ],
+    "Score": null,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {},
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 0,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Facility?",
+    "Layouts": [
+      "facility"
+    ],
+    "Score": null,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {},
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 0,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Coriolis Starport",
+    "Layouts": [
+      "no_truss",
+      "dual_truss",
+      "quad_truss",
+      "no truss",
+      "coriolis"
+    ],
+    "Score": 8,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -2,
+      "Wealth": 3,
+      "Tech level": 2,
+      "Standard of living": 3,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 3,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 63001,
+    "LandingPads": {
+      "no_truss": [
+        8,
+        11,
+        5
+      ],
+      "dual_truss": [
+        8,
+        11,
+        5
+      ],
+      "quad_truss": [
+        8,
+        11,
+        5
+      ]
+    }
+  },
+  {
+    "Name": "Asteroid Starport",
+    "Layouts": [
+      "asteroid"
+    ],
+    "Score": 8,
+    "Pads": "large",
+    "Economy": "Extraction",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 5,
+      "Tech level": 3,
+      "Standard of living": -4,
+      "Development level": 7
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 3,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 53546,
+    "LandingPads": {
+      "asteroid": [
+        8,
+        11,
+        5
+      ]
+    }
+  },
+  {
+    "Name": "Dodec Starport",
+    "Layouts": [
+      "dodec",
+      "quint_truss",
+      "dec_truss"
+    ],
+    "Score": 15,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 8,
+      "Max population": 4,
+      "Security": -4,
+      "Wealth": 9,
+      "Tech level": 8,
+      "Standard of living": 7,
+      "Development level": 10
+    },
+    "NeedsTier": 3,
+    "NeedsCount": 6,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 236000.0,
+    "LandingPads": {
+      "dodec": [
+        4,
+        11,
+        5
+      ],
+      "quint_truss": [
+        4,
+        11,
+        5
+      ],
+      "dec_truss": [
+        4,
+        11,
+        5
+      ]
+    }
+  },
+  {
+    "Name": "Ocellus Starport",
+    "Layouts": [
+      "ocellus"
+    ],
+    "Score": 15,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 5,
+      "Max population": 1,
+      "Security": -3,
+      "Wealth": 8,
+      "Tech level": 7,
+      "Standard of living": 5,
+      "Development level": 9
+    },
+    "NeedsTier": 3,
+    "NeedsCount": 6,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 219135,
+    "LandingPads": {
+      "ocellus": [
+        8,
+        11,
+        5
+      ]
+    }
+  },
+  {
+    "Name": "Orbis Starport",
+    "Layouts": [
+      "apollo",
+      "artemis",
+      "orbis"
+    ],
+    "Score": 15,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 5,
+      "Max population": 1,
+      "Security": -3,
+      "Wealth": 8,
+      "Tech level": 7,
+      "Standard of living": 5,
+      "Development level": 9
+    },
+    "NeedsTier": 3,
+    "NeedsCount": 6,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 214878,
+    "LandingPads": {
+      "apollo": [
+        8,
+        11,
+        5
+      ],
+      "artemis": [
+        8,
+        11,
+        5
+      ]
+    }
+  },
+  {
+    "Name": "Commercial Outpost",
+    "Layouts": [
+      "plutus"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 3,
+      "Standard of living": 5
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 20480,
+    "LandingPads": {
+      "plutus": [
+        3,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Industrial Outpost",
+    "Layouts": [
+      "vulcan"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 3,
+      "Development level": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 21181,
+    "LandingPads": {
+      "vulcan": [
+        2,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Pirate Outpost",
+    "Layouts": [
+      "dysnomia"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "Service",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -2,
+      "Wealth": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 21797,
+    "LandingPads": {
+      "dysnomia": [
+        2,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Civilian Outpost",
+    "Layouts": [
+      "vesta"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 1,
+      "Standard of living": 2,
+      "Development level": 1
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 21624,
+    "LandingPads": {
+      "vesta": [
+        4,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Scientific Outpost",
+    "Layouts": [
+      "prometheus"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 20827,
+    "LandingPads": {
+      "prometheus": [
+        2,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Military Outpost",
+    "Layouts": [
+      "nemesis"
+    ],
+    "Score": 3,
+    "Pads": "medium",
+    "Economy": "Military",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": 2
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 20952,
+    "LandingPads": {
+      "nemesis": [
+        2,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Satellite Installation",
+    "Layouts": [
+      "angelia",
+      "eirene",
+      "hermes"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {
+      "Wealth": 1,
+      "Standard of living": 2,
+      "Development level": 1
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Tourist Settlements",
+      "Strong link unlock: Vista Genomics at T1 Surface or T2 orbital ports",
+      "Strong link unlock: Universal Cartographics at T1 Surface or T2 orbital ports"
+    ],
+    "AverageHaul": 7274,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Communication Installation",
+    "Layouts": [
+      "aletheia",
+      "pistis",
+      "soter"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {
+      "Security": 1,
+      "Tech level": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Exploration Hub",
+      "Strong link unlock: Vista Genomics at T1 Surface or T2 orbital ports",
+      "Strong link unlock: Universal Cartographics at T1 Surface or T2 orbital ports",
+      "Strong link unlock: Commodities at Pirate, Scientific or Military Outposts"
+    ],
+    "AverageHaul": 6695,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Space Farm",
+    "Layouts": [
+      "demeter"
+    ],
+    "Score": 2,
+    "Pads": "none",
+    "Economy": "Agriculture",
+    "Effects": {
+      "Standard of living": 5,
+      "Development level": 1
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Outpost Hub"
+    ],
+    "AverageHaul": 6709,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Pirate Base Installation",
+    "Layouts": [
+      "apate",
+      "laverna"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "Service",
+    "Effects": {
+      "Security": -4,
+      "Wealth": 4
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "Strong link unlock: Black Market"
+    ],
+    "AverageHaul": 14088,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Mining/Industrial Installation",
+    "Layouts": [
+      "euthenia",
+      "phorcys"
+    ],
+    "Score": 2,
+    "Pads": "none",
+    "Economy": "Extraction",
+    "Effects": {
+      "Wealth": 4,
+      "Standard of living": -2
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Industrial Hub"
+    ],
+    "AverageHaul": 11352,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Relay Installation",
+    "Layouts": [
+      "enodia",
+      "ichnaea"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "High Tech",
+    "Effects": {
+      "Security": 1,
+      "Development level": 1
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "Strong link unlock: Vista Genomics at T1 Surface or T2 orbital ports",
+      "Strong link unlock: Universal Cartographics at T1 Surface or T2 orbital ports",
+      "Strong link unlock: Commodities at Pirate, Scientific or Military Outposts"
+    ],
+    "AverageHaul": 6855,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Military Installation",
+    "Layouts": [
+      "alastor",
+      "vacuna"
+    ],
+    "Score": 4,
+    "Pads": "none",
+    "Economy": "Military",
+    "Effects": {
+      "Security": 7
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a military settlement",
+    "Unlocks": [
+      "System unlock: Military Hub",
+      "System unlock: Shipyard at T1 surface ports",
+      "System unlock: Outfitting at non-Military Outposts",
+      "System unlock: Outfitting at non-Industrial T1 surface ports"
+    ],
+    "AverageHaul": 10130,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Security Installation",
+    "Layouts": [
+      "dicaeosyne",
+      "eunomia",
+      "nomos",
+      "poena"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "Military",
+    "Effects": {
+      "Security": 9,
+      "Standard of living": 3,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a relay installation",
+    "Unlocks": [],
+    "AverageHaul": 10089,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Government Installation",
+    "Layouts": [
+      "harmonia"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {
+      "Security": 2,
+      "Standard of living": 7,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 10035,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Medical Installation",
+    "Layouts": [
+      "asclepius",
+      "eupraxia"
+    ],
+    "Score": 4,
+    "Pads": "none",
+    "Economy": "High Tech",
+    "Effects": {
+      "Tech level": 3,
+      "Standard of living": 5
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Vista Genomics at T1 Surface or T2 orbital ports"
+    ],
+    "AverageHaul": 10081,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Research Installation",
+    "Layouts": [
+      "astraeus",
+      "coeus",
+      "dione",
+      "dodona"
+    ],
+    "Score": 4,
+    "Pads": "none",
+    "Economy": "High Tech",
+    "Effects": {
+      "Tech level": 8,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a bio research settlement",
+    "Unlocks": [
+      "System unlock: Universal Cartographics at T1 Surface or T2 orbital ports"
+    ],
+    "AverageHaul": 10010,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Tourist Installation",
+    "Layouts": [
+      "hedone",
+      "opora",
+      "pasithea"
+    ],
+    "Score": 3,
+    "Pads": "none",
+    "Economy": "Tourism",
+    "Effects": {
+      "Security": -3,
+      "Wealth": 6,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a tourism settlement",
+    "Unlocks": [
+      "System unlock: Commodities at Pirate, Scientific or Military Outposts"
+    ],
+    "AverageHaul": 10100,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Space Bar Installation",
+    "Layouts": [
+      "bacchus",
+      "dionysus"
+    ],
+    "Score": 4,
+    "Pads": "none",
+    "Economy": "Tourism",
+    "Effects": {
+      "Security": -2,
+      "Wealth": 3,
+      "Standard of living": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Commodities at Pirate, Scientific or Military Outposts",
+      "System unlock: Crew Lounge at non-Civilian T1 ports"
+    ],
+    "AverageHaul": 10092,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Civilian Surface Outpost",
+    "Layouts": [
+      "atropos",
+      "clotho",
+      "decima",
+      "hestia",
+      "lachesis",
+      "nona"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 2,
+      "Max population": 1,
+      "Security": -2,
+      "Standard of living": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 35950,
+    "LandingPads": {
+      "atropos": [
+        4,
+        2,
+        2
+      ],
+      "clotho": [
+        4,
+        4,
+        2
+      ],
+      "decima": [
+        4,
+        4,
+        4
+      ],
+      "hestia": [
+        4,
+        4,
+        4
+      ],
+      "lachesis": [
+        4,
+        2,
+        2
+      ],
+      "nona": [
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  {
+    "Name": "Industrial Surface Outpost",
+    "Layouts": [
+      "bia",
+      "hephaestus",
+      "mefitis",
+      "opis",
+      "ponos",
+      "tethys"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 36443,
+    "LandingPads": {
+      "bia": [
+        4,
+        2,
+        2
+      ],
+      "hephaestus": [
+        4,
+        4,
+        4
+      ],
+      "mefitis": [
+        4,
+        4,
+        2
+      ],
+      "opis": [
+        4,
+        4,
+        4
+      ],
+      "ponos": [
+        4,
+        2,
+        2
+      ],
+      "tethys": [
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  {
+    "Name": "Scientific Surface Outpost",
+    "Layouts": [
+      "ananke",
+      "antevorta",
+      "fauna",
+      "necessitas",
+      "porrima",
+      "providentia"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Tech level": 5,
+      "Development level": 1
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 36902,
+    "LandingPads": {
+      "ananke": [
+        4,
+        4,
+        4
+      ],
+      "antevorta": [
+        4,
+        2,
+        2
+      ],
+      "fauna": [
+        4,
+        2,
+        2
+      ],
+      "necessitas": [
+        4,
+        4,
+        4
+      ],
+      "porrima": [
+        4,
+        4,
+        2
+      ],
+      "providentia": [
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  {
+    "Name": "Large Planetary Port",
+    "Layouts": [
+      "aphrodite",
+      "hera",
+      "poseidon",
+      "zeus"
+    ],
+    "Score": 15,
+    "Pads": "large",
+    "Economy": "Colony",
+    "Effects": {
+      "Population": 10,
+      "Max population": 10,
+      "Security": -3,
+      "Wealth": 5,
+      "Tech level": 5,
+      "Standard of living": 7,
+      "Development level": 10
+    },
+    "NeedsTier": 3,
+    "NeedsCount": 6,
+    "GivesTier": 0,
+    "GivesCount": 0,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 215597,
+    "LandingPads": {
+      "aphrodite": [
+        4,
+        4,
+        8
+      ],
+      "hera": [
+        4,
+        4,
+        8
+      ],
+      "poseidon": [
+        4,
+        4,
+        8
+      ],
+      "zeus": [
+        4,
+        4,
+        8
+      ]
+    }
+  },
+  {
+    "Name": "Agriculture Settlement: Small",
+    "Layouts": [
+      "consus"
+    ],
+    "Score": 1,
+    "Pads": "small",
+    "Economy": "Agriculture",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Standard of living": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 2834,
+    "LandingPads": {
+      "consus": [
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Agriculture Settlement: Medium",
+    "Layouts": [
+      "annona",
+      "picumnus"
+    ],
+    "Score": 2,
+    "Pads": "large",
+    "Economy": "Agriculture",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Standard of living": 7
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 5697,
+    "LandingPads": {
+      "annona": [
+        1,
+        0,
+        0
+      ],
+      "picumnus": [
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Agriculture Settlement: Large",
+    "Layouts": [
+      "ceres",
+      "fornax"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Agriculture",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Standard of living": 10
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 8517,
+    "LandingPads": {
+      "ceres": [
+        1,
+        0,
+        1
+      ],
+      "fornax": [
+        2,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Mining Settlement: Small",
+    "Layouts": [
+      "ourea"
+    ],
+    "Score": 1,
+    "Pads": "small",
+    "Economy": "Extraction",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Extraction Hub"
+    ],
+    "AverageHaul": 2837,
+    "LandingPads": {
+      "ourea": [
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Mining Settlement: Medium",
+    "Layouts": [
+      "mantus",
+      "orcus"
+    ],
+    "Score": 2,
+    "Pads": "large",
+    "Economy": "Extraction",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 5
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Extraction Hub"
+    ],
+    "AverageHaul": 5638,
+    "LandingPads": {
+      "mantus": [
+        0,
+        1,
+        0
+      ],
+      "orcus": [
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Mining Settlement: Large",
+    "Layouts": [
+      "aerecura",
+      "erebus"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Extraction",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 8,
+      "Tech level": 2,
+      "Standard of living": -2
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Extraction Hub"
+    ],
+    "AverageHaul": 8760,
+    "LandingPads": {
+      "aerecura": [
+        0,
+        0,
+        1
+      ],
+      "erebus": [
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Industrial Settlement: Small",
+    "Layouts": [
+      "fontus"
+    ],
+    "Score": 1,
+    "Pads": "small",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Development level": 3
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 2828,
+    "LandingPads": {
+      "fontus": [
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Industrial Settlement: Medium",
+    "Layouts": [
+      "meteope",
+      "minthe",
+      "palici"
+    ],
+    "Score": 2,
+    "Pads": "large",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Development level": 6
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 5656,
+    "LandingPads": {
+      "meteope": [
+        1,
+        0,
+        1
+      ],
+      "minthe": [
+        0,
+        1,
+        0
+      ],
+      "palici": [
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Industrial Settlement: Large",
+    "Layouts": [
+      "gaea"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 3,
+      "Development level": 9
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 8481,
+    "LandingPads": {
+      "gaea": [
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Military Settlement: Small",
+    "Layouts": [
+      "ioke"
+    ],
+    "Score": 1,
+    "Pads": "medium",
+    "Economy": "Military",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": 2
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Military Installations"
+    ],
+    "AverageHaul": 3553,
+    "LandingPads": {
+      "ioke": [
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Military Settlement: Medium",
+    "Layouts": [
+      "bellona",
+      "enyo",
+      "polemos"
+    ],
+    "Score": 2,
+    "Pads": "medium",
+    "Economy": "Military",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": 4
+    },
+    "NeedsTier": 0,
+    "NeedsCount": 0,
+    "GivesTier": 2,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Military Installations"
+    ],
+    "AverageHaul": 5629,
+    "LandingPads": {
+      "bellona": [
+        1,
+        0,
+        0
+      ],
+      "enyo": [
+        1,
+        1,
+        0
+      ],
+      "polemos": [
+        1,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Military Settlement: Large",
+    "Layouts": [
+      "minerva"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Military",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": 7,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Military Installations"
+    ],
+    "AverageHaul": 8554,
+    "LandingPads": {
+      "minerva": [
+        2,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Bio Settlement: Small",
+    "Layouts": [
+      "pheobe"
+    ],
+    "Score": 2,
+    "Pads": "small",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 3,
+      "Development level": 1
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Scientific Installations"
+    ],
+    "AverageHaul": 2897,
+    "LandingPads": {
+      "pheobe": [
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Bio Settlement: Medium",
+    "Layouts": [
+      "asteria",
+      "caerus"
+    ],
+    "Score": 2,
+    "Pads": "small",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 7,
+      "Development level": 1
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Scientific Installations"
+    ],
+    "AverageHaul": 5681,
+    "LandingPads": {
+      "asteria": [
+        1,
+        0,
+        0
+      ],
+      "caerus": [
+        3,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Bio Settlement: Large",
+    "Layouts": [
+      "chronos"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 10,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Scientific Installations"
+    ],
+    "AverageHaul": 8537,
+    "LandingPads": {
+      "chronos": [
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Tourist Settlement: Small",
+    "Layouts": [
+      "aergia"
+    ],
+    "Score": 1,
+    "Pads": "medium",
+    "Economy": "Tourism",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 1
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a satellite installation",
+    "Unlocks": [
+      "System unlock: Tourist Installations"
+    ],
+    "AverageHaul": 2895,
+    "LandingPads": {
+      "aergia": [
+        0,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "Name": "Tourist Settlement: Medium",
+    "Layouts": [
+      "comus",
+      "gelos",
+      "comos"
+    ],
+    "Score": 2,
+    "Pads": "large",
+    "Economy": "Tourism",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a satellite installation",
+    "Unlocks": [
+      "System unlock: Tourist Installations"
+    ],
+    "AverageHaul": 5671,
+    "LandingPads": {
+      "comus": [
+        2,
+        0,
+        1
+      ],
+      "gelos": [
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "Name": "Tourist Settlement: Large",
+    "Layouts": [
+      "fufluns"
+    ],
+    "Score": 4,
+    "Pads": "large",
+    "Economy": "Tourism",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -2,
+      "Wealth": 5
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 2,
+    "Prerequisite": "a satellite installation",
+    "Unlocks": [
+      "System unlock: Tourist Installations"
+    ],
+    "AverageHaul": 8568,
+    "LandingPads": {
+      "fufluns": [
+        2,
+        0,
+        2
+      ]
+    }
+  },
+  {
+    "Name": "Extraction Hub",
+    "Layouts": [
+      "tartarus"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "Extraction",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 10,
+      "Standard of living": -4,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "an extraction settlement",
+    "Unlocks": [],
+    "AverageHaul": 9996,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Civilian Hub",
+    "Layouts": [
+      "aegle"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -3,
+      "Standard of living": 3,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "an agricultural settlement",
+    "Unlocks": [],
+    "AverageHaul": 9890,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Exploration Hub",
+    "Layouts": [
+      "tellus_e"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "Tourism",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Tech level": 7,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a communications installation",
+    "Unlocks": [
+      "System unlock: Universal Cartographics at T1 Surface or T2 orbital ports"
+    ],
+    "AverageHaul": 9960,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Outpost Hub",
+    "Layouts": [
+      "io"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "None",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -2,
+      "Standard of living": 3,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a space farm",
+    "Unlocks": [
+      "System unlock: Commodities at Pirate, Scientific or Military Outposts"
+    ],
+    "AverageHaul": 9945,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Scientific Hub",
+    "Layouts": [
+      "athena",
+      "caelus"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Tech level": 10
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Vista Genomics at T1 Surface or T2 orbital ports"
+    ],
+    "AverageHaul": 9958,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Military Hub",
+    "Layouts": [
+      "alala",
+      "ares"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "Military",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": 10
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a military installation",
+    "Unlocks": [],
+    "AverageHaul": 10089,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Refinery Hub",
+    "Layouts": [
+      "silenus"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "Refinery",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -1,
+      "Wealth": 5,
+      "Tech level": 3,
+      "Standard of living": -2,
+      "Development level": 7
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [],
+    "AverageHaul": 9957,
+    "LandingPads": {}
+  },
+  {
+    "Name": "High Tech Hub",
+    "Layouts": [
+      "janus"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "High Tech",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Security": -2,
+      "Wealth": 3,
+      "Tech level": 10
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "",
+    "Unlocks": [
+      "System unlock: Outfitting at non-Military Outposts",
+      "System unlock: Outfitting at non-Industrial T1 surface ports",
+      "Strong link unlock: Shipyard at T1 surface ports"
+    ],
+    "AverageHaul": 9881,
+    "LandingPads": {}
+  },
+  {
+    "Name": "Industrial Hub",
+    "Layouts": [
+      "eunostus",
+      "molae",
+      "tellus_i",
+      "tellus"
+    ],
+    "Score": 5,
+    "Pads": "none",
+    "Economy": "Industrial",
+    "Effects": {
+      "Population": 1,
+      "Max population": 1,
+      "Wealth": 5,
+      "Tech level": 3,
+      "Standard of living": -4,
+      "Development level": 3
+    },
+    "NeedsTier": 2,
+    "NeedsCount": 1,
+    "GivesTier": 3,
+    "GivesCount": 1,
+    "Prerequisite": "a mining outpost installation",
+    "Unlocks": [
+      "System unlock: Shipyard at T1 surface ports",
+      "Strong link unlock: Outfitting at non-Military Outposts",
+      "Strong link unlock: Outfitting at non-Industrial T1 surface ports"
+    ],
+    "AverageHaul": 9950,
+    "LandingPads": {}
+  }
+]

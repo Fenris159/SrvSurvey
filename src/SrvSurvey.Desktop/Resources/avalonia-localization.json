@@ -3889,6 +3889,10 @@
       "translation": "Erstellen Sie eine völlig neue freigegebene Ersatzkarte für diesen Site-Typ. Wählen Sie einen Hintergrund, richten Sie ihn aus und fügen Sie dann gemessene Masterpunkte und Gruppenbeschriftungen hinzu."
     },
     {
+      "source": "Build preview",
+      "translation": "Build-Vorschau"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "BuildSiteRepairVisits"
     },
@@ -4211,6 +4215,10 @@
     {
       "source": "CSV export",
       "translation": "CSV-Export"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "CSV exportiert."
     },
     {
       "source": "CSV table",
@@ -4549,6 +4557,10 @@
       "translation": "Cargo hat dazu beigetragen"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "Frachtlieferungen pro Stunde"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "Erinnerung an volle Ladung nach einer Minute Leerlauf"
     },
@@ -4569,6 +4581,10 @@
       "translation": "Benötigte Fracht: {0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "Frachtanforderungen"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "Frachtplatz {0}"
     },
@@ -4587,6 +4603,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "Fracht nicht verfügbar"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "Fracht aktualisiert. Lieferhistorie nicht verfügbar."
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -4619,6 +4639,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "Carrier- und Distanzarbeitsplätze"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "Carrier-Fracht nicht verfügbar. Fehlmengen und Fahrten können nicht bestätigt werden."
     },
     {
       "source": "Carrier operations and cargo",
@@ -6725,6 +6749,14 @@
       "translation": "Aktualisierungsinstanzregistrierungen konnten nicht aufgelistet werden: {0}"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "CSV konnte nicht exportiert werden. Überprüfen Sie das Ziel und versuchen Sie es erneut."
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "Dieser Build konnte nicht geladen werden. Wählen Sie „Aktualisieren“, um es erneut zu versuchen."
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "VoxStellar konnte nicht geöffnet werden: {0}"
     },
@@ -6987,6 +7019,10 @@
     {
       "source": "Current location",
       "translation": "Aktueller Standort"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "Aktuelles Schiff ({0} Tonnen): {1} Fahrten"
     },
     {
       "source": "Current survey destination",
@@ -7485,12 +7521,20 @@
       "translation": "Liefern Sie {0}: {1} verbleibende Einheiten"
     },
     {
+      "source": "Delivered",
+      "translation": "Geliefert"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "Lieferung und lokale Lagerung"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "Die Liefergutschrift wird erfasst; verbleibende Bauanforderungen werden erneut versucht: {0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "Lieferhistorie nicht verfügbar."
     },
     {
       "source": "Demand:",
@@ -9265,6 +9309,10 @@
       "translation": "exportieren"
     },
     {
+      "source": "Export CSV",
+      "translation": "CSV exportieren"
+    },
+    {
       "source": "Export CSV…",
       "translation": "CSV exportieren…"
     },
@@ -9279,6 +9327,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "JSON + CSV exportieren…"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "Exportieren Sie den Raven-Build als CSV-Datei"
     },
     {
       "source": "Export Surface Mining survey",
@@ -9465,6 +9517,14 @@
       "translation": "FC"
     },
     {
+      "source": "FC DIFF",
+      "translation": "FC DIFF"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff zeigt Trägerüberschuss (+) oder -mangel (-) an. Der Überschuss einer Ware kann eine andere nicht decken."
+    },
+    {
       "source": "FC LOAD",
       "translation": "FC-LADUNG"
     },
@@ -9531,6 +9591,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "Flottenträger"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "FLOTTENTRÄGERDEFIZIT"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -13325,6 +13389,10 @@
       "translation": "Groß"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "Groß ({0}t): {1} Fahrten · Mittel ({2}t): {3} Fahrten"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Die Überprüfung großer Profile über eine Netzwerkfreigabe kann mehrere Minuten dauern. Der Datei- und Byte-Fortschritt wird oben angezeigt. Ein erfolgreicher Import wird automatisch neu gestartet SrvSurvey, sodass kein In-Memory-Status vor dem Import migrierte Daten überschreiben kann."
     },
@@ -13609,6 +13677,14 @@
       "translation": "Verknüpfte Fracht nutzt das vorhandene RavenColonial-Inventar und folgt seiner Frachtsynchronisierungspräferenz. Frontier bleibt die Quelle für Kapazität, Finanzen und Dienstleistungen."
     },
     {
+      "source": "Linked commanders",
+      "translation": "Verbundene Kommandeure"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "Verbundene Flottenbetreiber"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Verbundene Staffelladung von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
     },
@@ -13643,6 +13719,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "Live / Ziel (gedimmt)"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "Live-Raven-Daten · schreibgeschützte Vorschau"
     },
     {
       "source": "Live Status.json state",
@@ -13915,6 +13995,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "Laden der Systemdaten EDSM und Spansh…"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "Live-Build-Daten von Raven werden geladen…"
     },
     {
       "source": "Loading notes for {0}…",
@@ -16105,6 +16189,10 @@
       "translation": "Kein Kommandant ausgewählt"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "Keine Warenzuweisungen"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "Für diesen Kommandanten wurden keine Community-Ziele zurückgegeben."
     },
@@ -16557,6 +16645,10 @@
       "translation": "Es ist kein Elite-Fenster mit Raupen verfügbar. Verwenden Sie „Overlay-Positionen bearbeiten“ für Offline-Layoutänderungen."
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "Noch keine Sendungen mit Sendungsverfolgung."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Für diesen Körper sind keine ungefilterten Canonn-Biologiekoordinaten übrig."
     },
@@ -16615,6 +16707,10 @@
     {
       "source": "Not assigned",
       "translation": "Nicht zugewiesen"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "Für diesen Build-Typ nicht verfügbar."
     },
     {
       "source": "Not checked",
@@ -17163,6 +17259,10 @@
     {
       "source": "Open journal",
       "translation": "Tagebuch öffnen"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "Öffnen Sie die Live-Build-Vorschau"
     },
     {
       "source": "Open log folder",
@@ -19021,6 +19121,10 @@
       "translation": "Profile bleiben auch dann isoliert, wenn ihre Journale einen gemeinsamen Ordner teilen."
     },
     {
+      "source": "Progress tracker",
+      "translation": "Fortschrittstracker"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "Fortschritt nicht verfügbar"
     },
@@ -19031,6 +19135,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "Bei der Projekterstellung werden der live angedockte Baustellenkontext und ein ausgelieferter Build-Katalog verwendet."
+    },
+    {
+      "source": "Project details",
+      "translation": "Projektdetails"
     },
     {
       "source": "Project name",
@@ -19421,6 +19529,10 @@
       "translation": "RAM TAH-LOGS"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "RAVEN-BUILD-VORSCHAU"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -19503,6 +19615,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "VERBLEIBEN (LY)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "RESTLICHE FRACHT"
     },
     {
       "source": "REQUIRED",
@@ -19715,6 +19831,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "Raven Colonial-Zugriff ist aktiviert. Warten auf ein Kommandantenprofil."
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial Zugriff ist deaktiviert."
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -20273,6 +20393,10 @@
       "translation": "Bereit für Probe 1 von 3"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "Bereit auf Flottenträgern"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "Bereit zur Veröffentlichung von {0} Aktualisierung(en) und {1} Löschung(en). {2} Site(s) bleiben unverändert."
     },
@@ -20437,6 +20561,10 @@
       "translation": "Referenzdaten geladen. Kommandantenbesuche werden angezeigt, sobald ein Tagebuchprofil verfügbar ist."
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "Referenzeffekte für diesen Build-Typ. Die tatsächlichen Systemsummen hängen von anderen Websites und Links ab."
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "Referenzbild verfügbar · Typ .show"
     },
@@ -20531,6 +20659,10 @@
     {
       "source": "Refresh devices",
       "translation": "Geräte aktualisieren"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "Aktualisierung fehlgeschlagen. Zeigt den letzten erfolgreichen Schnappschuss."
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -25781,6 +25913,10 @@
       "translation": "Systemdetails konnten nicht geladen werden: {0}"
     },
     {
+      "source": "System effects",
+      "translation": "Systemeffekte"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "Die Systemanreicherung kann je nach aktivierter Funktion EDSM, Spansh, Canonn oder Raven verwenden."
     },
@@ -26539,6 +26675,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "Die Raven Colonial-Einstellung konnte nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "Der Raven-Build-Vorschau-Reader ist nicht verfügbar."
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -28393,6 +28533,10 @@
       "translation": "Diese Boxel-Suche ist bereits in der Bibliothek gespeichert."
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "Dieser Build ist nicht mehr verfügbar unter Raven Colonial."
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "Diese Baulieferung wird bereits zum Abgleich zurückgehalten."
     },
@@ -29451,6 +29595,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "{0} verknüpfte(n) Flottenträger-Frachteintrag(e) von {1} aktualisiert."
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "Aktualisiert {0} · wird alle 30 Sekunden aktualisiert"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -34117,6 +34265,10 @@
       "translation": "{0} + ausstehend"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} – Raven-Build-Vorschau"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} – USB {1}:{2}"
     },
@@ -34813,6 +34965,18 @@
       "translation": "{0} t verbleibend · {1} t insgesamt"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} Tonnen geliefert"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} Tonnen · Gesamtfracht des Frachtführers"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "{0} verfolgte Lieferungen"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "{0}-Typografie „{1}“ muss eine Zahl von {2} bis {3} sein."
     },
@@ -34951,6 +35115,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% abgeschlossen"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% geliefert"
     },
     {
       "source": "{0}% of {1}",
@@ -39087,6 +39255,10 @@
       "translation": "Cree un mapa compartido de reemplazo desde cero para este tipo de sitio. Elija un fondo, alinéelo y luego agregue puntos maestros medidos y etiquetas de grupo."
     },
     {
+      "source": "Build preview",
+      "translation": "Vista previa de compilación"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "Visitas de reparación del sitio de construcción"
     },
@@ -39409,6 +39581,10 @@
     {
       "source": "CSV export",
       "translation": "Exportación CSV"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "CSV exportado."
     },
     {
       "source": "CSV table",
@@ -39747,6 +39923,10 @@
       "translation": "Carga aportada"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "Entregas de carga por hora"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "Recordatorio de carga completa después de un minuto de inactividad"
     },
@@ -39767,6 +39947,10 @@
       "translation": "Carga requerida: {0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "Requisitos de carga"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "Ranura de carga {0}"
     },
@@ -39785,6 +39969,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "Carga no disponible"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "Carga actualizada. Historial de entrega no disponible."
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -39817,6 +40005,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "Espacios de trabajo portadores y a distancia"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "Carga del transportista no disponible. No se pueden confirmar desabastecimientos ni viajes."
     },
     {
       "source": "Carrier operations and cargo",
@@ -41923,6 +42115,14 @@
       "translation": "No se pudieron enumerar los registros de instancias de actualización: {0}"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "No se pudo exportar CSV. Comprueba el destino y vuelve a intentarlo."
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "No se pudo cargar esta compilación. Elija Actualizar para intentarlo de nuevo."
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "No se pudo abrir VoxStellar: {0}"
     },
@@ -42185,6 +42385,10 @@
     {
       "source": "Current location",
       "translation": "Ubicación actual"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "Barco actual ({0} toneladas): viajes {1}"
     },
     {
       "source": "Current survey destination",
@@ -42683,12 +42887,20 @@
       "translation": "Entregar {0}: {1} unidades restantes"
     },
     {
+      "source": "Delivered",
+      "translation": "Entregado"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "Entrega y almacenamiento local."
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "Se registra el crédito de entrega; Los requisitos de construcción restantes se volverán a intentar: {0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "Historial de entrega no disponible."
     },
     {
       "source": "Demand:",
@@ -44463,6 +44675,10 @@
       "translation": "exportar"
     },
     {
+      "source": "Export CSV",
+      "translation": "Exportar CSV"
+    },
+    {
       "source": "Export CSV…",
       "translation": "Exportar CSV…"
     },
@@ -44477,6 +44693,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "Exportar JSON + CSV…"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "Exportar CSV de compilación de Raven"
     },
     {
       "source": "Export Surface Mining survey",
@@ -44663,6 +44883,14 @@
       "translation": "FC"
     },
     {
+      "source": "FC DIFF",
+      "translation": "DIFERENCIA FC"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff muestra excedente de operador (+) o escasez (-). El excedente de un bien no puede cubrir otro."
+    },
+    {
       "source": "FC LOAD",
       "translation": "CARGA FC"
     },
@@ -44729,6 +44957,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "Transportista de flota"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "DÉFICIT DE TRANSPORTADORES DE FLOTA"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -48523,6 +48755,10 @@
       "translation": "Grande"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "Grande ({0}t): disparos {1} · Medio ({2}t): disparos {3}"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Los perfiles grandes pueden tardar varios minutos en verificarse en un recurso compartido de red. El progreso del archivo y del byte aparece arriba. Una importación exitosa se reinicia SrvSurvey automáticamente para que ningún estado en memoria previo a la importación pueda sobrescribir los datos migrados."
     },
@@ -48807,6 +49043,14 @@
       "translation": "La carga vinculada utiliza el inventario RavenColonial existente y sigue su preferencia de sincronización de carga. Frontier sigue siendo la fuente de capacidad, finanzas y servicios."
     },
     {
+      "source": "Linked commanders",
+      "translation": "Comandantes vinculados"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "Transportistas de flota vinculados"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga del escuadrón vinculado de RavenColonial. La capacidad y las finanzas provienen de la última actualización Frontier."
     },
@@ -48841,6 +49085,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "En vivo/destino (atenuado)"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "Datos de Live Raven · vista previa de solo lectura"
     },
     {
       "source": "Live Status.json state",
@@ -49113,6 +49361,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "Cargando datos del sistema EDSM y Spansh…"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "Cargando datos de compilación de Raven en vivo..."
     },
     {
       "source": "Loading notes for {0}…",
@@ -51303,6 +51555,10 @@
       "translation": "Ningún comandante seleccionado"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "Sin asignaciones de productos básicos"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "No se devolvieron goles comunitarios para este comandante."
     },
@@ -51755,6 +52011,10 @@
       "translation": "No hay ninguna ventana Elite rastreada disponible. Utilice Editar posiciones de superposición para realizar cambios de diseño sin conexión."
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "Aún no hay entregas rastreadas."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "No quedan coordenadas biológicas Canonn sin filtrar para este cuerpo."
     },
@@ -51813,6 +52073,10 @@
     {
       "source": "Not assigned",
       "translation": "No asignado"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "No disponible para este tipo de compilación."
     },
     {
       "source": "Not checked",
@@ -52361,6 +52625,10 @@
     {
       "source": "Open journal",
       "translation": "diario abierto"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "Abrir vista previa de compilación en vivo"
     },
     {
       "source": "Open log folder",
@@ -54219,6 +54487,10 @@
       "translation": "Los perfiles permanecen aislados incluso cuando sus diarios comparten una carpeta."
     },
     {
+      "source": "Progress tracker",
+      "translation": "Rastreador de progreso"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "Progreso no disponible"
     },
@@ -54229,6 +54501,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "La creación de proyectos utiliza el contexto del sitio de construcción acoplado en vivo y un catálogo de construcción enviado."
+    },
+    {
+      "source": "Project details",
+      "translation": "Detalles del proyecto"
     },
     {
       "source": "Project name",
@@ -54619,6 +54895,10 @@
       "translation": "REGISTROS DE RAM TAH"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "VISTA PREVIA DE CONSTRUCCIÓN DE RAVEN"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -54701,6 +54981,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "RESTANTE (LY)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "CARGA RESTANTE"
     },
     {
       "source": "REQUIRED",
@@ -54913,6 +55197,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "Raven Colonial el acceso está habilitado. Esperando un perfil de comandante."
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial el acceso está desactivado."
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -55471,6 +55759,10 @@
       "translation": "Listo para la muestra 1 de 3"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "Listo para transportistas de flotas"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "Listo para publicar {0} actualizaciones y {1} eliminaciones. Los sitios {2} permanecen sin cambios."
     },
@@ -55635,6 +55927,10 @@
       "translation": "Datos de referencia cargados. Las visitas del comandante aparecerán después de que esté disponible un perfil de diario."
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "Efectos de referencia para este tipo de construcción. Los totales reales del sistema dependen de otros sitios y enlaces."
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "Imagen de referencia disponible · tipo .show"
     },
@@ -55729,6 +56025,10 @@
     {
       "source": "Refresh devices",
       "translation": "Actualizar dispositivos"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "Error al actualizar. Mostrando la última instantánea exitosa."
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -60979,6 +61279,10 @@
       "translation": "No se pudieron cargar los detalles del sistema: {0}"
     },
     {
+      "source": "System effects",
+      "translation": "Efectos del sistema"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "El enriquecimiento del sistema puede utilizar EDSM, Spansh, Canonn o Raven dependiendo de la función habilitada."
     },
@@ -61737,6 +62041,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "La preferencia Raven Colonial no se pudo guardar: {0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "El lector de vista previa de compilación de Raven no está disponible."
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -63591,6 +63899,10 @@
       "translation": "Esta búsqueda de cuadro ya está guardada en la biblioteca."
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "Esta compilación ya no está disponible en Raven Colonial."
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "Esta entrega de construcción ya está retenida para conciliación."
     },
@@ -64649,6 +64961,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Se actualizaron las {0} entradas de carga vinculadas de Fleet Carrier de {1}."
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "Actualizado {0} · se actualiza cada 30 segundos"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -69315,6 +69631,10 @@
       "translation": "{0} + pendiente"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} - Vista previa de la compilación de Raven"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
     },
@@ -70011,6 +70331,18 @@
       "translation": "{0} t restantes · {1} t totales"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} toneladas entregadas"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} toneladas · carga total del transportista"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "Entregas rastreadas {0}"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "La tipografía {0} '{1}' debe ser un número de {2} a {3}."
     },
@@ -70149,6 +70481,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% completado"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% entregado"
     },
     {
       "source": "{0}% of {1}",
@@ -74285,6 +74621,10 @@
       "translation": "Créez une carte partagée de remplacement à partir de zéro pour ce type de site. Choisissez un arrière-plan, alignez-le, puis ajoutez des points principaux mesurés et des étiquettes de groupe."
     },
     {
+      "source": "Build preview",
+      "translation": "Aperçu de la construction"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "Visites de réparation de site de construction"
     },
@@ -74607,6 +74947,10 @@
     {
       "source": "CSV export",
       "translation": "Exportation CSV"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "CSV exporté."
     },
     {
       "source": "CSV table",
@@ -74945,6 +75289,10 @@
       "translation": "Cargaison apportée"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "Livraisons de marchandises par heure"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "Rappel de chargement plein après une minute d'inactivité"
     },
@@ -74965,6 +75313,10 @@
       "translation": "Cargaison requise : {0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "Exigences en matière de fret"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "Emplacement de chargement {0}"
     },
@@ -74983,6 +75335,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "Cargaison indisponible"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "Cargaison mise à jour. Historique de livraison indisponible."
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -75015,6 +75371,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "Espaces de travail transporteurs et à distance"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "Cargaison du transporteur indisponible. Les pénuries et les voyages ne peuvent être confirmés."
     },
     {
       "source": "Carrier operations and cargo",
@@ -77121,6 +77481,14 @@
       "translation": "Impossible d'énumérer les enregistrements d'instances de mise à jour : {0}"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "Impossible d'exporter au format CSV. Vérifiez la destination et réessayez."
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "Impossible de charger cette version. Choisissez Actualiser pour réessayer."
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "Impossible d'ouvrir VoxStellar : {0}"
     },
@@ -77383,6 +77751,10 @@
     {
       "source": "Current location",
       "translation": "Emplacement actuel"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "Navire actuel (tonnes {0}) : voyages {1}"
     },
     {
       "source": "Current survey destination",
@@ -77881,12 +78253,20 @@
       "translation": "Livrer {0} : {1} unités restantes"
     },
     {
+      "source": "Delivered",
+      "translation": "Livré"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "Livraison et stockage local"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "Un crédit de livraison est enregistré ; Les exigences de construction restantes seront réessayées : {0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "Historique de livraison indisponible."
     },
     {
       "source": "Demand:",
@@ -79661,6 +80041,10 @@
       "translation": "exporter"
     },
     {
+      "source": "Export CSV",
+      "translation": "Exporter au format CSV"
+    },
+    {
       "source": "Export CSV…",
       "translation": "Exporter au format CSV…"
     },
@@ -79675,6 +80059,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "Exporter JSON + CSV…"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "Exporter le CSV de la version Raven"
     },
     {
       "source": "Export Surface Mining survey",
@@ -79861,6 +80249,14 @@
       "translation": "FC"
     },
     {
+      "source": "FC DIFF",
+      "translation": "FC DIFF"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff affiche un excédent de transporteur (+) ou une pénurie (−). L’excédent d’un produit ne peut en couvrir un autre."
+    },
+    {
       "source": "FC LOAD",
       "translation": "CHARGE FC"
     },
@@ -79927,6 +80323,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "Transporteur de flotte"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "DÉFICIT DE TRANSPORTEURS DE FLOTTE"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -83721,6 +84121,10 @@
       "translation": "Grand"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "Grand ({0}t) : déclenchements {1} · Moyen ({2}t) : déclenchements {3}"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "La vérification des profils volumineux peut prendre plusieurs minutes sur un partage réseau. La progression des fichiers et des octets apparaît ci-dessus. Une importation réussie redémarre automatiquement SrvSurvey afin qu'aucun état en mémoire préalable à l'importation ne puisse écraser les données migrées."
     },
@@ -84005,6 +84409,14 @@
       "translation": "Le fret lié utilise l'inventaire RavenColonial existant et suit sa préférence de synchronisation du fret. Frontier reste la source de capacité, de finances et de services."
     },
     {
+      "source": "Linked commanders",
+      "translation": "Commandants liés"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "Transporteurs de flotte liés"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Cargaison d'escadron liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
     },
@@ -84039,6 +84451,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "En direct / destination (faible)"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "Données Live Raven · aperçu en lecture seule"
     },
     {
       "source": "Live Status.json state",
@@ -84311,6 +84727,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "Chargement des données système EDSM et Spansh…"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "Chargement des données de build Raven en direct…"
     },
     {
       "source": "Loading notes for {0}…",
@@ -86501,6 +86921,10 @@
       "translation": "Aucun commandant sélectionné"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "Aucune affectation de marchandises"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "Aucun objectif communautaire n'a été renvoyé pour ce commandant."
     },
@@ -86953,6 +87377,10 @@
       "translation": "Aucune fenêtre Elite suivie n’est disponible. Utilisez Modifier les positions de superposition pour les modifications de mise en page hors ligne."
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "Pas de livraisons suivies pour l'instant."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Il ne reste aucune coordonnée biologique Canonn non filtrée pour ce corps."
     },
@@ -87011,6 +87439,10 @@
     {
       "source": "Not assigned",
       "translation": "Non attribué"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "Non disponible pour ce type de build."
     },
     {
       "source": "Not checked",
@@ -87559,6 +87991,10 @@
     {
       "source": "Open journal",
       "translation": "Journal ouvert"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "Ouvrir l'aperçu de la build en direct"
     },
     {
       "source": "Open log folder",
@@ -89417,6 +89853,10 @@
       "translation": "Les profils restent isolés même lorsque leurs journaux partagent un même dossier."
     },
     {
+      "source": "Progress tracker",
+      "translation": "Suivi des progrès"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "Progression indisponible"
     },
@@ -89427,6 +89867,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "La création de projet utilise le contexte de chantier ancré en direct et un catalogue de construction livré."
+    },
+    {
+      "source": "Project details",
+      "translation": "Détails du projet"
     },
     {
       "source": "Project name",
@@ -89817,6 +90261,10 @@
       "translation": "JOURNAUX RAM TAH"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "APERÇU DE LA CONSTRUCTION RAVEN"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -89899,6 +90347,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "RESTANT (LY)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "CARGAISON RESTANTE"
     },
     {
       "source": "REQUIRED",
@@ -90111,6 +90563,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "L'accès Raven Colonial est activé. En attente d'un profil de commandant."
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial l’accès est désactivé."
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -90669,6 +91125,10 @@
       "translation": "Prêt pour l'échantillon 1 sur 3"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "Prêt sur les transporteurs de flotte"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "Prêt à publier les {0} mise(s) à jour et les {1} suppression(s). Les sites {2} restent inchangés."
     },
@@ -90833,6 +91293,10 @@
       "translation": "Données de référence chargées. Les visites du commandant apparaîtront une fois qu'un profil de journal sera disponible."
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "Effets de référence pour ce type de build. Les totaux réels du système dépendent d’autres sites et liens."
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "Image de référence disponible · tapez .show"
     },
@@ -90927,6 +91391,10 @@
     {
       "source": "Refresh devices",
       "translation": "Actualiser les appareils"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "L'actualisation a échoué. Affichage du dernier instantané réussi."
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -96177,6 +96645,10 @@
       "translation": "Les détails du système n'ont pas pu être chargés : {0}"
     },
     {
+      "source": "System effects",
+      "translation": "Effets du système"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "L'enrichissement du système peut utiliser EDSM, Spansh, Canonn ou Raven en fonction de la fonctionnalité activée."
     },
@@ -96935,6 +97407,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "La préférence Raven Colonial n'a pas pu être enregistrée : {0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "Le lecteur d'aperçu de build Raven n'est pas disponible."
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -98789,6 +99265,10 @@
       "translation": "Cette recherche boxel est déjà enregistrée dans la bibliothèque."
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "Cette version n'est plus disponible sur Raven Colonial."
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "Cette livraison de construction est déjà retenue pour rapprochement."
     },
@@ -99847,6 +100327,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Mise à jour des {0} entrées de fret liées aux transporteurs de flotte à partir de {1}."
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "{0} mis à jour · rafraîchit toutes les 30 secondes"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -104513,6 +104997,10 @@
       "translation": "{0} + en attente"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} - Aperçu de la version Raven"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1} :{2}"
     },
@@ -105209,6 +105697,18 @@
       "translation": "{0} t restants · {1} t total"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} tonnes livrées"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} tonnes · fret total du transporteur"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "Livraisons suivies {0}"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "La typographie {0} « {1} » doit être un nombre compris entre {2} et {3}."
     },
@@ -105347,6 +105847,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% terminé"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% livré"
     },
     {
       "source": "{0}% of {1}",
@@ -109483,6 +109987,10 @@
       "translation": "Crie um mapa compartilhado substituto do zero para esse tipo de site. Escolha um plano de fundo, alinhe-o e adicione pontos mestres medidos e rótulos de grupo."
     },
     {
+      "source": "Build preview",
+      "translation": "Pré-visualização da versão"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "BuildSiteRepairVisitas"
     },
@@ -109805,6 +110313,10 @@
     {
       "source": "CSV export",
       "translation": "Exportação CSV"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "CSV exportado."
     },
     {
       "source": "CSV table",
@@ -110143,6 +110655,10 @@
       "translation": "Carga contribuída"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "Entregas de carga por hora"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "Lembrete de carga cheia após um minuto de inatividade"
     },
@@ -110163,6 +110679,10 @@
       "translation": "Carga necessária: {0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "Requisitos de carga"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "Espaço de carga {0}"
     },
@@ -110181,6 +110701,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "Carga indisponível"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "Carga atualizada. Histórico de entrega indisponível."
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -110213,6 +110737,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "Espaços de trabalho de operadora e à distância"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "Carga da transportadora indisponível. Escassez e viagens não podem ser confirmadas."
     },
     {
       "source": "Carrier operations and cargo",
@@ -112319,6 +112847,14 @@
       "translation": "Não foi possível enumerar registros de instância de atualização: {0}"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "Não foi possível exportar CSV. Verifique o destino e tente novamente."
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "Não foi possível carregar esta compilação. Escolha Atualizar para tentar novamente."
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "Não foi possível abrir VoxStellar: {0}"
     },
@@ -112581,6 +113117,10 @@
     {
       "source": "Current location",
       "translation": "Localização atual"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "Navio atual (toneladas {0}): viagens {1}"
     },
     {
       "source": "Current survey destination",
@@ -113079,12 +113619,20 @@
       "translation": "Entregar {0}: {1} unidades restantes"
     },
     {
+      "source": "Delivered",
+      "translation": "Entregue"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "Entrega e armazenamento local"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "O crédito de entrega é registrado; os requisitos de construção restantes tentarão novamente: {0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "Histórico de entrega indisponível."
     },
     {
       "source": "Demand:",
@@ -114859,6 +115407,10 @@
       "translation": "exportar"
     },
     {
+      "source": "Export CSV",
+      "translation": "Exportar CSV"
+    },
+    {
       "source": "Export CSV…",
       "translation": "Exportar CSV…"
     },
@@ -114873,6 +115425,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "Exportar JSON + CSV…"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "Exportar CSV de construção Raven"
     },
     {
       "source": "Export Surface Mining survey",
@@ -115059,6 +115615,14 @@
       "translation": "FC"
     },
     {
+      "source": "FC DIFF",
+      "translation": "FC DIFERENTE"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff mostra excedente (+) ou escassez (-) da operadora. O excedente de uma mercadoria não pode cobrir outra."
+    },
+    {
       "source": "FC LOAD",
       "translation": "CARGA FC"
     },
@@ -115125,6 +115689,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "Transportadora de Frota"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "DÉFICIT DE FROTA"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -118919,6 +119487,10 @@
       "translation": "Grande"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "Grande ({0}t): viagens {1} · Médio ({2}t): viagens {3}"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Perfis grandes podem levar vários minutos para serem verificados em um compartilhamento de rede. O progresso de arquivos e bytes aparece acima. Uma importação bem-sucedida é reiniciada SrvSurvey automaticamente para que nenhum estado de pré-importação na memória possa substituir os dados migrados."
     },
@@ -119203,6 +119775,14 @@
       "translation": "A carga vinculada usa o inventário RavenColonial existente e segue sua preferência de sincronização de carga. Frontier continua a ser a fonte de capacidade, finanças e serviços."
     },
     {
+      "source": "Linked commanders",
+      "translation": "Comandantes vinculados"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "Transportadoras de frota vinculadas"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga do esquadrão vinculado da RavenColonial. A capacidade e as finanças são da última atualização Frontier."
     },
@@ -119237,6 +119817,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "Ao vivo/destino (escurecido)"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "Dados Live Raven · visualização somente leitura"
     },
     {
       "source": "Live Status.json state",
@@ -119509,6 +120093,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "Carregando dados do sistema EDSM e Spansh…"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "Carregando dados de construção Raven ao vivo…"
     },
     {
       "source": "Loading notes for {0}…",
@@ -121699,6 +122287,10 @@
       "translation": "Nenhum comandante selecionado"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "Nenhuma atribuição de mercadoria"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "Nenhuma meta comunitária foi retornada para este comandante."
     },
@@ -122151,6 +122743,10 @@
       "translation": "Nenhuma janela Elite rastreada está disponível. Use Editar posições de sobreposição para alterações de layout offline."
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "Nenhuma entrega rastreada ainda."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Nenhuma coordenada biológica Canonn não filtrada permanece para este corpo."
     },
@@ -122209,6 +122805,10 @@
     {
       "source": "Not assigned",
       "translation": "Não atribuído"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "Não disponível para este tipo de compilação."
     },
     {
       "source": "Not checked",
@@ -122757,6 +123357,10 @@
     {
       "source": "Open journal",
       "translation": "Diário aberto"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "Abrir visualização de compilação ao vivo"
     },
     {
       "source": "Open log folder",
@@ -124615,6 +125219,10 @@
       "translation": "Os perfis permanecem isolados mesmo quando seus diários compartilham uma pasta."
     },
     {
+      "source": "Progress tracker",
+      "translation": "Rastreador de progresso"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "Progresso indisponível"
     },
@@ -124625,6 +125233,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "A criação do projeto usa o contexto do canteiro de obras acoplado ao vivo e um catálogo de construção enviado."
+    },
+    {
+      "source": "Project details",
+      "translation": "Detalhes do projeto"
     },
     {
       "source": "Project name",
@@ -125015,6 +125627,10 @@
       "translation": "REGISTROS DE RAM TAH"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "PRÉ-VISUALIZAÇÃO DA CONSTRUÇÃO DO RAVEN"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -125097,6 +125713,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "RESTANTE (LY)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "CARGA RESTANTE"
     },
     {
       "source": "REQUIRED",
@@ -125309,6 +125929,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "O acesso Raven Colonial está ativado. Aguardando um perfil de comandante."
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial o acesso está desativado."
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -125867,6 +126491,10 @@
       "translation": "Pronto para amostra 1 de 3"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "Pronto para transportadoras de frota"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "Pronto para publicar {0} atualizações e {1} exclusões. {2} site(s) permanecem inalterados."
     },
@@ -126031,6 +126659,10 @@
       "translation": "Dados de referência carregados. As visitas do comandante aparecerão depois que um perfil do diário estiver disponível."
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "Efeitos de referência para este tipo de compilação. Os totais reais do sistema dependem de outros sites e links."
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "Imagem de referência disponível · digite .show"
     },
@@ -126125,6 +126757,10 @@
     {
       "source": "Refresh devices",
       "translation": "Atualizar dispositivos"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "Falha na atualização. Mostrando o último instantâneo bem-sucedido."
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -131375,6 +132011,10 @@
       "translation": "Não foi possível carregar os detalhes do sistema: {0}"
     },
     {
+      "source": "System effects",
+      "translation": "Efeitos do sistema"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "O enriquecimento do sistema pode usar EDSM, Spansh, Canonn ou Raven dependendo do recurso habilitado."
     },
@@ -132133,6 +132773,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "A preferência Raven Colonial não pôde ser salva: {0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "O leitor de visualização de compilação Raven não está disponível."
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -133987,6 +134631,10 @@
       "translation": "Esta pesquisa boxel já está salva na biblioteca."
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "Esta compilação não está mais disponível em Raven Colonial."
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "Esta entrega de construção já está retida para conciliação."
     },
@@ -135045,6 +135693,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Atualizadas {0} entradas de carga vinculadas ao Fleet Carrier de {1}."
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "{0} atualizado · atualiza a cada 30 segundos"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -139711,6 +140363,10 @@
       "translation": "{0} + pendente"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} - Visualização da construção Raven"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
     },
@@ -140407,6 +141063,18 @@
       "translation": "{0} t restante · {1} t total"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} toneladas entregues"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} toneladas · carga total da transportadora"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "{0} entregas rastreadas"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "A tipografia {0} '{1}' deve ser um número de {2} a {3}."
     },
@@ -140545,6 +141213,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% concluído"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% entregue"
     },
     {
       "source": "{0}% of {1}",
@@ -144681,6 +145353,10 @@
       "translation": "Создайте замену общей карты с нуля для этого типа сайта. Выберите фон, выровняйте его, затем добавьте измеренные основные точки и сгруппируйте метки."
     },
     {
+      "source": "Build preview",
+      "translation": "Предварительный просмотр сборки"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "СборкаРемонт сайтаПосещения"
     },
@@ -145003,6 +145679,10 @@
     {
       "source": "CSV export",
       "translation": "CSV-экспорт"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "CSV экспортирован."
     },
     {
       "source": "CSV table",
@@ -145341,6 +146021,10 @@
       "translation": "Груз внесен"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "Доставка грузов в час"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "Напоминание о заполнении груза после одной минуты простоя"
     },
@@ -145361,6 +146045,10 @@
       "translation": "Требуется груз: {0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "Требования к грузу"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "Грузовой слот {0}"
     },
@@ -145379,6 +146067,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "Груз недоступен"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "Груз обновлен. История доставки недоступна."
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -145411,6 +146103,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "Операторские и дистанционные рабочие места"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "Груз перевозчика недоступен. Недостачи и поездки не могут быть подтверждены."
     },
     {
       "source": "Carrier operations and cargo",
@@ -147517,6 +148213,14 @@
       "translation": "Не удалось перечислить регистрации экземпляров обновлений: {0}."
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "Не удалось экспортировать CSV. Проверьте пункт назначения и повторите попытку."
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "Не удалось загрузить эту сборку. Выберите «Обновить», чтобы повторить попытку."
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "Не удалось открыть VoxStellar: {0}"
     },
@@ -147779,6 +148483,10 @@
     {
       "source": "Current location",
       "translation": "Текущее местоположение"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "Текущее судно ({0} тонн): рейсы {1}"
     },
     {
       "source": "Current survey destination",
@@ -148277,12 +148985,20 @@
       "translation": "Доставьте {0}: осталось {1} единиц."
     },
     {
+      "source": "Delivered",
+      "translation": "Доставленный"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "Доставка и локальное хранение"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "Кредит на доставку учитывается; оставшиеся требования к строительству будут повторены: {0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "История доставки недоступна."
     },
     {
       "source": "Demand:",
@@ -150057,6 +150773,10 @@
       "translation": "экспорт"
     },
     {
+      "source": "Export CSV",
+      "translation": "Экспортировать CSV"
+    },
+    {
       "source": "Export CSV…",
       "translation": "Экспортировать CSV…"
     },
@@ -150071,6 +150791,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "Экспортировать JSON + CSV…"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "Экспортировать сборку Raven в формате CSV"
     },
     {
       "source": "Export Surface Mining survey",
@@ -150257,6 +150981,14 @@
       "translation": "ФК"
     },
     {
+      "source": "FC DIFF",
+      "translation": "ФК ДИФФ"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff показывает избыток (+) или нехватку (-) операторов связи. Избыток одного товара не может покрыть другой."
+    },
+    {
       "source": "FC LOAD",
       "translation": "ФК НАГРУЗКА"
     },
@@ -150323,6 +151055,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "Авианосец флота"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "ДЕФИЦИТ АВТОНОСНОГО ФЛОТА"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -154117,6 +154853,10 @@
       "translation": "Большой"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "Большой ({0}t): отключения {1} · Средний ({2}t): отключения {3}"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Проверка больших профилей в общей сетевой папке может занять несколько минут. Ход выполнения файлов и байтов отображается выше. Успешный импорт перезапускается SrvSurvey автоматически, поэтому никакое состояние предварительного импорта в памяти не может перезаписать перенесенные данные."
     },
@@ -154401,6 +155141,14 @@
       "translation": "Связанный груз использует существующий инвентарь RavenColonial и следует своим предпочтениям синхронизации грузов. Frontier остается источником мощности, финансов и услуг."
     },
     {
+      "source": "Linked commanders",
+      "translation": "Связанные командиры"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "Связанные перевозчики флота"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Связанный эскадрильный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
     },
@@ -154435,6 +155183,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "Прямой эфир / пункт назначения (тусклый)"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "Живые данные Raven · предварительный просмотр только для чтения"
     },
     {
       "source": "Live Status.json state",
@@ -154707,6 +155459,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "Загрузка системных данных EDSM и Spansh…"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "Загрузка актуальных данных сборки Raven…"
     },
     {
       "source": "Loading notes for {0}…",
@@ -156897,6 +157653,10 @@
       "translation": "Командир не выбран"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "Нет товарных назначений"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "Для этого командира не было возвращено никаких целей сообщества."
     },
@@ -157349,6 +158109,10 @@
       "translation": "Отслеживаемое окно Elite недоступно. Используйте «Редактировать позиции наложения» для изменения макета в автономном режиме."
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "Отслеживаемых поставок пока нет."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Для этого тела не осталось нефильтрованных биологических координат Canonn ."
     },
@@ -157407,6 +158171,10 @@
     {
       "source": "Not assigned",
       "translation": "Не назначено"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "Недоступно для этого типа сборки."
     },
     {
       "source": "Not checked",
@@ -157955,6 +158723,10 @@
     {
       "source": "Open journal",
       "translation": "Открыть журнал"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "Открыть предварительный просмотр сборки"
     },
     {
       "source": "Open log folder",
@@ -159813,6 +160585,10 @@
       "translation": "Профили остаются изолированными, даже если их журналы находятся в одной папке."
     },
     {
+      "source": "Progress tracker",
+      "translation": "Трекер прогресса"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "Прогресс недоступен"
     },
@@ -159823,6 +160599,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "При создании проекта используется контекст живой закрепленной строительной площадки и отгруженный каталог сборки."
+    },
+    {
+      "source": "Project details",
+      "translation": "Детали проекта"
     },
     {
       "source": "Project name",
@@ -160213,6 +160993,10 @@
       "translation": "ЖУРНАЛЫ ОЗУ ТАХ"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "ОБЗОР СТРОИТЕЛЬСТВА RAVEN"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -160295,6 +161079,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "ОСТАЛОСЬ (ЛИ)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "ОСТАТОЧНЫЙ ГРУЗ"
     },
     {
       "source": "REQUIRED",
@@ -160507,6 +161295,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "Доступ к Raven Colonial включен. Жду профиля командира."
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial доступ отключен."
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -161065,6 +161857,10 @@
       "translation": "Готов к выборке 1 из 3"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "Готовы к использованию на авианосцах"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "Готовы опубликовать обновления {0} и удаления {1}. {2} сайт(ы) остаются без изменений."
     },
@@ -161229,6 +162025,10 @@
       "translation": "Справочные данные загружены. Посещения командира появятся после того, как станет доступен профиль журнала."
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "Эталонные эффекты для этого типа сборки. Фактические итоговые показатели системы зависят от других сайтов и ссылок."
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "Доступно эталонное изображение · введите .show"
     },
@@ -161323,6 +162123,10 @@
     {
       "source": "Refresh devices",
       "translation": "Обновить устройства"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "Обновить не удалось. Показываю последний успешный снимок."
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -166573,6 +167377,10 @@
       "translation": "Не удалось загрузить сведения о системе: {0}"
     },
     {
+      "source": "System effects",
+      "translation": "Системные эффекты"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "Для расширения системы можно использовать EDSM, Spansh, Canonn или Raven в зависимости от включенной функции."
     },
@@ -167331,6 +168139,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "Не удалось сохранить настройку Raven Colonial: {0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "Программа предварительного просмотра сборки Raven недоступна."
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -169185,6 +169997,10 @@
       "translation": "Этот поиск по боксу уже сохранен в библиотеке."
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "Эта сборка больше не доступна на Raven Colonial."
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "Эта строительная поставка уже сохранена для сверки."
     },
@@ -170243,6 +171059,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Обновлены {0} связанные записи о грузе Fleet Carrier из {1}."
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "Обновлен {0} · обновляется каждые 30 секунд."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -174909,6 +175729,10 @@
       "translation": "{0} + ожидание"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} — предварительный просмотр сборки Raven"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} – USB {1}:{2}"
     },
@@ -175605,6 +176429,18 @@
       "translation": "{0} t осталось · {1} t всего"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} тонн доставлено"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} тонны · общий груз перевозчика"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "{0} отслеживаемые поставки"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "Типографика {0} «{1}» должно быть числом от {2} до {3}."
     },
@@ -175743,6 +176579,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% выполнено"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% доставлено"
     },
     {
       "source": "{0}% of {1}",
@@ -179879,6 +180719,10 @@
       "translation": "为此站点类型从头开始构建替换共享地图。选择背景，对齐它，然后添加测量的主点和组标签。"
     },
     {
+      "source": "Build preview",
+      "translation": "构建预览"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "建造现场修复访问"
     },
@@ -180201,6 +181045,10 @@
     {
       "source": "CSV export",
       "translation": "CSV 导出"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "导出 CSV。"
     },
     {
       "source": "CSV table",
@@ -180539,6 +181387,10 @@
       "translation": "货物贡献"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "每小时货物运送量"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "闲置一分钟货物已满提醒"
     },
@@ -180559,6 +181411,10 @@
       "translation": "所需货物：{0}{1}"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "货物要求"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "货舱 {0}"
     },
@@ -180577,6 +181433,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "货物不可用"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "货物已更新。交货历史记录不可用。"
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -180609,6 +181469,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "载体和距离工作空间"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "无法承运货物。短缺和行程无法确认。"
     },
     {
       "source": "Carrier operations and cargo",
@@ -182715,6 +183579,14 @@
       "translation": "无法枚举更新实例注册：{0}"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "无法导出 CSV。检查目的地并重试。"
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "无法加载此版本。选择刷新重试。"
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "无法打开 VoxStellar：{0}"
     },
@@ -182977,6 +183849,10 @@
     {
       "source": "Current location",
       "translation": "当前位置"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "当前船舶（{0} 吨）：{1} 行程"
     },
     {
       "source": "Current survey destination",
@@ -183475,12 +184351,20 @@
       "translation": "交付 {0}：剩余 {1} 单位"
     },
     {
+      "source": "Delivered",
+      "translation": "发表"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "交付和本地存储"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "记录交货信用；剩余施工要求将重试：{0}"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "交货历史记录不可用。"
     },
     {
       "source": "Demand:",
@@ -185255,6 +186139,10 @@
       "translation": "出口"
     },
     {
+      "source": "Export CSV",
+      "translation": "导出 CSV"
+    },
+    {
       "source": "Export CSV…",
       "translation": "导出 CSV..."
     },
@@ -185269,6 +186157,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "导出 JSON + CSV..."
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "导出 Raven 构建 CSV"
     },
     {
       "source": "Export Surface Mining survey",
@@ -185455,6 +186347,14 @@
       "translation": "FC"
     },
     {
+      "source": "FC DIFF",
+      "translation": "FC差速器"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "FC Diff 显示运营商盈余 (+) 或短缺 (−)。一种商品的剩余不能覆盖另一种商品。"
+    },
+    {
       "source": "FC LOAD",
       "translation": "FC负载"
     },
@@ -185521,6 +186421,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "舰队航母"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "舰队承运人赤字"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -189315,6 +190219,10 @@
       "translation": "大号"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "大型 ({0}t)：{1} 行程 · 中型 ({2}t)：{3} 行程"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "通过网络共享验证大型配置文件可能需要几分钟的时间。文件和字节进度显示在上方。成功导入会自动重新启动 SrvSurvey，因此导入前的内存状态不会覆盖已迁移的数据。"
     },
@@ -189599,6 +190507,14 @@
       "translation": "链接的货物使用现有的 RavenColonial 库存并遵循其货物同步偏好。 Frontier 仍然是产能、财务和服务的来源。"
     },
     {
+      "source": "Linked commanders",
+      "translation": "关联指挥官"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "关联车队承运商"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "来自 RavenColonial 的链接中队货物。产能和财务来自上次 Frontier 刷新。"
     },
@@ -189633,6 +190549,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "实时/目的地（暗淡）"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "实时Raven数据·只读预览"
     },
     {
       "source": "Live Status.json state",
@@ -189905,6 +190825,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "正在加载 EDSM 和 Spansh 系统数据..."
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "正在加载实时 Raven 构建数据..."
     },
     {
       "source": "Loading notes for {0}…",
@@ -192095,6 +193019,10 @@
       "translation": "未选择指挥官"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "无商品分配"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "没有返回该指挥官的社区目标。"
     },
@@ -192547,6 +193475,10 @@
       "translation": "没有可用的跟踪精英窗口。使用编辑叠加位置进行离线布局更改。"
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "尚无跟踪的交货情况。"
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "该机构不存在未过滤的 Canonn 生物坐标。"
     },
@@ -192605,6 +193537,10 @@
     {
       "source": "Not assigned",
       "translation": "未分配"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "不适用于此构建类型。"
     },
     {
       "source": "Not checked",
@@ -193153,6 +194089,10 @@
     {
       "source": "Open journal",
       "translation": "打开日记本"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "打开实时构建预览"
     },
     {
       "source": "Open log folder",
@@ -195011,6 +195951,10 @@
       "translation": "即使他们的日记共享一个文件夹，个人资料仍然是独立的。"
     },
     {
+      "source": "Progress tracker",
+      "translation": "进度追踪器"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "无法取得进展"
     },
@@ -195021,6 +195965,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "项目创建使用实时停靠的施工现场上下文和已发布的构建目录。"
+    },
+    {
+      "source": "Project details",
+      "translation": "项目详情"
     },
     {
       "source": "Project name",
@@ -195411,6 +196359,10 @@
       "translation": "拉姆塔原木"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "乌鸦构建预览"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "RAVEN COLONIAL"
     },
@@ -195493,6 +196445,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "剩余 (LY)"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "剩余货物"
     },
     {
       "source": "REQUIRED",
@@ -195705,6 +196661,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "Raven Colonial 访问已启用。等待指挥官简介。"
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "Raven Colonial 访问已关闭。"
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -196263,6 +197223,10 @@
       "translation": "准备好 3 个样本中的第 1 个"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "舰队承运人已准备就绪"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "准备发布 {0} 更新和 {1} 删除。 {2} 站点保持不变。"
     },
@@ -196427,6 +197391,10 @@
       "translation": "已加载参考数据。指挥官访问将在日志简介可用后显示。"
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "此构建类型的参考效果。实际系统总数取决于其他站点和链接。"
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "可用参考图像 · 输入 .show"
     },
@@ -196521,6 +197489,10 @@
     {
       "source": "Refresh devices",
       "translation": "刷新设备"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "刷新失败。显示最后一次成功的快照。"
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -201771,6 +202743,10 @@
       "translation": "无法加载系统详细信息：{0}"
     },
     {
+      "source": "System effects",
+      "translation": "系统效果"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "系统丰富可以使用 EDSM、Spansh、Canonn 或 Raven，具体取决于启用的功能。"
     },
@@ -202529,6 +203505,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "无法保存 Raven Colonial 首选项：{0}"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "Raven 构建预览阅读器不可用。"
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -204383,6 +205363,10 @@
       "translation": "此框搜索已保存到库中。"
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "此版本在 Raven Colonial 上不再可用。"
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "该施工交付已保留用于调节。"
     },
@@ -205441,6 +206425,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "更新了 {0} 来自 {1} 的链接舰队承运商货物条目。"
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "更新了 {0} · 每 30 秒刷新一次"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -210107,6 +211095,10 @@
       "translation": "{0} + 待处理"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "{0} - Raven 构建预览"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
     },
@@ -210803,6 +211795,18 @@
       "translation": "{0} t 剩余 · {1} t 总计"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "{0} 已交付吨"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "{0} 吨·承运货物总量"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "{0} 跟踪交货"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "{0} 排版“{1}”必须是从 {2} 到 {3} 的数字。"
     },
@@ -210941,6 +211945,10 @@
     {
       "source": "{0}% complete",
       "translation": "{0}% 完成"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "{0}% 已交付"
     },
     {
       "source": "{0}% of {1}",
@@ -215077,6 +216085,10 @@
       "translation": "* BUILD A REPLACEMENT SHARED MAP FROM SCRATCH FOR THIS SITE TYPE. CHOOSE A BACKGROUND, ALIGN IT, THEN ADD MEASURED MASTER POINTS AND GROUP LABELS. >>>!"
     },
     {
+      "source": "Build preview",
+      "translation": "* BUILD PREVIEW >>>!"
+    },
+    {
       "source": "BuildSiteRepairVisits",
       "translation": "* BUILDSITEREPAIRVISITS >>>!"
     },
@@ -215399,6 +216411,10 @@
     {
       "source": "CSV export",
       "translation": "* CSV EXPORT >>>!"
+    },
+    {
+      "source": "CSV exported.",
+      "translation": "* CSV EXPORTED. >>>!"
     },
     {
       "source": "CSV table",
@@ -215737,6 +216753,10 @@
       "translation": "* CARGO CONTRIBUTED >>>!"
     },
     {
+      "source": "Cargo deliveries per hour",
+      "translation": "* CARGO DELIVERIES PER HOUR >>>!"
+    },
+    {
       "source": "Cargo full reminder after one minute idle",
       "translation": "* CARGO FULL REMINDER AFTER ONE MINUTE IDLE >>>!"
     },
@@ -215757,6 +216777,10 @@
       "translation": "* CARGO REQUIRED: {0}{1} >>>!"
     },
     {
+      "source": "Cargo requirements",
+      "translation": "* CARGO REQUIREMENTS >>>!"
+    },
+    {
       "source": "Cargo slot {0}",
       "translation": "* CARGO SLOT {0} >>>!"
     },
@@ -215775,6 +216799,10 @@
     {
       "source": "Cargo unavailable",
       "translation": "* CARGO UNAVAILABLE >>>!"
+    },
+    {
+      "source": "Cargo updated. Delivery history unavailable.",
+      "translation": "* CARGO UPDATED. DELIVERY HISTORY UNAVAILABLE. >>>!"
     },
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -215807,6 +216835,10 @@
     {
       "source": "Carrier and distance workspaces",
       "translation": "* CARRIER AND DISTANCE WORKSPACES >>>!"
+    },
+    {
+      "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+      "translation": "* CARRIER CARGO UNAVAILABLE. SHORTAGES AND TRIPS CANNOT BE CONFIRMED. >>>!"
     },
     {
       "source": "Carrier operations and cargo",
@@ -217913,6 +218945,14 @@
       "translation": "* COULD NOT ENUMERATE UPDATE INSTANCE REGISTRATIONS: {0} >>>!"
     },
     {
+      "source": "Could not export CSV. Check the destination and try again.",
+      "translation": "* COULD NOT EXPORT CSV. CHECK THE DESTINATION AND TRY AGAIN. >>>!"
+    },
+    {
+      "source": "Could not load this build. Choose Refresh to try again.",
+      "translation": "* COULD NOT LOAD THIS BUILD. CHOOSE REFRESH TO TRY AGAIN. >>>!"
+    },
+    {
       "source": "Could not open VoxStellar: {0}",
       "translation": "* COULD NOT OPEN VOXSTELLAR: {0} >>>!"
     },
@@ -218175,6 +219215,10 @@
     {
       "source": "Current location",
       "translation": "* CURRENT LOCATION >>>!"
+    },
+    {
+      "source": "Current ship ({0} tonnes): {1} trips",
+      "translation": "* CURRENT SHIP ({0} TONNES): {1} TRIPS >>>!"
     },
     {
       "source": "Current survey destination",
@@ -218673,12 +219717,20 @@
       "translation": "* DELIVER {0}: {1} UNITS REMAINING >>>!"
     },
     {
+      "source": "Delivered",
+      "translation": "* DELIVERED >>>!"
+    },
+    {
       "source": "Delivery and local storage",
       "translation": "* DELIVERY AND LOCAL STORAGE >>>!"
     },
     {
       "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
       "translation": "* DELIVERY CREDIT IS RECORDED; REMAINING CONSTRUCTION REQUIREMENTS WILL RETRY: {0} >>>!"
+    },
+    {
+      "source": "Delivery history unavailable.",
+      "translation": "* DELIVERY HISTORY UNAVAILABLE. >>>!"
     },
     {
       "source": "Demand:",
@@ -220453,6 +221505,10 @@
       "translation": "* EXPORT >>>!"
     },
     {
+      "source": "Export CSV",
+      "translation": "* EXPORT CSV >>>!"
+    },
+    {
       "source": "Export CSV…",
       "translation": "* EXPORT CSV… >>>!"
     },
@@ -220467,6 +221523,10 @@
     {
       "source": "Export JSON + CSV…",
       "translation": "* EXPORT JSON + CSV… >>>!"
+    },
+    {
+      "source": "Export Raven build CSV",
+      "translation": "* EXPORT RAVEN BUILD CSV >>>!"
     },
     {
       "source": "Export Surface Mining survey",
@@ -220653,6 +221713,14 @@
       "translation": "* FC >>>!"
     },
     {
+      "source": "FC DIFF",
+      "translation": "* FC DIFF >>>!"
+    },
+    {
+      "source": "FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another.",
+      "translation": "* FC DIFF SHOWS CARRIER SURPLUS (+) OR SHORTAGE (−). SURPLUS OF ONE COMMODITY CANNOT COVER ANOTHER. >>>!"
+    },
+    {
       "source": "FC LOAD",
       "translation": "* FC LOAD >>>!"
     },
@@ -220719,6 +221787,10 @@
     {
       "source": "FLEET CARRIER",
       "translation": "* FLEET CARRIER >>>!"
+    },
+    {
+      "source": "FLEET CARRIER DEFICIT",
+      "translation": "* FLEET CARRIER DEFICIT >>>!"
     },
     {
       "source": "FLEET CARRIER ROUTE",
@@ -224513,6 +225585,10 @@
       "translation": "* LARGE >>>!"
     },
     {
+      "source": "Large ({0}t): {1} trips · Medium ({2}t): {3} trips",
+      "translation": "* LARGE ({0}T): {1} TRIPS · MEDIUM ({2}T): {3} TRIPS >>>!"
+    },
+    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "* LARGE PROFILES CAN TAKE SEVERAL MINUTES TO VERIFY OVER A NETWORK SHARE. FILE AND BYTE PROGRESS APPEARS ABOVE. A SUCCESSFUL IMPORT RESTARTS SRVSURVEY AUTOMATICALLY SO NO PRE-IMPORT IN-MEMORY STATE CAN OVERWRITE MIGRATED DATA. >>>!"
     },
@@ -224797,6 +225873,14 @@
       "translation": "* LINKED CARGO USES THE EXISTING RAVENCOLONIAL INVENTORY AND FOLLOWS ITS CARGO-SYNC PREFERENCE. FRONTIER REMAINS THE SOURCE FOR CAPACITY, FINANCES AND SERVICES. >>>!"
     },
     {
+      "source": "Linked commanders",
+      "translation": "* LINKED COMMANDERS >>>!"
+    },
+    {
+      "source": "Linked fleet carriers",
+      "translation": "* LINKED FLEET CARRIERS >>>!"
+    },
+    {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "* LINKED SQUADRON CARGO FROM RAVENCOLONIAL. CAPACITY AND FINANCES ARE FROM THE LAST FRONTIER REFRESH. >>>!"
     },
@@ -224831,6 +225915,10 @@
     {
       "source": "Live / destination (dim)",
       "translation": "* LIVE / DESTINATION (DIM) >>>!"
+    },
+    {
+      "source": "Live Raven data · read-only preview",
+      "translation": "* LIVE RAVEN DATA · READ-ONLY PREVIEW >>>!"
     },
     {
       "source": "Live Status.json state",
@@ -225103,6 +226191,10 @@
     {
       "source": "Loading EDSM and Spansh system data…",
       "translation": "* LOADING EDSM AND SPANSH SYSTEM DATA… >>>!"
+    },
+    {
+      "source": "Loading live Raven build data…",
+      "translation": "* LOADING LIVE RAVEN BUILD DATA… >>>!"
     },
     {
       "source": "Loading notes for {0}…",
@@ -227293,6 +228385,10 @@
       "translation": "* NO COMMANDER SELECTED >>>!"
     },
     {
+      "source": "No commodity assignments",
+      "translation": "* NO COMMODITY ASSIGNMENTS >>>!"
+    },
+    {
       "source": "No community goals were returned for this commander.",
       "translation": "* NO COMMUNITY GOALS WERE RETURNED FOR THIS COMMANDER. >>>!"
     },
@@ -227745,6 +228841,10 @@
       "translation": "* NO TRACKED ELITE WINDOW IS AVAILABLE. USE EDIT OVERLAY POSITIONS FOR OFFLINE LAYOUT CHANGES. >>>!"
     },
     {
+      "source": "No tracked deliveries yet.",
+      "translation": "* NO TRACKED DELIVERIES YET. >>>!"
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "* NO UNFILTERED CANONN BIOLOGY COORDINATES REMAIN FOR THIS BODY. >>>!"
     },
@@ -227803,6 +228903,10 @@
     {
       "source": "Not assigned",
       "translation": "* NOT ASSIGNED >>>!"
+    },
+    {
+      "source": "Not available for this build type.",
+      "translation": "* NOT AVAILABLE FOR THIS BUILD TYPE. >>>!"
     },
     {
       "source": "Not checked",
@@ -228351,6 +229455,10 @@
     {
       "source": "Open journal",
       "translation": "* OPEN JOURNAL >>>!"
+    },
+    {
+      "source": "Open live build preview",
+      "translation": "* OPEN LIVE BUILD PREVIEW >>>!"
     },
     {
       "source": "Open log folder",
@@ -230209,6 +231317,10 @@
       "translation": "* PROFILES REMAIN ISOLATED EVEN WHEN THEIR JOURNALS SHARE ONE FOLDER. >>>!"
     },
     {
+      "source": "Progress tracker",
+      "translation": "* PROGRESS TRACKER >>>!"
+    },
+    {
       "source": "Progress unavailable",
       "translation": "* PROGRESS UNAVAILABLE >>>!"
     },
@@ -230219,6 +231331,10 @@
     {
       "source": "Project creation uses the live docked construction-site context and a shipped build catalog.",
       "translation": "* PROJECT CREATION USES THE LIVE DOCKED CONSTRUCTION-SITE CONTEXT AND A SHIPPED BUILD CATALOG. >>>!"
+    },
+    {
+      "source": "Project details",
+      "translation": "* PROJECT DETAILS >>>!"
     },
     {
       "source": "Project name",
@@ -230609,6 +231725,10 @@
       "translation": "* RAM TAH LOGS >>>!"
     },
     {
+      "source": "RAVEN BUILD PREVIEW",
+      "translation": "* RAVEN BUILD PREVIEW >>>!"
+    },
+    {
       "source": "RAVEN COLONIAL",
       "translation": "* RAVEN COLONIAL >>>!"
     },
@@ -230691,6 +231811,10 @@
     {
       "source": "REMAINING (LY)",
       "translation": "* REMAINING (LY) >>>!"
+    },
+    {
+      "source": "REMAINING CARGO",
+      "translation": "* REMAINING CARGO >>>!"
     },
     {
       "source": "REQUIRED",
@@ -230903,6 +232027,10 @@
     {
       "source": "Raven Colonial access is enabled. Waiting for a commander profile.",
       "translation": "* RAVEN COLONIAL ACCESS IS ENABLED. WAITING FOR A COMMANDER PROFILE. >>>!"
+    },
+    {
+      "source": "Raven Colonial access is off.",
+      "translation": "* RAVEN COLONIAL ACCESS IS OFF. >>>!"
     },
     {
       "source": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -231461,6 +232589,10 @@
       "translation": "* READY FOR SAMPLE 1 OF 3 >>>!"
     },
     {
+      "source": "Ready on fleet carriers",
+      "translation": "* READY ON FLEET CARRIERS >>>!"
+    },
+    {
       "source": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
       "translation": "* READY TO PUBLISH {0} UPDATE(S) AND {1} DELETION(S). {2} SITE(S) REMAIN UNCHANGED. >>>!"
     },
@@ -231625,6 +232757,10 @@
       "translation": "* REFERENCE DATA LOADED. COMMANDER VISITS WILL APPEAR AFTER A JOURNAL PROFILE IS AVAILABLE. >>>!"
     },
     {
+      "source": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+      "translation": "* REFERENCE EFFECTS FOR THIS BUILD TYPE. ACTUAL SYSTEM TOTALS DEPEND ON OTHER SITES AND LINKS. >>>!"
+    },
+    {
       "source": "Reference image available · type .show",
       "translation": "* REFERENCE IMAGE AVAILABLE · TYPE .SHOW >>>!"
     },
@@ -231719,6 +232855,10 @@
     {
       "source": "Refresh devices",
       "translation": "* REFRESH DEVICES >>>!"
+    },
+    {
+      "source": "Refresh failed. Showing the last successful snapshot.",
+      "translation": "* REFRESH FAILED. SHOWING THE LAST SUCCESSFUL SNAPSHOT. >>>!"
     },
     {
       "source": "Refresh hotspot search after jumps and scans",
@@ -236969,6 +238109,10 @@
       "translation": "* SYSTEM DETAILS COULD NOT BE LOADED: {0} >>>!"
     },
     {
+      "source": "System effects",
+      "translation": "* SYSTEM EFFECTS >>>!"
+    },
+    {
       "source": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
       "translation": "* SYSTEM ENRICHMENT MAY USE EDSM, SPANSH, CANONN, OR RAVEN DEPENDING ON THE ENABLED FEATURE. >>>!"
     },
@@ -237727,6 +238871,10 @@
     {
       "source": "The Raven Colonial preference could not be saved: {0}",
       "translation": "* THE RAVEN COLONIAL PREFERENCE COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "The Raven build preview reader is unavailable.",
+      "translation": "* THE RAVEN BUILD PREVIEW READER IS UNAVAILABLE. >>>!"
     },
     {
       "source": "The Raven site review could not be completed: {0}",
@@ -239581,6 +240729,10 @@
       "translation": "* THIS BOXEL SEARCH IS ALREADY SAVED TO THE LIBRARY. >>>!"
     },
     {
+      "source": "This build is no longer available on Raven Colonial.",
+      "translation": "* THIS BUILD IS NO LONGER AVAILABLE ON RAVEN COLONIAL. >>>!"
+    },
+    {
       "source": "This construction delivery is already retained for reconciliation.",
       "translation": "* THIS CONSTRUCTION DELIVERY IS ALREADY RETAINED FOR RECONCILIATION. >>>!"
     },
@@ -240639,6 +241791,10 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "* UPDATED {0} LINKED FLEET CARRIER CARGO ENTRY(S) FROM {1}. >>>!"
+    },
+    {
+      "source": "Updated {0} · refreshes every 30 seconds",
+      "translation": "* UPDATED {0} · REFRESHES EVERY 30 SECONDS >>>!"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -245305,6 +246461,10 @@
       "translation": "* {0} + PENDING >>>!"
     },
     {
+      "source": "{0} - Raven build preview",
+      "translation": "* {0} - RAVEN BUILD PREVIEW >>>!"
+    },
+    {
       "source": "{0} - USB {1}:{2}",
       "translation": "* {0} - USB {1}:{2} >>>!"
     },
@@ -246001,6 +247161,18 @@
       "translation": "* {0} T REMAINING · {1} T TOTAL >>>!"
     },
     {
+      "source": "{0} tonnes delivered",
+      "translation": "* {0} TONNES DELIVERED >>>!"
+    },
+    {
+      "source": "{0} tonnes · total carrier cargo",
+      "translation": "* {0} TONNES · TOTAL CARRIER CARGO >>>!"
+    },
+    {
+      "source": "{0} tracked deliveries",
+      "translation": "* {0} TRACKED DELIVERIES >>>!"
+    },
+    {
       "source": "{0} typography '{1}' must be a number from {2} to {3}.",
       "translation": "* {0} TYPOGRAPHY '{1}' MUST BE A NUMBER FROM {2} TO {3}. >>>!"
     },
@@ -246139,6 +247311,10 @@
     {
       "source": "{0}% complete",
       "translation": "* {0}% COMPLETE >>>!"
+    },
+    {
+      "source": "{0}% delivered",
+      "translation": "* {0}% DELIVERED >>>!"
     },
     {
       "source": "{0}% of {1}",

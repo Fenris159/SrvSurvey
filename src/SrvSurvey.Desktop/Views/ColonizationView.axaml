@@ -517,9 +517,13 @@
                       <CheckBox VerticalAlignment="Center"
                                 IsChecked="{Binding IsShown, Mode=TwoWay}" />
                       <StackPanel Grid.Column="1" Spacing="2">
-                        <TextBlock FontWeight="SemiBold"
-                                   Text="{Binding BuildName}"
-                                   TextWrapping="Wrap" />
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                Click="OpenProjectPreview_Click"
+                                ToolTip.Tip="Open live build preview">
+                          <TextBlock FontWeight="SemiBold"
+                                     Text="{Binding BuildName}"
+                                     TextWrapping="Wrap" />
+                        </Button>
                         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                    FontSize="10"
                                    FontWeight="Bold"

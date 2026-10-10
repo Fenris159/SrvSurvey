@@ -19,6 +19,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
 
     private readonly IRavenColonialClient client;
+    private Action<ColonizationProject>? projectPreviewOpener;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
     private readonly CommanderProfileStore? commanderProfileStore;
@@ -133,6 +134,30 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>Connects the native read-only build popout without coupling project rows to a desktop window.</summary>
+    internal void SetProjectPreviewOpener(Action<ColonizationProject>? opener) => projectPreviewOpener = opener;
+
+    /// <summary>Opens the clicked build independently of its Show checkbox and current primary project.</summary>
+    public void OpenProjectPreview(ColonizationProject project)
+    {
+        if (IsEnabled)
+        {
+            projectPreviewOpener?.Invoke(project);
+        }
+    }
+
+    /// <summary>Creates an isolated preview sharing the bounded public reader and current Raven consent.</summary>
+    internal ColonizationProjectPreviewViewModel CreateProjectPreview(string buildId)
+    {
+        return new ColonizationProjectPreviewViewModel(
+            client as IRavenColonialProjectReader
+                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            buildId,
+            () => IsEnabled,
+            () => recovery.ShipCargoCapacity
+        );
+    }
 
     public ICommand RefreshCommand { get; }
 
