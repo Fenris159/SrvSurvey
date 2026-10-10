@@ -35,6 +35,7 @@ internal sealed class X11OverlayPlatformService
     private readonly nuint utilityWindowAtom;
     private readonly nuint normalWindowAtom;
     private readonly GamescopeX11Connection? gamescope;
+    private GamescopeRoutingHost? gamescopeInput;
 
     /// <summary>Retains the owned display and initialized tool-window atoms for later overlay preparation.</summary>
     private X11OverlayPlatformService(X11OverlayPlatformContext context)
@@ -51,6 +52,7 @@ internal sealed class X11OverlayPlatformService
         Capabilities = OverlayPlatformCapabilities.ForHost(context.Host) with
         {
             UsesGamescopeExternalOverlay = context.GamescopeSession is not null,
+            SupportsGamescopePointerInteraction = gamescope is not null && context.ShapeAvailable,
             SupportsTopmost = context.GamescopeSession is null || gamescope is not null,
             SupportsClickThrough = context.ShapeAvailable,
             SupportsGameWindowTracking = true,
@@ -250,9 +252,14 @@ internal sealed class X11OverlayPlatformService
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
-        if (interactive && window is CombinedOverlayWindow && Capabilities.UsesGamescopeExternalOverlay)
+        if (window is CombinedOverlayWindow && Capabilities.UsesGamescopeExternalOverlay)
         {
-            return new OverlayInteractionResult(false, false, Capabilities.StatusText);
+            if (interactive)
+            {
+                return BeginGamescopeInput(window);
+            }
+            gamescopeInput?.Dispose();
+            gamescopeInput = null;
         }
         nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
@@ -478,9 +485,11 @@ internal sealed class X11OverlayPlatformService
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(regions);
-        if (regions.Count > 0 && Capabilities.UsesGamescopeExternalOverlay)
+        if (Capabilities.UsesGamescopeExternalOverlay)
         {
-            return new OverlayInteractionResult(false, false, Capabilities.StatusText);
+            // Live mode owns pointer input on the primary server. Capture the entire canvas
+            // so background clicks cannot reach Steam's otherwise invisible overlay window.
+            return SetInteractive(window, regions.Count > 0);
         }
         nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
@@ -591,6 +600,8 @@ internal sealed class X11OverlayPlatformService
     {
         lock (displaySync)
         {
+            gamescopeInput?.Dispose();
+            gamescopeInput = null;
             interactiveWindowHandles.Clear();
             gamescope?.Dispose();
             nint currentDisplay = display;
@@ -606,6 +617,161 @@ internal sealed class X11OverlayPlatformService
                     UnregisterErrorHandledDisplay(currentDisplay);
                 }
             }
+        }
+    }
+
+    private OverlayInteractionResult BeginGamescopeInput(Window canvas)
+    {
+        if (
+            gamescope is null
+            || !shapeAvailable
+            || canvas.TryGetPlatformHandle()?.Handle is not { } handle
+            || handle == 0
+            || !canvas.IsVisible
+        )
+        {
+            return new OverlayInteractionResult(false, false, Capabilities.StatusText);
+        }
+        if (gamescopeInput is not null)
+        {
+            return new OverlayInteractionResult(
+                true,
+                true,
+                "Gamescope live pointer interaction is active; Steam menus take priority."
+            );
+        }
+        var input = new GamescopeRoutingHost(gamescope, canvas, active => ApplyGamescopeCanvasInput(canvas, active));
+        if (!input.Start())
+        {
+            input.Dispose();
+            return new OverlayInteractionResult(
+                false,
+                false,
+                "Gamescope pointer interaction could not start. Close Steam menus and try again."
+            );
+        }
+        gamescopeInput = input;
+        return new OverlayInteractionResult(
+            true,
+            true,
+            "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends."
+        );
+    }
+
+    private bool ApplyGamescopeCanvasInput(Window canvas, bool active)
+    {
+        lock (displaySync)
+        {
+            nint handle = canvas.TryGetPlatformHandle()?.Handle ?? 0;
+            if (
+                !TryGetDisplay(out nint currentDisplay)
+                || handle == 0
+                || !IsValidWindow(currentDisplay, unchecked((nuint)handle))
+            )
+            {
+                return false;
+            }
+            nuint window = unchecked((nuint)handle);
+            if (active)
+            {
+                X11Native.XShapeCombineMask(currentDisplay, window, X11Native.ShapeInput, 0, 0, 0, X11Native.ShapeSet);
+                interactiveWindowHandles.Add(window);
+            }
+            else
+            {
+                X11Native.XShapeCombineRectangles(
+                    currentDisplay,
+                    window,
+                    X11Native.ShapeInput,
+                    0,
+                    0,
+                    0,
+                    0,
+                    X11Native.ShapeSet,
+                    X11Native.Unsorted
+                );
+                interactiveWindowHandles.Remove(window);
+            }
+            _ = X11Native.XSync(currentDisplay, 0);
+            canvas.IsHitTestVisible = active;
+            return true;
+        }
+    }
+
+    /// <summary>A blank lower window selects the display; the raised external canvas receives real XWayland clicks.</summary>
+    private sealed class GamescopeRoutingHost : IDisposable
+    {
+        private readonly GamescopeX11Connection connection;
+        private readonly Window canvas;
+        private readonly Window router;
+        private readonly GamescopePointerInputLease lease;
+        private readonly OverlayDispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(50) };
+        private readonly nuint routerHandle;
+        private bool disposed;
+
+        public GamescopeRoutingHost(GamescopeX11Connection connection, Window canvas, Func<bool, bool> applyCanvasInput)
+        {
+            this.connection = connection;
+            this.canvas = canvas;
+            router = new CombinedOverlayWindow { Topmost = false, IsHitTestVisible = false };
+            routerHandle = unchecked((nuint)(router.TryGetPlatformHandle()?.Handle ?? 0));
+            lease = new GamescopePointerInputLease(
+                () => canvas.IsVisible && !connection.HasForeignInput(routerHandle),
+                active =>
+                {
+                    bool prepared = connection.SetOverlayRole(routerHandle, active);
+                    bool shaped = applyCanvasInput(active && prepared);
+                    router.InvalidateVisual();
+                    return prepared && shaped;
+                },
+                MaintainStack
+            );
+            timer.Tick += OnTick;
+        }
+
+        public bool Start()
+        {
+            if (routerHandle == 0 || !connection.PrepareExternalOverlay(routerHandle))
+            {
+                return false;
+            }
+            connection.ClearInputRegion(routerHandle);
+            SynchronizeBounds();
+            router.Show();
+            if (!lease.Start())
+            {
+                return false;
+            }
+            timer.Start();
+            return true;
+        }
+
+        private void SynchronizeBounds()
+        {
+            router.Position = canvas.Position;
+            router.Width = canvas.Width;
+            router.Height = canvas.Height;
+        }
+
+        private void MaintainStack()
+        {
+            SynchronizeBounds();
+            connection.StackPointerRouter(routerHandle, unchecked((nuint)(canvas.TryGetPlatformHandle()?.Handle ?? 0)));
+        }
+
+        private void OnTick(object? sender, EventArgs args) => lease.Refresh();
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+            disposed = true;
+            timer.Stop();
+            timer.Tick -= OnTick;
+            lease.Stop(); // Restore roles and the canvas's empty input region BEFORE unmapping.
+            router.Close();
         }
     }
 

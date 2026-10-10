@@ -9,7 +9,7 @@ that starts Elite and SrvSurvey in the same nested display, see
 [CachyOS: Elite Dangerous, SrvSurvey, KDE Plasma, and Gamescope](CACHYOS_GAMESCOPE.md).
 
 Ordinary Windows, X11, and XWayland sessions continue to use one native window
-per live overlay. A verified Gamescope session uses one transparent passive
+per live overlay. A verified Gamescope session uses one transparent
 canvas registered with the compositor. The existing controls, positioning,
 opacity, and suppression models supply its content.
 
@@ -34,11 +34,19 @@ slot, which the performance HUD also uses. Simultaneous display is not supported
 The SrvSurvey canvas covers the compositor output, while panel anchors follow
 Elite's projected viewport, including letterboxing and Gamescope scaling.
 
-The HUD remains passive so game input stays with Elite. The live-interaction
-shortcut cannot enable dragging or clicking the Gaming Mode HUD. Configure
-positions, opacity, and scale in the separate position editor; Desktop Mode is
-the recommended configuration environment until Deck controller navigation is
-validated. SrvSurvey does not register configuration windows as external overlays.
+The HUD starts passive. Use the existing live-interaction shortcut to click its
+controls or drag panels while playing, then press it again to save positions and
+return pointer input to Elite. Live mode reserves the entire canvas's pointer
+input, including blank areas; keyboard input stays with Elite. A separate
+transparent routing window selects pointer-only focus without replacing the
+game picture. Steam overlay and Quick Access Menu input requests temporarily
+release the routing; live mode resumes after those requests clear. Close Steam
+menus before first enabling live mode.
+
+The position editor remains available for positions, opacity, and scale.
+Desktop Mode is the recommended configuration environment until Deck controller
+navigation is validated. Configuration windows are not external overlays.
+Text entry in HUD controls is not supported by this pointer-only mode.
 
 X11 screen-based detection is unavailable in this mode because the primary
 overlay display does not contain Elite's composited game image. Journal-driven

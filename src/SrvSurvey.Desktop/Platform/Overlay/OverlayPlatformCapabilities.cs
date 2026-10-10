@@ -14,7 +14,9 @@ public sealed record OverlayPlatformCapabilities(
 
     public bool UsesGamescopeExternalOverlay { get; init; }
 
-    public bool SupportsLiveOverlayInteraction => !UsesGamescopeExternalOverlay;
+    public bool SupportsGamescopePointerInteraction { get; init; }
+
+    public bool SupportsLiveOverlayInteraction => !UsesGamescopeExternalOverlay || SupportsGamescopePointerInteraction;
 
     public bool SupportsPassiveOverlay => SupportsTopmost && SupportsTransparency;
 
@@ -24,8 +26,13 @@ public sealed record OverlayPlatformCapabilities(
 
     private string GetGamescopeStatusText() =>
         SupportsPassiveOverlay && SupportsClickThrough && SupportsGameWindowTracking
-            ? "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable."
+            ? GetGamescopeInputStatusText()
             : "Gamescope was detected, but passive overlay initialization failed. Check the application log.";
+
+    private string GetGamescopeInputStatusText() =>
+        SupportsGamescopePointerInteraction
+            ? "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD."
+            : "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.";
 
     private string GetHostStatusText() =>
         Host switch

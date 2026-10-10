@@ -740,6 +740,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         StatusMessage =
             $"{placement.Panels.Count:N0} live overlay(s) are clickable. Drag them into place, then use the shortcut again to save.";
+        if (Capabilities.SupportsGamescopePointerInteraction)
+        {
+            StatusMessage +=
+                " Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.";
+        }
         return true;
     }
 

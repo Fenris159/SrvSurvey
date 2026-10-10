@@ -1,4 +1,4 @@
-# Gamescope composition smoke test
+# Gamescope composition and pointer smoke tests
 
 This manual Linux test runs the production `CombinedOverlayPresentationController`,
 X11 overlay service, session resolver, and game tracker against a real headless
@@ -39,3 +39,38 @@ argument and capture the base game only, which would give a false failure.
 This verifies native rendering, alpha, property registration, display routing,
 and focus against Gamescope. It does not simulate Steam client focus policies,
 Proton, Deck touch/controller input, the performance HUD, or physical output changes.
+
+## Live pointer interaction
+
+The interaction harness runs the same production Avalonia DLL and injects actual
+compositor seat input through Gamescope's private libei socket. It adds a
+transparent, full-opacity simulated Steam overlay with a nonempty input region,
+so a root focus-display property alone cannot falsely prove HUD delivery.
+Additional requirements: `pkg-config` and libei, XRender, and XShape development
+libraries; Gamescope must expose input emulation through `LIBEI_SOCKET`.
+
+```sh
+dotnet build tests/SrvSurvey.GamescopeSmoke/SrvSurvey.GamescopeSmoke.csproj
+python3 tests/SrvSurvey.GamescopeSmoke/run-interaction.py \
+  --dll tests/SrvSurvey.GamescopeSmoke/bin/Debug/net10.0/SrvSurvey.GamescopeSmoke.dll \
+  --gamescope /path/to/gamescope \
+  --protocol /path/to/gamescope-source/protocol/gamescope-control.xml \
+  --output /tmp/srvsurvey-gamescope-interaction
+
+# Repeat with --from-game to verify relocation from the inherited game display.
+```
+
+The harness asserts exactly two actual Avalonia HUD pointer presses: initial
+live mode and reacquisition after a foreign Steam input request clears. It also
+asserts that F8 reaches the game during live mode, blank clicks are swallowed by
+the canvas, a Steam input request receives both pointer positions and keyboard,
+and toggling off restores passive game input. Native inventory verifies the
+lower router's empty input shape after Avalonia `Show`, and the HUD's full
+canvas shape while live versus empty shape while yielded or passive. Screenshots
+check composition, presenter hiding/showing, and final disposal.
+
+The simulated Steam process, foreign input request, and synthetic Elite window
+exercise the production routing contract without mini-ed-launcher. They do not
+validate real Steam client policies, Proton/Elite, physical Deck devices, or
+SteamOS version differences. The test never injects events into the user's
+desktop; each run owns a private compositor and runtime directory.

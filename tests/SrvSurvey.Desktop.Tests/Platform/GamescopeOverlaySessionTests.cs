@@ -24,7 +24,7 @@ public sealed class GamescopeOverlaySessionTests
         Assert.Null(startup.Error);
         Assert.Equal(":42", routed);
         Assert.Contains(messages, message => message.Contains("inherited display: :43", StringComparison.Ordinal));
-        Assert.Contains(messages, message => message.Contains("passive", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("live pointer interaction", StringComparison.Ordinal));
         startup = GamescopeOverlaySession.Initialize(messages.Add, ":43", () => (session, null), _ => false);
         Assert.Null(startup.Session);
         Assert.Contains("unavailable", startup.Error);

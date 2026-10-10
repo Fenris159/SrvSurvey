@@ -45,7 +45,7 @@ internal sealed partial record GamescopeOverlaySession(string Display, Gamescope
                 }
                 log($"Gamescope overlay display: {session.Display} (server 0); inherited display: {original}.");
                 log(
-                    "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels."
+                    "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input."
                 );
             }
             else if (error is not null)

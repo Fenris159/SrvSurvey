@@ -49,6 +49,10 @@ internal sealed class SmokeApplication : Application
         tracker = GameWindowTracker.CreateCurrent();
         var registry = new OverlayWindowRegistry();
         controller = new CombinedOverlayPresentationController(platform, tracker, registry);
+        bool interactive = desktop.Args?.Contains("--interactive", StringComparer.Ordinal) == true;
+        int pointerCount = 0;
+        var marker = new Border { Background = Brushes.Lime };
+        marker.PointerPressed += (_, _) => Console.WriteLine($"HUD POINTER count={++pointerCount}");
         var source = new Window
         {
             Width = 64,
@@ -57,7 +61,7 @@ internal sealed class SmokeApplication : Application
             WindowDecorations = WindowDecorations.None,
             ShowActivated = false,
             ShowInTaskbar = false,
-            Content = new Border { Background = Brushes.Lime },
+            Content = marker,
         };
         registry.Register(source, "PlotJumpInfo");
         _ = controller.PreparePassiveWindow(source);
@@ -70,9 +74,35 @@ internal sealed class SmokeApplication : Application
             Console.WriteLine(
                 $"GAME visible={game.IsVisible} foreground={game.IsForeground} bounds={game.ClientBounds} canvas={game.OverlayCanvasBounds}"
             );
-            if (++ticks == 30)
+            ++ticks;
+            if (interactive)
             {
-                desktop.Shutdown(game.IsVisible ? 0 : 2);
+                if (ticks is 4 or 20)
+                {
+                    bool active = ticks == 4;
+                    OverlayInteractionResult result = controller.SetInteractive(source, active);
+                    Console.WriteLine(
+                        $"LIVE {(active ? "on" : "off")} prepared={result.IsPrepared} interactive={result.IsInteractive}: {result.Status}"
+                    );
+                    if (!result.IsPrepared || result.IsInteractive != active)
+                    {
+                        desktop.Shutdown(3);
+                    }
+                }
+                if (ticks == 24)
+                {
+                    registry.SetPresentationVisible(source, false);
+                    Console.WriteLine("SOURCE hidden");
+                }
+                if (ticks == 26)
+                {
+                    registry.SetPresentationVisible(source, true);
+                    Console.WriteLine("SOURCE shown");
+                }
+            }
+            if (ticks == (interactive ? 36 : 30))
+            {
+                desktop.Shutdown(game.IsVisible && (!interactive || pointerCount > 0) ? 0 : 2);
             }
         };
         timer.Start();

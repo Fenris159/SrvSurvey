@@ -10961,16 +10961,32 @@
       "translation": "Die Registrierung des externen Gamescope-Overlays ist fehlgeschlagen. Das HUD bleibt ausgeblendet."
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "Die Gamescope-Live-Pointer-Interaktion ist aktiv. Elite behält die Tastatureingabe bei; Die Zeigereingabe kehrt zum Spiel zurück, wenn der Live-Modus endet."
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "Die Gamescope-Live-Pointer-Interaktion ist aktiv. Steam-Menüs haben Vorrang."
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Gamescope-Overlay-Anzeige: {0} (Server 0); geerbte Anzeige: {1}."
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "Gamescope-Overlays sind passiv. Schalten Sie das Performance-HUD aus. Verwenden Sie den Positionseditor, um Panels zu konfigurieren."
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "Gamescope-Overlays sind verfügbar. Die Live-Interaktionsverknüpfung leitet Zeigereingaben an das HUD weiter, während Elite die Tastatureingaben beibehält. Steam-Menüs haben Vorrang. Schalten Sie das Leistungs-HUD aus."
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "Gamescope-Overlays verwenden eine externe Leinwand. Schalten Sie das Performance-HUD aus. Die Live-Zeigerinteraktion führt zu Steam-Menüs und behält die Elite-Tastatureingabe bei."
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Passive Gamescope-Overlays sind verfügbar. Schalten Sie das Performance-HUD aus. Panels im Positionseditor konfigurieren. Live-HUD-Interaktion ist nicht verfügbar."
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "Die Interaktion mit dem Gamescope-Zeiger konnte nicht gestartet werden. Schließen Sie die Steam-Menüs und versuchen Sie es erneut."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -18607,6 +18623,10 @@
     {
       "source": "Point name",
       "translation": "Punktname"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "Die Zeigereingabe ist für das HUD reserviert, einschließlich leerer Bereiche. Elite behält die Tastatureingabe bei; Steam-Menüs haben Vorrang."
     },
     {
       "source": "Points of interest",
@@ -46423,16 +46443,32 @@
       "translation": "Error en el registro de superposición externa de Gamescope; el HUD permanecerá oculto."
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "La interacción del puntero en vivo de Gamescope está activa. Elite mantiene la entrada del teclado; La entrada del puntero regresa al juego cuando finaliza el modo en vivo."
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "La interacción del puntero en vivo de Gamescope está activa; Los menús de Steam tienen prioridad."
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Pantalla superpuesta de Gamescope: {0} (servidor 0); pantalla heredada: {1}."
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "Las superposiciones de Gamescope son pasivas. Apague el HUD de rendimiento; Utilice el editor de posiciones para configurar los paneles."
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "Las superposiciones de Gamescope están disponibles. El atajo de interacción en vivo dirige la entrada del puntero al HUD mientras que Elite mantiene la entrada del teclado. Los menús de Steam tienen prioridad. Apague el HUD de rendimiento."
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "Las superposiciones de Gamescope utilizan un lienzo externo. Apague el HUD de rendimiento; La interacción del puntero en vivo cede a los menús de Steam y mantiene la entrada del teclado Elite."
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Se encuentran disponibles superposiciones pasivas de Gamescope. Apague el HUD de rendimiento; configurar paneles en el editor de posiciones. La interacción HUD en vivo no está disponible."
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "No se pudo iniciar la interacción del puntero del Gamescope. Cierra los menús de Steam y vuelve a intentarlo."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -54069,6 +54105,10 @@
     {
       "source": "Point name",
       "translation": "Nombre del punto"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "La entrada del puntero está reservada para el HUD, incluidas las áreas en blanco. Elite mantiene la entrada del teclado; Los menús de Steam tienen prioridad."
     },
     {
       "source": "Points of interest",
@@ -81885,16 +81925,32 @@
       "translation": "L'enregistrement de la superposition externe Gamescope a échoué ; le HUD restera caché."
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "L'interaction du pointeur en direct Gamescope est active. Elite conserve la saisie au clavier ; l'entrée du pointeur revient au jeu à la fin du mode direct."
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "L'interaction du pointeur en direct Gamescope est active ; Les menus Steam sont prioritaires."
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Affichage de superposition Gamescope : {0} (serveur 0) ; affichage hérité : {1}."
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "Les superpositions Gamescope sont passives. Désactivez le HUD de performances ; utilisez l'éditeur de position pour configurer les panneaux."
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "Des superpositions Gamescope sont disponibles. Le raccourci d’interaction en direct achemine la saisie du pointeur vers le HUD tandis qu’Elite conserve la saisie au clavier. Les menus Steam sont prioritaires. Désactivez le HUD de performances."
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "Les superpositions Gamescope utilisent un canevas externe. Désactivez le HUD de performances ; l'interaction du pointeur en direct cède aux menus Steam et conserve la saisie au clavier Elite."
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Des superpositions passives Gamescope sont disponibles. Désactivez le HUD de performances ; configurer les panneaux dans l'éditeur de position. L'interaction en direct avec le HUD n'est pas disponible."
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "L'interaction du pointeur Gamescope n'a pas pu démarrer. Fermez les menus Steam et réessayez."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -89531,6 +89587,10 @@
     {
       "source": "Point name",
       "translation": "Nom du point"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "La saisie du pointeur est réservée au HUD, y compris les zones vides. Elite conserve la saisie au clavier ; Les menus Steam sont prioritaires."
     },
     {
       "source": "Points of interest",
@@ -117347,16 +117407,32 @@
       "translation": "Falha no registro de sobreposição externa do Gamescope; o HUD permanecerá oculto."
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "A interação do ponteiro ao vivo do Gamescope está ativa. Elite mantém a entrada do teclado; a entrada do ponteiro retorna ao jogo quando o modo ao vivo termina."
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "A interação do ponteiro ao vivo do Gamescope está ativa; Os menus do Steam têm prioridade."
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Exibição de sobreposição do Gamescope: {0} (servidor 0); exibição herdada: {1}."
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "As sobreposições do Gamescope são passivas. Desligue o HUD de desempenho; use o editor de posição para configurar painéis."
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "Sobreposições de Gamescope estão disponíveis. O atalho de interação ao vivo direciona a entrada do ponteiro para o HUD enquanto o Elite mantém a entrada do teclado. Os menus do Steam têm prioridade. Desligue o HUD de desempenho."
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "As sobreposições do Gamescope usam uma tela externa. Desligue o HUD de desempenho; a interação do ponteiro ao vivo cede aos menus do Steam e mantém a entrada do teclado Elite."
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Sobreposições passivas do Gamescope estão disponíveis. Desligue o HUD de desempenho; configurar painéis no editor de posição. A interação ao vivo do HUD não está disponível."
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "A interação do ponteiro do Gamescope não pôde ser iniciada. Feche os menus do Steam e tente novamente."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -124993,6 +125069,10 @@
     {
       "source": "Point name",
       "translation": "Nome do ponto"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "A entrada do ponteiro é reservada para o HUD, incluindo áreas em branco. Elite mantém a entrada do teclado; Os menus do Steam têm prioridade."
     },
     {
       "source": "Points of interest",
@@ -152809,16 +152889,32 @@
       "translation": "Не удалось зарегистрировать внешнее наложение Gamescope; HUD останется скрытым."
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "Взаимодействие с живым указателем Gamescope активно. Elite сохраняет ввод с клавиатуры; ввод указателя возвращается в игру, когда режим реального времени заканчивается."
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "Взаимодействие с живым указателем Gamescope активно; Меню Steam имеют приоритет."
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Наложение игрового прицела: {0} (сервер 0); унаследованный дисплей: {1}."
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "Наложения Gamescope пассивны. Отключить производительность HUD; используйте редактор позиций для настройки панелей."
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "Доступны наложения Gamescope. Ярлык живого взаимодействия направляет ввод указателя на HUD, в то время как Elite сохраняет ввод с клавиатуры. Меню Steam имеют приоритет. Отключите HUD производительности."
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "Наложения Gamescope используют внешний холст. Отключить производительность HUD; Взаимодействие с живым указателем приводит к меню Steam и сохраняет ввод с клавиатуры Elite."
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Доступны пассивные наложения Gamescope. Отключить производительность HUD; настроить панели в редакторе позиций. Живое взаимодействие с HUD недоступно."
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "Не удалось начать взаимодействие с указателем Gamescope. Закройте меню Steam и повторите попытку."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -160455,6 +160551,10 @@
     {
       "source": "Point name",
       "translation": "Имя точки"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "Ввод указателя зарезервирован для HUD, включая пустые области. Elite сохраняет ввод с клавиатуры; Меню Steam имеют приоритет."
     },
     {
       "source": "Points of interest",
@@ -188271,16 +188371,32 @@
       "translation": "Gamescope 外部覆盖注册失败； HUD 将保持隐藏状态。"
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "Gamescope 实时指针交互处于活动状态。 Elite保留键盘输入；当实时模式结束时，指针输入返回到游戏。"
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "Gamescope 实时指针交互处于活动状态； Steam 菜单优先。"
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "Gamescope 叠加显示：{0}（服务器 0）；继承显示：{1}。"
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "游戏范围覆盖是被动的。关闭性能HUD；使用位置编辑器配置面板。"
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "游戏范围覆盖可用。实时交互快捷方式将指针输入路由到 HUD，而 Elite 则保留键盘输入。 Steam 菜单优先。关闭性能 HUD。"
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "Gamescope 覆盖使用外部画布。关闭性能HUD；实时指针交互让位于 Steam 菜单并保留精英键盘输入。"
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "Gamescope 被动覆盖可用。关闭性能HUD；在位置编辑器中配置面板。实时 HUD 交互不可用。"
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "Gamescope 指针交互无法启动。关闭 Steam 菜单并重试。"
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -195917,6 +196033,10 @@
     {
       "source": "Point name",
       "translation": "点名称"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "指针输入是为 HUD 保留的，包括空白区域。 Elite保留键盘输入； Steam 菜单优先。"
     },
     {
       "source": "Points of interest",
@@ -223733,16 +223853,32 @@
       "translation": "* GAMESCOPE EXTERNAL-OVERLAY REGISTRATION FAILED; THE HUD WILL REMAIN HIDDEN. >>>!"
     },
     {
+      "source": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+      "translation": "* GAMESCOPE LIVE POINTER INTERACTION IS ACTIVE. ELITE KEEPS KEYBOARD INPUT; POINTER INPUT RETURNS TO THE GAME WHEN LIVE MODE ENDS. >>>!"
+    },
+    {
+      "source": "Gamescope live pointer interaction is active; Steam menus take priority.",
+      "translation": "* GAMESCOPE LIVE POINTER INTERACTION IS ACTIVE; STEAM MENUS TAKE PRIORITY. >>>!"
+    },
+    {
       "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
       "translation": "* GAMESCOPE OVERLAY DISPLAY: {0} (SERVER 0); INHERITED DISPLAY: {1}. >>>!"
     },
     {
-      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
-      "translation": "* GAMESCOPE OVERLAYS ARE PASSIVE. TURN OFF THE PERFORMANCE HUD; USE THE POSITION EDITOR TO CONFIGURE PANELS. >>>!"
+      "source": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+      "translation": "* GAMESCOPE OVERLAYS ARE AVAILABLE. THE LIVE INTERACTION SHORTCUT ROUTES POINTER INPUT TO THE HUD WHILE ELITE KEEPS KEYBOARD INPUT. STEAM MENUS TAKE PRIORITY. TURN OFF THE PERFORMANCE HUD. >>>!"
+    },
+    {
+      "source": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+      "translation": "* GAMESCOPE OVERLAYS USE AN EXTERNAL CANVAS. TURN OFF THE PERFORMANCE HUD; LIVE POINTER INTERACTION YIELDS TO STEAM MENUS AND KEEPS ELITE KEYBOARD INPUT. >>>!"
     },
     {
       "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
       "translation": "* GAMESCOPE PASSIVE OVERLAYS ARE AVAILABLE. TURN OFF THE PERFORMANCE HUD; CONFIGURE PANELS IN THE POSITION EDITOR. LIVE HUD INTERACTION IS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+      "translation": "* GAMESCOPE POINTER INTERACTION COULD NOT START. CLOSE STEAM MENUS AND TRY AGAIN. >>>!"
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -231379,6 +231515,10 @@
     {
       "source": "Point name",
       "translation": "* POINT NAME >>>!"
+    },
+    {
+      "source": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+      "translation": "* POINTER INPUT IS RESERVED FOR THE HUD, INCLUDING BLANK AREAS. ELITE KEEPS KEYBOARD INPUT; STEAM MENUS TAKE PRIORITY. >>>!"
     },
     {
       "source": "Points of interest",

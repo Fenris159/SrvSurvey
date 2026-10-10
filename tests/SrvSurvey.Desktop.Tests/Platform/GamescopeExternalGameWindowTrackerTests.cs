@@ -78,6 +78,10 @@ public sealed class GamescopeExternalGameWindowTrackerTests
         Assert.True(shown.IsVisible);
         Assert.False(shown.IsForeground);
         Assert.Equal(focus.OutputBounds, shown.ClientBounds);
+        focus = focus with { KeyboardDisplay = ":7.0" };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+        focus = focus with { KeyboardDisplay = ":6" };
+        Assert.False(tracker.GetSnapshot().IsForeground);
         focus = focus with { Window = 99 };
         Assert.False(tracker.GetSnapshot().IsVisible);
         focus = focus with { Window = 42, Display = ":8" }; // Same numeric XID on another server must not match.

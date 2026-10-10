@@ -309,7 +309,9 @@ canvas, primary-display routing before Avalonia initialization, same-user Elite
 display discovery, display-qualified graphics/input focus, native-long X11
 property encoding, and output/viewport separation. A verified external-overlay
 session forces one canvas even when the separate-window override is set.
-Live HUD interaction is disabled; the separate position editor remains available.
+The initial implementation kept live HUD interaction disabled; the pointer
+interaction follow-up below enables the existing shortcut. The separate position
+editor remains available.
 Normal Steam/Proton launches do not require mini-ed-launcher. Ordinary desktop
 sessions retain their native overlay path, and a nested Gamescope X11 outer
 window can be mapped automatically through Elite's verified process ancestor.
@@ -359,8 +361,105 @@ session, since it would sample the Steam/overlay display rather than Elite's
 composited image. Screen-based detection needs a separately supported capture
 backend; capture of SrvSurvey's own controls is unaffected.
 
-The final repository quality gate passed with 3,310 desktop tests and three
+The initial passive implementation's repository quality gate passed with 3,310 desktop tests and three
 platform-specific skips. Changed production code achieved 91.4% coverage
 (507 of 555 line and branch points), above the required 80%. CSharpier, all
 seven localization catalogs, scoped Sonar checks, and the normal solution
 build with analyzer warnings treated as errors also passed.
+
+## Live pointer interaction follow-up, 2026-10-10
+
+The existing live-interaction shortcut now requests a pointer-only session on
+verified primary-server Gamescope. It uses two native windows: a raised external
+Avalonia canvas for rendering and actual pointer delivery, and a separate blank,
+output-sized, lowered routing window with an empty XShape input region. The
+router requests `STEAM_OVERLAY=1`, external role `0`, and `STEAM_INPUT_FOCUS=2`.
+Mode 2 keeps keyboard input on the game. `GAMESCOPE_KEYBOARD_FOCUS_DISPLAY`
+preserves game-foreground eligibility for shortcuts while the pointer display
+changes. These properties are internal compositor integration points, with
+source and executable verification rather than a stable third-party API
+guarantee. [Pinned input selection](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L5208-L5362),
+[current upstream comparison](https://github.com/ValveSoftware/gamescope/blob/cbe74f8f753504632f6929c81c8e2d48c4fc2d22/src/steamcompmgr.cpp#L5231-L5385).
+
+An external canvas alone cannot request live pointer input. The compositor picks
+one primary Steam-overlay candidate by whole-window opacity; equal-opacity ties
+favor the lowest eligible window. A visually transparent inactive Steam window
+can win this slot. Lowering the visible canvas wins the compositor selection but
+puts its controls below that foreign window for XWayland hit testing. The two
+windows separate compositor routing from the actual click recipient. The router
+stays lowest while the visible canvas stays highest; stacking is checked during
+live mode. [Candidate selection](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L4579-L4623),
+[window-list ordering](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L4239-L4250),
+[X Shape input regions](https://www.x.org/releases/X11R7.7/doc/xextproto/shape.html).
+
+Steam requests do not automatically displace that lower router. Before starting
+and every 50 ms while requested, SrvSurvey scans foreign primary-server windows
+for a Steam-overlay role and nonzero input request. A request yields routing and
+empties the canvas input region; clearing it reacquires pointer routing while
+live mode is still requested. Unmapped foreign windows are included because
+upstream selection does not require viewability. All owned input roles are
+cleared before hide, unmap, close, or disposal, and one overlay classification
+is retained throughout role changes so the blank router cannot become a base
+game candidate. Foreign windows and global base-app selection are never edited.
+This is best-effort arbitration: scanning and registering have no atomic
+reservation protocol, so brief transition races still require device testing.
+[Unmapping behavior](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L5863-L5885),
+[role/input changes](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L6898-L7032).
+
+During live mode, pointer input belongs to the HUD's entire canvas. Shape holes
+would pass blank-area clicks to another primary-server window, not across to
+Elite's separate game server. Reserving the canvas prevents accidental clicks
+on inactive Steam UI. Toggle live mode off to return pointer input to Elite.
+Buttons, scrolling, and dragging use the existing Avalonia controls and managed
+drag implementation; text entry is not supported because keyboard focus stays
+with Elite. The independent performance-HUD external-slot conflict remains.
+[Pointer surface selection](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/wlserver.cpp#L2803-L2834).
+
+The isolated native two-window prototype verified actual compositor button and
+keyboard dispatch with a transparent full-opacity foreign Steam/QAM-like
+window, rather than inferring event delivery from root focus-display properties.
+Passive and stopped sessions delivered clicks and F8 to the synthetic game;
+live and reacquired sessions delivered control clicks to the HUD and F8 to the
+game; explicit yield delivered both to the simulated Steam window. Graphics app
+359320 and the green HUD/red game composition remained unchanged across all
+nine stages. Tests injected input through Gamescope's private libei socket,
+whose handlers call the normal compositor mouse/key functions. They did not
+use `XSendEvent` to bypass routing. [Input-emulation dispatch](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/InputEmulation.cpp#L163-L219).
+
+The [production interaction smoke harness](../../tests/SrvSurvey.GamescopeSmoke/README.md#live-pointer-interaction)
+then ran the real Avalonia combined controller, native platform service, and
+tracker through the same compositor input path. Both primary-start and
+inherited-game-display runs passed. Native inspection verified the output-sized
+router remained input-transparent after Avalonia `Show`; the canvas had one
+full-output input rectangle while live and none while passive or yielded.
+Exactly two actual Avalonia pointer presses were recorded, initially live and
+after reacquisition. F8 remained with the game in both states, blank-area clicks
+were swallowed, and the simulated Steam request received both tested clicks
+plus F8 after yield. Toggle-off, registry presenter hide/show, and disposal
+restored the expected passive input and green-marker/red-background composition.
+The committed runner retains native, Avalonia, and compositor logs and stage
+screenshots, and requires no mini-ed-launcher.
+
+The local Gamescope 3.16.29 source has compatibility changes to a runtime
+relative-mouse hint, Wayland client output buffer size, and nested Wayland
+fullscreen/output selection. None changes overlay or input-focus selection;
+the headless runs do not exercise the nested Wayland changes or enable the
+relative-mouse hint. Comparisons against current upstream found the same
+relevant input-slot behavior. SDL input simulation on isolated Xvfb failed due
+to software Vulkan WSI lacking present-id/present-wait support; the successful
+headless tests used libei instead.
+
+Deck touch/trackpads, Steam controller layouts, physical press/release races,
+real Steam client policy, actual Proton/Elite input, rotation, DPI, and the
+installed Gamescope version remain hardware validation requirements. Native
+layer-shell is not an alternative interactive route in the inspected source:
+Gamescope classifies it as external and does not use its keyboard-interactivity
+request in focus selection. [Layer-shell handling](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/wlserver.cpp#L1997-L2083).
+
+The follow-up repository quality gate passed with 3,316 desktop tests, three
+platform-specific skips, and all 19 localization catalog tests. Changed
+production code achieved 91.4% coverage (660 of 722 line and branch points).
+CSharpier, scoped Sonar checks, and localization freshness across all seven
+catalogs and the strict solution build (zero warnings/errors) passed. Both
+committed interaction smoke-runner variants passed on
+the isolated local compositor.

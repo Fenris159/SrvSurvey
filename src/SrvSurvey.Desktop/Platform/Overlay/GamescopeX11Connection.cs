@@ -13,12 +13,16 @@ internal sealed record GamescopeFocusSnapshot(
     uint? InputApp,
     uint? GraphicsApp,
     PixelRect OutputBounds,
-    uint ScalingMode = 0
+    uint ScalingMode = 0,
+    string? KeyboardDisplay = null
 );
 
 /// <summary>Owns the Gamescope X11 protocol, including LP64 property encoding and display identity.</summary>
 internal sealed class GamescopeX11Connection : IDisposable
 {
+    private const string SteamOverlayAtom = "STEAM_OVERLAY";
+    private const string SteamInputFocusAtom = "STEAM_INPUT_FOCUS";
+
     private nint display;
     private readonly nuint root;
 
@@ -86,7 +90,8 @@ internal sealed class GamescopeX11Connection : IDisposable
             ReadNumber("GAMESCOPE_FOCUSED_APP"),
             ReadNumber("GAMESCOPE_FOCUSED_APP_GFX"),
             ReadBounds(),
-            ReadNumber("GAMESCOPE_NEW_SCALING_SCALER") ?? 0
+            ReadNumber("GAMESCOPE_NEW_SCALING_SCALER") ?? 0,
+            DecodeDisplay(ReadNumbers("GAMESCOPE_KEYBOARD_FOCUS_DISPLAY"))
         );
     }
 
@@ -98,21 +103,45 @@ internal sealed class GamescopeX11Connection : IDisposable
     }
 
     /// <summary>Registers only a primary-server host and verifies the property after synchronizing.</summary>
-    public bool PrepareExternalOverlay(nuint window)
+    public bool PrepareExternalOverlay(nuint window) => SetOverlayRole(window, false);
+
+    /// <summary>Switches only our window between passive rendering and pointer-only compositor routing.</summary>
+    internal bool SetOverlayRole(nuint window, bool pointerRouter)
     {
         if (window == 0 || ReadIdentity()?.ServerId != 0)
         {
             return false;
         }
+        WriteNumber(window, SteamInputFocusAtom, 0);
+        // Retain an overlay role throughout the transition so the router is never a base-game candidate.
+        if (pointerRouter)
+        {
+            WriteNumber(window, SteamOverlayAtom, 1);
+            WriteNumber(window, "GAMESCOPE_EXTERNAL_OVERLAY", 0);
+        }
+        else
+        {
+            WriteNumber(window, "GAMESCOPE_EXTERNAL_OVERLAY", 1);
+            WriteNumber(window, SteamOverlayAtom, 0);
+        }
+        WriteNumber(window, SteamInputFocusAtom, pointerRouter ? 2u : 0u);
+        _ = X11Native.XSync(display, 0);
+        return ReadNumber("GAMESCOPE_EXTERNAL_OVERLAY", window) == (pointerRouter ? 0 : 1)
+            && ReadNumber(SteamOverlayAtom, window) == (pointerRouter ? 1 : 0)
+            && ReadNumber(SteamInputFocusAtom, window) == (pointerRouter ? 2 : 0);
+    }
+
+    private void WriteNumber(nuint window, string atom, uint number)
+    {
         nint value = Marshal.AllocHGlobal(nint.Size);
         try
         {
             // Xlib format 32 consumes native longs, including on LP64.
-            Marshal.WriteIntPtr(value, 1);
+            Marshal.WriteIntPtr(value, unchecked((nint)number));
             _ = X11Native.XChangeProperty(
                 display,
                 window,
-                X11Native.XInternAtom(display, "GAMESCOPE_EXTERNAL_OVERLAY", 0),
+                X11Native.XInternAtom(display, atom, 0),
                 6,
                 32,
                 X11Native.PropertyReplace,
@@ -124,8 +153,82 @@ internal sealed class GamescopeX11Connection : IDisposable
         {
             Marshal.FreeHGlobal(value);
         }
+    }
+
+    /// <summary>Steam/QAM input requests take precedence even for windows that are currently unmapped.</summary>
+    internal bool HasForeignInput(nuint router)
+    {
+        nuint[]? children = ReadChildren();
+        return children is null
+            || children.Any(window =>
+                window != router
+                && ReadNumber(SteamOverlayAtom, window) == 1
+                && ReadNumber(SteamInputFocusAtom, window) is > 0
+            );
+    }
+
+    internal void ClearInputRegion(nuint window)
+    {
+        X11Native.XShapeCombineRectangles(
+            display,
+            window,
+            X11Native.ShapeInput,
+            0,
+            0,
+            0,
+            0,
+            X11Native.ShapeSet,
+            X11Native.Unsorted
+        );
         _ = X11Native.XSync(display, 0);
-        return ReadNumber("GAMESCOPE_EXTERNAL_OVERLAY", window) == 1;
+    }
+
+    /// <summary>The compositor picks the lowest equal-opacity overlay; XWayland hit-tests the raised HUD.</summary>
+    internal void StackPointerRouter(nuint router, nuint canvas)
+    {
+        nuint[]? children = ReadChildren();
+        if (children is null || children.Length == 0)
+        {
+            return;
+        }
+        if (children[0] != router)
+        {
+            _ = X11Native.XLowerWindow(display, router);
+        }
+        if (children[^1] != canvas)
+        {
+            _ = X11Native.XRaiseWindow(display, canvas);
+        }
+        _ = X11Native.XFlush(display);
+    }
+
+    private nuint[]? ReadChildren()
+    {
+        if (!IsAlive)
+        {
+            return null;
+        }
+        int result = X11Native.XQueryTree(display, root, out _, out _, out nint data, out uint count);
+        try
+        {
+            if (result == 0 || count > 4096)
+            {
+                return null;
+            }
+            nuint[] children = new nuint[count];
+            for (int index = 0; index < children.Length; index++)
+            {
+                children[index] = unchecked((nuint)Marshal.ReadIntPtr(data, index * nint.Size));
+            }
+            return children;
+        }
+        finally
+        {
+            if (data != nint.Zero)
+            {
+                _ = X11Native.XFree(data);
+            }
+        }
     }
 
     private bool IsAlive => display != nint.Zero && !X11TransientDisplayRecovery.HasFailed(display);

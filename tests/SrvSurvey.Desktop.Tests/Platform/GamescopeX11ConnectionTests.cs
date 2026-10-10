@@ -104,6 +104,38 @@ public sealed partial class GamescopeX11ConnectionTests
             SetNumbers(display, root, "GAMESCOPE_XWAYLAND_SERVER_ID", [0]);
             Assert.True(connection.PrepareExternalOverlay(window));
             Assert.Equal([1u], connection.ReadNumbers("GAMESCOPE_EXTERNAL_OVERLAY", window));
+            Assert.False(connection.HasForeignInput(window));
+            nuint foreign = XCreateSimpleWindow(display, root, 0, 0, 1280, 800, 0, 0, 0);
+            SetNumbers(display, foreign, "STEAM_OVERLAY", [1]);
+            SetNumbers(display, foreign, "STEAM_INPUT_FOCUS", [0]);
+            Assert.False(connection.HasForeignInput(window));
+            SetNumbers(display, foreign, "STEAM_INPUT_FOCUS", [1]);
+            Assert.True(connection.HasForeignInput(window)); // Unmapped windows still participate upstream.
+            Assert.False(connection.HasForeignInput(foreign));
+            Assert.True(connection.SetOverlayRole(window, true));
+            Assert.Equal([2u], connection.ReadNumbers("STEAM_INPUT_FOCUS", window));
+            Assert.Equal([1u], connection.ReadNumbers("STEAM_OVERLAY", window));
+            Assert.Equal([0u], connection.ReadNumbers("GAMESCOPE_EXTERNAL_OVERLAY", window));
+            connection.ClearInputRegion(window);
+            connection.StackPointerRouter(foreign, window);
+            connection.StackPointerRouter(window, foreign);
+            connection.StackPointerRouter(window, foreign); // Already stacked correctly.
+            Assert.NotEqual(0, X11Native.XQueryTree(display, root, out _, out _, out nint children, out uint count));
+            try
+            {
+                Assert.Equal(2u, count);
+                Assert.Equal(window, unchecked((nuint)Marshal.ReadIntPtr(children)));
+                Assert.Equal(foreign, unchecked((nuint)Marshal.ReadIntPtr(children, nint.Size)));
+            }
+            finally
+            {
+                _ = X11Native.XFree(children);
+            }
+            Assert.True(connection.PrepareExternalOverlay(window));
+            Assert.Equal([0u], connection.ReadNumbers("STEAM_INPUT_FOCUS", window));
+            Assert.Equal([0u], connection.ReadNumbers("STEAM_OVERLAY", window));
+            SetNumbers(display, foreign, "STEAM_INPUT_FOCUS", [0]);
+            Assert.False(connection.HasForeignInput(window));
             Assert.Empty(connection.ReadNumbers("missing-property"));
             SetNumbers(display, root, "GAMESCOPE_PID", [1, 2]);
             Assert.Null(connection.ReadIdentity()?.ProcessId);
@@ -118,12 +150,14 @@ public sealed partial class GamescopeX11ConnectionTests
             SetNumbers(display, root, "GAMESCOPE_FOCUSED_APP", [359320]);
             SetNumbers(display, root, "GAMESCOPE_FOCUSED_APP_GFX", [359320]);
             SetNumbers(display, root, "GAMESCOPE_NEW_SCALING_SCALER", [2]);
+            SetNumbers(display, root, "GAMESCOPE_KEYBOARD_FOCUS_DISPLAY", [BitConverter.ToUInt32([58, 55, 0, 0])]);
             GamescopeFocusSnapshot focus = connection.ReadFocus();
             Assert.Equal(":7", focus.Display);
             Assert.Equal(window, focus.Window);
             Assert.Equal(359320u, focus.InputApp);
             Assert.Equal(359320u, focus.GraphicsApp);
             Assert.Equal(2u, focus.ScalingMode);
+            Assert.Equal(":7", focus.KeyboardDisplay);
             Assert.Equal(new PixelRect(0, 0, 1280, 800), focus.OutputBounds);
             using IOverlayPlatformService? platform = X11OverlayPlatformService.TryCreate(
                 OverlayHostKind.LinuxXWayland,
@@ -136,17 +170,22 @@ public sealed partial class GamescopeX11ConnectionTests
             ICombinedOverlayNativeService combined = Assert.IsAssignableFrom<ICombinedOverlayNativeService>(platform);
             Assert.False(combined.SetInteractiveRegions(canvas, [new PixelRect(0, 0, 64, 64)]).IsPrepared);
             var editor = new Window();
-            Assert.False(platform.Capabilities.SupportsLiveOverlayInteraction);
+            Assert.True(platform.Capabilities.SupportsLiveOverlayInteraction);
             Assert.False(platform.SetInteractive(editor, false).IsPrepared);
             Assert.False(combined.SetInteractiveRegions(canvas, []).IsPrepared);
             using IGameWindowTracker? tracker = GamescopeExternalGameWindowTracker.TryCreate(new(name, new(0, null)));
             Assert.NotNull(tracker);
-            Assert.Same(GameWindowSnapshot.Unavailable, tracker.GetSnapshot());
+            // Another isolated smoke session may have an Elite-like process; it must never be presented here.
+            GameWindowSnapshot tracked = tracker.GetSnapshot();
+            Assert.False(tracked.IsVisible);
+            Assert.False(tracked.IsForeground);
             connection.Dispose();
             connection.Dispose();
             Assert.Equal(default, connection.ReadBounds());
             Assert.Null(connection.ReadIdentity());
             Assert.False(connection.PrepareExternalOverlay(window));
+            Assert.True(connection.HasForeignInput(window));
+            connection.StackPointerRouter(window, foreign);
         }
         finally
         {
