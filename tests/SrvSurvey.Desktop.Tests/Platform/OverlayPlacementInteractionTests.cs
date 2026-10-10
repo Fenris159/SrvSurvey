@@ -636,7 +636,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             window.RaiseEvent(
                 new PointerReleasedEventArgs(
                     window,
-                    Assert.IsAssignableFrom<IPointer>(dragPointer),
+                    Assert.IsType<IPointer>(dragPointer, exactMatch: false),
                     window,
                     window.PointToClient(releasePosition),
                     1,
