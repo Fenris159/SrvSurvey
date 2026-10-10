@@ -236,9 +236,13 @@ public sealed class X11OverlayWindowManagerPolicyTests
         }
     }
 
-    /// <summary>Flushes a delayed motion packet using the current desktop pointer instead of trailing it after release.</summary>
-    [AvaloniaFact]
-    public void ManagedDragDoesNotTrailTheNativePointerWhenMotionEventsAreDelayed()
+    /// <summary>Keeps a delayed release at its recorded position after the free pointer has moved elsewhere.</summary>
+    [AvaloniaTheory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void ReleasedDragIgnoresNativeMovementAfterButtonUp(bool nativeButtonPressed, bool hasPendingMotion)
     {
         var window = new Window { Width = 200, Height = 120 };
         var probe = new DragPointerProbe(new PixelPoint(4028, 1491));
@@ -249,13 +253,16 @@ public sealed class X11OverlayWindowManagerPolicyTests
             window.Show();
             window.Position = new PixelPoint(3904, 1472);
             window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
-            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), false);
-            window.MouseUp(new Point(140, 19), MouseButton.Left, RawInputModifiers.None);
+            if (hasPendingMotion)
+            {
+                window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            }
+            probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), nativeButtonPressed);
+            window.MouseUp(new Point(144, 24), MouseButton.Left, RawInputModifiers.None);
 
-            Assert.Equal(new PixelPoint(4104, 1472), window.Position);
+            Assert.Equal(new PixelPoint(3924, 1477), window.Position);
             window.MouseMove(new Point(500, 19), RawInputModifiers.None);
-            Assert.Equal(new PixelPoint(4104, 1472), window.Position);
+            Assert.Equal(new PixelPoint(3924, 1477), window.Position);
             Assert.Equal(1, probe.Disposals);
         }
         finally
@@ -264,7 +271,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
         }
     }
 
-    /// <summary>Uses the current pointer during a scheduled move and ends a native release before queued motion can replay.</summary>
+    /// <summary>Uses fresh held-button samples, but ignores free pointer movement when a scheduled update discovers release.</summary>
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]
@@ -284,14 +291,15 @@ public sealed class X11OverlayWindowManagerPolicyTests
             window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
             probe.Sample = new OverlayDragPointerSample(new PixelPoint(4228, 1491), nativeButtonPressed);
 
-            Assert.Equal(new PixelPoint(4104, 1472), await applied.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            var expected = new PixelPoint(nativeButtonPressed ? 4104 : 3920, 1472);
+            Assert.Equal(expected, await applied.Task.WaitAsync(TimeSpan.FromSeconds(5)));
             if (!nativeButtonPressed)
             {
                 Assert.Equal(1, probe.Disposals);
                 window.MouseMove(new Point(500, 19), RawInputModifiers.LeftMouseButton);
             }
             window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
-            Assert.Equal(new PixelPoint(4104, 1472), window.Position);
+            Assert.Equal(expected, window.Position);
             Assert.Equal(1, probe.Disposals);
         }
         finally
@@ -306,11 +314,12 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [InlineData(-10000, -10000, 0, 1080)]
     [InlineData(4028, 1491, 3904, 1472)]
     [InlineData(null, null, 3920, 1472)]
-    public void NativeDragPreservesMonitorLockAndEventFallback(int? x, int? y, int expectedX, int expectedY)
+    public async Task NativeDragPreservesMonitorLockAndEventFallback(int? x, int? y, int expectedX, int expectedY)
     {
         var window = new Window { Width = 200, Height = 120 };
         var probe = new DragPointerProbe(new PixelPoint(4028, 1491));
         var boundary = new PixelRect(0, 1080, 5120, 1440);
+        var sampled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         OverlayDragPolicy.SetOptionsFactory(
             window,
             () =>
@@ -328,12 +337,14 @@ public sealed class X11OverlayWindowManagerPolicyTests
             window.Show();
             window.Position = new PixelPoint(3904, 1472);
             window.MouseDown(new Point(124, 19), MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
             probe.Sample =
                 x is { } nativeX && y is { } nativeY
-                    ? new OverlayDragPointerSample(new PixelPoint(nativeX, nativeY), false)
+                    ? new OverlayDragPointerSample(new PixelPoint(nativeX, nativeY), true)
                     : null;
-            window.MouseUp(new Point(140, 19), MouseButton.Left, RawInputModifiers.None);
+            probe.Sampled = () => sampled.TrySetResult();
+            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
+            await sampled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
 
             Assert.Equal(new PixelPoint(expectedX, expectedY), window.Position);
             Assert.Equal(1, probe.Disposals);
@@ -376,8 +387,8 @@ public sealed class X11OverlayWindowManagerPolicyTests
             await applied.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
             probe.Sample = new OverlayDragPointerSample(new PixelPoint(4028, 1491), false);
-            window.MouseMove(new Point(140, 19), RawInputModifiers.LeftMouseButton);
-            window.MouseUp(new Point(140, 19), MouseButton.Left, RawInputModifiers.None);
+            window.MouseMove(new Point(124, 19), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(new Point(124, 19), MouseButton.Left, RawInputModifiers.None);
 
             Assert.Equal([new PixelPoint(4104, 1472), origin], requests);
         }
@@ -449,9 +460,14 @@ public sealed class X11OverlayWindowManagerPolicyTests
     {
         internal OverlayDragPointerSample? Sample { get; set; } = new(initialPosition, true);
         internal int Disposals { get; private set; }
+        internal Action? Sampled { get; set; }
 
         /// <summary>Returns the most recent desktop sample without consuming queued local events.</summary>
-        public OverlayDragPointerSample? Read() => Sample;
+        public OverlayDragPointerSample? Read()
+        {
+            Sampled?.Invoke();
+            return Sample;
+        }
 
         /// <summary>Records when the gesture releases ownership of the pointer source.</summary>
         public void Dispose() => Disposals++;
