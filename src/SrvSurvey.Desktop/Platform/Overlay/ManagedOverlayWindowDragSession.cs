@@ -42,7 +42,8 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
             position =>
             {
                 OverlayDragPointerSample? native = diagnostics.Observe(latestPointerPosition);
-                if (native is not null)
+                // A button-up sample can belong to free movement after a queued release.
+                if (native is { LeftButtonPressed: true } && !stopped)
                 {
                     position = CalculatePosition(initialWindowPosition, initialPointerPosition, native.Position);
                     position = options.ConstrainPosition?.Invoke(position) ?? position;
@@ -128,6 +129,7 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         );
     }
 
+    /// <summary>Coalesces held-button motion and ends the gesture when an event reports release.</summary>
     private void OnPointerMoved(object? sender, PointerEventArgs eventArgs)
     {
         if (stopped || !ReferenceEquals(eventArgs.Pointer, pointer))
@@ -143,16 +145,24 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         }
 
         PixelPoint currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
-        latestPointerPosition = currentPointerPosition;
-        PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
-        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
+        UpdatePendingPosition(currentPointerPosition);
         eventArgs.Handled = true;
     }
 
+    /// <summary>Queues a gesture position while preserving the fixed press origin and monitor constraint.</summary>
+    private void UpdatePendingPosition(PixelPoint pointerPosition)
+    {
+        latestPointerPosition = pointerPosition;
+        PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, pointerPosition);
+        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
+    }
+
+    /// <summary>Finishes at the release event's position rather than sampling a pointer that may already be elsewhere.</summary>
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs eventArgs)
     {
         if (ReferenceEquals(eventArgs.Pointer, pointer))
         {
+            UpdatePendingPosition(window.PointToScreen(eventArgs.GetPosition(window)));
             Stop(releasePointer: true, reason: "released");
         }
     }
