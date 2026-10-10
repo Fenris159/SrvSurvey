@@ -41,7 +41,8 @@ internal static class EliteKeyboardDisplayDiscovery
     internal static EliteKeyboardDisplay? Read(
         string procDirectory,
         bool requireDisplay = true,
-        KeyboardDisplayContext? context = null
+        KeyboardDisplayContext? context = null,
+        string? preferredDisplay = null
     )
     {
         try
@@ -76,7 +77,8 @@ internal static class EliteKeyboardDisplayDiscovery
                     }
                 }
             }
-            return SelectDisplay(candidates, procDirectory, context);
+            return FindPreferredDisplay(candidates, preferredDisplay)
+                ?? SelectDisplay(candidates, procDirectory, context);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -84,6 +86,16 @@ internal static class EliteKeyboardDisplayDiscovery
         }
         return null;
     }
+
+    private static EliteKeyboardDisplay? FindPreferredDisplay(
+        List<EliteKeyboardDisplay> candidates,
+        string? preferredDisplay
+    ) =>
+        IsLocalDisplay(preferredDisplay)
+            ? candidates.FirstOrDefault(candidate =>
+                NormalizeDisplay(candidate.Display) == NormalizeDisplay(preferredDisplay!)
+            )
+            : null;
 
     /// <summary>Uses focus first and monitor overlap second, refusing to guess between ambiguous clients.</summary>
     private static EliteKeyboardDisplay? SelectDisplay(
@@ -160,7 +172,7 @@ internal static class EliteKeyboardDisplayDiscovery
         display.EndsWith(".0", StringComparison.Ordinal) ? display[..^2] : display;
 
     /// <summary>Matches only a gamescope ancestor, avoiding unrelated launchers shared by multiple game processes.</summary>
-    private static int? FindGamescopeParent(string procDirectory, int processId)
+    internal static int? FindGamescopeParent(string procDirectory, int processId)
     {
         var visited = new HashSet<int>();
         try
@@ -168,7 +180,7 @@ internal static class EliteKeyboardDisplayDiscovery
             while (processId > 1 && visited.Add(processId))
             {
                 string directory = Path.Combine(procDirectory, processId.ToString(CultureInfo.InvariantCulture));
-                if (File.ReadAllText(Path.Combine(directory, "comm")).Trim() == "gamescope")
+                if (File.ReadAllText(Path.Combine(directory, "comm")).Trim() is "gamescope" or "gamescope-wl")
                 {
                     return processId;
                 }

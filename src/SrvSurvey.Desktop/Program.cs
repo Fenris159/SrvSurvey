@@ -65,10 +65,9 @@ internal static class Program
             return;
         }
 
+        bool? x11ThreadingInitialized = OperatingSystem.IsLinux() ? X11Native.TryInitializeThreading() : (bool?)null;
+        GamescopeOverlaySession.InitializeCurrent(message => applicationLog.Append(message));
         var displayCapabilities = OverlayPlatformCapabilities.DetectCurrent();
-        bool? x11ThreadingInitialized = displayCapabilities.UsesX11Compatibility
-            ? X11Native.TryInitializeThreading()
-            : (bool?)null;
         applicationLog.Append($"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");

@@ -21944,6 +21944,118 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GameTextInputService.cs"
   },
   {
+    "Text": "Gamescope display probing is unavailable: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
+  },
+  {
+    "Text": "Gamescope display routing failed; overlays are unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
+  },
+  {
+    "Text": "Gamescope external-overlay registration failed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Gamescope live pointer interaction is active. Elite keeps keyboard input; pointer input returns to the game when live mode ends.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Gamescope live pointer interaction is active; Steam menus take priority.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
+  },
+  {
+    "Text": "Gamescope overlays are available. The live interaction shortcut routes pointer input to the HUD while Elite keeps keyboard input. Steam menus take priority. Turn off the performance HUD.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Gamescope overlays use an external canvas. Turn off the performance HUD; live pointer interaction yields to Steam menus and keeps Elite keyboard input.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
+  },
+  {
+    "Text": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
+  },
+  {
+    "Text": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
     "Text": "Gamescope was detected; live panels will share one native overlay window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37245,6 +37357,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Pointer input is reserved for the HUD, including blank areas. Elite keeps keyboard input; Steam menus take priority.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Points of interest",
@@ -57026,6 +57146,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
     "Text": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64856,6 +64984,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
+    "Text": "gamescope-wl",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
     "Text": "gamma",
     "IsFormat": false,
     "SourceKinds": [
@@ -67469,7 +67605,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
   },
   {
     "Text": "steamapps",
@@ -67478,6 +67614,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
+    "Text": "steamcompmgr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeX11Connection.cs"
   },
   {
     "Text": "steamvr",
