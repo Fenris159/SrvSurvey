@@ -5,9 +5,16 @@ read-only preview. Multiple builds can have their own windows open. Selecting th
 same name again activates its existing window. Opening a preview leaves **Show**,
 the primary project, and delivery tracking unchanged.
 
+**Combined Build Report**, before **Open Raven builds**, opens the same window for
+all workspace projects, including hidden projects. It sums cargo requirements and
+delivery progress, counts shared fleet carrier stock once, and lists the included
+builds, linked commanders and carriers, and system effects grouped by system.
+
 The window refreshes every 30 seconds and provides an immediate **Refresh** button.
 Closing it stops its refreshes and cancels pending reads. Disabling Raven access or
-changing the active commander closes all build previews.
+changing the active commander closes all build previews and the combined report.
+Combined reports read projects sequentially and retain the last complete snapshot
+if any project cannot be refreshed.
 
 Cargo rows show remaining requirements, each linked carrier's stock, and the signed
 **FC Diff**. A positive value is surplus and a negative value is a shortage. Surplus
@@ -23,10 +30,15 @@ and hourly delivery history use Raven's public build data.
 
 **Export CSV** saves the snapshot displayed when the button was clicked. The CSV
 contains project details, commodities, carrier totals, system effects, and delivery
-history. Its rectangular table uses a `Record` column to distinguish those sections;
-filter to `Commodity` for a cargo-only spreadsheet. Numbers use invariant formatting
-and the file includes a UTF-8 BOM for Excel. Public names and notes are escaped to
-prevent spreadsheet formula execution.
+history in compact labelled tables with their own headers. Empty tables are omitted.
+Combined exports replace project details with the report summary and included build
+list. Numbers use invariant formatting and the file includes a UTF-8 BOM for Excel.
+Public names and notes are escaped to prevent spreadsheet formula execution.
+
+The **Show** checkbox controls the shopping plan and overlay. Opted-in ship-cargo
+publishing continues when every project is hidden or no projects are loaded. Raven
+access, credentials, commander and ship readiness, and protection against ambiguous
+cargo from multiple game windows are still required.
 
 The preview uses only the existing public GET endpoints:
 

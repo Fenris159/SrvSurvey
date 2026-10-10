@@ -1586,6 +1586,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return "Dock at the Fleet Carrier and reopen its commodity market before syncing.";
     }
 
+    /// <summary>Checks commander and ship readiness independently of which projects are shown in the shopping plan.</summary>
     private string? GetShipCargoPublishingBlockReason()
     {
         if (!IsEnabled)
@@ -1601,11 +1602,6 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         if (CommanderName is null)
         {
             return "Load a commander profile before publishing ship cargo.";
-        }
-
-        if (!Projects.Any(project => project.IsShown))
-        {
-            return "Ship cargo was not published because no visible colonization projects are active.";
         }
 
         if (string.IsNullOrWhiteSpace(currentShipType))
