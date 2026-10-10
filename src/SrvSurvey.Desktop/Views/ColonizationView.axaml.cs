@@ -18,6 +18,27 @@ public sealed partial class ColonizationView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>Opens the clicked project's read-only popout without changing project selection or primary status.</summary>
+    private void OpenProjectPreview_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (
+            sender is Control { DataContext: ColonizationProjectRowViewModel row }
+            && DataContext is MainWindowViewModel viewModel
+        )
+        {
+            viewModel.Colonization.OpenProjectPreview(row.Project);
+        }
+    }
+
+    /// <summary>Opens the combined live report without saving or changing the current project selection.</summary>
+    private void CombinedBuildReport_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.Colonization.OpenCombinedReport();
+        }
+    }
+
     private async void OpenRavenApiKeyPage_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is not MainWindowViewModel viewModel)

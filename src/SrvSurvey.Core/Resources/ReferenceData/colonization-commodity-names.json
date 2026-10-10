@@ -1,0 +1,242 @@
+{
+  "advancedcatalysers": {
+    "Name": "Advanced Catalysers",
+    "Category": "Technology"
+  },
+  "agriculturalmedicines": {
+    "Name": "Agri-Medicines",
+    "Category": "Medicines"
+  },
+  "aluminium": {
+    "Name": "Aluminium",
+    "Category": "Metals"
+  },
+  "animalmeat": {
+    "Name": "Animal Meat",
+    "Category": "Foods"
+  },
+  "autofabricators": {
+    "Name": "Auto-Fabricators",
+    "Category": "Technology"
+  },
+  "basicmedicines": {
+    "Name": "Basic Medicines",
+    "Category": "Medicines"
+  },
+  "battleweapons": {
+    "Name": "Battle Weapons",
+    "Category": "Weapons"
+  },
+  "beer": {
+    "Name": "Beer",
+    "Category": "Legal Drugs"
+  },
+  "bioreducinglichen": {
+    "Name": "Bioreducing Lichen",
+    "Category": "Technology"
+  },
+  "biowaste": {
+    "Name": "Biowaste",
+    "Category": "Waste"
+  },
+  "buildingfabricators": {
+    "Name": "Building Fabricators",
+    "Category": "Machinery"
+  },
+  "ceramiccomposites": {
+    "Name": "Ceramic Composites",
+    "Category": "Industrial Materials"
+  },
+  "cmmcomposite": {
+    "Name": "CMM Composite",
+    "Category": "Industrial Materials"
+  },
+  "coffee": {
+    "Name": "Coffee",
+    "Category": "Foods"
+  },
+  "combatstabilisers": {
+    "Name": "Combat Stabilisers",
+    "Category": "Medicines"
+  },
+  "computercomponents": {
+    "Name": "Computer Components",
+    "Category": "Technology"
+  },
+  "copper": {
+    "Name": "Copper",
+    "Category": "Metals"
+  },
+  "cropharvesters": {
+    "Name": "Crop Harvesters",
+    "Category": "Machinery"
+  },
+  "emergencypowercells": {
+    "Name": "Emergency Power Cells",
+    "Category": "Machinery"
+  },
+  "evacuationshelter": {
+    "Name": "Evacuation Shelter",
+    "Category": "Consumer Items"
+  },
+  "fish": {
+    "Name": "Fish",
+    "Category": "Foods"
+  },
+  "foodcartridges": {
+    "Name": "Food Cartridges",
+    "Category": "Foods"
+  },
+  "fruitandvegetables": {
+    "Name": "Fruit and Vegetables",
+    "Category": "Foods"
+  },
+  "geologicalequipment": {
+    "Name": "Geological Equipment",
+    "Category": "Machinery"
+  },
+  "grain": {
+    "Name": "Grain",
+    "Category": "Foods"
+  },
+  "hazardousenvironmentsuits": {
+    "Name": "H.E. Suits",
+    "Category": "Technology"
+  },
+  "heliostaticfurnaces": {
+    "Name": "Microbial Furnaces",
+    "Category": "Machinery"
+  },
+  "insulatingmembrane": {
+    "Name": "Insulating Membrane",
+    "Category": "Industrial Materials"
+  },
+  "liquidoxygen": {
+    "Name": "Liquid oxygen",
+    "Category": "Chemicals"
+  },
+  "liquor": {
+    "Name": "Liquor",
+    "Category": "Legal Drugs"
+  },
+  "medicaldiagnosticequipment": {
+    "Name": "Medical Diagnostic Equipment",
+    "Category": "Technology"
+  },
+  "microcontrollers": {
+    "Name": "Micro Controllers",
+    "Category": "Technology"
+  },
+  "militarygradefabrics": {
+    "Name": "Military Grade Fabrics",
+    "Category": "Textiles"
+  },
+  "mineralextractors": {
+    "Name": "Mineral Extractors",
+    "Category": "Machinery"
+  },
+  "mutomimager": {
+    "Name": "Muon Imager",
+    "Category": "Technology"
+  },
+  "nonlethalweapons": {
+    "Name": "Non-Lethal Weapons",
+    "Category": "Weapons"
+  },
+  "pesticides": {
+    "Name": "Pesticides",
+    "Category": "Chemicals"
+  },
+  "polymers": {
+    "Name": "Polymers",
+    "Category": "Industrial Materials"
+  },
+  "powergenerators": {
+    "Name": "Power Generators",
+    "Category": "Machinery"
+  },
+  "reactivearmour": {
+    "Name": "Reactive Armour",
+    "Category": "Weapons"
+  },
+  "resonatingseparators": {
+    "Name": "Resonating Separators",
+    "Category": "Technology"
+  },
+  "robotics": {
+    "Name": "Robotics",
+    "Category": "Technology"
+  },
+  "semiconductors": {
+    "Name": "Semiconductors",
+    "Category": "Industrial Materials"
+  },
+  "steel": {
+    "Name": "Steel",
+    "Category": "Metals"
+  },
+  "structuralregulators": {
+    "Name": "Structural Regulators",
+    "Category": "Technology"
+  },
+  "superconductors": {
+    "Name": "Superconductors",
+    "Category": "Industrial Materials"
+  },
+  "surfacestabilisers": {
+    "Name": "Surface Stabilisers",
+    "Category": "Chemicals"
+  },
+  "survivalequipment": {
+    "Name": "Survival Equipment",
+    "Category": "Consumer Items"
+  },
+  "tea": {
+    "Name": "Tea",
+    "Category": "Foods"
+  },
+  "terrainenrichmentsystems": {
+    "Name": "Land Enrichment Systems",
+    "Category": "Technology"
+  },
+  "thermalcoolingunits": {
+    "Name": "Thermal Cooling Units",
+    "Category": "Machinery"
+  },
+  "titanium": {
+    "Name": "Titanium",
+    "Category": "Metals"
+  },
+  "tritium": {
+    "Name": "Tritium",
+    "Category": "Chemicals"
+  },
+  "water": {
+    "Name": "Water",
+    "Category": "Chemicals"
+  },
+  "waterpurifiers": {
+    "Name": "Water Purifiers",
+    "Category": "Machinery"
+  },
+  "wine": {
+    "Name": "Wine",
+    "Category": "Legal Drugs"
+  },
+  "combatstabilizers": {
+    "Name": "Combat Stabilisers",
+    "Category": "Medicines"
+  },
+  "muonimager": {
+    "Name": "Muon Imager",
+    "Category": "Technology"
+  },
+  "landenrichmentsystems": {
+    "Name": "Land Enrichment Systems",
+    "Category": "Technology"
+  },
+  "microbialfurnaces": {
+    "Name": "Microbial Furnaces",
+    "Category": "Machinery"
+  }
+}

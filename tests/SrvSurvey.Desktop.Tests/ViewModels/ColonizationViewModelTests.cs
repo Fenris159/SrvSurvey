@@ -1618,14 +1618,22 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         Assert.Equal(1, client.PublishShipCount);
     }
 
-    [Fact]
-    public async Task DoesNotPublishShipCargoWithoutOptInOrVisibleProjects()
+    /// <summary>Publishes only opted-in commander cargo even when every build is hidden or no builds are loaded.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task PublishesShipCargoOnlyWhenOptedInRegardlessOfProjectVisibility(int projectCount)
     {
+        ColonizationProject[] projects = Enumerable
+            .Range(0, projectCount)
+            .Select(index => Project($"hidden-{index}", $"Port {index}", remaining: 100))
+            .ToArray();
         var client = new StubRavenColonialClient
         {
             Workspace = new ColonizationCommanderProjects(
-                [Project("hidden", "Port", remaining: 100)],
-                ["hidden"],
+                projects,
+                projects.Select(project => project.BuildId).ToArray(),
                 null,
                 []
             ),
@@ -1649,8 +1657,54 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         viewModel.ShipCargoPublishingEnabled = true;
         await viewModel.UpdateCargoAsync(cargo with { Timestamp = cargo.Timestamp.AddSeconds(1) });
 
+        Assert.Equal(1, client.PublishShipCount);
+        Assert.Equal("Test Cmdr", client.LastPublishedShip!.CommanderName);
+        Assert.Equal(1, client.LastPublishedShip.Cargo["steel"]);
+        Assert.Contains("Published", viewModel.ShipCargoPublishingStatus);
+        Assert.Equal(projectCount, viewModel.Projects.Count);
+        Assert.All(viewModel.Projects, project => Assert.False(project.IsShown));
+        Assert.Empty(viewModel.CommodityOverlay.Plan.Rows);
+
+        viewModel.ShipCargoPublishingEnabled = false;
+        await viewModel.UpdateCargoAsync(cargo with { Timestamp = cargo.Timestamp.AddSeconds(2) });
+
+        Assert.Equal(1, client.PublishShipCount);
+    }
+
+    /// <summary>Keeps Raven consent, credentials, commander identity, and ship readiness required independently of builds.</summary>
+    [Theory]
+    [InlineData(false, true, true, true, "Enable Raven Colonial")]
+    [InlineData(true, false, true, true, "Save a Raven API key")]
+    [InlineData(true, true, false, true, "Load a commander profile")]
+    [InlineData(true, true, true, false, "Loadout")]
+    public async Task DoesNotPublishShipCargoWithoutReadyCommanderAndShip(
+        bool ravenEnabled,
+        bool hasApiKey,
+        bool hasCommander,
+        bool hasShip,
+        string expectedStatus
+    )
+    {
+        var client = new StubRavenColonialClient { Workspace = new ColonizationCommanderProjects([], [], null, []) };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = ravenEnabled;
+        viewModel.ShipCargoPublishingEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, hasApiKey ? "secret-key" : null);
+        if (hasShip)
+        {
+            viewModel.ApplyJournalEvents([Event("Loadout", "\"Ship\":\"python\",\"CargoCapacity\":192")]);
+        }
+        if (hasCommander)
+        {
+            await viewModel.SetCommanderAsync("Test Cmdr");
+        }
+
+        await viewModel.UpdateCargoAsync(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 1, [new CargoItem("steel", "Steel", 1, 0)])
+        );
+
         Assert.Equal(0, client.PublishShipCount);
-        Assert.Contains("no visible", viewModel.ShipCargoPublishingStatus);
+        Assert.Contains(expectedStatus, viewModel.ShipCargoPublishingStatus);
     }
 
     [Fact]

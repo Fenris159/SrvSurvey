@@ -1,0 +1,177 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.ColonizationProjectPreviewWindow"
+        x:DataType="vm:ColonizationProjectPreviewViewModel"
+        Width="1180" Height="850" MinWidth="700" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding WindowTitle}">
+  <Window.DataTemplates>
+    <DataTemplate DataType="vm:PreviewField">
+      <Grid ColumnDefinitions="155,*" ColumnSpacing="12" Margin="0,5">
+        <TextBlock Classes="muted" Text="{Binding Label}" TextWrapping="Wrap" />
+        <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+      </Grid>
+    </DataTemplate>
+  </Window.DataTemplates>
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}" Padding="24,20"
+            BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="eyebrow" Text="RAVEN BUILD PREVIEW" />
+          <TextBlock Classes="page-title" FontSize="26" Text="{Binding Title}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <Button x:Name="RefreshButton" Classes="secondary" Content="Refresh"
+                  IsEnabled="{Binding !IsBusy}" Click="Refresh_Click" />
+          <Button x:Name="ExportCsvButton" Classes="secondary" Content="Export CSV"
+                  IsEnabled="{Binding CanExport}" Click="ExportCsv_Click" />
+        </StackPanel>
+      </Grid>
+    </Border>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="24,20" Spacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+              <StackPanel Spacing="5">
+                <TextBlock Classes="eyebrow" Text="REMAINING CARGO" />
+                <TextBlock FontSize="28" FontWeight="SemiBold" Text="{Binding RemainingText}" />
+                <TextBlock Classes="muted" Text="{Binding RemainingTrips}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding CurrentShipTrips}" IsVisible="{Binding HasCurrentShip}" TextWrapping="Wrap" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="5">
+                <TextBlock Classes="eyebrow" Text="FLEET CARRIER DEFICIT" />
+                <TextBlock FontSize="28" FontWeight="SemiBold" Text="{Binding DeficitText}" />
+                <TextBlock Classes="muted" Text="{Binding DeficitTrips}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="card-title" Text="{Binding ProgressText}" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding DeliveredText}" />
+                  <TextBlock Classes="muted" Text="tonnes" />
+                </StackPanel>
+              </Grid>
+              <ProgressBar x:Name="DeliveredProgress" Minimum="0" Maximum="100" Value="{Binding Progress}" Height="12" />
+            </StackPanel>
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="card-title" Text="Ready on fleet carriers" TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding ReadyText}" />
+                  <TextBlock Classes="muted" Text="tonnes" />
+                </StackPanel>
+              </Grid>
+              <ProgressBar Minimum="0" Maximum="100" Value="{Binding ReadyProgress}" Height="12" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="card-title" Text="Cargo requirements" />
+            <TextBlock Classes="muted" Text="FC Diff shows carrier surplus (+) or shortage (−). Surplus of one commodity cannot cover another." TextWrapping="Wrap" />
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <StackPanel>
+                <Grid ColumnDefinitions="150,250,90,100,Auto" ColumnSpacing="8" Margin="0,0,0,8">
+                  <TextBlock Classes="eyebrow" Text="CATEGORY" />
+                  <TextBlock Grid.Column="1" Classes="eyebrow" Text="COMMODITY" />
+                  <TextBlock Grid.Column="2" Classes="eyebrow" Text="NEED" />
+                  <TextBlock Grid.Column="3" Classes="eyebrow" Text="FC DIFF" />
+                  <ItemsControl Grid.Column="4" ItemsSource="{Binding CarrierHeaders}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Classes="eyebrow" Width="120" Text="{Binding}" /></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+                <ItemsControl x:Name="CommodityRows" ItemsSource="{Binding Rows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PreviewCommodityRow">
+                      <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,9">
+                        <Grid ColumnDefinitions="150,250,90,100,Auto" ColumnSpacing="8">
+                          <TextBlock Classes="muted" Text="{Binding Category}" TextWrapping="Wrap" />
+                          <TextBlock Grid.Column="1" Text="{Binding Commodity}" TextWrapping="Wrap" />
+                          <TextBlock Grid.Column="2" Classes="monospace" Text="{Binding Need}" />
+                          <TextBlock Grid.Column="3" Classes="monospace" Text="{Binding Difference}" />
+                          <ItemsControl Grid.Column="4" ItemsSource="{Binding Quantities}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Classes="monospace" Width="120" Text="{Binding}" /></DataTemplate></ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </ScrollViewer>
+          </StackPanel>
+        </Border>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+          <StackPanel Spacing="18">
+            <Border Classes="card">
+              <StackPanel Spacing="10">
+                <TextBlock Classes="card-title" Text="{Binding DetailsTitle}" />
+                <ItemsControl ItemsSource="{Binding Details}" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="10">
+                <TextBlock Classes="card-title" Text="Linked commanders" />
+                <ItemsControl ItemsSource="{Binding Commanders}" />
+                <TextBlock Classes="card-title" Text="Linked fleet carriers" />
+                <ItemsControl ItemsSource="{Binding CarrierDetails}" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          <Border Grid.Column="1" Classes="card" VerticalAlignment="Top">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="card-title" Text="System effects" />
+              <TextBlock Classes="muted" Text="{Binding EffectsDescription}" TextWrapping="Wrap" />
+              <ItemsControl ItemsSource="{Binding Effects}" IsVisible="{Binding !IsCombinedReport}" />
+              <ItemsControl ItemsSource="{Binding EffectGroups}" IsVisible="{Binding IsCombinedReport}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PreviewEffectGroup">
+                    <StackPanel Spacing="6" Margin="0,0,0,12">
+                      <TextBlock Classes="card-title" Text="{Binding Name}" TextWrapping="Wrap" />
+                      <ItemsControl ItemsSource="{Binding Fields}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </Grid>
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="card-title" Text="Progress tracker" />
+            <TextBlock Classes="muted" Text="{Binding HistoryStatus}" />
+            <ItemsControl ItemsSource="{Binding DeliveryTotals}" />
+            <TextBlock Classes="muted" Text="Cargo deliveries per hour" />
+            <ItemsControl ItemsSource="{Binding DeliveryHistory}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:PreviewDelivery">
+                  <Grid ColumnDefinitions="180,*,100" RowDefinitions="Auto,Auto" ColumnSpacing="12" Margin="0,6">
+                    <TextBlock Text="{Binding Time}" />
+                    <ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Height="14" Value="{Binding Percentage}" />
+                    <TextBlock Grid.Column="2" Classes="monospace" Text="{Binding Cargo}" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Classes="muted" Text="{Binding Commanders}" TextWrapping="Wrap" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" Background="{DynamicResource RavenSurfaceBrush}" Padding="24,14"
+            BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted" Text="{Binding RefreshedAt}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted" Text="{Binding ExportStatus}" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

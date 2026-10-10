@@ -550,10 +550,13 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         }
     }
 
+    /// <summary>Keeps control clicks intact and sends drag releases at a fixed screen position across frame timings.</summary>
     [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void PanelControlsReceiveClicksWithoutStartingPanelDrag(bool scrollbar)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PanelControlsReceiveClicksWithoutStartingPanelDrag(bool scrollbar, bool applyMoveBeforeRelease)
     {
         var registry = new OverlayWindowRegistry();
         var button = new Button { Content = "Activate", Height = 36 };
@@ -613,9 +616,17 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             }
 
             var background = new Point(250, 200);
+            PixelPoint releasePosition = window.PointToScreen(background + new Vector(20, 30));
             window.MouseDown(background, MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            window.MouseMove(background + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
-            window.MouseUp(background + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
+            window.MouseMove(window.PointToClient(releasePosition), RawInputModifiers.LeftMouseButton);
+            if (applyMoveBeforeRelease)
+            {
+                await Task.Delay(30);
+                Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+                Assert.Equal(new PixelPoint(120, 230), window.Position);
+            }
+            // A completed frame changes the release's client coordinates, not its screen position.
+            window.MouseUp(window.PointToClient(releasePosition), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(1, platform.MoveDragStarts);
             Assert.Equal(new PixelPoint(120, 230), window.Position);
         }

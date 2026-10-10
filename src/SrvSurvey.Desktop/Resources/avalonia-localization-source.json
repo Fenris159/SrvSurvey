@@ -328,6 +328,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 build project",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "1 geological signal unidentified",
     "IsFormat": false,
     "SourceKinds": [
@@ -366,6 +374,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "1 system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "1 to 1000",
@@ -1398,6 +1414,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A build is no longer available. Refresh the workspace project list.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "A cache-write failure does not repeat a successful server mutation in the same session.",
@@ -7787,6 +7811,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Build preview",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "Build projects in this report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "BuildSiteRepairVisits",
     "IsFormat": false,
     "SourceKinds": [
@@ -8041,7 +8081,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "CENTER SYSTEM",
@@ -8438,12 +8478,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
+    "Text": "CSV exported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "CSV table",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
     "Text": "CTRL",
@@ -9118,6 +9166,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Cargo deliveries per hour",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Cargo full reminder after one minute idle",
     "IsFormat": false,
     "SourceKinds": [
@@ -9158,6 +9214,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Cargo requirements",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Cargo slot {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -9196,6 +9260,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Cargo updated. Delivery history unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
@@ -9260,6 +9332,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Carrier operations and cargo",
@@ -11321,6 +11401,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Combined Build Report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Combined overlay edit mode is active on Windows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11343,6 +11432,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
+  },
+  {
+    "Text": "Combined reference effects, grouped by system. Actual system totals depend on other sites and links.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Combines recorded statistics from every boxel belonging to this saved search. Boxels without recorded data add nothing to the totals.",
@@ -13479,6 +13576,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
   },
   {
+    "Text": "Could not export CSV. Check the destination and try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "Could not load this report. Choose Refresh to try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "Could not open VoxStellar: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -14007,6 +14120,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Current ship ({0} tonnes): {1} trips",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Current survey destination",
@@ -15018,6 +15139,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
+    "Text": "Delivery history unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Demand:",
@@ -18575,6 +18704,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Export CSV",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Export CSV\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -18605,6 +18742,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Export Raven build CSV",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
     "Text": "Export Surface Mining survey",
@@ -18975,6 +19120,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
+    "Text": "FC DIFF",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
+    "Text": "FC Diff shows carrier surplus (\u002B) or shortage (\u2212). Surplus of one commodity cannot cover another.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "FC LOAD",
     "IsFormat": false,
     "SourceKinds": [
@@ -19111,6 +19272,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "FLEET CARRIER DEFICIT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "FLEET CARRIER ROUTE",
@@ -26728,6 +26897,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Large ({0}t): {1} trips \u00B7 Medium ({2}t): {3} trips",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27297,6 +27474,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Linked commanders",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
+    "Text": "Linked fleet carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27367,6 +27560,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Live Raven data \u00B7 read-only preview",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Live Status.json state",
@@ -27911,6 +28112,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Loading live Raven build data\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Loading notes for {0}\u2026",
@@ -32244,6 +32453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "No build projects are available in the workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "No child boxel statistics are recorded inside {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -32306,6 +32523,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "No commodity assignments",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "No community goals were returned for this commander.",
@@ -33213,6 +33438,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "No tracked deliveries yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "No unfiltered Canonn biology coordinates remain for this body.",
     "IsFormat": false,
     "SourceKinds": [
@@ -33331,6 +33564,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
+    "Text": "Not available for this build type.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Not checked",
@@ -34431,6 +34672,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ErrorReportWindow.axaml"
+  },
+  {
+    "Text": "Open live build preview",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Open log folder",
@@ -38157,12 +38406,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Progress tracker",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Progress unavailable",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Prohibited",
@@ -38179,6 +38436,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Project details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Project name",
@@ -38958,6 +39223,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "RAVEN BUILD PREVIEW",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "RAVEN COLONIAL",
     "IsFormat": false,
     "SourceKinds": [
@@ -39125,6 +39398,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "REMAINING CARGO",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "REQUIRED",
@@ -39549,6 +39830,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Raven Colonial access is off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Raven Colonial access is off. No project data will be fetched or published.",
@@ -40663,6 +40952,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Ready on fleet carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "Ready to publish {0} update(s) and {1} deletion(s). {2} site(s) remain unchanged.",
     "IsFormat": true,
     "SourceKinds": [
@@ -40991,6 +41288,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Reference effects for this build type. Actual system totals depend on other sites and links.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "Reference image available \u00B7 type .show",
     "IsFormat": false,
     "SourceKinds": [
@@ -41182,6 +41487,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Refresh failed. Showing the last successful snapshot.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Refresh hotspot search after jumps and scans",
@@ -47346,14 +47659,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Ship cargo was not published because no visible colonization projects are active.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
     "Text": "Ship cargo was not published: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -51706,6 +52011,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "System effects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
+  },
+  {
     "Text": "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53226,6 +53540,14 @@
   {
     "Text": "The Raven Colonial preference could not be saved: {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "The Raven build preview reader is unavailable.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -56937,6 +57259,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "This build is no longer available on Raven Colonial.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "This construction delivery is already retained for reconciliation.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57040,14 +57370,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
-  },
-  {
-    "Text": "This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched.",
@@ -59061,6 +59383,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
+    "Text": "Updated {0} \u00B7 refreshes every 30 seconds",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Updated {0}. A verified state backup was retained.",
@@ -61485,6 +61815,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "When multiple Commanders share a folder, confirm the preferred Frontier ID and active Elite window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63382,6 +63720,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
   },
   {
+    "Text": "combined-report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ColonizationProjectPreviewWindowCoordinator.cs"
+  },
+  {
     "Text": "comm",
     "IsFormat": false,
     "SourceKinds": [
@@ -63563,7 +63909,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
     "Text": "culture",
@@ -66283,7 +66629,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
     "Text": "prior-scans",
@@ -67347,7 +67693,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
     "Text": "text/plain",
@@ -67548,6 +67894,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
+  },
+  {
+    "Text": "tonnes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "top",
@@ -68407,6 +68761,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
   },
   {
+    "Text": "{0} - Raven build preview",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "{0} - USB {1}:{2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -68845,6 +69207,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "{0} build projects",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "{0} cargo is already current.",
@@ -69775,6 +70145,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "{0} systems",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "{0} t",
     "IsFormat": true,
     "SourceKinds": [
@@ -69797,6 +70175,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0} tonnes delivered",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "{0} tonnes \u00B7 total carrier cargo",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "{0} tracked deliveries",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "{0} typography \u0027{1}\u0027 must be a number from {2} to {3}.",
@@ -70031,6 +70433,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "{0} \u00B7 {1} \u00B7 includes all projects regardless of Show selection",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "{0} \u00B7 {1} \u00B7 {2} km border",
     "IsFormat": true,
     "SourceKinds": [
@@ -70077,6 +70487,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0}% delivered",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "{0}% of {1}",

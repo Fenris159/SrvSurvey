@@ -116,7 +116,7 @@ public interface IRavenColonialClient
     );
 }
 
-public sealed class RavenColonialClient : IRavenColonialClient
+public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenColonialProjectReader
 {
     private const string RccKeyHeader = "rcc-key";
 

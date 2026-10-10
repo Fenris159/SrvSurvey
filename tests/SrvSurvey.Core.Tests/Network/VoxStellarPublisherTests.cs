@@ -170,12 +170,20 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
-    [Fact]
-    public async Task DisablingConsentWaitsUntilAuthorizedTransportHasStarted()
+    /// <summary>Preserves the transport-start consent fence with immediate and normally batched uploads.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DisablingConsentWaitsUntilAuthorizedTransportHasStarted(bool useDefaultBatchInterval)
     {
         var handler = new TransportStartBlockingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client, batchInterval: TimeSpan.Zero);
+        using var publisher = new VoxStellarPublisher(
+            "1.0.0",
+            "test-key",
+            client,
+            batchInterval: useDefaultBatchInterval ? null : TimeSpan.Zero
+        );
         publisher.SetEnabled(true);
 
         await publisher.ApplyAsync(
@@ -187,31 +195,35 @@ public sealed class VoxStellarPublisherTests
                 AllowPublishing = true,
             }
         );
-        await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
-
-        var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        Task disableTask = Task.Factory.StartNew(
-            () =>
-            {
-                disableStarted.TrySetResult();
-                publisher.SetEnabled(false);
-            },
-            CancellationToken.None,
-            TaskCreationOptions.LongRunning,
-            TaskScheduler.Default
-        );
+        Task? disableTask = null;
         try
         {
-            await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            // Startup includes the five-second batch interval and CI worker scheduling.
+            await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+            var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            disableTask = Task.Factory.StartNew(
+                () =>
+                {
+                    disableStarted.TrySetResult();
+                    publisher.SetEnabled(false);
+                },
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default
+            );
+            await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
             await Task.Delay(50);
             Assert.False(disableTask.IsCompleted);
         }
         finally
         {
             handler.AllowTransportStart.Set();
+            if (disableTask is not null)
+            {
+                await disableTask.WaitAsync(TimeSpan.FromSeconds(10));
+            }
         }
-
-        await disableTask.WaitAsync(TimeSpan.FromSeconds(2));
     }
 
     [Fact]

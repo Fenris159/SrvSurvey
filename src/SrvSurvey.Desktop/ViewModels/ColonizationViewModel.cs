@@ -19,6 +19,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
 
     private readonly IRavenColonialClient client;
+    private Action<ColonizationProject>? projectPreviewOpener;
+    private Action? combinedReportOpener;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
     private readonly CommanderProfileStore? commanderProfileStore;
@@ -133,6 +135,52 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>Connects the native read-only build popout without coupling project rows to a desktop window.</summary>
+    internal void SetProjectPreviewOpener(Action<ColonizationProject>? opener) => projectPreviewOpener = opener;
+
+    /// <summary>Connects the combined report to the same native popout lifecycle as individual previews.</summary>
+    internal void SetCombinedReportOpener(Action? opener) => combinedReportOpener = opener;
+
+    /// <summary>Opens all workspace projects without changing their Show or primary selection.</summary>
+    public void OpenCombinedReport()
+    {
+        if (IsEnabled && HasProjects)
+        {
+            combinedReportOpener?.Invoke();
+        }
+    }
+
+    /// <summary>Creates a report whose membership follows every workspace build and whose trips use the current ship.</summary>
+    internal ColonizationProjectPreviewViewModel CreateCombinedReport() =>
+        new(
+            client as IRavenColonialProjectReader
+                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            () => Projects.Select(row => row.Project.BuildId).ToArray(),
+            () => IsEnabled,
+            () => recovery.ShipCargoCapacity
+        );
+
+    /// <summary>Opens the clicked build independently of its Show checkbox and current primary project.</summary>
+    public void OpenProjectPreview(ColonizationProject project)
+    {
+        if (IsEnabled)
+        {
+            projectPreviewOpener?.Invoke(project);
+        }
+    }
+
+    /// <summary>Creates an isolated preview sharing the bounded public reader and current Raven consent.</summary>
+    internal ColonizationProjectPreviewViewModel CreateProjectPreview(string buildId)
+    {
+        return new ColonizationProjectPreviewViewModel(
+            client as IRavenColonialProjectReader
+                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            buildId,
+            () => IsEnabled,
+            () => recovery.ShipCargoCapacity
+        );
+    }
 
     public ICommand RefreshCommand { get; }
 
@@ -1538,6 +1586,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return "Dock at the Fleet Carrier and reopen its commodity market before syncing.";
     }
 
+    /// <summary>Checks commander and ship readiness independently of which projects are shown in the shopping plan.</summary>
     private string? GetShipCargoPublishingBlockReason()
     {
         if (!IsEnabled)
@@ -1553,11 +1602,6 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         if (CommanderName is null)
         {
             return "Load a commander profile before publishing ship cargo.";
-        }
-
-        if (!Projects.Any(project => project.IsShown))
-        {
-            return "Ship cargo was not published because no visible colonization projects are active.";
         }
 
         if (string.IsNullOrWhiteSpace(currentShipType))

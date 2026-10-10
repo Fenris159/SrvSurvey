@@ -52,6 +52,7 @@ internal sealed partial class DesktopRuntime
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
     private MultiGameCommanderOverlayCoordinator? multiGameCommanderOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
+    private ColonizationProjectPreviewWindowCoordinator? colonizationProjectPreviewWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
     private RouteWindowCoordinator? fleetCarrierRouteWindowCoordinator;
@@ -279,6 +280,10 @@ internal sealed partial class DesktopRuntime
         TaskScheduler.UnobservedTaskException += HandleUnobservedTaskException;
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainWindowReady);
         systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(viewModel.SystemNotes, mainWindow);
+        colonizationProjectPreviewWindowCoordinator = new ColonizationProjectPreviewWindowCoordinator(
+            viewModel.Colonization,
+            mainWindow
+        );
         journeyWindowCoordinator = new JourneyWindowCoordinator(viewModel.Journey, mainWindow);
         routeWindowCoordinator = new RouteWindowCoordinator(viewModel.Route, mainWindow);
         fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(viewModel.FleetCarrierRoute, mainWindow);
@@ -913,6 +918,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref errorReportWindowCoordinator);
         DisposeResource(ref colonizationCommodityOverlayCoordinator);
         DisposeResource(ref systemNotesWindowCoordinator);
+        DisposeResource(ref colonizationProjectPreviewWindowCoordinator);
         DisposeResource(ref journeyWindowCoordinator);
         DisposeResource(ref routeWindowCoordinator);
         DisposeResource(ref fleetCarrierRouteWindowCoordinator);

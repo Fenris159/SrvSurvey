@@ -8,6 +8,8 @@ namespace SrvSurvey.Core.Tests.Inara;
 
 public sealed class InaraPublisherTests
 {
+    // Bound worker readiness without imposing a one-second CI scheduling deadline.
+    private static readonly TimeSpan RequestStartupTimeout = TimeSpan.FromSeconds(10);
     private static readonly InaraPublicationOptions Options = new(
         ApiKey: "personal-key",
         CommanderName: "Test Commander",
@@ -346,7 +348,7 @@ public sealed class InaraPublisherTests
         );
 
         await applyTask.WaitAsync(TimeSpan.FromSeconds(1));
-        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await handler.RequestStarted.Task.WaitAsync(RequestStartupTimeout);
         Task<InaraPublicationResult> stopTask = publisher.StopAsync();
         Assert.False(stopTask.IsCompleted);
 
@@ -394,7 +396,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await handler.RequestStarted.Task.WaitAsync(RequestStartupTimeout);
 
         using var cancellation = new CancellationTokenSource();
         Task<InaraPublicationResult> cancelledWait = publisher.StopAsync(cancellation.Token);
@@ -440,7 +442,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await handler.RequestStarted.Task.WaitAsync(RequestStartupTimeout);
         var disposeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var completed = new TaskCompletionSource<Exception?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var thread = new Thread(() =>
@@ -503,7 +505,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await handler.RequestStarted.Task.WaitAsync(RequestStartupTimeout);
 
         InaraPublicationOptions disabledOptions = Options with { ApiKey = null };
         InaraPublicationResult optOut = await publisher.ApplyAsync(

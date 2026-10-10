@@ -167,7 +167,7 @@
                       Content="Track and publish cargo on ship (Needs API Key)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonization projects are active." />
+                       Text="When enabled, this publishes the ship name, type, capacity, and Cargo.json counts to Raven Colonial, even when all colonization projects are hidden or none are loaded." />
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        TextWrapping="Wrap"
                        Text="{Binding Colonization.ShipCargoPublishingStatus}" />
@@ -461,6 +461,11 @@
                          Text="Selected projects appear in aggregate cargo requirements. Changes are sent only when you choose Save selection." />
             </StackPanel>
             <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+            <Button x:Name="CombinedBuildReportButton" Margin="0,0,8,0"
+                    Classes="secondary"
+                    IsEnabled="{Binding Colonization.HasProjects}"
+                    Click="CombinedBuildReport_Click"
+                    Content="Combined Build Report" />
             <Button Margin="0,0,8,0"
                     Classes="secondary"
                     Click="OpenRavenBuilds_Click"
@@ -517,9 +522,13 @@
                       <CheckBox VerticalAlignment="Center"
                                 IsChecked="{Binding IsShown, Mode=TwoWay}" />
                       <StackPanel Grid.Column="1" Spacing="2">
-                        <TextBlock FontWeight="SemiBold"
-                                   Text="{Binding BuildName}"
-                                   TextWrapping="Wrap" />
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                Click="OpenProjectPreview_Click"
+                                ToolTip.Tip="Open live build preview">
+                          <TextBlock FontWeight="SemiBold"
+                                     Text="{Binding BuildName}"
+                                     TextWrapping="Wrap" />
+                        </Button>
                         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                    FontSize="10"
                                    FontWeight="Bold"
