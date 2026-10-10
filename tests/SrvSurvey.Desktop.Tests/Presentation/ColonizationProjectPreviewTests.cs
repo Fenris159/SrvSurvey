@@ -19,6 +19,67 @@ public sealed class ColonizationProjectPreviewTests
 {
     private static readonly string[] CombinedBuildNames = ["First build", "Second build"];
 
+    /// <summary>The combined report's dropdown filters its actual native bindings, retains selection during refresh, and fits the minimum window size.</summary>
+    [AvaloniaTheory]
+    [InlineData(1180)]
+    [InlineData(700)]
+    public void FiltersCombinedReportFromSystemDropdown(int width)
+    {
+        using var model = new ColonizationProjectPreviewViewModel(
+            new ColonizationProjectPreviewViewModelTests.Reader(
+                (id, _) =>
+                    Task.FromResult<ColonizationProjectPreviewData?>(
+                        ColonizationProjectSystemFilterTests.SystemData(
+                            id,
+                            id == CombinedBuildNames[0] ? "Col 359 Sector NR-T c4-1" : "Example system",
+                            id == CombinedBuildNames[0] ? 300 : 100
+                        )
+                    )
+            ),
+            () => CombinedBuildNames
+        );
+        var window = new ColonizationProjectPreviewWindow(model) { Width = width };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Assert.NotNull(initial);
+            ComboBox filter = window.FindControl<ComboBox>("SystemFilter")!;
+            Assert.True(filter.IsVisible);
+            Assert.Same(model.SystemOptions[0], filter.SelectedItem);
+            Assert.Equal(3, filter.Items.Count);
+            filter.SelectedItem = model.SystemOptions[1];
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            Assert.Equal("300", model.RemainingText);
+            Assert.Single(model.Details);
+            Assert.Equal(25, window.FindControl<ProgressBar>("DeliveredProgress")!.Value);
+            Button refresh = window.FindControl<Button>("RefreshButton")!;
+            Assert.True(filter.Bounds.Right <= refresh.Bounds.Left);
+            refresh.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            using WriteableBitmap? refreshed = window.CaptureRenderedFrame();
+            Assert.NotNull(refreshed);
+            Assert.Same(model.SelectedSystem, filter.SelectedItem);
+            Assert.Equal("Col 359 Sector NR-T c4-1", model.SelectedSystem!.SystemName);
+            string? directory = Environment.GetEnvironmentVariable("SRVSURVEY_BUILD_PREVIEW_RENDER_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+                frame.Save(
+                    Path.Combine(directory, $"combined-build-system-filter-{width}.png"),
+                    PngBitmapEncoderOptions.Default
+                );
+            }
+            filter.SelectedItem = model.SystemOptions[0];
+            Assert.Equal("400", model.RemainingText);
+            Assert.Equal(2, model.Details.Count);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>The combined report uses the same native layout, export toolbar, and refresh lifecycle.</summary>
     [AvaloniaFact]
     public void RendersCombinedReportWithBuildMembershipAndDeduplicatedCarriers()
@@ -104,6 +165,7 @@ public sealed class ColonizationProjectPreviewTests
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
             Assert.Equal("Example build - Raven build preview", window.Title);
+            Assert.False(window.FindControl<ComboBox>("SystemFilter")!.IsVisible);
             Assert.True(window.FindControl<Button>("ExportCsvButton")!.IsEnabled);
             Assert.Equal(50, window.FindControl<ProgressBar>("DeliveredProgress")!.Value);
             Assert.Contains(window.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "Steel");

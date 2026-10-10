@@ -5,7 +5,7 @@ using SrvSurvey.Core.Colonization;
 namespace SrvSurvey.Desktop.ViewModels;
 
 /// <summary>Owns one read-only build preview, refreshing only while its popout is open and retaining the last snapshot after a failed refresh.</summary>
-public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged, IDisposable
+public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly IRavenColonialProjectReader reader;
     private readonly Func<IReadOnlyList<string>> buildIds;
@@ -99,15 +99,19 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     }
 
     /// <summary>States aggregate membership independently of overlay selection, with readable singular counts.</summary>
-    private static string CombinedSubtitle(ColonizationProjectPreview snapshot)
+    private string CombinedSubtitle(ColonizationProjectPreview snapshot)
     {
         string projectsText =
             snapshot.Projects.Count == 1 ? "1 build project" : $"{snapshot.Projects.Count:N0} build projects";
         int systems = snapshot
-            .Projects.Select(project => project.SystemName)
+            .Projects.Select(project => project.SystemName.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Count();
         string systemsText = systems == 1 ? "1 system" : $"{systems:N0} systems";
+        if (selectedSystem.SystemName is not null)
+        {
+            systemsText = selectedSystem.Label;
+        }
         return $"{projectsText} · {systemsText} · includes all projects regardless of Show selection";
     }
 
@@ -193,28 +197,36 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
         Notify();
         try
         {
-            ColonizationProjectPreview? snapshot = await ReadSnapshotAsync();
+            IReadOnlyList<ColonizationProjectPreviewData> data = await ReadReportDataAsync();
             if (disposed)
             {
                 return;
             }
-            if (snapshot is null)
+            if (data.Count == 0)
             {
                 Snapshot = null;
+                reportData = [];
+                SystemOptions = [AllSystems];
+                selectedSystem = AllSystems;
                 ClearRows();
                 Status = isCombined
                     ? "No build projects are available in the workspace."
                     : "This build is no longer available on Raven Colonial.";
                 return;
             }
-            Snapshot = snapshot;
-            ApplySnapshot(Snapshot);
-            Status = (Snapshot.CarrierDeficit, Snapshot.Statistics) switch
-            {
-                (null, _) => "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
-                (_, null) => "Cargo updated. Delivery history unavailable.",
-                _ => "Live Raven data · read-only preview",
-            };
+            reportData = isCombined
+                ? data.Select(build =>
+                        build with
+                        {
+                            Project = build.Project with { SystemName = build.Project.SystemName.Trim() },
+                        }
+                    )
+                    .ToArray()
+                : data;
+            fetchedAt = DateTimeOffset.UtcNow;
+            refreshFailed = false;
+            UpdateSystemOptions();
+            ApplyReport();
         }
         catch (OperationCanceledException) when (lifetimeToken.IsCancellationRequested)
         {
@@ -224,6 +236,7 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
             when (exception is HttpRequestException or IOException or InvalidDataException or OperationCanceledException
             )
         {
+            refreshFailed = true;
             Status = Snapshot is null
                 ? "Could not load this report. Choose Refresh to try again."
                 : "Refresh failed. Showing the last successful snapshot.";
@@ -236,7 +249,7 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
     }
 
     /// <summary>Reads distinct builds sequentially to bound request bursts and commits only a complete report snapshot.</summary>
-    private async Task<ColonizationProjectPreview?> ReadSnapshotAsync()
+    private async Task<IReadOnlyList<ColonizationProjectPreviewData>> ReadReportDataAsync()
     {
         var data = new List<ColonizationProjectPreviewData>();
         foreach (string id in buildIds().Distinct(StringComparer.OrdinalIgnoreCase))
@@ -251,17 +264,11 @@ public sealed class ColonizationProjectPreviewViewModel : INotifyPropertyChanged
                         "A build is no longer available. Refresh the workspace project list."
                     );
                 }
-                return null;
+                return [];
             }
             data.Add(build);
         }
-        if (data.Count == 0)
-        {
-            return null;
-        }
-        return isCombined
-            ? ColonizationProjectPreview.CreateCombined(data, DateTimeOffset.UtcNow)
-            : new ColonizationProjectPreview(data[0], DateTimeOffset.UtcNow);
+        return data;
     }
 
     /// <summary>Exports the captured displayed snapshot, allowing a refresh during the save picker without changing the file's content.</summary>

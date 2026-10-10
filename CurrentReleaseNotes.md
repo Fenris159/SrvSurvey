@@ -21,6 +21,9 @@ application restarts.
   hidden builds. It combines requirements, delivery progress, ship and carrier
   cargo planning, and linked participants, with system effects grouped by system.
   Shared carrier stock counts once so shortages are not understated.
+  Choose a system beside Refresh to see just that system's combined report, or
+  leave All Systems selected to plan across all projects. CSV exports follow the
+  selected system, and automatic refresh keeps your selection while it has builds.
 - **Reports stay up to date while open.** Individual previews and combined
   reports refresh automatically 30 seconds after each read cycle, with a Refresh
   button for an immediate update. Failed refreshes keep the last complete report;

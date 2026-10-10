@@ -1753,6 +1753,10 @@
       "translation": "Alle Geschwaderträger-Datenpunkte ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Alle Systeme"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Alle Daten und Uhrzeiten verwenden UTC."
     },
@@ -9947,6 +9951,10 @@
     {
       "source": "Filename",
       "translation": "Dateiname"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "Kombinierten Bericht nach System filtern"
     },
     {
       "source": "Filter local discoveries",
@@ -37163,6 +37171,10 @@
       "translation": "Todos los puntos de datos del Squadron Carrier ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Todos los sistemas"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Todas las fechas y horas utilizan UTC."
     },
@@ -45357,6 +45369,10 @@
     {
       "source": "Filename",
       "translation": "Nombre de archivo"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "Filtrar informe combinado por sistema"
     },
     {
       "source": "Filter local discoveries",
@@ -72573,6 +72589,10 @@
       "translation": "Tous les points de données du Squadron Carrier ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Tous les systèmes"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Toutes les dates et heures utilisent UTC."
     },
@@ -80767,6 +80787,10 @@
     {
       "source": "Filename",
       "translation": "Nom du fichier"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "Filtrer le rapport combiné par système"
     },
     {
       "source": "Filter local discoveries",
@@ -107983,6 +108007,10 @@
       "translation": "Todos os pontos de dados do Squadron Carrier ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Todos os sistemas"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Todas as datas e horários usam UTC."
     },
@@ -116177,6 +116205,10 @@
     {
       "source": "Filename",
       "translation": "Nome do arquivo"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "Filtrar relatório combinado por sistema"
     },
     {
       "source": "Filter local discoveries",
@@ -143393,6 +143425,10 @@
       "translation": "Все точки данных авианосца эскадрильи ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Все системы"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Все даты и время указаны в формате UTC."
     },
@@ -151587,6 +151623,10 @@
     {
       "source": "Filename",
       "translation": "Имя файла"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "Фильтровать комбинированный отчет по системе"
     },
     {
       "source": "Filter local discoveries",
@@ -178803,6 +178843,10 @@
       "translation": "所有航空母舰中队数据点 ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "所有星系"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "所有日期和时间均使用 UTC。"
     },
@@ -186997,6 +187041,10 @@
     {
       "source": "Filename",
       "translation": "文件名"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "按星系筛选合并报告"
     },
     {
       "source": "Filter local discoveries",
@@ -214213,6 +214261,10 @@
       "translation": "* ALL SQUADRON CARRIER DATA POINTS ({0}) >>>!"
     },
     {
+      "source": "All Systems",
+      "translation": "* ALL SYSTEMS >>>!"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "* ALL DATES AND TIMES USE UTC. >>>!"
     },
@@ -222407,6 +222459,10 @@
     {
       "source": "Filename",
       "translation": "* FILENAME >>>!"
+    },
+    {
+      "source": "Filter combined report by system",
+      "translation": "* FILTER COMBINED REPORT BY SYSTEM >>>!"
     },
     {
       "source": "Filter local discoveries",
