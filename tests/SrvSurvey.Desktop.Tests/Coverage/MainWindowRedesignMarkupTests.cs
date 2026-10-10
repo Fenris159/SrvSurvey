@@ -365,11 +365,7 @@ public sealed class MainWindowRedesignMarkupTests
             "Foreground",
             "{DynamicResource RavenTextBrush}"
         );
-        AssertStyleSetter(
-            styleMap["ListBox.guide-categories ListBoxItem:selected"],
-            "Foreground",
-            "{DynamicResource RavenTextBrush}"
-        );
+        AssertStyleSetter(styleMap["Button.guide-topic.selected"], "Foreground", "{DynamicResource RavenTextBrush}");
     }
 
     [Fact]

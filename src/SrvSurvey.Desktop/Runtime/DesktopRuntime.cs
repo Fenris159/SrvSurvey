@@ -15,6 +15,8 @@ internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService?
     internal bool BringMainWindowToFront { get; init; }
 
     internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
+
+    internal SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSyncService { get; init; }
 }
 
 internal enum DesktopStartupCheckpoint

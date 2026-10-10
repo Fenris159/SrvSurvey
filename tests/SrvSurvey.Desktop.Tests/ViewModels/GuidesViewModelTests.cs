@@ -11,9 +11,9 @@ public sealed class GuidesViewModelTests
     {
         IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
 
-        Assert.Equal(17, categories.Count);
+        Assert.Equal(19, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 17).Select(number => number.ToString("00", CultureInfo.InvariantCulture)).ToArray(),
+            Enumerable.Range(1, 19).Select(number => number.ToString("00", CultureInfo.InvariantCulture)).ToArray(),
             categories.Select(category => category.Number).ToArray()
         );
         Assert.Equal(categories.Count, categories.Select(category => category.Key).Distinct().Count());
@@ -349,6 +349,129 @@ public sealed class GuidesViewModelTests
     public void EmptyCatalogIsRejected()
     {
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));
+    }
+
+    /// <summary>Accordion expansion is independent of reading and only one group remains open.</summary>
+    [Fact]
+    public void ExpandingAnotherCategoryKeepsTheTaskUntilATopicIsSelected()
+    {
+        var guides = new GuidesViewModel(GuideCatalog.Create());
+        GuideTopicViewModel original = guides.SelectedTopic;
+        GuideNavigationCategoryViewModel mining = guides.Navigation.Single(category =>
+            category.Category.Key == "surface-mining"
+        );
+        mining.IsExpanded = true;
+        mining.IsExpanded = true;
+        Assert.Single(guides.Navigation, category => category.IsExpanded);
+        Assert.Same(original, guides.SelectedTopic);
+        mining.Topics[1].OpenCommand.Execute(null);
+        Assert.Same(mining.Topics[1], guides.SelectedTopic);
+        Assert.True(mining.Topics[1].IsSelected);
+        Assert.False(original.IsSelected);
+        mining.IsExpanded = false;
+        guides.SelectedTopic.OpenCommand.Execute(null);
+        Assert.True(mining.IsExpanded);
+    }
+
+    /// <summary>Search includes category words and opens the full instructions rather than a summary.</summary>
+    [Fact]
+    public void SearchOpensTaskAndClearingItRetainsCurrentSelection()
+    {
+        var guides = new GuidesViewModel(GuideCatalog.Create());
+        var changes = new List<string?>();
+        guides.PropertyChanged += (_, args) => changes.Add(args.PropertyName);
+        guides.SearchText = "surface\tmining\nprofitable";
+        GuideSearchResultViewModel result = Assert.Single(guides.SearchResults);
+        Assert.Equal("Guide", result.Kind);
+        Assert.Equal("Surface mining", result.Category);
+        Assert.NotEmpty(result.Summary);
+        result.OpenCommand.Execute(null);
+        Assert.Same(result.Topic, guides.SelectedTopic);
+        Assert.True(guides.IsBrowsing);
+        Assert.True(guides.SelectedTopic.HasSteps);
+        Assert.Equal(Enumerable.Range(1, result.Topic.Steps.Count), result.Topic.Steps.Select(step => step.Number));
+        Assert.All(result.Topic.Steps, step => Assert.False(string.IsNullOrWhiteSpace(step.Text)));
+        guides.SearchText = "nonexistent-guides-query";
+        Assert.True(guides.HasNoSearchResults);
+        Assert.Equal("0 matching guide entries", guides.SearchSummary);
+        guides.ClearSearchCommand.Execute(null);
+        Assert.Same(result.Topic, guides.SelectedTopic);
+        Assert.False(guides.HasNoSearchResults);
+        Assert.False(guides.HasSearchResults);
+        int count = changes.Count;
+        guides.SearchText = string.Empty;
+        Assert.Equal(count, changes.Count);
+        guides.SearchText = "   ";
+        Assert.Empty(guides.SearchResults);
+        Assert.True(guides.IsBrowsing);
+        guides.SearchText = null!;
+        Assert.Equal(string.Empty, guides.SearchText);
+        Assert.Contains(nameof(GuidesViewModel.SelectedTopic), changes);
+    }
+
+    /// <summary>Symbol results keep their rendered illustration, and every catalog entry can be opened.</summary>
+    [Fact]
+    public void EveryTaskAndSymbolIsReachableFromTheAccordion()
+    {
+        var guides = new GuidesViewModel(GuideCatalog.Create());
+        GuideTopicViewModel[] topics = guides.Navigation.SelectMany(category => category.Topics).ToArray();
+        Assert.Equal(guides.Categories.Sum(category => category.Sections.Count + category.Icons.Count), topics.Length);
+        foreach (GuideTopicViewModel topic in topics)
+        {
+            topic.OpenCommand.Execute(null);
+            Assert.Same(topic, guides.SelectedTopic);
+            Assert.False(string.IsNullOrWhiteSpace(topic.Title));
+            Assert.False(string.IsNullOrWhiteSpace(topic.Summary));
+            Assert.Equal(topic.Details.Count > 0, topic.HasDetails);
+            Assert.Equal(topic.Illustrations.Count > 0, topic.HasIllustrations);
+            Assert.Equal(topic.Steps.Count > 0, topic.HasSteps);
+            Assert.Single(topics, entry => entry.IsSelected);
+            if (topic.Icon is not null)
+            {
+                Assert.Equal(topic.Icon, Assert.Single(topic.Illustrations));
+                Assert.Null(topic.Section);
+                Assert.Empty(topic.Steps);
+                Assert.Empty(topic.Details);
+            }
+        }
+        guides.SearchText = "conflict power post";
+        GuideSearchResultViewModel hit = Assert.Single(guides.SearchResults);
+        Assert.Equal("Icon glossary", hit.Kind);
+        Assert.Equal("1 matching guide entry", guides.SearchSummary);
+        hit.OpenCommand.Execute(null);
+        Assert.Equal(GuideIconKind.ConflictPowerPost, guides.SelectedTopic.Icon!.Kind);
+        GuideTopicViewModel biology = topics.Single(topic => topic.Title == "Predictions and bio signals");
+        Assert.Contains(biology.Illustrations, icon => icon.Kind == GuideIconKind.BiologyRewardPredicted);
+    }
+
+    /// <summary>An empty category cannot leave the reader without a subject.</summary>
+    [Fact]
+    public void EmptyCategoryAndNullInputsAreRejected()
+    {
+        Assert.Throws<ArgumentNullException>(() => new GuidesViewModel(null!));
+        Assert.Throws<ArgumentException>(() => new GuidesViewModel([new("empty", "01", "Empty", "", [], [])]));
+        var guides = new GuidesViewModel(GuideCatalog.Create());
+        Assert.Throws<ArgumentNullException>(() => guides.SelectedCategory = null!);
+        guides.SelectedCategory = guides.Categories[0];
+        Assert.True(guides.IsBrowsing);
+    }
+
+    /// <summary>Recently added workflows have their own discoverable task guides.</summary>
+    [Theory]
+    [InlineData("Planetary Mining", "Plan mining for Powerplay")]
+    [InlineData("mine–sell", "Find profitable surface mining locations")]
+    [InlineData("SELECTED MARKER", "Edit or remove a mapped deposit")]
+    [InlineData("Remember selection", "Wayland screen capture")]
+    [InlineData("Reset input detection", "Linux keyboard input sources")]
+    [InlineData("Global Shortcuts", "Approve or change desktop shortcuts")]
+    [InlineData("notification animations", "Bypass Window Management on Linux")]
+    [InlineData("Composition Scanner", "Create a ship configuration")]
+    [InlineData("Left Right", "Firegroups cockpit visibility")]
+    [InlineData("Retry selected deliveries", "Resolve unconfirmed deliveries")]
+    public void CurrentFeatureDocumentationIsSearchable(string query, string title)
+    {
+        var guides = new GuidesViewModel(GuideCatalog.Create()) { SearchText = query };
+        Assert.Contains(guides.SearchResults, result => result.Title == title);
     }
 
     private static string Instructions(IReadOnlyList<GuideCategoryViewModel> categories, string key) =>

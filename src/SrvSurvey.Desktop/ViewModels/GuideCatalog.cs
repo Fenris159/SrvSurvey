@@ -3,6 +3,7 @@ using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+/// <summary>The player-facing task and symbol catalog, checked against the current workspaces.</summary>
 public static class GuideCatalog
 {
     private const string AvaloniaResourceScheme = "avares";
@@ -15,6 +16,7 @@ public static class GuideCatalog
 
     private static readonly Lazy<GuideSectionViewModel[]> ChatCommandSections = new(LoadChatCommandSections);
 
+    /// <summary>Returns the complete offline guide, including the shipped chat-command reference.</summary>
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
         return
@@ -44,29 +46,29 @@ public static class GuideCatalog
                         [],
                         [
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
-                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
                             "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
                             "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
                         ]
                     ),
-                    IntroSection(
-                        "What this field manual covers",
-                        "The in-app guide reconciles the original SrvSurvey user guide with the current cross-platform implementation.",
-                        [],
+                    Section(
+                        "Find help quickly",
+                        "Guides are available without Elite running. Each subject explains one task.",
                         [
-                            "Content is derived from the repository README, porting plan, UI/journal/network/data-migration parity matrices, biology-criteria notes, the original project wiki, and the behavior implemented in the current code.",
-                            "Legacy Windows-only steps are replaced with their current Avalonia workflow. Features that still require an operating-system capability report that status in the relevant setting.",
-                            "Developer file formats are summarized as player tasks here; Diagnostics and repository documentation retain the lower-level evidence.",
-                        ]
+                            "Expand a category on the left and select a subject. Opening another category collapses the previous one; the current guide stays open until you select a subject.",
+                            "Search at the top using a feature name, setting label, chat command, or symbol. All words must match, in any order. Select a result to read the full instructions.",
+                            "Follow the numbered steps. Good to know explains requirements and limitations; illustrated symbols show the same shapes used by the overlays. You can select and copy instruction text.",
+                        ],
+                        []
                     ),
                     IntroSection(
                         "Automatic overlays",
                         "Most overlays appear only when their information is useful, then hide when that game context ends.",
                         [
                             "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
-                            "Use Settings > Overlay behavior and layout to disable individual overlays or change their triggers.",
+                            "Use Theme > Overlay Settings to disable individual overlays or change their triggers.",
                             "Use the global overlay visibility shortcut when you need to hide or restore every detached overlay at once.",
                         ],
                         [
@@ -132,7 +134,7 @@ public static class GuideCatalog
                             "Review body type, estimated scan/DSS value, biological and geological signals, terraformable status, and landability.",
                         ],
                         [
-                            "Low-value bodies can be dimmed or filtered in Settings while valuable bodies remain highlighted.",
+                            "Use Exploration overlay settings to dim or filter low-value bodies while valuable bodies remain highlighted.",
                             "External-data enrichment can add prior discovery, traffic, station, and biological context when its privacy setting is enabled.",
                             "EDSM and Spansh body lookups wait for an active Elite session and a confirmed visit to the current system. If newly discovered body data is not indexed yet, SrvSurvey allows up to three retries after the initial lookup and remembers the current-visit budget across application restarts.",
                             "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -193,6 +195,11 @@ public static class GuideCatalog
                             "A body row can contain more prediction PIPs than its reported biological-signal count when several genera remain plausible. Those additional hatched PIPs are alternative candidates, not extra signals or additive rewards.",
                             "A reward range appears when unresolved signals could match organisms with different values.",
                             "A filled flag marks a Commander first, an outline flag marks a Commander regional first, and a sun marks a potential Galactic-region first from external candidate data.",
+                        ],
+                        [
+                            GuideIconKind.BiologyRewardKnown,
+                            GuideIconKind.BiologyRewardPredicted,
+                            GuideIconKind.BiologyRewardUnknown,
                         ]
                     ),
                     Section(
@@ -204,9 +211,10 @@ public static class GuideCatalog
                             "Complete all three samples. The confirmed organism and unclaimed reward are retained in the Commander profile until sale events clear them.",
                         ],
                         [
-                            "First-footfall status can change reward presentation because a confirmed first footfall multiplies biological sale value.",
+                            "First-footfall status helps estimate the first-logged bonus. Treat screen-inferred rewards as estimates; the game determines the actual biological sale value.",
                             "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
-                        ]
+                        ],
+                        [GuideIconKind.RadarSample]
                     ),
                     Section(
                         "Surface radar and bookmarks",
@@ -217,6 +225,12 @@ public static class GuideCatalog
                             "Dots represent biological samples or bookmarks. Their surrounding circles show the organism colony radius.",
                             "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                             "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
+                        ],
+                        [
+                            GuideIconKind.RadarCommander,
+                            GuideIconKind.RadarShip,
+                            GuideIconKind.RadarSrv,
+                            GuideIconKind.RadarBookmark,
                         ]
                     ),
                     Section(
@@ -240,32 +254,54 @@ public static class GuideCatalog
                 [
                     Section(
                         "Enable Surface mining",
-                        "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
+                        "Surface Mining has its own maps, searches, and Rhino guidance. Mining contains the ship and ring-mining tools.",
                         [
-                            "Expand Activities and select Mining. Use the overlay-settings button beside Mining to enable Surface mining and assign a show/hide shortcut if desired.",
-                            "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
+                            "Expand Activities and open Surface Mining for Surface Maps, Survey map, Hotspot List, Surface Hunt, and Search.",
+                            "Use the overlay-settings icon beside Surface Mining to enable its overlay and configure Rhino tracking and shortcuts.",
+                            "Board a Rhino on a planetary surface. With valid journal and status data, the overlay shows your vehicles, saved rigs, resource bookmarks, and cargo.",
                         ],
                         [
-                            "Surface Survey and its mini tracker remain hidden while operating the Rhino or returning to its parked location on foot, even if the Mining panel is toggled off.",
-                            "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
+                            "Surface Survey and its mini tracker hide while operating the Rhino or returning to its parked location on foot.",
+                            "Use Theme > Overlay Settings > Edit Overlay Positions to arrange previews, including the rig calibration frame.",
                         ]
                     ),
                     Section(
                         "Experimental rig bar detection",
-                        "Track the six rigs automatically from their HUD bars. Detection adds a missing tracker immediately and clears its location only after three continuous seconds of empty readings.",
+                        "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
                         [
-                            "Open Surface Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
-                            "Drag the frame over the six HUD circles. Resize it from the lower-right corner, leaving room for cockpit movement; resizing changes the capture area without stretching or moving the guides inside it. Drag each numbered red dot onto its matching circle centre. Keep all six circles and their complete bars inside the frame; the small numbers are not read.",
-                            "Use Size−/Size+ for circle diameter, Height−/Height+ for oval proportions, and R−/R+ for outline rotation. Gap−/Gap+ move the cyan bar curves closer to or farther below the circles without changing the outlines. Align them with the middle of the deployed rig's segmented bar. The curves show the expected bar shape; detection groups matching colored segments and ignores neutral circle outlines. Each circle centre can be positioned independently to match the sloping cockpit HUD.",
-                            "Search−/Search+ adjust the movement search allowance in pixels. The readout and optional Search bounds outline show its extent; this does not move or rotate the guides. Keep the search area inside the capture frame. After changing size, height, rotation or alignment, select Test again. No label learning is required.",
-                            "While stationary and looking forward, select Test to hide the guides and previews. Start with rig 1 as the first deployed bar to establish the anchor, then deploy the other rigs. Their calibrated spacing and relative movement preserve their numbers when an earlier bar disappears. Check the six slot readings before driving. A question mark means uncertain, not detected; the controls display the reason when capture is blocked. An ellipsis means a change is awaiting confirmation. BAR means confirmed present; empty means confirmed absent. BAR immediately saves a missing tracker at the Rhino deployment position. Repeated BAR readings keep that original position. An ellipsis during empty readings means the three-second removal delay is running; empty confirms that the specific tracker can be cleared. A question mark, a returning bar or interrupted capture restarts the delay.",
-                            "Calibration Test is a preview and never changes saved trackers. Use the editor's save button and close the editor before automatic tracking takes effect, or cancel to discard calibration changes. Start automatic tracking before deploying rigs so each position is recorded at deployment. During normal play the frame is invisible; detection results appear in Mining settings and directly below the overlay's rig trackers.",
+                            "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
+                            "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
+                            "Calibrate the six circles in Edit Overlay Positions, test the readings, then save and close the editor before automatic tracking can change rig locations.",
                         ],
                         [
-                            "Detection runs only aboard the Rhino with no cockpit panel open. Automatic tracker changes freeze while surface coordinates or heading change and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second; all pending removal timers restart. Stop before deploying so the saved location corresponds to deployment. Free head look does not change the game's panel status, so the six-circle layout must also be visible. Looking away produces unknown readings rather than empty rig slots. After the final bar disappears, detection uses the visible circle grid to update alignment; it needs matching circles in both rows before declaring slots empty. Keep the whole six-circle group inside the capture frame. Circle outlines are used only for alignment, never as deployment bars. A partial bar can show a question mark when its full shape is unreadable; those surviving colored segments prevent an empty reading from clearing its saved location. The detector does not shift the grid just to preserve whichever rig numbers were visible in the previous frame.",
-                            "Detection groups bright segments matching the selected bar color, allowing for shading and small hue differences. Gray, white, black and dark pixels do not count as a deployment bar. Gaps separate rig groups; calibrated positions and the established anchor determine their numbers. Unreadable or ambiguous groups remain uncertain instead of being renumbered. Low brightness, changed HUD geometry, head look, or obscuring windows can prevent recognition.",
-                            "The top row maps left to right to rigs 1, 2, and 3; the bottom row maps to rigs 4, 5, and 6. A bar adds its tracker immediately; clearing requires three continuous seconds of empty readings. Missing frames and uncertain readings do not clear your trackers. Symbols and counters inside circles do not determine deployment.",
-                            "Calibration follows the game viewport when resolution changes. Check alignment after changing aspect ratio, field of view or HUD layout; update the selected color after changing HUD colors. Only calibration and the selected color are saved; screen captures are processed in memory and discarded. Audio is not captured.",
+                            "Use Rig tracking with key chords when capture is unavailable. Neither method deploys or collects rigs for you.",
+                        ]
+                    ),
+                    Section(
+                        "Calibrate the six rig circles",
+                        "Align the capture frame and numbered guides with the forward-facing Rhino HUD.",
+                        [
+                            "Open Edit Overlay Positions and choose Mining. Drag the capture frame around all six circles and their complete deployment bars; resize from the lower-right corner.",
+                            "Drag each numbered red dot onto its circle centre: 1–3 across the top row, 4–6 across the bottom. Each centre can be adjusted separately.",
+                            "Use Size−/Size+, Height−/Height+, and R−/R+ to match circle diameter, oval shape, and rotation. Gap−/Gap+ align the cyan curves with the middle of the deployed bars.",
+                            "Use Search−/Search+ to adjust the movement allowance. Keep the Search bounds inside the capture frame.",
+                            "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
+                            "Save and close the editor to use the calibration, or cancel to discard changes. Test is a preview and never changes saved rig locations.",
+                        ],
+                        [
+                            "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
+                        ]
+                    ),
+                    Section(
+                        "Understand automatic rig readings",
+                        "BAR means present, empty means absent, ? means uncertain, and an ellipsis means a change is awaiting confirmation.",
+                        [],
+                        [
+                            "BAR immediately records a missing tracker at the Rhino deployment position. Repeated BAR readings preserve that original position.",
+                            "A tracker clears only after three continuous seconds of reliable empty readings. Uncertain or missing frames, a returning bar, or interrupted capture restart the delay.",
+                            "Tracking runs aboard the Rhino with no cockpit panel open. Position, heading, or HUD movement pauses changes until one second of stillness. Stop before deploying so the recorded position is correct.",
+                            "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
+                            "Only calibration and the selected color are saved. Screen images are processed locally in memory and discarded; no audio is captured.",
                         ]
                     ),
                     Section(
@@ -341,6 +377,32 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Edit or remove a mapped deposit",
+                        "Select deposits directly on Surface Mining > Survey map.",
+                        [
+                            "Open a saved surface map, then left-click a deposit. Its target reticle highlights it and SELECTED MARKER appears below Marker visibility.",
+                            "Edit the mineral or metal, amount, density, rig capacity, latitude, or longitude. Select Save marker to persist changes.",
+                            "Use Remove marker to delete the selected deposit, or left-click empty map space to deselect it.",
+                        ],
+                        [
+                            "Rig capacity 0 means not recorded. Changing visibility filters can hide markers; the editor reports save or removal failures in its status.",
+                        ]
+                    ),
+                    Section(
+                        "Find profitable surface mining locations",
+                        "Surface Mining > Search pairs landable mining bodies with nearby selling stations.",
+                        [
+                            "Enter a Reference system and Distance. Choose a Mineral / metal, landing pad size, and minimum and maximum demand.",
+                            "Set Max. mine–sell distance to limit travel between a mining system and its buyer. Search results controls how many selling-system groups are returned.",
+                            "Select Search. Compare Best Sell Station prices and demand with the linked Mining System bodies, arrival distances, and gravity.",
+                            "Expand matching bodies for details. Hide Irrelevant Material Tags reduces clutter; Force Include if viable keeps an eligible reference system in the results.",
+                        ],
+                        [
+                            "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
+                            "Surface Hunt explains which body types and geological clues to investigate; Hotspot List provides material availability and color references.",
+                        ]
+                    ),
+                    Section(
                         "Ship, Rhino, and cargo",
                         "Two vehicle columns sit above the rig chevrons, with cargo capacity below them.",
                         [
@@ -365,7 +427,8 @@ public static class GuideCatalog
                             "Follow the circular bearing display relative to ship heading. The attack-angle line helps judge descent toward the target.",
                             "Send .target off or clear the target in Travel when finished.",
                         ],
-                        ["Ground targets are body-specific. A target is not treated as valid on a different body."]
+                        ["Ground targets are body-specific. A target is not treated as valid on a different body."],
+                        [GuideIconKind.GroundTarget]
                     ),
                     Section(
                         "Journeys, routes, and system notes",
@@ -533,7 +596,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Present, absent, empty, active, scanned, and target states use different fills, outlines, and colors. The icon glossary shows the underlying shapes.",
-                        ]
+                        ],
+                        [GuideIconKind.GuardianSiteHeading, GuideIconKind.GuardianPoiStates]
                     ),
                     GuardianSection(
                         "Ram Tah and obelisks",
@@ -543,7 +607,8 @@ public static class GuideCatalog
                             "An active obelisk receives an emphasized ring; a scanned obelisk is filled with the success color.",
                             "Filters can show only mission logs still needed for the active Ram Tah task.",
                             "The nearest mapped point and target ring help correlate the in-game site with the survey layout.",
-                        ]
+                        ],
+                        [GuideIconKind.GuardianObelisk, GuideIconKind.GuardianActiveObelisk]
                     ),
                     GuardianSection(
                         "Inspecting the Survey map",
@@ -646,8 +711,8 @@ public static class GuideCatalog
                         "Connect Raven Colonial",
                         "Raven access is opt-in. A valid Commander API key is required before private project data or authenticated mutations are used.",
                         [
-                            "Enable Raven Colonial in Settings and save the API key for the active Commander.",
-                            "Open Colonization and refresh projects. Rejected or mismatched credentials do not replace the stored Commander profile.",
+                            "Open Colonization and check Enable colonization features.",
+                            "Expand Fleet Carrier cargo sync, enter the active Commander’s Raven API key, and select Save key. Get API key opens Raven’s key page. Refresh projects after validation succeeds; rejected credentials do not replace the stored profile.",
                             "Use the Raven links when you need to review a project or system in the website.",
                         ],
                         [
@@ -667,15 +732,11 @@ public static class GuideCatalog
                     ),
                     Section(
                         "Primary port order safety",
-                        "Creating a project protects the existing first system site because Raven's nexus page treats that position as the primary port.",
+                        "Creating a project preserves Raven’s existing primary port.",
+                        [],
                         [
-                            "Before creation, SrvSurvey reads the Raven system sites and records the persisted ID of the first site.",
-                            "If an existing first site has no stable ID, or no API key is available to protect it, creation is refused before any project is posted.",
-                            "After creation, SrvSurvey reads the sites again. If the new project displaced the original first site, it sends an order-only correction with the original site first.",
-                            "SrvSurvey verifies the corrected order and makes at most two correction attempts. An unverifiable result is reported clearly instead of being treated as safe.",
-                        ],
-                        [
-                            "The correction changes only the ordered site IDs; it does not rebuild or overwrite the site's other Raven fields.",
+                            "SrvSurvey checks the first saved system site before and after project creation. If the new project moves it, SrvSurvey restores the original order without replacing the other site details.",
+                            "If the existing primary port cannot be identified or the order cannot be verified, the operation reports the problem. Review Raven before trying again.",
                         ]
                     ),
                     Section(
@@ -713,6 +774,18 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Resolve unconfirmed deliveries",
+                        "A lost connection can leave a delivery’s server outcome unknown. Retrying it without checking could credit it twice.",
+                        [
+                            "When Unconfirmed construction deliveries appears at the top of Colonization, check the listed deliveries on Raven.",
+                            "Select only deliveries you are ready to resolve using their checkboxes.",
+                            "Use Retry selected deliveries for deliveries Raven has not recorded. Use Dismiss selected deliveries for those already credited; dismissing clears local recovery records and does not undo a Raven delivery.",
+                        ],
+                        [
+                            "Unselected records stay pending and survive an application restart. The panel disappears once no unresolved deliveries remain.",
+                        ]
+                    ),
+                    Section(
                         "Raven system update tool",
                         "The updater merges live discoveries, local edits, and the latest Raven copy before publishing.",
                         [
@@ -742,7 +815,7 @@ public static class GuideCatalog
                             "FSS overlays follow FSS focus; body and biology overlays follow the current body; maps follow nearby site or surface state; travel overlays follow targets and routes; shopping follows active construction context.",
                             "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
                             "Manual show shortcuts do not fabricate live data; the full position editor is the intentional offline preview surface.",
-                            "Use the overlay-settings icon beside a supported navigation category to open only that activity's overlay controls. The main Settings workspace remains the complete view.",
+                            "Use the overlay-settings icon beside a supported navigation category for that activity’s controls. Theme > Overlay Settings opens the complete overlay controls.",
                             "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
                         ]
                     ),
@@ -764,7 +837,7 @@ public static class GuideCatalog
                         "Edit all overlay positions",
                         "The position editor can display realistic simulated overlays without Elite running.",
                         [
-                            "Open Settings > Overlay behavior and layout > Edit overlay positions.",
+                            "Open Theme > Overlay Settings > Edit Overlay Positions.",
                             "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
                             "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
                             "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -795,6 +868,73 @@ public static class GuideCatalog
                         [
                             "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
                             "Imported legacy overlay colors, positions, scale, and opacity remain in the overlay control group.",
+                        ]
+                    ),
+                    Section(
+                        "Choose an overlay monitor",
+                        "Theme > Overlay Settings controls display placement for live panels and the position editor.",
+                        [
+                            "Choose Overlay monitor, or leave Automatic to follow Elite’s display and use the primary display when Elite is not detected.",
+                            "Enable Keep overlays on the selected monitor to constrain dragging to that display. Reopen the position editor after changing the monitor.",
+                        ],
+                        [
+                            "Desktop scaling changes logical display sizes. A 3840×2160 monitor can be reported as 2560×1440 at 150% scale without reducing the captured image.",
+                        ]
+                    ),
+                    Section(
+                        "Bypass Window Management on Linux",
+                        "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
+                        [
+                            "Open Theme > Overlay Settings and toggle Bypass Window Management.",
+                            "Restart SrvSurvey when **App Restart Required appears. The choice applies to both live overlays and the position editor.",
+                        ],
+                        [
+                            "On KDE or GNOME using X11/XWayland, bypass can keep overlays above fullscreen games without KDE window rules. Desktop placement and snapping are bypassed, and visibility and editor focus depend on the compositor.",
+                            "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
+                        ]
+                    ),
+                    Section(
+                        "Linux keyboard input sources",
+                        "Settings > Input provides one source choice for all keyboard shortcuts in the active Commander profile.",
+                        [
+                            "Enable key chords, assign the actions you need, and leave Keyboard input source on Automatic initially.",
+                            "Test a shortcut with Elite focused. A working source is remembered for that session; shortcuts used in SrvSurvey or before the game runs do not lock in the game source.",
+                            "For troubleshooting, select Desktop keyboard, Game display, or Wayland portal when available. Check the status for the selected source and last configured shortcut received.",
+                            "Use Reset input detection to return to Automatic and clear the learned source and held-key state. Bindings and desktop approval are retained; no restart is required.",
+                        ],
+                        [
+                            "Game display can follow a separate nested X11 display, including Gamescope, when that display is accessible. Native Wayland input needs desktop Global Shortcuts portal support.",
+                            "A manual source does not silently fall back when unavailable. Switch to Automatic or reset detection if your game or desktop setup changes.",
+                            "Automatic selection requires confirmed Elite focus. If the desktop cannot report game focus, approved portal actions can remain global while Elite is running; those actions do not lock in a source.",
+                        ]
+                    ),
+                    Section(
+                        "Approve or change desktop shortcuts",
+                        "The desktop Global Shortcuts portal has its own approval and configuration screen.",
+                        [
+                            "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
+                            "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
+                            "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
+                        ],
+                        [
+                            "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
+                            "Approval can be remembered by the desktop. Availability depends on its portal backend, not just the distribution name. If unsupported, use an available raw input source.",
+                        ]
+                    ),
+                    Section(
+                        "Wayland screen capture",
+                        "Optional display sharing supports FSS tuning completion, first-footfall detection, and Rhino rig tracking on Linux Wayland/XWayland.",
+                        [
+                            "Open Settings > Application. Enable Wayland screen capture and enable only the individual trackers you want to test; all start disabled.",
+                            "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
+                            "Prefer Display or Monitor. Capturing a Proton/Gamescope game window can be slower; try Window only if display capture cannot provide the correct game image.",
+                            "Allow Remember this selection if offered. SrvSurvey requests reuse on later sessions; the desktop controls whether it can restore without asking. Use Choose capture source again when you want to change it.",
+                        ],
+                        [
+                            "No application restart is needed to choose a new source. Detection pauses when the game is unavailable and resumes when valid game context returns.",
+                            "Display and captured-frame sizes can differ because of desktop scaling. SrvSurvey maps the game’s crop into the shared display; select the display containing the game and reselect if you move it to another monitor.",
+                            "Rhino detection uses your calibrated circles. FSS tuning checks the upper-right game region; first-footfall detection checks the upper central message area. Those fixed regions scale with the game viewport, but altered HUD geometry or obscured content can reduce accuracy.",
+                            "The screen is processed locally, not transmitted. Screen sharing and keyboard shortcut approval are separate permissions.",
                         ]
                     ),
                     Section(
@@ -860,6 +1000,23 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Back up and continue on another computer",
+                        "Settings > Data & migration can back up your profile to Google Drive or a local file. Link the same Google account on each computer to synchronize portable preferences and saved work.",
+                        [
+                            "Choose Link Google Drive and approve access in your browser. Automatic sync checks cloud changes at startup and saves a backup on orderly shutdown.",
+                            "Use Backup now before changing computers. Use Sync now to check cloud changes while SrvSurvey is open; downloaded changes apply after restart.",
+                            "If both computers changed the same value, choose this machine's or the cloud's conflicting values. Independent changes are kept together.",
+                            "Expand the restore history to recover an older backup, or export and restore a backup file without Google Drive.",
+                            "Refresh cloud history to see the backup count and storage used. Download the selected cloud backup to keep a separate copy. Delete selected backup or Clear all SrvSurvey cloud backups asks for confirmation before permanently removing cloud history; local data and Google linking stay intact.",
+                        ],
+                        [
+                            "Themes, portable overlay preferences, shortcut bindings, workspace selections, saved searches, routes, bookmarks and survey data can follow you. Display positions, capture calibration, platform options and device choices stay local; their backup can only be restored on the originating machine.",
+                            "Credentials, journals, screenshots and queued API reports are excluded. Offline changes stay local and sync can be retried next session. Close all SrvSurvey instances before applying a restore.",
+                            "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
+                            "Cloud backups use Google's hidden app-data folder and count toward your Google storage. Automatic backups on any linked computer can create new files after you clear history.",
+                        ]
+                    ),
+                    Section(
                         "Import an original SrvSurvey profile",
                         "Legacy migration is backup-first, staged, checksum-verified, and designed to leave the source untouched.",
                         [
@@ -871,6 +1028,18 @@ public static class GuideCatalog
                             "Commander data, journeys, routes, notes, Codex progress, system surveys, Guardian work, quest state, Raven settings, plotters.json layout/opacity, and theme.json overlay colors are migrated when compatible.",
                             "Unknown compatible JSON fields are preserved where the modern store supports lossless merging. Incompatible reference catalogs are ignored safely and reported in logs.",
                             "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
+                        ]
+                    ),
+                    Section(
+                        "Link a Frontier account",
+                        "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
+                        [
+                            "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
+                            "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
+                            "For another Commander, launch that profile’s isolated instance from Overview and start linking there.",
+                        ],
+                        [
+                            "Keep the intended Commander instance open during authorization. If the callback reports no available application, retry a fresh link after confirming the current SrvSurvey installation is registered.",
                         ]
                     ),
                     Section(
@@ -1050,26 +1219,51 @@ public static class GuideCatalog
                         [
                             "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
                             "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
-                            "Markets → Sell mined cargo finds stations buying your commodity, highest observed prices first. Buy supplies finds stations selling it, cheapest first. Choose a category or enter a commodity name; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
-                            "Use Local discoveries / import journals to review your own scans and import earlier journals. Search destinations returns to online/local combined searching. Provider page starts at 0; station searches use 20 results per page.",
+                            "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
+                            "Use Local ring discoveries / Import earlier journals to review your own scans and import earlier journals. Provider page starts at 0; station searches use 20 results per page.",
                         ],
                         [
                             "Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.",
-                            "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
+                            "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
                             "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system.",
                         ]
                     ),
                     Section(
-                        "Plan mining for Powerplay",
-                        "Find → Powerplay connects the system, ring and market decisions.",
+                        "Find Platinum spots",
+                        "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
                         [
-                            "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
-                            "Select a system and choose Find rings in selected system. This switches to Rings and searches that exact system. Adjust mineral and ring type as needed. For acquisition, uncheck Only this system to compare surrounding rings; the chosen acquisition destination is retained separately. Select a ring and choose Selling stations to open Markets → Sell mined cargo. The plan context shows the mining origin and Powerplay destination.",
-                            "Only this system constrains rings and nearby markets to the reference system. Reinforce/Undermine plans keep mining and selling in the same system; acquisition plans retain the selected selling destination even when the ring is elsewhere. Ordinary ring-to-market searches compare nearby destinations. Clear Powerplay plan ends that destination link. Galaxy-wide prices deliberately ignore that location restriction.",
+                            "Choose the reference system, radius, result count, reserve level, minimum hotspots, and data source.",
+                            "Select Find Platinum spots. Compare Why it ranks, RES, overlap, reserve, and travel distances.",
+                            "Use Find buyers for selected spot to look for selling stations, or bookmark the ring for later.",
                         ],
                         [
-                            "These are planning filters, not a merit calculator. Check current Powerplay assignments, system eligibility and acquisition support range in the game before mining or selling. Commodity prices and Powerplay observations may be stale; no reward is guaranteed. Unknown Power ownership is never counted as an enemy or an acquisition target.",
-                            "Spansh searches show one provider page. Expansion and Contested use local journal/EDDN observations because Spansh does not index those states; an empty result can mean the local cache has not seen them. Broaden the radius or change page if filters return no matches. A failed or oversized response appears as a search message; retry or narrow the search.",
+                            "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+                        ]
+                    ),
+                    Section(
+                        "Plan mining for Powerplay",
+                        "Mining > Powerplay finds mining and selling opportunities for Reinforce, Undermine, or Acquire.",
+                        [
+                            "Enter a Reference system and Distance, then choose Your Power, Power goal, and optionally an Opposing Power.",
+                            "Select minerals and Mining type. Traditional ring searches support Core, Laser Surface, Surface Deposit, and Sub Surface Deposit; choose Planetary Mining for landable surface-mining bodies.",
+                            "Adjust demand, landing pad, market age, system state, and result count, then select Search.",
+                            "Compare the result systems, stations, prices, body or ring details, State, and Power. Expand a system to inspect its available destinations.",
+                        ],
+                        [
+                            "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
+                            "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
+                        ]
+                    ),
+                    Section(
+                        "Track mining missions",
+                        "Mining > Missions compares active mining contracts with cargo and delivery progress.",
+                        [
+                            "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
+                            "Use Find hotspots for this commodity from a mission’s context menu to plan collection.",
+                            "Complete, abandon, or fail the mission in Elite; journal events update the list.",
+                        ],
+                        [
+                            "Cargo is allocated in acceptance order so one unit is not counted toward several missions. Mission progress depends on the journal; SrvSurvey does not submit the mission for you.",
                         ]
                     ),
                     Section(
@@ -1088,34 +1282,101 @@ public static class GuideCatalog
                         [
                             "Select a completed session to edit notes or attach screenshots. Export HTML for graphs, material breakdowns and the prospecting timeline; open it in a browser to print or save as PDF.",
                             "Compare all sessions, export CSV, or import EliteMining/SrvSurvey summary CSVs. Imported summaries keep their original fields without pretending that per-asteroid journal data was supplied.",
-                            "Settings → Backup exports a ZIP with commander mining data, named Firegroups configurations and cached loadouts, shared bookmarks and local screenshot attachments. Restore applies the backed-up contents and keeps previous files for recovery. Older ZIPs without Firegroups leave current named configurations intact.",
+                            "Mining → Settings → Backup exports a ZIP with commander mining data, named Firegroups configurations and cached loadouts, shared bookmarks and local screenshot attachments. Restore applies the backed-up contents and keeps previous files for recovery. Older ZIPs without Firegroups leave current named configurations intact.",
                         ],
                         [
                             "Screenshots larger than 20 MB or unsupported formats are omitted from packaged images. Keep originals when using standalone bookmark JSON.",
                         ]
                     ),
                     Section(
-                        "Carrier and distance workspaces",
-                        "Shared tools are available outside Mining.",
+                        "Mining notifications and announcements",
+                        "Ship mining notifications and optional speech are independent of Rhino guidance and Firegroups.",
                         [
-                            "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-                            "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
-                            "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-                            "Travel → Distance follows FC Routes. Calculate distances and save a home system there.",
+                            "Enable Mining notifications in Mining Overlay Settings and choose whether they are limited to an active session or hidden in supercruise.",
+                            "Open Mining > Settings > Announcements to configure collected, refined, and prospecting messages, material thresholds, core filters, and named presets.",
+                            "Save mining settings to retain the Commander’s preferences.",
                         ],
-                        []
+                        [
+                            "Mining notifications hide on foot or aboard an SRV. Optional speech uses locally installed Windows voices.",
+                            "Firegroups has its own category in Guides and its own overlay-settings window.",
+                        ]
+                    ),
+                ]
+            ),
+            Category(
+                "firegroups",
+                "18",
+                "Firegroups",
+                "Create ship-specific primary and secondary firing references and control where the live overlay appears.",
+                [
+                    Section(
+                        "Create a ship configuration",
+                        "Firegroups is a reference for your in-game assignments; it does not change Elite’s firing bindings.",
+                        [
+                            "Open Firegroups below Fleet Carrier in the sidebar. A Loadout for the identified ship supplies its equipped modules.",
+                            "Choose A–H with the arrows. Add primary and secondary rows with the circled plus controls, choose modules, and use Add group for another group.",
+                            "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
+                        ],
+                        [
+                            "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
+                            "Other supported weapons and scanners, including FSD interdictors, are offered when equipped. Assignments for removed modules remain visible with a warning. Engineering conversions currently retain the base module name.",
+                        ]
                     ),
                     Section(
-                        "Announcements and firegroups",
-                        "Mining has independent ship notifications and a firegroup reference panel.",
+                        "Manage saved firegroups",
+                        "Named configurations let you keep different references for the same ship.",
                         [
-                            "In Mining Overlay Settings, enable Mining notifications. Firegroups has its own overlay settings window, opened with the settings icon beside Firegroups in the sidebar; placement remains in the editor’s Status & utilities category. Assign shortcuts and adjust placement in the overlay editor.",
-                            "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.",
-                            "Firegroups, directly below Fleet Carrier in the sidebar, reads equipped modules from Loadout. Choose A–H with the arrows, add primary and secondary dropdowns with the circled plus buttons, then Add group. The tree previews all assignments. Enter a configuration name and Save; click a saved name to edit, or expand it to inspect the groups. Save and Remove sit beside the name. Each saved row also has a trash button for direct deletion; confirm Yes to delete, or No to keep it.",
-                            "Save mining settings to persist search filters and preferences for this commander.",
+                            "Select a saved name to edit it, or expand its row to inspect its groups.",
+                            "Use Save to retain changes. Remove or a saved row’s trash button requests deletion; confirm Yes to remove it or No to keep it.",
                         ],
                         [
-                            "Mining notifications require the main ship and disappear on foot or in any SRV. Their session-only visibility and supercruise preferences are in Mining Overlay Settings. Firegroups selects the saved configuration for the identified boarded ship and maps Status.json values 0–7 to A–H. It requires that vessel’s Loadout and a saved configuration, and hides on foot or aboard an unidentified vessel. Its dedicated settings window contains visibility, shortcut and Overlay Exceptions. Existing Rhino overlays remain independent.",
+                            "The live overlay uses the saved configuration and Elite’s active fire group, not unsaved editor changes. Mining > Settings > Backup includes Firegroups configurations and cached loadouts.",
+                        ]
+                    ),
+                    Section(
+                        "Firegroups cockpit visibility",
+                        "Only the main cockpit view is enabled by default.",
+                        [
+                            "Open the overlay-settings icon beside Firegroups.",
+                            "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
+                            "Use the same window to configure the visibility shortcut and Overlay Exceptions for allowed vessels.",
+                        ],
+                        [
+                            "Left and Right correspond to Elite’s external and internal panels. Main is the normal no-panel cockpit focus; unrestricted head-look direction is not reported by the game.",
+                            "The overlay requires the identified boarded vessel, its Loadout, and a saved configuration. It hides on foot and in other panel views such as maps, comms, and FSS. Enabling a view does not bypass those requirements.",
+                        ]
+                    ),
+                ]
+            ),
+            Category(
+                "fleet-carrier",
+                "19",
+                "Fleet Carrier",
+                "View personal and squadron carrier information, link Raven inventories, and plan travel.",
+                [
+                    Section(
+                        "Personal, squadron, and linked carriers",
+                        "Fleet Carrier sits below Overview and uses Frontier and Raven data for different purposes.",
+                        [
+                            "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
+                            "Open Linked carriers for RavenColonial-linked inventories and use its on-demand refresh.",
+                            "Docking at a linked carrier with a squadron bank can identify the squadron carrier. Otherwise select it explicitly.",
+                        ],
+                        [
+                            "Frontier supplies capacity, finances, and services. Raven supplies linked cargo inventory and follows your Raven cargo-sync preference.",
+                            "Travel > Distance provides current, home, and carrier shortcuts; FC Routes handles carrier journey planning.",
+                        ]
+                    ),
+                    Section(
+                        "Keep linked cargo current",
+                        "Automatic Raven Fleet Carrier cargo sync requires an API key and explicit consent.",
+                        [
+                            "Open Colonization, save the active Commander’s validated Raven API key, and enable Sync linked Fleet Carrier cargo automatically if desired.",
+                            "Dock at the intended linked carrier and open its market to provide a fresh inventory snapshot.",
+                            "Review the sync status. A failed or ambiguous update needs a fresh valid context; do not use another Commander’s shared cargo data.",
+                        ],
+                        [
+                            "Ship cargo publishing is a separate option. Carrier purchases, sales, and transfers are attributed to the carrier docked at when the event occurred, including events immediately before undocking.",
                         ]
                     ),
                 ]
@@ -1132,7 +1393,7 @@ public static class GuideCatalog
                 "Open Settings > Global overlays and find VR overlays.",
                 "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
                 "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-                "Choose Windows Mixed Reality only on Windows 11 23H2 where the headset and its SteamVR bridge still work; Microsoft removed WMR from 24H2 and ends Steam support in November 2026.",
+                "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
                 "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
             ],
             [
@@ -1748,14 +2009,16 @@ public static class GuideCatalog
         return new GuideCategoryViewModel(key, number, title, summary, sections, icons ?? []);
     }
 
+    /// <summary>Builds one task and its optional contextual symbol examples.</summary>
     private static GuideSectionViewModel Section(
         string title,
         string summary,
         IReadOnlyList<string> steps,
-        IReadOnlyList<string> details
+        IReadOnlyList<string> details,
+        IReadOnlyList<GuideIconKind>? illustrations = null
     )
     {
-        return new GuideSectionViewModel(title, summary, steps, details);
+        return new GuideSectionViewModel(title, summary, steps, details, illustrations);
     }
 
     private static GuideSectionViewModel IntroSection(
@@ -1765,12 +2028,14 @@ public static class GuideCatalog
         IReadOnlyList<string> details
     ) => Section(title, summary, steps, details);
 
+    /// <summary>Builds a Guardian task with optional map-symbol examples.</summary>
     private static GuideSectionViewModel GuardianSection(
         string title,
         string summary,
         IReadOnlyList<string> steps,
-        IReadOnlyList<string> details
-    ) => Section(title, summary, steps, details);
+        IReadOnlyList<string> details,
+        IReadOnlyList<GuideIconKind>? illustrations = null
+    ) => Section(title, summary, steps, details, illustrations);
 
     private static GuideIconViewModel Icon(
         GuideIconKind kind,

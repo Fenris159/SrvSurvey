@@ -34,5 +34,11 @@
   "VoxStellarWebhook": "https://voxstellar.com/webhooks/v1/system",
   "VoxStellarPrivacyPolicy": "https://voxstellar.com/privacy-policy",
   "VoxStellarTermsOfService": "https://voxstellar.com/terms-of-service",
-  "VoxStellarPluginSource": "https://github.com/SvenSapphire/EDMC-VoxStellar"
+  "VoxStellarPluginSource": "https://github.com/SvenSapphire/EDMC-VoxStellar",
+  "GoogleDriveAppDataScope": "https://www.googleapis.com/auth/drive.appdata",
+  "GoogleOAuthToken": "https://oauth2.googleapis.com/token",
+  "GoogleOAuthAuthorize": "https://accounts.google.com/o/oauth2/v2/auth",
+  "GoogleDriveFiles": "https://www.googleapis.com/drive/v3/files",
+  "GoogleDriveUpload": "https://www.googleapis.com/upload/drive/v3/files",
+  "GoogleDriveFilesDirectory": "https://www.googleapis.com/drive/v3/files/"
 }

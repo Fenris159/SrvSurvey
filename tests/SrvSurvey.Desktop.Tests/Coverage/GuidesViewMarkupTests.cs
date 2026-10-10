@@ -4,30 +4,38 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class GuidesViewMarkupTests
 {
+    /// <summary>Guides exposes tasks through an accordion and retains search and illustrated references.</summary>
     [Fact]
-    public void CatalogueAndReadingFlowAvoidNumbersBulletsAndChevrons()
+    public void AccordionAndSearchBothOpenCompleteSubjects()
     {
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "GuidesView.axaml")
         );
-        string[] values = document
-            .Descendants()
-            .SelectMany(element => element.Attributes())
-            .Select(attribute => attribute.Value)
-            .ToArray();
-        XElement categoryTemplate = document
-            .Descendants()
-            .Single(element => element.Name.LocalName == "ListBox.ItemTemplate");
-
-        Assert.DoesNotContain("{Binding Number}", values);
-        Assert.DoesNotContain(values, value => value.Contains("CATEGORY {0}", StringComparison.Ordinal));
-        Assert.DoesNotContain("❯", values);
-        Assert.DoesNotContain("•", values);
-        Assert.Contains("guide-step", values);
-        Assert.Contains("guide-detail", values);
-        Assert.Single(
-            categoryTemplate.Descendants(),
-            element => element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "{Binding Title}"
+        XElement expander = Assert.Single(document.Descendants(), element => element.Name.LocalName == "Expander");
+        Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", expander.Attribute("IsExpanded")?.Value);
+        Assert.Contains(
+            expander.Descendants(),
+            element =>
+                element.Name.LocalName == "Button" && element.Attribute("Command")?.Value == "{Binding OpenCommand}"
+        );
+        Assert.Contains(
+            document.Descendants(),
+            element =>
+                element.Name.LocalName == "TextBox"
+                && element.Attribute("Text")?.Value?.Contains("Guides.SearchText", StringComparison.Ordinal) == true
+        );
+        Assert.Contains(document.Descendants(), element => element.Name.LocalName == "SelectableTextBlock");
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Attribute("ItemsSource")?.Value == "{Binding Guides.SelectedTopic.Illustrations}"
+        );
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Attribute("ItemsSource")?.Value == "{Binding Guides.SelectedTopic.Steps}"
+        );
+        Assert.DoesNotContain(
+            document.Descendants(),
+            element => element.Attribute("ItemsSource")?.Value == "{Binding Guides.SelectedCategory.Sections}"
         );
     }
 
