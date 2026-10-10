@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace SrvSurvey.Desktop.Controls;
 
@@ -8,8 +9,8 @@ internal static class GuardianSurveyMarkerDrawing
     internal static readonly Color HaloColor = Color.FromArgb(160, 72, 61, 139);
     internal static readonly Color RingColor = Color.FromArgb(96, 0, 255, 255);
 
-    private static readonly IBrush HaloBrush = new SolidColorBrush(HaloColor);
-    private static readonly IBrush RingBrush = new SolidColorBrush(RingColor);
+    private static readonly IBrush HaloBrush = new ImmutableSolidColorBrush(HaloColor);
+    private static readonly IBrush RingBrush = new ImmutableSolidColorBrush(RingColor);
 
     public static void Draw(
         DrawingContext context,
