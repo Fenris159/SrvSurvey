@@ -615,6 +615,13 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
                 Assert.Equal(1, clicks);
             }
 
+            IPointer? dragPointer = null;
+            window.AddHandler(
+                InputElement.PointerPressedEvent,
+                (_, args) => dragPointer = args.Pointer,
+                Avalonia.Interactivity.RoutingStrategies.Tunnel,
+                true
+            );
             var background = new Point(250, 200);
             PixelPoint releasePosition = window.PointToScreen(background + new Vector(20, 30));
             window.MouseDown(background, MouseButton.Left, RawInputModifiers.LeftMouseButton);
@@ -625,7 +632,20 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
                 Avalonia.Threading.Dispatcher.UIThread.RunJobs();
                 Assert.Equal(new PixelPoint(120, 230), window.Position);
             }
-            // A completed frame changes the release's client coordinates, not its screen position.
+            // Deliver the fixed screen point before the headless helper drains queued drag frames.
+            window.RaiseEvent(
+                new PointerReleasedEventArgs(
+                    window,
+                    Assert.IsAssignableFrom<IPointer>(dragPointer),
+                    window,
+                    window.PointToClient(releasePosition),
+                    1,
+                    new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
+                    KeyModifiers.None,
+                    MouseButton.Left
+                )
+            );
+            // Reset the headless mouse state after the gesture has already ended.
             window.MouseUp(window.PointToClient(releasePosition), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(1, platform.MoveDragStarts);
             Assert.Equal(new PixelPoint(120, 230), window.Position);
