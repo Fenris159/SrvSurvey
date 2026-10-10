@@ -32761,6 +32761,10 @@
       "translation": "einheimisch"
     },
     {
+      "source": "native button-up",
+      "translation": "nativer Knopfverschluss"
+    },
+    {
       "source": "navigation",
       "translation": "Navigation"
     },
@@ -67957,6 +67961,10 @@
     {
       "source": "native",
       "translation": "nativo"
+    },
+    {
+      "source": "native button-up",
+      "translation": "botones nativos"
     },
     {
       "source": "navigation",
@@ -103157,6 +103165,10 @@
       "translation": "indigène"
     },
     {
+      "source": "native button-up",
+      "translation": "bouton natif"
+    },
+    {
       "source": "navigation",
       "translation": "navigation"
     },
@@ -138353,6 +138365,10 @@
     {
       "source": "native",
       "translation": "nativo"
+    },
+    {
+      "source": "native button-up",
+      "translation": "botão nativo"
     },
     {
       "source": "navigation",
@@ -173553,6 +173569,10 @@
       "translation": "родной"
     },
     {
+      "source": "native button-up",
+      "translation": "родная застежка на пуговицах"
+    },
+    {
       "source": "navigation",
       "translation": "навигация"
     },
@@ -208751,6 +208771,10 @@
       "translation": "本国的"
     },
     {
+      "source": "native button-up",
+      "translation": "原生按钮向上"
+    },
+    {
       "source": "navigation",
       "translation": "导航"
     },
@@ -243947,6 +243971,10 @@
     {
       "source": "native",
       "translation": "* NATIVE >>>!"
+    },
+    {
+      "source": "native button-up",
+      "translation": "* NATIVE BUTTON-UP >>>!"
     },
     {
       "source": "navigation",

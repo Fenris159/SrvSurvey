@@ -20,8 +20,10 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
     private readonly OverlayDragOptions options;
     private readonly OverlayDragDiagnostics diagnostics;
     private PixelPoint latestPointerPosition;
+    private PixelPoint lastRequestedPosition;
     private bool stopped;
 
+    /// <summary>Captures a fixed drag origin and coalesces motion using current native screen coordinates when available.</summary>
     private ManagedOverlayWindowDragSession(
         Window window,
         PointerPressedEventArgs eventArgs,
@@ -31,6 +33,7 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         this.window = window;
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
+        lastRequestedPosition = initialWindowPosition;
         initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
         latestPointerPosition = initialPointerPosition;
         options = OverlayDragPolicy.GetOptions(window);
@@ -38,11 +41,22 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         pendingMove = new PendingWindowMove(
             position =>
             {
-                diagnostics.Observe(latestPointerPosition);
-                if (window.Position != position)
+                OverlayDragPointerSample? native = diagnostics.Observe(latestPointerPosition);
+                if (native is not null)
                 {
+                    position = CalculatePosition(initialWindowPosition, initialPointerPosition, native.Position);
+                    position = options.ConstrainPosition?.Invoke(position) ?? position;
+                }
+                if (lastRequestedPosition != position)
+                {
+                    lastRequestedPosition = position;
                     window.Position = position;
-                    positionApplied?.Invoke(window.Position);
+                    // X11 reports the previous position until its configure event is processed.
+                    positionApplied?.Invoke(position);
+                }
+                if (native is { LeftButtonPressed: false } && !stopped)
+                {
+                    Stop(releasePointer: true, reason: "native button-up");
                 }
             },
             callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)

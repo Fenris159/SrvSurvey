@@ -173,6 +173,7 @@ internal static partial class X11Native
         out uint mask
     );
 
+    /// <summary>Opens a gesture-scoped pointer reader only for native X11 and XWayland windows.</summary>
     internal static IOverlayDragPointerProbe? TryCreatePointerProbe(string? handleDescriptor)
     {
         if (!OperatingSystem.IsLinux() || handleDescriptor != "XID")
@@ -192,20 +193,14 @@ internal static partial class X11Native
         }
     }
 
+    /// <summary>Reads root screen pixels and button state without waiting for queued window-relative events.</summary>
     private sealed class X11PointerProbe(nint pointerDisplay) : IOverlayDragPointerProbe
     {
         private nint currentDisplay = pointerDisplay;
-        private long lastQueryTimestamp;
 
+        /// <summary>Samples the current pointer, including a release occurring between coalesced drag updates.</summary>
         public OverlayDragPointerSample? Read()
         {
-            long now = System.Diagnostics.Stopwatch.GetTimestamp();
-            if (System.Diagnostics.Stopwatch.GetElapsedTime(lastQueryTimestamp, now) < TimeSpan.FromMilliseconds(16))
-            {
-                return null;
-            }
-
-            lastQueryTimestamp = now;
             if (
                 currentDisplay == nint.Zero
                 || XQueryPointer(
@@ -227,6 +222,7 @@ internal static partial class X11Native
             return new OverlayDragPointerSample(new Avalonia.PixelPoint(x, y), (mask & (1U << 8)) != 0);
         }
 
+        /// <summary>Closes the gesture's display connection once after its final pointer sample.</summary>
         public void Dispose()
         {
             nint previousDisplay = currentDisplay;
