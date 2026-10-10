@@ -65686,6 +65686,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
   },
   {
+    "Text": "native button-up",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
+  },
+  {
     "Text": "navigation",
     "IsFormat": false,
     "SourceKinds": [
