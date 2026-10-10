@@ -198,6 +198,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         UpdateHost();
     }
 
+    /// <summary>Creates and classifies the native host before its first map while retaining its management mode.</summary>
     private void EnsureHost()
     {
         if (host is not null || disposed)

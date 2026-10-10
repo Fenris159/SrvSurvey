@@ -7,6 +7,7 @@ using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
+/// <summary>Owns X11 overlay classification, input regions, and optional direct window management.</summary>
 internal sealed class X11OverlayPlatformService
     : IOverlayPlatformService,
         ICombinedOverlayNativeService,
@@ -34,6 +35,7 @@ internal sealed class X11OverlayPlatformService
     private readonly nuint utilityWindowAtom;
     private readonly nuint normalWindowAtom;
 
+    /// <summary>Retains the owned display and initialized tool-window atoms for later overlay preparation.</summary>
     private X11OverlayPlatformService(X11OverlayPlatformContext context)
     {
         display = context.Display;
@@ -63,6 +65,7 @@ internal sealed class X11OverlayPlatformService
 
         public nuint WindowTypeAtom { get; init; }
 
+        /// <summary>Identifies the tool-window type excluded from KDE notification and popup animations.</summary>
         public nuint UtilityWindowAtom { get; init; }
 
         public nuint NormalWindowAtom { get; init; }
@@ -70,6 +73,7 @@ internal sealed class X11OverlayPlatformService
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
+    /// <summary>Opens an X11-compatible display and initializes the atoms used for overlay classification.</summary>
     public static IOverlayPlatformService? TryCreate(OverlayHostKind host)
     {
         if (!OperatingSystem.IsLinux() || !OverlayPlatformCapabilities.IsX11Compatible(host))
@@ -943,6 +947,7 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
+    /// <summary>Publishes utility first, with normal fallback, without changing the window's management mode.</summary>
     private bool ApplyWindowType(nint currentDisplay, nint handle)
     {
         nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(utilityWindowAtom, normalWindowAtom);
@@ -982,6 +987,7 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
+    /// <summary>Reports classification failures separately from the requested input-region mode.</summary>
     private string CreateStatus(bool interactive, bool stackingApplied)
     {
         if (!stackingApplied)
