@@ -79,10 +79,10 @@ XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
 
-## RC59.1 release sequence
+## RC59.2 release sequence
 
-RC51 remains the permanent legacy bridge and RC59 is the preceding published preview. Do not
-dispatch RC59.1 until its pull request has merged into
+RC51 remains the permanent legacy bridge and RC59.1 is the preceding published preview. Do not
+dispatch RC59.2 until its pull request has merged into
 `SrvSurvey-Avalonia` and the external publishing step has been explicitly
 approved. Then update the local branch and verify the checked-in release
 contract before starting the workflow:
@@ -117,7 +117,7 @@ gh release download xp2-v2.1.3.0-rc.59.2 \
   --repo Fenris159/SrvSurvey \
   --pattern release-index.json \
   --dir artifacts/verify-rc59-2
-pwsh -Command '$index = Get-Content artifacts/verify-rc59-2/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC59.1 release index contract failed." }'
+pwsh -Command '$index = Get-Content artifacts/verify-rc59-2/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC59.2 release index contract failed." }'
 ```
 
 Confirm that legacy clients still select `xp-v2.1.3.0-rc.51` and an RC51 client
