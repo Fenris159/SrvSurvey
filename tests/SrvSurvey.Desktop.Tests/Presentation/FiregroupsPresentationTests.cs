@@ -15,6 +15,91 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class FiregroupsPresentationTests
 {
+    /// <summary>The dedicated settings expose three bound checkboxes and persist choices in the profile UI document.</summary>
+    [AvaloniaFact]
+    public void CockpitVisibilityCheckboxesControlLiveOverlayAndStayInFiregroupsSettings()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder =>
+                builder.WithAppDataPaths(
+                    new(
+                        Path.Combine(directory, "config"),
+                        Path.Combine(directory, "data"),
+                        Path.Combine(directory, "cache"),
+                        []
+                    )
+                )
+        );
+        var view = new Views.OverlaySettingsView(OverlaySettingsCategory.Firegroups) { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 800,
+            Height = 650,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            CheckBox left = view.FindControl<CheckBox>("FiregroupsLeftViewCheckBox")!;
+            CheckBox cockpit = view.FindControl<CheckBox>("FiregroupsMainViewCheckBox")!;
+            CheckBox right = view.FindControl<CheckBox>("FiregroupsRightViewCheckBox")!;
+            Assert.True(left.IsEffectivelyVisible);
+            Assert.True(cockpit.IsEffectivelyVisible);
+            Assert.True(right.IsEffectivelyVisible);
+            Assert.Equal(false, left.IsChecked);
+            Assert.Equal(true, cockpit.IsChecked);
+            Assert.Equal(false, right.IsChecked);
+            var journal = new JournalSessionState();
+            JournalEventEnvelope[] events =
+            [
+                FiregroupsWorkspaceViewModelTests.Event(
+                    """{"event":"LoadGame","FID":"Views","Ship":"python","ShipID":1}"""
+                ),
+                FiregroupsWorkspaceViewModelTests.Loadout(1, "Python"),
+            ];
+            foreach (JournalEventEnvelope entry in events)
+            {
+                journal.Apply(entry);
+            }
+            var status = new EliteStatus { Flags = StatusFlags.InMainShip };
+            main.Firegroups.Apply(new(null, events, status, null, null, null, [], false), journal, status);
+            main.Firegroups.Primary[0].SelectedModule = main.Firegroups.Primary[0].Options[0];
+            main.Firegroups.ConfigurationName = "Cockpit setup";
+            main.Firegroups.SaveCommand.Execute(null);
+            Assert.True(main.Firegroups.ShouldShow);
+            cockpit.IsChecked = false;
+            Assert.False(main.Firegroups.ShouldShow);
+            left.IsChecked = true;
+            right.IsChecked = true;
+            status = status with { GuiFocus = GuiFocus.ExternalPanel };
+            main.Firegroups.Apply(new(null, [], status, null, null, null, [], false), journal, status);
+            Assert.True(main.Firegroups.ShouldShow);
+            Assert.Equal(
+                new FiregroupsOverlayPreferences(true, false, true),
+                new FiregroupsOverlaySettingsStore(main.AppDataPaths.UiSettingsPath).Load()
+            );
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_FIREGROUPS_RENDER_OUTPUT");
+            if (output is not null)
+            {
+                Directory.CreateDirectory(output);
+                using FileStream stream = File.Create(Path.Combine(output, "firegroups-visibility-settings.png"));
+                frame!.Save(stream, PngBitmapEncoderOptions.Default);
+            }
+            var global = new Views.OverlaySettingsView { DataContext = main };
+            Assert.False(global.FindControl<Border>("FiregroupsVisibilityCard")!.IsVisible);
+            var mining = new Views.OverlaySettingsView(OverlaySettingsCategory.Mining) { DataContext = main };
+            Assert.False(mining.FindControl<Border>("FiregroupsVisibilityCard")!.IsVisible);
+        }
+        finally
+        {
+            window.Close();
+            Directory.Delete(directory, true);
+        }
+    }
+
     [AvaloniaFact]
     public void SavingFiregroupImmediatelyDisplaysItsConfigurationAndDedicatedSettings()
     {

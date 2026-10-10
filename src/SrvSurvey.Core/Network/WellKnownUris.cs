@@ -32,6 +32,18 @@ public static class WellKnownUris
     public static Uri CodexMissingForm => RequireUri("CodexMissingForm");
     public static Uri ColonisationWiki => RequireUri("ColonisationWiki");
     public static Uri EdGalaxyVisitedStars => RequireUri("EdGalaxyVisitedStars");
+    public static Uri GoogleDriveAppDataScope => RequireUri("GoogleDriveAppDataScope");
+
+    public static Uri GoogleOAuthToken => RequireUri("GoogleOAuthToken");
+
+    public static Uri GoogleOAuthAuthorize => RequireUri("GoogleOAuthAuthorize");
+
+    public static Uri GoogleDriveFiles => RequireUri("GoogleDriveFiles");
+
+    public static Uri GoogleDriveFilesDirectory => RequireUri("GoogleDriveFilesDirectory");
+
+    public static Uri GoogleDriveUpload => RequireUri("GoogleDriveUpload");
+
     public static Uri FrontierOAuthRedirect => RequireUri("FrontierOAuthRedirect");
     public static Uri DesktopLogoAsset => RequireUri("DesktopLogoAsset");
     public static Uri GuardianScienceCorpsDiscord => RequireUri("GuardianScienceCorpsDiscord");

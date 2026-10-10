@@ -318,6 +318,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "journey trip station csv export"
             ),
             new(
+                "Google Drive backup and sync",
+                DataCategoryKey,
+                "ProfileSyncCard",
+                "ProfileSyncCard",
+                "backup restore synchronize sync cloud machine google drive computer profile"
+            ),
+            new(
                 "Elite journal source",
                 DataCategoryKey,
                 "JournalDirectoryTextBox",

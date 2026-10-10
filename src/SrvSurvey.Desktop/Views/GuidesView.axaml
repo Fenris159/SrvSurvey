@@ -1,108 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              x:Class="SrvSurvey.Desktop.Views.GuidesView"
-             x:DataType="vm:MainWindowViewModel"
-             mc:Ignorable="d">
-  <Grid Margin="32"
-        RowDefinitions="Auto,*"
-        RowSpacing="22">
-    <Grid ColumnDefinitions="*,360" ColumnSpacing="28">
-      <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="FIELD MANUAL" />
-        <TextBlock Classes="page-title" Text="Guides" />
-        <TextBlock Classes="muted"
-                   Text="Task-focused help for every SrvSurvey workspace and overlay." />
-      </StackPanel>
-
-      <TextBox Grid.Column="1"
-               Classes="guide-search"
-               VerticalAlignment="Center"
-               PlaceholderText="Search guides, settings, symbols, or workflows"
-               Text="{Binding Guides.SearchText, Mode=TwoWay}" />
-    </Grid>
-
-    <Grid Grid.Row="1"
-          ColumnDefinitions="230,*"
-          ColumnSpacing="18">
-      <Border Classes="card" Padding="8">
-        <ListBox Classes="guide-categories"
-                 ItemsSource="{Binding Guides.Categories}"
-                 SelectedItem="{Binding Guides.SelectedCategory, Mode=TwoWay}">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:GuideCategoryViewModel">
-              <TextBlock Margin="4,0"
-                         FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding Title}" />
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </Border>
-
-      <ScrollViewer Grid.Column="1"
-                    HorizontalScrollBarVisibility="Disabled">
-        <StackPanel MaxWidth="850" Spacing="16">
-          <StackPanel IsVisible="{Binding Guides.IsBrowsing}" Spacing="16">
-            <Border Classes="card raised">
-              <StackPanel Spacing="6">
-                <TextBlock Classes="eyebrow" Text="GUIDE" />
-                <TextBlock FontSize="24"
-                           FontWeight="SemiBold"
-                           Text="{Binding Guides.SelectedCategory.Title}" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="{Binding Guides.SelectedCategory.Summary}" />
-              </StackPanel>
-            </Border>
-
-            <ItemsControl IsVisible="{Binding Guides.SelectedCategory.HasSections}"
-                          ItemsSource="{Binding Guides.SelectedCategory.Sections}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:GuideSectionViewModel">
-                  <Border Classes="card" Margin="0,0,0,14">
-                    <StackPanel Spacing="12">
-                      <TextBlock Classes="card-title" Text="{Binding Title}" />
-                      <TextBlock Classes="muted"
-                                 TextWrapping="Wrap"
-                                 Text="{Binding Summary}" />
-
-                      <ItemsControl IsVisible="{Binding HasSteps}"
-                                    ItemsSource="{Binding Steps}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate>
-                            <Border Classes="guide-step">
-                              <TextBlock TextWrapping="Wrap" Text="{Binding}" />
-                            </Border>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-
-                      <ItemsControl IsVisible="{Binding HasDetails}"
-                                    ItemsSource="{Binding Details}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate>
-                            <Border Classes="guide-detail">
-                              <TextBlock Classes="muted"
-                                         TextWrapping="Wrap"
-                                         Text="{Binding}" />
-                            </Border>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </StackPanel>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <ItemsControl IsVisible="{Binding Guides.SelectedCategory.HasIcons}"
-                          ItemsSource="{Binding Guides.SelectedCategory.Icons}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:GuideIconViewModel">
+             x:DataType="vm:MainWindowViewModel">
+  <UserControl.Resources>
+                <DataTemplate x:Key="GuideIconTemplate" x:DataType="vm:GuideIconViewModel">
                   <Border Classes="card" Margin="0,0,0,14" Padding="14">
                     <Grid ColumnDefinitions="72,*" ColumnSpacing="14">
                       <Grid Width="72"
@@ -175,53 +78,110 @@
                     </Grid>
                   </Border>
                 </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-
-          <StackPanel IsVisible="{Binding Guides.IsSearching}" Spacing="14">
-            <Grid ColumnDefinitions="*,Auto">
-              <StackPanel Spacing="3">
-                <TextBlock Classes="eyebrow" Text="SEARCH RESULTS" />
-                <TextBlock Classes="card-title"
-                           Text="{Binding Guides.SearchSummary}" />
+  </UserControl.Resources>
+  <Grid Margin="24" RowDefinitions="Auto,Auto,*" RowSpacing="16">
+    <StackPanel Spacing="4">
+      <TextBlock Classes="eyebrow" Text="FIELD MANUAL" />
+      <TextBlock Classes="page-title" Text="Guides" />
+      <TextBlock Classes="muted" TextWrapping="Wrap" Text="Expand a category and choose a subject, or search for a feature, setting, command, or symbol." />
+    </StackPanel>
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+      <TextBox x:Name="GuideSearch" Classes="guide-search"
+               PlaceholderText="Search all guides"
+               Text="{Binding Guides.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+      <Button Grid.Column="1" Classes="secondary" Content="Clear search"
+              IsVisible="{Binding Guides.IsSearching}" Command="{Binding Guides.ClearSearchCommand}" />
+    </Grid>
+    <Grid Grid.Row="2" ColumnDefinitions="270,*" ColumnSpacing="20">
+      <Border Classes="card" Padding="8">
+        <ScrollViewer x:Name="GuideNavigationScroller" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Guides.Navigation}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GuideNavigationCategoryViewModel">
+                <Expander Classes="guide-category" HorizontalAlignment="Stretch"
+                          IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                  <Expander.Header>
+                    <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Title}" />
+                  </Expander.Header>
+                  <ItemsControl Margin="8,4,0,8" ItemsSource="{Binding Topics}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:GuideTopicViewModel">
+                        <Button Classes="guide-topic" Classes.selected="{Binding IsSelected}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Command="{Binding OpenCommand}">
+                          <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Expander>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+      <ScrollViewer x:Name="GuideReader" Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="780" HorizontalAlignment="Left" Spacing="16">
+          <StackPanel x:Name="TopicReader" IsVisible="{Binding Guides.IsBrowsing}" Spacing="18">
+            <Border Classes="card raised">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="eyebrow" TextWrapping="Wrap" Text="{Binding Guides.SelectedTopic.Category.Title}" />
+                <TextBlock FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Guides.SelectedTopic.Title}" />
+                <SelectableTextBlock IsVisible="{Binding Guides.SelectedTopic.HasInstructions}" FontSize="14" TextWrapping="Wrap" Text="{Binding Guides.SelectedTopic.Summary}" />
               </StackPanel>
-              <TextBlock Grid.Column="1"
-                         Classes="muted"
-                         VerticalAlignment="Bottom"
-                         Text="Type more words to narrow the results" />
-            </Grid>
-
-            <ItemsControl IsVisible="{Binding Guides.HasSearchResults}"
-                          ItemsSource="{Binding Guides.SearchResults}">
+            </Border>
+            <Border Classes="card" IsVisible="{Binding Guides.SelectedTopic.HasSteps}">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="What to do" />
+                <ItemsControl ItemsSource="{Binding Guides.SelectedTopic.Steps}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:GuideStepViewModel">
+                      <Grid ColumnDefinitions="28,*" ColumnSpacing="10" Margin="0,0,0,14">
+                        <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Number}" />
+                        <SelectableTextBlock Grid.Column="1" FontSize="14" TextWrapping="Wrap" Text="{Binding Text}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+            <ItemsControl IsVisible="{Binding Guides.SelectedTopic.HasIllustrations}"
+                          ItemsSource="{Binding Guides.SelectedTopic.Illustrations}"
+                          ItemTemplate="{StaticResource GuideIconTemplate}" />
+            <Border Classes="card" IsVisible="{Binding Guides.SelectedTopic.HasDetails}">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Good to know" />
+                <ItemsControl ItemsSource="{Binding Guides.SelectedTopic.Details}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <SelectableTextBlock Margin="0,0,0,12" FontSize="14" TextWrapping="Wrap" Text="{Binding}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          <StackPanel x:Name="GuideSearchResults" IsVisible="{Binding Guides.IsSearching}" Spacing="14">
+            <TextBlock Classes="eyebrow" Text="SEARCH RESULTS" />
+            <TextBlock Classes="card-title" Text="{Binding Guides.SearchSummary}" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Select a result to open the complete guide." />
+            <ItemsControl IsVisible="{Binding Guides.HasSearchResults}" ItemsSource="{Binding Guides.SearchResults}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:GuideSearchResultViewModel">
-                  <Border Classes="card" Margin="0,0,0,12">
+                  <Button Classes="guide-result" Margin="0,0,0,12" Padding="18"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                          Command="{Binding OpenCommand}">
                     <StackPanel Spacing="6">
-                      <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Classes="card-title" Text="{Binding Title}" />
-                        <Border Grid.Column="1" Classes="badge">
-                          <TextBlock FontSize="10"
-                                     Foreground="{DynamicResource RavenAccentBrush}"
-                                     Text="{Binding Kind}" />
-                        </Border>
-                      </Grid>
-                      <TextBlock Classes="muted" Text="{Binding Category}" />
-                      <TextBlock TextWrapping="Wrap" Text="{Binding Summary}" />
+                      <TextBlock Classes="eyebrow" TextWrapping="Wrap" Text="{Binding Category}" />
+                      <TextBlock FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Title}" />
+                      <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Summary}" />
                     </StackPanel>
-                  </Border>
+                  </Button>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-
-            <Border Classes="card"
-                    IsVisible="{Binding Guides.HasNoSearchResults}">
-              <StackPanel Spacing="5">
-                <TextBlock Classes="card-title" Text="No matching guide entries" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route." />
-              </StackPanel>
+            <Border Classes="card" IsVisible="{Binding Guides.HasNoSearchResults}">
+              <TextBlock TextWrapping="Wrap" Text="No matching subjects. Try a feature name, a setting label, or a chat command. You can also browse the categories on the left." />
             </Border>
           </StackPanel>
         </StackPanel>

@@ -48,6 +48,7 @@ public sealed partial class App : Application
 
     private async Task StartDesktopAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? profileSync = null;
         try
         {
             ApplicationStartupInstanceDecision startupDecision = await EvaluateStartupAsync(desktop)
@@ -58,15 +59,32 @@ public sealed partial class App : Application
                 return;
             }
 
+            if (Program.StartupContext?.DiagnosticReplay is null)
+            {
+                profileSync = new(
+                    new SrvSurvey.Desktop.ProfileSync.ProfileSyncStore(
+                        Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                    ),
+                    log: message => Program.ApplicationLog?.Append(message)
+                );
+                await profileSync.StartupAsync().ConfigureAwait(false);
+            }
+
             // Instance scanning resumes off the UI thread; Avalonia window construction must not.
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                string language = SrvSurvey.Desktop.Configuration.LocalizationSettingsStore.ResolveCurrent(
+                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                );
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.Initialize(language);
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.ApplyCulture(language);
                 desktopRuntime = DesktopRuntime.Start(
                     this,
                     desktop,
                     new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
                     {
                         AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
+                        ProfileSyncService = profileSync,
                         DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
                         BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
                     }
@@ -86,6 +104,13 @@ public sealed partial class App : Application
                 "SrvSurvey could not verify whether another instance is running: " + exception.Message
             );
             await ShutdownOnUiThreadAsync(desktop, exitCode: 1);
+        }
+        finally
+        {
+            if (desktopRuntime is null)
+            {
+                profileSync?.Dispose();
+            }
         }
     }
 

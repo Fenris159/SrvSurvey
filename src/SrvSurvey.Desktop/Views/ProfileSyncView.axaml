@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.ProfileSyncView"
+             x:DataType="vm:ProfileSyncViewModel">
+  <StackPanel Spacing="10">
+  <StackPanel Spacing="14" IsEnabled="{Binding !IsBusy}">
+    <StackPanel Spacing="4">
+      <TextBlock Classes="card-title" Text="Backup &amp; sync with Google Drive" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Continue on another computer with your themes, portable overlay options, shortcuts, saved searches, routes, bookmarks, mining data and surveys. Link the same Google account on each machine." />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Display placement, capture calibration, Wayland options and device choices stay with their original machine. Credentials, journal files and queued API reports are excluded. Google Drive access is limited to SrvSurvey's private app-data folder." />
+      <TextBlock Text="{Binding DeviceDescription}" />
+    </StackPanel>
+    <WrapPanel Orientation="Horizontal">
+      <Button Classes="primary" Margin="0,0,8,6" Content="Link Google Drive" IsEnabled="{Binding CanLink}" Click="Link_Click" />
+      <Button Classes="secondary" Margin="0,0,8,6" Content="Disconnect" IsVisible="{Binding IsLinked}" Click="Disconnect_Click" />
+      <Button Classes="secondary" Margin="0,0,8,6" Content="Backup now" Click="Backup_Click" />
+      <Button Classes="secondary" Margin="0,0,8,6" Content="Sync now" IsEnabled="{Binding CanUseCloud}" Click="Sync_Click" />
+    </WrapPanel>
+    <CheckBox Content="Sync portable data on startup and back up on shutdown"
+              IsEnabled="{Binding IsLinked}" IsChecked="{Binding Automatic, Mode=TwoWay}" />
+    <TextBlock Classes="muted" TextWrapping="Wrap"
+               Text="When offline, SrvSurvey keeps local changes and tries again next session. If two machines change the same value, choose which version to keep. Independent changes are combined. Restores requested while the app is open apply after restart." />
+    <StackPanel Spacing="8" IsVisible="{Binding HasConflicts}">
+      <TextBlock Classes="eyebrow" Text="SYNC CONFLICTS" />
+      <TextBox Text="{Binding ConflictDescription}" IsReadOnly="True" AcceptsReturn="True" MaxHeight="130" />
+      <WrapPanel>
+        <Button Classes="secondary" Content="Keep this machine's conflicting values" Margin="0,0,8,6" Click="KeepLocal_Click" />
+        <Button Classes="secondary" Content="Use cloud conflicting values" Margin="0,0,8,6" Click="UseCloud_Click" />
+      </WrapPanel>
+    </StackPanel>
+    <Expander Header="Restore a Google Drive backup">
+      <StackPanel Spacing="10" Margin="0,10,0,0">
+        <Button Classes="secondary" HorizontalAlignment="Left" Content="Refresh backup history" IsEnabled="{Binding CanUseCloud}" Click="Refresh_Click" />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CloudStorageText}" />
+        <ComboBox ItemsSource="{Binding Backups}" SelectedItem="{Binding SelectedBackup, Mode=TwoWay}" IsEnabled="{Binding CanUseCloud}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:ProfileBackupOption"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+        </ComboBox>
+        <CheckBox Content="Also restore this machine's hardware and platform settings"
+                  IsChecked="{Binding RestoreMachineSettings, Mode=TwoWay}" />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Hardware settings can only be restored from a backup made by this machine. Restoring another machine's backup uses portable data only. Your current profile is backed up before restoration." />
+        <WrapPanel>
+          <Button Classes="secondary" Content="Restore selected backup" Margin="0,0,8,6" IsEnabled="{Binding CanRestore}" Click="Restore_Click" />
+          <Button Classes="secondary" Content="Download selected backup" Margin="0,0,8,6" IsEnabled="{Binding CanRestore}" Click="Download_Click" />
+          <Button Classes="secondary" Content="Delete selected backup" Margin="0,0,8,6" IsEnabled="{Binding CanRestore}" Click="DeleteBackup_Click" />
+        </WrapPanel>
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Cloud backups are stored in Drive's hidden app-data folder and count toward your Google storage. Download a backup to view or keep a separate copy. Clearing cloud history does not disconnect Google Drive or delete local files." />
+        <Button Classes="secondary" HorizontalAlignment="Left" Content="Clear all SrvSurvey cloud backups" IsEnabled="{Binding CanClearBackups}" Click="ClearBackups_Click" />
+        <Border Classes="card" Padding="14" IsVisible="{Binding IsDeleteConfirmationVisible}">
+          <StackPanel Spacing="10">
+            <TextBlock Text="{Binding DeleteConfirmationText}" TextWrapping="Wrap" />
+            <WrapPanel>
+              <Button Classes="secondary" Content="Cancel deletion" Margin="0,0,8,6" Click="CancelDelete_Click" />
+              <Button Classes="primary" Content="Permanently delete" Margin="0,0,8,6" Click="ConfirmDelete_Click" />
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Expander>
+    <Expander Header="Local backup and restore">
+      <StackPanel Spacing="10" Margin="0,10,0,0">
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Export or import the same backup format without a Google account. Keep a copy outside this computer for recovery." />
+        <CheckBox Content="Also restore this machine's hardware and platform settings" IsChecked="{Binding RestoreMachineSettings, Mode=TwoWay}" />
+        <WrapPanel>
+          <Button Classes="secondary" Content="Export backup file" Margin="0,0,8,6" Click="Export_Click" />
+          <Button Classes="secondary" Content="Restore backup file" Margin="0,0,8,6" Click="Import_Click" />
+        </WrapPanel>
+      </StackPanel>
+    </Expander>
+    <StackPanel Spacing="8" IsVisible="{Binding NeedsClientSetup}">
+      <TextBlock Classes="muted" TextWrapping="Wrap" Text="This build does not yet include Google's application setup. The publisher must configure a Google Cloud Desktop OAuth client. For a development build, import that client JSON here before linking." />
+      <Button Classes="secondary" HorizontalAlignment="Left" Content="Import Google client setup" Click="ClientSetup_Click" />
+    </StackPanel>
+    <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" />
+    <Button Classes="primary" HorizontalAlignment="Left" Content="Restart SrvSurvey to apply" IsVisible="{Binding RestartRequired}" Click="Restart_Click" />
+  </StackPanel>
+  <Button Classes="secondary" Content="Cancel Google linking" HorizontalAlignment="Left" IsVisible="{Binding IsLinking}" Click="CancelLink_Click" />
+  </StackPanel>
+</UserControl>

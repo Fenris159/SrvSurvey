@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Tests.Firegroups;
 
 public sealed class FiregroupLoadoutTests
 {
+    /// <summary>The equipped surface scanner and every built-in action are offered for assignment.</summary>
     [Fact]
     public void ParseOffersEquippedSurfaceScannerAndBuiltInScannerActions()
     {
@@ -14,6 +15,35 @@ public sealed class FiregroupLoadoutTests
         Assert.Contains(ship.Modules, module => module.Name == "D-Scanner");
         Assert.Contains(ship.Modules, module => module.Name == "SC-Suite");
         Assert.Contains(ship.Modules, module => module.Name == "Data Link Scanner");
+        Assert.Contains(ship.Modules, module => module.Name == "Composition Scanner");
+    }
+
+    /// <summary>Every EDCD interdictor variant remains assignable when present in the journal loadout.</summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void ParseOffersEveryEquippedFsdInterdictorRating(int size)
+    {
+        string[] ratings = ["E", "D", "C", "B", "A"];
+        for (int rating = 0; rating < ratings.Length; rating++)
+        {
+            string symbol = $"Int_FSDInterdictor_Size{size}_Class{rating + 1}";
+            FiregroupShip ship = Parse(new LoadoutModule("Slot01_Size4", symbol));
+
+            Assert.Contains(
+                ship.Modules,
+                module =>
+                    module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
+                    && module.Name == $"Frame Shift Drive Interdictor ({size}{ratings[rating]})"
+                    && module.Slot == "Slot01_Size4"
+            );
+            Assert.DoesNotContain(
+                Parse().Modules,
+                module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
+            );
+        }
     }
 
     [Theory]

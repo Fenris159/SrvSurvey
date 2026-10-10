@@ -1,145 +1,65 @@
-# SrvSurvey-XP 2.1.3.0-rc.61
+# SrvSurvey-XP 2.1.3.0-rc.62
 
-RC.61 keeps KDE overlays steady with desktop notification effects enabled and
-adds a system selector to the combined Raven build report. It includes RC.60's
-live build previews, combined cargo planning, and spreadsheet exports, plus the
-RC.59 improvements below.
+RC.62 adds profile backup and Google Drive sync, reorganizes Guides into
+searchable subjects, and restores missing Firegroups choices with controls for
+cockpit-view visibility.
 
-This preview improves window sizing, overlays, keyboard shortcuts, mining and
-Boxel searches, and background uploads. It focuses on keeping your chosen
-settings and work intact when searches overlap, connections fail, or the
-application restarts.
+## What's changed
 
-## What's changed in RC.61 and recent previews
-
-- **Inspect a Raven build inside SrvSurvey.** Click a project name in
-  Colonization → My build projects to open its own read-only window. See cargo
-  requirements, delivered progress, carrier stock and deficits, trip estimates,
-  linked commanders and carriers, system effects, and delivery history.
-- **Plan cargo across all your builds.** Combined Build Report, beside Open
-  Raven builds, opens an aggregate report for every workspace project, including
-  hidden builds. It combines requirements, delivery progress, ship and carrier
-  cargo planning, and linked participants, with system effects grouped by system.
-  Shared carrier stock counts once so shortages are not understated.
-  Choose a system beside Refresh to see just that system's combined report, or
-  leave All Systems selected to plan across all projects. CSV exports follow the
-  selected system, and automatic refresh keeps your selection while it has builds.
-- **Reports stay up to date while open.** Individual previews and combined
-  reports refresh automatically 30 seconds after each read cycle, with a Refresh
-  button for an immediate update. Failed refreshes keep the last complete report;
-  closing a window stops its requests.
-- **Export a build report to a spreadsheet.** Export CSV saves the displayed
-  individual or combined report in compact labelled tables with cargo quantities
-  in tonnes. Empty sections are omitted, and Excel-compatible exports include
-  build details or report membership, carrier totals, system effects, and history.
-- **Hidden builds no longer stop ship-cargo uploads.** When automatic publishing
-  is enabled, the ship name, type, capacity, and current Cargo.json counts continue
-  to publish to Raven even with all builds hidden or no projects loaded. Show
-  controls the shopping plan and overlay; the publishing help text now makes this
-  clear. Raven access, credentials, ship readiness, and the multiple-game-window
-  safeguard remain required.
-- **KDE overlays stay steady with notification effects enabled.** Live panels
-  and position-editor previews use a tool window type before appearing, avoiding
-  notification sliding and standard popup animations with Bypass Window Management
-  either on or off. You can leave Plasma's notification effects enabled while
-  moving overlays. KDE's fullscreen stacking rules still apply when bypass is off.
-- **RC.59.2 quick patch: overlay dragging.** Live overlays and position-editor
-  previews use the current mouse position on X11/XWayland, fixing stale drag
-  positions that could leave panels trailing behind the pointer. Fast direction
-  changes no longer skip a move while the desktop is reporting an earlier
-  position, and releasing the mouse ends the drag cleanly. The selected-monitor
-  lock continues to keep panels within the chosen display.
-- **RC.59.1 quick patch: Linux keyboard shortcuts.** SrvSurvey registers with
-  the desktop shortcut service when launched directly from an AppImage, fixing
-  the reported "App info not found" error. Unsupported or rejected shortcut
-  setup stops retrying and filling the log. Temporary connection failures still
-  recover automatically; after repairing desktop setup, restart SrvSurvey or
-  turn key chords off and back on to retry.
-- **Your window keeps its shape.** SrvSurvey remembers the main window's size,
-  position, and maximized state between sessions. Switching applications,
-  receiving an unchanged display notification, or restoring from the tray no
-  longer resets a resized window. A changed monitor, resolution, or scaling
-  setting uses a suitable default when the saved geometry cannot be restored.
-- **Overlays stay visible when you ask them to.** “Keep overlays visible when
-  Elite loses focus” also applies to the multi-game Commander panel, keeping it
-  on top while you use another application.
-- **Overlays recover more cleanly.** Hiding and showing a panel retries a
-  temporary opening or preparation failure. Stream overlays retry preparation
-  automatically, and repeated failures produce a clear status without filling
-  the log with the same message.
-- **Keyboard shortcuts recover after temporary failures.** Game-display input
-  continues checking after a discovery, focus, or input-reading error instead
-  of stopping for the rest of the session. Recovery clears stale held keys and
-  automatic input-source selection while keeping your configured bindings.
-- **Overlay positioning saves your final move.** Saving a layout or opening
-  the position editor includes a drag that the desktop has not finished
-  reporting yet. If saving fails, your live edits remain available to retry;
-  canceling still restores the original positions.
-- **Mining searches keep the right results.** Starting a replacement search
-  prevents older work from changing the current results or progress. Ring and
-  planetary searches retain their own diagnostic output, and restored searches
-  keep their reference system until you edit it.
-- **Powerplay searches continue past stale results.** If refreshing a cached
-  batch removes all its candidates, the search continues to later pages instead
-  of stopping early. Reference systems with surrounding spaces are handled
-  consistently without changing a restored reference.
-- **Raven delivery recovery preserves construction progress.** Pending updates
-  recover the remaining materials and completion state after a restart, without
-  resending delivery credit that Raven already acknowledged. Deliveries with an
-  uncertain credit response still use the existing verification workflow.
-- **Fleet-carrier updates stay with the right commander.** Switching profiles
-  or overlapping a journal refresh with a manual refresh no longer lets stale
-  work update the replacement profile or prematurely clear its pending cargo.
-  Docking context and queued cargo changes remain recoverable for their owner.
-- **Journal shutdown preserves recorded progress.** Exploration and system
-  history from an already-read journal batch are saved before monitoring stops.
-  With cargo publishing enabled and one game window open, startup publishes the
-  current cargo snapshot without replaying historical cargo uploads.
-- **Invalid coordinates no longer interrupt Guardian tracking.** Missing or
-  out-of-range position data preserves the existing site information instead of
-  triggering a false nearby-site match or aborting the journal update.
-- **Boxel searches suggest the last known system again.** Named-sector systems
-  are retained when resolving available Spansh, local, and route data. The
-  suggested number is the highest known system, and you can still override it
-  when in-game investigation finds a larger range.
-- **Boxel completion settings affect an active search.** Previously visited
-  systems and systems whose Spansh data predates the search start date are
-  evaluated using your chosen rules. Completed systems stay visible and marked
-  complete, and next-target selection skips them. Requiring a full FSS scan no
-  longer lets an old scan complete a later unscanned visit. Manual empty markers,
-  deferred systems, and a forced last-system value remain intact.
-- **Starting a fresh Boxel search gives you a fresh set of results.** Completion,
-  empty-system markers, and deferred systems from a previous search no longer
-  carry into a new one. The new search uses the completion rules you choose.
-  Continuing the active search or resuming one from the library keeps its recorded
-  progress, with saved completion marks visible before system data finishes loading.
-- **Boxel auto-copy controls stay in sync.** Changing “Auto-copy next system in
-  Galaxy Map” in overlay settings also updates the Boxel workspace control, and
-  vice versa. Boxel search, Route Manager, and FC Routes share one destination
-  source: enabling auto-copy for one turns it off for the others, so each Galaxy
-  Map entry copies a single destination.
-- **New Boxel searches start with today's date.** The default refreshes when
-  entering the workspace or preparing a new search, including after midnight.
-  Dates you deliberately choose are preserved, and explicitly resumed progress
-  retains its original start date. Configuration drafts also survive refreshes
-  and rapid checkbox changes.
-- **VoxStellar logs are quieter and uploads are grouped.** Events collect in
-  short timed batches, reuse connections, and produce one summary of accepted,
-  rejected, and failed uploads per batch. Uploads retain their existing order
-  and request format; turning off uploads invalidates unsent queued events.
+- **Continue on another computer with Google Drive.** Link your Google account
+  in Settings → Data & migration. Portable preferences and saved work can follow
+  you between computers, including themes and colors, overlay visibility,
+  shortcuts, workspace selections, saved searches, routes, navigation and mining
+  bookmarks, Firegroups configurations, and surveys. Automatic sync checks for
+  cloud changes on startup and backs up on orderly shutdown. Backup now and Sync
+  now let you update the cloud while SrvSurvey is open.
+- **Keep hardware settings with the right machine.** Monitor selection, overlay
+  placement, capture calibration, platform options, and input-device choices are
+  backed up separately and restored only on their originating machine and
+  operating system. Credentials, journals, screenshots, and queued API reports
+  are excluded from backups.
+- **Recover saved work and choose conflicting changes.** Restore a cloud backup
+  or export and import a local backup file without a Google account. Ten recent
+  local and cloud backups are retained per machine. Restores requested while the
+  app is open apply after restart, with a local recovery copy saved first. If
+  computers change the same setting or collection, choose which version to keep;
+  independent changes are combined. Failed uploads retain local recovery data so
+  you can retry later. Close all SrvSurvey instances before applying a restore.
+- **Manage your cloud backup history.** Refresh history to see the backup count
+  and storage used across computers. Download a selected backup to keep a
+  separate file, delete one backup, or clear all listed SrvSurvey cloud backups.
+  Deletion requires confirmation and preserves local data and Google linking.
+  Automatic backups on linked machines can create new cloud files afterward.
+  Cloud backups use Drive's private app-data folder and count toward your Google
+  storage; SrvSurvey's permission is limited to that folder.
+- **Find and follow Guides more easily.** Expand a category and choose a subject
+  to read focused instructions. Search stays at the top, searches complete
+  subjects in the selected language, and opens matching instructions directly.
+  Procedures use numbered steps, supporting notes, and relevant symbol examples.
+  Updated help covers current mining searches, Rhino calibration, Wayland capture,
+  keyboard input, overlays, delivery recovery, backup and sync, and other existing
+  workflows. Firegroups and Fleet Carrier now have their own categories.
+- **Assign the missing Firegroups actions.** Composition Scanner joins the
+  built-in scanners in new and saved ship configurations. Equipped Frame Shift
+  Drive Interdictors now have readable module names. Other equipment choices
+  continue to follow the selected ship's recorded loadout.
+- **Choose where the Firegroups overlay appears.** New Left, Main, and Right
+  checkboxes in Theme → Overlay Settings control cockpit-view visibility. Main
+  is enabled by default; the overlay hides when a side panel is focused unless
+  you enable that view, and stays hidden in other interface screens.
 
 ## Update channel and packages
 
-RC.61 is a development preview on the schema-2 `xp2-v` update channel. Existing
+RC.62 is a development preview on the schema-2 `xp2-v` update channel. Existing
 update-channel choices are preserved, and RC51 remains the compatibility bridge
 for older installations. Windows and Linux packages remain self-contained.
 
-- Version: `2.1.3.0-rc.61`
-- Tag: `xp2-v2.1.3.0-rc.61`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.61-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.61-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.61-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.61-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.62`
+- Tag: `xp2-v2.1.3.0-rc.62`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.62-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.62-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.62-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.62-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

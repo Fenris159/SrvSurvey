@@ -35,6 +35,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
+        "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs",
         "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs",
         "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
         "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs",
@@ -199,6 +200,11 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Storage/VisitedStarsCacheServiceTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/Platform/CodexImageCacheTests.cs",
             ]
+        ),
+        new(
+            "google-drive-profile-sync",
+            ["src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"],
+            ["tests/SrvSurvey.Desktop.Tests/ProfileSync/GoogleDriveBackupClientTests.cs"]
         ),
         new(
             "diagnostic-network-denial",

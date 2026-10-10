@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Firegroups;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -10,20 +11,202 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     private readonly string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
     private readonly JournalSessionState journal = new();
 
+    /// <summary>Default visibility follows panel focus and excludes every non-cockpit interface.</summary>
+    [Theory]
+    [InlineData(GuiFocus.NoFocus, true)]
+    [InlineData(GuiFocus.ExternalPanel, false)]
+    [InlineData(GuiFocus.InternalPanel, false)]
+    [InlineData(GuiFocus.CommsPanel, false)]
+    [InlineData(GuiFocus.RolePanel, false)]
+    [InlineData(GuiFocus.StationServices, false)]
+    [InlineData(GuiFocus.GalaxyMap, false)]
+    [InlineData(GuiFocus.SystemMap, false)]
+    [InlineData(GuiFocus.Orrery, false)]
+    [InlineData(GuiFocus.Fss, false)]
+    [InlineData(GuiFocus.Saa, false)]
+    [InlineData(GuiFocus.Codex, false)]
+    [InlineData((GuiFocus)999, false)]
+    public void OverlayDefaultsToMainCockpitOnly(GuiFocus focus, bool visible)
+    {
+        FiregroupsWorkspaceViewModel vm = Create();
+        SaveOne(vm, "Cockpit setup");
+        Feed(vm, [], focus: focus);
+        Assert.Equal(visible, vm.ShouldShow);
+        Assert.False(vm.ShowOverlayInLeftView);
+        Assert.True(vm.ShowOverlayInMainView);
+        Assert.False(vm.ShowOverlayInRightView);
+    }
+
+    /// <summary>All combinations work independently and survive restart with a cached ship configuration.</summary>
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void CockpitViewChoicesApplyIndependentlyAndPersist(bool left, bool main, bool right)
+    {
+        FiregroupsWorkspaceViewModel vm = Create();
+        SaveOne(vm, "Cockpit setup");
+        vm.ShowOverlayInLeftView = left;
+        vm.ShowOverlayInMainView = main;
+        vm.ShowOverlayInRightView = right;
+        var restarted = new FiregroupsWorkspaceViewModel(directory);
+        Assert.Equal(left, restarted.ShowOverlayInLeftView);
+        Assert.Equal(main, restarted.ShowOverlayInMainView);
+        Assert.Equal(right, restarted.ShowOverlayInRightView);
+        foreach (FiregroupsWorkspaceViewModel model in new[] { vm, restarted })
+        {
+            Feed(model, [], focus: GuiFocus.ExternalPanel);
+            Assert.Equal(left, model.ShouldShow);
+            Feed(model, [], focus: GuiFocus.NoFocus);
+            Assert.Equal(main, model.ShouldShow);
+            Feed(model, [], focus: GuiFocus.InternalPanel);
+            Assert.Equal(right, model.ShouldShow);
+            Feed(model, [], focus: GuiFocus.Fss);
+            Assert.False(model.ShouldShow);
+        }
+    }
+
+    /// <summary>Toggling a focused view updates live visibility without another journal tick or restart.</summary>
+    [Fact]
+    public void ViewTogglePublishesImmediateVisibilityAndIgnoresUnchangedValues()
+    {
+        FiregroupsWorkspaceViewModel vm = Create();
+        SaveOne(vm, "Cockpit setup");
+        var notifications = new List<string?>();
+        vm.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+        vm.ShowOverlayInMainView = false;
+        Assert.False(vm.ShouldShow);
+        Assert.Contains(nameof(vm.ShowOverlayInMainView), notifications);
+        Assert.Contains(nameof(vm.ShouldShow), notifications);
+        notifications.Clear();
+        vm.ShowOverlayInMainView = false;
+        Assert.Empty(notifications);
+        Feed(vm, [], focus: GuiFocus.ExternalPanel);
+        vm.ShowOverlayInLeftView = true;
+        Assert.True(vm.ShouldShow);
+        Feed(vm, [], focus: GuiFocus.InternalPanel);
+        vm.ShowOverlayInRightView = true;
+        Assert.True(vm.ShouldShow);
+    }
+
+    /// <summary>Storage failures retain the live choice and report a warning that clears after a successful save.</summary>
+    [Fact]
+    public void ViewToggleSurvivesSettingsSaveFailureAndCanRecover()
+    {
+        Directory.CreateDirectory(directory);
+        string blocked = Path.Combine(directory, "blocked");
+        File.WriteAllText(blocked, "Not a directory");
+        var vm = new FiregroupsWorkspaceViewModel(
+            directory,
+            new FiregroupsOverlaySettingsStore(Path.Combine(blocked, "ui-settings.json"))
+        );
+        Feed(vm, [Event("""{"event":"LoadGame","FID":"F1","Ship":"python","ShipID":1}"""), Loadout(1, "Python")]);
+        SaveOne(vm, "Cockpit setup");
+        vm.ShowOverlayInMainView = false;
+        Assert.False(vm.ShouldShow);
+        Assert.Contains("could not be saved", vm.OverlaySettingsStatus);
+        File.Delete(blocked);
+        vm.ShowOverlayInMainView = true;
+        Assert.True(vm.ShouldShow);
+        Assert.Empty(vm.OverlaySettingsStatus);
+        Assert.True(
+            new FiregroupsOverlaySettingsStore(Path.Combine(blocked, "ui-settings.json")).Load().ShowInMainView
+        );
+    }
+
+    /// <summary>Assignable equipment and built-in actions appear without intentionally excluded modules.</summary>
     [Fact]
     public void EquippedFilterIncludesDuplicateHardpointsUtilityLimpetsAndBuiltInScannersButNotPassiveDefencesOrCoreModules()
     {
         FiregroupsWorkspaceViewModel vm = Create();
         IReadOnlyList<FiregroupModule> options = vm.Primary[0].Options;
-        Assert.Equal(7, options.Count);
+        Assert.Equal(8, options.Count);
         Assert.Equal(2, options.Count(m => m.Name.StartsWith("Pulse Laser", StringComparison.Ordinal)));
         Assert.Contains(options, m => m.Slot == "TinyHardpoint1");
         Assert.Contains(options, m => m.Name.Contains("Limpet Controller"));
         Assert.Contains(options, m => m.Name == "D-Scanner");
         Assert.Contains(options, m => m.Name == "SC-Suite");
         Assert.Contains(options, m => m.Name == "Data Link Scanner");
+        Assert.Contains(options, m => m.Name == "Composition Scanner");
         Assert.DoesNotContain(options, m => m.Symbol.Contains("shieldcellbank") || m.Slot == "PowerPlant");
-        Assert.Equal(7, options.Select(m => m.Display).Distinct().Count());
+        Assert.Equal(8, options.Select(m => m.Display).Distinct().Count());
+    }
+
+    /// <summary>Old cached and restored loadouts expose the scanner without a fresh Loadout event.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CachedAndRestoredLoadoutsOfferCompositionScannerWithoutNewLoadout(bool restore)
+    {
+        FiregroupsWorkspaceViewModel original = Create();
+        SaveOne(original, "Existing setup");
+        var store = new FiregroupStore(directory);
+        FiregroupDocument saved = store.Load("F1");
+        saved.Ships[0] = saved.Ships[0] with
+        {
+            Modules = saved.Ships[0].Modules.Where(module => module.Name != "Composition Scanner").ToArray(),
+        };
+        store.Save("F1", saved);
+        var reloaded = new FiregroupsWorkspaceViewModel(directory);
+        Feed(reloaded, []);
+        if (restore)
+        {
+            Assert.True(reloaded.Restore("F1", FiregroupStore.Export(saved)));
+        }
+
+        FiregroupModule scanner = Assert.Single(
+            reloaded.Primary[0].Options,
+            module => module.Name == "Composition Scanner"
+        );
+        Assert.Single(reloaded.Secondary[0].Options, module => module.Name == scanner.Name);
+        Assert.Equal(
+            4,
+            reloaded.Primary[0].Options.Count(module => module.Symbol.StartsWith("builtin_", StringComparison.Ordinal))
+        );
+        reloaded.Primary[0].SelectedModule = scanner;
+        Assert.False(reloaded.Primary[0].HasWarning);
+        reloaded.SaveCommand.Execute(null);
+        Assert.StartsWith("Saved", reloaded.Status);
+
+        var restarted = new FiregroupsWorkspaceViewModel(directory);
+        Feed(restarted, []);
+        Assert.Equal(scanner, restarted.Primary[0].SelectedModule);
+        Assert.False(restarted.Primary[0].HasWarning);
+        using var overlay = new MiningActivityOverlayViewModel(null, true, restarted);
+        Assert.Contains("Composition Scanner", overlay.PrimaryLabel);
+    }
+
+    /// <summary>The picker exposes an equipped interdictor and preserves its assignment through restart.</summary>
+    [Fact]
+    public void EquippedInterdictorCanBeSelectedSavedAndReloaded()
+    {
+        FiregroupsWorkspaceViewModel vm = Create();
+        Feed(
+            vm,
+            [
+                Event(
+                    """{"event":"Loadout","Ship":"python","ShipID":1,"Modules":[{"Slot":"Slot01_Size4","Item":"Int_FSDInterdictor_Size4_Class5"}]}"""
+                ),
+            ]
+        );
+        FiregroupModule interdictor = Assert.Single(
+            vm.Primary[0].Options,
+            module => module.Symbol == "int_fsdinterdictor_size4_class5"
+        );
+        vm.Secondary[0].SelectedModule = interdictor;
+        vm.ConfigurationName = "Interdiction";
+        vm.SaveCommand.Execute(null);
+        Assert.StartsWith("Saved", vm.Status);
+
+        var restarted = new FiregroupsWorkspaceViewModel(directory);
+        Feed(restarted, []);
+        Assert.Equal(interdictor, restarted.Secondary[0].SelectedModule);
+        Assert.False(restarted.Secondary[0].HasWarning);
     }
 
     [Fact]
@@ -127,6 +310,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Single(vm.ActiveProfile.Groups);
     }
 
+    /// <summary>Refreshing equipment preserves editor rows and identifies unavailable saved assignments.</summary>
     [Fact]
     public void LoadoutRefreshRetainsMissingAssignmentsAndNoOpUpdatesPreserveEditorRows()
     {
@@ -139,9 +323,9 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Same(row, vm.Primary[0]);
         Assert.NotNull(row.SelectedModule);
         Assert.Contains("Not equipped", row.Warning);
-        Assert.Equal(4, row.Options.Count);
+        Assert.Equal(5, row.Options.Count);
         Assert.Contains(row.SelectedModule, row.Options);
-        Assert.Equal(3, row.Options.Count(module => module.Symbol.StartsWith("builtin_", StringComparison.Ordinal)));
+        Assert.Equal(4, row.Options.Count(module => module.Symbol.StartsWith("builtin_", StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -281,11 +465,13 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.StartsWith("Saved", vm.Status);
     }
 
+    /// <summary>Applies journal events and a synchronous status update with the requested vehicle and panel focus.</summary>
     private void Feed(
         FiregroupsWorkspaceViewModel vm,
         IReadOnlyList<JournalEventEnvelope> events,
         int group = 0,
-        StatusFlags flags = StatusFlags.InMainShip
+        StatusFlags flags = StatusFlags.InMainShip,
+        GuiFocus focus = GuiFocus.NoFocus
     )
     {
         foreach (JournalEventEnvelope entry in events)
@@ -293,7 +479,12 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
             journal.Apply(entry);
         }
 
-        var status = new EliteStatus { Flags = flags, FireGroup = group };
+        var status = new EliteStatus
+        {
+            Flags = flags,
+            FireGroup = group,
+            GuiFocus = focus,
+        };
         vm.Apply(new JournalMonitorUpdate(null, events, status, null, null, null, [], false), journal, status);
     }
 
