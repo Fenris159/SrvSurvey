@@ -1,10 +1,17 @@
 using System.Globalization;
+using Microsoft.VisualBasic.FileIO;
 using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationProjectCsvExporterTests
 {
+    private static readonly string[] FieldHeader = ["Field", "Value"];
+    private static readonly string[] CommanderDeliveryHeader = ["Commander", "Cargo"];
+    private static readonly string[] ExpectedCommanderDelivery = ["Cmdr", "30"];
+    private static readonly string[] HourlyDeliveryHeader = ["Time UTC", "Commander", "Cargo"];
+    private static readonly string[] ExpectedHourlyDelivery = ["1970-01-01T00:00:00.0000000+00:00", "Cmdr", "30"];
+
     /// <summary>Verifies UTF-8 BOM compatibility and replacement of an existing longer export, including non-ASCII names.</summary>
     [Fact]
     public async Task WritesExcelUtf8AndTruncatesExistingFile()
@@ -18,7 +25,7 @@ public sealed class ColonizationProjectCsvExporterTests
         Assert.True(stream.CanRead);
     }
 
-    /// <summary>Checks that cargo, project metadata, effects, carrier totals, and hourly deliveries share one rectangular CSV schema.</summary>
+    /// <summary>Checks complete data round trips through compact tables whose columns belong to that section, including multiline notes.</summary>
     [Fact]
     public void ExportsCompletePreviewWithInvariantNumbersAndHistory()
     {
@@ -58,16 +65,41 @@ public sealed class ColonizationProjectCsvExporterTests
             Assert.Contains("\"Fleet carrier deficit\",\"8261\"", csv);
             Assert.Contains("Cmdr (steel)", csv);
             Assert.Contains("Line one, quoted \"\"text\"\"\nLine two", csv);
-            Assert.Contains("\"Hourly deliveries\"", csv);
-            Assert.Contains("\"Commander deliveries\"", csv);
-            Assert.Contains("\"Effect\",\"Security\",\"'+10\"", csv);
+            Assert.Contains("\"Security\",\"'+10\"", csv);
             Assert.Contains("1970-01-01T00:00:00.0000000+00:00", csv);
             Assert.EndsWith("\r\n", csv);
-            string noMultiline = csv.Replace("\nLine two", "Line two", StringComparison.Ordinal);
-            Assert.All(
-                noMultiline.Split("\r\n", StringSplitOptions.RemoveEmptyEntries),
-                line => Assert.Equal(12, ParseCells(line))
+            Dictionary<string, List<string[]>> tables = ParseTables(csv);
+            Assert.Equal(6, tables.Count);
+            Assert.Equal(FieldHeader, tables["Project details"][0]);
+            Assert.All(tables["Project details"], row => Assert.Equal(2, row.Length));
+            Assert.Contains(tables["Project details"], row => row.SequenceEqual(new[] { "Notes", data.Project.Notes }));
+            Assert.Contains(
+                tables["Project details"],
+                row => row.SequenceEqual(new[] { "Current ship capacity", "128" })
             );
+            Assert.Contains(tables["Project details"], row => row.SequenceEqual(new[] { "Current ship trips", "78" }));
+            List<string[]> cargo = tables["Cargo requirements (tonnes)"];
+            string[] cargoHeader =
+            [
+                "Category",
+                "Commodity",
+                "Need",
+                "FC Diff",
+                .. preview.Carriers.Select(carrier => carrier.Label),
+            ];
+            Assert.Equal(cargoHeader, cargo[0]);
+            Assert.Equal(preview.Rows.Count + 1, cargo.Count);
+            Assert.All(cargo, row => Assert.Equal(6, row.Length));
+            Assert.Contains(
+                cargo,
+                row => row.SequenceEqual(new[] { "Metals", "Aluminium", "2414", "-2414", "0", "0" })
+            );
+            Assert.All(tables["Fleet carrier cargo (tonnes)"], row => Assert.Equal(2, row.Length));
+            Assert.All(tables["System effects"], row => Assert.Equal(2, row.Length));
+            Assert.Equal(CommanderDeliveryHeader, tables["Commander deliveries (tonnes)"][0]);
+            Assert.Equal(ExpectedCommanderDelivery, tables["Commander deliveries (tonnes)"][1]);
+            Assert.Equal(HourlyDeliveryHeader, tables["Hourly deliveries (tonnes)"][0]);
+            Assert.Equal(ExpectedHourlyDelivery, tables["Hourly deliveries (tonnes)"][1]);
             Assert.Equal(
                 "Raven-build-test-build-19700101-000000.csv",
                 ColonizationProjectCsvExporter.SuggestedFileName(preview)
@@ -116,34 +148,52 @@ public sealed class ColonizationProjectCsvExporterTests
         string csv = ColonizationProjectCsvExporter.Write(new(data, DateTimeOffset.UnixEpoch));
         Assert.Contains("\"Fleet carrier deficit\",\"\"", csv);
         Assert.Contains("\"Progress (%)\",\"\"", csv);
-        Assert.DoesNotContain("\"Effect\"", csv);
+        Assert.DoesNotContain("System effects", csv);
+        Dictionary<string, List<string[]>> tables = ParseTables(csv);
+        Assert.All(tables["Cargo requirements (tonnes)"].Skip(1), row => Assert.All(row.Skip(3), Assert.Empty));
+        Assert.All(tables["Fleet carrier cargo (tonnes)"].Skip(1), row => Assert.Empty(row[1]));
     }
 
-    /// <summary>Counts quoted CSV cells, distinguishing an escaped quote from a field boundary.</summary>
-    private static int ParseCells(string line)
+    /// <summary>Omits table headings and unused columns when a build has no cargo, carrier links, effects, or delivery records.</summary>
+    [Fact]
+    public void OmitsEmptyTablesButKeepsSummaryAndKnownZeroes()
     {
-        int cells = 1;
-        bool quoted = false;
-        int index = 0;
-        while (index < line.Length)
+        var project = new ColonizationProject { BuildId = "empty", BuildType = "unknown" };
+        var preview = new ColonizationProjectPreview(new(project, [], new()), DateTimeOffset.UnixEpoch);
+        Dictionary<string, List<string[]>> tables = ParseTables(ColonizationProjectCsvExporter.Write(preview));
+        Assert.Single(tables);
+        List<string[]> details = tables["Project details"];
+        Assert.All(details, row => Assert.Equal(2, row.Length));
+        Assert.Contains(details, row => row.SequenceEqual(new[] { "Remaining cargo", "0" }));
+        Assert.Contains(details, row => row.SequenceEqual(new[] { "Tracked deliveries", "0" }));
+        Assert.DoesNotContain(details, row => row[0].StartsWith("Current ship", StringComparison.Ordinal));
+    }
+
+    /// <summary>Parses section titles and CSV records with a framework reader, preserving escaped quotes, blank values, and multiline text.</summary>
+    private static Dictionary<string, List<string[]>> ParseTables(string csv)
+    {
+        using var parser = new TextFieldParser(new StringReader(csv))
         {
-            if (line[index] == '"')
+            HasFieldsEnclosedInQuotes = true,
+            TrimWhiteSpace = false,
+        };
+        parser.SetDelimiters(",");
+        var tables = new Dictionary<string, List<string[]>>(StringComparer.Ordinal);
+        List<string[]>? table = null;
+        while (!parser.EndOfData)
+        {
+            string[] cells = Assert.IsType<string[]>(parser.ReadFields());
+            if (cells.Length == 1)
             {
-                if (quoted && index + 1 < line.Length && line[index + 1] == '"')
-                {
-                    index++;
-                }
-                else
-                {
-                    quoted = !quoted;
-                }
+                table = [];
+                tables.Add(cells[0], table);
             }
-            else if (line[index] == ',' && !quoted)
+            else
             {
-                cells++;
+                Assert.NotNull(table);
+                table.Add(cells);
             }
-            index++;
         }
-        return cells;
+        return tables;
     }
 }

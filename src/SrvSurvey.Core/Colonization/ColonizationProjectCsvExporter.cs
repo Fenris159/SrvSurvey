@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SrvSurvey.Core.Colonization;
 
-/// <summary>Exports a rectangular CSV containing build details, cargo, effects, and delivery history without credentials or editing controls.</summary>
+/// <summary>Exports compact CSV tables for build details, cargo, effects, and delivery history without credentials or editing controls.</summary>
 public static class ColonizationProjectCsvExporter
 {
     /// <summary>Replaces a selected file with an Excel-compatible UTF-8 CSV while leaving stream ownership with the caller.</summary>
@@ -19,141 +19,107 @@ public static class ColonizationProjectCsvExporter
         await writer.WriteAsync(csv);
     }
 
-    /// <summary>Produces invariant numbers and quoted, formula-safe text; each record kind can be filtered in a spreadsheet.</summary>
+    /// <summary>Produces labelled sections with only their relevant columns, invariant numbers, and quoted, formula-safe text.</summary>
     public static string Write(ColonizationProjectPreview preview, int currentShipCapacity = 0)
     {
         ArgumentNullException.ThrowIfNull(preview);
         var csv = new StringBuilder();
-        Append(
+        AppendTable(
             csv,
-            [
-                "Record",
-                "Field",
-                "Value",
-                "Category",
-                "Commodity",
-                "Need",
-                "FC Diff",
-                "Time UTC",
-                "Commander",
-                "Cargo",
-                .. preview.Carriers.Select(carrier => Text(carrier.Label)),
-            ]
+            "Project details",
+            ["Field", "Value"],
+            Details(preview)
+                .Concat(CurrentShipDetails(preview, currentShipCapacity))
+                .Select(pair => new[] { Text(pair.Key), Text(pair.Value) })
         );
-        foreach ((string field, string value) in Details(preview))
-        {
-            Append(
-                csv,
-                ["Project", Text(field), Text(value), .. Enumerable.Repeat(string.Empty, 7 + preview.Carriers.Count)]
-            );
-        }
-        if (currentShipCapacity > 0)
-        {
-            Append(
-                csv,
-                [
-                    "Project",
-                    "Current ship capacity",
-                    Number(currentShipCapacity),
-                    .. Enumerable.Repeat(string.Empty, 7 + preview.Carriers.Count),
-                ]
-            );
-            Append(
-                csv,
-                [
-                    "Project",
-                    "Current ship trips",
-                    Number(ColonizationProjectPreview.Trips(preview.Remaining, currentShipCapacity)),
-                    .. Enumerable.Repeat(string.Empty, 7 + preview.Carriers.Count),
-                ]
-            );
-        }
-        foreach (ColonizationPreviewCommodity row in preview.Rows)
-        {
-            Append(
-                csv,
-                [
-                    "Commodity",
-                    "",
-                    "",
-                    Text(row.Category),
-                    Text(row.Name),
-                    Number(row.Need),
-                    Number(row.CarrierDifference),
-                    "",
-                    "",
-                    "",
-                    .. row.CarrierQuantities.Select(quantity => Number(quantity)),
-                ]
-            );
-        }
-        foreach (ColonizationPreviewCarrier carrier in preview.Carriers)
-        {
-            Append(
-                csv,
-                [
-                    "Carrier",
-                    Text(carrier.Label),
-                    Number(carrier.TotalCargo),
-                    .. Enumerable.Repeat(string.Empty, 7 + preview.Carriers.Count),
-                ]
-            );
-        }
+        AppendTable(
+            csv,
+            "Cargo requirements (tonnes)",
+            ["Category", "Commodity", "Need", "FC Diff", .. preview.Carriers.Select(carrier => Text(carrier.Label))],
+            preview.Rows.Select(row =>
+                new[] { Text(row.Category), Text(row.Name), Number(row.Need), Number(row.CarrierDifference) }
+                    .Concat(row.CarrierQuantities.Select(quantity => Number(quantity)))
+                    .ToArray()
+            )
+        );
+        AppendTable(
+            csv,
+            "Fleet carrier cargo (tonnes)",
+            ["Fleet carrier", "Total cargo"],
+            preview.Carriers.Select(carrier => new[] { Text(carrier.Label), Number(carrier.TotalCargo) })
+        );
         if (preview.Effects is { } effects)
         {
-            foreach ((string field, string value) in EffectDetails(effects))
-            {
-                Append(
-                    csv,
-                    ["Effect", Text(field), Text(value), .. Enumerable.Repeat(string.Empty, 7 + preview.Carriers.Count)]
-                );
-            }
+            AppendTable(
+                csv,
+                "System effects",
+                ["Field", "Value"],
+                EffectDetails(effects).Select(pair => new[] { Text(pair.Key), Text(pair.Value) })
+            );
         }
         if (preview.Statistics is { } statistics)
         {
-            foreach ((string commander, long cargo) in statistics.Cmdrs)
-            {
-                Append(
-                    csv,
-                    [
-                        "Commander deliveries",
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        Text(commander),
-                        Number(cargo),
-                        .. Enumerable.Repeat(string.Empty, preview.Carriers.Count),
-                    ]
-                );
-            }
-            foreach (ColonizationDeliveryBucket bucket in statistics.Stats.OrderBy(bucket => bucket.Time))
-            {
-                foreach ((string commander, long cargo) in bucket.Cmdrs)
-                {
-                    Append(
-                        csv,
-                        [
-                            "Hourly deliveries",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            bucket.Time.ToString("O", CultureInfo.InvariantCulture),
-                            Text(commander),
-                            Number(cargo),
-                            .. Enumerable.Repeat(string.Empty, preview.Carriers.Count),
-                        ]
-                    );
-                }
-            }
+            AppendTable(
+                csv,
+                "Commander deliveries (tonnes)",
+                ["Commander", "Cargo"],
+                statistics.Cmdrs.Select(pair => new[] { Text(pair.Key), Number(pair.Value) })
+            );
+            AppendTable(
+                csv,
+                "Hourly deliveries (tonnes)",
+                ["Time UTC", "Commander", "Cargo"],
+                statistics
+                    .Stats.OrderBy(bucket => bucket.Time)
+                    .SelectMany(bucket =>
+                        bucket.Cmdrs.Select(pair =>
+                            new[]
+                            {
+                                bucket.Time.ToString("O", CultureInfo.InvariantCulture),
+                                Text(pair.Key),
+                                Number(pair.Value),
+                            }
+                        )
+                    )
+            );
         }
         return csv.ToString();
+    }
+
+    /// <summary>Includes current-ship trip estimates only when the preview has a usable cargo capacity.</summary>
+    private static IEnumerable<KeyValuePair<string, string>> CurrentShipDetails(
+        ColonizationProjectPreview preview,
+        int currentShipCapacity
+    )
+    {
+        if (currentShipCapacity > 0)
+        {
+            yield return KeyValuePair.Create("Current ship capacity", Number(currentShipCapacity));
+            yield return KeyValuePair.Create(
+                "Current ship trips",
+                Number(ColonizationProjectPreview.Trips(preview.Remaining, currentShipCapacity))
+            );
+        }
+    }
+
+    /// <summary>Separates populated tables with one blank line, omitting empty tables and unrelated column padding.</summary>
+    private static void AppendTable(StringBuilder csv, string title, string[] header, IEnumerable<string[]> rows)
+    {
+        bool started = false;
+        foreach (string[] row in rows)
+        {
+            if (!started)
+            {
+                if (csv.Length > 0)
+                {
+                    csv.Append("\r\n");
+                }
+                Append(csv, [title]);
+                Append(csv, header);
+                started = true;
+            }
+            Append(csv, row);
+        }
     }
 
     /// <summary>Includes the build identity and refresh time so exports remain distinct and valid on supported desktops.</summary>
