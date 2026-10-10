@@ -198,6 +198,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         UpdateHost();
     }
 
+    /// <summary>Creates and classifies the native host before its first map while retaining its management mode.</summary>
     private void EnsureHost()
     {
         if (host is not null || disposed)
@@ -207,6 +208,10 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
         var window = new CombinedOverlayWindow();
         OverlayThemeResources.Apply(window);
+        if (nativePlatform is IOverlayWindowManagement nativeManagement)
+        {
+            nativeManagement.PrepareOverlayWindow(window);
+        }
         window.Opened += OnHostOpened;
         host = window;
     }

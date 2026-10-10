@@ -10,6 +10,12 @@ all workspace projects, including hidden projects. It sums cargo requirements an
 delivery progress, counts shared fleet carrier stock once, and lists the included
 builds, linked commanders and carriers, and system effects grouped by system.
 
+The system selector to the left of **Refresh** starts at **All Systems**. Choose a
+system to combine only its builds across every report section and the CSV export.
+Switching systems uses the last complete snapshot without making extra API calls.
+Refresh keeps the selected system while it has projects, otherwise returning to
+**All Systems**. The filter leaves workspace **Show** and primary choices intact.
+
 The window refreshes every 30 seconds and provides an immediate **Refresh** button.
 Closing it stops its refreshes and cancels pending reads. Disabling Raven access or
 changing the active commander closes all build previews and the combined report.

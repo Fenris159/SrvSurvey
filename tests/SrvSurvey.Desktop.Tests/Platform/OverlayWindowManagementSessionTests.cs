@@ -13,7 +13,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayWindowManagementSessionTests
 {
-    /// <summary>Checks that normal presentation and the combined gamescope host never enable bypass.</summary>
+    /// <summary>Prepares separate managed overlays without enabling bypass; the combined host keeps its own lifecycle.</summary>
     [AvaloniaTheory]
     [InlineData(false, OverlayPresentationMode.MultipleWindows)]
     [InlineData(true, OverlayPresentationMode.CombinedWindow)]
@@ -21,13 +21,14 @@ public sealed class OverlayWindowManagementSessionTests
     {
         var registry = new OverlayWindowRegistry();
         int nativeCreations = 0;
+        var native = new FakeWindowManagement();
         using OverlayPresentationSession presentation = CreatePresentation(
             registry,
             mode,
             () =>
             {
                 nativeCreations++;
-                return new FakeWindowManagement();
+                return native;
             }
         );
         presentation.ConfigureWindowManagement(enabled);
@@ -36,7 +37,10 @@ public sealed class OverlayWindowManagementSessionTests
         {
             registry.Register(window, "PlotJumpInfo");
             window.Show();
-            Assert.Equal(0, nativeCreations);
+            Assert.Equal(mode == OverlayPresentationMode.MultipleWindows ? 1 : 0, nativeCreations);
+            Assert.Empty(native.Prepared);
+            Assert.Equal(mode == OverlayPresentationMode.MultipleWindows ? [window] : [], native.Classified);
+            Assert.False(native.ClassifiedWhileVisible);
         }
         finally
         {
@@ -167,12 +171,15 @@ public sealed class OverlayWindowManagementSessionTests
             registry.Register(live, "PlotJumpInfo");
             registry.Register(live, "PlotJumpInfo");
             Assert.Equal([live], native.Prepared);
+            Assert.Equal([live], native.Classified);
+            Assert.False(native.ClassifiedWhileVisible);
             Assert.False(native.PreparedWhileVisible);
             live.Position = new PixelPoint(100, 200);
             Assert.Empty(native.Raised);
             live.Show();
             Assert.Contains(live, native.Raised);
             Assert.DoesNotContain(ordinaryWindow, native.Prepared);
+            Assert.DoesNotContain(ordinaryWindow, native.Classified);
             Assert.DoesNotContain(ordinaryWindow, native.Raised);
             Assert.Empty(native.Activated);
 
@@ -231,6 +238,10 @@ public sealed class OverlayWindowManagementSessionTests
             );
             Assert.Empty(registry.Snapshot());
             Assert.False(native.PreparedWhileVisible);
+            Assert.False(native.ClassifiedWhileVisible);
+            Assert.Contains(toolbar, native.Classified);
+            Assert.All(host.PreviewWindows, window => Assert.Contains(window, native.Classified));
+            Assert.Equal(native.Classified.Count, native.Classified.Distinct().Count());
             if (enabled)
             {
                 Assert.Contains(toolbar, native.Prepared);
@@ -263,6 +274,8 @@ public sealed class OverlayWindowManagementSessionTests
                 Assert.Equal(native.Prepared.Count, native.Prepared.Distinct().Count());
                 Assert.Equal(2, native.Activated.Count);
             }
+            Assert.All(host.PreviewWindows, window => Assert.Contains(window, native.Classified));
+            Assert.Equal(native.Classified.Count, native.Classified.Distinct().Count());
             Assert.Empty(registry.Snapshot());
         }
         finally
@@ -273,6 +286,38 @@ public sealed class OverlayWindowManagementSessionTests
             {
                 Directory.Delete(directory, recursive: true);
             }
+        }
+    }
+
+    /// <summary>Classifies live panels once without bypass, raising, or affecting ordinary windows.</summary>
+    [AvaloniaFact]
+    public void ManagedPanelsReceivePreMapClassificationAndDetachOnDisposal()
+    {
+        var registry = new OverlayWindowRegistry();
+        var native = new FakeWindowManagement();
+        using var session = new OverlayWindowManagementSession(registry, native, bypassWindowManagement: false);
+        var window = new Window();
+        var laterWindow = new Window();
+        try
+        {
+            registry.Register(window, "PlotJumpInfo");
+            registry.PrepareWindow(window);
+            Assert.Equal([window], native.Classified);
+            Assert.Empty(native.Prepared);
+            Assert.False(native.ClassifiedWhileVisible);
+            window.Show();
+            window.Position = new PixelPoint(20, 30);
+            Assert.Empty(native.Raised);
+            window.Close();
+            session.Dispose();
+            registry.Register(laterWindow, "PlotFSS");
+            Assert.Equal([window], native.Classified);
+            Assert.Equal(1, native.DisposeCount);
+        }
+        finally
+        {
+            window.Close();
+            laterWindow.Close();
         }
     }
 
@@ -342,6 +387,12 @@ public sealed class OverlayWindowManagementSessionTests
         /// <summary>Records windows submitted for native bypass configuration.</summary>
         internal List<Window> Prepared { get; } = [];
 
+        /// <summary>Records classification in both bypass modes before a window becomes visible.</summary>
+        internal List<Window> Classified { get; } = [];
+
+        /// <summary>Detects late classification that would leave the initial map eligible for window effects.</summary>
+        internal bool ClassifiedWhileVisible { get; private set; }
+
         /// <summary>Records shown or moved windows submitted for raising.</summary>
         internal List<Window> Raised { get; } = [];
 
@@ -364,6 +415,13 @@ public sealed class OverlayWindowManagementSessionTests
         /// <summary>Models interaction remaining available for an unmanaged panel.</summary>
         public OverlayInteractionResult SetInteractive(Window window, bool interactive) =>
             new(true, interactive, "Prepared");
+
+        /// <summary>Records pre-map native classification independently of the bypass choice.</summary>
+        public void PrepareOverlayWindow(Window window)
+        {
+            Classified.Add(window);
+            ClassifiedWhileVisible |= window.IsVisible;
+        }
 
         /// <summary>Checks that the session prepares windows before showing them.</summary>
         public bool TryBypassWindowManagement(Window window)

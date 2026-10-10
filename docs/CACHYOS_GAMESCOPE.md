@@ -94,8 +94,13 @@ Gamescope isolation problem.
    fullscreen while testing.
 5. Trigger an SrvSurvey overlay and confirm that it follows the Elite window.
 
-SrvSurvey asks KWin for its on-screen-display window type automatically. If an
-overlay remains behind Elite, create this manual fallback rule.
+SrvSurvey classifies X11/XWayland overlays as utility windows before showing
+them, so KDE's notification sliding and standard popup animations do not move
+or fade them. This applies with **Bypass Window Management** on or off. Bypass
+also lets SrvSurvey raise separate overlays directly. With bypass off, KDE
+manages their stacking; if an overlay remains behind an exclusive fullscreen
+game, create this window rule. It changes the stacking **Layer**, while keeping
+the utility window type that avoids notification animations.
 
 ### KDE window rule for SrvSurvey overlays
 

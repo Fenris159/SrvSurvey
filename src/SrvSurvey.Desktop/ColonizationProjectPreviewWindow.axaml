@@ -24,6 +24,16 @@
           <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <ComboBox x:Name="SystemFilter" Width="200" IsVisible="{Binding IsCombinedReport}"
+                    ItemsSource="{Binding SystemOptions}" SelectedItem="{Binding SelectedSystem, Mode=TwoWay}"
+                    AutomationProperties.Name="Filter combined report by system"
+                    ToolTip.Tip="Filter combined report by system">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:PreviewSystemOption">
+                <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Label}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
           <Button x:Name="RefreshButton" Classes="secondary" Content="Refresh"
                   IsEnabled="{Binding !IsBusy}" Click="Refresh_Click" />
           <Button x:Name="ExportCsvButton" Classes="secondary" Content="Export CSV"

@@ -689,9 +689,9 @@ internal static partial class X11Native
     [LibraryImport("libXtst.so.6")]
     private static partial int XRecordFreeContext(nint display, nuint context);
 
-    /// <summary>Completes control requests before enabling the data stream.</summary>
+    /// <summary>Completes this connection's queued requests before another connection or data stream proceeds.</summary>
     [LibraryImport("libX11.so.6")]
-    private static partial int XSync(nint display, int discard);
+    internal static partial int XSync(nint display, int discard);
 
     /// <summary>Looks up a standard X11 keysym.</summary>
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]

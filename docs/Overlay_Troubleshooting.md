@@ -200,11 +200,11 @@ Include the trace for a problematic drag when reporting continued drifting.
 
 ## KDE Plasma — overlays not appearing or not staying above Elite
 
-KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. SrvSurvey now checks the X11 window manager's `_NET_SUPPORTED` capabilities. When KWin advertises `_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY`, SrvSurvey applies that type to runtime overlays, edit previews, and the overlay editor while retaining `_NET_WM_WINDOW_TYPE_NORMAL` as the standards-compatible fallback.
+SrvSurvey classifies X11/XWayland runtime overlays, edit previews, and the position editor as utility windows before they appear. KDE's **Slide Plasma notifications in and out** effect and standard popup opening/closing animations exclude this type. Notification and on-screen-display window types are no longer used. Other window managers can use the normal-window fallback if utility windows are unsupported.
 
-This check is capability-based rather than distribution- or desktop-name-based. Other X11 window managers keep Avalonia's existing normal/topmost behavior, and a failed capability check also falls back to that behavior.
+The utility classification applies with **Bypass Window Management** on or off. Bypass lets SrvSurvey place and raise separate windows directly; it does not turn off the compositor's effects globally. Desktop-wide effects and custom animation scripts remain controlled by KDE.
 
-The edit previews remain interactive. Because KWin treats OSD windows as special windows and does not provide its normal interactive move operation for them, SrvSurvey moves those windows directly while the pointer is captured.
+Edit previews remain interactive and use SrvSurvey's direct pointer dragging. With bypass off, KDE manages stacking and can keep an exclusive fullscreen game above topmost utility windows. Use borderless mode or the following stacking rule if this occurs.
 
 If overlays still remain behind Elite, use the following manual rule as a fallback.
 
@@ -225,7 +225,7 @@ If overlays still remain behind Elite, use the following manual rule as a fallba
 
 ![KDE Plasma Window Rules configured for SrvSurvey overlays](kde-window-rules-srvsurvey-overlays.png)
 
-The screenshot was captured with an older build and may show **Normal window** or the previous longer title expression. Use the exact values in the table: current builds can classify an overlay as an OSD window before the fallback rule is evaluated.
+The screenshot was captured with an older build and may show **Normal window** or the previous longer title expression. Use the exact values in the table so the rule also matches utility windows.
 
 4. Click **Apply**.
 
@@ -237,7 +237,7 @@ After applying the rule, restart SrvSurvey (or simply close and re-open the affe
 
 ### Why the OSD layer is used on Plasma
 
-Plasma is more restrictive than GNOME about the stacking order of windows relative to exclusive full-screen clients. The **On-screen display** layer is intended for short-lived indicators that must paint above full-screen applications; SrvSurvey uses the same KWin-recognized window type for its overlay surfaces.
+The **On-screen display** stacking layer can place overlays above exclusive fullscreen applications. Set the **Layer** property, keeping the utility window type intact; changing the type to a notification or on-screen display can make the overlay eligible for KDE animations again.
 
 ## Other desktop environments
 

@@ -1753,6 +1753,10 @@
       "translation": "Alle Geschwaderträger-Datenpunkte ({0})"
     },
     {
+      "source": "All Systems",
+      "translation": "Alle Systeme"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Alle Daten und Uhrzeiten verwenden UTC."
     },
@@ -9949,6 +9953,10 @@
       "translation": "Dateiname"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "Kombinierten Bericht nach System filtern"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "Filtern Sie lokale Entdeckungen"
     },
@@ -17755,10 +17763,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Der Overlay-Bearbeitungsmodus ist unter Windows aktiv."
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "Der Overlay-Bearbeitungsmodus ist über den X11-Eingabebereich mit KDE-Bildschirmstapelung aktiv."
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -26833,6 +26837,10 @@
       "translation": "Die X11-Display-Verbindung ist geschlossen."
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "Der X11-Overlay-Dienstprogrammfenstertyp konnte nicht angewendet werden."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "Die aktive Bootstrap-Quelle und die auf dieser Plattform überprüften Speicherorte."
     },
@@ -31033,12 +31041,8 @@
       "translation": "Der X11-Overlay-Interaktionsmodus konnte nicht geändert werden: {0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "X11-Overlay-Stacking-Richtlinie: KDE-Bildschirmanzeige (vom Fenstermanager angekündigt)."
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "X11-Overlay-Stacking-Richtlinie: Standard oben (KDE-Unterstützung für die Bildschirmanzeige wurde nicht angekündigt)."
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "X11-Overlay-Fensterrichtlinie: Dienstprogrammfenster mit standardmäßiger oberster Stapelung."
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -37161,6 +37165,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "Todos los puntos de datos del Squadron Carrier ({0})"
+    },
+    {
+      "source": "All Systems",
+      "translation": "Todos los sistemas"
     },
     {
       "source": "All dates and times use UTC.",
@@ -45359,6 +45367,10 @@
       "translation": "Nombre de archivo"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "Filtrar informe combinado por sistema"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "Filtrar descubrimientos locales"
     },
@@ -53165,10 +53177,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "El modo de edición de superposición está activo en Windows."
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "El modo de edición de superposición está activo a través de la región de entrada X11 con apilamiento de visualización en pantalla de KDE."
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -62243,6 +62251,10 @@
       "translation": "La conexión de pantalla X11 está cerrada."
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "No se pudo aplicar el tipo de ventana de utilidad de superposición X11."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "La fuente de arranque activa y las ubicaciones marcadas en esta plataforma."
     },
@@ -66443,12 +66455,8 @@
       "translation": "No se pudo cambiar el modo de interacción de superposición X11: {0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "Política de apilamiento de superposiciones X11: visualización en pantalla de KDE (anunciada por el administrador de ventanas)."
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "Política de apilamiento de superposiciones X11: estándar superior (no se anunció la compatibilidad con la visualización en pantalla de KDE)."
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "Política de ventanas superpuestas X11: ventanas de servicios públicos con apilamiento superior estándar."
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -72571,6 +72579,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "Tous les points de données du Squadron Carrier ({0})"
+    },
+    {
+      "source": "All Systems",
+      "translation": "Tous les systèmes"
     },
     {
       "source": "All dates and times use UTC.",
@@ -80769,6 +80781,10 @@
       "translation": "Nom du fichier"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "Filtrer le rapport combiné par système"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "Filtrer les découvertes locales"
     },
@@ -88575,10 +88591,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Le mode d’édition par superposition est actif sous Windows."
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "Le mode d'édition par superposition est actif via la région d'entrée X11 avec l'empilement d'affichage à l'écran de KDE."
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -97653,6 +97665,10 @@
       "translation": "La connexion de l'écran X11 est fermée."
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "Le type de fenêtre utilitaire de superposition X11 n'a pas pu être appliqué."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "La source d'amorçage active et les emplacements vérifiés sur cette plateforme."
     },
@@ -101853,12 +101869,8 @@
       "translation": "Le mode d'interaction de superposition X11 n'a pas pu être modifié : {0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "Politique d'empilement de superposition X11 : affichage à l'écran de KDE (annoncé par le gestionnaire de fenêtres)."
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "Politique d'empilement de superposition X11 : standard en haut (la prise en charge de l'affichage à l'écran de KDE n'a pas été annoncée)."
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "Politique de fenêtre de superposition X11 : fenêtres utilitaires avec empilement standard le plus haut."
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -107981,6 +107993,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "Todos os pontos de dados do Squadron Carrier ({0})"
+    },
+    {
+      "source": "All Systems",
+      "translation": "Todos os sistemas"
     },
     {
       "source": "All dates and times use UTC.",
@@ -116179,6 +116195,10 @@
       "translation": "Nome do arquivo"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "Filtrar relatório combinado por sistema"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "Filtrar descobertas locais"
     },
@@ -123985,10 +124005,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "O modo de edição de sobreposição está ativo no Windows."
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "O modo de edição de sobreposição está ativo através da região de entrada X11 com empilhamento de exibição na tela do KDE."
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -133063,6 +133079,10 @@
       "translation": "A conexão do display X11 está fechada."
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "O tipo de janela do utilitário de sobreposição X11 não pôde ser aplicado."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "A fonte de bootstrap ativa e os locais verificados nesta plataforma."
     },
@@ -137263,12 +137283,8 @@
       "translation": "O modo de interação de sobreposição X11 não pôde ser alterado: {0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "Política de empilhamento de sobreposição do X11: exibição na tela do KDE (anunciado pelo gerenciador de janelas)."
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "Política de empilhamento de sobreposição do X11: padrão superior (o suporte para exibição na tela do KDE não foi anunciado)."
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "Política de janela de sobreposição X11: janelas utilitárias com empilhamento superior padrão."
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -143391,6 +143407,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "Все точки данных авианосца эскадрильи ({0})"
+    },
+    {
+      "source": "All Systems",
+      "translation": "Все системы"
     },
     {
       "source": "All dates and times use UTC.",
@@ -151589,6 +151609,10 @@
       "translation": "Имя файла"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "Фильтровать комбинированный отчет по системе"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "Фильтровать местные открытия"
     },
@@ -159395,10 +159419,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Режим редактирования наложения активен в Windows."
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "Режим редактирования наложения активен через область ввода X11 со стеком KDE на экране."
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -168473,6 +168493,10 @@
       "translation": "Соединение дисплея X11 закрыто."
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "Не удалось применить тип окна утилиты наложения X11."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "Активный источник начальной загрузки и местоположения, проверенные на этой платформе."
     },
@@ -172673,12 +172697,8 @@
       "translation": "Не удалось изменить режим взаимодействия оверлея X11: {0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "Политика наложения наложений X11: экранное отображение KDE (объявляется оконным менеджером)."
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "Политика наложения наложения X11: стандартная, самая верхняя (поддержка экранного отображения KDE не рекламировалась)."
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "Политика наложения окон X11: служебные окна со стандартным верхним расположением."
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -178801,6 +178821,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "所有航空母舰中队数据点 ({0})"
+    },
+    {
+      "source": "All Systems",
+      "translation": "所有星系"
     },
     {
       "source": "All dates and times use UTC.",
@@ -186999,6 +187023,10 @@
       "translation": "文件名"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "按星系筛选合并报告"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "过滤本地发现"
     },
@@ -194805,10 +194833,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "覆盖编辑模式在 Windows 上处于活动状态。"
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "覆盖编辑模式通过 X11 输入区域与 KDE 屏幕显示堆叠激活。"
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -203883,6 +203907,10 @@
       "translation": "X11 显示连接已关闭。"
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "无法应用 X11 覆盖实用程序窗口类型。"
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "在此平台上检查的活动引导源和位置。"
     },
@@ -208083,12 +208111,8 @@
       "translation": "无法更改 X11 覆盖交互模式：{0}"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "X11 覆盖堆叠策略：KDE 屏幕显示（由窗口管理器通告）。"
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "X11 覆盖堆叠策略：标准最顶层（KDE 屏幕显示支持未公布）。"
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "X11 覆盖窗口策略：具有标准最顶层堆叠的实用程序窗口。"
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",
@@ -214211,6 +214235,10 @@
     {
       "source": "All Squadron Carrier data points ({0})",
       "translation": "* ALL SQUADRON CARRIER DATA POINTS ({0}) >>>!"
+    },
+    {
+      "source": "All Systems",
+      "translation": "* ALL SYSTEMS >>>!"
     },
     {
       "source": "All dates and times use UTC.",
@@ -222409,6 +222437,10 @@
       "translation": "* FILENAME >>>!"
     },
     {
+      "source": "Filter combined report by system",
+      "translation": "* FILTER COMBINED REPORT BY SYSTEM >>>!"
+    },
+    {
       "source": "Filter local discoveries",
       "translation": "* FILTER LOCAL DISCOVERIES >>>!"
     },
@@ -230215,10 +230247,6 @@
     {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "* OVERLAY EDIT MODE IS ACTIVE ON WINDOWS. >>>!"
-    },
-    {
-      "source": "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking.",
-      "translation": "* OVERLAY EDIT MODE IS ACTIVE THROUGH THE X11 INPUT REGION WITH KDE ON-SCREEN-DISPLAY STACKING. >>>!"
     },
     {
       "source": "Overlay edit mode is active through the X11 input region.",
@@ -239293,6 +239321,10 @@
       "translation": "* THE X11 DISPLAY CONNECTION IS CLOSED. >>>!"
     },
     {
+      "source": "The X11 overlay utility-window type could not be applied.",
+      "translation": "* THE X11 OVERLAY UTILITY-WINDOW TYPE COULD NOT BE APPLIED. >>>!"
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "* THE ACTIVE BOOTSTRAP SOURCE AND THE LOCATIONS CHECKED ON THIS PLATFORM. >>>!"
     },
@@ -243493,12 +243525,8 @@
       "translation": "* X11 OVERLAY INTERACTION MODE COULD NOT BE CHANGED: {0} >>>!"
     },
     {
-      "source": "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager).",
-      "translation": "* X11 OVERLAY STACKING POLICY: KDE ON-SCREEN DISPLAY (ADVERTISED BY THE WINDOW MANAGER). >>>!"
-    },
-    {
-      "source": "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).",
-      "translation": "* X11 OVERLAY STACKING POLICY: STANDARD TOPMOST (KDE ON-SCREEN DISPLAY SUPPORT WAS NOT ADVERTISED). >>>!"
+      "source": "X11 overlay window policy: utility windows with standard topmost stacking.",
+      "translation": "* X11 OVERLAY WINDOW POLICY: UTILITY WINDOWS WITH STANDARD TOPMOST STACKING. >>>!"
     },
     {
       "source": "X11 request failed and will be delegated to the previous error handler: {0}",

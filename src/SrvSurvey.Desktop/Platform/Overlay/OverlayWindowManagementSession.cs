@@ -9,6 +9,7 @@ internal sealed class OverlayWindowManagementSession : IDisposable
     private readonly OverlayWindowRegistry registry;
     private readonly IOverlayWindowManagement native;
     private readonly Action<string>? log;
+    private readonly bool bypassWindowManagement;
     private readonly HashSet<Window> windows = [];
     private bool disposed;
 
@@ -16,19 +17,28 @@ internal sealed class OverlayWindowManagementSession : IDisposable
     internal OverlayWindowManagementSession(
         OverlayWindowRegistry registry,
         IOverlayWindowManagement native,
-        Action<string>? log = null
+        Action<string>? log = null,
+        bool bypassWindowManagement = true
     )
     {
         this.registry = registry;
         this.native = native;
         this.log = log;
+        this.bypassWindowManagement = bypassWindowManagement;
         registry.WindowPreparing += PrepareWindow;
     }
 
-    /// <summary>Attempts bypass once before showing an overlay or editor window, retaining management on failure.</summary>
+    /// <summary>Classifies each window before mapping, then optionally bypasses desktop placement.</summary>
     private void PrepareWindow(Window window)
     {
-        if (windows.Contains(window))
+        if (!windows.Add(window))
+        {
+            return;
+        }
+
+        window.Closed += ReleaseWindow;
+        native.PrepareOverlayWindow(window);
+        if (!bypassWindowManagement)
         {
             return;
         }
@@ -41,10 +51,8 @@ internal sealed class OverlayWindowManagementSession : IDisposable
             return;
         }
 
-        windows.Add(window);
         window.Opened += RaiseWindow;
         window.PositionChanged += RaiseMovedWindow;
-        window.Closed += ReleaseWindow;
     }
 
     /// <summary>Raises shown windows and honors editor activation while passive panels retain game focus.</summary>
@@ -101,9 +109,12 @@ internal sealed class OverlayWindowManagementSession : IDisposable
     }
 }
 
-/// <summary>Native operations for unmanaged overlay windows; unsupported backends do not implement this contract.</summary>
+/// <summary>Native classification and optional unmanaged placement for overlay and position-editor windows.</summary>
 internal interface IOverlayWindowManagement : IDisposable
 {
+    /// <summary>Prepares native overlay attributes before mapping, independently of the bypass preference.</summary>
+    void PrepareOverlayWindow(Window window);
+
     /// <summary>Sets override-redirect only while the native window is still unmapped.</summary>
     bool TryBypassWindowManagement(Window window);
 

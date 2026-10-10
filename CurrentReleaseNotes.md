@@ -1,16 +1,16 @@
-# SrvSurvey-XP 2.1.3.0-rc.60
+# SrvSurvey-XP 2.1.3.0-rc.61
 
-RC.60 adds live Raven build previews, a combined cargo report, and spreadsheet
-exports. Opted-in ship-cargo uploads now continue when builds are hidden or none
-are loaded. It includes the RC.59.2 overlay-dragging patch, the RC.59.1 keyboard
-shortcut patch, and the earlier RC.59 improvements below.
+RC.61 keeps KDE overlays steady with desktop notification effects enabled and
+adds a system selector to the combined Raven build report. It includes RC.60's
+live build previews, combined cargo planning, and spreadsheet exports, plus the
+RC.59 improvements below.
 
 This preview improves window sizing, overlays, keyboard shortcuts, mining and
 Boxel searches, and background uploads. It focuses on keeping your chosen
 settings and work intact when searches overlap, connections fail, or the
 application restarts.
 
-## What's changed in RC.60 and the RC.59 previews
+## What's changed in RC.61 and recent previews
 
 - **Inspect a Raven build inside SrvSurvey.** Click a project name in
   Colonization → My build projects to open its own read-only window. See cargo
@@ -21,6 +21,9 @@ application restarts.
   hidden builds. It combines requirements, delivery progress, ship and carrier
   cargo planning, and linked participants, with system effects grouped by system.
   Shared carrier stock counts once so shortages are not understated.
+  Choose a system beside Refresh to see just that system's combined report, or
+  leave All Systems selected to plan across all projects. CSV exports follow the
+  selected system, and automatic refresh keeps your selection while it has builds.
 - **Reports stay up to date while open.** Individual previews and combined
   reports refresh automatically 30 seconds after each read cycle, with a Refresh
   button for an immediate update. Failed refreshes keep the last complete report;
@@ -35,6 +38,11 @@ application restarts.
   controls the shopping plan and overlay; the publishing help text now makes this
   clear. Raven access, credentials, ship readiness, and the multiple-game-window
   safeguard remain required.
+- **KDE overlays stay steady with notification effects enabled.** Live panels
+  and position-editor previews use a tool window type before appearing, avoiding
+  notification sliding and standard popup animations with Bypass Window Management
+  either on or off. You can leave Plasma's notification effects enabled while
+  moving overlays. KDE's fullscreen stacking rules still apply when bypass is off.
 - **RC.59.2 quick patch: overlay dragging.** Live overlays and position-editor
   previews use the current mouse position on X11/XWayland, fixing stale drag
   positions that could leave panels trailing behind the pointer. Fast direction
@@ -122,16 +130,16 @@ application restarts.
 
 ## Update channel and packages
 
-RC.60 is a development preview on the schema-2 `xp2-v` update channel. Existing
+RC.61 is a development preview on the schema-2 `xp2-v` update channel. Existing
 update-channel choices are preserved, and RC51 remains the compatibility bridge
 for older installations. Windows and Linux packages remain self-contained.
 
-- Version: `2.1.3.0-rc.60`
-- Tag: `xp2-v2.1.3.0-rc.60`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.60-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.60-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.60-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.60-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.61`
+- Tag: `xp2-v2.1.3.0-rc.61`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.61-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.61-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.61-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.61-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
