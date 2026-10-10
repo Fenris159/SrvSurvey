@@ -10945,6 +10945,46 @@
       "translation": "Die Texteingabe für das Spiel ist nicht verfügbar."
     },
     {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "Gamescope-Anzeigeprüfung ist nicht verfügbar: {0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Gamescope-Display-Routing fehlgeschlagen; Overlays sind nicht verfügbar."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "Die Registrierung des externen Gamescope-Overlays ist fehlgeschlagen."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "Die Registrierung des externen Gamescope-Overlays ist fehlgeschlagen. Das HUD bleibt ausgeblendet."
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Gamescope-Overlay-Anzeige: {0} (Server 0); geerbte Anzeige: {1}."
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "Gamescope-Overlays sind passiv. Schalten Sie das Performance-HUD aus. Verwenden Sie den Positionseditor, um Panels zu konfigurieren."
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Passive Gamescope-Overlays sind verfügbar. Schalten Sie das Performance-HUD aus. Panels im Positionseditor konfigurieren. Live-HUD-Interaktion ist nicht verfügbar."
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope trennt die Spielanzeige von der Overlay-Leinwand. Die bildschirmbasierte X11-Erkennung ist in dieser Sitzung nicht verfügbar."
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "Gamescope wurde erkannt, sein primäres Overlay-Display konnte jedoch nicht eindeutig identifiziert werden. Overlays sind nicht verfügbar."
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "Gamescope wurde erkannt, aber die Initialisierung des passiven Overlays ist fehlgeschlagen. Überprüfen Sie das Anwendungsprotokoll."
+    },
+    {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
       "translation": "Gamescope wurde erkannt; Live-Panels teilen sich ein natives Overlay-Fenster."
     },
@@ -28437,6 +28477,10 @@
       "translation": "Das Upload-Protokoll wurde vom VoxStellar-Plugin für EDMC angepasst. Copyright © 2023 Sven Ziereis. Die MIT-Lizenz des Plugins erlaubt die Nutzung und Änderung mit ihrem Urheberrechts- und Erlaubnishinweis und stellt die Software ohne Gewährleistung zur Verfügung. Diese Implementierung wird weiterhin unter der GPL-3.0-Lizenz von SrvSurvey vertrieben."
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "Der verifizierte Gamescope-Compositor verfügt über einen externen Overlay-Steckplatz; Panels teilen sich eine passive Leinwand in Ausgabegröße."
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "Der verifizierte Update-Helfer wartet. Schließen Sie SrvSurvey, um das Update fortzusetzen; Die aktuelle Installation bleibt für ein Rollback verfügbar."
     },
@@ -33655,6 +33699,10 @@
     {
       "source": "steamapps",
       "translation": "Steamapps"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "Steamcompmgr"
     },
     {
       "source": "steamvr",
@@ -46357,6 +46405,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "La entrada de texto del juego no está disponible."
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "La sonda de visualización del Gamescope no está disponible: {0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Falló el enrutamiento de la pantalla del Gamescope; las superposiciones no están disponibles."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "Error en el registro de superposición externa de Gamescope."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "Error en el registro de superposición externa de Gamescope; el HUD permanecerá oculto."
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Pantalla superpuesta de Gamescope: {0} (servidor 0); pantalla heredada: {1}."
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "Las superposiciones de Gamescope son pasivas. Apague el HUD de rendimiento; Utilice el editor de posiciones para configurar los paneles."
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Se encuentran disponibles superposiciones pasivas de Gamescope. Apague el HUD de rendimiento; configurar paneles en el editor de posiciones. La interacción HUD en vivo no está disponible."
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope separa la pantalla del juego del lienzo superpuesto. La detección basada en pantalla X11 no está disponible en esta sesión."
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "Se detectó Gamescope, pero su pantalla superpuesta principal no se pudo identificar de forma única. Las superposiciones no están disponibles."
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "Se detectó Gamescope, pero falló la inicialización de la superposición pasiva. Consulte el registro de la aplicación."
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -63851,6 +63939,10 @@
       "translation": "El protocolo de carga se adaptó del complemento VoxStellar para EDMC. Copyright © 2023 Sven Ziereis. La licencia MIT del complemento permite el uso y la modificación con su aviso de permiso y derechos de autor y proporciona el software sin garantía. Esta implementación permanece distribuida bajo la licencia GPL-3.0 de SrvSurvey."
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "El compositor Gamescope verificado tiene una ranura de superposición externa; Los paneles comparten un lienzo pasivo del tamaño de una salida."
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "El asistente de actualización verificado está esperando. Cierre SrvSurvey para continuar con la actualización; la instalación actual permanece disponible para revertirla."
     },
@@ -69069,6 +69161,10 @@
     {
       "source": "steamapps",
       "translation": "aplicaciones de vapor"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "steamcommgr"
     },
     {
       "source": "steamvr",
@@ -81771,6 +81867,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "La saisie du texte du jeu n'est pas disponible."
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "Le sondage de l'affichage du Gamescope n'est pas disponible : {0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Le routage de l'affichage du Gamescope a échoué ; les superpositions ne sont pas disponibles."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "L'enregistrement de la superposition externe Gamescope a échoué."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "L'enregistrement de la superposition externe Gamescope a échoué ; le HUD restera caché."
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Affichage de superposition Gamescope : {0} (serveur 0) ; affichage hérité : {1}."
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "Les superpositions Gamescope sont passives. Désactivez le HUD de performances ; utilisez l'éditeur de position pour configurer les panneaux."
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Des superpositions passives Gamescope sont disponibles. Désactivez le HUD de performances ; configurer les panneaux dans l'éditeur de position. L'interaction en direct avec le HUD n'est pas disponible."
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope sépare l'affichage du jeu du canevas de superposition. La détection basée sur l'écran X11 n'est pas disponible dans cette session."
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "Gamescope a été détecté, mais son affichage principal en superposition n'a pas pu être identifié de manière unique. Les superpositions ne sont pas disponibles."
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "Gamescope a été détecté, mais l'initialisation de la superposition passive a échoué. Vérifiez le journal des applications."
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -99265,6 +99401,10 @@
       "translation": "Le protocole de téléchargement a été adapté du plugin VoxStellar pour EDMC. Copyright © 2023 Sven Ziereis. La licence MIT du plugin permet l'utilisation et la modification avec son avis de droit d'auteur et d'autorisation et fournit le logiciel sans garantie. Cette implémentation reste distribuée sous la licence SrvSurvey GPL-3.0 de SrvSurvey."
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "Le compositeur Gamescope vérifié dispose d'un emplacement de superposition externe ; les panneaux partagent un canevas passif de taille de sortie."
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "L'assistant de mise à jour vérifié est en attente. Fermez SrvSurvey pour continuer la mise à jour ; l'installation actuelle reste disponible pour la restauration."
     },
@@ -104483,6 +104623,10 @@
     {
       "source": "steamapps",
       "translation": "applications steam"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "steamcompmgr"
     },
     {
       "source": "steamvr",
@@ -117185,6 +117329,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "A entrada de texto do jogo não está disponível."
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "A sondagem de exibição do Gamescope não está disponível: {0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Falha no roteamento de exibição do gamescope; as sobreposições não estão disponíveis."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "Falha no registro da sobreposição externa do Gamescope."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "Falha no registro de sobreposição externa do Gamescope; o HUD permanecerá oculto."
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Exibição de sobreposição do Gamescope: {0} (servidor 0); exibição herdada: {1}."
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "As sobreposições do Gamescope são passivas. Desligue o HUD de desempenho; use o editor de posição para configurar painéis."
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Sobreposições passivas do Gamescope estão disponíveis. Desligue o HUD de desempenho; configurar painéis no editor de posição. A interação ao vivo do HUD não está disponível."
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope separa a exibição do jogo da tela de sobreposição. A detecção baseada em tela do X11 não está disponível nesta sessão."
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "O Gamescope foi detectado, mas sua exibição de sobreposição primária não pôde ser identificada de forma exclusiva. As sobreposições não estão disponíveis."
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "O Gamescope foi detectado, mas a inicialização da sobreposição passiva falhou. Verifique o log do aplicativo."
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -134679,6 +134863,10 @@
       "translation": "O protocolo de upload foi adaptado do plugin VoxStellar para EDMC. Direitos autorais © 2023 Sven Ziereis. A licença MIT do plugin permite o uso e modificação com seu aviso de direitos autorais e permissão e fornece o software sem garantia. Esta implementação permanece distribuída sob a licença GPL-3.0 de SrvSurvey."
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "O compositor Gamescope verificado possui um slot de sobreposição externa; os painéis compartilham uma tela de tamanho de saída passiva."
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "O auxiliar de atualização verificado está aguardando. Feche SrvSurvey para continuar a atualização; a instalação atual permanece disponível para reversão."
     },
@@ -139897,6 +140085,10 @@
     {
       "source": "steamapps",
       "translation": "aplicativos Steam"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "steamcompmgr"
     },
     {
       "source": "steamvr",
@@ -152599,6 +152791,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "Ввод игрового текста недоступен."
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "Проверка дисплея Gamescope недоступна: {0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Не удалось выполнить маршрутизацию дисплея Gamescope; наложения недоступны."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "Не удалось зарегистрировать внешнее наложение Gamescope."
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "Не удалось зарегистрировать внешнее наложение Gamescope; HUD останется скрытым."
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Наложение игрового прицела: {0} (сервер 0); унаследованный дисплей: {1}."
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "Наложения Gamescope пассивны. Отключить производительность HUD; используйте редактор позиций для настройки панелей."
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Доступны пассивные наложения Gamescope. Отключить производительность HUD; настроить панели в редакторе позиций. Живое взаимодействие с HUD недоступно."
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope отделяет отображение игры от наложенного холста. Обнаружение на экране X11 в этом сеансе недоступно."
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "Gamescope был обнаружен, но его основной наложенный дисплей не удалось однозначно идентифицировать. Наложения недоступны."
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "Gamescope был обнаружен, но инициализация пассивного оверлея не удалась. Проверьте журнал приложения."
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -170093,6 +170325,10 @@
       "translation": "Протокол загрузки был адаптирован из плагина VoxStellar для EDMC. Copyright © 2023 Свен Зирайс. Лицензия MIT плагина разрешает использование и модификацию с уведомлением об авторских правах и разрешениях и предоставляет программное обеспечение без гарантии. Эта реализация по-прежнему распространяется по лицензии SrvSurvey GPL-3.0 компании GPL-3.0."
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "Проверенный композитор Gamescope имеет один слот для внешнего оверлея; панели используют общий холст выходного размера."
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "Подтвержденный помощник по обновлению ждет. Закройте SrvSurvey, чтобы продолжить обновление; текущая установка остается доступной для отката."
     },
@@ -175311,6 +175547,10 @@
     {
       "source": "steamapps",
       "translation": "SteamApps"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "Steamcompmgr"
     },
     {
       "source": "steamvr",
@@ -188013,6 +188253,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "游戏文字输入不可用。"
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "Gamescope 显示探测不可用：{0}"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "Gamescope 显示路由失败；覆盖不可用。"
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "Gamescope 外部覆盖注册失败。"
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "Gamescope 外部覆盖注册失败； HUD 将保持隐藏状态。"
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "Gamescope 叠加显示：{0}（服务器 0）；继承显示：{1}。"
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "游戏范围覆盖是被动的。关闭性能HUD；使用位置编辑器配置面板。"
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "Gamescope 被动覆盖可用。关闭性能HUD；在位置编辑器中配置面板。实时 HUD 交互不可用。"
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "Gamescope 将游戏显示与覆盖画布分开。基于 X11 屏幕的检测在此会话中不可用。"
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "已检测到 Gamescope，但无法唯一识别其主要覆盖显示。叠加层不可用。"
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "检测到 Gamescope，但被动覆盖初始化失败。检查应用程序日志。"
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -205507,6 +205787,10 @@
       "translation": "上传协议改编自 EDMC 的 VoxStellar 插件。版权所有 © 2023 斯文·齐雷斯。该插件的 MIT 许可证允许使用和修改其版权和许可声明，并提供无担保的软件。此实现仍然根据 SrvSurvey 的 GPL-3.0 许可证进行分发。"
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "经过验证的 Gamescope 合成器有一个外部覆盖插槽；面板共享一个无源输出大小的画布。"
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "已验证的更新助手正在等待。关闭SrvSurvey继续更新；当前安装仍然可以回滚。"
     },
@@ -210725,6 +211009,10 @@
     {
       "source": "steamapps",
       "translation": "蒸汽应用程序"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "蒸汽压缩器"
     },
     {
       "source": "steamvr",
@@ -223427,6 +223715,46 @@
     {
       "source": "Game text entry is unavailable.",
       "translation": "* GAME TEXT ENTRY IS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Gamescope display probing is unavailable: {0}",
+      "translation": "* GAMESCOPE DISPLAY PROBING IS UNAVAILABLE: {0} >>>!"
+    },
+    {
+      "source": "Gamescope display routing failed; overlays are unavailable.",
+      "translation": "* GAMESCOPE DISPLAY ROUTING FAILED; OVERLAYS ARE UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Gamescope external-overlay registration failed.",
+      "translation": "* GAMESCOPE EXTERNAL-OVERLAY REGISTRATION FAILED. >>>!"
+    },
+    {
+      "source": "Gamescope external-overlay registration failed; the HUD will remain hidden.",
+      "translation": "* GAMESCOPE EXTERNAL-OVERLAY REGISTRATION FAILED; THE HUD WILL REMAIN HIDDEN. >>>!"
+    },
+    {
+      "source": "Gamescope overlay display: {0} (server 0); inherited display: {1}.",
+      "translation": "* GAMESCOPE OVERLAY DISPLAY: {0} (SERVER 0); INHERITED DISPLAY: {1}. >>>!"
+    },
+    {
+      "source": "Gamescope overlays are passive. Turn off the performance HUD; use the position editor to configure panels.",
+      "translation": "* GAMESCOPE OVERLAYS ARE PASSIVE. TURN OFF THE PERFORMANCE HUD; USE THE POSITION EDITOR TO CONFIGURE PANELS. >>>!"
+    },
+    {
+      "source": "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable.",
+      "translation": "* GAMESCOPE PASSIVE OVERLAYS ARE AVAILABLE. TURN OFF THE PERFORMANCE HUD; CONFIGURE PANELS IN THE POSITION EDITOR. LIVE HUD INTERACTION IS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
+      "translation": "* GAMESCOPE SEPARATES THE GAME DISPLAY FROM THE OVERLAY CANVAS. X11 SCREEN-BASED DETECTION IS UNAVAILABLE IN THIS SESSION. >>>!"
+    },
+    {
+      "source": "Gamescope was detected, but its primary overlay display could not be identified uniquely. Overlays are unavailable.",
+      "translation": "* GAMESCOPE WAS DETECTED, BUT ITS PRIMARY OVERLAY DISPLAY COULD NOT BE IDENTIFIED UNIQUELY. OVERLAYS ARE UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Gamescope was detected, but passive overlay initialization failed. Check the application log.",
+      "translation": "* GAMESCOPE WAS DETECTED, BUT PASSIVE OVERLAY INITIALIZATION FAILED. CHECK THE APPLICATION LOG. >>>!"
     },
     {
       "source": "Gamescope was detected; live panels will share one native overlay window.",
@@ -240921,6 +241249,10 @@
       "translation": "* THE UPLOAD PROTOCOL WAS ADAPTED FROM THE VOXSTELLAR PLUGIN FOR EDMC. COPYRIGHT © 2023 SVEN ZIEREIS. THE PLUGIN'S MIT LICENSE PERMITS USE AND MODIFICATION WITH ITS COPYRIGHT AND PERMISSION NOTICE AND PROVIDES THE SOFTWARE WITHOUT WARRANTY. THIS IMPLEMENTATION REMAINS DISTRIBUTED UNDER SRVSURVEY'S GPL-3.0 LICENSE. >>>!"
     },
     {
+      "source": "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas.",
+      "translation": "* THE VERIFIED GAMESCOPE COMPOSITOR HAS ONE EXTERNAL-OVERLAY SLOT; PANELS SHARE A PASSIVE OUTPUT-SIZED CANVAS. >>>!"
+    },
+    {
       "source": "The verified update helper is waiting. Close SrvSurvey to continue the update; the current installation remains available for rollback.",
       "translation": "* THE VERIFIED UPDATE HELPER IS WAITING. CLOSE SRVSURVEY TO CONTINUE THE UPDATE; THE CURRENT INSTALLATION REMAINS AVAILABLE FOR ROLLBACK. >>>!"
     },
@@ -246139,6 +246471,10 @@
     {
       "source": "steamapps",
       "translation": "* STEAMAPPS >>>!"
+    },
+    {
+      "source": "steamcompmgr",
+      "translation": "* STEAMCOMPMGR >>>!"
     },
     {
       "source": "steamvr",

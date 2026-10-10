@@ -4,6 +4,30 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class OverlayPresentationModeSelectorTests
 {
+    [Fact]
+    public void VerifiedExternalSlotRequiresOnePassiveHostEvenWithSeparateOverride()
+    {
+        OverlayPlatformCapabilities capabilities = OverlayPlatformCapabilities.ForHost(
+            OverlayHostKind.LinuxXWayland
+        ) with
+        {
+            UsesGamescopeExternalOverlay = true,
+        };
+        OverlayPresentationDecision decision = OverlayPresentationModeSelector.Select(
+            capabilities,
+            "separate",
+            null,
+            null,
+            null
+        );
+        Assert.Equal(OverlayPresentationMode.CombinedWindow, decision.Mode);
+        Assert.False(capabilities.SupportsLiveOverlayInteraction);
+        Assert.Contains("performance HUD", capabilities.StatusText);
+        Assert.Contains("failed", (capabilities with { SupportsClickThrough = false }).StatusText);
+        Assert.Contains("failed", (capabilities with { SupportsTopmost = false }).StatusText);
+        Assert.Contains("failed", (capabilities with { SupportsGameWindowTracking = false }).StatusText);
+    }
+
     [Theory]
     [InlineData(OverlayHostKind.Windows)]
     [InlineData(OverlayHostKind.LinuxX11)]

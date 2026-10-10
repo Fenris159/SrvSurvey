@@ -22,6 +22,33 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     );
 
     [Fact]
+    public void GamescopeAllowsPositionEditorButRejectsLiveInput()
+    {
+        var platform = new FakeOverlayPlatform
+        {
+            Capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland) with
+            {
+                UsesGamescopeExternalOverlay = true,
+            },
+        };
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        );
+        Assert.False(viewModel.ToggleLiveOverlayInteraction());
+        Assert.Contains("Live HUD interaction", viewModel.StatusMessage);
+        Assert.Empty(platform.InteractiveStates);
+        Assert.True(viewModel.Begin());
+        Assert.True(host.IsOpen);
+    }
+
+    [Fact]
     public void CalibrationAloneCanBeSavedWithoutCreatingOverlayPlacements()
     {
         var platform = new FakeOverlayPlatform();
@@ -1022,7 +1049,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             ICombinedOverlayNativeService,
             IOverlayWindowManagement
     {
-        public OverlayPlatformCapabilities Capabilities { get; } =
+        public OverlayPlatformCapabilities Capabilities { get; init; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         public List<bool> InteractiveStates { get; } = [];

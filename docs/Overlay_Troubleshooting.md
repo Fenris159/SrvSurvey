@@ -9,10 +9,55 @@ that starts Elite and SrvSurvey in the same nested display, see
 [CachyOS: Elite Dangerous, SrvSurvey, KDE Plasma, and Gamescope](CACHYOS_GAMESCOPE.md).
 
 Ordinary Windows, X11, and XWayland sessions continue to use one native window
-per live overlay. When Gamescope is detected, SrvSurvey reparents the same live
-Avalonia controls into one transparent game-sized host. Opacity, positioning,
-suppression, stream capture, OpenVR capture, and edit-mode dragging continue to
-use the existing overlay models; only the native presentation strategy changes.
+per live overlay. A verified Gamescope session uses one transparent passive
+canvas registered with the compositor. The existing controls, positioning,
+opacity, and suppression models supply its content.
+
+### SteamOS Gaming Mode
+
+SrvSurvey verifies the Gamescope window manager and XWayland server ID at startup.
+Before Avalonia initializes, it selects the compositor's primary server (ID `0`),
+whose actual `DISPLAY` can be `:2`, `:7`, or another value. If SrvSurvey inherits
+a game server instead, it finds the same user's Steam display and verifies that
+it belongs to the same compositor. An ambiguous or inaccessible primary display
+disables overlays and records the reason in the application log.
+
+Start the native Linux AppImage in the same user's Gaming Mode session. Elite
+can launch normally through Steam/Proton; mini-ed-launcher is optional. Its
+additional-process configuration can continue to launch the AppImage unchanged.
+SrvSurvey discovers Elite's display from the running process and follows game
+startup, focus changes, and restart. A separate non-Steam SrvSurvey shortcut is
+also supported by this discovery; return to Elite after configuring SrvSurvey.
+
+**Turn the Deck performance overlay off.** Gamescope exposes one external-overlay
+slot, which the performance HUD also uses. Simultaneous display is not supported.
+The SrvSurvey canvas covers the compositor output, while panel anchors follow
+Elite's projected viewport, including letterboxing and Gamescope scaling.
+
+The HUD remains passive so game input stays with Elite. The live-interaction
+shortcut cannot enable dragging or clicking the Gaming Mode HUD. Configure
+positions, opacity, and scale in the separate position editor; Desktop Mode is
+the recommended configuration environment until Deck controller navigation is
+validated. SrvSurvey does not register configuration windows as external overlays.
+
+X11 screen-based detection is unavailable in this mode because the primary
+overlay display does not contain Elite's composited game image. Journal-driven
+panels and capture of SrvSurvey's own overlay controls remain available. A
+separately supported screen-sharing backend is required for image-based features.
+
+Check the log for `Gamescope overlay display:` and `Overlay presentation:
+CombinedWindow`. `SRVSURVEY_OVERLAY_HOST=separate` cannot override a verified
+external-overlay session because only one canvas can occupy that slot.
+
+### Desktop Mode, including normal Steam/Proton launches
+
+Without Gamescope, the existing desktop overlay path applies. When Elite runs
+inside nested Gamescope on an X11/XWayland desktop, SrvSurvey can discover its
+display and map it through the visible desktop window owned by its Gamescope
+ancestor. This does not require mini-ed-launcher or a bridge file. SrvSurvey
+keeps its UI on the desktop so it survives the nested compositor closing.
+Multiple ambiguous outer windows are not guessed. For a native Wayland outer
+window with no X11 geometry, the bridge described below is still required.
 
 Check the application log for either `Overlay presentation: CombinedWindow` or
 `Overlay presentation: MultipleWindows`. If Gamescope detection is missing,
@@ -22,7 +67,7 @@ launch SrvSurvey in the same Gamescope environment as Elite or test explicitly:
 SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
 ```
 
-To diagnose a compositor regression, restore the previous behavior with
+Outside a verified external-overlay session, diagnose a compositor regression with
 `SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
 
 ### SrvSurvey on the desktop with native Wayland Gamescope

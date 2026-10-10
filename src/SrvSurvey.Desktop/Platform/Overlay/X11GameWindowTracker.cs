@@ -170,7 +170,14 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 clientBounds,
                 isVisible,
                 activeWindow == gameWindow
-            );
+            )
+            {
+                DisplayBounds =
+                    X11Native.XGetWindowAttributes(display, rootWindow, out X11Native.XWindowAttributes rootAttributes)
+                    != 0
+                        ? new PixelRect(0, 0, rootAttributes.Width, rootAttributes.Height)
+                        : null,
+            };
             return HasFailedTransientDisplay() ? GameWindowSnapshot.Unavailable : snapshot;
         }
     }

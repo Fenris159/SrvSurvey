@@ -34,6 +34,7 @@ internal sealed class X11OverlayPlatformService
     private readonly nuint windowTypeAtom;
     private readonly nuint utilityWindowAtom;
     private readonly nuint normalWindowAtom;
+    private readonly GamescopeX11Connection? gamescope;
 
     /// <summary>Retains the owned display and initialized tool-window atoms for later overlay preparation.</summary>
     private X11OverlayPlatformService(X11OverlayPlatformContext context)
@@ -44,8 +45,13 @@ internal sealed class X11OverlayPlatformService
         windowTypeAtom = context.WindowTypeAtom;
         utilityWindowAtom = context.UtilityWindowAtom;
         normalWindowAtom = context.NormalWindowAtom;
+        gamescope = context.GamescopeSession is null
+            ? null
+            : GamescopeX11Connection.TryOpen(context.GamescopeSession.Display);
         Capabilities = OverlayPlatformCapabilities.ForHost(context.Host) with
         {
+            UsesGamescopeExternalOverlay = context.GamescopeSession is not null,
+            SupportsTopmost = context.GamescopeSession is null || gamescope is not null,
             SupportsClickThrough = context.ShapeAvailable,
             SupportsGameWindowTracking = true,
             // BeginMoveDrag is already the managed drag, which applies the monitor lock itself.
@@ -69,12 +75,17 @@ internal sealed class X11OverlayPlatformService
         public nuint UtilityWindowAtom { get; init; }
 
         public nuint NormalWindowAtom { get; init; }
+
+        public GamescopeOverlaySession? GamescopeSession { get; init; }
     }
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
     /// <summary>Opens an X11-compatible display and initializes the atoms used for overlay classification.</summary>
-    public static IOverlayPlatformService? TryCreate(OverlayHostKind host)
+    public static IOverlayPlatformService? TryCreate(OverlayHostKind host) =>
+        TryCreate(host, GamescopeOverlaySession.Current);
+
+    internal static IOverlayPlatformService? TryCreate(OverlayHostKind host, GamescopeOverlaySession? session)
     {
         if (!OperatingSystem.IsLinux() || !OverlayPlatformCapabilities.IsX11Compatible(host))
         {
@@ -82,15 +93,20 @@ internal sealed class X11OverlayPlatformService
         }
 
         nint display;
+        nint displayName = session is null ? nint.Zero : Marshal.StringToCoTaskMemUTF8(session.Display);
         try
         {
             EnsureErrorHandlerInstalled();
-            display = X11Native.XOpenDisplay(nint.Zero);
+            display = X11Native.XOpenDisplay(displayName);
         }
         catch (Exception exception)
             when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             return null;
+        }
+        finally
+        {
+            Marshal.FreeCoTaskMem(displayName);
         }
 
         if (display == nint.Zero)
@@ -158,6 +174,7 @@ internal sealed class X11OverlayPlatformService
                 WindowTypeAtom = windowTypeAtom,
                 UtilityWindowAtom = utilityWindowAtom,
                 NormalWindowAtom = normalWindowAtom,
+                GamescopeSession = session,
             }
         );
     }
@@ -174,6 +191,10 @@ internal sealed class X11OverlayPlatformService
                 if (!ApplyWindowType(currentDisplay, handle))
                 {
                     Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
+                }
+                if (!TryPrepareGamescopeWindow(window, handle))
+                {
+                    Trace.TraceWarning("Gamescope external-overlay registration failed; the HUD will remain hidden.");
                 }
                 // Wait for this connection's property update before Avalonia shows the window.
                 _ = X11Native.XSync(currentDisplay, 0);
@@ -229,6 +250,10 @@ internal sealed class X11OverlayPlatformService
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
+        if (interactive && window is CombinedOverlayWindow && Capabilities.UsesGamescopeExternalOverlay)
+        {
+            return new OverlayInteractionResult(false, false, Capabilities.StatusText);
+        }
         nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
@@ -263,6 +288,14 @@ internal sealed class X11OverlayPlatformService
                     );
                 }
 
+                if (!TryPrepareGamescopeWindow(window, handle))
+                {
+                    return new OverlayInteractionResult(
+                        false,
+                        false,
+                        "Gamescope external-overlay registration failed."
+                    );
+                }
                 bool stackingApplied = ApplyWindowType(currentDisplay, handle);
                 if (interactive)
                 {
@@ -419,6 +452,16 @@ internal sealed class X11OverlayPlatformService
 
             try
             {
+                if (Capabilities.UsesGamescopeExternalOverlay)
+                {
+                    // Keep hidden source panels at their own layout size: Gamescope otherwise
+                    // configures ordinary desktop clients to the full output before we unmap them.
+                    _ = X11OverlayWindowManagement.TryEnable(
+                        X11Native.OverlayWindowOperations,
+                        currentDisplay,
+                        unchecked((nuint)handle)
+                    );
+                }
                 _ = X11Native.XUnmapWindow(currentDisplay, unchecked((nuint)handle));
                 _ = X11Native.XFlush(currentDisplay);
                 return true;
@@ -435,6 +478,10 @@ internal sealed class X11OverlayPlatformService
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(regions);
+        if (regions.Count > 0 && Capabilities.UsesGamescopeExternalOverlay)
+        {
+            return new OverlayInteractionResult(false, false, Capabilities.StatusText);
+        }
         nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
@@ -545,6 +592,7 @@ internal sealed class X11OverlayPlatformService
         lock (displaySync)
         {
             interactiveWindowHandles.Clear();
+            gamescope?.Dispose();
             nint currentDisplay = display;
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
@@ -559,6 +607,20 @@ internal sealed class X11OverlayPlatformService
                 }
             }
         }
+    }
+
+    private bool TryPrepareGamescopeWindow(Window window, nint handle)
+    {
+        if (window is not CombinedOverlayWindow || !Capabilities.UsesGamescopeExternalOverlay)
+        {
+            return true;
+        }
+        bool prepared = gamescope?.PrepareExternalOverlay(unchecked((nuint)handle)) == true;
+        if (prepared)
+        {
+            window.InvalidateVisual();
+        }
+        return prepared;
     }
 
     internal static void EnsureErrorHandlerInstalled()

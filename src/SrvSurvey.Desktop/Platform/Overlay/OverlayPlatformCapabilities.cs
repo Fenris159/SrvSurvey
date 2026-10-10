@@ -12,11 +12,22 @@ public sealed record OverlayPlatformCapabilities(
     /// <summary>Whether monitor-locked drags replace the platform move-drag with the managed drag that applies the lock.</summary>
     public bool UsesManagedDragForMonitorLock { get; init; }
 
+    public bool UsesGamescopeExternalOverlay { get; init; }
+
+    public bool SupportsLiveOverlayInteraction => !UsesGamescopeExternalOverlay;
+
     public bool SupportsPassiveOverlay => SupportsTopmost && SupportsTransparency;
 
     public bool UsesX11Compatibility => IsX11Compatible(Host);
 
-    public string StatusText =>
+    public string StatusText => UsesGamescopeExternalOverlay ? GetGamescopeStatusText() : GetHostStatusText();
+
+    private string GetGamescopeStatusText() =>
+        SupportsPassiveOverlay && SupportsClickThrough && SupportsGameWindowTracking
+            ? "Gamescope passive overlays are available. Turn off the performance HUD; configure panels in the position editor. Live HUD interaction is unavailable."
+            : "Gamescope was detected, but passive overlay initialization failed. Check the application log.";
+
+    private string GetHostStatusText() =>
         Host switch
         {
             OverlayHostKind.Windows => SupportsClickThrough
@@ -48,13 +59,23 @@ public sealed record OverlayPlatformCapabilities(
 
         if (OperatingSystem.IsLinux())
         {
-            return ForHost(
+            OverlayPlatformCapabilities capabilities = ForHost(
                 DetectLinuxHost(
                     Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"),
                     Environment.GetEnvironmentVariable("DISPLAY"),
                     Environment.GetEnvironmentVariable("WAYLAND_DISPLAY")
                 )
             );
+            return GamescopeOverlaySession.UnavailableReason is not null
+                ? capabilities with
+                {
+                    SupportsTopmost = false,
+                    SupportsGameWindowTracking = false,
+                }
+                : capabilities with
+                {
+                    UsesGamescopeExternalOverlay = GamescopeOverlaySession.Current is not null,
+                };
         }
 
         return ForHost(OverlayHostKind.Other);

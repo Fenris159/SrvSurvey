@@ -9,6 +9,40 @@ public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
 
+    [Fact]
+    public void NormalSteamNestedSessionUsesVerifiedAncestorAndActualOuterWindow()
+    {
+        string root = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot window = new(42, 20, new PixelRect(1920, 10, 1280, 800), true, true);
+            var bridge = GamescopeGameWindowBridge.Discover(root, [window]);
+            Assert.Equal(new GamescopeGameWindowBridge(20, ":7", window.ClientBounds), bridge);
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, []));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window with { IsVisible = false }]));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window, window with { NativeHandle = 43 }]));
+            File.WriteAllText(Path.Combine(root, "20", "comm"), "other-launcher");
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window]));
+            File.Delete(Path.Combine(root, "10", "environ"));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window]));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     /// <summary>Verifies that losing a nested X server leaves the game tracker usable.</summary>
     [Fact]
     public async Task NestedX11ServerShutdownLeavesTrackerRecoverable()

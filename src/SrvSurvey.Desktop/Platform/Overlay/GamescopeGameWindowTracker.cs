@@ -1,5 +1,6 @@
 using System.Globalization;
 using Avalonia;
+using SrvSurvey.Desktop.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -11,6 +12,29 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
     public static GamescopeGameWindowBridge? TryReadCurrent()
     {
         return TryRead(Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR"));
+    }
+
+    /// <summary>Maps a normal Steam-launched nested compositor through its verified desktop window.</summary>
+    internal static GamescopeGameWindowBridge? DiscoverCurrent()
+    {
+        return TryReadCurrent() ?? Discover("/proc", X11GameWindowTracker.ReadDesktopWindows());
+    }
+
+    internal static GamescopeGameWindowBridge? Discover(string procDirectory, IReadOnlyList<GameWindowSnapshot> windows)
+    {
+        EliteKeyboardDisplay? game = EliteKeyboardDisplayDiscovery.Read(
+            procDirectory,
+            context: new KeyboardDisplayContext(null, windows, [])
+        );
+        int? parent = game is null
+            ? null
+            : EliteKeyboardDisplayDiscovery.FindGamescopeParent(procDirectory, game.ProcessId);
+        GameWindowSnapshot[] matches = windows
+            .Where(window => window.ProcessId == parent && parent is not null && window.IsAvailable && window.IsVisible)
+            .ToArray();
+        return game is not null && matches.Length == 1
+            ? new GamescopeGameWindowBridge(parent!.Value, game.Display, matches[0].ClientBounds)
+            : null;
     }
 
     internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory)

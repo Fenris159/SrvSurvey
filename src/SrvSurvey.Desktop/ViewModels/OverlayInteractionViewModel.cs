@@ -664,6 +664,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     {
         if (
             !IsAvailable
+            || !Capabilities.SupportsLiveOverlayInteraction
             || disposed
             || platform is null
             || gameWindowTracker is null

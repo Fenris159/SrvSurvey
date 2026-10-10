@@ -270,7 +270,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
-        hostBounds = gameWindow.ClientBounds;
+        hostBounds = gameWindow.OverlayCanvasBounds ?? gameWindow.ClientBounds;
         window.Position = hostBounds.Position;
         window.Width = hostBounds.Width / screen.Scaling;
         window.Height = hostBounds.Height / screen.Scaling;
