@@ -69,7 +69,7 @@ jobs:
         if: steps.layout.outputs.available == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes xvfb libx11-6 libxext6 libxfixes3 libfontconfig1 libice6 libsm6 libpipewire-0.3-0
+          sudo apt-get install --yes desktop-file-utils xvfb libx11-6 libxext6 libxfixes3 libfontconfig1 libice6 libsm6 libpipewire-0.3-0
 
       - name: Verify native focus publisher failure handling
         if: steps.layout.outputs.available == 'true'
