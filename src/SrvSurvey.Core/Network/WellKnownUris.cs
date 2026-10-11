@@ -42,6 +42,12 @@ public static class WellKnownUris
 
     public static Uri GoogleDriveFilesDirectory => RequireUri("GoogleDriveFilesDirectory");
 
+    /// <summary>Receives anonymous daily installation check-ins.</summary>
+    public static Uri ActiveUsersPing => RequireUri("ActiveUsersPing");
+
+    /// <summary>Publishes aggregate activity counts without requiring a protected statistics credential.</summary>
+    public static Uri ActiveUsersPublic => RequireUri("ActiveUsersPublic");
+
     public static Uri GoogleDriveUpload => RequireUri("GoogleDriveUpload");
 
     public static Uri FrontierOAuthRedirect => RequireUri("FrontierOAuthRedirect");

@@ -1453,6 +1453,10 @@
       "translation": "Aktiver Wächter-Obelisk"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Aktive Benutzer 7d:"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Aktiver Gensammler"
     },
@@ -9925,10 +9929,6 @@
       "translation": "FC Routes akzeptiert nur Spansh Fleet Carrier Router-Ergebnis-URLs."
     },
     {
-      "source": "FC Δ",
-      "translation": "FC Δ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RABE"
     },
@@ -12027,10 +12027,6 @@
     {
       "source": "HAVE",
       "translation": "HABEN"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "HABEN Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -18877,6 +18873,10 @@
       "translation": "Projektname"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PYR"
     },
@@ -18943,6 +18943,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Passives Benachrichtigungs-Overlay"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Passive Überlagerung"
     },
     {
       "source": "Paste",
@@ -30389,6 +30393,10 @@
       "translation": "Unbekannter Organismus"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Einzigartige Installationen, die in den letzten 7 Tagen aktiv waren. Einmal täglich aktualisiert."
+    },
+    {
       "source": "Unique point name",
       "translation": "Eindeutiger Punktname"
     },
@@ -38153,6 +38161,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "Obelisco guardián activo"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "Usuarios activos 7d:"
     },
     {
       "source": "Active genetic sampler",
@@ -46627,10 +46639,6 @@
       "translation": "FC Routes acepta Spansh URL de resultados de Fleet Carrier Router únicamente."
     },
     {
-      "source": "FC Δ",
-      "translation": "FC Δ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -48729,10 +48737,6 @@
     {
       "source": "HAVE",
       "translation": "tener"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "TENER Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -55579,6 +55583,10 @@
       "translation": "Nombre del proyecto"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PIR"
     },
@@ -55645,6 +55653,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Superposición de notificaciones pasivas"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "superposición pasiva"
     },
     {
       "source": "Paste",
@@ -67091,6 +67103,10 @@
       "translation": "Organismo no identificado"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Instalaciones únicas activas en los últimos 7 días. Actualizado una vez al día."
+    },
+    {
       "source": "Unique point name",
       "translation": "Nombre de punto único"
     },
@@ -74855,6 +74871,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "Obélisque du Gardien actif"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "Utilisateurs actifs 7j :"
     },
     {
       "source": "Active genetic sampler",
@@ -83329,10 +83349,6 @@
       "translation": "FC Routes accepte uniquement les URL de résultats des Spansh Fleet Carrier Router."
     },
     {
-      "source": "FC Δ",
-      "translation": "FCΔ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -85431,10 +85447,6 @@
     {
       "source": "HAVE",
       "translation": "AVOIR"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "AVOIR Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -92281,6 +92293,10 @@
       "translation": "Nom du projet"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PYR"
     },
@@ -92347,6 +92363,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Superposition de notifications passives"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Superposition passive"
     },
     {
       "source": "Paste",
@@ -103793,6 +103813,10 @@
       "translation": "Organisme non identifié"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Installations uniques actives au cours des 7 derniers jours. Mis à jour une fois par jour."
+    },
+    {
       "source": "Unique point name",
       "translation": "Nom de point unique"
     },
@@ -111557,6 +111581,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "Obelisco do Guardião Ativo"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "Usuários ativos 7d:"
     },
     {
       "source": "Active genetic sampler",
@@ -120031,10 +120059,6 @@
       "translation": "FC Routes aceita apenas URLs de resultados do Spansh Fleet Carrier Router."
     },
     {
-      "source": "FC Δ",
-      "translation": "FCΔ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -122133,10 +122157,6 @@
     {
       "source": "HAVE",
       "translation": "TENHO"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "TENHO Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -128983,6 +129003,10 @@
       "translation": "Nome do projeto"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PIR"
     },
@@ -129049,6 +129073,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Sobreposição de notificação passiva"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Sobreposição passiva"
     },
     {
       "source": "Paste",
@@ -140495,6 +140523,10 @@
       "translation": "Organismo não identificado"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Instalações únicas ativas nos últimos 7 dias. Atualizado uma vez por dia."
+    },
+    {
       "source": "Unique point name",
       "translation": "Nome de ponto exclusivo"
     },
@@ -148259,6 +148291,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "Обелиск Активного Стража"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "Активные пользователи 7д:"
     },
     {
       "source": "Active genetic sampler",
@@ -156733,10 +156769,6 @@
       "translation": "FC Routes принимает только URL-адреса результатов Spansh Fleet Carrier Router."
     },
     {
-      "source": "FC Δ",
-      "translation": "ФК Δ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "ФДЕВ-ВОРОН"
     },
@@ -158835,10 +158867,6 @@
     {
       "source": "HAVE",
       "translation": "ИМЕТЬ"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "ЕСТЬ Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -165685,6 +165713,10 @@
       "translation": "Название проекта"
     },
     {
+      "source": "PSV",
+      "translation": "ПСВ"
+    },
+    {
       "source": "PYR",
       "translation": "ПИР"
     },
@@ -165751,6 +165783,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Пассивное наложение уведомлений"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Пассивное наложение"
     },
     {
       "source": "Paste",
@@ -177197,6 +177233,10 @@
       "translation": "Неопознанный организм"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Уникальные инсталляции, активные за последние 7 дней. Обновляется один раз в день."
+    },
+    {
       "source": "Unique point name",
       "translation": "Уникальное имя точки"
     },
@@ -184961,6 +185001,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "活跃守护者方尖碑"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "7 天活跃用户："
     },
     {
       "source": "Active genetic sampler",
@@ -193435,10 +193479,6 @@
       "translation": "FC 路线仅接受 Spansh 舰队运营商路由器结果 URL。"
     },
     {
-      "source": "FC Δ",
-      "translation": "FC Δ"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-乌鸦"
     },
@@ -195537,10 +195577,6 @@
     {
       "source": "HAVE",
       "translation": "有"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "有Δ"
     },
     {
       "source": "HE {0}–{1}%",
@@ -202387,6 +202423,10 @@
       "translation": "项目名称"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "吡咯烷酮"
     },
@@ -202453,6 +202493,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "被动通知覆盖"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "被动叠加"
     },
     {
       "source": "Paste",
@@ -213899,6 +213943,10 @@
       "translation": "不明生物"
     },
     {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "过去 7 天内活跃的独特安装。每天更新一次。"
+    },
+    {
       "source": "Unique point name",
       "translation": "独特的点名称"
     },
@@ -221663,6 +221711,10 @@
     {
       "source": "Active Guardian obelisk",
       "translation": "* ACTIVE GUARDIAN OBELISK >>>!"
+    },
+    {
+      "source": "Active Users 7d:",
+      "translation": "* ACTIVE USERS 7D: >>>!"
     },
     {
       "source": "Active genetic sampler",
@@ -230137,10 +230189,6 @@
       "translation": "* FC ROUTES ACCEPTS SPANSH FLEET CARRIER ROUTER RESULT URLS ONLY. >>>!"
     },
     {
-      "source": "FC Δ",
-      "translation": "* FC Δ >>>!"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "* FDEV-RAVEN >>>!"
     },
@@ -232239,10 +232287,6 @@
     {
       "source": "HAVE",
       "translation": "* HAVE >>>!"
-    },
-    {
-      "source": "HAVE Δ",
-      "translation": "* HAVE Δ >>>!"
     },
     {
       "source": "HE {0}–{1}%",
@@ -239089,6 +239133,10 @@
       "translation": "* PROJECT NAME >>>!"
     },
     {
+      "source": "PSV",
+      "translation": "* PSV >>>!"
+    },
+    {
       "source": "PYR",
       "translation": "* PYR >>>!"
     },
@@ -239155,6 +239203,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "* PASSIVE NOTIFICATION OVERLAY >>>!"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "* PASSIVE OVERLAY >>>!"
     },
     {
       "source": "Paste",
@@ -250599,6 +250651,10 @@
     {
       "source": "Unidentified organism",
       "translation": "* UNIDENTIFIED ORGANISM >>>!"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "* UNIQUE INSTALLATIONS ACTIVE IN THE LAST 7 DAYS. UPDATED ONCE DAILY. >>>!"
     },
     {
       "source": "Unique point name",

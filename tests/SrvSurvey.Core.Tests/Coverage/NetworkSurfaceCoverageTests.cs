@@ -13,6 +13,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Edsm/EdsmPublisher.cs",
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
+        "src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
@@ -59,6 +60,11 @@ public sealed class NetworkSurfaceCoverageTests
 
     private static readonly NetworkSurface[] Surfaces =
     [
+        new(
+            "anonymous-daily-active-users",
+            ["src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs"],
+            ["tests/SrvSurvey.Core.Tests/Network/DailyActiveUsersClientTests.cs"]
+        ),
         new(
             "published-data-and-release-delivery",
             [

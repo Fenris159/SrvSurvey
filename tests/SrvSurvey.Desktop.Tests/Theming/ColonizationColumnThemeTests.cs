@@ -247,7 +247,8 @@ public sealed class ColonizationColumnThemeTests : IDisposable
             TextBlock[] cells = grid.Children.OfType<TextBlock>().Where(cell => cell.IsVisible).ToArray();
             TextBlock need = Assert.Single(cells, cell => Grid.GetColumn(cell) == 1);
             TextBlock cargo = Assert.Single(cells, cell => Grid.GetColumn(cell) == 2);
-            TextBlock inShip = Assert.Single(cells, cell => Grid.GetColumn(cell) == 3);
+            TextBlock inShip = Assert.Single(grid.Children.OfType<TextBlock>(), cell => Grid.GetColumn(cell) == 3);
+            Assert.Equal(!combined, inShip.IsVisible);
             Assert.Same(brushes["ColoniseNeed"], need.Foreground);
             Assert.Same(brushes[role], cargo.Foreground);
             Assert.Same(brushes["ColoniseShip"], inShip.Foreground);
@@ -258,7 +259,7 @@ public sealed class ColonizationColumnThemeTests : IDisposable
                 header => header.Classes.Contains("commodity-headers")
             );
             Assert.All(
-                headers.Children.OfType<TextBlock>(),
+                headers.GetVisualDescendants().OfType<TextBlock>(),
                 header => Assert.Same(brushes["Primary"], header.Foreground)
             );
             var changed = new SolidColorBrush(Colors.Magenta);

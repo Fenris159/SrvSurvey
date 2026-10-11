@@ -49,11 +49,6 @@
             <TextBlock FontSize="9" Classes="muted type-detail" Text="{Binding SurfaceMining.HistoryText}" />
           </StackPanel>
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
       <controls:SurfaceSurveyRadarControl Grid.Row="1" MinHeight="140"
           Markers="{Binding SurfaceMining.RadarMarkers}" ScaleMultiplier="{Binding SurfaceMining.RadarScale}"

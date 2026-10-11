@@ -48,14 +48,6 @@
                      IsVisible="{Binding Survey.HasFssTuningIndicator}"
                      Text="{Binding Survey.FssTuningIndicator}"
                      ToolTip.Tip="FSS tuning detector status" />
-          <LayoutTransformControl Classes="type-icon" HorizontalAlignment="Right">
-            <Border Classes="badge">
-              <TextBlock Classes="overlay-caption"
-                         Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="SemiBold"
-                         Text="{Binding InputMode}" />
-            </Border>
-          </LayoutTransformControl>
         </StackPanel>
         <TextBlock Grid.Row="1"
                    Grid.ColumnSpan="2"

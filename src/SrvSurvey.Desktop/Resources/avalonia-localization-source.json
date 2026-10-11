@@ -2905,6 +2905,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Active Users 7d:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
+  },
+  {
     "Text": "Active genetic sampler",
     "IsFormat": false,
     "SourceKinds": [
@@ -19898,14 +19906,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "FC \u0394",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
-  },
-  {
     "Text": "FDEV-RAVEN",
     "IsFormat": false,
     "SourceKinds": [
@@ -24113,14 +24113,6 @@
   },
   {
     "Text": "HAVE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
-  },
-  {
-    "Text": "HAVE \u0394",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -32391,7 +32383,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ActiveUsersViewModel.cs"
   },
   {
     "Text": "NAME",
@@ -37867,6 +37859,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "PSV",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+  },
+  {
     "Text": "PYR",
     "IsFormat": false,
     "SourceKinds": [
@@ -38001,6 +38001,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Passive overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "Paste",
@@ -60939,6 +60947,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
+  },
+  {
+    "Text": "Unique installations active in the last 7 days. Updated once daily.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
   },
   {
     "Text": "Unique point name",

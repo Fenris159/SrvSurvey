@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         d:DesignWidth="270"
         d:DesignHeight="400"
-        MinWidth="200"
+        MinWidth="1"
         MinHeight="1"
         SizeToContent="WidthAndHeight"
         HorizontalContentAlignment="Left"

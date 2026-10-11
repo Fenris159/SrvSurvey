@@ -885,6 +885,7 @@ public sealed class OverlayPresentationContractTests
         Assert.DoesNotContain("Survey.BodyInformation.", bodyInfo);
     }
 
+    /// <summary>Retains compact body information and composition rows after removing the header's platform input badge.</summary>
     [Fact]
     public void BodyInformationHeaderAndCompositionRowsRemainCompact()
     {
@@ -893,8 +894,8 @@ public sealed class OverlayPresentationContractTests
             Path.Combine(root, "src", "SrvSurvey.Desktop", "BodyInformationOverlayPresentation.axaml")
         );
 
-        Assert.Contains("Classes=\"badge overlay-state-pill\"", bodyInfo);
-        Assert.Contains("Padding=\"7,1\"", bodyInfo);
+        Assert.Contains("Text=\"BODY INFORMATION\"", bodyInfo);
+        Assert.DoesNotContain("Binding InputMode", bodyInfo);
         Assert.True(
             bodyInfo.IndexOf("BodyInformationDisplay.BodyClass", StringComparison.Ordinal)
                 < bodyInfo.IndexOf("BodyInformationDisplay.Distance", StringComparison.Ordinal)
@@ -940,6 +941,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("<WrapPanel Orientation=\"Horizontal\">", humanSite);
     }
 
+    /// <summary>Keeps the two gameplay state badges uniform while omitting the old platform input-status pill.</summary>
     [Fact]
     public void PriorScanStatePillsShareOneVisualContract()
     {
@@ -948,7 +950,7 @@ public sealed class OverlayPresentationContractTests
         string priorScans = File.ReadAllText(Path.Combine(desktop, "PriorScansOverlayPresentation.axaml"));
         string ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
 
-        Assert.Equal(3, priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
+        Assert.Equal(2, priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
         Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"66\"", ravenStyles);
         Assert.Contains("Property=\"Padding\" Value=\"8,3\"", ravenStyles);

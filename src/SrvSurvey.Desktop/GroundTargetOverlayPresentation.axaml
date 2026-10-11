@@ -20,13 +20,6 @@
           <TextBlock FontSize="10" Classes="muted type-detail"
                      Text="Live bearing and descent guidance" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock FontSize="9" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
 
       <Border Classes="overlay-divider"

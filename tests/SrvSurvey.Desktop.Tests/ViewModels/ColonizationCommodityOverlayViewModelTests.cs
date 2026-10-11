@@ -389,7 +389,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Empty(separate.OnFleetCarriersText);
         Assert.Equal("20", separate.InShipText);
         Assert.Equal("SHIP", viewModel.ShipColumnHeader);
-        Assert.Equal("FC", viewModel.FleetCarrierColumnHeader);
+        Assert.Empty(viewModel.FleetCarrierColumnHeader);
 
         viewModel.ApplyPreferences(preferences with { ShowFleetCarrierCargo = true });
         ColonizationCommodityOverlayRowViewModel combined = Assert.Single(Assert.Single(viewModel.Groups).Rows);
@@ -432,9 +432,53 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         );
         ColonizationCommodityOverlayRowViewModel row = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.True(row.IsFleetCarrierLoadHighlighted);
-        Assert.Equal("FC READY", row.MarketBadgeText);
+        Assert.Equal("FC LOAD", row.MarketBadgeText);
         Assert.Equal(expected, row.OnFleetCarriersText);
         Assert.True(row.IsSatisfied);
+    }
+
+    /// <summary>Keeps cargo awaiting transfer labeled FC LOAD, then marks the carrier ready only after it holds the full requirement.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void FleetCarrierReadyWaitsForShipCargoToBeTransferred(bool combined, bool delta)
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        ColonizationCommodityPlan plan = Plan();
+        ColonizationCommodityPlanRow cargo = plan.Rows[0] with
+        {
+            OnFleetCarriers = 80,
+            InShip = 20,
+            CanCompleteFleetCarrierLoad = true,
+            IsAvailableAtCurrentMarket = true,
+        };
+        ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default with
+        {
+            CollapseCoveredGroups = false,
+            InlineFleetCarrierCargo = combined,
+            ShowFleetCarrierDelta = delta,
+            HighlightAlmostCoveredFleetCarrierLoads = true,
+        };
+        viewModel.ApplyPreferences(preferences);
+        viewModel.Apply(plan with { Rows = [cargo] }, Status(GuiFocus.StationServices));
+        ColonizationCommodityOverlayRowViewModel row = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.Equal("FC LOAD", row.MarketBadgeText);
+        Assert.True(row.HasMarketBadge);
+        Assert.True(row.IsFleetCarrierLoadHighlighted);
+        Assert.Equal(combined, row.IsSatisfied);
+
+        cargo = cargo with { OnFleetCarriers = 100, InShip = 0, CanCompleteFleetCarrierLoad = false };
+        viewModel.Apply(plan with { Rows = [cargo] }, Status(GuiFocus.StationServices));
+        row = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.Equal("FC READY", row.MarketBadgeText);
+        Assert.True(row.IsSatisfied);
+        Assert.False(row.IsFleetCarrierLoadHighlighted);
+        Assert.Equal(delta ? "0" : "100", row.OnFleetCarriersText);
+
+        viewModel.ApplyPreferences(preferences with { HighlightAlmostCoveredFleetCarrierLoads = false });
+        Assert.Equal("MARKET", Assert.Single(Assert.Single(viewModel.Groups).Rows).MarketBadgeText);
     }
 
     /// <summary>Prevents integer overflow when two valid cargo counts exceed an individual count's range.</summary>
@@ -547,7 +591,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.True(steel.IsAlternateRow);
         Assert.False(water.IsAlternateRow);
         Assert.True(steel.IsFleetCarrierLoadHighlighted);
-        Assert.Equal("FC READY", steel.MarketBadgeText);
+        Assert.Equal("FC LOAD", steel.MarketBadgeText);
         Assert.Equal("80", steel.OnFleetCarriersText);
         Assert.Equal(1, steel.RowOpacity);
         Assert.False(water.HasMarketBadge);

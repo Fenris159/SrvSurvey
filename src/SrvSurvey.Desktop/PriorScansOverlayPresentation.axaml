@@ -29,13 +29,6 @@
                        Text="{Binding SpeciesCountText}" />
           </StackPanel>
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge overlay-state-pill">
-            <TextBlock FontSize="9" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
 
       <Border Grid.Row="1"

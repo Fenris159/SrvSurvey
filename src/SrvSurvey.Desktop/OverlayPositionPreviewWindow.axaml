@@ -37,7 +37,7 @@
   </Window.Styles>
   <!--
     Editor-only chrome shell:
-      1) Yellow folder tab with panel display name (identification)
+      1) Yellow folder tab with panel display name and passive badge (identification)
       2) Yellow-bordered body hosting simulated / runtime presentation
     Live overlay windows never use this host.
   -->
@@ -64,7 +64,7 @@
               CornerRadius="7,7,0,0"
               BoxShadow="0 0 0 0 #00000000"
               ToolTip.Tip="{Binding Title}">
-        <Grid ColumnDefinitions="Auto,Auto"
+        <Grid ColumnDefinitions="Auto,Auto,Auto"
               ColumnSpacing="6">
           <TextBlock x:Name="EditorFolderTabLabel"
                      MaxWidth="280"
@@ -74,8 +74,20 @@
                      FontWeight="Bold"
                      Text="{Binding Title}"
                      TextTrimming="CharacterEllipsis" />
+          <Border Grid.Column="1"
+                  Padding="5,1"
+                  VerticalAlignment="Center"
+                  Background="#261A1208"
+                  CornerRadius="3">
+            <TextBlock x:Name="EditorFolderTabPassiveLabel"
+                       Foreground="#1A1208"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="PSV"
+                       ToolTip.Tip="Passive overlay" />
+          </Border>
           <Button x:Name="EditorFolderTabStateButton"
-                  Grid.Column="1"
+                  Grid.Column="2"
                   MinWidth="46"
                   Height="20"
                   MinHeight="20"

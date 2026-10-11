@@ -208,7 +208,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal("+4", polymers.OnFleetCarriersText);
         Assert.True(polymers.IsSatisfied);
         Assert.True(polymers.IsFleetCarrierLoadHighlighted);
-        Assert.Equal("FC READY", polymers.MarketBadgeText);
+        Assert.Equal("FC LOAD", polymers.MarketBadgeText);
         ScrollViewer scroll = Assert.Single(window.RuntimePresentation.GetVisualDescendants().OfType<ScrollViewer>());
         Assert.Equal(300, scroll.MaxHeight);
         Assert.True(

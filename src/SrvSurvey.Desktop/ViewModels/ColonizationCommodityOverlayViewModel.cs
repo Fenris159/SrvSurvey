@@ -192,13 +192,31 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
 
     /// <summary>Identifies whether the cargo column shows carrier or combined quantities and their delta.</summary>
     public string FleetCarrierColumnHeader =>
-        (CombineShipCargo, preferences.ShowFleetCarrierDelta) switch
+        FleetCarrierColumnLabel + (ShowFleetCarrierDeltaIndicator ? " Δ" : string.Empty);
+
+    /// <summary>Supplies the carrier heading without mixing fallback symbol metrics into the text line.</summary>
+    public string FleetCarrierColumnLabel =>
+        (ShowFleetCarrierColumn, CombineShipCargo) switch
         {
-            (true, true) => "HAVE Δ",
-            (true, false) => "HAVE",
-            (false, true) => "FC Δ",
+            (false, _) => string.Empty,
+            (true, true) => "HAVE",
             _ => "FC",
         };
+
+    /// <summary>Shows the delta indicator only for an enabled carrier cargo column in delta mode.</summary>
+    public bool ShowFleetCarrierDeltaIndicator => ShowFleetCarrierColumn && preferences.ShowFleetCarrierDelta;
+
+    /// <summary>Omits the carrier heading and its reserved width when carrier cargo is disabled.</summary>
+    public bool ShowFleetCarrierColumn => preferences.ShowFleetCarrierCargo;
+
+    /// <summary>Omits the separate ship column when its cargo is included in the combined total.</summary>
+    public bool ShowShipColumn => !CombineShipCargo;
+
+    /// <summary>Reserves readable cargo-column width only while the carrier column is visible.</summary>
+    public double FleetCarrierColumnMinWidth => ShowFleetCarrierColumn ? 34 : 0;
+
+    /// <summary>Releases the ship column's minimum width when combined cargo hides it.</summary>
+    public double ShipColumnMinWidth => ShowShipColumn ? 34 : 0;
 
     /// <summary>Omits the separate ship heading when its cargo contributes to the combined column.</summary>
     public string ShipColumnHeader => CombineShipCargo ? string.Empty : "SHIP";
@@ -253,6 +271,12 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         RaisePlanProperties();
         OnPropertyChanged(nameof(CollapseModeText));
         OnPropertyChanged(nameof(FleetCarrierColumnHeader));
+        OnPropertyChanged(nameof(FleetCarrierColumnLabel));
+        OnPropertyChanged(nameof(ShowFleetCarrierDeltaIndicator));
+        OnPropertyChanged(nameof(ShowFleetCarrierColumn));
+        OnPropertyChanged(nameof(ShowShipColumn));
+        OnPropertyChanged(nameof(FleetCarrierColumnMinWidth));
+        OnPropertyChanged(nameof(ShipColumnMinWidth));
         OnPropertyChanged(nameof(ShipColumnHeader));
         OnPropertyChanged(nameof(UseCompactScrollingCommoditiesList));
         OnPropertyChanged(nameof(CommodityListMaxHeight));
@@ -438,6 +462,15 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool IsAlternateRow { get; }
 
+    /// <summary>Matches the heading's minimum width while allowing disabled carrier cells to collapse.</summary>
+    public double FleetCarrierColumnMinWidth => ShowFleetCarrierCargo ? 34 : 0;
+
+    /// <summary>Matches the heading's minimum width while allowing combined cargo to remove the ship cells.</summary>
+    public double ShipColumnMinWidth => InlineFleetCarrierCargo ? 0 : 34;
+
+    /// <summary>Shows carrier sums only when the carrier column is enabled and delta mode is disabled.</summary>
+    public bool ShowFleetCarrierSum => ShowFleetCarrierCargo && !ShowFleetCarrierDelta;
+
     public int FleetCarrierDeficit => Math.Max(0, Needed - OnFleetCarriers);
 
     /// <summary>Highlights carrier-loading guidance without excluding cargo shown in a combined total.</summary>
@@ -445,14 +478,19 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool HasMarketBadge => IsAvailableAtCurrentMarket;
 
-    public string MarketBadgeText =>
-        IsFleetCarrierLoadHighlighted
-            ? (InShip >= FleetCarrierDeficit) switch
+    /// <summary>Marks the carrier ready only when its stored cargo covers the requirement, excluding cargo still aboard the ship.</summary>
+    public string MarketBadgeText
+    {
+        get
+        {
+            if (HighlightAlmostCoveredFleetCarrierLoads && FleetCarriersHaveEnough)
             {
-                true => "FC READY",
-                false => "FC LOAD",
+                return "FC READY";
             }
-            : "MARKET";
+
+            return IsFleetCarrierLoadHighlighted ? "FC LOAD" : "MARKET";
+        }
+    }
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
@@ -505,16 +543,16 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     private bool IsDeltaSurplus => DisplayedCargoTotal >= Needed;
 
     /// <summary>Selects the normal surplus brush only for a nonnegative delta at an available or unknown market.</summary>
-    public bool IsActiveSurplus => ShowFleetCarrierDelta && IsDeltaSurplus && IsActiveItem;
+    public bool IsActiveSurplus => ShowFleetCarrierCargo && ShowFleetCarrierDelta && IsDeltaSurplus && IsActiveItem;
 
     /// <summary>Selects the dim surplus brush for a nonnegative delta unavailable at the current market.</summary>
-    public bool IsDimmedSurplus => ShowFleetCarrierDelta && IsDeltaSurplus && IsDimmedItem;
+    public bool IsDimmedSurplus => ShowFleetCarrierCargo && ShowFleetCarrierDelta && IsDeltaSurplus && IsDimmedItem;
 
     /// <summary>Selects the normal deficit brush only for a negative delta at an available or unknown market.</summary>
-    public bool IsActiveDeficit => ShowFleetCarrierDelta && !IsDeltaSurplus && IsActiveItem;
+    public bool IsActiveDeficit => ShowFleetCarrierCargo && ShowFleetCarrierDelta && !IsDeltaSurplus && IsActiveItem;
 
     /// <summary>Selects the dim deficit brush for a negative delta unavailable at the current market.</summary>
-    public bool IsDimmedDeficit => ShowFleetCarrierDelta && !IsDeltaSurplus && IsDimmedItem;
+    public bool IsDimmedDeficit => ShowFleetCarrierCargo && ShowFleetCarrierDelta && !IsDeltaSurplus && IsDimmedItem;
 
     public string AssignmentText =>
         IsAssignedToCommander

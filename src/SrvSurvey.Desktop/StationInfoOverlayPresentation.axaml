@@ -36,13 +36,6 @@
                        Text="{Binding StationInfo.StationName}"
                        TextWrapping="Wrap" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="Bold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
         <TextBlock FontSize="10" Grid.Row="2"
                    Grid.ColumnSpan="2"
                    Classes="muted type-detail"

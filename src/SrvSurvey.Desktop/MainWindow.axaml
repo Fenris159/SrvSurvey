@@ -83,23 +83,33 @@
           </StackPanel>
         </Grid>
 
-        <Button Grid.Row="1"
-                Classes="commander-card"
-                Classes.selected="{Binding IsProfileSelected}"
-                Command="{Binding ShowProfileCommand}"
-                ToolTip.Tip="Open Frontier commander profile"
-                AutomationProperties.HelpText="Open Frontier commander profile">
-          <StackPanel Spacing="3">
-            <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
-            <TextBlock FontWeight="SemiBold"
-                       TextTrimming="CharacterEllipsis"
-                       Text="{Binding CommanderName}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextTrimming="CharacterEllipsis"
-                       Text="{Binding SystemDescription}" />
+        <StackPanel Grid.Row="1" Spacing="6">
+          <StackPanel x:Name="ActiveUsersDisplay"
+                      Orientation="Horizontal"
+                      Spacing="4"
+                      ToolTip.Tip="Unique installations active in the last 7 days. Updated once daily.">
+            <TextBlock Classes="muted" FontSize="12" Text="Active Users 7d:" />
+            <TextBlock x:Name="ActiveUsersCount" Classes="muted" FontSize="12"
+                       Text="{Binding ActiveUsers.CountText}" />
           </StackPanel>
-        </Button>
+          <Button x:Name="ActiveCommanderCard"
+                  Classes="commander-card"
+                  Classes.selected="{Binding IsProfileSelected}"
+                  Command="{Binding ShowProfileCommand}"
+                  ToolTip.Tip="Open Frontier commander profile"
+                  AutomationProperties.HelpText="Open Frontier commander profile">
+            <StackPanel Spacing="3">
+              <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
+              <TextBlock FontWeight="SemiBold"
+                         TextTrimming="CharacterEllipsis"
+                         Text="{Binding CommanderName}" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextTrimming="CharacterEllipsis"
+                         Text="{Binding SystemDescription}" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
 
         <StackPanel Grid.Row="2" Spacing="4">
           <ItemsControl x:Name="OverviewNavigationShortcuts"

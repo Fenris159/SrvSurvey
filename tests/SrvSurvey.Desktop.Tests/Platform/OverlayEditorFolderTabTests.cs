@@ -92,6 +92,7 @@ public sealed class OverlayEditorFolderTabTests
         }
     }
 
+    /// <summary>Keeps the panel name and compact passive badge in the editor tab above the unchanged preview body.</summary>
     [AvaloniaFact]
     public void PreviewRendersAVisibleFolderTabAttachedAboveTheBody()
     {
@@ -109,6 +110,12 @@ public sealed class OverlayEditorFolderTabTests
 
             Assert.True(preview.EditorFolderTabControl.IsVisible);
             Assert.Equal(definition.DisplayName, preview.EditorFolderTabLabelControl.Text);
+            TextBlock passive = preview.FindControl<TextBlock>("EditorFolderTabPassiveLabel")!;
+            Assert.Equal("PSV", passive.Text);
+            Assert.True(passive.IsEffectivelyVisible);
+            Assert.Contains(preview.EditorFolderTabControl, passive.GetVisualAncestors());
+            Assert.Equal("Passive overlay", ToolTip.GetTip(passive));
+            Assert.InRange(passive.Bounds.Height, 1, preview.EditorFolderTabControl.Bounds.Height);
             Assert.True(preview.EditorFolderTabControl.MinHeight >= 24);
             Assert.True(preview.EditorFolderTabControl.Bounds.Width >= 72);
             Assert.True(preview.EditorFolderTabControl.Bounds.Height >= 24);

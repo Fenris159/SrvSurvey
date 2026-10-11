@@ -39,7 +39,8 @@
           RowSpacing="3"
           HorizontalAlignment="Left"
           Grid.IsSharedSizeScope="True">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+      <Grid RowDefinitions="Auto,Auto"
+            MaxWidth="{Binding #CommodityColumnHeaders.Bounds.Width}">
         <StackPanel Spacing="0" MaxWidth="{Binding #CommodityColumnHeaders.Bounds.Width}">
           <TextBlock x:Name="ProjectHeaderText" Classes="overlay-header type-header"
                      Text="{Binding HeaderTitle}"
@@ -55,59 +56,66 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </StackPanel>
-        <TextBlock FontSize="8" Classes="type-icon" Grid.Column="1"
-                   VerticalAlignment="Top"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontWeight="SemiBold"
-                   Text="{Binding InputMode}" />
       </Grid>
 
       <StackPanel Grid.Row="1" Spacing="3">
         <Border Background="{DynamicResource RavenRaisedSurfaceBrush}"
                 CornerRadius="3"
                 IsVisible="{Binding HasWarning}"
+                MaxWidth="{Binding #CommodityColumnHeaders.Bounds.Width}"
                 Padding="6,3">
           <TextBlock FontSize="9" Classes="type-body" Foreground="{DynamicResource RavenWarningBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding WarningText}"
-                     TextTrimming="CharacterEllipsis" />
+                     TextWrapping="Wrap" />
         </Border>
         <TextBlock FontSize="11" Classes="type-title" Foreground="{DynamicResource RavenSuccessBrush}"
                    FontWeight="Bold"
                    IsVisible="{Binding IsConstructionComplete}"
+                   MaxWidth="{Binding #CommodityColumnHeaders.Bounds.Width}" TextWrapping="Wrap"
                    Text="Construction complete" />
         <!-- Match row Padding (3). Compact scrolling reserves a scrollbar gutter. -->
         <Grid x:Name="CommodityColumnHeaders" Classes="commodity-headers"
               Classes.compact-scrolling="{Binding UseCompactScrollingCommoditiesList}"
               HorizontalAlignment="Left"
-              ColumnSpacing="3">
+              ColumnSpacing="0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" SharedSizeGroup="ColoniseCommodity" />
             <ColumnDefinition Width="Auto"
                               MinWidth="40"
                               SharedSizeGroup="ColoniseNeed" />
             <ColumnDefinition Width="Auto"
-                              MinWidth="34"
+                              MinWidth="{Binding FleetCarrierColumnMinWidth}"
                               SharedSizeGroup="ColoniseFc" />
             <ColumnDefinition Width="Auto"
-                              MinWidth="34"
+                              MinWidth="{Binding ShipColumnMinWidth}"
                               SharedSizeGroup="ColoniseShip" />
           </Grid.ColumnDefinitions>
-          <TextBlock FontSize="8" Classes="type-title"
+          <TextBlock FontSize="8" Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}" Text="COMMODITY" />
           <TextBlock FontSize="8" Grid.Column="1"
-                     Classes="type-title"
+                     Margin="3,0,0,0"
+                     Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}"
                      HorizontalAlignment="Right"
                      Text="NEED" />
-          <TextBlock FontSize="8" Grid.Column="2"
-                     Classes="type-title"
-                     Foreground="{DynamicResource RavenPrimaryBrush}"
-                     HorizontalAlignment="Right"
-                     Text="{Binding FleetCarrierColumnHeader}" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                      VerticalAlignment="Top" Margin="3,0,0,0"
+                      IsVisible="{Binding ShowFleetCarrierColumn}"
+                      AutomationProperties.Name="{Binding FleetCarrierColumnHeader}">
+            <TextBlock x:Name="FleetCarrierHeaderText" FontSize="8" Classes="type-title commodity-column-label"
+                       Foreground="{DynamicResource RavenPrimaryBrush}" Text="{Binding FleetCarrierColumnLabel}" />
+            <Viewbox Height="{Binding #FleetCarrierHeaderText.FontSize}" Margin="3,0,0,0"
+                     VerticalAlignment="Center" IsVisible="{Binding ShowFleetCarrierDeltaIndicator}">
+              <TextBlock FontSize="8" Classes="type-title"
+                         Foreground="{DynamicResource RavenPrimaryBrush}" Text="Δ" />
+            </Viewbox>
+          </StackPanel>
           <TextBlock FontSize="8" Grid.Column="3"
-                     Classes="type-title"
+                     Margin="3,0,0,0"
+                     Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}"
+                     IsVisible="{Binding ShowShipColumn}"
                      HorizontalAlignment="Right"
                      Text="{Binding ShipColumnHeader}" />
         </Grid>
@@ -143,28 +151,28 @@
                               CornerRadius="1"
                               HorizontalAlignment="Left"
                               Opacity="{Binding RowOpacity}">
-                        <Grid ColumnSpacing="3">
+                        <Grid ColumnSpacing="0">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="ColoniseCommodity" />
                             <ColumnDefinition Width="Auto"
                                               MinWidth="40"
                                               SharedSizeGroup="ColoniseNeed" />
                             <ColumnDefinition Width="Auto"
-                                              MinWidth="34"
+                                              MinWidth="{Binding FleetCarrierColumnMinWidth}"
                                               SharedSizeGroup="ColoniseFc" />
                             <ColumnDefinition Width="Auto"
-                                              MinWidth="34"
+                                              MinWidth="{Binding ShipColumnMinWidth}"
                                               SharedSizeGroup="ColoniseShip" />
                           </Grid.ColumnDefinitions>
                           <StackPanel Orientation="Horizontal" Spacing="3">
                             <StackPanel Orientation="Horizontal" Spacing="0">
-                              <TextBlock FontSize="10" Classes="type-icon"
-                                         FontWeight="Bold"
-                                         VerticalAlignment="Center"
-                                         Foreground="{DynamicResource RavenColoniseSurplusBrush}"
-                                         IsVisible="{Binding IsSatisfied}"
-                                         Text="&#x2713;" />
-                              <TextBlock FontSize="10" Classes="type-body" VerticalAlignment="Center"
+                              <Viewbox Height="{Binding #CommodityNameText.FontSize}"
+                                       VerticalAlignment="Center" IsVisible="{Binding IsSatisfied}">
+                                <TextBlock FontSize="10" Classes="type-icon" FontWeight="Bold"
+                                           FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2"
+                                           Foreground="{DynamicResource RavenColoniseSurplusBrush}" Text="&#x2713;" />
+                              </Viewbox>
+                              <TextBlock x:Name="CommodityNameText" FontSize="10" Classes="type-body" VerticalAlignment="Center"
                                          Foreground="{DynamicResource RavenColoniseItemBrush}"
                                          IsVisible="{Binding IsActiveItem}"
                                          Text="{Binding DisplayName}" />
@@ -185,36 +193,43 @@
                                        Text="{Binding MarketBadgeText}" />
                           </StackPanel>
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="1"
+                                     Margin="3,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseNeedBrush}"
                                      Text="{Binding NeededText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
+                                     Margin="3,0,0,0"
                                      Classes.carrier-load="{Binding IsFleetCarrierLoadHighlighted}"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseHaveBrush}"
-                                     IsVisible="{Binding !ShowFleetCarrierDelta}"
+                                     IsVisible="{Binding ShowFleetCarrierSum}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
+                                     Margin="3,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitBrush}"
                                      IsVisible="{Binding IsActiveDeficit}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
+                                     Margin="3,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitDimBrush}"
                                      IsVisible="{Binding IsDimmedDeficit}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
+                                     Margin="3,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusBrush}"
                                      IsVisible="{Binding IsActiveSurplus}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
+                                     Margin="3,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusDimBrush}"
                                      IsVisible="{Binding IsDimmedSurplus}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="3"
+                                     Margin="3,0,0,0" IsVisible="{Binding !InlineFleetCarrierCargo}"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseShipBrush}"
@@ -230,13 +245,14 @@
         </ItemsControl>
       </ScrollViewer>
 
-      <StackPanel Grid.Row="3" Spacing="2" HorizontalAlignment="Left">
+      <StackPanel Grid.Row="3" Spacing="2" HorizontalAlignment="Left"
+                  MaxWidth="{Binding #CommodityColumnHeaders.Bounds.Width}">
         <TextBlock FontSize="10" Classes="type-value"
                    FontWeight="SemiBold"
-                   Text="{Binding RemainingSummary}" />
+                   Text="{Binding RemainingSummary}" TextWrapping="Wrap" />
         <TextBlock FontSize="8" Classes="muted type-caption"
                    IsVisible="{Binding HasFleetCarriers}"
-                   Text="{Binding FleetCarrierSummary}" />
+                   Text="{Binding FleetCarrierSummary}" TextWrapping="Wrap" />
       </StackPanel>
     </Grid>
   </Border>

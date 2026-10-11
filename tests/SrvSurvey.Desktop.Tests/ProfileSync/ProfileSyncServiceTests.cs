@@ -438,6 +438,7 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     internal int? FailDeletionAfter { get; set; }
     internal byte[]? DownloadBytes { get; set; }
     internal bool IncludeSizes { get; set; } = true;
+    internal Func<CancellationToken, Task>? BeforeUpload { get; set; }
 
     /// <summary>Adds a simulated immutable cloud backup with device identity and size metadata.</summary>
     internal void Add(ProfileSnapshot snapshot)
@@ -496,16 +497,19 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     }
 
     /// <summary>Records an uploaded snapshot and exposes it in simulated cloud history.</summary>
-    public Task UploadAsync(ProfileSnapshot snapshot, CancellationToken cancellationToken)
+    public async Task UploadAsync(ProfileSnapshot snapshot, CancellationToken cancellationToken)
     {
         if (Failure is not null)
         {
-            return Task.FromException(Failure);
+            throw Failure;
+        }
+        if (BeforeUpload is not null)
+        {
+            await BeforeUpload(cancellationToken);
         }
 
         Uploaded.Add(snapshot);
         Add(snapshot);
-        return Task.CompletedTask;
     }
 
     /// <summary>Records release of the simulated client for startup cleanup assertions.</summary>
