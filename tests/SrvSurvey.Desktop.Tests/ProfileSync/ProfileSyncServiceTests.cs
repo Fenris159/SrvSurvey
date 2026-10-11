@@ -438,6 +438,8 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     internal int? FailDeletionAfter { get; set; }
     internal byte[]? DownloadBytes { get; set; }
     internal bool IncludeSizes { get; set; } = true;
+
+    /// <summary>Pauses upload so shutdown tests can check close guards while a backup is in progress.</summary>
     internal Func<CancellationToken, Task>? BeforeUpload { get; set; }
 
     /// <summary>Adds a simulated immutable cloud backup with device identity and size metadata.</summary>

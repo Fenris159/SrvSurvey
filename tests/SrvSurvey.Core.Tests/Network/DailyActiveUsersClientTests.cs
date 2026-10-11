@@ -81,6 +81,39 @@ public sealed class DailyActiveUsersClientTests
         Assert.Single(fixture.Messages);
     }
 
+    /// <summary>Leaves time to fetch statistics when either check-in headers or its response body stalls.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PingTimeoutStillRefreshesStatistics(bool stallBody)
+    {
+        using var fixture = new UsageFixture();
+        if (stallBody)
+        {
+            fixture.Handler.PingContentFactory = () => new StreamContent(new StalledReadStream());
+        }
+        else
+        {
+            fixture.Handler.BeforePing = token => Task.Delay(Timeout.InfiniteTimeSpan, token);
+        }
+        using var cancellation = new CancellationTokenSource();
+        using DailyActiveUsersClient client = fixture.Create();
+        Task<long?> pending = client.RefreshAsync(cancellation.Token);
+        try
+        {
+            Assert.Equal(42, await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.Equal(42, await client.RefreshAsync());
+            Assert.Equal(2, fixture.Handler.Requests.Count);
+            Assert.Single(fixture.Handler.Reports);
+            Assert.Contains("check-in skipped", Assert.Single(fixture.Messages));
+        }
+        finally
+        {
+            await cancellation.CancelAsync();
+            await pending;
+        }
+    }
+
     /// <summary>Bounds successful ping replies while still allowing a public-count refresh.</summary>
     [Fact]
     public async Task OversizedPingReplyIsQuietlyDiscarded()
@@ -215,10 +248,19 @@ public sealed class DailyActiveUsersClientTests
     /// <summary>Provides isolated durable state, a controllable UTC clock, and a deterministic Worker transport.</summary>
     private sealed class UsageFixture : IDisposable
     {
+        /// <summary>Isolates identity and daily checkpoints from real application data.</summary>
         public string Root { get; } = Path.Combine(Path.GetTempPath(), "srv-usage-" + Guid.NewGuid().ToString("N"));
+
+        /// <summary>Records requests and controls the simulated Worker responses.</summary>
         public UsageHandler Handler { get; } = new();
+
+        /// <summary>Controls UTC rollover without waiting for the next reporting day.</summary>
         public UsageClock Clock { get; } = new();
+
+        /// <summary>Collects quiet failure reports for assertions.</summary>
         public List<string> Messages { get; } = [];
+
+        /// <summary>Shares the deterministic transport across clients representing one installation.</summary>
         public HttpClient Network { get; }
 
         /// <summary>Creates the machine-local root and shared test HTTP client.</summary>
@@ -241,6 +283,7 @@ public sealed class DailyActiveUsersClientTests
 
     private sealed class UsageClock : TimeProvider
     {
+        /// <summary>Sets the simulated UTC time used to select the daily reporting checkpoint.</summary>
         public DateTimeOffset UtcNow { get; set; } = new(2026, 10, 11, 23, 59, 0, TimeSpan.Zero);
 
         /// <summary>Returns the fixture's current UTC date for daily rollover tests.</summary>
@@ -249,14 +292,30 @@ public sealed class DailyActiveUsersClientTests
 
     private sealed class UsageHandler : HttpMessageHandler
     {
+        /// <summary>Records endpoint requests in the order the client sends them.</summary>
         public List<Uri> Requests { get; } = [];
+
+        /// <summary>Retains anonymous check-in payloads for identity and privacy assertions.</summary>
         public List<JsonElement> Reports { get; } = [];
+
+        /// <summary>Supplies the public statistics response without contacting the Worker.</summary>
         public string Stats { get; set; } =
             """{"totalUnique":100,"active7d":42,"active30d":75,"byVersion":{"test":100},"byOs":{"Linux":100}}""";
+
+        /// <summary>Supplies check-in response text for bounded-content tests.</summary>
         public string PingReply { get; set; } = "ok";
+
+        /// <summary>Controls whether the simulated check-in succeeds or returns an HTTP error.</summary>
         public HttpStatusCode PingStatus { get; set; } = HttpStatusCode.OK;
+
+        /// <summary>Controls the simulated public-statistics HTTP status.</summary>
         public HttpStatusCode StatsStatus { get; set; } = HttpStatusCode.OK;
+
+        /// <summary>Allows a check-in to stall or fail before response headers arrive.</summary>
         public Func<CancellationToken, Task>? BeforePing { get; set; }
+
+        /// <summary>Supplies custom response streams to exercise cancellation while reading the check-in body.</summary>
+        public Func<HttpContent>? PingContentFactory { get; set; }
 
         /// <summary>Imitates only the public Worker contract and records exactly which data was sent.</summary>
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -274,10 +333,27 @@ public sealed class DailyActiveUsersClientTests
                 {
                     await BeforePing(cancellationToken);
                 }
-                return new HttpResponseMessage(PingStatus) { Content = new StringContent(PingReply) };
+                return new HttpResponseMessage(PingStatus)
+                {
+                    Content = PingContentFactory?.Invoke() ?? new StringContent(PingReply),
+                };
             }
             Assert.Equal(WellKnownUris.ActiveUsersPublic, request.RequestUri);
             return new HttpResponseMessage(StatsStatus) { Content = new StringContent(Stats) };
+        }
+    }
+
+    /// <summary>Imitates a response body that remains unreadable until its supplied token is canceled.</summary>
+    private sealed class StalledReadStream : MemoryStream
+    {
+        /// <summary>Waits indefinitely so the request's body-reading deadline must release the stream.</summary>
+        public override async ValueTask<int> ReadAsync(
+            Memory<byte> buffer,
+            CancellationToken cancellationToken = default
+        )
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
         }
     }
 }

@@ -391,13 +391,14 @@ public sealed class LegacyOverlayThemeStore
         }
     }
 
+    /// <summary>Preserves a uniquely named, checksum-verified copy before replacing the current overlay palette.</summary>
     private string CreateVerifiedBackup(string directory)
     {
         string backupDirectory = Path.Combine(
             directory,
             "legacy-backups",
             "overlay-themes",
-            DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)
+            $"{DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)}-{Guid.NewGuid():N}"
         );
         Directory.CreateDirectory(backupDirectory);
         string backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));

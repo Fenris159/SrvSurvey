@@ -1,3 +1,6 @@
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
@@ -6,6 +9,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
@@ -234,6 +238,103 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         now = now.AddMinutes(1);
         route.RefreshCarrierJumpCountdown();
         Assert.Empty(notifications);
+    }
+
+    /// <summary>
+    /// Exercises live bindings through ticking, phase changes, and countdown visibility in both overlay hosts.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void LivePresentationUpdatesCountdownAndJumpStatus(bool separateWindow, bool initiallyScheduled)
+    {
+        var now = new DateTimeOffset(2026, 10, 11, 12, 0, 0, TimeSpan.Zero);
+        var route = new RouteWorkspaceViewModel(
+            new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),
+            new RouteNameImporter(new EmptyResolver()),
+            new EmptySpanshClient(),
+            FollowRouteKind.FleetCarrier,
+            () => now
+        );
+        JournalEventEnvelope request = Parse(
+            """
+            {"timestamp":"2026-10-11T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-10-11T12:15:00Z"}
+            """
+        );
+        if (initiallyScheduled)
+        {
+            route.ApplyFleetCarrierJumpEvents([request]);
+        }
+
+        using var viewModel = new FleetCarrierRouteOverlayViewModel(
+            route,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
+        Window window = separateWindow
+            ? new FleetCarrierRouteOverlayWindow(viewModel)
+            : new Window { Content = new FleetCarrierRouteOverlayPresentation { DataContext = viewModel } };
+        try
+        {
+            window.Show();
+            TextBlock countdown = window
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(block => block.Classes.Contains("overlay-value"));
+            StackPanel countdownPanel = countdown.FindAncestorOfType<StackPanel>()!;
+            TextBlock[] phase = countdownPanel
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(block => block.Classes.Contains("overlay-detail"))
+                .ToArray();
+            Assert.Equal(initiallyScheduled, countdownPanel.IsVisible);
+            if (!initiallyScheduled)
+            {
+                route.ApplyFleetCarrierJumpEvents([request]);
+            }
+
+            Assert.True(countdownPanel.IsVisible);
+            Assert.Equal("15:00", countdown.Text);
+            Assert.Equal("JUMP INITIATION IN", phase[0].Text);
+            Assert.Equal("5:00", phase[1].Text);
+
+            now = now.AddSeconds(1);
+            route.RefreshCarrierJumpCountdown();
+            Assert.Equal("14:59", route.CarrierJumpCountdownValue);
+            Assert.Equal(route.CarrierJumpCountdownValue, countdown.Text);
+            Assert.Equal("4:59", phase[1].Text);
+
+            now = now.AddMinutes(5);
+            route.RefreshCarrierJumpCountdown();
+            Assert.Equal("9:59", countdown.Text);
+            Assert.Equal("PAD LOCKDOWN IN", phase[0].Text);
+            Assert.Equal("6:39", phase[1].Text);
+
+            now = now.AddMinutes(7);
+            route.RefreshCarrierJumpCountdown();
+            Assert.Equal("2:59", countdown.Text);
+            Assert.Equal("LANDING PADS LOCKED", phase[0].Text);
+            Assert.False(phase[1].IsVisible);
+
+            now = new DateTimeOffset(2026, 10, 11, 12, 15, 0, TimeSpan.Zero);
+            route.RefreshCarrierJumpCountdown();
+            Assert.Equal("5:00", countdown.Text);
+            Assert.Equal("CARRIER ARRIVED", phase[0].Text);
+            Assert.Contains(window.GetVisualDescendants().OfType<TextBlock>(), block => block.Text == "JUMP COOLDOWN");
+
+            now = now.AddSeconds(1);
+            route.RefreshCarrierJumpCountdown();
+            Assert.Equal("4:59", countdown.Text);
+
+            now = now.AddMinutes(5);
+            route.RefreshCarrierJumpCountdown();
+            Assert.False(countdownPanel.IsVisible);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     public void Dispose()

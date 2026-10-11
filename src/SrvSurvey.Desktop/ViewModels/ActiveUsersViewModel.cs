@@ -22,7 +22,10 @@ public sealed class ActiveUsersViewModel : WorkspaceObservable, IAsyncDisposable
         this.clock = clock ?? TimeProvider.System;
     }
 
+    /// <summary>Formats the cached seven-day count, showing a dash until a valid count is available.</summary>
     public string CountText => count?.ToString("N0", CultureInfo.CurrentCulture) ?? "—";
+
+    /// <summary>Exposes the current background refresh so shutdown can observe its completion.</summary>
     internal Task PendingRefresh { get; private set; } = Task.CompletedTask;
 
     /// <summary>Starts a daily background refresh once a commander is known, including sessions spanning midnight.</summary>

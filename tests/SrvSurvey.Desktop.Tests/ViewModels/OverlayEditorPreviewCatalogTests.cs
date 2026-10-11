@@ -158,6 +158,7 @@ public sealed class OverlayEditorPreviewCatalogTests
         Assert.Equal(expected, body.IsRewardBandGroupHighlighted);
     }
 
+    /// <summary>Checks that preview totals, trips, and badges agree with the sample carrier and ship cargo.</summary>
     [Fact]
     public void ColonizationPreviewSummariesMatchItsRepresentativeCargo()
     {

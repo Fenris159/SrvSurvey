@@ -357,7 +357,10 @@ public sealed class ColonizationColumnThemeTests : IDisposable
             }
             else
             {
-                Assert.Equal(Colors.Transparent, Assert.IsAssignableFrom<ISolidColorBrush>(rows[1].Background).Color);
+                Assert.Equal(
+                    Colors.Transparent,
+                    Assert.IsType<ISolidColorBrush>(rows[1].Background, exactMatch: false).Color
+                );
             }
             Assert.All(rows, row => Assert.Equal(1, row.Opacity));
             Assert.All(
@@ -383,7 +386,10 @@ public sealed class ColonizationColumnThemeTests : IDisposable
                 .ToArray();
             Assert.Equal(2, restored.Length);
             Assert.Same(stripe, restored[0].Background);
-            Assert.Equal(Colors.Transparent, Assert.IsAssignableFrom<ISolidColorBrush>(restored[1].Background).Color);
+            Assert.Equal(
+                Colors.Transparent,
+                Assert.IsType<ISolidColorBrush>(restored[1].Background, exactMatch: false).Color
+            );
         }
         finally
         {

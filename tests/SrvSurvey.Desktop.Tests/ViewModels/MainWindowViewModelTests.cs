@@ -2976,6 +2976,7 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>Replays Codex firsts and disposes background session work before deleting the profile fixture.</summary>
     [Fact]
     public async Task RefreshReplaysCommanderCodexFirstsToLegacyLedgers()
     {
@@ -2992,7 +2993,7 @@ public sealed class MainWindowViewModelTests
                     + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"CodexEntry\",\"EntryID\":2310101,\"SystemAddress\":10477373803,\"BodyID\":3}\n"
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3009,7 +3010,6 @@ public sealed class MainWindowViewModelTests
             Assert.Single(Directory.GetFiles(profile, "F123-codex-*.json"));
             Assert.Equal("F123", viewModel.CodexBingo.SelectedCommander?.FrontierId);
             Assert.Equal(1, viewModel.CodexBingo.DiscoveredCount);
-            viewModel.CodexBingo.Dispose();
         }
         finally
         {

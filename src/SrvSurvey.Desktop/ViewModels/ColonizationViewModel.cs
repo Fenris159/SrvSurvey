@@ -229,6 +229,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         set => SaveOverlayPreferences(overlayPreferences with { InlineFleetCarrierCargo = value });
     }
 
+    /// <summary>Persists whether categories covered by carrier cargo collapse to their summary.</summary>
     public bool CollapseCoveredCommodityGroups
     {
         get => overlayPreferences.CollapseCoveredGroups;

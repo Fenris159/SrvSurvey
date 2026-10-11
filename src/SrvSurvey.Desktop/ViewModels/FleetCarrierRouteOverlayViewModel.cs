@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
+public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan FinishedLingerDuration = TimeSpan.FromSeconds(3);
 

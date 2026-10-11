@@ -94,6 +94,7 @@ public static class OverlayThemePresetCatalog
         "bio.galacticRegionPotentialSegmentEdge",
     ];
 
+    /// <summary>Lists the built-in palettes with consistent cargo-status colors and distinct category accents.</summary>
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),

@@ -54,6 +54,9 @@ and shutdown backups finish after the window disappears.
   checkboxes in Theme → Overlay Settings control cockpit-view visibility. Main
   is enabled by default; the overlay hides when a side panel is focused unless
   you enable that view, and stays hidden in other interface screens.
+- **Follow Fleet Carrier jump progress in the overlay.** Departure countdowns,
+  jump phases, and cooldowns now update in real time, matching the application.
+  Scheduling a jump also reveals the countdown in an already-open overlay.
 
 - **Keep the colonization panel visible when you need it.** The Colonization
   commodities shortcut and panel checkbox now show the panel persistently until
@@ -76,6 +79,8 @@ and shutdown backups finish after the window disappears.
   The Default preset uses a clearer grey commodity row fill at about 36%
   opacity (#6666665C). Carrier-loading highlights shade the whole row and share
   the row-fill opacity. Existing saved colors and row fills are preserved.
+  Rapid theme saves keep separate recovery copies instead of failing when
+  backups would otherwise share the same timestamp.
 - **Read a more compact colonization table.** Completed commodities show the
   existing checkmark before their name, removing the separate checkmark column.
   Checkmarks keep row heights uniform, and delta symbols stay aligned with the

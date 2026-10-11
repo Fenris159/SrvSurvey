@@ -1303,6 +1303,7 @@ public sealed class OverlayPresentationContractTests
         Assert.DoesNotContain("Colonisation projects", colonization);
     }
 
+    /// <summary>Verifies that shared overlay presentations own their compact layout and map-sizing rules.</summary>
     [Fact]
     public void SharedPresentationsOwnCompactionMapSizingAndDividerBehavior()
     {

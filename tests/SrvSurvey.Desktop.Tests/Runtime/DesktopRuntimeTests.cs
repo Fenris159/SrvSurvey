@@ -549,6 +549,8 @@ public sealed class DesktopRuntimeTests
         public Action<DesktopShutdownReason>? OnQuiesce { get; set; }
 
         public Action? OnDisposeViewModel { get; set; }
+
+        /// <summary>Supplies asynchronous cleanup work to hold shutdown until a backup completes.</summary>
         public Func<Task>? DisposeViewModel { get; init; }
 
         public void Quiesce(DesktopShutdownReason reason)
@@ -577,6 +579,7 @@ public sealed class DesktopRuntimeTests
             return Task.CompletedTask;
         }
 
+        /// <summary>Records view-model disposal and awaits any injected background backup work.</summary>
         public Task DisposeViewModelAsync()
         {
             events.Add("dispose-view-model");

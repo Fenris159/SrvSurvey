@@ -539,6 +539,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         );
     }
 
+    /// <summary>Checks unavailable-market dimming and readiness badges while cargo display options change.</summary>
     [Fact]
     public void MarketGuidanceDimsUnavailableRowsAndHighlightsCarrierLoads()
     {

@@ -227,6 +227,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         await RequestShutdownAsync(DesktopShutdownReason.RuntimeDisposed);
     }
 
+    /// <summary>Finishes dependent services and background backups before releasing the close guard and exiting.</summary>
     private async Task StopAsync(DesktopShutdownReason reason, int exitCode)
     {
         TryRun(() => QuiesceMainWindow(reason));

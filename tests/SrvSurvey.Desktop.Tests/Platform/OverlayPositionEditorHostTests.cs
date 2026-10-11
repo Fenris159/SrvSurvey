@@ -306,6 +306,51 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Empty(host.PreviewWindows);
     }
 
+    /// <summary>Removes the original listener even when the editor's source is replaced or cleared before closing.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ClosingEditorDetachesOriginalColonizationSource(bool closeToolbar, bool clearSource)
+    {
+        var source = new ColonizationCommodityOverlayViewModel();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        using var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = source,
+        };
+        Assert.True(editor.Begin());
+        System.Reflection.FieldInfo eventField = typeof(ColonizationCommodityOverlayViewModel).GetField(
+            nameof(ColonizationCommodityOverlayViewModel.PropertyChanged),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        )!;
+        var before = eventField.GetValue(source) as MulticastDelegate;
+        Assert.Contains(before?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+        editor.ColonizationOverlay = clearSource ? null : new ColonizationCommodityOverlayViewModel();
+        if (closeToolbar)
+        {
+            host.EditorToolbar!.Close();
+        }
+        else
+        {
+            editor.Cancel();
+        }
+
+        var after = eventField.GetValue(source) as MulticastDelegate;
+        Assert.DoesNotContain(after?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+    }
+
     [AvaloniaFact]
     public void EditorMonitorLockClampsPanelBodyAndPreservesPositionAfterSavingAndReopening()
     {

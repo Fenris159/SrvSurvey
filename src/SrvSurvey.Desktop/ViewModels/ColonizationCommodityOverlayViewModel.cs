@@ -263,6 +263,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(CollapseModeText));
     }
 
+    /// <summary>Rebuilds commodity groups and notifies live and editor presentations of saved display preferences.</summary>
     public void ApplyPreferences(ColonizationOverlayPreferences updatedPreferences)
     {
         ArgumentNullException.ThrowIfNull(updatedPreferences);
@@ -471,6 +472,7 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     /// <summary>Shows carrier sums only when the carrier column is enabled and delta mode is disabled.</summary>
     public bool ShowFleetCarrierSum => ShowFleetCarrierCargo && !ShowFleetCarrierDelta;
 
+    /// <summary>Reports cargo still missing from carriers, excluding cargo aboard the ship.</summary>
     public int FleetCarrierDeficit => Math.Max(0, Needed - OnFleetCarriers);
 
     /// <summary>Highlights carrier-loading guidance without excluding cargo shown in a combined total.</summary>

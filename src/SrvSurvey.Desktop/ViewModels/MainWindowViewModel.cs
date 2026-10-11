@@ -1102,6 +1102,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public VisitedStarsCacheViewModel VisitedStarsCache { get; }
 
+    /// <summary>Owns the machine-local daily activity refresh and sidebar count for this session.</summary>
     public ActiveUsersViewModel ActiveUsers { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests => questRuntimeCoordinator.Snapshot;
@@ -2515,6 +2516,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Projects the latest commander session into workspace state and starts eligible daily activity refreshes.</summary>
     private void ApplySnapshot(JournalSnapshot snapshot)
     {
         ActiveUsers.SessionLoaded(!string.IsNullOrWhiteSpace(snapshot.FrontierId));

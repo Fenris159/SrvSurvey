@@ -179,6 +179,7 @@ public sealed class ActiveUsersViewModelTests
 
     private sealed class UsageClock : TimeProvider
     {
+        /// <summary>Sets the UTC date used by long-running session refresh tests.</summary>
         public DateTimeOffset UtcNow { get; set; } = new(2026, 10, 11, 23, 59, 0, TimeSpan.Zero);
 
         /// <summary>Returns a controllable UTC day for long-running-session tests.</summary>
@@ -187,8 +188,13 @@ public sealed class ActiveUsersViewModelTests
 
     private sealed class WorkerHandler : HttpMessageHandler
     {
+        /// <summary>Counts only activity endpoint requests sent through the simulated Worker.</summary>
         public int RequestCount { get; private set; }
+
+        /// <summary>Keeps the simulated request pending so shutdown must cancel and observe it.</summary>
         public bool WaitForCancellation { get; init; }
+
+        /// <summary>Signals that background reporting has reached the simulated transport.</summary>
         public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>Responds only to the usage Worker while keeping unrelated integrations offline.</summary>

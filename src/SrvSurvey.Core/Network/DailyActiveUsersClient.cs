@@ -97,11 +97,13 @@ public sealed class DailyActiveUsersClient : IDisposable
         }
     }
 
-    /// <summary>Sends only a random installation identifier, release version, and platform name.</summary>
+    /// <summary>Sends anonymous installation activity with a shorter deadline so statistics can still refresh.</summary>
     private async Task PingAsync(string id, CancellationToken cancellationToken)
     {
         try
         {
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(3));
             using var request = new HttpRequestMessage(HttpMethod.Post, WellKnownUris.ActiveUsersPing)
             {
                 Content = JsonContent.Create(
@@ -114,14 +116,17 @@ public sealed class DailyActiveUsersClient : IDisposable
                 ),
             };
             using HttpResponseMessage response = await client
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             await BoundedHttpContent
-                .ReadBytesAsync(response.Content, MaximumPingBytes, "Active-user check-in", cancellationToken)
+                .ReadBytesAsync(response.Content, MaximumPingBytes, "Active-user check-in", deadline.Token)
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is HttpRequestException or InvalidDataException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or InvalidDataException
+                || (exception is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+            )
         {
             // Public statistics remain useful even when this installation's check-in fails.
             log?.Invoke("Daily active-user check-in skipped: " + exception.Message);
@@ -194,8 +199,13 @@ public sealed class DailyActiveUsersClient : IDisposable
     /// <summary>Machine-local identity, attempt date, and last valid public count, excluded from profile sync.</summary>
     private sealed record LocalUsageState
     {
+        /// <summary>Stores the random installation identity shared by this machine's commander instances.</summary>
         public string Id { get; init; } = string.Empty;
+
+        /// <summary>Reserves the last UTC reporting day before sending a potentially uncertain check-in.</summary>
         public DateOnly? LastAttemptDay { get; init; }
+
+        /// <summary>Retains the last valid public seven-day count for offline sessions.</summary>
         public long? Active7d { get; init; }
     }
 }

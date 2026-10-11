@@ -87,6 +87,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private bool closing;
     private bool disposed;
     private OverlayInteractionViewModel? viewModel;
+    private ColonizationCommodityOverlayViewModel? colonizationOverlay;
 
     public AvaloniaOverlayPositionEditorHost(IOverlayPlatformService platform, OverlayWindowRegistry? registry = null)
     {
@@ -125,7 +126,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         editor = toolbar;
         this.viewModel = viewModel;
         viewModel.PropertyChanged += OnEditorControlsHeightChanged;
-        viewModel.ColonizationOverlay?.PropertyChanged += OnColonizationPreferencesChanged;
+        colonizationOverlay = viewModel.ColonizationOverlay;
+        colonizationOverlay?.PropertyChanged += OnColonizationPreferencesChanged;
         registry.PrepareWindow(toolbar);
         toolbar.Show();
 
@@ -388,6 +390,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Closes previews and detaches their original settings sources before optionally restoring live overlays.</summary>
     public void Close(bool restoreRuntimeWindows = true)
     {
         if (closing)
@@ -410,7 +413,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
-        viewModel?.ColonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
+        colonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
+        colonizationOverlay = null;
 
         if (restoreRuntimeWindows)
         {
@@ -570,6 +574,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Releases preview subscriptions and restores live overlays when the toolbar closes directly.</summary>
     private void OnEditorClosed(object? sender, EventArgs eventArgs)
     {
         if (closing)
@@ -585,7 +590,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
-        viewModel?.ColonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
+        colonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
+        colonizationOverlay = null;
 
         editor = null;
         viewModel = null;
