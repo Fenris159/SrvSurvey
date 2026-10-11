@@ -27,10 +27,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-permissions:
-  contents: read
-  # Needed so the scanner can read PR metadata for SonarCloud PR decoration.
-  pull-requests: read
+permissions: {}
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -44,6 +41,8 @@ env:
 jobs:
   linux-coverage:
     name: Linux desktop coverage
+    permissions:
+      contents: read
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
@@ -100,6 +99,10 @@ jobs:
   analyze:
     name: Build and analyze
     needs: linux-coverage
+    permissions:
+      contents: read
+      # Needed so the scanner can read PR metadata for SonarCloud PR decoration.
+      pull-requests: read
     # Skip fork PRs (no access to SONAR_TOKEN secrets on pull_request from forks).
     if: >-
       github.event_name != 'pull_request' ||
