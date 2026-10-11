@@ -151,6 +151,206 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         }
     }
 
+    /// <summary>Exercises saved settings and immediate changes through the same preference flow used by the application.</summary>
+    [AvaloniaFact]
+    public void ColonizationPreviewFollowsCurrentSettingsWithoutChangingLiveCargo()
+    {
+        var settings = new ColonizationSettingsStore(Path.Combine(temporaryDirectory, "colonization.json"));
+        settings.SaveOverlayPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                InlineFleetCarrierCargo = true,
+                ShowFleetCarrierDelta = true,
+                HideCollapsedGroups = true,
+                HighlightAlmostCoveredFleetCarrierLoads = true,
+                UseCompactScrollingCommoditiesList = true,
+            }
+        );
+        using var colonization = new ColonizationViewModel(settings);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = colonization.CommodityOverlay,
+        };
+
+        Assert.True(editor.Begin());
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        OverlayPositionPreviewWindow window = host.PreviewWindows.Single(preview =>
+            preview.Definition.Name == "PlotBuildCommodities"
+        );
+        ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
+            window.RuntimePresentation!.DataContext
+        );
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        int rightEdge =
+            window.GetPanelScreenOrigin(window.RenderScaling).X
+            + window.GetPanelMetrics(window.RenderScaling).PanelSize.Width;
+        Assert.Equal(colonization.CommodityOverlay.Preferences, preview.Preferences);
+        Assert.Equal("HAVE Δ", preview.FleetCarrierColumnHeader);
+        Assert.Empty(preview.ShipColumnHeader);
+        Assert.DoesNotContain(preview.Groups, group => group.Name == "Consumer items");
+        ColonizationCommodityOverlayRowViewModel polymers = preview
+            .Groups.SelectMany(group => group.Rows)
+            .Single(row => row.Commodity == "polymers");
+        Assert.Equal("+4", polymers.OnFleetCarriersText);
+        Assert.True(polymers.IsSatisfied);
+        Assert.True(polymers.IsFleetCarrierLoadHighlighted);
+        Assert.Equal("FC LOAD", polymers.MarketBadgeText);
+        ScrollViewer scroll = Assert.Single(window.RuntimePresentation.GetVisualDescendants().OfType<ScrollViewer>());
+        Assert.Equal(300, scroll.MaxHeight);
+        Assert.True(
+            scroll.Extent.Height > scroll.Viewport.Height,
+            $"Extent={scroll.Extent.Height}; viewport={scroll.Viewport.Height}; bounds={scroll.Bounds.Height}"
+        );
+        Assert.Empty(colonization.CommodityOverlay.Plan.Rows);
+
+        colonization.InlineFleetCarrierCargo = false;
+        colonization.ShowFleetCarrierDelta = false;
+        colonization.HighlightAlmostCoveredFleetCarrierLoads = false;
+        colonization.HideCollapsedCommodityGroups = false;
+        colonization.UseCompactScrollingCommoditiesList = false;
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        Assert.Equal(
+            rightEdge,
+            window.GetPanelScreenOrigin(window.RenderScaling).X
+                + window.GetPanelMetrics(window.RenderScaling).PanelSize.Width
+        );
+        Assert.Same(preview, window.RuntimePresentation.DataContext);
+        Assert.Equal("FC", preview.FleetCarrierColumnHeader);
+        Assert.Equal("SHIP", preview.ShipColumnHeader);
+        polymers = preview.Groups.SelectMany(group => group.Rows).Single(row => row.Commodity == "polymers");
+        Assert.Equal("590", polymers.OnFleetCarriersText);
+        Assert.Equal("24", polymers.InShipText);
+        Assert.False(polymers.IsFleetCarrierLoadHighlighted);
+        Assert.False(polymers.IsSatisfied);
+        Assert.True(preview.Groups.Single(group => group.Name == "Consumer items").IsCollapsed);
+        Assert.Equal(double.PositiveInfinity, scroll.MaxHeight);
+        Assert.True(scroll.Bounds.Height > 300);
+
+        colonization.ShowFleetCarrierCargo = false;
+        Assert.All(preview.Groups, group => Assert.False(group.IsCollapsed));
+        Assert.False(preview.HasFleetCarriers);
+        Assert.All(preview.Groups.SelectMany(group => group.Rows), row => Assert.Empty(row.OnFleetCarriersText));
+        colonization.ShowFleetCarrierCargo = true;
+        colonization.CollapseCoveredCommodityGroups = false;
+        Assert.All(preview.Groups, group => Assert.False(group.IsCollapsed));
+        colonization.CommodityOverlay.Apply(preview.Plan with { Title = "Live project" }, null);
+        Assert.NotEqual("Live project", preview.Title);
+
+        editor.SelectedCategory = editor.Categories[0];
+        colonization.ShowFleetCarrierDelta = true;
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        window = host.PreviewWindows.Single(current => current.Definition.Name == "PlotBuildCommodities");
+        preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(window.RuntimePresentation!.DataContext);
+        Assert.Equal("FC Δ", preview.FleetCarrierColumnHeader);
+        editor.Cancel();
+    }
+
+    /// <summary>Detaches the live preference listener on both toolbar closure and editor cancellation.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClosedColonizationPreviewsNoLongerFollowSettings(bool closeToolbar)
+    {
+        var source = new ColonizationCommodityOverlayViewModel();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = source,
+        };
+        Assert.True(editor.Begin());
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
+            host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotBuildCommodities"
+            ).RuntimePresentation!.DataContext
+        );
+        if (closeToolbar)
+        {
+            host.EditorToolbar!.Close();
+        }
+        else
+        {
+            editor.Cancel();
+        }
+        source.ApplyPreferences(source.Preferences with { ShowFleetCarrierDelta = true });
+        Assert.False(preview.Preferences.ShowFleetCarrierDelta);
+        Assert.Empty(host.PreviewWindows);
+    }
+
+    /// <summary>Removes the original listener even when the editor's source is replaced or cleared before closing.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ClosingEditorDetachesOriginalColonizationSource(bool closeToolbar, bool clearSource)
+    {
+        var source = new ColonizationCommodityOverlayViewModel();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        using var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = source,
+        };
+        Assert.True(editor.Begin());
+        System.Reflection.FieldInfo eventField = typeof(ColonizationCommodityOverlayViewModel).GetField(
+            nameof(ColonizationCommodityOverlayViewModel.PropertyChanged),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        )!;
+        var before = eventField.GetValue(source) as MulticastDelegate;
+        Assert.Contains(before?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+        editor.ColonizationOverlay = clearSource ? null : new ColonizationCommodityOverlayViewModel();
+        if (closeToolbar)
+        {
+            host.EditorToolbar!.Close();
+        }
+        else
+        {
+            editor.Cancel();
+        }
+
+        var after = eventField.GetValue(source) as MulticastDelegate;
+        Assert.DoesNotContain(after?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+    }
+
     [AvaloniaFact]
     public void EditorMonitorLockClampsPanelBodyAndPreservesPositionAfterSavingAndReopening()
     {

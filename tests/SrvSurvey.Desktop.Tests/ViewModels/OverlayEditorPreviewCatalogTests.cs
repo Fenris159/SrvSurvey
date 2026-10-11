@@ -158,14 +158,32 @@ public sealed class OverlayEditorPreviewCatalogTests
         Assert.Equal(expected, body.IsRewardBandGroupHighlighted);
     }
 
+    /// <summary>Checks that preview totals, trips, and badges agree with the sample carrier and ship cargo.</summary>
     [Fact]
-    public void ColonizationPreviewRemainingMatchesTheSevenDisplayedRows()
+    public void ColonizationPreviewSummariesMatchItsRepresentativeCargo()
     {
         ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotBuildCommodities", 0)
         );
 
-        Assert.Equal(7, preview.Plan.Rows.Count);
-        Assert.Equal(4675, preview.Plan.TotalRemaining);
+        Assert.Equal(16, preview.Plan.Rows.Count);
+        Assert.Equal(preview.Plan.Rows.Sum(row => (long)row.Needed), preview.Plan.TotalRemaining);
+        Assert.Equal(
+            preview.Plan.Rows.Sum(row => Math.Max(0L, (long)row.Needed - row.OnFleetCarriers)),
+            preview.Plan.FleetCarrierDeficit
+        );
+        Assert.Equal((long)Math.Ceiling(preview.Plan.TotalRemaining / 512d), preview.Plan.TripsInCurrentShip);
+        Assert.Equal(
+            (long)Math.Ceiling(preview.Plan.FleetCarrierDeficit / 512d),
+            preview.Plan.FleetCarrierDeficitTrips
+        );
+        Assert.False(preview.Plan.IsAtConstructionSite);
+        Assert.Contains(preview.Groups, group => group.IsCollapsed);
+        Assert.Contains(preview.Plan.Rows, row => row.IsUnavailableAtCurrentMarket);
+        Assert.Contains(preview.Plan.Rows, row => row.CanCompleteFleetCarrierLoad);
+        Assert.All(
+            preview.Plan.Rows,
+            row => Assert.Equal(row.OnFleetCarriers, preview.Plan.FleetCarriers[0].Cargo[row.Commodity])
+        );
     }
 }

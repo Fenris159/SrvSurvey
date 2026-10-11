@@ -1453,6 +1453,10 @@
       "translation": "Aktiver Wächter-Obelisk"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Aktive Benutzer 7d:"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Aktiver Gensammler"
     },
@@ -1915,6 +1919,10 @@
     {
       "source": "Altitude",
       "translation": "Höhe"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "Aluminium"
     },
     {
       "source": "Always on top",
@@ -2585,16 +2593,16 @@
       "translation": "Automatisches Hinzufügen des Tracker-Standorts beim Composition-Scannen von Organismen."
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "Kolonisierungs-Overlay automatisch ausblenden, bis es angedockt ist"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "Automatisches Entfernen des Tracker-Standorts bei der Probenahme eines Organismus innerhalb von 250 m."
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "Tracker-Standorte beim letzten Scan automatisch entfernen"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "Kolonisierungs-Overlay automatisch anzeigen"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -4013,6 +4021,10 @@
       "translation": "Erstellen eines Kartenentwurfs"
     },
     {
+      "source": "Building fabricators",
+      "translation": "Bauunternehmer"
+    },
+    {
       "source": "Building geometry",
       "translation": "Gebäudegeometrie"
     },
@@ -4859,6 +4871,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "Century Gothic, Segoe UI, serifenlos"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "Keramik"
     },
     {
       "source": "Cerulean Gold",
@@ -5749,12 +5765,20 @@
       "translation": "Sammlernapfschnecke"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniseCategory"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "KolonisierenDefizit"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "ColoniseDeficitDim"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "ColoniseHave"
     },
     {
       "source": "ColoniseHighlight",
@@ -5769,8 +5793,20 @@
       "translation": "ColoniseItemDim"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "ColoniseLoadHighlight"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "ColoniseNeed"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "ColoniseRowHighlight"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "ColoniseShip"
     },
     {
       "source": "ColoniseSurplus",
@@ -5859,6 +5895,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "Combat.AutoShowMassacreMissions"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "Kombinieren Sie die Gesamtzahl der Schiffe zu FC-Zählungen"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -6255,6 +6295,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "Zusammenstellen von {0} Live-Overlays in SrvSurveyWindowOne."
+    },
+    {
+      "source": "Computer components",
+      "translation": "Computerkomponenten"
     },
     {
       "source": "Concha Aureolas",
@@ -6809,6 +6853,10 @@
       "translation": "Kopiert {0}: {1}"
     },
     {
+      "source": "Copper",
+      "translation": "Kupfer"
+    },
+    {
       "source": "Copy address",
       "translation": "Adresse kopieren"
     },
@@ -7091,6 +7139,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "Die abgedeckten Flottenträgergruppen werden erweitert."
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "Abgedeckte Flottenträgergruppen werden automatisch ausgeblendet."
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -9845,6 +9897,10 @@
       "translation": "FC"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "FC / HABEN"
+    },
+    {
       "source": "FC DIFF",
       "translation": "FC DIFF"
     },
@@ -9871,10 +9927,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC Routes akzeptiert nur Spansh Fleet Carrier Router-Ergebnis-URLs."
-    },
-    {
-      "source": "FC Δ",
-      "translation": "FC Δ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -12181,6 +12233,10 @@
       "translation": "Körpermaterialien ausblenden"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "Reduzierte Gruppen ausblenden"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Kampf-Overlays ausblenden, während Raven Colonial Build-Projekte aktiv sind"
     },
@@ -12235,6 +12291,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "HideBodyInfoMaterials"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "HideCollapsedGroups"
     },
     {
       "source": "HideGeoCount",
@@ -13233,6 +13293,10 @@
       "translation": "Anweisungen"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "Isoliermembran"
+    },
+    {
       "source": "Integration license",
       "translation": "Integrationslizenz"
     },
@@ -13279,6 +13343,10 @@
     {
       "source": "Item (dim)",
       "translation": "Artikel (gedimmt)"
+    },
+    {
+      "source": "Item Category",
+      "translation": "Artikelkategorie"
     },
     {
       "source": "ItemsDelivered",
@@ -14234,6 +14302,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "Flüssiger Sauerstoff"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "Flüssiger Sauerstoff"
     },
     {
@@ -15347,6 +15419,10 @@
     {
       "source": "Med kits",
       "translation": "Medizinische Kits"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "Medizinische Diagnosegeräte"
     },
     {
       "source": "Medium",
@@ -18797,6 +18873,10 @@
       "translation": "Projektname"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PYR"
     },
@@ -18863,6 +18943,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Passives Benachrichtigungs-Overlay"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Passive Überlagerung"
     },
     {
       "source": "Paste",
@@ -20777,12 +20861,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "RavenOverlayColoniseDeficitBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "RavenOverlayColoniseDeficitDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "RavenOverlayColoniseHaveBrush"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -20797,8 +20889,20 @@
       "translation": "RavenOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "RavenOverlayColoniseLoadHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "RavenOverlayColoniseNeedBrush"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "RavenOverlayColoniseRowHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "RavenOverlayColoniseShipBrush"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -24459,10 +24563,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "Teilen Sie eine Umfrage mit VoxStellar"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "Spalte mit der Anzahl der Schiffsladungen teilen"
     },
     {
       "source": "Share data",
@@ -29433,12 +29533,12 @@
       "translation": "Diese Filter verbergen nur Overlays; Das Aktivieren eines Fahrzeugs umgeht nicht den normalen Spielstatusauslöser, den Sichtbarkeitsschalter oder die Fokusregeln des Panels. Editor-Vorschauen bleiben weiterhin verfügbar."
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "Diese Hauptschalter steuern, ob jedes Panel rendern darf. Bestehende Einstellungen für die automatische Anzeige und den Kontext entscheiden weiterhin darüber, wann ein aktiviertes Bedienfeld angezeigt wird. Verknüpfungsfelder sind optional und haben keine Standardbindung."
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Diese Verknüpfungen zeichnen Standorte auf oder löschen sie. Sie setzen im Spiel keine Rigs ein und sammeln diese auch nicht."
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "Diese Schalter und Verknüpfungen sind im Bedienfeld verfügbar. Informationen zum Sichtbarkeitsverhalten finden Sie in der Beschreibung jedes Panels. Verknüpfungsfelder sind optional und haben keine Standardbindung."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -29631,6 +29731,10 @@
     {
       "source": "Timestamp",
       "translation": "Zeitstempel"
+    },
+    {
+      "source": "Titanium",
+      "translation": "Titan"
     },
     {
       "source": "Title",
@@ -29997,6 +30101,10 @@
       "translation": "Stimmen Sie das FSS auf einen Planeten ab"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "Aktivieren Sie diese Option, um die Kolonisierungsgüter für diese Sitzung sichtbar zu halten, auch nach dem Abdocken. Schalten Sie es aus, um es auszublenden."
+    },
+    {
       "source": "Turquoise",
       "translation": "Türkis"
     },
@@ -30283,6 +30391,10 @@
     {
       "source": "Unidentified organism",
       "translation": "Unbekannter Organismus"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Einzigartige Installationen, die in den letzten 7 Tagen aktiv waren. Einmal täglich aktualisiert."
     },
     {
       "source": "Unique point name",
@@ -32261,6 +32373,10 @@
       "translation": "Alpha"
     },
     {
+      "source": "aluminium",
+      "translation": "Aluminium"
+    },
+    {
       "source": "ammonia world",
       "translation": "Ammoniakwelt"
     },
@@ -32701,6 +32817,10 @@
       "translation": "Zentrum"
     },
     {
+      "source": "ceramics",
+      "translation": "Keramik"
+    },
+    {
       "source": "challenging",
       "translation": "herausfordernd"
     },
@@ -32775,6 +32895,22 @@
     {
       "source": "colonise.surplus",
       "translation": "kolonisieren.Überschuss"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "colonize.category"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "kolonisieren.haben"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "kolonisieren.brauchen"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "kolonisieren.schiff"
     },
     {
       "source": "color",
@@ -32887,6 +33023,10 @@
     {
       "source": "cooling",
       "translation": "Kühlung"
+    },
+    {
+      "source": "copper",
+      "translation": "Kupfer"
     },
     {
       "source": "core + laser",
@@ -34975,6 +35115,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "tinyhardpoint"
+    },
+    {
+      "source": "titanium",
+      "translation": "Titan"
     },
     {
       "source": "title",
@@ -38019,6 +38163,10 @@
       "translation": "Obelisco guardián activo"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Usuarios activos 7d:"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Muestreador genético activo"
     },
@@ -38481,6 +38629,10 @@
     {
       "source": "Altitude",
       "translation": "Altitud"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "aluminio"
     },
     {
       "source": "Always on top",
@@ -39151,16 +39303,16 @@
       "translation": "Agregar automáticamente la ubicación del rastreador cuando se escanea la composición de los organismos."
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "Ocultar automáticamente la superposición de colonización hasta que esté acoplada"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "Elimina automáticamente la ubicación del rastreador al muestrear un organismo dentro de 250 m."
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "Eliminación automática de ubicaciones de rastreadores en el análisis final"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "Superposición de colonización de exhibición automática"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -40579,6 +40731,10 @@
       "translation": "Construyendo un borrador de mapa"
     },
     {
+      "source": "Building fabricators",
+      "translation": "fabricantes de edificios"
+    },
+    {
       "source": "Building geometry",
       "translation": "Geometría del edificio"
     },
@@ -41425,6 +41581,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "Century Gothic, Segoe UI, sans-serif"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "cerámica"
     },
     {
       "source": "Cerulean Gold",
@@ -42315,12 +42475,20 @@
       "translation": "lapa recolectora"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColonizarCategoría"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "ColonizarDéficit"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "ColonizarDéficitDim"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "colonizartener"
     },
     {
       "source": "ColoniseHighlight",
@@ -42335,8 +42503,20 @@
       "translation": "ColonizarArtículoDim"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "ColonizarCargarResaltar"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "ColonizarNecesidad"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "ColonizarFilaDestacado"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "ColonizarBarco"
     },
     {
       "source": "ColoniseSurplus",
@@ -42425,6 +42605,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "Combat.AutoShowMassacreMisiones"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "Combinar los totales de barcos en recuentos de FC"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -42821,6 +43005,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "Composición de {0} superposiciones en vivo en SrvSurveyWindowOne."
+    },
+    {
+      "source": "Computer components",
+      "translation": "Componentes de computadora"
     },
     {
       "source": "Concha Aureolas",
@@ -43375,6 +43563,10 @@
       "translation": "Copiado {0}: {1}"
     },
     {
+      "source": "Copper",
+      "translation": "cobre"
+    },
+    {
       "source": "Copy address",
       "translation": "Copiar dirección"
     },
@@ -43657,6 +43849,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "Se amplían los grupos de transportistas de flota cubiertos."
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "Los grupos de transportistas de flota cubiertos se ocultan automáticamente."
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -46411,6 +46607,10 @@
       "translation": "FC"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "FC / TENGO"
+    },
+    {
       "source": "FC DIFF",
       "translation": "DIFERENCIA FC"
     },
@@ -46437,10 +46637,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC Routes acepta Spansh URL de resultados de Fleet Carrier Router únicamente."
-    },
-    {
-      "source": "FC Δ",
-      "translation": "FC Δ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -48747,6 +48943,10 @@
       "translation": "Ocultar materiales del cuerpo"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "Ocultar grupos colapsados"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Ocultar superposiciones de combate mientras los proyectos de construcción Raven Colonial están activos"
     },
@@ -48801,6 +49001,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "HideBodyInfoMaterials"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "Ocultar grupos colapsados"
     },
     {
       "source": "HideGeoCount",
@@ -49799,6 +50003,10 @@
       "translation": "Instrucciones"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "Membrana aislante"
+    },
+    {
       "source": "Integration license",
       "translation": "Licencia de integración"
     },
@@ -49845,6 +50053,10 @@
     {
       "source": "Item (dim)",
       "translation": "Artículo (tenue)"
+    },
+    {
+      "source": "Item Category",
+      "translation": "Categoría de artículo"
     },
     {
       "source": "ItemsDelivered",
@@ -50800,6 +51012,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "Oxígeno líquido"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "Oxígeno líquido"
     },
     {
@@ -51913,6 +52129,10 @@
     {
       "source": "Med kits",
       "translation": "botiquines"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "Equipo de diagnóstico médico"
     },
     {
       "source": "Medium",
@@ -55363,6 +55583,10 @@
       "translation": "Nombre del proyecto"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PIR"
     },
@@ -55429,6 +55653,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Superposición de notificaciones pasivas"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "superposición pasiva"
     },
     {
       "source": "Paste",
@@ -57343,12 +57571,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "CuervoSuperposiciónColoniseCategoríaCepillo"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "CuervoSuperposiciónColoniseDeficitBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "RavenOverlayColoniseDeficitDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "CuervoSuperposiciónColoniseHaveBrush"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -57363,8 +57599,20 @@
       "translation": "RavenOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "CuervoSuperposiciónColoniseCargarDestacarPincel"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "CuervoSuperposiciónColoniseNeedBrush"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "CuervoSuperposiciónColoniseFilaDestacadoCepillo"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "CuervoSuperposiciónColoniseBarcoCepillo"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -61025,10 +61273,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "Compartir una encuesta con VoxStellar"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "Compartir columna con recuentos de carga de barcos"
     },
     {
       "source": "Share data",
@@ -65999,12 +66243,12 @@
       "translation": "Estos filtros sólo ocultan superposiciones; habilitar un vehículo no pasa por alto el disparador de estado de juego normal, el interruptor de visibilidad o las reglas de enfoque del panel. Las vistas previas del editor siguen estando disponibles."
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "Estos interruptores maestros controlan si cada panel puede renderizar. Las configuraciones de contexto y visualización automática existentes aún deciden cuándo aparece un panel habilitado. Los campos de acceso directo son opcionales y no tienen ningún enlace predeterminado."
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Estos atajos registran o borran ubicaciones; no despliegan ni recolectan plataformas en el juego."
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "Estos interruptores y atajos controlan la disponibilidad del panel. Consulte la descripción de cada panel para conocer su comportamiento de visibilidad. Los campos de acceso directo son opcionales y no tienen ningún enlace predeterminado."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -66197,6 +66441,10 @@
     {
       "source": "Timestamp",
       "translation": "Marca de tiempo"
+    },
+    {
+      "source": "Titanium",
+      "translation": "titanio"
     },
     {
       "source": "Title",
@@ -66563,6 +66811,10 @@
       "translation": "Sintoniza el FSS con un planeta"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "Actívelo para mantener visibles los productos de colonización durante esta sesión, incluso después del desacoplamiento. Apágalo para ocultarlo."
+    },
+    {
       "source": "Turquoise",
       "translation": "Turquesa"
     },
@@ -66849,6 +67101,10 @@
     {
       "source": "Unidentified organism",
       "translation": "Organismo no identificado"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Instalaciones únicas activas en los últimos 7 días. Actualizado una vez al día."
     },
     {
       "source": "Unique point name",
@@ -68827,6 +69083,10 @@
       "translation": "alfa"
     },
     {
+      "source": "aluminium",
+      "translation": "aluminio"
+    },
+    {
       "source": "ammonia world",
       "translation": "mundo del amoníaco"
     },
@@ -69267,6 +69527,10 @@
       "translation": "centro"
     },
     {
+      "source": "ceramics",
+      "translation": "cerámica"
+    },
+    {
       "source": "challenging",
       "translation": "desafiante"
     },
@@ -69341,6 +69605,22 @@
     {
       "source": "colonise.surplus",
       "translation": "colonizar.excedente"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "colonizar.categoría"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "colonizar.tener"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "colonizar.necesidad"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "colonizar.barco"
     },
     {
       "source": "color",
@@ -69453,6 +69733,10 @@
     {
       "source": "cooling",
       "translation": "enfriamiento"
+    },
+    {
+      "source": "copper",
+      "translation": "cobre"
     },
     {
       "source": "core + laser",
@@ -71541,6 +71825,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "puntodiminuto"
+    },
+    {
+      "source": "titanium",
+      "translation": "titanio"
     },
     {
       "source": "title",
@@ -74585,6 +74873,10 @@
       "translation": "Obélisque du Gardien actif"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Utilisateurs actifs 7j :"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Échantillonneur génétique actif"
     },
@@ -75047,6 +75339,10 @@
     {
       "source": "Altitude",
       "translation": "Altitude"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "aluminium"
     },
     {
       "source": "Always on top",
@@ -75717,16 +76013,16 @@
       "translation": "Ajout automatique d'un emplacement de suivi lors de l'analyse de la composition des organismes."
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "Masquer automatiquement la superposition de colonisation jusqu'à ce qu'elle soit ancrée"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "Supprimez automatiquement l'emplacement du tracker lors de l'échantillonnage d'un organisme dans un rayon de 250 m."
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "Supprimer automatiquement les emplacements du tracker lors de l'analyse finale"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "Superposition de colonisation d'affichage automatique"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -77145,6 +77441,10 @@
       "translation": "Construire un brouillon de carte"
     },
     {
+      "source": "Building fabricators",
+      "translation": "Constructeurs de bâtiments"
+    },
+    {
       "source": "Building geometry",
       "translation": "Géométrie du bâtiment"
     },
@@ -77991,6 +78291,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "Century Gothic, Segoe UI, sans empattement"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "céramique"
     },
     {
       "source": "Cerulean Gold",
@@ -78881,12 +79185,20 @@
       "translation": "Patelle collectrice"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniserCatégorie"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "ColoniserDéficit"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "ColoniserDéficitDim"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "ColoniserAvoir"
     },
     {
       "source": "ColoniseHighlight",
@@ -78901,8 +79213,20 @@
       "translation": "ColoniseItemDim"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "ColoniserLoadHighlight"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "ColoniserBesoin"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "ColoniserRowHighlight"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "ColoniserNavire"
     },
     {
       "source": "ColoniseSurplus",
@@ -78991,6 +79315,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "Combat.AutoShowMassacreMissions"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "Combinez les totaux des navires en comptes FC"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -79387,6 +79715,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "Composition de superpositions en direct {0} dans SrvSurveyWindowOne."
+    },
+    {
+      "source": "Computer components",
+      "translation": "Composants informatiques"
     },
     {
       "source": "Concha Aureolas",
@@ -79941,6 +80273,10 @@
       "translation": "{0} copié : {1}"
     },
     {
+      "source": "Copper",
+      "translation": "cuivre"
+    },
+    {
       "source": "Copy address",
       "translation": "Copier l'adresse"
     },
@@ -80223,6 +80559,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "Les groupes de Fleet Carrier couverts sont élargis."
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "Les groupes Fleet Carrier couverts sont automatiquement masqués."
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -82977,6 +83317,10 @@
       "translation": "FC"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "FC / AVOIR"
+    },
+    {
       "source": "FC DIFF",
       "translation": "FC DIFF"
     },
@@ -83003,10 +83347,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC Routes accepte uniquement les URL de résultats des Spansh Fleet Carrier Router."
-    },
-    {
-      "source": "FC Δ",
-      "translation": "FCΔ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -85313,6 +85653,10 @@
       "translation": "Masquer les matériaux du corps"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "Masquer les groupes réduits"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Masquer les superpositions de combat pendant que les projets de build Raven Colonial sont actifs"
     },
@@ -85367,6 +85711,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "MasquerBodyInfoMatériaux"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "Masquer les groupes réduits"
     },
     {
       "source": "HideGeoCount",
@@ -86365,6 +86713,10 @@
       "translation": "Instructions"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "Membrane isolante"
+    },
+    {
       "source": "Integration license",
       "translation": "Licence d'intégration"
     },
@@ -86411,6 +86763,10 @@
     {
       "source": "Item (dim)",
       "translation": "Article (faible)"
+    },
+    {
+      "source": "Item Category",
+      "translation": "Catégorie d'article"
     },
     {
       "source": "ItemsDelivered",
@@ -87366,6 +87722,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "Oxygène liquide"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "Oxygène liquide"
     },
     {
@@ -88479,6 +88839,10 @@
     {
       "source": "Med kits",
       "translation": "Trousses médicales"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "Matériel de diagnostic médical"
     },
     {
       "source": "Medium",
@@ -91929,6 +92293,10 @@
       "translation": "Nom du projet"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PYR"
     },
@@ -91995,6 +92363,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Superposition de notifications passives"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Superposition passive"
     },
     {
       "source": "Paste",
@@ -93909,12 +94281,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "RavenOverlayColoniseDeficitBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "RavenOverlayColoniseDeficitDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "RavenOverlayColoniseHaveBrush"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -93929,8 +94309,20 @@
       "translation": "RavenOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "RavenOverlayColoniseLoadHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "RavenOverlayColoniseNeedBrush"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "RavenOverlayColoniseRowHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "RavenOverlayColoniseShipBrush"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -97591,10 +97983,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "Partager une enquête avec VoxStellar"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "Partager la colonne avec le nombre de cargaisons des navires"
     },
     {
       "source": "Share data",
@@ -102565,12 +102953,12 @@
       "translation": "Ces filtres masquent uniquement les superpositions ; l’activation d’un véhicule ne contourne pas le déclencheur d’état de jeu normal du panneau, le commutateur de visibilité ou les règles de mise au point. Les aperçus de l'éditeur restent disponibles."
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "Ces commutateurs principaux contrôlent si chaque panneau peut effectuer un rendu. Les paramètres d'affichage automatique et de contexte existants déterminent toujours le moment où un panneau activé apparaît. Les champs de raccourci sont facultatifs et n’ont pas de liaison par défaut."
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Ces raccourcis enregistrent ou effacent des emplacements ; ils ne déploient ni ne collectent de plates-formes dans le jeu."
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "Ces commutateurs et raccourcis contrôlent la disponibilité du panneau. Consultez la description de chaque panneau pour connaître son comportement en matière de visibilité. Les champs de raccourci sont facultatifs et n’ont pas de liaison par défaut."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -102763,6 +103151,10 @@
     {
       "source": "Timestamp",
       "translation": "Horodatage"
+    },
+    {
+      "source": "Titanium",
+      "translation": "titane"
     },
     {
       "source": "Title",
@@ -103129,6 +103521,10 @@
       "translation": "Adaptez le FSS à une planète"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "Activez cette option pour que les produits de colonisation restent visibles pour cette session, y compris après le désamarrage. Désactivez-le pour le masquer."
+    },
+    {
       "source": "Turquoise",
       "translation": "Turquoise"
     },
@@ -103415,6 +103811,10 @@
     {
       "source": "Unidentified organism",
       "translation": "Organisme non identifié"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Installations uniques actives au cours des 7 derniers jours. Mis à jour une fois par jour."
     },
     {
       "source": "Unique point name",
@@ -105393,6 +105793,10 @@
       "translation": "alpha"
     },
     {
+      "source": "aluminium",
+      "translation": "aluminium"
+    },
+    {
       "source": "ammonia world",
       "translation": "monde de l'ammoniac"
     },
@@ -105833,6 +106237,10 @@
       "translation": "centre"
     },
     {
+      "source": "ceramics",
+      "translation": "céramique"
+    },
+    {
       "source": "challenging",
       "translation": "stimulant"
     },
@@ -105907,6 +106315,22 @@
     {
       "source": "colonise.surplus",
       "translation": "coloniser.surplus"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "coloniser.category"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "coloniser.avoir"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "coloniser.besoin"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "coloniser.ship"
     },
     {
       "source": "color",
@@ -106019,6 +106443,10 @@
     {
       "source": "cooling",
       "translation": "refroidissement"
+    },
+    {
+      "source": "copper",
+      "translation": "cuivre"
     },
     {
       "source": "core + laser",
@@ -108107,6 +108535,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "petit point dur"
+    },
+    {
+      "source": "titanium",
+      "translation": "titane"
     },
     {
       "source": "title",
@@ -111151,6 +111583,10 @@
       "translation": "Obelisco do Guardião Ativo"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Usuários ativos 7d:"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Amostrador genético ativo"
     },
@@ -111613,6 +112049,10 @@
     {
       "source": "Altitude",
       "translation": "Altitude"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "alumínio"
     },
     {
       "source": "Always on top",
@@ -112283,16 +112723,16 @@
       "translation": "Adicionar automaticamente a localização do rastreador ao digitalizar organismos."
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "Ocultar automaticamente a sobreposição de colonização até encaixar"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "Remove automaticamente a localização do rastreador ao coletar amostras de um organismo em um raio de 250 m."
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "Remover automaticamente os locais do rastreador na verificação final"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "Sobreposição de colonização de exibição automática"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -113711,6 +114151,10 @@
       "translation": "Construindo um rascunho de mapa"
     },
     {
+      "source": "Building fabricators",
+      "translation": "Fabricantes de edifícios"
+    },
+    {
       "source": "Building geometry",
       "translation": "Geometria de construção"
     },
@@ -114557,6 +115001,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "Century Gothic, Segoe UI, sem serifa"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "cerâmica"
     },
     {
       "source": "Cerulean Gold",
@@ -115447,12 +115895,20 @@
       "translation": "Lapa coletora"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColonizarCategoria"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "Colonizar Déficit"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "Colonizar Déficit Dim"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "ColonizarTer"
     },
     {
       "source": "ColoniseHighlight",
@@ -115467,8 +115923,20 @@
       "translation": "ColonizarItemDim"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "ColonizarLoadHighlight"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "ColonizarNeed"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "ColonizarRowHighlight"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "Colonizar Navio"
     },
     {
       "source": "ColoniseSurplus",
@@ -115557,6 +116025,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "Combat.AutoShowMassacreMissões"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "Combine os totais do navio em contagens FC"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -115953,6 +116425,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "Compondo {0} sobreposições ao vivo em SrvSurveyWindowOne."
+    },
+    {
+      "source": "Computer components",
+      "translation": "Componentes de computador"
     },
     {
       "source": "Concha Aureolas",
@@ -116507,6 +116983,10 @@
       "translation": "Copiado {0}: {1}"
     },
     {
+      "source": "Copper",
+      "translation": "cobre"
+    },
+    {
       "source": "Copy address",
       "translation": "Copiar endereço"
     },
@@ -116789,6 +117269,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "Os grupos de transportadoras de frota cobertas são ampliados."
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "Os grupos de transportadoras de frota cobertas são ocultados automaticamente."
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -119543,6 +120027,10 @@
       "translation": "FC"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "FC / TER"
+    },
+    {
       "source": "FC DIFF",
       "translation": "FC DIFERENTE"
     },
@@ -119569,10 +120057,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC Routes aceita apenas URLs de resultados do Spansh Fleet Carrier Router."
-    },
-    {
-      "source": "FC Δ",
-      "translation": "FCΔ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -121879,6 +122363,10 @@
       "translation": "Ocultar materiais do corpo"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "Ocultar grupos recolhidos"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Ocultar sobreposições de combate enquanto os projetos de construção Raven Colonial estão ativos"
     },
@@ -121933,6 +122421,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "OcultarBodyInfoMaterials"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "Ocultar grupos recolhidos"
     },
     {
       "source": "HideGeoCount",
@@ -122931,6 +123423,10 @@
       "translation": "Instruções"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "Membrana isolante"
+    },
+    {
       "source": "Integration license",
       "translation": "Licença de integração"
     },
@@ -122977,6 +123473,10 @@
     {
       "source": "Item (dim)",
       "translation": "Item (escurecido)"
+    },
+    {
+      "source": "Item Category",
+      "translation": "Categoria de item"
     },
     {
       "source": "ItemsDelivered",
@@ -123933,6 +124433,10 @@
     {
       "source": "Liquid Oxygen",
       "translation": "Oxigênio Líquido"
+    },
+    {
+      "source": "Liquid oxygen",
+      "translation": "Oxigênio líquido"
     },
     {
       "source": "Listening for community observations…",
@@ -125045,6 +125549,10 @@
     {
       "source": "Med kits",
       "translation": "Kits médicos"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "Equipamento de diagnóstico médico"
     },
     {
       "source": "Medium",
@@ -128495,6 +129003,10 @@
       "translation": "Nome do projeto"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "PIR"
     },
@@ -128561,6 +129073,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Sobreposição de notificação passiva"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Sobreposição passiva"
     },
     {
       "source": "Paste",
@@ -130475,12 +130991,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "RavenOverlayColoniseDeficitBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "RavenOverlayColoniseDeficitDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "RavenOverlayColoniseHaveBrush"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -130495,8 +131019,20 @@
       "translation": "RavenOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "RavenOverlayColoniseLoadHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "RavenOverlayColoniseNeedBrush"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "RavenOverlayColoniseRowHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "RavenOverlayColoniseShipBrush"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -134157,10 +134693,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "Compartilhe uma pesquisa com VoxStellar"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "Coluna de compartilhamento com contagens de carga de navio"
     },
     {
       "source": "Share data",
@@ -139131,12 +139663,12 @@
       "translation": "Esses filtros ocultam apenas sobreposições; habilitar um veículo não ignora o acionador normal do estado de jogo, a chave de visibilidade ou as regras de foco do painel. As visualizações do editor permanecem disponíveis."
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "Essas chaves mestre controlam se cada painel pode ser renderizado. As configurações de exibição automática e de contexto existentes ainda decidem quando um painel ativado aparece. Os campos de atalho são opcionais e não possuem vinculação padrão."
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Esses atalhos registram ou limpam locais; eles não implantam ou coletam plataformas no jogo."
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "Essas opções e atalhos controlam a disponibilidade do painel. Veja a descrição de cada painel para saber seu comportamento de visibilidade. Os campos de atalho são opcionais e não possuem vinculação padrão."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -139329,6 +139861,10 @@
     {
       "source": "Timestamp",
       "translation": "Carimbo de data e hora"
+    },
+    {
+      "source": "Titanium",
+      "translation": "titânio"
     },
     {
       "source": "Title",
@@ -139695,6 +140231,10 @@
       "translation": "Sintonize o FSS para um planeta"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "Ative para manter os produtos de colonização visíveis nesta sessão, inclusive após o desencaixe. Desligue para ocultá-lo."
+    },
+    {
       "source": "Turquoise",
       "translation": "Turquesa"
     },
@@ -139981,6 +140521,10 @@
     {
       "source": "Unidentified organism",
       "translation": "Organismo não identificado"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Instalações únicas ativas nos últimos 7 dias. Atualizado uma vez por dia."
     },
     {
       "source": "Unique point name",
@@ -141959,6 +142503,10 @@
       "translation": "alfa"
     },
     {
+      "source": "aluminium",
+      "translation": "alumínio"
+    },
+    {
       "source": "ammonia world",
       "translation": "mundo da amônia"
     },
@@ -142399,6 +142947,10 @@
       "translation": "centro"
     },
     {
+      "source": "ceramics",
+      "translation": "cerâmica"
+    },
+    {
       "source": "challenging",
       "translation": "desafiante"
     },
@@ -142473,6 +143025,22 @@
     {
       "source": "colonise.surplus",
       "translation": "colonizar.excedente"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "colonizar.categoria"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "colonizar.ter"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "colonizar.preciso"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "colonizar.navio"
     },
     {
       "source": "color",
@@ -142585,6 +143153,10 @@
     {
       "source": "cooling",
       "translation": "resfriamento"
+    },
+    {
+      "source": "copper",
+      "translation": "cobre"
     },
     {
       "source": "core + laser",
@@ -144673,6 +145245,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "minúsculo ponto de hardware"
+    },
+    {
+      "source": "titanium",
+      "translation": "titânio"
     },
     {
       "source": "title",
@@ -147717,6 +148293,10 @@
       "translation": "Обелиск Активного Стража"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "Активные пользователи 7д:"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "Активный генетический пробоотборник"
     },
@@ -148179,6 +148759,10 @@
     {
       "source": "Altitude",
       "translation": "Высота"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "алюминий"
     },
     {
       "source": "Always on top",
@@ -148849,16 +149433,16 @@
       "translation": "Автоматическое добавление местоположения трекера при сканировании состава организмов."
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "Автоматически скрывать наложение колонизации, пока оно не будет закреплено"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "Автоматическое удаление местоположения трекера при отборе проб организма в радиусе 250 м."
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "Автоматическое удаление местоположений трекеров после окончательного сканирования"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "Наложение колонизации автошоу"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -150277,6 +150861,10 @@
       "translation": "Создание черновика карты"
     },
     {
+      "source": "Building fabricators",
+      "translation": "Строительные производители"
+    },
+    {
       "source": "Building geometry",
       "translation": "Строительная геометрия"
     },
@@ -151123,6 +151711,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "Century Gothic, Segoe UI, без засечек"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "керамика"
     },
     {
       "source": "Cerulean Gold",
@@ -152013,12 +152605,20 @@
       "translation": "Коллекционное блюдо"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniseCategory"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "КолонизацияДефицит"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "КолонизацияДефицитDim"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "ColoniseHave"
     },
     {
       "source": "ColoniseHighlight",
@@ -152033,8 +152633,20 @@
       "translation": "ColoniseItemDim"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "КолонизироватьЗагрузитьВыделить"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "КолонизироватьПотребность"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "КолонизироватьстрокуВыделить"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "КолонизироватьКорабль"
     },
     {
       "source": "ColoniseSurplus",
@@ -152123,6 +152735,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "Combat.AutoShowMassacreMissions"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "Объедините общее количество кораблей в количество FC."
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -152519,6 +153135,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "Компоновка живых наложений {0} в SrvSurveyWindowOne."
+    },
+    {
+      "source": "Computer components",
+      "translation": "Компьютерные компоненты"
     },
     {
       "source": "Concha Aureolas",
@@ -153073,6 +153693,10 @@
       "translation": "Скопировано {0}: {1}"
     },
     {
+      "source": "Copper",
+      "translation": "медь"
+    },
+    {
       "source": "Copy address",
       "translation": "Копировать адрес"
     },
@@ -153355,6 +153979,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "Расширены группы авианосцев крытого флота."
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "Группы перевозчиков крытого флота скрываются автоматически."
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -156109,6 +156737,10 @@
       "translation": "ФК"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "ФК / ЕСТЬ"
+    },
+    {
       "source": "FC DIFF",
       "translation": "ФК ДИФФ"
     },
@@ -156135,10 +156767,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC Routes принимает только URL-адреса результатов Spansh Fleet Carrier Router."
-    },
-    {
-      "source": "FC Δ",
-      "translation": "ФК Δ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -158445,6 +159073,10 @@
       "translation": "Скрыть материалы корпуса"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "Скрыть свернутые группы"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Скрыть наложения боевых действий, пока активны проекты сборки Raven Colonial"
     },
@@ -158499,6 +159131,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "СкрытьТелоИнформацияМатериалы"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "СкрытьСвернутыеГруппы"
     },
     {
       "source": "HideGeoCount",
@@ -159497,6 +160133,10 @@
       "translation": "Инструкции"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "Изоляционная мембрана"
+    },
+    {
       "source": "Integration license",
       "translation": "Лицензия на интеграцию"
     },
@@ -159543,6 +160183,10 @@
     {
       "source": "Item (dim)",
       "translation": "Товар (тусклый)"
+    },
+    {
+      "source": "Item Category",
+      "translation": "Категория товара"
     },
     {
       "source": "ItemsDelivered",
@@ -160498,6 +161142,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "Жидкий кислород"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "Жидкий кислород"
     },
     {
@@ -161611,6 +162259,10 @@
     {
       "source": "Med kits",
       "translation": "Медицинские наборы"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "Медицинское диагностическое оборудование"
     },
     {
       "source": "Medium",
@@ -165061,6 +165713,10 @@
       "translation": "Название проекта"
     },
     {
+      "source": "PSV",
+      "translation": "ПСВ"
+    },
+    {
       "source": "PYR",
       "translation": "ПИР"
     },
@@ -165127,6 +165783,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "Пассивное наложение уведомлений"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "Пассивное наложение"
     },
     {
       "source": "Paste",
@@ -167041,12 +167701,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "ВоронOverlayКолонизацияКатегорияКисть"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "ВоронОверлейКолонизацияДефицитКисть"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "ВоронOverlayКолонизацияДефицитDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "ВоронOverlayColoniseHaveBrush"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -167061,8 +167729,20 @@
       "translation": "ВоронOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "ВоронНаложениеКолонизацияЗагрузкаВыделениеКисть"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "ВоронOverlayColoniseNeedBrush"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "ВоронОверлейКолонизацияРядВыделениеКисть"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "ВоронOverlayКолонизацияКорабльКисть"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -170723,10 +171403,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "Поделитесь опросом с VoxStellar"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "Поделиться столбцом с количеством судовых грузов"
     },
     {
       "source": "Share data",
@@ -175697,12 +176373,12 @@
       "translation": "Эти фильтры скрывают только наложения; включение транспортного средства не обходит обычный триггер игрового состояния панели, переключатель видимости или правила фокусировки. Предварительный просмотр редактора остается доступным."
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "Эти главные переключатели управляют возможностью рендеринга каждой панели. Существующие настройки автоматического показа и контекста по-прежнему определяют, когда появится включенная панель. Поля ярлыков являются необязательными и не имеют привязки по умолчанию."
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Эти ярлыки записывают или удаляют местоположения; они не развертывают и не собирают буровые установки в игре."
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "Эти переключатели и ярлыки контролируют доступность панели. См. описание каждой панели, чтобы узнать о ее видимости. Поля ярлыков являются необязательными и не имеют привязки по умолчанию."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -175895,6 +176571,10 @@
     {
       "source": "Timestamp",
       "translation": "Временная метка"
+    },
+    {
+      "source": "Titanium",
+      "translation": "титан"
     },
     {
       "source": "Title",
@@ -176261,6 +176941,10 @@
       "translation": "Настройте ФСС на планету"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "Включите, чтобы товары колонизации оставались видимыми в этом сеансе, в том числе после отстыковки. Выключите, чтобы скрыть это."
+    },
+    {
       "source": "Turquoise",
       "translation": "Бирюзовый"
     },
@@ -176547,6 +177231,10 @@
     {
       "source": "Unidentified organism",
       "translation": "Неопознанный организм"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "Уникальные инсталляции, активные за последние 7 дней. Обновляется один раз в день."
     },
     {
       "source": "Unique point name",
@@ -178525,6 +179213,10 @@
       "translation": "альфа"
     },
     {
+      "source": "aluminium",
+      "translation": "алюминий"
+    },
+    {
       "source": "ammonia world",
       "translation": "мир аммиака"
     },
@@ -178965,6 +179657,10 @@
       "translation": "центр"
     },
     {
+      "source": "ceramics",
+      "translation": "керамика"
+    },
+    {
       "source": "challenging",
       "translation": "испытывающий"
     },
@@ -179039,6 +179735,22 @@
     {
       "source": "colonise.surplus",
       "translation": "колонизировать.излишек"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "колонизировать.категория"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "колонизировать.иметь"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "колонизировать.нужно"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "колонизировать.корабль"
     },
     {
       "source": "color",
@@ -179151,6 +179863,10 @@
     {
       "source": "cooling",
       "translation": "охлаждение"
+    },
+    {
+      "source": "copper",
+      "translation": "медь"
     },
     {
       "source": "core + laser",
@@ -181239,6 +181955,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "крошечная точка крепления"
+    },
+    {
+      "source": "titanium",
+      "translation": "титан"
     },
     {
       "source": "title",
@@ -184283,6 +185003,10 @@
       "translation": "活跃守护者方尖碑"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "7 天活跃用户："
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "主动基因采样器"
     },
@@ -184745,6 +185469,10 @@
     {
       "source": "Altitude",
       "translation": "海拔高度"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "铝"
     },
     {
       "source": "Always on top",
@@ -185415,16 +186143,16 @@
       "translation": "构图扫描生物体时自动添加跟踪器位置。"
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "自动隐藏殖民覆盖层直到停靠"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "对 250 m 范围内的生物体进行采样时，自动移除跟踪器位置。"
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "最终扫描时自动删除跟踪器位置"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "自动显示殖民覆盖"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -186843,6 +187571,10 @@
       "translation": "构建地图草稿"
     },
     {
+      "source": "Building fabricators",
+      "translation": "建筑制造商"
+    },
+    {
       "source": "Building geometry",
       "translation": "建筑几何形状"
     },
@@ -187689,6 +188421,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "世纪哥特式、Segoe UI、无衬线体"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "陶瓷"
     },
     {
       "source": "Cerulean Gold",
@@ -188579,12 +189315,20 @@
       "translation": "收藏家帽贝"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "殖民类别"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "殖民赤字"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "殖民赤字暗淡"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "殖民者"
     },
     {
       "source": "ColoniseHighlight",
@@ -188599,8 +189343,20 @@
       "translation": "殖民项目暗淡"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "殖民负载亮点"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "殖民需要"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "殖民行突出显示"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "殖民船"
     },
     {
       "source": "ColoniseSurplus",
@@ -188689,6 +189445,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "战斗.汽车秀大屠杀任务"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "将船舶总数合并为 FC 计数"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -189085,6 +189845,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "将 {0} 实时覆盖合成到 SrvSurveyWindowOne 中。"
+    },
+    {
+      "source": "Computer components",
+      "translation": "电脑部件"
     },
     {
       "source": "Concha Aureolas",
@@ -189639,6 +190403,10 @@
       "translation": "已复制 {0}：{1}"
     },
     {
+      "source": "Copper",
+      "translation": "铜"
+    },
+    {
       "source": "Copy address",
       "translation": "复制地址"
     },
@@ -189921,6 +190689,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "覆盖舰队航母群扩大。"
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "覆盖的舰队航母组会自动隐藏。"
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -192675,6 +193447,10 @@
       "translation": "FC"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "FC / 有"
+    },
+    {
       "source": "FC DIFF",
       "translation": "FC差速器"
     },
@@ -192701,10 +193477,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "FC 路线仅接受 Spansh 舰队运营商路由器结果 URL。"
-    },
-    {
-      "source": "FC Δ",
-      "translation": "FC Δ"
     },
     {
       "source": "FDEV-RAVEN",
@@ -195011,6 +195783,10 @@
       "translation": "隐藏车身材质"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "隐藏折叠的组"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "Raven Colonial 构建项目处于活动状态时隐藏战斗叠加层"
     },
@@ -195065,6 +195841,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "隐藏BodyInfo材质"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "隐藏折叠组"
     },
     {
       "source": "HideGeoCount",
@@ -196063,6 +196843,10 @@
       "translation": "指示"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "绝缘膜"
+    },
+    {
       "source": "Integration license",
       "translation": "集成许可证"
     },
@@ -196109,6 +196893,10 @@
     {
       "source": "Item (dim)",
       "translation": "项目（暗淡）"
+    },
+    {
+      "source": "Item Category",
+      "translation": "项目类别"
     },
     {
       "source": "ItemsDelivered",
@@ -197064,6 +197852,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "液氧"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "液氧"
     },
     {
@@ -198177,6 +198969,10 @@
     {
       "source": "Med kits",
       "translation": "医疗包"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "医疗诊断设备"
     },
     {
       "source": "Medium",
@@ -201627,6 +202423,10 @@
       "translation": "项目名称"
     },
     {
+      "source": "PSV",
+      "translation": "PSV"
+    },
+    {
       "source": "PYR",
       "translation": "吡咯烷酮"
     },
@@ -201693,6 +202493,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "被动通知覆盖"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "被动叠加"
     },
     {
       "source": "Paste",
@@ -203607,12 +204411,20 @@
       "translation": "RavenOverlayCaptionFontSize"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "乌鸦覆盖殖民类别画笔"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "乌鸦覆盖殖民赤字画笔"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "RavenOverlayColoniseDeficitDimBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "乌鸦覆盖殖民地有画笔"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -203627,8 +204439,20 @@
       "translation": "RavenOverlayColoniseItemDimBrush"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "RavenOverlayColoniseLoadHighlightBrush"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "乌鸦覆盖殖民地需要画笔"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "乌鸦覆盖殖民地行突出显示画笔"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "乌鸦覆盖殖民船画笔"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -207289,10 +208113,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "与 VoxStellar 分享调查"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "与船舶货物数量共享栏"
     },
     {
       "source": "Share data",
@@ -212263,12 +213083,12 @@
       "translation": "这些过滤器仅隐藏覆盖层；启用车辆不会绕过面板的正常游戏状态触发器、可见性开关或焦点规则。编辑器预览仍然可用。"
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "这些主开关控制每个面板是否可以渲染。现有的自动显示和上下文设置仍然决定启用的面板何时出现。快捷方式字段是可选的，并且没有默认绑定。"
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "这些快捷方式记录或清除位置；他们不会在游戏中部署或收集装备。"
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "这些开关和快捷键控制面板的可用性。请参阅每个面板的说明以了解其可见性行为。快捷方式字段是可选的，并且没有默认绑定。"
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -212461,6 +213281,10 @@
     {
       "source": "Timestamp",
       "translation": "时间戳"
+    },
+    {
+      "source": "Titanium",
+      "translation": "钛"
     },
     {
       "source": "Title",
@@ -212827,6 +213651,10 @@
       "translation": "将 FSS 调整到行星"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "打开以使殖民商品在此会话中保持可见，包括在脱离对接后。关闭以隐藏它。"
+    },
+    {
       "source": "Turquoise",
       "translation": "绿松石"
     },
@@ -213113,6 +213941,10 @@
     {
       "source": "Unidentified organism",
       "translation": "不明生物"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "过去 7 天内活跃的独特安装。每天更新一次。"
     },
     {
       "source": "Unique point name",
@@ -215091,6 +215923,10 @@
       "translation": "阿尔法"
     },
     {
+      "source": "aluminium",
+      "translation": "铝"
+    },
+    {
       "source": "ammonia world",
       "translation": "氨世界"
     },
@@ -215531,6 +216367,10 @@
       "translation": "中心"
     },
     {
+      "source": "ceramics",
+      "translation": "陶瓷"
+    },
+    {
       "source": "challenging",
       "translation": "具有挑战性的"
     },
@@ -215605,6 +216445,22 @@
     {
       "source": "colonise.surplus",
       "translation": "殖民盈余"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "殖民.类别"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "殖民.拥有"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "殖民需求"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "殖民统治"
     },
     {
       "source": "color",
@@ -215717,6 +216573,10 @@
     {
       "source": "cooling",
       "translation": "冷却"
+    },
+    {
+      "source": "copper",
+      "translation": "铜"
     },
     {
       "source": "core + laser",
@@ -217805,6 +218665,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "小硬点"
+    },
+    {
+      "source": "titanium",
+      "translation": "钛"
     },
     {
       "source": "title",
@@ -220849,6 +221713,10 @@
       "translation": "* ACTIVE GUARDIAN OBELISK >>>!"
     },
     {
+      "source": "Active Users 7d:",
+      "translation": "* ACTIVE USERS 7D: >>>!"
+    },
+    {
       "source": "Active genetic sampler",
       "translation": "* ACTIVE GENETIC SAMPLER >>>!"
     },
@@ -221311,6 +222179,10 @@
     {
       "source": "Altitude",
       "translation": "* ALTITUDE >>>!"
+    },
+    {
+      "source": "Aluminium",
+      "translation": "* ALUMINIUM >>>!"
     },
     {
       "source": "Always on top",
@@ -221981,16 +222853,16 @@
       "translation": "* AUTO ADD TRACKER LOCATION WHEN COMPOSITION SCANNING ORGANISMS. >>>!"
     },
     {
+      "source": "Auto hide colonization overlay until docked",
+      "translation": "* AUTO HIDE COLONIZATION OVERLAY UNTIL DOCKED >>>!"
+    },
+    {
       "source": "Auto remove tracker location when sampling an organism within 250 m.",
       "translation": "* AUTO REMOVE TRACKER LOCATION WHEN SAMPLING AN ORGANISM WITHIN 250 M. >>>!"
     },
     {
       "source": "Auto remove tracker locations upon final scan",
       "translation": "* AUTO REMOVE TRACKER LOCATIONS UPON FINAL SCAN >>>!"
-    },
-    {
-      "source": "Auto show colonization overlay",
-      "translation": "* AUTO SHOW COLONIZATION OVERLAY >>>!"
     },
     {
       "source": "Auto zoom map if within 30 m of obelisks",
@@ -223409,6 +224281,10 @@
       "translation": "* BUILDING A MAP DRAFT >>>!"
     },
     {
+      "source": "Building fabricators",
+      "translation": "* BUILDING FABRICATORS >>>!"
+    },
+    {
       "source": "Building geometry",
       "translation": "* BUILDING GEOMETRY >>>!"
     },
@@ -224255,6 +225131,10 @@
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
       "translation": "* CENTURY GOTHIC, SEGOE UI, SANS-SERIF >>>!"
+    },
+    {
+      "source": "Ceramics",
+      "translation": "* CERAMICS >>>!"
     },
     {
       "source": "Cerulean Gold",
@@ -225145,12 +226025,20 @@
       "translation": "* COLLECTOR LIMPET >>>!"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "* COLONISECATEGORY >>>!"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "* COLONISEDEFICIT >>>!"
     },
     {
       "source": "ColoniseDeficitDim",
       "translation": "* COLONISEDEFICITDIM >>>!"
+    },
+    {
+      "source": "ColoniseHave",
+      "translation": "* COLONISEHAVE >>>!"
     },
     {
       "source": "ColoniseHighlight",
@@ -225165,8 +226053,20 @@
       "translation": "* COLONISEITEMDIM >>>!"
     },
     {
+      "source": "ColoniseLoadHighlight",
+      "translation": "* COLONISELOADHIGHLIGHT >>>!"
+    },
+    {
+      "source": "ColoniseNeed",
+      "translation": "* COLONISENEED >>>!"
+    },
+    {
       "source": "ColoniseRowHighlight",
       "translation": "* COLONISEROWHIGHLIGHT >>>!"
+    },
+    {
+      "source": "ColoniseShip",
+      "translation": "* COLONISESHIP >>>!"
     },
     {
       "source": "ColoniseSurplus",
@@ -225255,6 +226155,10 @@
     {
       "source": "Combat.AutoShowMassacreMissions",
       "translation": "* COMBAT.AUTOSHOWMASSACREMISSIONS >>>!"
+    },
+    {
+      "source": "Combine Ship totals into FC counts",
+      "translation": "* COMBINE SHIP TOTALS INTO FC COUNTS >>>!"
     },
     {
       "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
@@ -225651,6 +226555,10 @@
     {
       "source": "Compositing {0} live overlays into SrvSurveyWindowOne.",
       "translation": "* COMPOSITING {0} LIVE OVERLAYS INTO SRVSURVEYWINDOWONE. >>>!"
+    },
+    {
+      "source": "Computer components",
+      "translation": "* COMPUTER COMPONENTS >>>!"
     },
     {
       "source": "Concha Aureolas",
@@ -226205,6 +227113,10 @@
       "translation": "* COPIED {0}: {1} >>>!"
     },
     {
+      "source": "Copper",
+      "translation": "* COPPER >>>!"
+    },
+    {
       "source": "Copy address",
       "translation": "* COPY ADDRESS >>>!"
     },
@@ -226487,6 +227399,10 @@
     {
       "source": "Covered Fleet Carrier groups are expanded.",
       "translation": "* COVERED FLEET CARRIER GROUPS ARE EXPANDED. >>>!"
+    },
+    {
+      "source": "Covered Fleet Carrier groups are hidden automatically.",
+      "translation": "* COVERED FLEET CARRIER GROUPS ARE HIDDEN AUTOMATICALLY. >>>!"
     },
     {
       "source": "Covered Fleet Carrier groups collapse automatically.",
@@ -229241,6 +230157,10 @@
       "translation": "* FC >>>!"
     },
     {
+      "source": "FC / HAVE",
+      "translation": "* FC / HAVE >>>!"
+    },
+    {
       "source": "FC DIFF",
       "translation": "* FC DIFF >>>!"
     },
@@ -229267,10 +230187,6 @@
     {
       "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
       "translation": "* FC ROUTES ACCEPTS SPANSH FLEET CARRIER ROUTER RESULT URLS ONLY. >>>!"
-    },
-    {
-      "source": "FC Δ",
-      "translation": "* FC Δ >>>!"
     },
     {
       "source": "FDEV-RAVEN",
@@ -231577,6 +232493,10 @@
       "translation": "* HIDE BODY MATERIALS >>>!"
     },
     {
+      "source": "Hide collapsed groups",
+      "translation": "* HIDE COLLAPSED GROUPS >>>!"
+    },
+    {
       "source": "Hide combat overlays while Raven Colonial build projects are active",
       "translation": "* HIDE COMBAT OVERLAYS WHILE RAVEN COLONIAL BUILD PROJECTS ARE ACTIVE >>>!"
     },
@@ -231631,6 +232551,10 @@
     {
       "source": "HideBodyInfoMaterials",
       "translation": "* HIDEBODYINFOMATERIALS >>>!"
+    },
+    {
+      "source": "HideCollapsedGroups",
+      "translation": "* HIDECOLLAPSEDGROUPS >>>!"
     },
     {
       "source": "HideGeoCount",
@@ -232629,6 +233553,10 @@
       "translation": "* INSTRUCTIONS >>>!"
     },
     {
+      "source": "Insulating membrane",
+      "translation": "* INSULATING MEMBRANE >>>!"
+    },
+    {
       "source": "Integration license",
       "translation": "* INTEGRATION LICENSE >>>!"
     },
@@ -232675,6 +233603,10 @@
     {
       "source": "Item (dim)",
       "translation": "* ITEM (DIM) >>>!"
+    },
+    {
+      "source": "Item Category",
+      "translation": "* ITEM CATEGORY >>>!"
     },
     {
       "source": "ItemsDelivered",
@@ -233630,6 +234562,10 @@
     },
     {
       "source": "Liquid Oxygen",
+      "translation": "* LIQUID OXYGEN >>>!"
+    },
+    {
+      "source": "Liquid oxygen",
       "translation": "* LIQUID OXYGEN >>>!"
     },
     {
@@ -234743,6 +235679,10 @@
     {
       "source": "Med kits",
       "translation": "* MED KITS >>>!"
+    },
+    {
+      "source": "Medical diagnostic equipment",
+      "translation": "* MEDICAL DIAGNOSTIC EQUIPMENT >>>!"
     },
     {
       "source": "Medium",
@@ -238193,6 +239133,10 @@
       "translation": "* PROJECT NAME >>>!"
     },
     {
+      "source": "PSV",
+      "translation": "* PSV >>>!"
+    },
+    {
       "source": "PYR",
       "translation": "* PYR >>>!"
     },
@@ -238259,6 +239203,10 @@
     {
       "source": "Passive notification overlay",
       "translation": "* PASSIVE NOTIFICATION OVERLAY >>>!"
+    },
+    {
+      "source": "Passive overlay",
+      "translation": "* PASSIVE OVERLAY >>>!"
     },
     {
       "source": "Paste",
@@ -240173,12 +241121,20 @@
       "translation": "* RAVENOVERLAYCAPTIONFONTSIZE >>>!"
     },
     {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "* RAVENOVERLAYCOLONISECATEGORYBRUSH >>>!"
+    },
+    {
       "source": "RavenOverlayColoniseDeficitBrush",
       "translation": "* RAVENOVERLAYCOLONISEDEFICITBRUSH >>>!"
     },
     {
       "source": "RavenOverlayColoniseDeficitDimBrush",
       "translation": "* RAVENOVERLAYCOLONISEDEFICITDIMBRUSH >>>!"
+    },
+    {
+      "source": "RavenOverlayColoniseHaveBrush",
+      "translation": "* RAVENOVERLAYCOLONISEHAVEBRUSH >>>!"
     },
     {
       "source": "RavenOverlayColoniseHighlightBrush",
@@ -240193,8 +241149,20 @@
       "translation": "* RAVENOVERLAYCOLONISEITEMDIMBRUSH >>>!"
     },
     {
+      "source": "RavenOverlayColoniseLoadHighlightBrush",
+      "translation": "* RAVENOVERLAYCOLONISELOADHIGHLIGHTBRUSH >>>!"
+    },
+    {
+      "source": "RavenOverlayColoniseNeedBrush",
+      "translation": "* RAVENOVERLAYCOLONISENEEDBRUSH >>>!"
+    },
+    {
       "source": "RavenOverlayColoniseRowHighlightBrush",
       "translation": "* RAVENOVERLAYCOLONISEROWHIGHLIGHTBRUSH >>>!"
+    },
+    {
+      "source": "RavenOverlayColoniseShipBrush",
+      "translation": "* RAVENOVERLAYCOLONISESHIPBRUSH >>>!"
     },
     {
       "source": "RavenOverlayColoniseSurplusBrush",
@@ -243855,10 +244823,6 @@
     {
       "source": "Share a survey with VoxStellar",
       "translation": "* SHARE A SURVEY WITH VOXSTELLAR >>>!"
-    },
-    {
-      "source": "Share column with ship cargo counts",
-      "translation": "* SHARE COLUMN WITH SHIP CARGO COUNTS >>>!"
     },
     {
       "source": "Share data",
@@ -248829,12 +249793,12 @@
       "translation": "* THESE FILTERS ONLY HIDE OVERLAYS; ENABLING A VEHICLE DOES NOT BYPASS THE PANEL’S NORMAL GAME-STATE TRIGGER, VISIBILITY SWITCH OR FOCUS RULES. EDITOR PREVIEWS REMAIN AVAILABLE. >>>!"
     },
     {
-      "source": "These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding.",
-      "translation": "* THESE MASTER SWITCHES CONTROL WHETHER EACH PANEL MAY RENDER. EXISTING AUTO-SHOW AND CONTEXT SETTINGS STILL DECIDE WHEN AN ENABLED PANEL APPEARS. SHORTCUT FIELDS ARE OPTIONAL AND HAVE NO DEFAULT BINDING. >>>!"
-    },
-    {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "* THESE SHORTCUTS RECORD OR CLEAR LOCATIONS; THEY DO NOT DEPLOY OR COLLECT RIGS IN THE GAME. >>>!"
+    },
+    {
+      "source": "These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+      "translation": "* THESE SWITCHES AND SHORTCUTS CONTROL PANEL AVAILABILITY. SEE EACH PANEL'S DESCRIPTION FOR ITS VISIBILITY BEHAVIOR. SHORTCUT FIELDS ARE OPTIONAL AND HAVE NO DEFAULT BINDING. >>>!"
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -249027,6 +249991,10 @@
     {
       "source": "Timestamp",
       "translation": "* TIMESTAMP >>>!"
+    },
+    {
+      "source": "Titanium",
+      "translation": "* TITANIUM >>>!"
     },
     {
       "source": "Title",
@@ -249393,6 +250361,10 @@
       "translation": "* TUNE THE FSS TO A PLANET >>>!"
     },
     {
+      "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+      "translation": "* TURN ON TO KEEP COLONIZATION COMMODITIES VISIBLE FOR THIS SESSION, INCLUDING AFTER UNDOCKING. TURN OFF TO HIDE IT. >>>!"
+    },
+    {
       "source": "Turquoise",
       "translation": "* TURQUOISE >>>!"
     },
@@ -249679,6 +250651,10 @@
     {
       "source": "Unidentified organism",
       "translation": "* UNIDENTIFIED ORGANISM >>>!"
+    },
+    {
+      "source": "Unique installations active in the last 7 days. Updated once daily.",
+      "translation": "* UNIQUE INSTALLATIONS ACTIVE IN THE LAST 7 DAYS. UPDATED ONCE DAILY. >>>!"
     },
     {
       "source": "Unique point name",
@@ -251657,6 +252633,10 @@
       "translation": "* ALPHA >>>!"
     },
     {
+      "source": "aluminium",
+      "translation": "* ALUMINIUM >>>!"
+    },
+    {
       "source": "ammonia world",
       "translation": "* AMMONIA WORLD >>>!"
     },
@@ -252097,6 +253077,10 @@
       "translation": "* CENTER >>>!"
     },
     {
+      "source": "ceramics",
+      "translation": "* CERAMICS >>>!"
+    },
+    {
       "source": "challenging",
       "translation": "* CHALLENGING >>>!"
     },
@@ -252171,6 +253155,22 @@
     {
       "source": "colonise.surplus",
       "translation": "* COLONISE.SURPLUS >>>!"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "* COLONIZE.CATEGORY >>>!"
+    },
+    {
+      "source": "colonize.have",
+      "translation": "* COLONIZE.HAVE >>>!"
+    },
+    {
+      "source": "colonize.need",
+      "translation": "* COLONIZE.NEED >>>!"
+    },
+    {
+      "source": "colonize.ship",
+      "translation": "* COLONIZE.SHIP >>>!"
     },
     {
       "source": "color",
@@ -252283,6 +253283,10 @@
     {
       "source": "cooling",
       "translation": "* COOLING >>>!"
+    },
+    {
+      "source": "copper",
+      "translation": "* COPPER >>>!"
     },
     {
       "source": "core + laser",
@@ -254371,6 +255375,10 @@
     {
       "source": "tinyhardpoint",
       "translation": "* TINYHARDPOINT >>>!"
+    },
+    {
+      "source": "titanium",
+      "translation": "* TITANIUM >>>!"
     },
     {
       "source": "title",

@@ -198,6 +198,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public ColonizationCommodityOverlayViewModel CommodityOverlay { get; }
 
+    /// <summary>Stores automatic docking visibility using the existing preference key; disabling it permits persistent display.</summary>
     public bool AutoShowCommodityOverlay
     {
         get => overlayPreferences.AutoShow;
@@ -228,10 +229,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         set => SaveOverlayPreferences(overlayPreferences with { InlineFleetCarrierCargo = value });
     }
 
+    /// <summary>Persists whether categories covered by carrier cargo collapse to their summary.</summary>
     public bool CollapseCoveredCommodityGroups
     {
         get => overlayPreferences.CollapseCoveredGroups;
         set => SaveOverlayPreferences(overlayPreferences with { CollapseCoveredGroups = value });
+    }
+
+    /// <summary>Controls whether covered categories disappear entirely when collapsed.</summary>
+    public bool HideCollapsedCommodityGroups
+    {
+        get => overlayPreferences.HideCollapsedGroups;
+        set => SaveOverlayPreferences(overlayPreferences with { HideCollapsedGroups = value });
     }
 
     public bool UseCompactScrollingCommoditiesList

@@ -547,6 +547,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 legacyProfileStore: new LegacyColonizationProfileStore(AppDataPaths.DataDirectory)
             );
             rollback.Add(Colonization.Dispose);
+            OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(externalNetworkClient);
@@ -857,6 +858,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 externalEffectsAllowed: !IsDiagnosticReplay
             );
             rollback.Add(visitedStarsHttpClient);
+            ActiveUsers = new ActiveUsersViewModel(
+                new DailyActiveUsersClient(
+                    AppDataPaths.DataDirectory,
+                    ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly).ToString(),
+                    System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier.Split('-')[0],
+                    externalNetworkClient,
+                    message => resolvedApplicationLogService?.Append(message)
+                ),
+                enabled: !IsDiagnosticReplay
+            );
+            rollback.Add(ActiveUsers.DisposeAsync);
             statusMessage = BuildJournalReadyStatus(folderResolution.IsFound, TargetFrontierId);
             journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
             journalProjections = CreateJournalProjection();
@@ -1089,6 +1101,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public CommanderPreferenceViewModel CommanderPreference { get; }
 
     public VisitedStarsCacheViewModel VisitedStarsCache { get; }
+
+    /// <summary>Owns the machine-local daily activity refresh and sidebar count for this session.</summary>
+    public ActiveUsersViewModel ActiveUsers { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests => questRuntimeCoordinator.Snapshot;
 
@@ -2501,8 +2516,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Projects the latest commander session into workspace state and starts eligible daily activity refreshes.</summary>
     private void ApplySnapshot(JournalSnapshot snapshot)
     {
+        ActiveUsers.SessionLoaded(!string.IsNullOrWhiteSpace(snapshot.FrontierId));
         CommanderInstances.UpdateCurrent(snapshot.FrontierId, snapshot.CommanderName);
         VisitedStarsCache.UpdateContext(snapshot.FrontierId, snapshot.CommanderName, snapshot.SystemName);
         CommanderName = Display(snapshot.CommanderName);
@@ -4497,6 +4514,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         TryDispose(SaveWorkspaceContinuity);
+        await TryDisposeAsync(ActiveUsers.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);

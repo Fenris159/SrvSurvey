@@ -16,10 +16,6 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header type-header"
                    Text="SEARCH GUIDANCE" />
-        <TextBlock FontSize="8" Classes="type-icon" Grid.Column="1"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontWeight="SemiBold"
-                   Text="{Binding InputMode}" />
       </Grid>
 
       <Border Padding="7,6"

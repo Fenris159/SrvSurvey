@@ -22,17 +22,6 @@
             RowSpacing="3"
             HorizontalAlignment="Left">
         <TextBlock Classes="overlay-header type-header" Text="BODY INFORMATION" />
-        <LayoutTransformControl Grid.Column="1"
-                                Classes="type-icon"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center">
-          <Border Classes="badge overlay-state-pill" Padding="7,1">
-            <TextBlock Classes="overlay-caption"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
         <TextBlock Grid.Row="1"
                    Grid.ColumnSpan="2"
                    Classes="overlay-title type-title"

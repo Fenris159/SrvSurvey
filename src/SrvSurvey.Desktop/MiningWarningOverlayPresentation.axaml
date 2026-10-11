@@ -44,13 +44,6 @@
                      Text="TOO FAR FROM RIGS"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="2" Classes="type-icon" VerticalAlignment="Center">
-          <Border Classes="badge">
-            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
         <TextBlock FontSize="9" Classes="type-detail" Grid.Row="1"
                    Grid.ColumnSpan="3"
                    HorizontalAlignment="Center"

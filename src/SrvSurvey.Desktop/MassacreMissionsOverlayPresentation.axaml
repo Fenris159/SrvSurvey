@@ -18,10 +18,6 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header type-header"
                    Text="MASSACRE MISSIONS" />
-        <TextBlock FontSize="8" Classes="type-icon" Grid.Column="1"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontWeight="SemiBold"
-                   Text="{Binding InputMode}" />
       </Grid>
       <ItemsControl ItemsSource="{Binding Combat.MassacreMissions}">
         <ItemsControl.ItemTemplate>

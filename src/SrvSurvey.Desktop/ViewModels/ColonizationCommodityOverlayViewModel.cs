@@ -26,6 +26,9 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>Exposes the saved presentation preferences so editor previews use the live panel's configuration.</summary>
+    internal ColonizationOverlayPreferences Preferences => preferences;
+
     public ColonizationCommodityPlan Plan
     {
         get => plan;
@@ -40,7 +43,16 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
 
     public string Title => Plan.Title;
 
-    public string HeaderTitle => Title.ToUpperInvariant();
+    /// <summary>Breaks the displayed project title after its first spaced hyphen without changing the stored name.</summary>
+    public string HeaderTitle
+    {
+        get
+        {
+            string title = Title.ToUpperInvariant();
+            int separator = title.IndexOf(" - ", StringComparison.Ordinal);
+            return separator < 0 ? title : $"{title[..(separator + 2)]}\n{title[(separator + 3)..]}";
+        }
+    }
 
     public IReadOnlyList<string> ProjectNames => projectNames;
 
@@ -109,13 +121,18 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         }
     }
 
+    /// <summary>Applies automatic docking context, or persistent eligibility when automatic hiding is disabled.</summary>
     public bool ShouldAutoShow
     {
         get
         {
+            if (!preferences.AutoShow)
+            {
+                return CanShowManually;
+            }
+
             OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
-            return preferences.AutoShow
-                && Plan.HasContent
+            return Plan.HasContent
                 && mode
                     is not OverlayGameMode.FsdJumping
                         and not OverlayGameMode.GalaxyMap
@@ -132,24 +149,31 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         }
     }
 
+    /// <summary>Allows a loaded panel in an active game independently of its automatic docking preference.</summary>
     public bool CanShowManually
     {
         get
         {
             OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
-            return preferences.AutoShow
-                && Plan.HasContent
-                && mode
-                    is not OverlayGameMode.Offline
-                        and not OverlayGameMode.FsdJumping
-                        and not OverlayGameMode.ExternalPanel;
+            return Plan.HasContent && mode is not OverlayGameMode.Offline and not OverlayGameMode.FsdJumping;
         }
     }
 
-    public string CollapseModeText =>
-        preferences.CollapseCoveredGroups ^ showSatisfiedGroups
-            ? "Covered Fleet Carrier groups collapse automatically."
-            : "Covered Fleet Carrier groups are expanded.";
+    /// <summary>Describes whether covered groups are expanded, summarized, or hidden.</summary>
+    public string CollapseModeText
+    {
+        get
+        {
+            if (!(preferences.CollapseCoveredGroups ^ showSatisfiedGroups))
+            {
+                return "Covered Fleet Carrier groups are expanded.";
+            }
+
+            return preferences.HideCollapsedGroups
+                ? "Covered Fleet Carrier groups are hidden automatically."
+                : "Covered Fleet Carrier groups collapse automatically.";
+        }
+    }
 
     public void UpdateMusicTrack(string? currentMusicTrack)
     {
@@ -163,16 +187,39 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(CanShowManually));
     }
 
-    public string FleetCarrierColumnHeader =>
-        preferences.InlineFleetCarrierCargo
-            ? "HAVE"
-            : (preferences.ShowFleetCarrierDelta) switch
-            {
-                true => "FC Δ",
-                false => "FC",
-            };
+    /// <summary>Combines cargo only while Fleet Carrier counts are enabled, retaining the saved preference.</summary>
+    private bool CombineShipCargo => preferences.ShowFleetCarrierCargo && preferences.InlineFleetCarrierCargo;
 
-    public string ShipColumnHeader => preferences.InlineFleetCarrierCargo ? string.Empty : "SHIP";
+    /// <summary>Identifies whether the cargo column shows carrier or combined quantities and their delta.</summary>
+    public string FleetCarrierColumnHeader =>
+        FleetCarrierColumnLabel + (ShowFleetCarrierDeltaIndicator ? " Δ" : string.Empty);
+
+    /// <summary>Supplies the carrier heading without mixing fallback symbol metrics into the text line.</summary>
+    public string FleetCarrierColumnLabel =>
+        (ShowFleetCarrierColumn, CombineShipCargo) switch
+        {
+            (false, _) => string.Empty,
+            (true, true) => "HAVE",
+            _ => "FC",
+        };
+
+    /// <summary>Shows the delta indicator only for an enabled carrier cargo column in delta mode.</summary>
+    public bool ShowFleetCarrierDeltaIndicator => ShowFleetCarrierColumn && preferences.ShowFleetCarrierDelta;
+
+    /// <summary>Omits the carrier heading and its reserved width when carrier cargo is disabled.</summary>
+    public bool ShowFleetCarrierColumn => preferences.ShowFleetCarrierCargo;
+
+    /// <summary>Omits the separate ship column when its cargo is included in the combined total.</summary>
+    public bool ShowShipColumn => !CombineShipCargo;
+
+    /// <summary>Reserves readable cargo-column width only while the carrier column is visible.</summary>
+    public double FleetCarrierColumnMinWidth => ShowFleetCarrierColumn ? 34 : 0;
+
+    /// <summary>Releases the ship column's minimum width when combined cargo hides it.</summary>
+    public double ShipColumnMinWidth => ShowShipColumn ? 34 : 0;
+
+    /// <summary>Omits the separate ship heading when its cargo contributes to the combined column.</summary>
+    public string ShipColumnHeader => CombineShipCargo ? string.Empty : "SHIP";
 
     public string PlatformStatus
     {
@@ -216,6 +263,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(CollapseModeText));
     }
 
+    /// <summary>Rebuilds commodity groups and notifies live and editor presentations of saved display preferences.</summary>
     public void ApplyPreferences(ColonizationOverlayPreferences updatedPreferences)
     {
         ArgumentNullException.ThrowIfNull(updatedPreferences);
@@ -224,9 +272,16 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         RaisePlanProperties();
         OnPropertyChanged(nameof(CollapseModeText));
         OnPropertyChanged(nameof(FleetCarrierColumnHeader));
+        OnPropertyChanged(nameof(FleetCarrierColumnLabel));
+        OnPropertyChanged(nameof(ShowFleetCarrierDeltaIndicator));
+        OnPropertyChanged(nameof(ShowFleetCarrierColumn));
+        OnPropertyChanged(nameof(ShowShipColumn));
+        OnPropertyChanged(nameof(FleetCarrierColumnMinWidth));
+        OnPropertyChanged(nameof(ShipColumnMinWidth));
         OnPropertyChanged(nameof(ShipColumnHeader));
         OnPropertyChanged(nameof(UseCompactScrollingCommoditiesList));
         OnPropertyChanged(nameof(CommodityListMaxHeight));
+        OnPropertyChanged(nameof(Preferences));
     }
 
     public void ApplyPendingFleetCarrierCargo(IEnumerable<string>? commodities)
@@ -248,6 +303,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(InputMode));
     }
 
+    /// <summary>Builds category rows using coverage rules and omits collapsed groups when requested.</summary>
     private void RebuildGroups()
     {
         Groups = Plan
@@ -261,7 +317,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                                 row,
                                 preferences.ShowFleetCarrierCargo,
                                 preferences.ShowFleetCarrierDelta,
-                                preferences.InlineFleetCarrierCargo,
+                                CombineShipCargo,
                                 preferences.HighlightAlmostCoveredFleetCarrierLoads,
                                 pendingCommodities.Contains(row.Commodity),
                                 rowIndex % 2 == 0
@@ -281,6 +337,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                     isCollapsed ? $"{rows.Length:N0} commodities covered by linked FCs" : string.Empty
                 );
             })
+            .Where(group => !preferences.HideCollapsedGroups || !group.IsCollapsed)
             .ToArray();
     }
 
@@ -406,25 +463,36 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool IsAlternateRow { get; }
 
+    /// <summary>Matches the heading's minimum width while allowing disabled carrier cells to collapse.</summary>
+    public double FleetCarrierColumnMinWidth => ShowFleetCarrierCargo ? 34 : 0;
+
+    /// <summary>Matches the heading's minimum width while allowing combined cargo to remove the ship cells.</summary>
+    public double ShipColumnMinWidth => InlineFleetCarrierCargo ? 0 : 34;
+
+    /// <summary>Shows carrier sums only when the carrier column is enabled and delta mode is disabled.</summary>
+    public bool ShowFleetCarrierSum => ShowFleetCarrierCargo && !ShowFleetCarrierDelta;
+
+    /// <summary>Reports cargo still missing from carriers, excluding cargo aboard the ship.</summary>
     public int FleetCarrierDeficit => Math.Max(0, Needed - OnFleetCarriers);
 
-    public bool IsFleetCarrierLoadHighlighted =>
-        HighlightAlmostCoveredFleetCarrierLoads
-        && CanCompleteFleetCarrierLoad
-        && (!InlineFleetCarrierCargo || InShip == 0);
-
-    public bool IsFleetCarrierValueNormal => !IsFleetCarrierLoadHighlighted;
+    /// <summary>Highlights carrier-loading guidance without excluding cargo shown in a combined total.</summary>
+    public bool IsFleetCarrierLoadHighlighted => HighlightAlmostCoveredFleetCarrierLoads && CanCompleteFleetCarrierLoad;
 
     public bool HasMarketBadge => IsAvailableAtCurrentMarket;
 
-    public string MarketBadgeText =>
-        IsFleetCarrierLoadHighlighted
-            ? (InShip >= FleetCarrierDeficit) switch
+    /// <summary>Marks the carrier ready only when its stored cargo covers the requirement, excluding cargo still aboard the ship.</summary>
+    public string MarketBadgeText
+    {
+        get
+        {
+            if (HighlightAlmostCoveredFleetCarrierLoads && FleetCarriersHaveEnough)
             {
-                true => "FC READY",
-                false => "FC LOAD",
+                return "FC READY";
             }
-            : "MARKET";
+
+            return IsFleetCarrierLoadHighlighted ? "FC LOAD" : "MARKET";
+        }
+    }
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
@@ -433,6 +501,10 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     public string InShipText =>
         !InlineFleetCarrierCargo && InShip > 0 ? InShip.ToString("N0", CultureInfo.CurrentCulture) : string.Empty;
 
+    /// <summary>Adds ship cargo in combined mode without overflowing the individual integer counts.</summary>
+    private long DisplayedCargoTotal => InlineFleetCarrierCargo ? (long)OnFleetCarriers + InShip : OnFleetCarriers;
+
+    /// <summary>Formats carrier or combined cargo, preserving pending state and using the same total for delta.</summary>
     public string OnFleetCarriersText
     {
         get
@@ -442,41 +514,47 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
                 return "...";
             }
 
-            if (InlineFleetCarrierCargo && InShip > 0)
-            {
-                return InShip.ToString("N0", CultureInfo.CurrentCulture);
-            }
-
-            if (!ShowFleetCarrierCargo || OnFleetCarriers <= 0)
+            if (!ShowFleetCarrierCargo)
             {
                 return string.Empty;
             }
 
-            if (!ShowFleetCarrierDelta && !IsFleetCarrierLoadHighlighted)
+            if (!ShowFleetCarrierDelta)
             {
-                return OnFleetCarriers.ToString("N0", CultureInfo.CurrentCulture);
+                return !InlineFleetCarrierCargo && OnFleetCarriers <= 0
+                    ? string.Empty
+                    : DisplayedCargoTotal.ToString("N0", CultureInfo.CurrentCulture);
             }
 
-            int difference = OnFleetCarriers - Needed;
+            long difference = DisplayedCargoTotal - Needed;
             return difference > 0
                 ? string.Create(CultureInfo.CurrentCulture, $"+{difference:N0}")
                 : difference.ToString("N0", CultureInfo.CurrentCulture);
         }
     }
 
-    public bool IsSatisfied => ShipHasEnough || FleetCarriersHaveEnough;
+    /// <summary>Uses combined coverage when ship cargo is included in the displayed carrier total.</summary>
+    public bool IsSatisfied =>
+        InlineFleetCarrierCargo ? DisplayedCargoTotal >= Needed : ShipHasEnough || FleetCarriersHaveEnough;
 
     public bool IsActiveItem => !IsUnavailableAtCurrentMarket;
 
     public bool IsDimmedItem => IsUnavailableAtCurrentMarket;
 
-    public bool IsActiveSurplus => IsSatisfied && IsActiveItem;
+    /// <summary>Classifies the displayed delta independently of cargo coverage in the separate ship column.</summary>
+    private bool IsDeltaSurplus => DisplayedCargoTotal >= Needed;
 
-    public bool IsDimmedSurplus => IsSatisfied && IsDimmedItem;
+    /// <summary>Selects the normal surplus brush only for a nonnegative delta at an available or unknown market.</summary>
+    public bool IsActiveSurplus => ShowFleetCarrierCargo && ShowFleetCarrierDelta && IsDeltaSurplus && IsActiveItem;
 
-    public bool IsActiveDeficit => !IsSatisfied && IsActiveItem;
+    /// <summary>Selects the dim surplus brush for a nonnegative delta unavailable at the current market.</summary>
+    public bool IsDimmedSurplus => ShowFleetCarrierCargo && ShowFleetCarrierDelta && IsDeltaSurplus && IsDimmedItem;
 
-    public bool IsDimmedDeficit => !IsSatisfied && IsDimmedItem;
+    /// <summary>Selects the normal deficit brush only for a negative delta at an available or unknown market.</summary>
+    public bool IsActiveDeficit => ShowFleetCarrierCargo && ShowFleetCarrierDelta && !IsDeltaSurplus && IsActiveItem;
+
+    /// <summary>Selects the dim deficit brush for a negative delta unavailable at the current market.</summary>
+    public bool IsDimmedDeficit => ShowFleetCarrierCargo && ShowFleetCarrierDelta && !IsDeltaSurplus && IsDimmedItem;
 
     public string AssignmentText =>
         IsAssignedToCommander

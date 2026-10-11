@@ -17,10 +17,6 @@
         <TextBlock Classes="overlay-header type-header"
                    Text="{Binding Combat.SettlementHeader}"
                    TextTrimming="CharacterEllipsis" />
-        <TextBlock FontSize="8" Classes="type-icon" Grid.Column="1"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontWeight="SemiBold"
-                   Text="{Binding InputMode}" />
       </Grid>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
         <StackPanel Spacing="0">

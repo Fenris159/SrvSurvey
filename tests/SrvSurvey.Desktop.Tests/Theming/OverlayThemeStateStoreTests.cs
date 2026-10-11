@@ -43,6 +43,34 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         Assert.Equal(originalTheme, File.ReadAllText(themePath));
     }
 
+    /// <summary>Rapid palette and named-state saves retain a distinct, verified copy of every preceding value.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RapidThemeSavesPreserveEachPreviousSnapshot(bool namedState)
+    {
+        string path = Path.Combine(temporaryDirectory, namedState ? "overlay-theme-states.json" : "theme.json");
+        var states = new OverlayThemeStateStore(path);
+        var themeStore = new LegacyOverlayThemeStore(path);
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        string? initialBackup = namedState
+            ? states.SaveState("Rapid updates", colors).BackupPath
+            : themeStore.Save(new LegacyOverlayTheme(colors, true, null)).BackupPath;
+        Assert.Null(initialBackup);
+        var backups = new HashSet<string>(StringComparer.Ordinal);
+        for (byte index = 1; index <= 40; index++)
+        {
+            string previous = File.ReadAllText(path);
+            colors["orange"] = Color.FromRgb(index, 20, 30);
+            string? backup = namedState
+                ? states.SaveState("Rapid updates", colors).BackupPath
+                : themeStore.Save(new LegacyOverlayTheme(colors, true, null)).BackupPath;
+            Assert.NotNull(backup);
+            Assert.True(backups.Add(backup));
+            Assert.Equal(previous, File.ReadAllText(backup));
+        }
+    }
+
     [Fact]
     public void InvalidStateFileIsPreservedAndNotOverwritten()
     {

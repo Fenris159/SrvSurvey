@@ -1279,7 +1279,7 @@ public sealed class MainWindowViewModelTests
                 )
             );
 
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder =>
                     builder
@@ -1326,7 +1326,7 @@ public sealed class MainWindowViewModelTests
             var settingsStore = new StationInfoSettingsStore(Path.Combine(root, "ui-settings.json"));
             settingsStore.Save(new StationInfoPreferences(AutoShow: false));
 
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder =>
                     builder
@@ -1369,7 +1369,7 @@ public sealed class MainWindowViewModelTests
                 }
             );
 
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder =>
                     builder
@@ -1426,7 +1426,7 @@ public sealed class MainWindowViewModelTests
                 SettingsFrontierId = "F123",
             };
             var applicationLog = new ApplicationLogService(data);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths).WithApplicationLogService(applicationLog)
             );
@@ -1494,7 +1494,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1542,7 +1542,7 @@ public sealed class MainWindowViewModelTests
             );
             const string currentSettings = "{\"Version\":1,\"Theme\":\"green-light\"}";
             await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1589,7 +1589,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1631,7 +1631,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1673,7 +1673,7 @@ public sealed class MainWindowViewModelTests
                 "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), data, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1719,7 +1719,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1757,7 +1757,7 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(sourceUiSettings, "{\"Version\":1,\"Theme\":\"orange-dark\"}");
             await File.WriteAllTextAsync(Path.Combine(data, "local-only.json"), "{}");
             var paths = new AppDataPaths(config, data, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1800,7 +1800,7 @@ public sealed class MainWindowViewModelTests
             var paths = new AppDataPaths(config, Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
             new JournalSettingsStore(paths.UiSettingsPath).Save(new JournalPreferences(journals));
 
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 null,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1840,7 +1840,7 @@ public sealed class MainWindowViewModelTests
             var paths = new AppDataPaths(config, Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
             new JournalSettingsStore(paths.UiSettingsPath).Save(new JournalPreferences(steam, [epic]));
 
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 null,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1934,7 +1934,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -1994,7 +1994,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2036,7 +2036,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2083,7 +2083,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2132,7 +2132,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2188,7 +2188,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2955,7 +2955,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -2976,6 +2976,7 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>Replays Codex firsts and disposes background session work before deleting the profile fixture.</summary>
     [Fact]
     public async Task RefreshReplaysCommanderCodexFirstsToLegacyLedgers()
     {
@@ -2992,7 +2993,7 @@ public sealed class MainWindowViewModelTests
                     + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"CodexEntry\",\"EntryID\":2310101,\"SystemAddress\":10477373803,\"BodyID\":3}\n"
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3009,7 +3010,6 @@ public sealed class MainWindowViewModelTests
             Assert.Single(Directory.GetFiles(profile, "F123-codex-*.json"));
             Assert.Equal("F123", viewModel.CodexBingo.SelectedCommander?.FrontierId);
             Assert.Equal(1, viewModel.CodexBingo.DiscoveredCount);
-            viewModel.CodexBingo.Dispose();
         }
         finally
         {
@@ -3052,7 +3052,7 @@ public sealed class MainWindowViewModelTests
                 )
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3133,7 +3133,7 @@ public sealed class MainWindowViewModelTests
                 }
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder =>
                     builder
@@ -3199,7 +3199,7 @@ public sealed class MainWindowViewModelTests
                 new ExplorationSnapshot(1000, 100, 10, 2, 3, 4, new Dictionary<string, long> { ["Alpha"] = 400 })
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3282,7 +3282,7 @@ public sealed class MainWindowViewModelTests
                 new ExobiologySnapshot(null, null, null, 500, ["999_1_2310101_500_False"], 0)
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3907,7 +3907,7 @@ public sealed class MainWindowViewModelTests
             string statusPath = Path.Combine(journals, "Status.json");
             await WriteSurfaceStatusAsync(statusPath, 1, 2);
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3968,7 +3968,7 @@ public sealed class MainWindowViewModelTests
             );
             var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             var processor = new CountingScreenshotProcessor();
-            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths).WithScreenshotProcessingService(processor)
             );

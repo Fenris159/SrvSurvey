@@ -40,5 +40,7 @@
   "GoogleOAuthAuthorize": "https://accounts.google.com/o/oauth2/v2/auth",
   "GoogleDriveFiles": "https://www.googleapis.com/drive/v3/files",
   "GoogleDriveUpload": "https://www.googleapis.com/upload/drive/v3/files",
-  "GoogleDriveFilesDirectory": "https://www.googleapis.com/drive/v3/files/"
+  "GoogleDriveFilesDirectory": "https://www.googleapis.com/drive/v3/files/",
+  "ActiveUsersPing": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/ping",
+  "ActiveUsersPublic": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public"
 }

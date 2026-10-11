@@ -5,7 +5,7 @@ Open **Settings → Data & migration → Backup & sync with Google Drive**. Loca
 ## Using more than one computer
 
 1. Link the same Google account on each computer. SrvSurvey opens your browser only when you choose **Link Google Drive**. You can cancel while it waits for authorization.
-2. Leave **Sync portable data on startup and back up on shutdown** enabled. SrvSurvey checks for cloud changes before loading its workspaces and saves a backup after its producers stop on orderly shutdown.
+2. Leave **Sync portable data on startup and back up on shutdown** enabled. SrvSurvey checks for cloud changes before loading its workspaces and saves a backup after its producers stop on orderly shutdown. When you close SrvSurvey, its window disappears immediately while the process finishes saving and uploading in the background, then exits. Repeated close requests do not interrupt that work.
 3. Choose **Backup now** before switching computers. **Sync now** uploads current changes and checks the other computers while the application is open; downloaded changes apply after restart.
 4. If different computers changed the same value, choose which conflicting values to keep. Independent changes are combined. Arrays, such as a bookmark collection, are treated as a single value; a conflicting collection needs a choice rather than an automatic merge.
 5. Close all SrvSurvey instances before applying a restore. Multiple Commander instances share this machine's backup identity and Google authorization. A second running instance defers startup restoration so cached settings cannot overwrite restored data.

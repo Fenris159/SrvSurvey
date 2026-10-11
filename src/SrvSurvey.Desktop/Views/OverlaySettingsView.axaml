@@ -1302,12 +1302,21 @@
         </StackPanel>
         <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
           <StackPanel Spacing="10">
-            <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
-                      Content="Auto show colonization overlay" />
+            <CheckBox x:Name="ColonizationAutoHideUntilDockedCheckBox"
+                      IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
+                      Content="Auto hide colonization overlay until docked" />
+            <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                       Text="The panel appears automatically when docking or opening enabled game panels. Turn this off for persistent display. You can also keep it visible using Colonization commodities or its shortcut." />
             <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
                       Content="Show when looking at right-hand panel" />
-            <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
+            <CheckBox x:Name="CollapseCoveredCommodityGroupsCheckBox"
+                      IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
                       Content="Collapse cargo groups when enough on FCs" />
+            <CheckBox x:Name="HideCollapsedCommodityGroupsCheckBox"
+                      Margin="24,0,0,0"
+                      IsChecked="{Binding Colonization.HideCollapsedCommodityGroups, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.CollapseCoveredCommodityGroups}"
+                      Content="Hide collapsed groups" />
             <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
                       Content="Use compact/scrolling commodities list" />
           </StackPanel>
@@ -1317,9 +1326,10 @@
             <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
                       Content="Show delta vs sum" />
-            <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
+            <CheckBox x:Name="CombineShipCargoCountsCheckBox"
+                      IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                      Content="Share column with ship cargo counts" />
+                      Content="Combine Ship totals into FC counts" />
             <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
                       Content="Highlight if ship can load enough on FCs" />
@@ -1834,7 +1844,7 @@
           <TextBlock Classes="card-title" Text="Panel availability and shortcuts" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding." />
+                     Text="These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding." />
         </StackPanel>
         <ItemsControl x:Name="PanelVisibilityItems">
           <ItemsControl.ItemTemplate>
