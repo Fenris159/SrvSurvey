@@ -5749,6 +5749,10 @@
       "translation": "Sammlernapfschnecke"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniseCategory"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "KolonisierenDefizit"
     },
@@ -13281,6 +13285,10 @@
       "translation": "Artikel (gedimmt)"
     },
     {
+      "source": "Item Category",
+      "translation": "Artikelkategorie"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "Gelieferte Artikel"
     },
@@ -20775,6 +20783,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -32777,6 +32789,10 @@
       "translation": "kolonisieren.Überschuss"
     },
     {
+      "source": "colonize.category",
+      "translation": "colonize.category"
+    },
+    {
       "source": "color",
       "translation": "Farbe"
     },
@@ -42315,6 +42331,10 @@
       "translation": "lapa recolectora"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColonizarCategoría"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "ColonizarDéficit"
     },
@@ -49847,6 +49867,10 @@
       "translation": "Artículo (tenue)"
     },
     {
+      "source": "Item Category",
+      "translation": "Categoría de artículo"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "Artículos entregados"
     },
@@ -57341,6 +57365,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "CuervoSuperposiciónColoniseCategoríaCepillo"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -69343,6 +69371,10 @@
       "translation": "colonizar.excedente"
     },
     {
+      "source": "colonize.category",
+      "translation": "colonizar.categoría"
+    },
+    {
       "source": "color",
       "translation": "color"
     },
@@ -78881,6 +78913,10 @@
       "translation": "Patelle collectrice"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniserCatégorie"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "ColoniserDéficit"
     },
@@ -86413,6 +86449,10 @@
       "translation": "Article (faible)"
     },
     {
+      "source": "Item Category",
+      "translation": "Catégorie d'article"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "Articles livrés"
     },
@@ -93907,6 +93947,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -105909,6 +105953,10 @@
       "translation": "coloniser.surplus"
     },
     {
+      "source": "colonize.category",
+      "translation": "coloniser.category"
+    },
+    {
       "source": "color",
       "translation": "couleur"
     },
@@ -115447,6 +115495,10 @@
       "translation": "Lapa coletora"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColonizarCategoria"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "Colonizar Déficit"
     },
@@ -122979,6 +123031,10 @@
       "translation": "Item (escurecido)"
     },
     {
+      "source": "Item Category",
+      "translation": "Categoria de item"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "Itens entregues"
     },
@@ -130473,6 +130529,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "RavenOverlayColoniseCategoryBrush"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -142475,6 +142535,10 @@
       "translation": "colonizar.excedente"
     },
     {
+      "source": "colonize.category",
+      "translation": "colonizar.categoria"
+    },
+    {
       "source": "color",
       "translation": "cor"
     },
@@ -152013,6 +152077,10 @@
       "translation": "Коллекционное блюдо"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "ColoniseCategory"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "КолонизацияДефицит"
     },
@@ -159545,6 +159613,10 @@
       "translation": "Товар (тусклый)"
     },
     {
+      "source": "Item Category",
+      "translation": "Категория товара"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "Товары доставлены"
     },
@@ -167039,6 +167111,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "ВоронOverlayКолонизацияКатегорияКисть"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -179041,6 +179117,10 @@
       "translation": "колонизировать.излишек"
     },
     {
+      "source": "colonize.category",
+      "translation": "колонизировать.категория"
+    },
+    {
       "source": "color",
       "translation": "цвет"
     },
@@ -188579,6 +188659,10 @@
       "translation": "收藏家帽贝"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "殖民类别"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "殖民赤字"
     },
@@ -196111,6 +196195,10 @@
       "translation": "项目（暗淡）"
     },
     {
+      "source": "Item Category",
+      "translation": "项目类别"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "已交付物品"
     },
@@ -203605,6 +203693,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "RavenOverlayCaptionFontSize"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "乌鸦覆盖殖民类别画笔"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -215607,6 +215699,10 @@
       "translation": "殖民盈余"
     },
     {
+      "source": "colonize.category",
+      "translation": "殖民.类别"
+    },
+    {
       "source": "color",
       "translation": "颜色"
     },
@@ -225145,6 +225241,10 @@
       "translation": "* COLLECTOR LIMPET >>>!"
     },
     {
+      "source": "ColoniseCategory",
+      "translation": "* COLONISECATEGORY >>>!"
+    },
+    {
       "source": "ColoniseDeficit",
       "translation": "* COLONISEDEFICIT >>>!"
     },
@@ -232677,6 +232777,10 @@
       "translation": "* ITEM (DIM) >>>!"
     },
     {
+      "source": "Item Category",
+      "translation": "* ITEM CATEGORY >>>!"
+    },
+    {
       "source": "ItemsDelivered",
       "translation": "* ITEMSDELIVERED >>>!"
     },
@@ -240171,6 +240275,10 @@
     {
       "source": "RavenOverlayCaptionFontSize",
       "translation": "* RAVENOVERLAYCAPTIONFONTSIZE >>>!"
+    },
+    {
+      "source": "RavenOverlayColoniseCategoryBrush",
+      "translation": "* RAVENOVERLAYCOLONISECATEGORYBRUSH >>>!"
     },
     {
       "source": "RavenOverlayColoniseDeficitBrush",
@@ -252171,6 +252279,10 @@
     {
       "source": "colonise.surplus",
       "translation": "* COLONISE.SURPLUS >>>!"
+    },
+    {
+      "source": "colonize.category",
+      "translation": "* COLONIZE.CATEGORY >>>!"
     },
     {
       "source": "color",

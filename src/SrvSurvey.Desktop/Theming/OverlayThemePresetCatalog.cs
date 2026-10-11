@@ -6,6 +6,7 @@ public static class OverlayThemePresetCatalog
 {
     public const string DefaultName = "Default";
 
+    private const string ColonizationCategoryKey = "colonize.category";
     private const string BioEmptyKey = "bio.empty";
     private const string BlackKey = "black";
     private const string HeaderKey = "header";
@@ -171,6 +172,24 @@ public static class OverlayThemePresetCatalog
         }
 
         return changed;
+    }
+
+    /// <summary>Adds the matching preset's category accent to older palettes without changing existing choices.</summary>
+    internal static void AddMissingCategoryColor(Dictionary<string, Color> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        if (colors.ContainsKey(ColonizationCategoryKey))
+        {
+            return;
+        }
+
+        OverlayThemePreset preset =
+            Presets.FirstOrDefault(candidate =>
+                PresetIdentityKeys.All(key =>
+                    colors.TryGetValue(key, out Color color) && candidate.Colors[key] == color
+                )
+            ) ?? Default;
+        colors[ColonizationCategoryKey] = preset.Colors[ColonizationCategoryKey];
     }
 
     internal static bool AddMissingHeaderColor(Dictionary<string, Color> colors)
@@ -411,9 +430,11 @@ public static class OverlayThemePresetCatalog
         };
     }
 
+    /// <summary>Uses the preset's contrasting value accent for categories and primary accent for items.</summary>
     private static void ApplyColonisation(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         colors["colonise.highlight"] = palette.Value;
+        colors[ColonizationCategoryKey] = palette.Value;
         colors["colonise.item"] = palette.Primary;
         colors["colonise.itemDark"] = palette.PrimaryDark;
         colors["colonise.rowHighlight"] = WithAlpha(palette.Primary, 72);

@@ -54,6 +54,7 @@ public sealed class RavenThemeService
         ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",
         ["RavenOverlayColoniseDeficitDimBrush"] = "colonise.deficitDark",
         ["RavenOverlayColoniseHighlightBrush"] = "colonise.highlight",
+        ["RavenOverlayColoniseCategoryBrush"] = "colonize.category",
         ["RavenOverlayColoniseItemBrush"] = "colonise.item",
         ["RavenOverlayColoniseItemDimBrush"] = "colonise.itemDark",
         ["RavenOverlayColoniseRowHighlightBrush"] = "colonise.rowHighlight",

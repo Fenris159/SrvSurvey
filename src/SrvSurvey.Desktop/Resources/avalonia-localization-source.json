@@ -11522,6 +11522,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
   },
   {
+    "Text": "ColoniseCategory",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
+  },
+  {
     "Text": "ColoniseDeficit",
     "IsFormat": false,
     "SourceKinds": [
@@ -26637,6 +26645,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Item Category",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
     "Text": "ItemsDelivered",
     "IsFormat": false,
     "SourceKinds": [
@@ -41669,6 +41685,14 @@
   },
   {
     "Text": "RavenOverlayCaptionFontSize",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "RavenOverlayColoniseCategoryBrush",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -65717,6 +65741,14 @@
   },
   {
     "Text": "colonise.surplus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
+  },
+  {
+    "Text": "colonize.category",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

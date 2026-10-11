@@ -74,11 +74,12 @@ public sealed class LegacyOverlayThemeStore
         ["colonise.deficit"] = Color.FromArgb(255, 255, 0, 0),
         ["colonise.deficitDark"] = Color.FromArgb(255, 139, 0, 0),
         ["colonise.highlight"] = Color.FromArgb(255, 255, 255, 0),
+        ["colonize.category"] = Color.FromArgb(255, 255, 193, 0),
         ["colonise.item"] = Color.FromArgb(255, 255, 111, 0),
         ["colonise.itemDark"] = Color.FromArgb(255, 95, 48, 3),
         // Row zebra fill: RGB is colour, A is opacity (edit with #RRGGBBAA
         // or the colour picker's alpha slider for separate control).
-        ["colonise.rowHighlight"] = Color.FromArgb(72, 56, 56, 56),
+        ["colonise.rowHighlight"] = Color.FromArgb(92, 102, 102, 102),
         ["fcz.checkpoint"] = Color.FromArgb(255, 255, 255, 0),
         ["fcz.checkpointLocal"] = Color.FromArgb(255, 0, 255, 0),
         ["fcz.powerPost"] = Color.FromArgb(255, 218, 165, 32),
@@ -106,6 +107,7 @@ public sealed class LegacyOverlayThemeStore
         this.path = Path.GetFullPath(path);
     }
 
+    /// <summary>Loads a saved palette, filling missing brushes while preserving custom colors.</summary>
     public LegacyOverlayTheme Load()
     {
         if (!File.Exists(path))
@@ -133,6 +135,7 @@ public sealed class LegacyOverlayThemeStore
             UpgradeLegacyDefaultHeaderColor(colors);
             _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
+            OverlayThemePresetCatalog.AddMissingCategoryColor(colors);
             foreach (KeyValuePair<string, Color> fallback in DefaultColors)
             {
                 colors.TryAdd(fallback.Key, fallback.Value);

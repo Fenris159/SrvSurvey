@@ -92,6 +92,7 @@ public static class OverlayThemeResources
         "ColoniseDeficit",
         "ColoniseDeficitDim",
         "ColoniseHighlight",
+        "ColoniseCategory",
         "ColoniseItem",
         "ColoniseItemDim",
         "ColoniseRowHighlight",

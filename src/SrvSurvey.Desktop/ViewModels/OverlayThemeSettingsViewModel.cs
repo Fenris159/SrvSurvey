@@ -74,6 +74,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryColonisation, "colonise.deficit", "Deficit"),
         new(CategoryColonisation, "colonise.deficitDark", "Deficit (dim)"),
         new(CategoryColonisation, "colonise.highlight", "Highlight"),
+        new(CategoryColonisation, "colonize.category", "Item Category"),
         new(CategoryColonisation, "colonise.item", "Item"),
         new(CategoryColonisation, "colonise.itemDark", "Item (dim)"),
         new(CategoryColonisation, "colonise.rowHighlight", "Commodity row fill (colour + alpha)"),

@@ -121,7 +121,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:ColonizationCommodityGroupViewModel">
               <StackPanel Margin="0,0,0,3" Spacing="0" HorizontalAlignment="Left">
-                <TextBlock FontSize="9" Classes="type-header" Foreground="{DynamicResource RavenColoniseItemBrush}"
+                <TextBlock FontSize="9" Classes="type-header" Foreground="{DynamicResource RavenColoniseCategoryBrush}"
                            FontWeight="Bold"
                            Text="{Binding Name}" />
                 <TextBlock FontSize="8" Classes="muted type-detail"
