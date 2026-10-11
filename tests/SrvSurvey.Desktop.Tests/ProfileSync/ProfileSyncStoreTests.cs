@@ -81,7 +81,7 @@ public sealed class ProfileSyncStoreTests
 
         Assert.Contains("100000", failure.Message);
         Assert.Contains("portable", failure.Message);
-        Assert.Contains("systems/large.json", failure.Message);
+        Assert.Contains(root.Path("data", "systems/large.json"), failure.Message);
         Assert.False(Directory.Exists(System.IO.Path.Combine(root.Store.StateDirectory, "backups")));
     }
 
@@ -647,9 +647,12 @@ internal sealed class ProfileSyncTestRoot : IDisposable
     internal ProfileSyncStore Store { get; }
     internal string MachineIdentity => root;
 
-    /// <summary>Resolves a fixture path within the chosen configuration or data root.</summary>
+    /// <summary>Resolves a fixture path within its root using the host platform's directory separators.</summary>
     internal string Path(string area, string relative) =>
-        System.IO.Path.Combine(area == "config" ? Paths.ConfigDirectory : Paths.DataDirectory, relative);
+        System.IO.Path.Combine(
+            area == "config" ? Paths.ConfigDirectory : Paths.DataDirectory,
+            relative.Replace('/', System.IO.Path.DirectorySeparatorChar)
+        );
 
     /// <summary>Creates parent directories and writes the requested profile fixture.</summary>
     internal void Write(string area, string relative, string text)
