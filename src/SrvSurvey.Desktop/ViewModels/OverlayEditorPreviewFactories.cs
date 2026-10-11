@@ -51,25 +51,48 @@ internal static class OverlayEditorPreviewFactories
         return vm;
     }
 
+    /// <summary>Models a shopping stop with shortages, covered groups, unavailable stock, and a list long enough to scroll.</summary>
     public static ColonizationCommodityOverlayViewModel CreateColonization()
     {
+        const int capacity = 512;
+        const string metalsCategory = "Metals";
+        const string technologyCategory = "Technology";
+        const string chemicalsCategory = "Chemicals";
+        ColonizationCommodityPlanRow[] rows =
+        [
+            Row("steel", "Steel", metalsCategory, 2450, 96, 620),
+            Row("power_generators", "Power generators", technologyCategory, 840, 32, 210),
+            Row("polymers", "Polymers", chemicalsCategory, 610, 24, 590),
+            Row("water_purifiers", "Water purifiers", technologyCategory, 420, 16, 120) with
+            {
+                IsAvailableAtCurrentMarket = false,
+                IsUnavailableAtCurrentMarket = true,
+                CanCompleteFleetCarrierLoad = false,
+            },
+            Row("cmm_composites", "CMM composites", metalsCategory, 80, 0, 90),
+            Row("emergency_power_cells", "Emergency power cells", technologyCategory, 200, 12, 170),
+            Row("evacuation_shelter", "Evacuation shelter", "Consumer items", 75, 0, 75),
+            Row("titanium", "Titanium", metalsCategory, 320, 0, 400),
+            Row("copper", "Copper", metalsCategory, 240, 0, 60),
+            Row("aluminium", "Aluminium", metalsCategory, 420, 0, 90),
+            Row("computer_components", "Computer components", technologyCategory, 140, 0, 90),
+            Row("building_fabricators", "Building fabricators", technologyCategory, 120, 0, 80),
+            Row("medical_diagnostic_equipment", "Medical diagnostic equipment", technologyCategory, 100, 0, 40),
+            Row("insulating_membrane", "Insulating membrane", chemicalsCategory, 160, 0, 40),
+            Row("ceramics", "Ceramics", chemicalsCategory, 280, 0, 60),
+            Row("liquid_oxygen", "Liquid oxygen", chemicalsCategory, 180, 0, 240),
+        ];
+        long totalRemaining = rows.Sum(row => (long)row.Needed);
+        long carrierDeficit = rows.Sum(row => Math.Max(0L, (long)row.Needed - row.OnFleetCarriers));
         var vm = new ColonizationCommodityOverlayViewModel();
         vm.Apply(
             new ColonizationCommodityPlan
             {
                 Title = State.ColonyProjectName,
                 ProjectNames = [State.ColonyProjectName, "Relay Hub"],
-                Rows =
-                [
-                    Row("steel", "Steel", "Metals", 2450, 96, 620),
-                    Row("power_generators", "Power generators", "Technology", 840, 32, 210),
-                    Row("polymers", "Polymers", "Chemicals", 610, 24, 180),
-                    Row("water_purifiers", "Water purifiers", "Technology", 420, 16, 120),
-                    // Covered FC loads show the shared status column (✓) in both editor and live.
-                    Row("cmm_composites", "CMM composites", "Metals", 80, 0, 80),
-                    Row("emergency_power_cells", "Emergency power cells", "Technology", 200, 12, 30),
-                    Row("evacuation_shelter", "Evacuation shelter", "Consumer items", 75, 0, 75),
-                ],
+                Rows = rows.OrderBy(row => row.Category, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
                 FleetCarriers =
                 [
                     new ColonizationFleetCarrier
@@ -77,27 +100,24 @@ internal static class OverlayEditorPreviewFactories
                         MarketId = 1,
                         Name = "Raven's Reach",
                         DisplayName = "Raven's Reach",
-                        Cargo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["steel"] = 620,
-                            ["polymers"] = 180,
-                            ["cmm_composites"] = 80,
-                            ["evacuation_shelter"] = 75,
-                        },
+                        Cargo = rows.ToDictionary(
+                            row => row.Commodity,
+                            row => row.OnFleetCarriers,
+                            StringComparer.OrdinalIgnoreCase
+                        ),
                     },
                 ],
-                TotalRemaining = 4675,
-                TripsInCurrentShip = 12,
-                FleetCarrierDeficit = 1240,
-                FleetCarrierDeficitTrips = 4,
-                IsAtConstructionSite = true,
+                TotalRemaining = totalRemaining,
+                TripsInCurrentShip = (long)Math.Ceiling(totalRemaining / (double)capacity),
+                FleetCarrierDeficit = carrierDeficit,
+                FleetCarrierDeficitTrips = (long)Math.Ceiling(carrierDeficit / (double)capacity),
             },
             updatedStatus: null,
             updatedHasMarketSinceDocking: true
         );
-        vm.ApplyPreferences(ColonizationOverlayPreferences.Default with { ShowFleetCarrierCargo = true });
         return vm;
 
+        /// <summary>Supplies a sample market commodity with carrier-loading eligibility for the simulated ship capacity.</summary>
         static ColonizationCommodityPlanRow Row(
             string commodity,
             string display,
@@ -115,6 +135,7 @@ internal static class OverlayEditorPreviewFactories
                 InShip = ship,
                 OnFleetCarriers = fc,
                 IsAvailableAtCurrentMarket = true,
+                CanCompleteFleetCarrierLoad = needed > fc && needed - fc < capacity,
             };
     }
 

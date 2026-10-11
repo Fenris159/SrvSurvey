@@ -1451,6 +1451,7 @@ internal sealed partial class DesktopRuntime
         });
     }
 
+    /// <summary>Dispatches shortcuts, including persistent colonization visibility before generic availability toggles.</summary>
     private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
     {
         MainWindowViewModel viewModel =
@@ -1458,6 +1459,11 @@ internal sealed partial class DesktopRuntime
         if (mainWindow is null)
         {
             throw new InvalidOperationException("Main window is not ready.");
+        }
+
+        if (action == GlobalInputAction.ToggleColonizationCommoditiesVisibility)
+        {
+            return ToggleColonyShopping();
         }
 
         if (GlobalInputActionCatalog.TryGetOverlayPlotterName(action, out string? plotterName))
@@ -1532,9 +1538,15 @@ internal sealed partial class DesktopRuntime
         return true;
     }
 
+    /// <summary>Uses one show/hide path for both colonization shortcuts and the availability checkbox.</summary>
     private bool ToggleColonyShopping()
     {
-        colonizationCommodityOverlayCoordinator?.ToggleVisibility();
+        if (mainViewModel is null || colonizationCommodityOverlayCoordinator is null)
+        {
+            return false;
+        }
+
+        colonizationCommodityOverlayCoordinator.ToggleVisibility(mainViewModel.OverlayPanelVisibility);
         return true;
     }
 

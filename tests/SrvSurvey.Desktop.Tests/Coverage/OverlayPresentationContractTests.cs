@@ -1323,7 +1323,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Classes.compact-scrolling=\"{Binding UseCompactScrollingCommoditiesList}\"", commodities);
         Assert.Contains("Grid.IsSharedSizeScope=\"True\"", commodities);
         Assert.Contains("SharedSizeGroup=\"ColoniseCommodity\"", commodities);
-        Assert.Contains("SharedSizeGroup=\"ColoniseStatus\"", commodities);
+        Assert.DoesNotContain("SharedSizeGroup=\"ColoniseStatus\"", commodities);
         Assert.Contains("Border.overlay-divider", ravenStyles);
         Assert.Contains("HorizontalAlignment\" Value=\"Stretch\"", ravenStyles);
         Assert.Contains("Border.guardian-header-rule", guardianStyles);

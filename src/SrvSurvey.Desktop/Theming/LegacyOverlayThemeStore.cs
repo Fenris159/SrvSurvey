@@ -75,6 +75,9 @@ public sealed class LegacyOverlayThemeStore
         ["colonise.deficitDark"] = Color.FromArgb(255, 139, 0, 0),
         ["colonise.highlight"] = Color.FromArgb(255, 255, 255, 0),
         ["colonize.category"] = Color.FromArgb(255, 255, 193, 0),
+        ["colonize.need"] = Color.FromArgb(255, 255, 255, 255),
+        ["colonize.have"] = Color.FromArgb(255, 84, 223, 237),
+        ["colonize.ship"] = Color.FromArgb(255, 255, 193, 0),
         ["colonise.item"] = Color.FromArgb(255, 255, 111, 0),
         ["colonise.itemDark"] = Color.FromArgb(255, 95, 48, 3),
         // Row zebra fill: RGB is colour, A is opacity (edit with #RRGGBBAA
@@ -135,7 +138,7 @@ public sealed class LegacyOverlayThemeStore
             UpgradeLegacyDefaultHeaderColor(colors);
             _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
-            OverlayThemePresetCatalog.AddMissingCategoryColor(colors);
+            OverlayThemePresetCatalog.AddMissingColonizationColors(colors);
             foreach (KeyValuePair<string, Color> fallback in DefaultColors)
             {
                 colors.TryAdd(fallback.Key, fallback.Value);

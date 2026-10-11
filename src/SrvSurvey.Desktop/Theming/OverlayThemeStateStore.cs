@@ -94,6 +94,7 @@ public sealed class OverlayThemeStateStore
         }
     }
 
+    /// <summary>Loads saved theme states and fills newly introduced brushes without replacing explicit choices.</summary>
     private OverlayThemeStateLoadResult LoadCore()
     {
         if (!File.Exists(path))
@@ -149,6 +150,7 @@ public sealed class OverlayThemeStateStore
 
                 _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
                 _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
+                OverlayThemePresetCatalog.AddMissingColonizationColors(colors);
                 ValidateColors(name, colors);
                 var typography = OverlayTypographySettings.Parse(
                     state["typography"] as JsonObject,

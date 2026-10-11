@@ -1,18 +1,98 @@
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.Tests.Platform;
+using SrvSurvey.Desktop.Tests.ViewModels;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    /// <summary>Both colonization actions show a hidden available panel on their first press and keep checkbox state synchronized.</summary>
+    [AvaloniaTheory]
+    [InlineData(GlobalInputAction.ToggleColonizationCommoditiesVisibility)]
+    [InlineData(GlobalInputAction.ShowColonyShopping)]
+    public async Task ColonizationShortcutsToggleActualVisibilityAndPersistThroughDocking(GlobalInputAction action)
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var window = new MainWindow(main);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
+        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
+        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        try
+        {
+            Assert.False(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            ColonizationCommodityOverlayViewModel overlay = main.Colonization.CommodityOverlay;
+            Assert.Same(overlay, main.OverlayInteraction.ColonizationOverlay);
+            var plan = new ColonizationCommodityPlan
+            {
+                Title = "Test build",
+                ProjectNames = ["Test build"],
+                FleetCarriers = [],
+                Rows =
+                [
+                    new ColonizationCommodityPlanRow
+                    {
+                        Commodity = "steel",
+                        DisplayName = "Steel",
+                        Category = "Metals",
+                        Needed = 100,
+                    },
+                ],
+            };
+            overlay.Apply(plan, new EliteStatus { Flags = StatusFlags.InMainShip });
+            using var host = new HostedOverlayTestHarness(OverlayWindowRegistry.Shared);
+            using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
+            typeof(DesktopRuntime)
+                .GetField("colonizationCommodityOverlayCoordinator", flags)!
+                .SetValue(runtime, coordinator);
+            OverlayPanelVisibilityEntryViewModel panel = main.OverlayPanelVisibility.Panels.Single(item =>
+                item.PlotterName == "PlotBuildCommodities"
+            );
+            Assert.True(panel.IsEnabled);
+            Assert.False(coordinator.IsVisible);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(coordinator.IsVisible);
+            overlay.Apply(
+                plan,
+                new EliteStatus { Flags = StatusFlags.Docked, GuiFocus = GuiFocus.StationServices },
+                updatedHasMarketSinceDocking: true
+            );
+            overlay.Apply(plan, new EliteStatus { Flags = StatusFlags.InMainShip });
+            Assert.True(coordinator.IsVisible);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.False(panel.IsEnabled);
+            Assert.False(coordinator.IsVisible);
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(panel.IsEnabled);
+            Assert.True(coordinator.IsVisible);
+        }
+        finally
+        {
+            main.OverlayPanelVisibility.EnsureVisible("PlotBuildCommodities");
+            window.Close();
+        }
+    }
+
     [Fact]
     public async Task ConcurrentShutdownRequestsShareOneOrderedStop()
     {

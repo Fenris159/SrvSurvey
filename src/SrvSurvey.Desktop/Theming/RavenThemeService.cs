@@ -55,6 +55,9 @@ public sealed class RavenThemeService
         ["RavenOverlayColoniseDeficitDimBrush"] = "colonise.deficitDark",
         ["RavenOverlayColoniseHighlightBrush"] = "colonise.highlight",
         ["RavenOverlayColoniseCategoryBrush"] = "colonize.category",
+        ["RavenOverlayColoniseNeedBrush"] = "colonize.need",
+        ["RavenOverlayColoniseHaveBrush"] = "colonize.have",
+        ["RavenOverlayColoniseShipBrush"] = "colonize.ship",
         ["RavenOverlayColoniseItemBrush"] = "colonise.item",
         ["RavenOverlayColoniseItemDimBrush"] = "colonise.itemDark",
         ["RavenOverlayColoniseRowHighlightBrush"] = "colonise.rowHighlight",
@@ -204,6 +207,7 @@ public sealed class RavenThemeService
         ApplyDepthResources(theme);
     }
 
+    /// <summary>Applies overlay colors and gives the loading highlight the commodity row fill's opacity.</summary>
     private void ApplyOverlayTheme(LegacyOverlayTheme theme, bool notify)
     {
         ArgumentNullException.ThrowIfNull(theme);
@@ -217,6 +221,12 @@ public sealed class RavenThemeService
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
+
+        Color highlight = theme.GetColor("colonise.highlight");
+        SetBrush(
+            "RavenOverlayColoniseLoadHighlightBrush",
+            Color.FromArgb(theme.GetColor("colonise.rowHighlight").A, highlight.R, highlight.G, highlight.B)
+        );
 
         OverlayTypographySettings typography = theme.EffectiveTypography;
         application.Resources["RavenOverlayHeaderFontSize"] = typography.Header;

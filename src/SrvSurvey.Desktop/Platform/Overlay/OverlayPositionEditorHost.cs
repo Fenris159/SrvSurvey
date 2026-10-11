@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -124,6 +125,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         editor = toolbar;
         this.viewModel = viewModel;
         viewModel.PropertyChanged += OnEditorControlsHeightChanged;
+        viewModel.ColonizationOverlay?.PropertyChanged += OnColonizationPreferencesChanged;
         registry.PrepareWindow(toolbar);
         toolbar.Show();
 
@@ -195,6 +197,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.ForCategory(category))
         {
             var preview = new OverlayPositionPreviewWindow(definition);
+            preview.ConfigureColonizationPreferences(
+                viewModel?.ColonizationOverlay?.Preferences ?? ColonizationOverlayPreferences.Default
+            );
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
@@ -405,6 +410,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
+        viewModel?.ColonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
 
         if (restoreRuntimeWindows)
         {
@@ -579,6 +585,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
+        viewModel?.ColonizationOverlay?.PropertyChanged -= OnColonizationPreferencesChanged;
 
         editor = null;
         viewModel = null;
@@ -626,6 +633,41 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         )
         {
             PositionEditorToolbar(toolbar);
+        }
+    }
+
+    /// <summary>Refreshes open colonization previews and their saved anchors when a presentation preference changes.</summary>
+    private void OnColonizationPreferencesChanged(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs eventArgs
+    )
+    {
+        if (
+            eventArgs.PropertyName != nameof(ColonizationCommodityOverlayViewModel.Preferences)
+            || sender is not ColonizationCommodityOverlayViewModel source
+            || editSession is not { } session
+        )
+        {
+            return;
+        }
+
+        updatingPreviewLayout = true;
+        try
+        {
+            foreach (
+                OverlayPositionPreviewWindow preview in previews.Where(window =>
+                    window.Definition.Name == "PlotBuildCommodities"
+                )
+            )
+            {
+                preview.ConfigureColonizationPreferences(source.Preferences);
+                PositionPreview(preview, session);
+                Dispatcher.UIThread.Post(() => PositionPreviewAfterOpening(preview, session));
+            }
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
         }
     }
 

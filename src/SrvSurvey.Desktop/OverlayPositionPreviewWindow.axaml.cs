@@ -251,6 +251,15 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         InvalidateMeasure();
     }
 
+    /// <summary>Applies the live colonization settings to the shared presentation without replacing its sample plan.</summary>
+    internal void ConfigureColonizationPreferences(ColonizationOverlayPreferences preferences)
+    {
+        if (runtimePresentation?.DataContext is ColonizationCommodityOverlayViewModel colonization)
+        {
+            colonization.ApplyPreferences(preferences);
+        }
+    }
+
     internal void RefreshTypographyBaseline()
     {
         if (runtimePresentation is not null)

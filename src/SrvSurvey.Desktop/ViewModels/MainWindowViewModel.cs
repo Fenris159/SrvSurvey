@@ -547,6 +547,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 legacyProfileStore: new LegacyColonizationProfileStore(AppDataPaths.DataDirectory)
             );
             rollback.Add(Colonization.Dispose);
+            OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(externalNetworkClient);

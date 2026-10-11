@@ -42,6 +42,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal("blue-dark", root["Theme"]?["Selected"]?.GetValue<string>());
     }
 
+    /// <summary>Retains legacy defaults and round-trips every shopping overlay option.</summary>
     [Fact]
     public void OverlayPreferencesUseLegacyDefaultsAndPersistOverrides()
     {
@@ -50,6 +51,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
 
         Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
         Assert.False(store.LoadOverlayPreferences().UseCompactScrollingCommoditiesList);
+        Assert.False(store.LoadOverlayPreferences().HideCollapsedGroups);
 
         ColonizationOverlayPreferences updated = ColonizationOverlayPreferences.Default with
         {
@@ -57,6 +59,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             ShowFleetCarrierDelta = true,
             InlineFleetCarrierCargo = true,
             CollapseCoveredGroups = false,
+            HideCollapsedGroups = true,
             HighlightAlmostCoveredFleetCarrierLoads = true,
             UseCompactScrollingCommoditiesList = true,
         };
@@ -64,6 +67,20 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
 
         Assert.Equal(updated, store.LoadOverlayPreferences());
         Assert.False(store.LoadEnabled());
+    }
+
+    /// <summary>Older or malformed preference values keep category headings visible by default.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"CollapseCoveredGroups\":true}")]
+    [InlineData("{\"HideCollapsedGroups\":\"invalid\"}")]
+    public void OlderOverlayPreferencesDoNotHideCollapsedGroups(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideCollapsedGroups);
     }
 
     [Fact]

@@ -138,6 +138,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     public event PropertyChangedEventHandler? PropertyChanged;
     public MiningDetectionViewModel? MiningDetection { get; set; }
 
+    /// <summary>Supplies live colonization preferences while previews retain their isolated sample cargo.</summary>
+    public ColonizationCommodityOverlayViewModel? ColonizationOverlay { get; set; }
+
     public OverlayBehaviorViewModel? OverlayBehavior { get; set; }
 
     public OverlayPlatformCapabilities Capabilities { get; }

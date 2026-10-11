@@ -25,6 +25,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
             && value;
     }
 
+    /// <summary>Loads shopping overlay options while preserving defaults for older settings documents.</summary>
     public ColonizationOverlayPreferences LoadOverlayPreferences()
     {
         JsonObject root = documentStore.Load();
@@ -44,7 +45,10 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
                 defaults.HighlightAlmostCoveredFleetCarrierLoads
             ),
             GetBoolean(overlay, "UseCompactScrollingCommoditiesList", defaults.UseCompactScrollingCommoditiesList)
-        );
+        )
+        {
+            HideCollapsedGroups = GetBoolean(overlay, "HideCollapsedGroups", defaults.HideCollapsedGroups),
+        };
     }
 
     public bool LoadFleetCarrierCargoSyncEnabled()
@@ -112,6 +116,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
         });
     }
 
+    /// <summary>Persists shopping overlay options without replacing other colonization settings.</summary>
     public void SaveOverlayPreferences(ColonizationOverlayPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
@@ -138,6 +143,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
             overlay["ShowFleetCarrierDelta"] = preferences.ShowFleetCarrierDelta;
             overlay["InlineFleetCarrierCargo"] = preferences.InlineFleetCarrierCargo;
             overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
+            overlay["HideCollapsedGroups"] = preferences.HideCollapsedGroups;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
             overlay["UseCompactScrollingCommoditiesList"] = preferences.UseCompactScrollingCommoditiesList;
         });
@@ -303,6 +309,9 @@ public sealed record ColonizationOverlayPreferences(
     bool UseCompactScrollingCommoditiesList
 )
 {
+    /// <summary>Omits collapsed categories entirely instead of displaying their heading and summary.</summary>
+    public bool HideCollapsedGroups { get; init; }
+
     public static ColonizationOverlayPreferences Default { get; } =
         new(
             AutoShow: true,
