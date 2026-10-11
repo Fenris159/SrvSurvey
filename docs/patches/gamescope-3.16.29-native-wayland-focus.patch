@@ -37,7 +37,7 @@
      }
 --- /dev/null
 +++ b/src/Backends/HostFocusPublisher.h
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,151 @@
 +#pragma once
 +
 +// Optional native Wayland backend publisher. The public geometry marker stays
@@ -122,9 +122,9 @@
 +                okay = renameat( m_runtimeFd, temp.c_str(), m_runtimeFd, m_name.c_str() ) == 0;
 +            if ( !okay )
 +            {
-+                // Invalidate any previous true state. A consumer that observed
-+                // this publisher must interpret its disappearance as unfocused.
-+                unlinkat( m_runtimeFd, m_name.c_str(), 0 );
++                // Keep the capability visible to new consumers after a failure.
++                // In-place fallback also works when atomic replacement cannot.
++                PreserveUnfocused();
 +                unlinkat( m_runtimeFd, temp.c_str(), 0 );
 +            }
 +        }
@@ -132,18 +132,36 @@
 +        {
 +            const int fd = open( m_legacyPath.c_str(), O_WRONLY | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK );
 +            struct stat info;
-+            const char state = focused ? '1' : '0';
++            const char state = focused && ( !hasRuntime || okay ) ? '1' : '0';
 +            const bool legacyOkay = fd >= 0 && fstat( fd, &info ) == 0 &&
 +                S_ISREG( info.st_mode ) && info.st_uid == getuid() &&
 +                pwrite( fd, &state, 1, 0 ) == 1;
 +            if ( fd >= 0 )
 +                close( fd );
++            if ( !legacyOkay && hasRuntime )
++                PreserveUnfocused();
 +            okay = legacyOkay && ( !hasRuntime || okay );
 +        }
 +        return okay;
 +    }
 +
 +private:
++    void PreserveUnfocused()
++    {
++        const int fd = openat( m_runtimeFd, m_name.c_str(),
++            O_WRONLY | O_CREAT | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0600 );
++        if ( fd < 0 )
++            return;
++        struct stat info;
++        if ( fstat( fd, &info ) == 0 && S_ISREG( info.st_mode ) && info.st_uid == getuid() )
++        {
++            const std::string data = m_startTicks + "\n0\n";
++            if ( ftruncate( fd, 0 ) == 0 )
++                WriteAll( fd, data.data(), data.size() );
++        }
++        close( fd );
++    }
++
 +    static bool WriteAll( int fd, const char *data, size_t length )
 +    {
 +        while ( length )

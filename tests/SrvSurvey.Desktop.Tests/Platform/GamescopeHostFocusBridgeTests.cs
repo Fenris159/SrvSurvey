@@ -54,6 +54,28 @@ public sealed class GamescopeHostFocusBridgeTests
         });
     }
 
+    [Fact]
+    public void ExplicitUnfocusedSidecarSurvivesNewTrackerLifetimes()
+    {
+        WithDirectory(directory =>
+        {
+            File.WriteAllText(
+                Path.Combine(directory, GamescopeGameWindowBridge.MarkerPrefix + "42"),
+                "123\n:7\n100 80 1280 800\n"
+            );
+            File.WriteAllText(Path.Combine(directory, GamescopeGameWindowFocus.MarkerPrefix + "42"), "123\n0\n");
+            for (int lifetime = 0; lifetime < 2; lifetime++)
+            {
+                using var tracker = new GamescopeGameWindowTracker(
+                    new StubTracker(GameWindowSnapshot.Unavailable),
+                    () => GamescopeGameWindowBridge.TryRead(directory, _ => 123),
+                    _ => new StubTracker(new(10, 20, new PixelRect(0, 0, 1280, 800), true, true))
+                );
+                Assert.False(tracker.GetSnapshot().IsForeground);
+            }
+        });
+    }
+
     [Theory]
     [InlineData("missing")]
     [InlineData("directory")]

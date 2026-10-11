@@ -9,6 +9,58 @@ public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
 
+    [Theory]
+    [InlineData("123\n0\n", true, false)]
+    [InlineData("123\n1\n", true, true)]
+    [InlineData("123\n1\n", false, false)]
+    [InlineData("122\n1\n", true, false)]
+    [InlineData(null, true, true)]
+    public void DesktopDiscoveryHonorsNativeFocus(string? contents, bool outerForeground, bool expected)
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            string path = Path.Combine(root, GamescopeGameWindowFocus.MarkerPrefix + "20");
+            if (contents is not null)
+            {
+                File.WriteAllText(path, contents);
+            }
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, outerForeground);
+            var bridge = GamescopeGameWindowBridge.Discover(root, [outer], root, _ => 123);
+            Assert.NotNull(bridge);
+            Assert.Equal(expected, bridge.IsHostForeground);
+            Assert.Equal(contents is not null, bridge.HasNativeHostFocusPublisher);
+            foreach (string invalidRuntime in new[] { string.Empty, "relative" })
+            {
+                var legacy = GamescopeGameWindowBridge.Discover(
+                    root,
+                    [outer],
+                    invalidRuntime,
+                    _ => throw new InvalidOperationException("An invalid runtime path must not query native focus.")
+                );
+                Assert.Equal(outerForeground, legacy!.IsHostForeground);
+                Assert.Null(legacy.ProcessStartTime);
+            }
+            int reads = 0;
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [outer], root, _ => ++reads == 1 ? 123ul : 124ul));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     [Fact]
     public void NormalSteamNestedSessionUsesVerifiedAncestorAndActualOuterWindow()
     {

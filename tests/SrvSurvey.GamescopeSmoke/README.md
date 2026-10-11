@@ -171,3 +171,16 @@ Expected phases: enter -> available/visible/foreground; competitor activation
 unavailable. The `--expect-sidecar` run omits both focus-file environment variables, proving automatic publication. Sidecar checks also require initial false, validated
 PID/start identity on each phase, and deletion on normal process shutdown.
 Logs and `tracker-snapshots.json` are retained in the specified artifact path.
+
+## Native focus publisher write failures
+
+The small publisher test extracts the C++ helper from the committed patch and
+compiles it with C++17 and warnings as errors. It reserves the next temporary
+filename so atomic publication fails, then verifies that startup and existing
+publishers retain a stamped `0` with mode 0600 for both enter and leave requests.
+A later publication must recover. It uses private temporary directories and
+does not require Gamescope or affect the current desktop.
+
+```console
+python3 tests/SrvSurvey.GamescopeSmoke/run-publisher.py
+```

@@ -24,10 +24,20 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
     /// <summary>Maps a normal Steam-launched nested compositor through its verified desktop window.</summary>
     internal static GamescopeGameWindowBridge? DiscoverCurrent()
     {
-        return TryReadCurrent() ?? Discover("/proc", X11GameWindowTracker.ReadDesktopWindows());
+        return TryReadCurrent()
+            ?? Discover(
+                "/proc",
+                X11GameWindowTracker.ReadDesktopWindows(),
+                Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR")
+            );
     }
 
-    internal static GamescopeGameWindowBridge? Discover(string procDirectory, IReadOnlyList<GameWindowSnapshot> windows)
+    internal static GamescopeGameWindowBridge? Discover(
+        string procDirectory,
+        IReadOnlyList<GameWindowSnapshot> windows,
+        string? runtimeDirectory = null,
+        Func<int, ulong?>? readProcessStartTime = null
+    )
     {
         EliteKeyboardDisplay? game = EliteKeyboardDisplayDiscovery.Read(
             procDirectory,
@@ -39,12 +49,28 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
         GameWindowSnapshot[] matches = windows
             .Where(window => window.ProcessId == parent && parent is not null && window.IsAvailable && window.IsVisible)
             .ToArray();
-        return game is not null && matches.Length == 1
-            ? new GamescopeGameWindowBridge(parent!.Value, game.Display, matches[0].ClientBounds)
-            {
-                IsHostForeground = matches[0].IsForeground,
-            }
+        if (game is null || matches.Length != 1)
+        {
+            return null;
+        }
+        int processId = parent!.Value;
+        readProcessStartTime ??= X11OverlayInteractionMarker.TryReadProcessStartTime;
+        ulong? startTime = Path.IsPathFullyQualified(runtimeDirectory ?? string.Empty)
+            ? readProcessStartTime(processId)
             : null;
+        bool? nativeForeground = startTime is ulong start
+            ? GamescopeGameWindowFocus.Read(runtimeDirectory!, processId, start, procDirectory)
+            : null;
+        if (startTime is not null && readProcessStartTime(processId) != startTime)
+        {
+            return null;
+        }
+        return new GamescopeGameWindowBridge(processId, game.Display, matches[0].ClientBounds)
+        {
+            IsHostForeground = matches[0].IsForeground && nativeForeground is not false,
+            HasNativeHostFocusPublisher = nativeForeground is not null,
+            ProcessStartTime = startTime,
+        };
     }
 
     internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory)

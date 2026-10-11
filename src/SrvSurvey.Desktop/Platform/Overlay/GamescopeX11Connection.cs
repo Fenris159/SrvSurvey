@@ -28,6 +28,7 @@ internal sealed partial class GamescopeX11Connection : IDisposable
     private readonly nuint root;
     private readonly string displayName;
     private GamescopeScalingState? scaling;
+    private GamescopeDisplayIdentity? scalingIdentity;
     private GamescopeX11Connection? gameScaling;
     private string? gameScalingName;
     private bool scalingInitialized;
@@ -107,8 +108,13 @@ internal sealed partial class GamescopeX11Connection : IDisposable
 
     private uint? ReadScalingMode(string? gameDisplay)
     {
-        GamescopeDisplayIdentity? identity = ReadIdentity();
-        scaling ??= new GamescopeScalingState(GamescopeScalingState.ReadStartupMode("/proc", identity?.ProcessId));
+        if (!scalingInitialized || gameScalingName != gameDisplay)
+        {
+            scalingIdentity = ReadIdentity();
+        }
+        scaling ??= new GamescopeScalingState(
+            GamescopeScalingState.ReadStartupMode("/proc", scalingIdentity?.ProcessId)
+        );
         SubscribeScaling();
         if (gameScalingName != gameDisplay)
         {
@@ -120,7 +126,7 @@ internal sealed partial class GamescopeX11Connection : IDisposable
             gameScaling is null
             && gameDisplay is not null
             && !GamescopeExternalGameWindowTracker.SameDisplay(displayName, gameDisplay)
-            && identity?.ProcessId is uint pid
+            && scalingIdentity?.ProcessId is uint pid
         )
         {
             GamescopeX11Connection? candidate = TryOpen(gameDisplay);
