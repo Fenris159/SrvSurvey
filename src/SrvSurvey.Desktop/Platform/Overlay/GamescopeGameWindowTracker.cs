@@ -8,8 +8,12 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
 {
     internal const string MarkerPrefix = nameof(GamescopeGameWindowBridge) + ".";
 
-    /// <summary>Desktop focus, when the outer compositor window is visible to X11.</summary>
+    /// <summary>Desktop focus from the outer X11 window or its native Wayland publisher.</summary>
     internal bool? IsHostForeground { get; init; }
+
+    internal bool HasNativeHostFocusPublisher { get; init; }
+
+    internal ulong? ProcessStartTime { get; init; }
 
     /// <summary>Returns the latest validated bridge for existing overlay placement.</summary>
     public static GamescopeGameWindowBridge? TryReadCurrent()
@@ -120,7 +124,15 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
                 return null;
             }
 
-            return new GamescopeGameWindowBridge(processId, lines[1], new PixelRect(x, y, width, height));
+            bool? hostForeground = GamescopeGameWindowFocus.Read(Path.GetDirectoryName(path)!, processId, startTime);
+            return readProcessStartTime(processId) == startTime
+                ? new GamescopeGameWindowBridge(processId, lines[1], new PixelRect(x, y, width, height))
+                {
+                    IsHostForeground = hostForeground,
+                    HasNativeHostFocusPublisher = hostForeground is not null,
+                    ProcessStartTime = startTime,
+                }
+                : null;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -137,6 +149,8 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
     private IGameWindowTracker? nestedTracker;
     private string? nestedDisplay;
     private int nestedProcessId;
+    private ulong? nestedProcessStartTime;
+    private bool hasNativeHostFocusPublisher;
 
     public GamescopeGameWindowTracker(
         IGameWindowTracker hostTracker,
@@ -164,20 +178,28 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
             return hostSnapshot;
         }
 
-        if (nestedTracker is null || nestedDisplay != bridge.Display || nestedProcessId != bridge.ProcessId)
+        if (
+            nestedTracker is null
+            || nestedDisplay != bridge.Display
+            || nestedProcessId != bridge.ProcessId
+            || nestedProcessStartTime != bridge.ProcessStartTime
+        )
         {
             ClearNestedTracker();
             nestedTracker = createNestedTracker(bridge.Display);
             nestedDisplay = bridge.Display;
             nestedProcessId = bridge.ProcessId;
+            nestedProcessStartTime = bridge.ProcessStartTime;
         }
+
+        hasNativeHostFocusPublisher |= bridge.HasNativeHostFocusPublisher;
 
         GameWindowSnapshot nestedSnapshot = nestedTracker?.GetSnapshot() ?? GameWindowSnapshot.Unavailable;
         return nestedSnapshot.IsAvailable && nestedSnapshot.IsVisible
             ? nestedSnapshot with
             {
                 ClientBounds = bridge.HostBounds,
-                IsForeground = nestedSnapshot.IsForeground && bridge.IsHostForeground != false,
+                IsForeground = nestedSnapshot.IsForeground && (bridge.IsHostForeground ?? !hasNativeHostFocusPublisher),
             }
             : hostSnapshot;
     }
@@ -194,5 +216,7 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
         nestedTracker = null;
         nestedDisplay = null;
         nestedProcessId = 0;
+        nestedProcessStartTime = null;
+        hasNativeHostFocusPublisher = false;
     }
 }

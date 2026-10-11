@@ -125,10 +125,30 @@ while placing its ordinary, separately interactive overlay windows on the
 desktop display. If there is no valid marker, SrvSurvey keeps using its normal
 desktop game-window tracker.
 
-The marker supplies geometry, not desktop activation. It retains the existing
-nested-focus behavior; it cannot apply the automatic X11 outer-window focus
-check to a native Wayland surface. Prefer the SDL/X11 outer-window route above
-when automatic desktop focus tracking is required.
+The geometry marker remains compatible with older launchers. For desktop focus,
+SrvSurvey also reads `GamescopeGameWindowFocus.<Gamescope PID>` from the same
+runtime directory. This companion has two lines: the owning process start time
+and `1` for foreground or `0` for background. The native Wayland focus patch in
+[the Ubuntu guide](UBUNTU_26_GAMESCOPE.md#native-wayland-launch-template) publishes
+it from the outer compositor's keyboard enter/leave events. SrvSurvey requires
+both outer desktop focus and inner Elite focus, so Alt-Tab hides the overlays and
+returning to the game restores them.
+
+Existing launchers that advertise `GAMESCOPE_HOST_FOCUS_FILE` or
+`ELITE_HOST_FOCUS_FILE` in the live Gamescope process environment are also
+supported. These files contain one `0` or `1` byte; SrvSurvey discovers the path
+from that process rather than requiring its own launch environment to match.
+The stamped companion takes precedence. A stale or invalid signal, an unreadable
+declared file, or loss of an observed companion cannot claim foreground.
+Process identity is checked again after reading focus, and a new compositor
+session reconnects independently.
+
+Older bridges without a focus publisher retain their previous nested-focus
+behavior. Unpatched upstream native Wayland Gamescope does not expose this
+host-focus signal. Install the documented focus patch or use the SDL/X11 outer
+window route for accurate Alt-Tab tracking. The **Keep overlays visible when
+Elite loses focus** setting still overrides hiding; position editing and live
+overlay interaction also retain their existing visibility override.
 
 Keyboard shortcuts also follow this bridge. SrvSurvey listens for game keys on
 the nested display alongside its desktop keyboard listener, so shortcuts work

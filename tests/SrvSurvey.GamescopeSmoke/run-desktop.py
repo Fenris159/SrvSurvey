@@ -104,6 +104,16 @@ with tempfile.TemporaryDirectory(prefix='srvsurvey-desktop-runtime-') as runtime
             marker = pathlib.Path(runtime)/('GamescopeGameWindowBridge.'+scope_pid)
             marker.write_text(f'{start}\n{inner_display}\n100 80 1280 800\n')
             sample(probe, f'session{session}-manual-marker-no-outer')
+            focus = pathlib.Path(runtime)/('GamescopeGameWindowFocus.'+scope_pid)
+            for name, value in [('foreground', f'{start}\n1\n'),
+                                ('background', f'{start}\n0\n'),
+                                ('restored', f'{start}\n1\n'),
+                                ('stale', '0\n1\n'),
+                                ('malformed', 'invalid\n')]:
+                focus.write_text(value)
+                sample(probe, f'session{session}-native-focus-{name}')
+            focus.unlink()
+            sample(probe, f'session{session}-native-focus-publisher-lost')
             marker.unlink()
             scope_command(control, scope, 'show')
             sample(probe, f'session{session}-automatic-restored')
@@ -132,6 +142,13 @@ for index in range(2):
     assert by_phase[prefix+'unduplicate']['Available']
     assert by_phase[prefix+'manual-marker-no-outer']['Available']
     assert by_phase[prefix+'manual-marker-no-outer']['Foreground'], 'Existing manual marker compatibility must retain unknown-host-focus behavior'
+    for phase in ['foreground', 'restored']:
+        assert by_phase[prefix+'native-focus-'+phase]['Foreground']
+    for phase in ['background', 'stale', 'malformed']:
+        snapshot = by_phase[prefix+'native-focus-'+phase]
+        assert snapshot['Available'] and snapshot['Visible']
+        assert not snapshot['Foreground'], 'BUG: native host activation escaped its session-validated focus gate'
+    assert not by_phase[prefix+'native-focus-publisher-lost']['Foreground']
     assert by_phase[prefix+'automatic-restored']['Available']
     assert not by_phase['after-session'+str(index)]['Available']
 assert not by_phase['before-session']['Available']

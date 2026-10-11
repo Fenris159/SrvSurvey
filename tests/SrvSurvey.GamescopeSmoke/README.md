@@ -97,11 +97,48 @@ python3 tests/SrvSurvey.GamescopeSmoke/run-desktop.py \
 
 Assertions cover foreground/background switching, movement, resizing, unmap
 and WM-hidden state, duplicate outer-window ambiguity, game/compositor exit,
-and reconnection after restart. Existing manual marker behavior retains its
-unknown desktop-focus semantics. Startup also verifies the ordinary desktop
+and reconnection after restart. Native Wayland companion fixtures cover host
+foreground/background/restoration, stale process identity, malformed data, and
+publisher loss while nested Elite remains focused. Existing manual markers
+without a publisher retain their unknown desktop-focus semantics. Startup also verifies the ordinary desktop
 overlay path and capture-backend availability. The runner retains JSON
 snapshots, process ancestry, native properties, and compositor/error logs.
 
 The outer windows are synthetic geometry and focus fixtures. This evidence
 covers production tracking; real SDL/Wayland presentation, HUD pixel placement,
 letterboxing/custom scaling, and keyboard delivery still need desktop testing.
+
+## Native Wayland host focus smoke
+
+This probe privately launches GNOME Shell headless, a real native Wayland
+Gamescope, a synthetic Elite X11 surface inside Gamescope, and a native zenity
+competitor. It verifies the actual native keyboard-enter/leave publisher; with
+`--dll`, it also queries the production desktop tracker while SrvSurvey runs on
+an isolated outer Xvfb display. The old three-line geometry marker is a fixture:
+this proves focus propagation, not automatic native Wayland global geometry.
+
+Requires GNOME Shell with `--headless --automation-script`, zenity,
+dbus-run-session, Xvfb, cc, pkg-config, X11 development files, and a functioning
+Gamescope Vulkan backend. Build the smoke DLL separately. The probe performs no
+.NET build and changes no installed Gamescope, launcher, source, or live window.
+It uses private D-Bus, Wayland, XDG runtime/config/cache/data directories and an
+in-process headless virtual keyboard. Runtime files are removed after the run.
+Use a fresh artifact directory for every run.
+
+```console
+python3 tests/SrvSurvey.GamescopeSmoke/run-native-wayland-focus.py \
+  --inner /path/to/gamescope-with-native-focus-patch \
+  --expect-sidecar \
+  --dll tests/SrvSurvey.GamescopeSmoke/bin/Release/net10.0/SrvSurvey.GamescopeSmoke.dll \
+  --output /tmp/srvsurvey-native-focus-proof
+```
+
+For a compositor with the older `ELITE_HOST_FOCUS_FILE` byte publisher, omit
+`--expect-sidecar`; the private runner creates and declares its initial false
+file. No installed launcher changes are necessary.
+
+Expected phases: enter -> available/visible/foreground; competitor activation
+-> available/visible/background; return -> foreground; compositor exit ->
+unavailable. The `--expect-sidecar` run omits both focus-file environment variables, proving automatic publication. Sidecar checks also require initial false, validated
+PID/start identity on each phase, and deletion on normal process shutdown.
+Logs and `tracker-snapshots.json` are retained in the specified artifact path.

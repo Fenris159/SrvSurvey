@@ -155,6 +155,32 @@ public sealed class GamescopeGameWindowTrackerTests
     }
 
     [Fact]
+    public void ReusedProcessIdStartsIndependentNativeFocusTracking()
+    {
+        var first = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+        var second = new StubTracker(new GameWindowSnapshot(43, 11, new PixelRect(0, 0, 960, 600), true, true));
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = false,
+            HasNativeHostFocusPublisher = true,
+            ProcessStartTime = 123,
+        };
+        int connections = 0;
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => connections++ == 0 ? first : second
+        );
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { ProcessStartTime = 124 };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+        Assert.True(first.Disposed);
+        Assert.Equal(2, connections);
+    }
+
+    [Fact]
     public void FollowsDesktopMoveAndResizeWithoutReconnectingNestedTracker()
     {
         var nested = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
@@ -219,6 +245,43 @@ public sealed class GamescopeGameWindowTrackerTests
     }
 
     [Fact]
+    public void NativeWaylandFocusBridgeHidesOverlaysAfterAltTabAndRestoresThem()
+    {
+        string directory = CreateTemporaryDirectory();
+        try
+        {
+            WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
+            string focusPath = Path.Combine(directory, "GamescopeGameWindowFocus." + Environment.ProcessId);
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n1\n");
+            var nested = new StubTracker(new GameWindowSnapshot(42, 123, new PixelRect(0, 0, 3840, 2160), true, true));
+            using var tracker = new OverlayGameWindowTracker(
+                new GamescopeGameWindowTracker(
+                    new StubTracker(GameWindowSnapshot.Unavailable),
+                    () => GamescopeGameWindowBridge.TryRead(directory, _ => ProcessStartTime),
+                    _ => nested
+                ),
+                () => false
+            );
+            Assert.True(tracker.GetSnapshot().IsForeground);
+
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n0\n");
+            GameWindowSnapshot background = tracker.GetSnapshot();
+            Assert.True(background.IsAvailable);
+            Assert.True(background.IsVisible);
+            Assert.False(background.IsForeground);
+
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n1\n");
+            Assert.True(tracker.GetSnapshot().IsForeground);
+            File.Delete(focusPath);
+            Assert.False(tracker.GetSnapshot().IsForeground);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void ReadsLiveGamescopeMarkerAndDesktopBounds()
     {
         string directory = CreateTemporaryDirectory();
@@ -232,6 +295,23 @@ public sealed class GamescopeGameWindowTrackerTests
             Assert.Equal(Environment.ProcessId, bridge.ProcessId);
             Assert.Equal(":7", bridge.Display);
             Assert.Equal(new PixelRect(3840, 0, 5120, 2880), bridge.HostBounds);
+            Assert.Null(bridge.IsHostForeground);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void RejectsBridgeWhenProcessIdentityChangesDuringFocusRead()
+    {
+        string directory = CreateTemporaryDirectory();
+        try
+        {
+            WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
+            int reads = 0;
+            Assert.Null(GamescopeGameWindowBridge.TryRead(directory, _ => reads++ == 0 ? ProcessStartTime : 999));
         }
         finally
         {

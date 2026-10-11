@@ -599,7 +599,7 @@ scaling, or keyboard event delivery.
 Validate the actual desktop with equal and unequal game/output aspect ratios,
 fractional scaling, windowed/fullscreen moves across monitors, minimized state,
 Steam menus, Alt-Tab, hotkeys/controllers, and both plain Gamescope/Proton and
-mini-ed-launcher. Native Wayland marker activation remains unknown. The keyboard
+mini-ed-launcher. Native Wayland marker activation without a publisher remains unknown; the following section adds that publisher. The keyboard
 listener's separate nested-display evidence and portal corroboration require
 their own input tests; this tracker probe does not establish those routes.
 
@@ -608,3 +608,51 @@ platform-specific skips, all 19 localization tests, and 91.6% changed-production
 coverage (672 of 734 line and branch points). CSharpier, scoped Sonar checks,
 and localization freshness across all seven catalogs passed. The strict
 solution build completed with zero warnings/errors.
+
+## Native Wayland Gamescope host focus follow-up
+
+Researched 2026-10-10 against Gamescope 3.16.29, commit `8f212644c46460549035971ab914421180f61a7c`. This extends the desktop geometry bridge; Steam Deck hardware and the user's running desktop were not used for validation.
+
+### Trustworthy signal
+
+For a native Wayland outer host, the owning Gamescope process receives actual `wl_keyboard.enter` and `leave` events. These describe keyboard focus for the specified surface; they are not a public query that lets unrelated SrvSurvey inspect another client's current focus. [Wayland keyboard events](https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-event-enter).
+
+Pinned Gamescope's main `CWaylandBackend` already filters those callbacks with `IsGamescopeToplevel`, stores `m_bKeyboardEntered`, and updates its cursor. Add publication after those existing true/false assignments, preserving the filter. The backend's separate input thread has its own duplicate listeners; publication does not need to change that thread or reroute any keyboard events. [Main backend listeners](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/WaylandBackend.cpp#L2681-L2700), [input thread listeners](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/Backends/WaylandBackend.cpp#L3239-L3287).
+
+The inner X11 root's `GAMESCOPE_KEYBOARD_FOCUS_DISPLAY` describes selection inside Gamescope. Its game may remain selected while the outer desktop has activated a different native application. It cannot substitute for the native backend's host focus signal. [Inner focus backchannel](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L5442-L5470).
+
+### Publisher contract and compatibility
+
+The [native focus patch](../patches/gamescope-3.16.29-native-wayland-focus.patch) adds a self-contained backend helper and three calls: initial unfocused state at native backend initialization, then focused/unfocused after filtered enter/leave. Apply it after the repository's native host and runtime relative mouse patches. Publication is automatic only in this optional patched native backend; patch installation is the opt-in. Neither an extra mini-ed-launcher setting nor a changed geometry marker is required.
+
+The helper publishes `$XDG_RUNTIME_DIR/GamescopeGameWindowFocus.<PID>` with exactly two lines: the compositor process start ticks from `/proc/self/stat`, then `0` or `1`. It validates an absolute, same-user private runtime directory, writes mode-0600 temporary files, then atomically renames them. Startup is false; normal process shutdown publishes false and removes its own sidecar. Consumers join by verified PID and start identity, so a stale file from a crashed process cannot authorize a different lifetime. The runtime directory ownership and privacy requirements follow the [XDG specification](https://specifications.freedesktop.org/basedir/latest/); the process start field is defined in [Linux proc documentation](https://docs.kernel.org/filesystems/proc.html#process-specific-subdirectories).
+
+A detected publisher is a capability for that particular compositor lifetime. Missing, malformed, stale, or unreadable declared state should mean host unfocused, including when a previously observed sidecar disappears. A legacy three-line geometry marker with no publisher keeps its prior unknown-focus behavior. This distinguishes unavailable focus support from a supported publisher reporting false.
+
+The helper also updates a preexisting single-byte regular same-user file named in its own initial environment by `GAMESCOPE_HOST_FOCUS_FILE`, or legacy `ELITE_HOST_FOCUS_FILE`. SrvSurvey should resolve those paths only from the already verified live compositor's initial `/proc/<PID>/environ`, not a similarly named untrusted window or unrelated process.
+
+### Existing installed launcher
+
+The local custom publisher is already present in `/home/drew/.local/opt/elite-split-launcher/bin/gamescope-host-focus`. Its archived source patch directly hooks the same filtered main backend callbacks and writes one byte to the already-created `ELITE_HOST_FOCUS_FILE`. The controller creates that file as `0` in its private run directory, passes it when starting the compositor, and independently writes the existing three-line geometry marker. SrvSurvey can therefore consume this installed capability without modifying either installed binary or controller. [Archived original publisher patch](/home/drew/.local/state/elite-split-launcher/focus-20261003-195621/gamescope-focus.patch), [controller source](/home/drew/.local/opt/elite-split-launcher/controller.py:90).
+
+A symlink does not convert the old byte file into a PID/start-stamped two-line file. Direct environment-path compatibility is the smaller reliable adapter. The old publisher lacks generic initial publication, atomic file replacement, process identity in content, and its own cleanup; the controller supplies initial false and lifecycle ownership. It remains trustworthy only while attached to the validated live compositor and private declared path.
+
+### Validation and limits
+
+The candidate compiled and linked successfully by recompiling only a temporary WaylandBackend translation unit and reading the installed build's other objects. A clean pinned-source application check proved that the existing native-host patch, runtime relative mouse patch, and candidate focus patch compose to the exact compiled source. No installed source, object, or binary was changed.
+
+A private GNOME Shell 50.1 headless compositor exposed a virtual 1280x800 output and a virtual keyboard. It launched the existing installed custom Gamescope with `--backend wayland`, a synthetic Elite X11 game inside that compositor, and a separate real native Wayland zenity competitor. Actual native backend callbacks reported `enter=1`, competitor activation `leave=0`, and return `1`. The virtual keyboard follows [GNOME's own keyboard implementation](https://github.com/GNOME/gnome-shell/blob/50.1/js/ui/keyboard.js#L1968-L1974). Logs: `/tmp/srvsurvey-native-wayland-focus-research/gnome-installed4/shell.log` and `inner.err`. The candidate independently passed the same real callbacks, initial stamped false, PID/start-stamped `1/0/1`, and normal-shutdown sidecar removal in `gnome-candidate-production`.
+
+The harness uses a private D-Bus session, Wayland socket, XDG runtime/config/cache/data directories, and in-process headless virtual input. It never activates windows on the user's live desktop. Merely running another headless Gamescope as the host did not reliably provide a native focus seat; that failed experiment is retained separately and is not positive evidence.
+
+Both the existing installed byte publisher and new candidate propagated these actual callbacks through the already built production `--desktop-tracking` smoke DLL. While the native competitor owned focus, the inner Elite snapshot remained available and visible but became foreground false; return restored foreground, and compositor stop made the snapshot unavailable. Artifacts: `gnome-installed-production/tracker-snapshots.json` and `gnome-candidate-production/tracker-snapshots.json` under the same temporary research directory. The outer geometry was the existing three-line marker fixture `100 80 1280 800`, not a claimed native geometry query.
+
+The minimal runner also passed candidate sidecar-only discovery with neither `ELITE_HOST_FOCUS_FILE` nor `GAMESCOPE_HOST_FOCUS_FILE` declared. It checked mode 0600 and same-user ownership while sampling the production tracker; evidence is in `/tmp/srvsurvey-native-wayland-focus-research/final-candidate-auto`. This proves the candidate does not depend on a custom launcher focus variable.
+
+Reproduction uses the [committed native focus runner](../../tests/SrvSurvey.GamescopeSmoke/run-native-wayland-focus.py), its sibling native helper and GNOME automation script, and [smoke instructions](../../tests/SrvSurvey.GamescopeSmoke/README.md#native-wayland-host-focus-smoke). Pass an already-built smoke `--dll`; the runner performs no .NET build.
+
+This verifies native keyboard host activation propagation, not automatic global native window geometry, Proton keyboard routing, controller routing, focus during every shell menu, or hardware behavior on Steam Deck. Geometry still comes from the existing marker, with the previously documented aspect-ratio and custom scaling limits. Filesystem failures can prevent publishing; readers must fail closed after observing or explicitly declaring the capability. SIGKILL cannot run producer cleanup, so process identity validation remains necessary.
+
+The original Alt-Tab regression failed before the reader change (`Expected: False, Actual: True`) and passes afterward. A production hosted overlay test closes and restores the real Avalonia window on that signal, and preserves the keep-visible override. The extended committed desktop smoke covers both old marker compatibility and stale, malformed, or lost focus publishers across two compositor lifetimes.
+
+The complete quality gate passes with **3,347 desktop tests, three platform skips, all 19 localization tests, and 94% changed-production coverage (773/822 line and branch points)**. CSharpier, scoped Sonar checks, seven-language catalog freshness, and the strict solution build pass with zero warnings/errors.
