@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.61**. Its development tag
-is `xp2-v2.1.3.0-rc.61`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.61`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.62**. Its development tag
+is `xp2-v2.1.3.0-rc.62`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.62`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and
@@ -79,10 +79,10 @@ XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
 
-## RC61 release sequence
+## RC62 release sequence
 
-RC51 remains the permanent legacy bridge and RC60 is the preceding published preview. Do not
-dispatch RC61 until its pull request has merged into
+RC51 remains the permanent legacy bridge and RC61 is the preceding published preview. Do not
+dispatch RC62 until its pull request has merged into
 `SrvSurvey-Avalonia` and the external publishing step has been explicitly
 approved. Then update the local branch and verify the checked-in release
 contract before starting the workflow:
@@ -90,7 +90,7 @@ contract before starting the workflow:
 ```console
 git switch SrvSurvey-Avalonia
 git pull --ff-only origin SrvSurvey-Avalonia
-pwsh ./scripts/Resolve-CrossPlatformReleaseContract.ps1 -Version 2.1.3.0-rc.61
+pwsh ./scripts/Resolve-CrossPlatformReleaseContract.ps1 -Version 2.1.3.0-rc.62
 gh workflow run build-srvsurvey-xp.yml \
   --repo Fenris159/SrvSurvey \
   --ref SrvSurvey-Avalonia \
@@ -106,22 +106,22 @@ run_id=$(gh run list \
 gh run watch "$run_id" --repo Fenris159/SrvSurvey --exit-status
 ```
 
-The resolver output must report `xp2-v2.1.3.0-rc.61` and schema 2. After the
+The resolver output must report `xp2-v2.1.3.0-rc.62` and schema 2. After the
 workflow succeeds, verify rather than replace its published assets:
 
 ```console
-gh release view xp2-v2.1.3.0-rc.61 \
+gh release view xp2-v2.1.3.0-rc.62 \
   --repo Fenris159/SrvSurvey \
   --json tagName,isDraft,isPrerelease,targetCommitish,assets
-gh release download xp2-v2.1.3.0-rc.61 \
+gh release download xp2-v2.1.3.0-rc.62 \
   --repo Fenris159/SrvSurvey \
   --pattern release-index.json \
-  --dir artifacts/verify-rc61
-pwsh -Command '$index = Get-Content artifacts/verify-rc61/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC61 release index contract failed." }'
+  --dir artifacts/verify-rc62
+pwsh -Command '$index = Get-Content artifacts/verify-rc62/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC62 release index contract failed." }'
 ```
 
 Confirm that legacy clients still select `xp-v2.1.3.0-rc.51` and an RC51 client
-selects `xp2-v2.1.3.0-rc.61`. Continue sequential RC version increments in the
+selects `xp2-v2.1.3.0-rc.62`. Continue sequential RC version increments in the
 `xp2-v` namespace; do not create any additional `xp-v` tag.
 
 ## User-facing release notes

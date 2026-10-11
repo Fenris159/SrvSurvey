@@ -266,6 +266,24 @@
       </StackPanel>
     </Border>
 
+    <Border x:Name="FiregroupsVisibilityCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Cockpit view visibility" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Choose where the Firegroups overlay appears: the left-hand panel, main cockpit, or right-hand panel. Changes apply immediately." />
+        <WrapPanel>
+          <CheckBox x:Name="FiregroupsLeftViewCheckBox" Margin="0,0,24,0" Content="Left"
+                    IsChecked="{Binding Firegroups.ShowOverlayInLeftView, Mode=TwoWay}" />
+          <CheckBox x:Name="FiregroupsMainViewCheckBox" Margin="0,0,24,0" Content="Main"
+                    IsChecked="{Binding Firegroups.ShowOverlayInMainView, Mode=TwoWay}" />
+          <CheckBox x:Name="FiregroupsRightViewCheckBox" Content="Right"
+                    IsChecked="{Binding Firegroups.ShowOverlayInRightView, Mode=TwoWay}" />
+        </WrapPanel>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap"
+                   Text="{Binding Firegroups.OverlaySettingsStatus}" />
+      </StackPanel>
+    </Border>
+
     <Border x:Name="MiningActivityCard" Classes="card raised">
       <StackPanel Spacing="12">
         <TextBlock Classes="card-title" Text="Ship mining overlays" />

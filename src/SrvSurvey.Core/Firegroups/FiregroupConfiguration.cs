@@ -54,7 +54,12 @@ public static class FiregroupLoadout
         new("$builtin:d-scanner", "builtin_d_scanner", "D-Scanner"),
         new("$builtin:sc-suite", "builtin_sc_suite", "SC-Suite"),
         new("$builtin:data-link-scanner", "builtin_data_link_scanner", "Data Link Scanner"),
+        new("$builtin:composition-scanner", "builtin_composition_scanner", "Composition Scanner"),
     ];
+
+    /// <summary>Adds built-in ship actions to fresh or cached modules without duplicating existing slots.</summary>
+    public static IReadOnlyList<FiregroupModule> IncludeBuiltInActions(IReadOnlyList<FiregroupModule> modules) =>
+        modules.Concat(BuiltInScanners).DistinctBy(module => module.Slot).ToArray();
 
     public static bool IsExcluded(FiregroupModule module) =>
         module.Symbol.Contains("shieldbooster", StringComparison.OrdinalIgnoreCase)
@@ -64,6 +69,7 @@ public static class FiregroupLoadout
         || module.Symbol.Contains("modulereinforcement", StringComparison.OrdinalIgnoreCase)
         || module.Symbol.Contains("cargorack", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>Reads a ship's equipped assignable modules and includes its built-in firegroup actions.</summary>
     public static FiregroupShip? Parse(JsonElement root)
     {
         string type = Text(root, "Ship");
@@ -102,9 +108,7 @@ public static class FiregroupLoadout
 
             equipped.Add(new FiregroupModule(slot, symbol, label));
         }
-        equipped = equipped.DistinctBy(module => module.Slot).ToList();
-        equipped.AddRange(BuiltInScanners);
-        return new(key, type.ToLowerInvariant(), id, name, equipped);
+        return new(key, type.ToLowerInvariant(), id, name, IncludeBuiltInActions(equipped));
     }
 
     private static string Text(JsonElement element, string name) =>

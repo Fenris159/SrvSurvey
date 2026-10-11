@@ -36,9 +36,11 @@ public sealed partial class OverlaySettingsView : UserControl
         PanelVisibilityCard.IsVisible = panels.Count > 0;
     }
 
+    /// <summary>Shows controls for the selected overlay category and hides unrelated settings cards.</summary>
     private void ApplyCategory(OverlaySettingsCategory category)
     {
         bool isGlobal = category == OverlaySettingsCategory.Global;
+        FiregroupsVisibilityCard.IsVisible = category == OverlaySettingsCategory.Firegroups;
         MiningActivityCard.IsVisible = category == OverlaySettingsCategory.Mining;
         MineMapOverlayCard.IsVisible = category == OverlaySettingsCategory.MineMap;
         MiningShortcutsCard.IsVisible = category == OverlaySettingsCategory.MineMap;

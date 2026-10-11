@@ -12,6 +12,9 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 {
     private readonly FiregroupStore store;
     private readonly MiningStore legacyStore;
+    private readonly FiregroupsOverlaySettingsStore overlaySettingsStore;
+    private FiregroupsOverlayPreferences overlayPreferences;
+    private string overlaySettingsStatus = "";
     private FiregroupDocument document = new();
     private string? commander;
     private bool storageAvailable;
@@ -27,10 +30,13 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private readonly SortedDictionary<int, FiregroupAssignment> groups = [];
     private readonly Dictionary<string, EditorDraft> drafts = [];
 
-    public FiregroupsWorkspaceViewModel(string directory)
+    /// <summary>Loads saved ship configurations and the profile's cockpit-view visibility preferences.</summary>
+    public FiregroupsWorkspaceViewModel(string directory, FiregroupsOverlaySettingsStore? overlaySettingsStore = null)
     {
         store = new(directory);
         legacyStore = new(directory);
+        this.overlaySettingsStore = overlaySettingsStore ?? new(Path.Combine(directory, "ui-settings.json"));
+        overlayPreferences = this.overlaySettingsStore.Load();
         AddPrimaryCommand = new WorkspaceCommand(() => AddRow(Primary));
         AddSecondaryCommand = new WorkspaceCommand(() => AddRow(Secondary));
         PreviousGroupCommand = new WorkspaceCommand(() => ChangeGroup((groupNumber + 7) % 8));
@@ -91,10 +97,50 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             );
     public int ActiveGroupNumber => latestStatus?.FireGroup ?? 0;
     public FiregroupAssignment? ActiveGroup => ActiveProfile?.Groups.FirstOrDefault(g => g.Number == ActiveGroupNumber);
+
+    /// <summary>Allows the live Firegroups overlay while Elite's left-hand panel is focused.</summary>
+    public bool ShowOverlayInLeftView
+    {
+        get => overlayPreferences.ShowInLeftView;
+        set =>
+            UpdateOverlayPreferences(overlayPreferences with { ShowInLeftView = value }, nameof(ShowOverlayInLeftView));
+    }
+
+    /// <summary>Allows the live Firegroups overlay in the main cockpit with no interface panel focused.</summary>
+    public bool ShowOverlayInMainView
+    {
+        get => overlayPreferences.ShowInMainView;
+        set =>
+            UpdateOverlayPreferences(overlayPreferences with { ShowInMainView = value }, nameof(ShowOverlayInMainView));
+    }
+
+    /// <summary>Allows the live Firegroups overlay while Elite's right-hand panel is focused.</summary>
+    public bool ShowOverlayInRightView
+    {
+        get => overlayPreferences.ShowInRightView;
+        set =>
+            UpdateOverlayPreferences(
+                overlayPreferences with
+                {
+                    ShowInRightView = value,
+                },
+                nameof(ShowOverlayInRightView)
+            );
+    }
+
+    /// <summary>Explains when a visibility change applies for this session but could not be persisted.</summary>
+    public string OverlaySettingsStatus
+    {
+        get => overlaySettingsStatus;
+        private set => Set(ref overlaySettingsStatus, value);
+    }
+
+    /// <summary>Shows a saved configuration only aboard its ship and in an enabled cockpit view.</summary>
     public bool ShouldShow =>
         storageAvailable
         && liveShip is not null
         && latestStatus is { OnFoot: false }
+        && overlayPreferences.Allows(latestStatus.GuiFocus)
         && boarded == liveShip.Type
         && ActiveProfile is not null;
     public ICommand AddPrimaryCommand { get; }
@@ -106,6 +152,29 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     public ICommand SaveCommand { get; }
     public ICommand RemoveCommand { get; }
     public ICommand NewCommand { get; }
+
+    /// <summary>Applies view choices immediately, saves them and reports any storage failure without losing the choice.</summary>
+    private void UpdateOverlayPreferences(FiregroupsOverlayPreferences preferences, string propertyName)
+    {
+        if (preferences == overlayPreferences)
+        {
+            return;
+        }
+
+        overlayPreferences = preferences;
+        Changed(propertyName);
+        Changed(nameof(ShouldShow));
+        try
+        {
+            overlaySettingsStore.Save(preferences);
+            OverlaySettingsStatus = "";
+        }
+        catch (Exception ex) when (IsStorageError(ex))
+        {
+            OverlaySettingsStatus =
+                "Firegroups visibility changed for this session but could not be saved: " + ex.Message;
+        }
+    }
 
     public void Apply(JournalMonitorUpdate update, JournalSessionState journal, EliteStatus? currentStatus)
     {
@@ -756,9 +825,13 @@ public sealed class FiregroupSelectionRow : WorkspaceObservable
     private IReadOnlyList<FiregroupModule> equipped = [];
     public ICommand? RemoveCommand { get; set; }
 
+    /// <summary>Refreshes equipped and built-in options while retaining saved selections that need replacement.</summary>
     public void UpdateOptions(IReadOnlyList<FiregroupModule> modules)
     {
-        equipped = modules.Where(module => !FiregroupLoadout.IsExcluded(module)).ToArray();
+        equipped = FiregroupLoadout
+            .IncludeBuiltInActions(modules)
+            .Where(module => !FiregroupLoadout.IsExcluded(module))
+            .ToArray();
         FiregroupModule? selection = selected;
         Options =
             selection is not null && !FiregroupLoadout.IsExcluded(selection) && !equipped.Contains(selection)

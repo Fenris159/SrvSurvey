@@ -37,6 +37,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
+    private const string OverviewNavigationKey = "overview";
+
     private static readonly TimeSpan DefaultSystemBodyDataRetryDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaximumSystemBodyDataRetryDelay = TimeSpan.FromMinutes(4);
     private const int MaximumSystemBodyDataRetryAttempts = 3;
@@ -234,6 +236,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
 
+    /// <summary>Constructs the main workspace with the default platform and persistence services.</summary>
     internal MainWindowViewModel(
         string? configuredJournalDirectory,
         MainWindowViewModelConstructionContext construction
@@ -548,7 +551,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(externalNetworkClient);
             Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory, ShowSurfaceMiningMap);
-            Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
+            Firegroups = new FiregroupsWorkspaceViewModel(
+                AppDataPaths.DataDirectory,
+                new FiregroupsOverlaySettingsStore(AppDataPaths.UiSettingsPath)
+            );
             MiningWorkspace = new MiningWorkspaceViewModel(
                 AppDataPaths.DataDirectory,
                 sharedSystemResolver,
@@ -886,7 +892,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
             NavigationItems =
             [
-                new("overview", "Overview", "Commander and current journal state"),
+                new(OverviewNavigationKey, "Overview", "Commander and current journal state"),
                 new("fleet-carrier", "Fleet Carrier", "Carrier operations and cargo"),
                 new("firegroups", "Firegroups", "Configure your firegroup reference", true),
                 new(ExplorationNavigationKey, "Exploration", "Trip totals and body scans", true),
@@ -908,7 +914,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
             OverviewNavigationItems = NavigationItems
-                .Where(item => item.Key is "overview" or "fleet-carrier" or "firegroups")
+                .Where(item => item.Key is OverviewNavigationKey or "fleet-carrier" or "firegroups")
                 .ToArray();
             SurveyNavigationItems = NavigationItems
                 .Where(item => item.Key is ExplorationNavigationKey or ExobiologyNavigationKey or BoxelNavigationKey)
@@ -928,6 +934,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 .ToArray();
             Guides = new GuidesViewModel(GuideCatalog.Create());
             SettingsWorkspace = new SettingsWorkspaceViewModel();
+            ProfileSync = new ProfileSyncViewModel(
+                foundation.ProfileSyncService
+                    ?? new SrvSurvey.Desktop.ProfileSync.ProfileSyncService(
+                        new SrvSurvey.Desktop.ProfileSync.ProfileSyncStore(AppDataPaths)
+                    )
+            );
+            rollback.Add(ProfileSync.Dispose);
+            ProfileSync.BeforeCapture = SaveWorkspaceContinuity;
+            RestoreWorkspaceContinuity();
 
             RavenThemeDefinition currentTheme =
                 themeService?.Current ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
@@ -1006,6 +1021,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public DesktopBehaviorViewModel DesktopBehavior { get; }
 
     public SettingsWorkspaceViewModel SettingsWorkspace { get; }
+
+    public ProfileSyncViewModel ProfileSync { get; }
 
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
 
@@ -1312,6 +1329,38 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public ICommand ShowProfileCommand { get; }
 
+    /// <summary>Restores portable workspace selections after all activity models are available.</summary>
+    private void RestoreWorkspaceContinuity()
+    {
+        WorkspaceContinuityPreferences preferences = new WorkspaceContinuitySettingsStore(
+            AppDataPaths.UiSettingsPath
+        ).Load();
+        MiningWorkspace.SelectedTab = preferences.MiningTab;
+        MineMap.SelectedTab = preferences.SurfaceMiningTab;
+        Guardian.SelectedWorkspaceTabIndex = preferences.GuardianTab;
+        ICommand carrierTab = preferences.FleetCarrierTab switch
+        {
+            1 => FleetCarrierWorkspace.SelectSquadronTabCommand,
+            2 => FleetCarrierWorkspace.SelectLinkedTabCommand,
+            _ => FleetCarrierWorkspace.SelectPersonalTabCommand,
+        };
+        carrierTab.Execute(null);
+        SelectedNavigation =
+            NavigationItems.FirstOrDefault(item => item.Key == preferences.Navigation) ?? NavigationItems[0];
+    }
+
+    /// <summary>Saves current workspace choices before exporting or shutting down.</summary>
+    private void SaveWorkspaceContinuity() =>
+        new WorkspaceContinuitySettingsStore(AppDataPaths.UiSettingsPath).Save(
+            new(
+                SelectedNavigation?.Key ?? OverviewNavigationKey,
+                MiningWorkspace.SelectedTab,
+                MineMap.SelectedTab,
+                Guardian.SelectedWorkspaceTabIndex,
+                (int)FleetCarrierWorkspace.SelectedTab
+            )
+        );
+
     public NavigationItemViewModel? SelectedNavigation
     {
         get => selectedNavigation;
@@ -1346,7 +1395,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public bool IsProfileSelected => isProfileSelected;
 
-    public bool IsOverviewSelected => SelectedNavigation?.Key == "overview" && !IsProfileSelected;
+    public bool IsOverviewSelected => SelectedNavigation?.Key == OverviewNavigationKey && !IsProfileSelected;
 
     public bool IsExplorationSelected => SelectedNavigation?.Key == ExplorationNavigationKey && !IsProfileSelected;
 
@@ -4399,6 +4448,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Drains journal producers, saves workspace continuity, and backs up the profile before releasing services.</summary>
     public async ValueTask DisposeAsync()
     {
         Task drain;
@@ -4446,6 +4496,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             }
         }
 
+        TryDispose(SaveWorkspaceContinuity);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
@@ -4501,6 +4552,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         await TryDisposeAsync(questRuntimeCoordinator.DisposeAsync);
+        if (!IsDiagnosticReplay)
+        {
+            await TryDisposeAsync(() => new ValueTask(ProfileSync.ShutdownAsync()));
+        }
+
+        TryDispose(ProfileSync.Dispose);
         ThrowDisposalFailures(failures);
     }
 

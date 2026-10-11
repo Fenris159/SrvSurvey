@@ -191,6 +191,7 @@ internal sealed partial class DesktopRuntime
             new MainWindowFoundationInputs
             {
                 ThemeService = themeService,
+                ProfileSyncService = startup.ProfileSyncService,
                 AppDataPaths = appDataPaths,
                 InputSettings = inputSettings,
                 ApplicationLogService = applicationLog,
@@ -256,6 +257,7 @@ internal sealed partial class DesktopRuntime
             ConfigureReleaseInstaller(viewModel, desktop, appDataPaths, applicationLog, startup.Arguments);
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
+            viewModel.ProfileSync.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested += RestartAfterCommanderPreferenceChangeAsync;
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(directory),
@@ -867,6 +869,7 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportPreparing -= StopJournalMonitorForProfileImportAsync;
             viewModel.ProfileImportCompleted -= RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
+            viewModel.ProfileSync.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;

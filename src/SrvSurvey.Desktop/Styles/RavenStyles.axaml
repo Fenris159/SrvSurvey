@@ -500,30 +500,25 @@
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
 
-  <Style Selector="ListBox.guide-categories">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
+  <Style Selector="Expander.guide-category">
+    <Setter Property="Margin" Value="0,2" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
-  <Style Selector="ListBox.guide-categories ListBoxItem">
+  <Style Selector="Button.guide-topic">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
-    <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Padding" Value="10,9" />
     <Setter Property="Margin" Value="0,1" />
+    <Setter Property="BorderThickness" Value="0" />
   </Style>
-  <Style Selector="ListBox.guide-categories ListBoxItem:pointerover">
+  <Style Selector="Button.guide-topic.selected">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
   </Style>
-  <Style Selector="ListBox.guide-categories ListBoxItem:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-  </Style>
-  <Style Selector="ListBox.guide-categories ListBoxItem:selected">
-    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
-  </Style>
-  <Style Selector="ListBox.guide-categories ListBoxItem:selected /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  <Style Selector="Button.guide-result">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
   </Style>
 
   <Style Selector="ListBox.system-pages">
@@ -675,20 +670,6 @@
   </Style>
   <Style Selector="Expander.section-pill /template/ ToggleButton /template/ Border#ToggleButtonBackground">
     <Setter Property="CornerRadius" Value="999" />
-  </Style>
-  <Style Selector="Border.guide-step">
-    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
-    <Setter Property="BorderThickness" Value="3,0,0,0" />
-    <Setter Property="CornerRadius" Value="8" />
-    <Setter Property="Padding" Value="12,9" />
-    <Setter Property="Margin" Value="0,3" />
-  </Style>
-  <Style Selector="Border.guide-detail">
-    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1,0,0,0" />
-    <Setter Property="Padding" Value="12,5" />
-    <Setter Property="Margin" Value="0,2" />
   </Style>
   <Style Selector="Border.rank-card">
     <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />

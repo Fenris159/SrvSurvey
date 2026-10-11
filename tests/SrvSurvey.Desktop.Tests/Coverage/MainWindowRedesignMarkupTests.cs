@@ -344,6 +344,7 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.DoesNotContain("$parent[ListBoxItem]", foreground.Attribute("Value")?.Value, StringComparison.Ordinal);
     }
 
+    /// <summary>Verifies that selected muted list text uses the theme specific contrast resource.</summary>
     [Fact]
     public void SelectedMutedListTextUsesTheThemeSpecificContrastResource()
     {
@@ -365,11 +366,7 @@ public sealed class MainWindowRedesignMarkupTests
             "Foreground",
             "{DynamicResource RavenTextBrush}"
         );
-        AssertStyleSetter(
-            styleMap["ListBox.guide-categories ListBoxItem:selected"],
-            "Foreground",
-            "{DynamicResource RavenTextBrush}"
-        );
+        AssertStyleSetter(styleMap["Button.guide-topic.selected"], "Foreground", "{DynamicResource RavenTextBrush}");
     }
 
     [Fact]

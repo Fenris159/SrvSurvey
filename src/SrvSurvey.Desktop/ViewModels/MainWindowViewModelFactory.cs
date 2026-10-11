@@ -174,6 +174,8 @@ internal sealed class MainWindowViewModelConstructionContext
 
 internal sealed class MainWindowFoundationInputs
 {
+    public SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSyncService { get; init; }
+
     public RavenThemeService? ThemeService { get; init; }
 
     public AppDataPaths? AppDataPaths { get; init; }

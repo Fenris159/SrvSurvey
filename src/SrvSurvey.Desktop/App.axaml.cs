@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
@@ -46,8 +47,10 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>Checks instance ownership, starts optional profile sync, and constructs the desktop on the UI thread.</summary>
     private async Task StartDesktopAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? profileSync = null;
         try
         {
             ApplicationStartupInstanceDecision startupDecision = await EvaluateStartupAsync(desktop)
@@ -58,15 +61,36 @@ public sealed partial class App : Application
                 return;
             }
 
+            if (Program.StartupContext?.DiagnosticReplay is null)
+            {
+                profileSync = await StartProfileSyncAsync(
+                        () =>
+                            new ProfileSyncService(
+                                new ProfileSyncStore(
+                                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                                ),
+                                log: message => Program.ApplicationLog?.Append(message)
+                            ),
+                        message => Program.ApplicationLog?.Append(message)
+                    )
+                    .ConfigureAwait(false);
+            }
+
             // Instance scanning resumes off the UI thread; Avalonia window construction must not.
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                string language = SrvSurvey.Desktop.Configuration.LocalizationSettingsStore.ResolveCurrent(
+                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                );
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.Initialize(language);
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.ApplyCulture(language);
                 desktopRuntime = DesktopRuntime.Start(
                     this,
                     desktop,
                     new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
                     {
                         AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
+                        ProfileSyncService = profileSync,
                         DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
                         BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
                     }
@@ -86,6 +110,34 @@ public sealed partial class App : Application
                 "SrvSurvey could not verify whether another instance is running: " + exception.Message
             );
             await ShutdownOnUiThreadAsync(desktop, exitCode: 1);
+        }
+        finally
+        {
+            if (desktopRuntime is null)
+            {
+                profileSync?.Dispose();
+            }
+        }
+    }
+
+    /// <summary>Starts optional sync, releasing failed services so the desktop can construct its fallback.</summary>
+    internal static async Task<ProfileSyncService?> StartProfileSyncAsync(
+        Func<ProfileSyncService> createService,
+        Action<string> log
+    )
+    {
+        ProfileSyncService? service = null;
+        try
+        {
+            service = createService();
+            await service.StartupAsync().ConfigureAwait(false);
+            return service;
+        }
+        catch (Exception exception)
+        {
+            log("Startup profile sync skipped: " + exception);
+            service?.Dispose();
+            return null;
         }
     }
 

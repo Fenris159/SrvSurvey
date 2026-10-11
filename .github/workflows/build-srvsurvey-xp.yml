@@ -193,6 +193,8 @@ jobs:
         env:
           INARA_APPLICATION_API_KEY: ${{ secrets.INARA_APPLICATION_API_KEY }}
           VOXSTELLAR_SHARED_KEY: ${{ secrets.VOXSTELLAR_SHARED_KEY }}
+          GoogleDriveClientId: ${{ secrets.GOOGLE_DRIVE_CLIENT_ID }}
+          GoogleDriveClientSecret: ${{ secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
         run: |
           dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
             --configuration Release `
