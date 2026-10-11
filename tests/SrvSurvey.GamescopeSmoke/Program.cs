@@ -19,7 +19,12 @@ internal static class Program
         GamescopeOverlaySession.InitializeCurrent(Console.WriteLine);
         if (args.Contains("--desktop-tracking", StringComparer.Ordinal))
         {
-            RunDesktopTracking();
+            RunTracking(desktop: true);
+            return;
+        }
+        if (args.Contains("--gamescope-tracking", StringComparer.Ordinal))
+        {
+            RunTracking(desktop: false);
             return;
         }
         AppBuilder
@@ -30,23 +35,25 @@ internal static class Program
             .StartWithClassicDesktopLifetime(args);
     }
 
-    /// <summary>Samples the actual desktop tracker without starting a Gamescope overlay session.</summary>
-    private static void RunDesktopTracking()
+    /// <summary>Samples the production tracker and verifies the selected overlay and capture path.</summary>
+    private static void RunTracking(bool desktop)
     {
         using IOverlayPlatformService platform = OverlayPlatformService.CreateCurrent();
         using IGameScreenCapture capture = GameScreenCapture.CreateCurrent();
         if (
-            GamescopeOverlaySession.Current is not null
-            || platform.Capabilities.UsesGamescopeExternalOverlay
-            || !capture.IsAvailable
+            (GamescopeOverlaySession.Current is null) != desktop
+            || platform.Capabilities.UsesGamescopeExternalOverlay == desktop
+            || capture.IsAvailable != desktop
         )
         {
             throw new InvalidOperationException(
-                "The desktop probe requires the ordinary X11 overlay and capture path."
+                "The tracker probe requires the selected desktop or Gamescope overlay and capture path."
             );
         }
         using IGameWindowTracker tracker = GameWindowTracker.CreateCurrent();
-        Console.WriteLine("DESKTOP_READY external=false capture=true");
+        Console.WriteLine(
+            desktop ? "DESKTOP_READY external=false capture=true" : "GAMESCOPE_READY external=true capture=false"
+        );
         while (Console.ReadLine() is { } command)
         {
             if (command != "snapshot")
@@ -80,6 +87,7 @@ internal sealed class SmokeApplication : Application
     private IGameWindowTracker? tracker;
     private CombinedOverlayPresentationController? controller;
     private DispatcherTimer? timer;
+    private IDisposable? cursorSession;
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -130,6 +138,15 @@ internal sealed class SmokeApplication : Application
                 {
                     bool active = ticks == 4;
                     OverlayInteractionResult result = controller.SetInteractive(source, active);
+                    if (active && result.IsPrepared)
+                    {
+                        cursorSession = controller.BeginVisibleCursorSession(source);
+                    }
+                    else if (!active)
+                    {
+                        cursorSession?.Dispose();
+                        cursorSession = null;
+                    }
                     Console.WriteLine(
                         $"LIVE {(active ? "on" : "off")} prepared={result.IsPrepared} interactive={result.IsInteractive}: {result.Status}"
                     );
@@ -158,6 +175,7 @@ internal sealed class SmokeApplication : Application
         desktop.Exit += (_, _) =>
         {
             timer.Stop();
+            cursorSession?.Dispose();
             controller.Dispose();
             tracker.Dispose();
             platform.Dispose();

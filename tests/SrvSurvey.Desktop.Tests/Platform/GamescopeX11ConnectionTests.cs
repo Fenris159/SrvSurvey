@@ -159,6 +159,13 @@ public sealed partial class GamescopeX11ConnectionTests
             Assert.Equal(2u, focus.ScalingMode);
             Assert.Equal(":7", focus.KeyboardDisplay);
             Assert.Equal(new PixelRect(0, 0, 1280, 800), focus.OutputBounds);
+            // An unchanged command value can override a newer legacy command.
+            SetNumbers(display, root, GamescopeScalingState.LegacyAtom, [2]);
+            Assert.Equal(1u, connection.ReadFocus().ScalingMode);
+            SetNumbers(display, root, GamescopeScalingState.ScalerAtom, [2]);
+            Assert.Equal(2u, connection.ReadFocus().ScalingMode);
+            SetNumbers(display, root, GamescopeScalingState.ScalerAtom, [9]);
+            Assert.Equal(2u, connection.ReadFocus().ScalingMode);
             using IOverlayPlatformService? platform = X11OverlayPlatformService.TryCreate(
                 OverlayHostKind.LinuxXWayland,
                 new(name, new(0, null))

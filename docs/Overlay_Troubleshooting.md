@@ -33,6 +33,13 @@ also supported by this discovery; return to Elite after configuring SrvSurvey.
 slot, which the performance HUD also uses. Simultaneous display is not supported.
 The SrvSurvey canvas covers the compositor output, while panel anchors follow
 Elite's projected viewport, including letterboxing and Gamescope scaling.
+Startup scaling comes from the verified compositor's command line. Subsequent
+new and legacy scaling requests are observed on its primary and active game
+displays. If conflicting requests predate SrvSurvey, their ordering is unknown;
+overlays wait for a fresh scaling selection instead of using uncertain bounds.
+Select a scaling mode again in Steam if the log reports
+`Gamescope scaling state is unknown`. Custom maximum and per-window scaling
+remain unsupported by this projection.
 
 The HUD starts passive. Use the existing live-interaction shortcut to click its
 controls or drag panels while playing, then press it again to save positions and
@@ -42,6 +49,8 @@ transparent routing window selects pointer-only focus without replacing the
 game picture. Steam overlay and Quick Access Menu input requests temporarily
 release the routing; live mode resumes after those requests clear. Close Steam
 menus before first enabling live mode.
+The visible-cursor session leaves keyboard activation to Gamescope, including
+when a Steam menu opens or the session ends.
 
 The position editor remains available for positions, opacity, and scale.
 Desktop Mode is the recommended configuration environment until Deck controller

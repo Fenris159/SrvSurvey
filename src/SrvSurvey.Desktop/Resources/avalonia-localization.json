@@ -10989,6 +10989,10 @@
       "translation": "Die Interaktion mit dem Gamescope-Zeiger konnte nicht gestartet werden. Schließen Sie die Steam-Menüs und versuchen Sie es erneut."
     },
     {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "Der Gamescope-Skalierungsstatus ist unbekannt. Wählen Sie in Steam erneut einen Skalierungsmodus aus, um genau platzierte Overlays wiederherzustellen."
+    },
+    {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
       "translation": "Gamescope trennt die Spielanzeige von der Overlay-Leinwand. Die bildschirmbasierte X11-Erkennung ist in dieser Sitzung nicht verfügbar."
     },
@@ -31461,6 +31465,10 @@
       "translation": "Authentifizierungs-Capi"
     },
     {
+      "source": "auto",
+      "translation": "Auto"
+    },
+    {
       "source": "avares",
       "translation": "Avares"
     },
@@ -32297,6 +32305,10 @@
       "translation": "Dateien."
     },
     {
+      "source": "fill",
+      "translation": "füllen"
+    },
+    {
       "source": "firegroups",
       "translation": "Feuergruppen"
     },
@@ -32311,6 +32323,10 @@
     {
       "source": "fistbump",
       "translation": "Fauststoß"
+    },
+    {
+      "source": "fit",
+      "translation": "fit"
     },
     {
       "source": "fleet-carrier",
@@ -32687,6 +32703,10 @@
     {
       "source": "instances",
       "translation": "Instanzen"
+    },
+    {
+      "source": "integer",
+      "translation": "ganze Zahl"
     },
     {
       "source": "interaction ended",
@@ -33747,6 +33767,10 @@
     {
       "source": "streams",
       "translation": "Ströme"
+    },
+    {
+      "source": "stretch",
+      "translation": "strecken"
     },
     {
       "source": "suffix {0}",
@@ -46473,6 +46497,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "No se pudo iniciar la interacción del puntero del Gamescope. Cierra los menús de Steam y vuelve a intentarlo."
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "Se desconoce el estado de escala del Gamescope. Seleccione un modo de escala nuevamente en Steam para restaurar las superposiciones colocadas con precisión."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -66947,6 +66975,10 @@
       "translation": "capi de autenticación"
     },
     {
+      "source": "auto",
+      "translation": "auto"
+    },
+    {
       "source": "avares",
       "translation": "avares"
     },
@@ -67783,6 +67815,10 @@
       "translation": "archivos."
     },
     {
+      "source": "fill",
+      "translation": "llenar"
+    },
+    {
       "source": "firegroups",
       "translation": "grupos de fuego"
     },
@@ -67797,6 +67833,10 @@
     {
       "source": "fistbump",
       "translation": "choque de puños"
+    },
+    {
+      "source": "fit",
+      "translation": "adaptar"
     },
     {
       "source": "fleet-carrier",
@@ -68173,6 +68213,10 @@
     {
       "source": "instances",
       "translation": "instancias"
+    },
+    {
+      "source": "integer",
+      "translation": "entero"
     },
     {
       "source": "interaction ended",
@@ -69233,6 +69277,10 @@
     {
       "source": "streams",
       "translation": "corrientes"
+    },
+    {
+      "source": "stretch",
+      "translation": "estirar"
     },
     {
       "source": "suffix {0}",
@@ -81959,6 +82007,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "L'interaction du pointeur Gamescope n'a pas pu démarrer. Fermez les menus Steam et réessayez."
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "L’état de mise à l’échelle du Gamescope est inconnu. Sélectionnez à nouveau un mode de mise à l'échelle dans Steam pour restaurer les superpositions placées avec précision."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -102433,6 +102485,10 @@
       "translation": "capi d'authentification"
     },
     {
+      "source": "auto",
+      "translation": "auto"
+    },
+    {
       "source": "avares",
       "translation": "avares"
     },
@@ -103269,6 +103325,10 @@
       "translation": "fichiers."
     },
     {
+      "source": "fill",
+      "translation": "remplir"
+    },
+    {
       "source": "firegroups",
       "translation": "groupes de pompiers"
     },
@@ -103283,6 +103343,10 @@
     {
       "source": "fistbump",
       "translation": "coup de poing"
+    },
+    {
+      "source": "fit",
+      "translation": "ajuster"
     },
     {
       "source": "fleet-carrier",
@@ -103659,6 +103723,10 @@
     {
       "source": "instances",
       "translation": "cas"
+    },
+    {
+      "source": "integer",
+      "translation": "entier"
     },
     {
       "source": "interaction ended",
@@ -104719,6 +104787,10 @@
     {
       "source": "streams",
       "translation": "flux"
+    },
+    {
+      "source": "stretch",
+      "translation": "extensible"
     },
     {
       "source": "suffix {0}",
@@ -117445,6 +117517,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "A interação do ponteiro do Gamescope não pôde ser iniciada. Feche os menus do Steam e tente novamente."
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "O estado de escala do Gamescope é desconhecido. Selecione um modo de escala novamente no Steam para restaurar sobreposições posicionadas com precisão."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -137919,6 +137995,10 @@
       "translation": "autenticação capi"
     },
     {
+      "source": "auto",
+      "translation": "auto"
+    },
+    {
       "source": "avares",
       "translation": "avares"
     },
@@ -138755,6 +138835,10 @@
       "translation": "arquivos."
     },
     {
+      "source": "fill",
+      "translation": "preencher"
+    },
+    {
       "source": "firegroups",
       "translation": "grupos de fogo"
     },
@@ -138769,6 +138853,10 @@
     {
       "source": "fistbump",
       "translation": "soco"
+    },
+    {
+      "source": "fit",
+      "translation": "ajustar"
     },
     {
       "source": "fleet-carrier",
@@ -139145,6 +139233,10 @@
     {
       "source": "instances",
       "translation": "instâncias"
+    },
+    {
+      "source": "integer",
+      "translation": "inteiro"
     },
     {
       "source": "interaction ended",
@@ -140205,6 +140297,10 @@
     {
       "source": "streams",
       "translation": "fluxos"
+    },
+    {
+      "source": "stretch",
+      "translation": "esticar"
     },
     {
       "source": "suffix {0}",
@@ -152931,6 +153027,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "Не удалось начать взаимодействие с указателем Gamescope. Закройте меню Steam и повторите попытку."
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "Состояние масштабирования Gamescope неизвестно. Снова выберите режим масштабирования в Steam, чтобы восстановить точно расположенные наложения."
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -173405,6 +173505,10 @@
       "translation": "авторизация капи"
     },
     {
+      "source": "auto",
+      "translation": "авто"
+    },
+    {
       "source": "avares",
       "translation": "аварес"
     },
@@ -174241,6 +174345,10 @@
       "translation": "файлы."
     },
     {
+      "source": "fill",
+      "translation": "наполнять"
+    },
+    {
       "source": "firegroups",
       "translation": "огневые группы"
     },
@@ -174255,6 +174363,10 @@
     {
       "source": "fistbump",
       "translation": "удар кулаком"
+    },
+    {
+      "source": "fit",
+      "translation": "соответствовать"
     },
     {
       "source": "fleet-carrier",
@@ -174631,6 +174743,10 @@
     {
       "source": "instances",
       "translation": "случаи"
+    },
+    {
+      "source": "integer",
+      "translation": "целое число"
     },
     {
       "source": "interaction ended",
@@ -175691,6 +175807,10 @@
     {
       "source": "streams",
       "translation": "ручьи"
+    },
+    {
+      "source": "stretch",
+      "translation": "потягиваться"
     },
     {
       "source": "suffix {0}",
@@ -188417,6 +188537,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "Gamescope 指针交互无法启动。关闭 Steam 菜单并重试。"
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "Gamescope 缩放状态未知。在 Steam 中再次选择缩放模式以恢复准确放置的叠加层。"
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -208891,6 +209015,10 @@
       "translation": "授权卡皮"
     },
     {
+      "source": "auto",
+      "translation": "汽车"
+    },
+    {
       "source": "avares",
       "translation": "阿瓦雷斯"
     },
@@ -209727,6 +209855,10 @@
       "translation": "文件。"
     },
     {
+      "source": "fill",
+      "translation": "充满"
+    },
+    {
       "source": "firegroups",
       "translation": "火力组"
     },
@@ -209741,6 +209873,10 @@
     {
       "source": "fistbump",
       "translation": "碰拳"
+    },
+    {
+      "source": "fit",
+      "translation": "合身"
     },
     {
       "source": "fleet-carrier",
@@ -210117,6 +210253,10 @@
     {
       "source": "instances",
       "translation": "实例"
+    },
+    {
+      "source": "integer",
+      "translation": "整数"
     },
     {
       "source": "interaction ended",
@@ -211177,6 +211317,10 @@
     {
       "source": "streams",
       "translation": "溪流"
+    },
+    {
+      "source": "stretch",
+      "translation": "拉紧"
     },
     {
       "source": "suffix {0}",
@@ -223903,6 +224047,10 @@
     {
       "source": "Gamescope pointer interaction could not start. Close Steam menus and try again.",
       "translation": "* GAMESCOPE POINTER INTERACTION COULD NOT START. CLOSE STEAM MENUS AND TRY AGAIN. >>>!"
+    },
+    {
+      "source": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+      "translation": "* GAMESCOPE SCALING STATE IS UNKNOWN. SELECT A SCALING MODE AGAIN IN STEAM TO RESTORE ACCURATELY PLACED OVERLAYS. >>>!"
     },
     {
       "source": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
@@ -244377,6 +244525,10 @@
       "translation": "* AUTH CAPI >>>!"
     },
     {
+      "source": "auto",
+      "translation": "* AUTO >>>!"
+    },
+    {
       "source": "avares",
       "translation": "* AVARES >>>!"
     },
@@ -245213,6 +245365,10 @@
       "translation": "* FILES. >>>!"
     },
     {
+      "source": "fill",
+      "translation": "* FILL >>>!"
+    },
+    {
       "source": "firegroups",
       "translation": "* FIREGROUPS >>>!"
     },
@@ -245227,6 +245383,10 @@
     {
       "source": "fistbump",
       "translation": "* FISTBUMP >>>!"
+    },
+    {
+      "source": "fit",
+      "translation": "* FIT >>>!"
     },
     {
       "source": "fleet-carrier",
@@ -245603,6 +245763,10 @@
     {
       "source": "instances",
       "translation": "* INSTANCES >>>!"
+    },
+    {
+      "source": "integer",
+      "translation": "* INTEGER >>>!"
     },
     {
       "source": "interaction ended",
@@ -246663,6 +246827,10 @@
     {
       "source": "streams",
       "translation": "* STREAMS >>>!"
+    },
+    {
+      "source": "stretch",
+      "translation": "* STRETCH >>>!"
     },
     {
       "source": "suffix {0}",

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia;
@@ -13,23 +14,31 @@ internal sealed record GamescopeFocusSnapshot(
     uint? InputApp,
     uint? GraphicsApp,
     PixelRect OutputBounds,
-    uint ScalingMode = 0,
+    uint? ScalingMode = 0,
     string? KeyboardDisplay = null
 );
 
 /// <summary>Owns the Gamescope X11 protocol, including LP64 property encoding and display identity.</summary>
-internal sealed class GamescopeX11Connection : IDisposable
+internal sealed partial class GamescopeX11Connection : IDisposable
 {
     private const string SteamOverlayAtom = "STEAM_OVERLAY";
     private const string SteamInputFocusAtom = "STEAM_INPUT_FOCUS";
 
     private nint display;
     private readonly nuint root;
+    private readonly string displayName;
+    private GamescopeScalingState? scaling;
+    private GamescopeX11Connection? gameScaling;
+    private string? gameScalingName;
+    private bool scalingInitialized;
+    private bool scalingSubscribed;
+    private bool reportedUnknownScaling;
 
-    private GamescopeX11Connection(nint display)
+    private GamescopeX11Connection(nint display, string name)
     {
         this.display = display;
         root = X11Native.XDefaultRootWindow(display);
+        displayName = name;
     }
 
     public static GamescopeX11Connection? TryOpen(string? name)
@@ -50,7 +59,7 @@ internal sealed class GamescopeX11Connection : IDisposable
             }
             X11OverlayPlatformService.RegisterErrorHandledDisplay(connection);
             X11TransientDisplayRecovery.Register(connection);
-            return new GamescopeX11Connection(connection);
+            return new GamescopeX11Connection(connection, name!);
         }
         finally
         {
@@ -84,15 +93,144 @@ internal sealed class GamescopeX11Connection : IDisposable
 
     public GamescopeFocusSnapshot ReadFocus()
     {
+        string? gameDisplay = DecodeDisplay(ReadNumbers("GAMESCOPE_FOCUS_DISPLAY"));
         return new GamescopeFocusSnapshot(
-            DecodeDisplay(ReadNumbers("GAMESCOPE_FOCUS_DISPLAY")),
+            gameDisplay,
             ReadNumber("GAMESCOPE_FOCUSED_WINDOW") ?? 0,
             ReadNumber("GAMESCOPE_FOCUSED_APP"),
             ReadNumber("GAMESCOPE_FOCUSED_APP_GFX"),
             ReadBounds(),
-            ReadNumber("GAMESCOPE_NEW_SCALING_SCALER") ?? 0,
+            ReadScalingMode(gameDisplay),
             DecodeDisplay(ReadNumbers("GAMESCOPE_KEYBOARD_FOCUS_DISPLAY"))
         );
+    }
+
+    private uint? ReadScalingMode(string? gameDisplay)
+    {
+        GamescopeDisplayIdentity? identity = ReadIdentity();
+        scaling ??= new GamescopeScalingState(GamescopeScalingState.ReadStartupMode("/proc", identity?.ProcessId));
+        SubscribeScaling();
+        if (gameScalingName != gameDisplay)
+        {
+            gameScaling?.Dispose();
+            gameScaling = null;
+            gameScalingName = gameDisplay;
+        }
+        if (
+            gameScaling is null
+            && gameDisplay is not null
+            && !GamescopeExternalGameWindowTracker.SameDisplay(displayName, gameDisplay)
+            && identity?.ProcessId is uint pid
+        )
+        {
+            GamescopeX11Connection? candidate = TryOpen(gameDisplay);
+            if (candidate?.ReadIdentity()?.ProcessId == pid)
+            {
+                gameScaling = candidate;
+                gameScaling.SubscribeScaling();
+            }
+            else
+            {
+                candidate?.Dispose();
+            }
+        }
+        if (!scalingInitialized)
+        {
+            scaling.Initialize(ReadExistingScalingRequests().Concat(gameScaling?.ReadExistingScalingRequests() ?? []));
+            scalingInitialized = true;
+        }
+        scaling.Observe(ReadScalingRequests().Concat(gameScaling?.ReadScalingRequests() ?? []));
+        if (scaling.Mode is null && !reportedUnknownScaling)
+        {
+            Trace.TraceWarning(
+                "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays."
+            );
+        }
+        reportedUnknownScaling = scaling.Mode is null;
+        return scaling.Mode;
+    }
+
+    private void SubscribeScaling()
+    {
+        if (!scalingSubscribed && IsAlive)
+        {
+            _ = XSelectInput(display, root, 1 << 22); // PropertyChangeMask on this owned connection only.
+            _ = X11Native.XSync(display, 0);
+            scalingSubscribed = true;
+        }
+    }
+
+    private IEnumerable<uint> ReadExistingScalingRequests()
+    {
+        foreach (string atom in new[] { GamescopeScalingState.ScalerAtom, GamescopeScalingState.LegacyAtom })
+        {
+            if (ReadNumber(atom) is uint value && GamescopeScalingState.DecodeRequest(atom, value) is uint mode)
+            {
+                yield return mode;
+            }
+        }
+    }
+
+    private List<GamescopeScalingRequest> ReadScalingRequests()
+    {
+        var requests = new List<GamescopeScalingRequest>();
+        if (!IsAlive || XPending(display) == 0)
+        {
+            return requests;
+        }
+        nint buffer = Marshal.AllocHGlobal(24 * nint.Size); // XEvent is a union of 24 native longs.
+        try
+        {
+            nuint scaler = X11Native.XInternAtom(display, GamescopeScalingState.ScalerAtom, 0);
+            nuint legacy = X11Native.XInternAtom(display, GamescopeScalingState.LegacyAtom, 0);
+            while (IsAlive && XPending(display) > 0)
+            {
+                _ = XNextEvent(display, buffer);
+                XPropertyEvent notification = Marshal.PtrToStructure<XPropertyEvent>(buffer);
+                if (
+                    notification.Type == 28
+                    && notification.Window == root
+                    && (notification.Atom == scaler || notification.Atom == legacy)
+                )
+                {
+                    string atom =
+                        notification.Atom == scaler
+                            ? GamescopeScalingState.ScalerAtom
+                            : GamescopeScalingState.LegacyAtom;
+                    if (GamescopeScalingState.DecodeRequest(atom, ReadNumber(atom) ?? 0) is uint mode)
+                    {
+                        requests.Add(new(unchecked((uint)notification.Time), mode, displayName));
+                    }
+                }
+            }
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
+        return requests;
+    }
+
+    [LibraryImport("libX11.so.6")]
+    private static partial int XSelectInput(nint display, nuint window, nint eventMask);
+
+    [LibraryImport("libX11.so.6")]
+    private static partial int XPending(nint display);
+
+    [LibraryImport("libX11.so.6")]
+    private static partial int XNextEvent(nint display, nint eventReturn);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct XPropertyEvent
+    {
+        public int Type;
+        public nuint Serial;
+        public int SendEvent;
+        public nint Display;
+        public nuint Window;
+        public nuint Atom;
+        public nuint Time;
+        public int State;
     }
 
     public PixelRect ReadBounds()
@@ -315,6 +453,8 @@ internal sealed class GamescopeX11Connection : IDisposable
 
     public void Dispose()
     {
+        gameScaling?.Dispose();
+        gameScaling = null;
         nint connection = display;
         display = nint.Zero;
         if (connection != nint.Zero)

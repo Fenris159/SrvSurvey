@@ -362,7 +362,7 @@ internal sealed class X11OverlayPlatformService
         nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
-            window.Activate();
+            ActivateCursorWindow(window);
             return null;
         }
 
@@ -370,7 +370,7 @@ internal sealed class X11OverlayPlatformService
         {
             if (!TryGetDisplay(out nint currentDisplay))
             {
-                window.Activate();
+                ActivateCursorWindow(window);
                 return null;
             }
 
@@ -378,18 +378,21 @@ internal sealed class X11OverlayPlatformService
             {
                 nuint rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
                 nuint activeWindowAtom = X11Native.XInternAtom(currentDisplay, "_NET_ACTIVE_WINDOW", onlyIfExists: 0);
-                nuint previousActiveWindow = ReadActiveWindow(currentDisplay, rootWindow, activeWindowAtom);
+                bool activate = !Capabilities.UsesGamescopeExternalOverlay;
+                nuint previousActiveWindow = activate
+                    ? ReadActiveWindow(currentDisplay, rootWindow, activeWindowAtom)
+                    : 0;
                 nuint interactionWindow = unchecked((nuint)handle);
                 interactiveWindowHandles.RemoveWhere(candidate => !IsValidWindow(currentDisplay, candidate));
                 if (!IsValidWindow(currentDisplay, interactionWindow))
                 {
-                    window.Activate();
+                    ActivateCursorWindow(window);
                     return null;
                 }
 
                 nuint[] interactionWindows = interactiveWindowHandles.Append(interactionWindow).Distinct().ToArray();
 
-                window.Activate();
+                ActivateCursorWindow(window);
                 nuint cursor = X11Native.XCreateFontCursor(currentDisplay, LeftPointerCursor);
                 if (cursor != 0)
                 {
@@ -399,13 +402,16 @@ internal sealed class X11OverlayPlatformService
                     }
                 }
 
-                _ = ActivateWindow(
-                    currentDisplay,
-                    rootWindow,
-                    activeWindowAtom,
-                    interactionWindow,
-                    previousActiveWindow
-                );
+                if (activate)
+                {
+                    _ = ActivateWindow(
+                        currentDisplay,
+                        rootWindow,
+                        activeWindowAtom,
+                        interactionWindow,
+                        previousActiveWindow
+                    );
+                }
                 return new X11CursorVisibilitySession(
                     interactionWindows,
                     cursor,
@@ -428,9 +434,19 @@ internal sealed class X11OverlayPlatformService
                     "X11 overlay cursor activation was unavailable; using the "
                         + $"window-manager fallback: {exception.Message}"
                 );
-                window.Activate();
+                ActivateCursorWindow(window);
                 return null;
             }
+        }
+    }
+
+    private void ActivateCursorWindow(Window window)
+    {
+        // Gamescope owns keyboard focus. Direct X11 activation can strand it on
+        // the HUD when a Steam menu later requests that display's keyboard.
+        if (!Capabilities.UsesGamescopeExternalOverlay)
+        {
+            window.Activate();
         }
     }
 

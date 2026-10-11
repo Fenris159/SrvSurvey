@@ -68,12 +68,41 @@ and toggling off restores passive game input. Native inventory verifies the
 lower router's empty input shape after Avalonia `Show`, and the HUD's full
 canvas shape while live versus empty shape while yielded or passive. Screenshots
 check composition, presenter hiding/showing, and final disposal.
+Live mode also starts the production visible-cursor session, matching the real
+shortcut sequence. Its cursor setup and disposal must preserve Gamescope's
+keyboard handoff when the simulated Steam menu requests input.
 
 The simulated Steam process, foreign input request, and synthetic Elite window
 exercise the production routing contract without mini-ed-launcher. They do not
 validate real Steam client policies, Proton/Elite, physical Deck devices, or
 SteamOS version differences. The test never injects events into the user's
 desktop; each run owns a private compositor and runtime directory.
+
+## Startup and live scaling
+
+This probe compares the production external tracker with actual compositor
+pixels. It starts Gamescope with `-S integer`, a 960×600 game, and a 1280×800
+output. The expected game viewport is (160,100) with size 960×600; reading only
+the new-scaler command property would incorrectly report the full output.
+
+Use the requirements for the composition test and an already-built smoke DLL.
+The output directory must be new, so stale evidence cannot produce a pass.
+
+```sh
+python3 tests/SrvSurvey.GamescopeSmoke/run-scaling.py \
+  --dll tests/SrvSurvey.GamescopeSmoke/bin/Release/net10.0/SrvSurvey.GamescopeSmoke.dll \
+  --gamescope /path/to/gamescope \
+  --protocol /path/to/gamescope-source/protocol/gamescope-control.xml \
+  --output /tmp/srvsurvey-gamescope-scaling
+```
+
+Nine phases cover startup, new and legacy scaling commands on the primary and
+game displays, repeated unchanged command values, and batched requests from
+both servers in both orders. Each phase requires matching tracker bounds and
+the red game rectangle measured in a compositor screenshot. The runner retains
+`snapshots.json`, screenshots, and the compositor log. This proves the inspected
+Gamescope version's scaling contract; actual Deck/Steam settings and custom
+maximum or per-window scaling still require separate validation.
 
 ## Desktop SrvSurvey with nested Gamescope
 

@@ -22032,6 +22032,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
   },
   {
+    "Text": "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeX11Connection.cs"
+  },
+  {
     "Text": "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63088,6 +63096,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
+  },
+  {
     "Text": "avares",
     "IsFormat": false,
     "SourceKinds": [
@@ -64760,6 +64776,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "fill",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
+  },
+  {
     "Text": "firegroups",
     "IsFormat": false,
     "SourceKinds": [
@@ -64790,6 +64814,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "fit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
   },
   {
     "Text": "fleet-carrier",
@@ -65542,6 +65574,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
+  },
+  {
+    "Text": "integer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
   },
   {
     "Text": "interaction ended",
@@ -67662,6 +67702,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "stretch",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
   },
   {
     "Text": "suffix {0}",

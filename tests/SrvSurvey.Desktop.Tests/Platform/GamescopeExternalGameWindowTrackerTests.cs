@@ -34,6 +34,10 @@ public sealed class GamescopeExternalGameWindowTrackerTests
             GamescopeViewport.Project(new PixelRect(0, 0, 1920, 1080), null, focus)
         );
         Assert.Equal(default, GamescopeViewport.Project(default, null, focus));
+        Assert.Equal(
+            default,
+            GamescopeViewport.Project(new PixelRect(0, 0, 960, 600), null, focus with { ScalingMode = null })
+        );
         Assert.Equal(default, GamescopeViewport.Project(new PixelRect(0, 0, 10, 10), default(PixelRect), focus));
         Assert.Equal(
             default,

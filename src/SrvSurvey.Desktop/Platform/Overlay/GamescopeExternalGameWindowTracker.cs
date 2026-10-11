@@ -119,6 +119,7 @@ internal static class GamescopeViewport
             || output.Height <= 0
             || nested.Width <= 0
             || nested.Height <= 0
+            || focus.ScalingMode is null
         )
         {
             return default;

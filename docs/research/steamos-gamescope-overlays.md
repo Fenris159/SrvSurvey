@@ -656,3 +656,52 @@ This verifies native keyboard host activation propagation, not automatic global 
 The original Alt-Tab regression failed before the reader change (`Expected: False, Actual: True`) and passes afterward. A production hosted overlay test closes and restores the real Avalonia window on that signal, and preserves the keep-visible override. The extended committed desktop smoke covers both old marker compatibility and stale, malformed, or lost focus publishers across two compositor lifetimes.
 
 The complete quality gate passes with **3,347 desktop tests, three platform skips, all 19 localization tests, and 94% changed-production coverage (773/822 line and branch points)**. CSharpier, scoped Sonar checks, seven-language catalog freshness, and the strict solution build pass with zero warnings/errors.
+
+## PR audit fixes: cursor activation and scaling state
+
+The interaction audit added the production `BeginVisibleCursorSession` call to
+the existing live-mode smoke sequence. Before the fix, both primary-start and
+inherited-game-display runs failed the Steam-yield keyboard assertion: ordinary
+X11 cursor setup had activated the Avalonia HUD, leaving primary-server keyboard
+focus there after Gamescope selected the simulated Steam menu. Gamescope cursor
+sessions now define the visible cursor without activating the HUD or restoring
+an earlier X11 window on disposal. Ordinary desktop cursor sessions retain their
+activation behavior. Both committed smoke variants pass the full sequence.
+
+The scaling audit confirmed that `GAMESCOPE_NEW_SCALING_SCALER` is a command,
+not published current state. CLI `-S integer` sets the scaler directly, and the
+legacy `GAMESCOPE_SCALING_FILTER` path also changes it. The new observer reads
+startup arguments only from the verified same-user compositor, then joins root
+`PropertyNotify` commands from its primary and verified active game server.
+It handles unchanged repeated values, legacy integer/auto mapping, invalid new
+values, timestamp wrap, and same-server event order. Conflicting historical
+commands or simultaneous conflicting commands on different servers leave the
+mode unknown until a new request; the tracker hides rather than publishing an
+uncertain viewport. There is no authoritative current-scaler query in the
+inspected Gamescope control protocol.
+[CLI setting](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L755-L763),
+[command handlers](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L7173-L7222),
+[new scaler handler](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/steamcompmgr.cpp#L7328-L7341),
+[control protocol](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/protocol/gamescope-control.xml).
+
+The [scaling probe](../../tests/SrvSurvey.GamescopeSmoke/README.md#startup-and-live-scaling)
+uses a real private Gamescope 3.16.29 and the production tracker. Before the fix,
+startup integer scaling reported (0,0,1280,800) instead of (160,100,960,600).
+After the fix, all nine phases match captured compositor pixels: startup,
+new/legacy requests on both servers, unchanged requests, and batched cross-server
+requests in both orders. Evidence is retained under
+`/tmp/srvsurvey-pr207-scaling-red2` and `/tmp/srvsurvey-pr207-scaling-green3`.
+Cursor evidence is in `/tmp/srvsurvey-pr207-cursor-green` and
+`/tmp/srvsurvey-pr207-cursor-inherited-green`, with the failing audit runs retained
+in the sibling cursor audit directories.
+
+These fixes do not change ordinary desktop overlay routing. The private tests
+exercise actual compositor input and pixels with synthetic game and Steam
+windows. Real Steam client/Proton behavior, Deck devices, custom maximum or
+per-window scaling, and compositor-version differences remain validation limits.
+
+The audit-fix quality gate passes with **3,356 desktop tests, three platform
+skips, all 19 localization tests, and 90.8% changed-production coverage
+(1,021/1,124 line and branch points)**. CSharpier, scoped Sonar checks, and
+seven-language catalog freshness pass. The strict solution build completes
+with zero warnings/errors.
