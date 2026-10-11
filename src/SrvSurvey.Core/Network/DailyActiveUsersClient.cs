@@ -41,8 +41,8 @@ public sealed class DailyActiveUsersClient : IDisposable
         long? count = null;
         try
         {
-            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(TimeSpan.FromSeconds(10));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10), clock);
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             Directory.CreateDirectory(directory);
             using FileStream lease = await AcquireLeaseAsync(deadline.Token).ConfigureAwait(false);
             LocalUsageState state = ReadState();
@@ -102,8 +102,8 @@ public sealed class DailyActiveUsersClient : IDisposable
     {
         try
         {
-            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(TimeSpan.FromSeconds(3));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3), clock);
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             using var request = new HttpRequestMessage(HttpMethod.Post, WellKnownUris.ActiveUsersPing)
             {
                 Content = JsonContent.Create(

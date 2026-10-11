@@ -88,20 +88,32 @@ public sealed class DailyActiveUsersClientTests
     public async Task PingTimeoutStillRefreshesStatistics(bool stallBody)
     {
         using var fixture = new UsageFixture();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         if (stallBody)
         {
-            fixture.Handler.PingContentFactory = () => new StreamContent(new StalledReadStream());
+            fixture.Handler.PingContentFactory = () => new StreamContent(new StalledReadStream(entered));
         }
         else
         {
-            fixture.Handler.BeforePing = token => Task.Delay(Timeout.InfiniteTimeSpan, token);
+            fixture.Handler.BeforePing = token =>
+            {
+                entered.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            };
         }
         using var cancellation = new CancellationTokenSource();
         using DailyActiveUsersClient client = fixture.Create();
         Task<long?> pending = client.RefreshAsync(cancellation.Token);
         try
         {
-            Assert.Equal(42, await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(
+                [TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(3)],
+                fixture.Clock.Timers.Select(timer => timer.DueTime)
+            );
+            fixture.Clock.Timers[1].Fire();
+            Assert.Equal(42, await pending.WaitAsync(TimeSpan.FromSeconds(30)));
             Assert.Equal(42, await client.RefreshAsync());
             Assert.Equal(2, fixture.Handler.Requests.Count);
             Assert.Single(fixture.Handler.Reports);
@@ -283,11 +295,62 @@ public sealed class DailyActiveUsersClientTests
 
     private sealed class UsageClock : TimeProvider
     {
+        /// <summary>Records independent deadlines so tests can expire them without waiting on the runner's clock.</summary>
+        public List<UsageTimer> Timers { get; } = [];
+
         /// <summary>Sets the simulated UTC time used to select the daily reporting checkpoint.</summary>
         public DateTimeOffset UtcNow { get; set; } = new(2026, 10, 11, 23, 59, 0, TimeSpan.Zero);
 
         /// <summary>Returns the fixture's current UTC date for daily rollover tests.</summary>
         public override DateTimeOffset GetUtcNow() => UtcNow;
+
+        /// <summary>Creates manually fired, one-shot deadlines for deterministic cancellation tests.</summary>
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            Assert.Equal(Timeout.InfiniteTimeSpan, period);
+            var timer = new UsageTimer(callback, state, dueTime);
+            Timers.Add(timer);
+            return timer;
+        }
+    }
+
+    /// <summary>Expires a captured deadline only when a test explicitly requests it.</summary>
+    private sealed class UsageTimer(TimerCallback callback, object? state, TimeSpan dueTime) : ITimer
+    {
+        private int disposed;
+
+        /// <summary>Exposes the scheduled deadline for assertions about check-in and refresh budgets.</summary>
+        public TimeSpan DueTime { get; private set; } = dueTime;
+
+        /// <summary>Runs the deadline callback while the owning cancellation source is still alive.</summary>
+        public void Fire()
+        {
+            if (Volatile.Read(ref disposed) == 0)
+            {
+                callback(state);
+            }
+        }
+
+        /// <summary>Updates an active deadline without introducing a wall-clock timer.</summary>
+        public bool Change(TimeSpan dueTime, TimeSpan period)
+        {
+            if (Volatile.Read(ref disposed) != 0)
+            {
+                return false;
+            }
+            DueTime = dueTime;
+            return true;
+        }
+
+        /// <summary>Prevents a disposed deadline from firing.</summary>
+        public void Dispose() => Interlocked.Exchange(ref disposed, 1);
+
+        /// <summary>Disposes the deadline without asynchronous work.</summary>
+        public ValueTask DisposeAsync()
+        {
+            Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class UsageHandler : HttpMessageHandler
@@ -344,7 +407,7 @@ public sealed class DailyActiveUsersClientTests
     }
 
     /// <summary>Imitates a response body that remains unreadable until its supplied token is canceled.</summary>
-    private sealed class StalledReadStream : MemoryStream
+    private sealed class StalledReadStream(TaskCompletionSource entered) : MemoryStream
     {
         /// <summary>Waits indefinitely so the request's body-reading deadline must release the stream.</summary>
         public override async ValueTask<int> ReadAsync(
@@ -352,6 +415,7 @@ public sealed class DailyActiveUsersClientTests
             CancellationToken cancellationToken = default
         )
         {
+            entered.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return 0;
         }
