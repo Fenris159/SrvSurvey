@@ -238,7 +238,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
                 : throw new InvalidOperationException("Select a backup to restore.")
         );
 
-    /// <summary>Uses cloud values for conflicts while preserving independent local changes.</summary>
+    /// <summary>Uses cloud or staged-backup values for conflicts while preserving independent local changes.</summary>
     public Task UseCloudAsync() =>
         RunAsync(() => service.ResolveConflictsAsync(useCloud: true, CancellationToken.None));
 

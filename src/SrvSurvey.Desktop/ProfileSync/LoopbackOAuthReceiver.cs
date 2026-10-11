@@ -104,5 +104,5 @@ internal sealed class LoopbackOAuthReceiver : IDisposable
     }
 
     /// <summary>Releases the callback port when authorization completes or is cancelled.</summary>
-    public void Dispose() => listener.Stop();
+    public void Dispose() => listener.Dispose();
 }

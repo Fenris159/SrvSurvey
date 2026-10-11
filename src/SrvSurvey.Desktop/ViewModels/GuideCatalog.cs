@@ -1384,6 +1384,7 @@ public static class GuideCatalog
         ];
     }
 
+    /// <summary>Explains how to select a supported headset bridge and OpenVR connection route.</summary>
     private static GuideSectionViewModel CreateVrConnectionRouteSection()
     {
         return Section(

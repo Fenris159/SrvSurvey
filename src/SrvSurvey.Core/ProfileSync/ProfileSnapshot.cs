@@ -24,6 +24,9 @@ public sealed record ProfileSnapshot(
 {
     public const int CurrentSchema = 1;
     public const int MaximumBytes = 32 * 1024 * 1024;
+
+    /// <summary>Limits each snapshot collection, including portable deletion history.</summary>
+    public const int MaximumValues = 100_000;
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
     /// <summary>Serializes a snapshot for local export or Google Drive.</summary>
@@ -58,8 +61,8 @@ public sealed record ProfileSnapshot(
             || !IsValidFingerprint(snapshot.MachineFingerprint)
             || snapshot.Portable is null
             || snapshot.Machine is null
-            || snapshot.Portable.Count > 100_000
-            || snapshot.Machine.Count > 100_000
+            || snapshot.Portable.Count > MaximumValues
+            || snapshot.Machine.Count > MaximumValues
             || snapshot.Portable.Any(pair =>
                 pair.Value is null
                 || pair.Value.Clock is null

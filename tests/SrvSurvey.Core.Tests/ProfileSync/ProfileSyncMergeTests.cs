@@ -7,6 +7,7 @@ namespace SrvSurvey.Core.Tests.ProfileSync;
 
 public sealed class ProfileSyncMergeTests
 {
+    /// <summary>Verifies that capture tracks independent changes and deletes without changing unedited counters.</summary>
     [Fact]
     public void CaptureTracksIndependentChangesAndDeletesWithoutChangingUneditedCounters()
     {
@@ -32,6 +33,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Equal(2, again["bookmark"].Clock["A"]);
     }
 
+    /// <summary>Verifies that sequential machine changes supersede earlier values including deletion.</summary>
     [Fact]
     public void SequentialMachineChangesSupersedeEarlierValuesIncludingDeletion()
     {
@@ -53,6 +55,7 @@ public sealed class ProfileSyncMergeTests
         Assert.True(ProfileSyncMerge.Merge(b, deleted).Values["theme"].Deleted);
     }
 
+    /// <summary>Verifies that independent settings merge and concurrent equal values combine their counters.</summary>
     [Fact]
     public void IndependentSettingsMergeAndConcurrentEqualValuesCombineTheirCounters()
     {
@@ -69,6 +72,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Single(a["theme"].Clock);
     }
 
+    /// <summary>Verifies that conflicting values require a choice that supersedes both versions.</summary>
     [Theory]
     [InlineData(false, "blue")]
     [InlineData(true, "gold")]
@@ -86,6 +90,7 @@ public sealed class ProfileSyncMergeTests
         Assert.True(chosen.Includes(conflict.Remote));
     }
 
+    /// <summary>Verifies that concurrent deletion does not silently discard an edit.</summary>
     [Fact]
     public void ConcurrentDeletionDoesNotSilentlyDiscardAnEdit()
     {
@@ -103,6 +108,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Single(ProfileSyncMerge.Merge(removed, edited).Conflicts);
     }
 
+    /// <summary>Verifies that reused counters for different values are rejected.</summary>
     [Fact]
     public void ReusedCountersForDifferentValuesAreRejected()
     {
@@ -111,6 +117,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Throws<InvalidDataException>(() => ProfileSyncMerge.Merge(a, b));
     }
 
+    /// <summary>Verifies that snapshot round trips and malformed payloads are rejected.</summary>
     [Fact]
     public void SnapshotRoundTripsAndMalformedPayloadsAreRejected()
     {
@@ -134,6 +141,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Throws<ArgumentNullException>(() => ProfileSnapshot.Parse(null!));
     }
 
+    /// <summary>Verifies that snapshot rejects invalid schema and counters.</summary>
     [Theory]
     [InlineData("SchemaVersion", "2")]
     [InlineData("DeviceId", "\"\"")]
@@ -160,6 +168,7 @@ public sealed class ProfileSyncMergeTests
         Assert.Throws<InvalidDataException>(() => ProfileSnapshot.Parse(Encoding.UTF8.GetBytes(root.ToJsonString())));
     }
 
+    /// <summary>Creates a single-device portable value for causal merge fixtures.</summary>
     private static SyncValue Value(string value, string device) =>
         new(JsonValue.Create(value), false, new() { [device] = 1 });
 }

@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class GuidesViewModelTests
 {
+    /// <summary>Verifies that catalog covers every workspace and icon family.</summary>
     [Fact]
     public void CatalogCoversEveryWorkspaceAndIconFamily()
     {

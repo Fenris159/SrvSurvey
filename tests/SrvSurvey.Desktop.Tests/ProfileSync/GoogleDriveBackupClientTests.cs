@@ -10,6 +10,7 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class GoogleDriveBackupClientTests
 {
+    /// <summary>Verifies that browser link validates PKCE and state persists authorization and disconnects.</summary>
     [Fact]
     public async Task BrowserLinkValidatesPkceAndStatePersistsAuthorizationAndDisconnects()
     {
@@ -57,6 +58,7 @@ public sealed class GoogleDriveBackupClientTests
         harness.Drive.Disconnect();
     }
 
+    /// <summary>Verifies that invalid state cannot exchange a response and cancellation closes the listener.</summary>
     [Fact]
     public async Task InvalidStateCannotExchangeAResponseAndCancellationClosesTheListener()
     {
@@ -74,6 +76,7 @@ public sealed class GoogleDriveBackupClientTests
         Assert.False(client.IsLinked);
     }
 
+    /// <summary>Verifies that missing setup or corrupt authorization does not open browser or authorize requests.</summary>
     [Fact]
     public async Task MissingSetupOrCorruptAuthorizationDoesNotOpenBrowserOrAuthorizeRequests()
     {
@@ -89,6 +92,7 @@ public sealed class GoogleDriveBackupClientTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.ListAsync(CancellationToken.None));
     }
 
+    /// <summary>Verifies that refresh uses stored token and metadata pagination skips invalid entries.</summary>
     [Fact]
     public async Task RefreshUsesStoredTokenAndMetadataPaginationSkipsInvalidEntries()
     {
@@ -132,6 +136,7 @@ public sealed class GoogleDriveBackupClientTests
         Assert.Equal(2, pages);
     }
 
+    /// <summary>Verifies that downloads validate content and bound stream size.</summary>
     [Fact]
     public async Task DownloadsValidateContentAndBoundStreamSize()
     {
@@ -161,6 +166,7 @@ public sealed class GoogleDriveBackupClientTests
         );
     }
 
+    /// <summary>Verifies that history reads Google string sizes without inventing missing values.</summary>
     [Theory]
     [InlineData("\"123456\"", 123456L)]
     [InlineData("\"0\"", 0L)]
@@ -190,6 +196,7 @@ public sealed class GoogleDriveBackupClientTests
         Assert.Equal(expected, backup.SizeBytes);
     }
 
+    /// <summary>Verifies that deletion escapes the id and only ignores already removed files.</summary>
     [Theory]
     [InlineData(HttpStatusCode.NoContent)]
     [InlineData(HttpStatusCode.NotFound)]
@@ -225,6 +232,7 @@ public sealed class GoogleDriveBackupClientTests
         }
     }
 
+    /// <summary>Verifies that resumable upload includes private folder and prunes only this machine's old history.</summary>
     [Fact]
     public async Task ResumableUploadIncludesPrivateFolderAndPrunesOnlyThisMachinesOldHistory()
     {
@@ -294,6 +302,7 @@ public sealed class GoogleDriveBackupClientTests
         Assert.All(deleted, path => Assert.DoesNotContain("other", path));
     }
 
+    /// <summary>Verifies that upload never sends bearer to an untrusted session.</summary>
     [Theory]
     [InlineData("missing")]
     [InlineData("http://www.googleapis.com/upload/session")]
@@ -325,6 +334,7 @@ public sealed class GoogleDriveBackupClientTests
         );
     }
 
+    /// <summary>Verifies that invalid token responses are rejected.</summary>
     [Theory]
     [InlineData("[]", "invalid authorization")]
     [InlineData("{}", "renewable access")]
@@ -337,6 +347,7 @@ public sealed class GoogleDriveBackupClientTests
         Assert.Contains(message, failure.Message);
     }
 
+    /// <summary>Verifies that authorization and Drive errors do not expose response secrets.</summary>
     [Fact]
     public async Task AuthorizationAndDriveErrorsDoNotExposeResponseSecrets()
     {
@@ -365,12 +376,15 @@ public sealed class GoogleDriveBackupClientTests
         Assert.DoesNotContain("private-response-secret", drive.Message);
     }
 
+    /// <summary>Builds a test authorization response with a configurable token expiry.</summary>
     private static string Token(int expires = 3600) =>
         $"{{\"access_token\":\"access-test\",\"refresh_token\":\"refresh-test\",\"expires_in\":{expires}}}";
 
+    /// <summary>Creates an HTTP JSON response for the simulated Google endpoints.</summary>
     private static HttpResponseMessage Json(string value) =>
         new(HttpStatusCode.OK) { Content = new StringContent(value, Encoding.UTF8, "application/json") };
 
+    /// <summary>Decodes URL query parameters for OAuth request assertions.</summary>
     private static Dictionary<string, string> Query(string value) =>
         value
             .TrimStart('?')
@@ -382,6 +396,7 @@ public sealed class GoogleDriveBackupClientTests
     {
         private Task? callback;
 
+        /// <summary>Creates isolated profile storage and a Google client using simulated HTTP and browser callbacks.</summary>
         internal DriveHarness(
             ProfileSyncTestRoot root,
             Func<HttpRequestMessage, Task<HttpResponseMessage>> handler,
@@ -415,6 +430,7 @@ public sealed class GoogleDriveBackupClientTests
 
         internal GoogleDriveBackupClient Drive { get; }
 
+        /// <summary>Completes authorization through the test browser and callback listener.</summary>
         internal async Task LinkAsync()
         {
             try
@@ -430,11 +446,13 @@ public sealed class GoogleDriveBackupClientTests
             }
         }
 
+        /// <summary>Releases the Google client and its simulated HTTP resources.</summary>
         public void Dispose() => Drive.Dispose();
     }
 
     private sealed class Handler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler) : HttpMessageHandler
     {
+        /// <summary>Routes Google requests to the supplied test handler without contacting the network.</summary>
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken

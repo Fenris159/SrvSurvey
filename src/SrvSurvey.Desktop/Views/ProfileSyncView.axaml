@@ -28,7 +28,7 @@
       <TextBox Text="{Binding ConflictDescription}" IsReadOnly="True" AcceptsReturn="True" MaxHeight="130" />
       <WrapPanel>
         <Button Classes="secondary" Content="Keep this machine's conflicting values" Margin="0,0,8,6" Click="KeepLocal_Click" />
-        <Button Classes="secondary" Content="Use cloud conflicting values" Margin="0,0,8,6" Click="UseCloud_Click" />
+        <Button Classes="secondary" Content="Use the backup's conflicting values" Margin="0,0,8,6" Click="UseCloud_Click" />
       </WrapPanel>
     </StackPanel>
     <Expander Header="Restore a Google Drive backup">

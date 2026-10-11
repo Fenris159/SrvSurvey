@@ -64,7 +64,16 @@ internal sealed class ProfileSyncService : IDisposable
                     return;
                 }
                 Store.RecoverInterruptedRestore();
-                bool restored = Store.ApplyPending();
+                bool restored = Store.ApplyPending(out SyncMergeResult? restoreConflicts);
+                if (restoreConflicts is not null)
+                {
+                    pendingMerge = restoreConflicts;
+                    pendingSnapshot = Store.Capture();
+                    SetStatus(
+                        $"{restoreConflicts.Conflicts.Count} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained."
+                    );
+                    return;
+                }
                 if (!Store.LoadPreferences().Automatic || !IsLinked)
                 {
                     if (restored)
@@ -224,6 +233,9 @@ internal sealed class ProfileSyncService : IDisposable
                 }
 
                 ProfileSnapshot fresh = Store.Capture();
+                ProfileSnapshot? staged = RestartRequired
+                    ? ProfileSnapshot.Parse(File.ReadAllBytes(Store.PendingPath))
+                    : null;
                 var values = new Dictionary<string, SyncValue>(pendingMerge.Values, StringComparer.Ordinal);
                 foreach ((string key, SyncValue value) in fresh.Portable)
                 {
@@ -243,9 +255,12 @@ internal sealed class ProfileSyncService : IDisposable
                     SyncConflict current = conflict with { Local = values[conflict.Key] };
                     values[conflict.Key] = ProfileSyncMerge.Resolve(Store.Device.Id, current, useCloud);
                 }
-                ProfileSnapshot resolved = fresh with { Portable = values };
-                Store.StageRestore(resolved, restoreMachine: false);
-                await drive.UploadAsync(resolved, token).ConfigureAwait(false);
+                ProfileSnapshot resolved = (staged ?? fresh) with { Portable = values, CreatedUtc = fresh.CreatedUtc };
+                Store.StageRestore(resolved, restoreMachine: staged is not null);
+                if (IsLinked)
+                {
+                    await drive.UploadAsync(resolved, token).ConfigureAwait(false);
+                }
                 pendingMerge = null;
                 SetStatus("Conflict choices are backed up. Restart SrvSurvey to apply the merged profile.");
             },

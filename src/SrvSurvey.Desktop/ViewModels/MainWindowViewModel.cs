@@ -236,6 +236,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
 
+    /// <summary>Constructs the main workspace with the default platform and persistence services.</summary>
     internal MainWindowViewModel(
         string? configuredJournalDirectory,
         MainWindowViewModelConstructionContext construction
@@ -4447,6 +4448,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Drains journal producers, saves workspace continuity, and backs up the profile before releasing services.</summary>
     public async ValueTask DisposeAsync()
     {
         Task drain;

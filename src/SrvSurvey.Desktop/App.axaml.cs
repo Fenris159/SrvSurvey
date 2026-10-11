@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
@@ -46,6 +47,7 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>Checks instance ownership, starts optional profile sync, and constructs the desktop on the UI thread.</summary>
     private async Task StartDesktopAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
         SrvSurvey.Desktop.ProfileSync.ProfileSyncService? profileSync = null;
@@ -61,13 +63,17 @@ public sealed partial class App : Application
 
             if (Program.StartupContext?.DiagnosticReplay is null)
             {
-                profileSync = new(
-                    new SrvSurvey.Desktop.ProfileSync.ProfileSyncStore(
-                        Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
-                    ),
-                    log: message => Program.ApplicationLog?.Append(message)
-                );
-                await profileSync.StartupAsync().ConfigureAwait(false);
+                profileSync = await StartProfileSyncAsync(
+                        () =>
+                            new ProfileSyncService(
+                                new ProfileSyncStore(
+                                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                                ),
+                                log: message => Program.ApplicationLog?.Append(message)
+                            ),
+                        message => Program.ApplicationLog?.Append(message)
+                    )
+                    .ConfigureAwait(false);
             }
 
             // Instance scanning resumes off the UI thread; Avalonia window construction must not.
@@ -111,6 +117,27 @@ public sealed partial class App : Application
             {
                 profileSync?.Dispose();
             }
+        }
+    }
+
+    /// <summary>Starts optional sync, releasing failed services so the desktop can construct its fallback.</summary>
+    internal static async Task<ProfileSyncService?> StartProfileSyncAsync(
+        Func<ProfileSyncService> createService,
+        Action<string> log
+    )
+    {
+        ProfileSyncService? service = null;
+        try
+        {
+            service = createService();
+            await service.StartupAsync().ConfigureAwait(false);
+            return service;
+        }
+        catch (Exception exception)
+        {
+            log("Startup profile sync skipped: " + exception);
+            service?.Dispose();
+            return null;
         }
     }
 

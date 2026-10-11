@@ -19785,6 +19785,10 @@
       "translation": "Profil importiert"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "Die Profilsynchronisierung hat eine fehlerhafte JSON-Datei übersprungen: {0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "Profilsynchronisierung: {0}"
     },
@@ -26097,6 +26101,10 @@
       "translation": "Der Start ist an {0} angeheftet."
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "Synchronisierung des Startprofils übersprungen: {0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Startsynchronisierung abgeschlossen. Die tragbaren Einstellungen und Arbeitsbereichsdaten sind auf dem neuesten Stand."
     },
@@ -29365,6 +29373,10 @@
       "translation": "Der {0} kann nicht kopiert werden."
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "Der {0}-Profilwertgrenzwert von {1} wurde von {2} überschritten. Große JSON-Dateien in Systemen oder im Mining-Such-Cache können diesen Grenzwert überschreiten."
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "Die Fensterfabrik {0} hat null zurückgegeben."
     },
@@ -30765,10 +30777,6 @@
       "translation": "Verwenden Sie Boost für B → C"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "Verwenden Sie widersprüchliche Cloud-Werte"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Verwenden Sie die kompakte/scrollende Warenliste"
     },
@@ -30851,6 +30859,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "Nutzen Sie das Rhino-Bergbauradar, die Rig-Key-Akkorde, die Fahrzeugführung und die Frachtanzeige, während Sie auf einer Planetenoberfläche arbeiten."
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "Verwenden Sie die widersprüchlichen Werte der Sicherung"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -33813,6 +33825,10 @@
       "translation": "ly"
     },
     {
+      "source": "machine",
+      "translation": "Maschine"
+    },
+    {
       "source": "mainengines",
       "translation": "Hauptmotoren"
     },
@@ -34289,6 +34305,10 @@
       "translation": "Polymere"
     },
     {
+      "source": "portable",
+      "translation": "tragbar"
+    },
+    {
       "source": "position",
       "translation": "Position"
     },
@@ -34323,6 +34343,10 @@
     {
       "source": "privacy",
       "translation": "Privatsphäre"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "Profildateien und gespeicherter Löschverlauf"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -35687,6 +35711,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} unterstützt keine Guardian-Komponentenmaterialien."
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "{0} Nach dem Staging vorgenommene Änderungen erfordern eine Auswahl unter „Daten und Migration“. Lokale Daten und das bereitgestellte Backup wurden beibehalten."
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -56323,6 +56351,10 @@
       "translation": "Perfil importado"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "La sincronización del perfil omitió el archivo JSON con formato incorrecto: {0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "Sincronización de perfil: {0}"
     },
@@ -62635,6 +62667,10 @@
       "translation": "El inicio está anclado a {0}."
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "Sincronización del perfil de inicio omitida: {0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronización de inicio completa. Las preferencias portátiles y los datos del espacio de trabajo están actualizados."
     },
@@ -65903,6 +65939,10 @@
       "translation": "El {0} no está disponible para copiar."
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "{2} superó el límite de valor del perfil {0} de {1}. Los archivos JSON grandes en sistemas o caché de búsqueda minera pueden exceder este límite."
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "La fábrica de ventanas {0} devolvió nulo."
     },
@@ -67303,10 +67343,6 @@
       "translation": "Usar impulso en B → C"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "Utilice valores conflictivos en la nube"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Utilice una lista de productos compacta/desplazable"
     },
@@ -67389,6 +67425,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "Utilice el radar de minería de Rhino, las teclas del equipo, la guía de vehículos y la visualización de carga mientras trabaja en una superficie planetaria."
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "Utilice los valores conflictivos de la copia de seguridad"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -70351,6 +70391,10 @@
       "translation": "ly"
     },
     {
+      "source": "machine",
+      "translation": "máquina"
+    },
+    {
       "source": "mainengines",
       "translation": "motores principales"
     },
@@ -70827,6 +70871,10 @@
       "translation": "polímeros"
     },
     {
+      "source": "portable",
+      "translation": "portátil"
+    },
+    {
       "source": "position",
       "translation": "posición"
     },
@@ -70861,6 +70909,10 @@
     {
       "source": "privacy",
       "translation": "privacidad"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "archivos de perfil e historial de eliminación retenido"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -72225,6 +72277,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} no admite materiales del componente Guardian."
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "Las ediciones {0} realizadas después de la preparación necesitan una opción en Datos y migración. Se conservaron los datos locales y la copia de seguridad por etapas."
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -92861,6 +92917,10 @@
       "translation": "Profil importé"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "La synchronisation du profil a ignoré le fichier JSON mal formé : {0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "Synchronisation du profil : {0}"
     },
@@ -99173,6 +99233,10 @@
       "translation": "Le démarrage est épinglé sur {0}."
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "Synchronisation du profil de démarrage ignorée : {0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Synchronisation de démarrage terminée. Les préférences portables et les données de l'espace de travail sont à jour."
     },
@@ -102441,6 +102505,10 @@
       "translation": "Le {0} n'est pas disponible pour la copie."
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "La limite de valeur du profil {0} de {1} a été dépassée par {2}. Les fichiers JSON volumineux dans les systèmes ou dans le cache de recherche minière peuvent dépasser cette limite."
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "La fabrique de fenêtres {0} a renvoyé null."
     },
@@ -103841,10 +103909,6 @@
       "translation": "Utiliser boost sur B → C"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "Utiliser des valeurs contradictoires dans le cloud"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Utiliser une liste de produits compacte/déroulante"
     },
@@ -103927,6 +103991,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "Utilisez le radar minier Rhino, les accords clés, le guidage du véhicule et l'affichage de la cargaison tout en travaillant sur une surface planétaire."
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "Utiliser les valeurs contradictoires de la sauvegarde"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -106889,6 +106957,10 @@
       "translation": "ly"
     },
     {
+      "source": "machine",
+      "translation": "machine"
+    },
+    {
       "source": "mainengines",
       "translation": "moteurs principaux"
     },
@@ -107365,6 +107437,10 @@
       "translation": "polymères"
     },
     {
+      "source": "portable",
+      "translation": "portable"
+    },
+    {
       "source": "position",
       "translation": "position"
     },
@@ -107399,6 +107475,10 @@
     {
       "source": "privacy",
       "translation": "confidentialité"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "fichiers de profil et historique de suppression conservé"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -108763,6 +108843,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} ne prend pas en charge les matériaux des composants Guardian."
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "Les modifications {0} effectuées après la préparation nécessitent un choix dans Données et migration. Les données locales et la sauvegarde par étapes ont été conservées."
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -129399,6 +129483,10 @@
       "translation": "Perfil importado"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "A sincronização do perfil foi ignorada no arquivo JSON malformado: {0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "Sincronização de perfil: {0}"
     },
@@ -135711,6 +135799,10 @@
       "translation": "A inicialização está fixada em {0}."
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "Sincronização do perfil de inicialização ignorada: {0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronização de inicialização concluída. As preferências portáteis e os dados do espaço de trabalho estão atualizados."
     },
@@ -138979,6 +139071,10 @@
       "translation": "O {0} não está disponível para cópia."
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "O limite de valor do perfil {0} de {1} foi excedido por {2}. Arquivos JSON grandes em sistemas ou cache de pesquisa de mineração podem exceder esse limite."
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "A fábrica de janelas {0} retornou nulo."
     },
@@ -140379,10 +140475,6 @@
       "translation": "Use impulso em B → C"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "Use valores conflitantes na nuvem"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Use lista de mercadorias compacta/rolagem"
     },
@@ -140465,6 +140557,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "Use o radar de mineração Rhino, os acordes principais do equipamento, a orientação do veículo e a exibição da carga enquanto trabalha em uma superfície planetária."
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "Use os valores conflitantes do backup"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -143427,6 +143523,10 @@
       "translation": "apenas"
     },
     {
+      "source": "machine",
+      "translation": "máquina"
+    },
+    {
       "source": "mainengines",
       "translation": "motores principais"
     },
@@ -143903,6 +144003,10 @@
       "translation": "polímeros"
     },
     {
+      "source": "portable",
+      "translation": "portátil"
+    },
+    {
       "source": "position",
       "translation": "posição"
     },
@@ -143937,6 +144041,10 @@
     {
       "source": "privacy",
       "translation": "privacidade"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "arquivos de perfil e histórico de exclusão retido"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -145301,6 +145409,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} não suporta materiais componentes do Guardian."
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "As edições {0} feitas após a preparação precisam de uma escolha em Dados e migração. Os dados locais e o backup preparado foram mantidos."
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -165937,6 +166049,10 @@
       "translation": "Профиль импортирован"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "Синхронизация профиля пропущена, неверный файл JSON: {0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "Синхронизация профиля: {0}"
     },
@@ -172249,6 +172365,10 @@
       "translation": "Запуск закреплен за {0}."
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "Синхронизация профиля запуска пропущена: {0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Синхронизация запуска завершена. Портативные настройки и данные рабочей области актуальны."
     },
@@ -175517,6 +175637,10 @@
       "translation": "{0} недоступен для копирования."
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "Предел значения профиля {0} {1} был превышен {2}. Большие файлы JSON в системах или кеше поиска могут превышать этот предел."
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "Фабрика окон {0} вернула значение null."
     },
@@ -176917,10 +177041,6 @@
       "translation": "Используйте усиление на B → C."
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "Используйте облачные конфликтующие значения"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Использовать компактный/прокручиваемый список товаров"
     },
@@ -177003,6 +177123,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "Используйте горный радар Rhino, клавиши управления буровой установкой, наведение транспортного средства и отображение груза во время работы на поверхности планеты."
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "Используйте конфликтующие значения резервной копии"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -179965,6 +180089,10 @@
       "translation": "ли"
     },
     {
+      "source": "machine",
+      "translation": "машина"
+    },
+    {
       "source": "mainengines",
       "translation": "главные двигатели"
     },
@@ -180441,6 +180569,10 @@
       "translation": "полимеры"
     },
     {
+      "source": "portable",
+      "translation": "портативный"
+    },
+    {
       "source": "position",
       "translation": "позиция"
     },
@@ -180475,6 +180607,10 @@
     {
       "source": "privacy",
       "translation": "конфиденциальность"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "файлы профиля и сохраненная история удалений"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -181839,6 +181975,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} не поддерживает материалы компонентов Guardian."
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "Изменения {0}, внесенные после подготовки, требуют выбора в разделе «Данные и миграция». Локальные данные и поэтапное резервное копирование были сохранены."
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -202475,6 +202615,10 @@
       "translation": "导入配置文件"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "配置文件同步跳过了格式错误的 JSON 文件：{0}"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "配置文件同步：{0}"
     },
@@ -208787,6 +208931,10 @@
       "translation": "启动固定到 {0}。"
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "已跳过启动配置文件同步：{0}"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "启动同步完成。便携式首选项和工作区数据是最新的。"
     },
@@ -212055,6 +212203,10 @@
       "translation": "{0} 不可复制。"
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "{2} 超出了 {1} 的 {0} 配置文件值限制。系统或挖掘搜索缓存中的大型 JSON 文件可能会超出此限制。"
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "{0} 窗口工厂返回 null。"
     },
@@ -213455,10 +213607,6 @@
       "translation": "在 B → C 上使用升压"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "使用云冲突值"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "使用紧凑/滚动商品列表"
     },
@@ -213541,6 +213689,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "在行星表面工作时使用 Rhino 采矿雷达、装备键、车辆引导和货物显示。"
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "使用备份的冲突值"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -216503,6 +216655,10 @@
       "translation": "莱"
     },
     {
+      "source": "machine",
+      "translation": "机器"
+    },
+    {
       "source": "mainengines",
       "translation": "主机"
     },
@@ -216979,6 +217135,10 @@
       "translation": "聚合物"
     },
     {
+      "source": "portable",
+      "translation": "便携的"
+    },
+    {
       "source": "position",
       "translation": "位置"
     },
@@ -217013,6 +217173,10 @@
     {
       "source": "privacy",
       "translation": "隐私"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "配置文件和保留的删除历史记录"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -218377,6 +218541,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "{0} 不支持 Guardian 组件材质。"
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "暂存后进行的 {0} 编辑需要在数据和迁移中进行选择。保留本地数据和分阶段备份。"
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",
@@ -239013,6 +239181,10 @@
       "translation": "* PROFILE IMPORTED >>>!"
     },
     {
+      "source": "Profile sync skipped malformed JSON file: {0}",
+      "translation": "* PROFILE SYNC SKIPPED MALFORMED JSON FILE: {0} >>>!"
+    },
+    {
       "source": "Profile sync: {0}",
       "translation": "* PROFILE SYNC: {0} >>>!"
     },
@@ -245325,6 +245497,10 @@
       "translation": "* STARTUP IS PINNED TO {0}. >>>!"
     },
     {
+      "source": "Startup profile sync skipped: {0}",
+      "translation": "* STARTUP PROFILE SYNC SKIPPED: {0} >>>!"
+    },
+    {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "* STARTUP SYNC COMPLETE. PORTABLE PREFERENCES AND WORKSPACE DATA ARE UP TO DATE. >>>!"
     },
@@ -248593,6 +248769,10 @@
       "translation": "* THE {0} IS NOT AVAILABLE TO COPY. >>>!"
     },
     {
+      "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+      "translation": "* THE {0} PROFILE VALUE LIMIT OF {1} WAS EXCEEDED BY {2}. LARGE JSON FILES IN SYSTEMS OR MINING-SEARCH-CACHE CAN EXCEED THIS LIMIT. >>>!"
+    },
+    {
       "source": "The {0} window factory returned null.",
       "translation": "* THE {0} WINDOW FACTORY RETURNED NULL. >>>!"
     },
@@ -249993,10 +250173,6 @@
       "translation": "* USE BOOST ON B → C >>>!"
     },
     {
-      "source": "Use cloud conflicting values",
-      "translation": "* USE CLOUD CONFLICTING VALUES >>>!"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "* USE COMPACT/SCROLLING COMMODITIES LIST >>>!"
     },
@@ -250079,6 +250255,10 @@
     {
       "source": "Use the Rhino mining radar, rig key chords, vehicle guidance, and cargo display while working on a planetary surface.",
       "translation": "* USE THE RHINO MINING RADAR, RIG KEY CHORDS, VEHICLE GUIDANCE, AND CARGO DISPLAY WHILE WORKING ON A PLANETARY SURFACE. >>>!"
+    },
+    {
+      "source": "Use the backup's conflicting values",
+      "translation": "* USE THE BACKUP'S CONFLICTING VALUES >>>!"
     },
     {
       "source": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -253041,6 +253221,10 @@
       "translation": "* LY >>>!"
     },
     {
+      "source": "machine",
+      "translation": "* MACHINE >>>!"
+    },
+    {
       "source": "mainengines",
       "translation": "* MAINENGINES >>>!"
     },
@@ -253517,6 +253701,10 @@
       "translation": "* POLYMERS >>>!"
     },
     {
+      "source": "portable",
+      "translation": "* PORTABLE >>>!"
+    },
+    {
       "source": "position",
       "translation": "* POSITION >>>!"
     },
@@ -253551,6 +253739,10 @@
     {
       "source": "privacy",
       "translation": "* PRIVACY >>>!"
+    },
+    {
+      "source": "profile files and retained deletion history",
+      "translation": "* PROFILE FILES AND RETAINED DELETION HISTORY >>>!"
     },
     {
       "source": "profile frontier id journal commander selection",
@@ -254915,6 +255107,10 @@
     {
       "source": "{0} does not support Guardian component materials.",
       "translation": "* {0} DOES NOT SUPPORT GUARDIAN COMPONENT MATERIALS. >>>!"
+    },
+    {
+      "source": "{0} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained.",
+      "translation": "* {0} EDITS MADE AFTER STAGING NEED A CHOICE IN DATA & MIGRATION. LOCAL DATA AND THE STAGED BACKUP WERE RETAINED. >>>!"
     },
     {
       "source": "{0} events across {1} journal file(s), {2} to {3}.{4}",

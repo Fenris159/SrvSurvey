@@ -23,11 +23,13 @@ internal sealed class ProfileSyncStore
         AllowTrailingCommas = true,
     };
     private readonly AppDataPaths paths;
+    private readonly Action<string> log;
 
     /// <summary>Opens the machine-local sync directory and verifies its installation identity.</summary>
-    internal ProfileSyncStore(AppDataPaths paths, Func<string>? machineIdentity = null)
+    internal ProfileSyncStore(AppDataPaths paths, Func<string>? machineIdentity = null, Action<string>? log = null)
     {
         this.paths = paths;
+        this.log = log ?? (message => System.Diagnostics.Trace.TraceWarning(message));
         Directory.CreateDirectory(StateDirectory);
         Device = LoadDevice(machineIdentity ?? ReadMachineIdentity);
     }
@@ -68,11 +70,13 @@ internal sealed class ProfileSyncStore
     internal void SaveBaseline(ProfileSnapshot snapshot) =>
         WriteAtomic(Path.Combine(StateDirectory, "baseline.json"), snapshot.Serialize());
 
-    /// <summary>Reads the current files without including credentials, journals, caches, or queued API reports.</summary>
+    /// <summary>Reads allowed profile data without including credentials, journals, or queued API reports.</summary>
     internal ProfileSnapshot Capture()
     {
         var portable = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
         var machine = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
+        Dictionary<string, SyncValue> baseline = LoadBaseline()?.Portable ?? [];
+        var skippedFiles = new HashSet<string>(StringComparer.Ordinal);
         foreach ((string area, string root) in Roots())
         {
             if (!Directory.Exists(root))
@@ -94,7 +98,17 @@ internal sealed class ProfileSyncStore
                     throw new InvalidDataException("A profile file exceeds the supported backup size.");
                 }
 
-                JsonNode? node = ReadContent(relative, bytes);
+                JsonNode? node;
+                try
+                {
+                    node = ReadContent(relative, bytes);
+                }
+                catch (JsonException)
+                {
+                    skippedFiles.Add(ProfileSyncPolicy.Key(area, relative, ""));
+                    log("Profile sync skipped malformed JSON file: " + file);
+                    continue;
+                }
                 ProfileSyncPolicy.RemoveLocalReferencesFromArrays(node);
                 foreach ((string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(node))
                 {
@@ -105,20 +119,52 @@ internal sealed class ProfileSyncStore
                     }
 
                     string key = ProfileSyncPolicy.Key(area, relative, pointer);
-                    (local.Value ? machine : portable)[key] = value?.DeepClone();
+                    Dictionary<string, JsonNode?> target = local.Value ? machine : portable;
+                    target[key] = value?.DeepClone();
+                    CheckValueLimit(target.Count, local.Value ? "machine" : "portable", file);
                 }
             }
         }
+        RetainSkippedValues(portable, baseline, skippedFiles);
+        Dictionary<string, SyncValue> captured = ProfileSyncMerge.Capture(Device.Id, portable, baseline);
+        CheckValueLimit(captured.Count, "portable", "profile files and retained deletion history");
         return new(
             ProfileSnapshot.CurrentSchema,
             Device.Id,
             Device.Name,
             Device.Platform,
             DateTimeOffset.UtcNow,
-            ProfileSyncMerge.Capture(Device.Id, portable, LoadBaseline()?.Portable ?? []),
+            captured,
             machine,
             Device.MachineHash
         );
+    }
+
+    /// <summary>Retains unreadable files' live values so capture also preserves their existing counters and deletions.</summary>
+    private static void RetainSkippedValues(
+        Dictionary<string, JsonNode?> portable,
+        Dictionary<string, SyncValue> baseline,
+        HashSet<string> skippedFiles
+    )
+    {
+        foreach ((string key, SyncValue value) in baseline)
+        {
+            if (!value.Deleted && skippedFiles.Contains(key[..(key.IndexOf('#') + 1)]))
+            {
+                portable[key] = value.Value?.DeepClone();
+            }
+        }
+    }
+
+    /// <summary>Reports excessive flattened data at capture time rather than as an invalid saved backup.</summary>
+    private static void CheckValueLimit(int count, string scope, string cause)
+    {
+        if (count > ProfileSnapshot.MaximumValues)
+        {
+            throw new InvalidDataException(
+                $"The {scope} profile value limit of {ProfileSnapshot.MaximumValues} was exceeded by {cause}. Large JSON files in systems or mining-search-cache can exceed this limit."
+            );
+        }
     }
 
     /// <summary>Keeps ten local recovery snapshots independently of Google Drive availability.</summary>
@@ -187,23 +233,85 @@ internal sealed class ProfileSyncStore
             wanted ??= new(null, true, []);
             values[key] = ProfileSyncMerge.Resolve(Device.Id, new(key, previous, wanted), useRemote: true);
         }
+        SaveBaseline(current);
         StageRestore(snapshot with { Portable = values }, restoreMachine);
     }
 
     /// <summary>Applies a queued restore before workspaces and journal producers are constructed.</summary>
-    internal bool ApplyPending()
+    internal bool ApplyPending() => ApplyPending(out _);
+
+    /// <summary>Merges a queued restore with subsequent edits, deferring conflicting changes for an explicit choice.</summary>
+    internal bool ApplyPending(out SyncMergeResult? conflicts)
     {
+        conflicts = null;
         if (!File.Exists(PendingPath))
         {
             return false;
         }
 
-        var snapshot = ProfileSnapshot.Parse(File.ReadAllBytes(PendingPath));
+        var staged = ProfileSnapshot.Parse(File.ReadAllBytes(PendingPath));
+        ValidateScope(staged);
+        if (!IsOriginalMachine(staged))
+        {
+            throw new InvalidOperationException(
+                "The backup's hardware settings belong to another machine or operating system."
+            );
+        }
+        Dictionary<string, SyncValue> baseline = LoadBaseline()?.Portable ?? [];
+        ProfileSnapshot current = Capture();
+        SyncMergeResult merge = MergePending(current.Portable, staged.Portable, baseline);
+        if (merge.Conflicts.Count > 0)
+        {
+            SaveBackup(current);
+            conflicts = merge;
+            return false;
+        }
+        ProfileSnapshot snapshot = staged with { Portable = merge.Values };
         Apply(snapshot, restoreMachine: true);
         SaveBaseline(snapshot);
         File.Delete(PendingPath);
         return true;
     }
+
+    /// <summary>Detects competing edits against the staging baseline, including same-device counter collisions.</summary>
+    private SyncMergeResult MergePending(
+        Dictionary<string, SyncValue> current,
+        Dictionary<string, SyncValue> staged,
+        Dictionary<string, SyncValue> baseline
+    )
+    {
+        var local = new Dictionary<string, SyncValue>(current, StringComparer.Ordinal);
+        var remote = new Dictionary<string, SyncValue>(staged, StringComparer.Ordinal);
+        var conflicts = new List<SyncConflict>();
+        foreach ((string key, SyncValue value) in current)
+        {
+            SyncValue? previous = baseline.GetValueOrDefault(key);
+            if (
+                !SameContent(value, previous)
+                && staged.TryGetValue(key, out SyncValue? incoming)
+                && !SameContent(value, incoming)
+            )
+            {
+                var conflict = new SyncConflict(key, value, incoming);
+                remote.Remove(key);
+                if (SameContent(incoming, previous))
+                {
+                    local[key] = ProfileSyncMerge.Resolve(Device.Id, conflict, useRemote: false);
+                }
+                else
+                {
+                    conflicts.Add(conflict);
+                }
+            }
+        }
+        SyncMergeResult merged = ProfileSyncMerge.Merge(local, remote);
+        return new(merged.Values, conflicts.Concat(merged.Conflicts).ToArray());
+    }
+
+    /// <summary>Compares content against the staging baseline, treating an absent entry as a deletion.</summary>
+    private static bool SameContent(SyncValue first, SyncValue? second) =>
+        first.Deleted == (second?.Deleted ?? true)
+        && (first.Deleted || JsonNode.DeepEquals(first.Value, second?.Value));
 
     /// <summary>Writes validated JSON changes atomically and rolls all changed files back on failure.</summary>
     internal void Apply(ProfileSnapshot snapshot, bool restoreMachine = false)

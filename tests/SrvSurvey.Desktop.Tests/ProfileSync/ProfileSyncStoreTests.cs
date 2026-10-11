@@ -9,6 +9,156 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    /// <summary>Verifies that restore conflicts cannot bypass an untrusted pending snapshot's machine identity.</summary>
+    [Fact]
+    public void PendingRestoreValidatesHardwareIdentityBeforeOfferingConflictChoices()
+    {
+        using var remote = new ProfileSyncTestRoot();
+        remote.Write("config", "cross-platform-ui.json", "{\"Theme\":\"remote\"}");
+        remote.Write("data", "plotters.json", "{\"Panel\":\"left:10,top:20\"}");
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"local\"}");
+        File.WriteAllBytes(root.Store.PendingPath, remote.Store.Capture().Serialize());
+
+        Assert.Throws<InvalidOperationException>(() => root.Store.ApplyPending());
+
+        Assert.Contains("local", File.ReadAllText(root.Paths.UiSettingsPath));
+        Assert.False(File.Exists(root.Path("data", "plotters.json")));
+    }
+
+    /// <summary>Verifies that malformed files retain baseline values and deletions while other files are captured.</summary>
+    [Fact]
+    public void MalformedFilesRetainBaselineValuesAndDeletionsWhileOtherFilesAreCaptured()
+    {
+        var messages = new List<string>();
+        using var root = new ProfileSyncTestRoot(messages.Add);
+        root.Write("data", "systems/example.json", "{\"Name\":\"Sol\",\"Removed\":true}");
+        root.Store.SaveBaseline(root.Store.Capture());
+        root.Write("data", "systems/example.json", "{\"Name\":\"Sol\"}");
+        ProfileSnapshot baseline = root.Store.Capture();
+        root.Store.SaveBaseline(baseline);
+        root.Write("data", "systems/example.json", "{truncated");
+        root.Write("data", "systems/new.json", "{malformed");
+        root.Write("data", "theme.json", "{\"orange\":\"#abc\"}");
+
+        ProfileSnapshot captured = root.Store.Capture();
+
+        foreach ((string key, SyncValue value) in baseline.Portable)
+        {
+            Assert.Equal(value.Deleted, captured.Portable[key].Deleted);
+            Assert.True(JsonNode.DeepEquals(value.Value, captured.Portable[key].Value));
+            Assert.Equal(value.Clock, captured.Portable[key].Clock);
+        }
+        Assert.Contains(Key("data", "theme.json", "/orange"), captured.Portable.Keys);
+        Assert.DoesNotContain(
+            captured.Portable.Keys,
+            key => key.Contains("systems/new.json", StringComparison.Ordinal)
+        );
+        Assert.Contains(
+            messages,
+            message => message.Contains(root.Path("data", "systems/example.json"), StringComparison.Ordinal)
+        );
+        Assert.Contains(
+            messages,
+            message => message.Contains(root.Path("data", "systems/new.json"), StringComparison.Ordinal)
+        );
+        root.Store.SaveBackup(captured);
+    }
+
+    /// <summary>Verifies that high volume capture reports the portable key limit before saving.</summary>
+    [Fact]
+    public void HighVolumeCaptureReportsThePortableKeyLimitBeforeSaving()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var content = new JsonObject();
+        for (int index = 0; index <= 100_000; index++)
+        {
+            content[index.ToString(System.Globalization.CultureInfo.InvariantCulture)] = index;
+        }
+        root.Write("data", "systems/large.json", content.ToJsonString());
+
+        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => root.Store.Capture());
+
+        Assert.Contains("100000", failure.Message);
+        Assert.Contains("portable", failure.Message);
+        Assert.Contains("systems/large.json", failure.Message);
+        Assert.False(Directory.Exists(System.IO.Path.Combine(root.Store.StateDirectory, "backups")));
+    }
+
+    /// <summary>Verifies that deleted history counts toward the portable limit and the limit itself is allowed.</summary>
+    [Fact]
+    public void DeletedHistoryCountsTowardThePortableLimitAndTheLimitItselfIsAllowed()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var content = new JsonObject();
+        for (int index = 0; index < ProfileSnapshot.MaximumValues; index++)
+        {
+            content[index.ToString(System.Globalization.CultureInfo.InvariantCulture)] = index;
+        }
+        root.Write("data", "systems/large.json", content.ToJsonString());
+        ProfileSnapshot baseline = root.Store.Capture();
+        Assert.Equal(ProfileSnapshot.MaximumValues, baseline.Portable.Count);
+        root.Store.SaveBaseline(baseline);
+        File.Delete(root.Path("data", "systems/large.json"));
+        root.Write("data", "theme.json", "{\"orange\":\"#abc\"}");
+
+        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => root.Store.Capture());
+
+        Assert.Contains("100000", failure.Message);
+        Assert.Contains("deletion history", failure.Message);
+    }
+
+    /// <summary>Verifies that excessive machine values have a clear capture limit.</summary>
+    [Fact]
+    public void ExcessiveMachineValuesHaveAClearCaptureLimit()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var content = new JsonObject();
+        for (int index = 0; index <= ProfileSnapshot.MaximumValues; index++)
+        {
+            content[index.ToString(System.Globalization.CultureInfo.InvariantCulture)] = index;
+        }
+        root.Write("data", "plotters.json", content.ToJsonString());
+
+        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => root.Store.Capture());
+
+        Assert.Contains("machine", failure.Message);
+        Assert.Contains("plotters.json", failure.Message);
+    }
+
+    /// <summary>Verifies that pending restore preserves edits to values that were not changed by the restore.</summary>
+    [Fact]
+    public void PendingRestorePreservesEditsToValuesThatWereNotChangedByTheRestore()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\",\"Workspace\":{\"Navigation\":\"travel\"}}");
+        ProfileSnapshot old = root.Store.Capture();
+        root.Write(
+            "config",
+            "cross-platform-ui.json",
+            "{\"Theme\":\"current\",\"Workspace\":{\"Navigation\":\"travel\"}}"
+        );
+        root.Store.StageExplicitRestore(old, false);
+        root.Write(
+            "config",
+            "cross-platform-ui.json",
+            "{\"Theme\":\"current\",\"Workspace\":{\"Navigation\":\"mining\"}}"
+        );
+
+        Assert.True(root.Store.ApplyPending());
+
+        JsonNode settings = JsonNode.Parse(File.ReadAllText(root.Paths.UiSettingsPath))!;
+        Assert.Equal("old", settings["Theme"]!.GetValue<string>());
+        Assert.Equal("mining", settings["Workspace"]!["Navigation"]!.GetValue<string>());
+        Assert.Equal(
+            "mining",
+            root.Store.LoadBaseline()!
+                .Portable[Key("config", "cross-platform-ui.json", "/Workspace/Navigation")]
+                .Value!.GetValue<string>()
+        );
+    }
+
+    /// <summary>Verifies that capture separates machine settings and excludes secrets and operational state.</summary>
     [Fact]
     public void CaptureSeparatesMachineSettingsAndExcludesSecretsAndOperationalState()
     {
@@ -42,6 +192,7 @@ public sealed class ProfileSyncStoreTests
         ProfileSyncStore.ValidateScope(snapshot);
     }
 
+    /// <summary>Verifies that restore merges portable preferences and preserves machine and credential fields.</summary>
     [Fact]
     public void RestoreMergesPortablePreferencesAndPreservesMachineAndCredentialFields()
     {
@@ -73,6 +224,7 @@ public sealed class ProfileSyncStoreTests
         );
     }
 
+    /// <summary>Verifies that hardware restore requires original machine and operating system.</summary>
     [Fact]
     public void HardwareRestoreRequiresOriginalMachineAndOperatingSystem()
     {
@@ -93,6 +245,7 @@ public sealed class ProfileSyncStoreTests
         Assert.NotNull(first.Store.LoadBaseline());
     }
 
+    /// <summary>Verifies that same machine can recover hardware after its local sync identity is lost.</summary>
     [Fact]
     public void SameMachineCanRecoverHardwareAfterItsLocalSyncIdentityIsLost()
     {
@@ -109,6 +262,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Contains("left:10", File.ReadAllText(root.Path("data", "plotters.json")));
     }
 
+    /// <summary>Verifies that missing OS identity does not authorize hardware restore on another installation.</summary>
     [Fact]
     public void MissingOsIdentityDoesNotAuthorizeHardwareRestoreOnAnotherInstallation()
     {
@@ -124,6 +278,7 @@ public sealed class ProfileSyncStoreTests
         Assert.True(source.ApplyPending());
     }
 
+    /// <summary>Verifies that portable pending restore can be applied on another machine.</summary>
     [Fact]
     public void PortablePendingRestoreCanBeAppliedOnAnotherMachine()
     {
@@ -135,6 +290,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Contains("#abc", File.ReadAllText(second.Path("data", "theme.json")));
     }
 
+    /// <summary>Verifies that untrusted backup cannot write outside allowed files.</summary>
     [Theory]
     [InlineData("../bookmarks.json")]
     [InlineData("/bookmarks.json")]
@@ -159,6 +315,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Throws<InvalidDataException>(() => root.Store.Apply(malicious));
     }
 
+    /// <summary>Verifies that keys must match their declared scope.</summary>
     [Theory]
     [InlineData("invalid")]
     [InlineData("data/#")]
@@ -171,6 +328,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Throws<InvalidDataException>(() => ProfileSyncPolicy.ParseKey(key, machine: false));
     }
 
+    /// <summary>Verifies that deleted values remove existing fields and files.</summary>
     [Fact]
     public void DeletedValuesRemoveExistingFieldsAndFiles()
     {
@@ -189,6 +347,7 @@ public sealed class ProfileSyncStoreTests
         Assert.False(File.Exists(root.Path("data", "bookmarks.json")));
     }
 
+    /// <summary>Verifies that deleted saved routes stay absent instead of returning as empty catalog entries.</summary>
     [Fact]
     public async Task DeletedSavedRoutesStayAbsentInsteadOfReturningAsEmptyCatalogEntries()
     {
@@ -209,6 +368,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Empty(await routes.ListAsync("F123"));
     }
 
+    /// <summary>Verifies that device identity and preferences persist and backup history is bounded.</summary>
     [Fact]
     public void DeviceIdentityAndPreferencesPersistAndBackupHistoryIsBounded()
     {
@@ -230,6 +390,7 @@ public sealed class ProfileSyncStoreTests
         );
     }
 
+    /// <summary>Verifies that JSON pointers handle property names and malformed files do not get overwritten.</summary>
     [Fact]
     public void JsonPointersHandlePropertyNamesAndMalformedFilesDoNotGetOverwritten()
     {
@@ -254,6 +415,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Equal("{broken", File.ReadAllText(root.Path("data", "theme.json")));
     }
 
+    /// <summary>Verifies that capture and restore refuse symbolic links.</summary>
     [Fact]
     public void CaptureAndRestoreRefuseSymbolicLinks()
     {
@@ -270,6 +432,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Throws<InvalidDataException>(() => root.Store.Apply(external.Store.Capture()));
     }
 
+    /// <summary>Verifies that an older explicit restore supersedes current counters and removes newer portable values.</summary>
     [Fact]
     public void AnOlderExplicitRestoreSupersedesCurrentCountersAndRemovesNewerPortableValues()
     {
@@ -295,6 +458,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Empty(ProfileSyncMerge.Merge(restored.Portable, current.Portable).Conflicts);
     }
 
+    /// <summary>Verifies that search filters retain their plain text keys and commander scoped settings remain independent.</summary>
     [Fact]
     public void SearchFiltersRetainTheirPlainTextKeysAndCommanderScopedSettingsRemainIndependent()
     {
@@ -318,6 +482,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Contains("#abc", File.ReadAllText(destination.Path("data", "commanders/F123/overlays/theme.json")));
     }
 
+    /// <summary>Verifies that malformed preferences and copied hardware identity do not reuse another machine's identity.</summary>
     [Fact]
     public void MalformedPreferencesAndCopiedHardwareIdentityDoNotReuseAnotherMachinesIdentity()
     {
@@ -331,6 +496,7 @@ public sealed class ProfileSyncStoreTests
         Assert.NotEmpty(recovered.Device.Id);
     }
 
+    /// <summary>Verifies that an interrupted restore recovers the complete previous files before startup.</summary>
     [Fact]
     public void AnInterruptedRestoreRecoversTheCompletePreviousFilesBeforeStartup()
     {
@@ -355,6 +521,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Throws<InvalidDataException>(root.Store.RecoverInterruptedRestore);
     }
 
+    /// <summary>Verifies that directory at a file path cannot destroy existing data.</summary>
     [Fact]
     public void DirectoryAtAFilePathCannotDestroyExistingData()
     {
@@ -367,6 +534,7 @@ public sealed class ProfileSyncStoreTests
         Assert.True(Directory.Exists(destination.Path("data", "bookmarks.json")));
     }
 
+    /// <summary>Verifies that recovery works when Windows data is nested inside the configuration folder.</summary>
     [Fact]
     public void RecoveryWorksWhenWindowsDataIsNestedInsideTheConfigurationFolder()
     {
@@ -393,6 +561,7 @@ public sealed class ProfileSyncStoreTests
         Assert.Contains("retained", File.ReadAllText(file));
     }
 
+    /// <summary>Verifies that portable collection changes keep existing local screenshot links and journey counters.</summary>
     [Fact]
     public void PortableCollectionChangesKeepExistingLocalScreenshotLinksAndJourneyCounters()
     {
@@ -429,6 +598,7 @@ public sealed class ProfileSyncStoreTests
         );
     }
 
+    /// <summary>Verifies that empty containers do not introduce parent keys that can overwrite newer children.</summary>
     [Fact]
     public void EmptyContainersDoNotIntroduceParentKeysThatCanOverwriteNewerChildren()
     {
@@ -447,6 +617,7 @@ public sealed class ProfileSyncStoreTests
         );
     }
 
+    /// <summary>Builds a scoped profile key using the production file and JSON-pointer encoding.</summary>
     private static string Key(string area, string relative, string pointer) =>
         ProfileSyncPolicy.Key(area, relative, pointer);
 }
@@ -459,7 +630,8 @@ internal sealed class ProfileSyncTestRoot : IDisposable
         Guid.NewGuid().ToString("N")
     );
 
-    internal ProfileSyncTestRoot()
+    /// <summary>Creates isolated configuration, data, and cache roots with a stable test machine identity.</summary>
+    internal ProfileSyncTestRoot(Action<string>? log = null)
     {
         Paths = new(
             System.IO.Path.Combine(root, "config"),
@@ -468,16 +640,18 @@ internal sealed class ProfileSyncTestRoot : IDisposable
             []
         );
         Directory.CreateDirectory(Paths.DataDirectory);
-        Store = new(Paths, () => MachineIdentity);
+        Store = new(Paths, () => MachineIdentity, log);
     }
 
     internal AppDataPaths Paths { get; }
     internal ProfileSyncStore Store { get; }
     internal string MachineIdentity => root;
 
+    /// <summary>Resolves a fixture path within the chosen configuration or data root.</summary>
     internal string Path(string area, string relative) =>
         System.IO.Path.Combine(area == "config" ? Paths.ConfigDirectory : Paths.DataDirectory, relative);
 
+    /// <summary>Creates parent directories and writes the requested profile fixture.</summary>
     internal void Write(string area, string relative, string text)
     {
         string path = Path(area, relative);
@@ -485,5 +659,6 @@ internal sealed class ProfileSyncTestRoot : IDisposable
         File.WriteAllText(path, text);
     }
 
+    /// <summary>Removes all files belonging to the isolated profile fixture.</summary>
     public void Dispose() => Directory.Delete(root, recursive: true);
 }

@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class WorkspaceContinuitySettingsStoreTests
 {
+    /// <summary>Verifies that defaults and selections are portable without changing other sections.</summary>
     [Fact]
     public void DefaultsAndSelectionsArePortableWithoutChangingOtherSections()
     {
@@ -19,6 +20,7 @@ public sealed class WorkspaceContinuitySettingsStoreTests
         Assert.Equal("gold", JsonNode.Parse(File.ReadAllText(root.Paths.UiSettingsPath))!["Theme"]!.GetValue<string>());
     }
 
+    /// <summary>Verifies that invalid saved tabs use their safe default.</summary>
     [Theory]
     [InlineData(-1)]
     [InlineData(99)]

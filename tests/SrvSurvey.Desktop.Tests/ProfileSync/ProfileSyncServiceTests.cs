@@ -9,6 +9,144 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncServiceTests
 {
+    /// <summary>Verifies that optional startup construction failure returns a fallback and logs the cause.</summary>
+    [Fact]
+    public async Task OptionalStartupConstructionFailureReturnsAFallbackAndLogsTheCause()
+    {
+        var messages = new List<string>();
+
+        ProfileSyncService? result = await App.StartProfileSyncAsync(
+            () => throw new IOException("profile directory unavailable"),
+            messages.Add
+        );
+
+        Assert.Null(result);
+        Assert.Contains(
+            messages,
+            message => message.Contains("profile directory unavailable", StringComparison.Ordinal)
+        );
+    }
+
+    /// <summary>Verifies that optional startup failure disposes the partial service and its live lease.</summary>
+    [Fact]
+    public async Task OptionalStartupFailureDisposesThePartialServiceAndItsLiveLease()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive { LinkStatusFailure = new ArgumentException("unexpected provider failure") };
+        var messages = new List<string>();
+
+        ProfileSyncService? result = await App.StartProfileSyncAsync(
+            () => new ProfileSyncService(root.Store, cloud),
+            messages.Add
+        );
+
+        Assert.Null(result);
+        Assert.True(cloud.Disposed);
+        Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+        Assert.Contains(messages, message => message.Contains("unexpected provider failure", StringComparison.Ordinal));
+    }
+
+    /// <summary>Verifies that optional startup success retains the service for the desktop lifetime.</summary>
+    [Fact]
+    public async Task OptionalStartupSuccessRetainsTheServiceForTheDesktopLifetime()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var cloud = new FakeProfileDrive();
+        using var service = new ProfileSyncService(root.Store, cloud);
+        var messages = new List<string>();
+
+        ProfileSyncService? result = await App.StartProfileSyncAsync(() => service, messages.Add);
+
+        Assert.Same(service, result);
+        Assert.False(cloud.Disposed);
+        Assert.Empty(messages);
+    }
+
+    /// <summary>Verifies that staged restore conflicts preserve later edits until a choice even without Google.</summary>
+    [Theory]
+    [InlineData(false, "edited")]
+    [InlineData(true, "old")]
+    public async Task StagedRestoreConflictsPreserveLaterEditsUntilAChoiceEvenWithoutGoogle(
+        bool useCloud,
+        string expected
+    )
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\"}");
+        ProfileSnapshot old = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"current\"}");
+        root.Store.StageExplicitRestore(old, false);
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"edited\"}");
+        var cloud = new FakeProfileDrive { IsLinked = false };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.StartupAsync();
+
+        Assert.Single(service.Conflicts);
+        Assert.Contains("edited", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.True(service.RestartRequired);
+        await service.ResolveConflictsAsync(useCloud);
+        Assert.Empty(service.Conflicts);
+        Assert.True(root.Store.ApplyPending());
+        Assert.Equal(
+            expected,
+            JsonNode.Parse(await File.ReadAllTextAsync(root.Paths.UiSettingsPath))!["Theme"]!.GetValue<string>()
+        );
+        Assert.Empty(cloud.Uploaded);
+    }
+
+    /// <summary>Verifies that staged conflict survives repeated starts and retains the requested hardware restore.</summary>
+    [Fact]
+    public async Task StagedConflictSurvivesRepeatedStartsAndRetainsTheRequestedHardwareRestore()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\"}");
+        root.Write("data", "plotters.json", "{\"Panel\":\"left:10,top:20\"}");
+        ProfileSnapshot old = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"current\"}");
+        root.Write("data", "plotters.json", "{\"Panel\":\"left:90,top:90\"}");
+        root.Store.StageExplicitRestore(old, true);
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"edited\"}");
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            using var service = new ProfileSyncService(root.Store, new FakeProfileDrive { IsLinked = false });
+            await service.StartupAsync();
+            Assert.Single(service.Conflicts);
+            Assert.Contains("left:90", await File.ReadAllTextAsync(root.Path("data", "plotters.json")));
+            if (attempt == 1)
+            {
+                await service.ResolveConflictsAsync(false);
+            }
+        }
+
+        Assert.True(root.Store.ApplyPending());
+        Assert.Contains("edited", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.Contains("left:10", await File.ReadAllTextAsync(root.Path("data", "plotters.json")));
+    }
+
+    /// <summary>Verifies that edits after sync staging are merged with independent downloaded values.</summary>
+    [Fact]
+    public async Task EditsAfterSyncStagingAreMergedWithIndependentDownloadedValues()
+    {
+        using var remote = new ProfileSyncTestRoot();
+        remote.Write("data", "bookmarks.json", "[{\"Name\":\"Sol\"}]");
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\"}");
+        var cloud = new FakeProfileDrive();
+        cloud.Add(remote.Store.Capture());
+        using var service = new ProfileSyncService(root.Store, cloud);
+        await service.SynchronizeAsync();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"edited\"}");
+
+        Assert.True(root.Store.ApplyPending());
+
+        Assert.Contains("edited", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.Contains("Sol", await File.ReadAllTextAsync(root.Path("data", "bookmarks.json")));
+        Assert.Empty(service.Conflicts);
+    }
+
+    /// <summary>Verifies that linking enables automatic sync and disconnect only affects this machine.</summary>
     [Fact]
     public async Task LinkingEnablesAutomaticSyncAndDisconnectOnlyAffectsThisMachine()
     {
@@ -23,6 +161,7 @@ public sealed class ProfileSyncServiceTests
         Assert.False(root.Store.LoadPreferences().Automatic);
     }
 
+    /// <summary>Verifies that automatic sync disabled retains the link without contacting Google at startup.</summary>
     [Fact]
     public async Task AutomaticSyncDisabledRetainsTheLinkWithoutContactingGoogleAtStartup()
     {
@@ -35,6 +174,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Empty(cloud.Uploaded);
     }
 
+    /// <summary>Verifies that offline backup is retained and retried without losing counters.</summary>
     [Fact]
     public async Task OfflineBackupIsRetainedAndRetriedWithoutLosingCounters()
     {
@@ -52,6 +192,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Equal(1, cloud.Uploaded[0].Portable.Values.Single().Clock[root.Store.Device.Id]);
     }
 
+    /// <summary>Verifies that startup pulls remote changes before workspaces load and leaves hardware local.</summary>
     [Fact]
     public async Task StartupPullsRemoteChangesBeforeWorkspacesLoadAndLeavesHardwareLocal()
     {
@@ -74,6 +215,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Contains("Startup sync complete", service.Status);
     }
 
+    /// <summary>Verifies that sync while open stages remote changes for restart and skips stale shutdown upload.</summary>
     [Fact]
     public async Task SyncWhileOpenStagesRemoteChangesForRestartAndSkipsStaleShutdownUpload()
     {
@@ -94,6 +236,7 @@ public sealed class ProfileSyncServiceTests
         Assert.True(File.Exists(root.Path("data", "bookmarks.json")));
     }
 
+    /// <summary>Verifies that conflicts keep both versions until an explicit choice.</summary>
     [Theory]
     [InlineData(false, "blue")]
     [InlineData(true, "gold")]
@@ -121,6 +264,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Equal(2, cloud.Uploaded[^1].Portable.Values.Single().Clock.Count);
     }
 
+    /// <summary>Verifies that second commander instance defers restores until all readers close.</summary>
     [Fact]
     public async Task SecondCommanderInstanceDefersRestoresUntilAllReadersClose()
     {
@@ -134,6 +278,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Contains("another SrvSurvey instance", second.Status);
     }
 
+    /// <summary>Verifies that backups can be listed and restored locally or from cloud.</summary>
     [Fact]
     public async Task BackupsCanBeListedAndRestoredLocallyOrFromCloud()
     {
@@ -155,6 +300,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Throws<InvalidDataException>(() => service.RestoreLocal(Encoding.UTF8.GetBytes("bad"), false));
     }
 
+    /// <summary>Verifies that view model contains errors and refreshes link backup and restore actions.</summary>
     [Fact]
     public async Task ViewModelContainsErrorsAndRefreshesLinkBackupAndRestoreActions()
     {
@@ -207,6 +353,7 @@ public sealed class ProfileSyncServiceTests
         Assert.False(vm.IsBusy);
     }
 
+    /// <summary>Verifies that conflicts at startup keep local edits made before the user chooses.</summary>
     [Fact]
     public async Task ConflictsAtStartupKeepLocalEditsMadeBeforeTheUserChooses()
     {
@@ -234,6 +381,7 @@ public sealed class ProfileSyncServiceTests
         Assert.True(settings["MineMap"]!["ShowMapLegend"]!.GetValue<bool>());
     }
 
+    /// <summary>Verifies that pending restores cannot publish an old live profile.</summary>
     [Fact]
     public async Task PendingRestoresCannotPublishAnOldLiveProfile()
     {
@@ -249,6 +397,7 @@ public sealed class ProfileSyncServiceTests
         Assert.Empty(cloud.Uploaded);
     }
 
+    /// <summary>Verifies that unlinked local backup and no conflict choice have clear statuses.</summary>
     [Fact]
     public async Task UnlinkedLocalBackupAndNoConflictChoiceHaveClearStatuses()
     {
@@ -267,8 +416,22 @@ public sealed class ProfileSyncServiceTests
 internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
 {
     private readonly List<(DriveBackup Metadata, ProfileSnapshot Snapshot)> files = [];
+    private bool isLinked = true;
     public bool IsConfigured { get; set; } = true;
-    public bool IsLinked { get; set; } = true;
+    public bool IsLinked
+    {
+        get
+        {
+            if (LinkStatusFailure is not null)
+            {
+                throw LinkStatusFailure;
+            }
+            return isLinked;
+        }
+        set => isLinked = value;
+    }
+    internal Exception? LinkStatusFailure { get; set; }
+    internal bool Disposed { get; private set; }
     internal Exception? Failure { get; set; }
     internal List<ProfileSnapshot> Uploaded { get; } = [];
     internal List<string> Deleted { get; } = [];
@@ -276,6 +439,7 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     internal byte[]? DownloadBytes { get; set; }
     internal bool IncludeSizes { get; set; } = true;
 
+    /// <summary>Adds a simulated immutable cloud backup with device identity and size metadata.</summary>
     internal void Add(ProfileSnapshot snapshot)
     {
         files.Add(
@@ -293,27 +457,33 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
         );
     }
 
+    /// <summary>Marks the simulated Google client as linked without opening a browser.</summary>
     public Task LinkAsync(CancellationToken cancellationToken)
     {
         IsLinked = true;
         return Task.CompletedTask;
     }
 
+    /// <summary>Clears only the simulated client link.</summary>
     public void Disconnect() => IsLinked = false;
 
+    /// <summary>Returns simulated cloud metadata or the configured transport failure.</summary>
     public Task<IReadOnlyList<DriveBackup>> ListAsync(CancellationToken cancellationToken) =>
         Failure is null
             ? Task.FromResult<IReadOnlyList<DriveBackup>>(files.Select(file => file.Metadata).ToArray())
             : Task.FromException<IReadOnlyList<DriveBackup>>(Failure);
 
+    /// <summary>Returns the simulated snapshot identified by its cloud file ID.</summary>
     public Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken) =>
         Task.FromResult(files.Single(file => file.Metadata.Id == id).Snapshot);
 
+    /// <summary>Returns cloud bytes for export, including configured malformed-payload and transport scenarios.</summary>
     public Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken) =>
         Failure is null
             ? Task.FromResult(DownloadBytes ?? files.Single(file => file.Metadata.Id == id).Snapshot.Serialize())
             : Task.FromException<byte[]>(Failure);
 
+    /// <summary>Records deletions and simulates a failure partway through a confirmed selection.</summary>
     public Task DeleteAsync(string id, CancellationToken cancellationToken)
     {
         if (Failure is not null || Deleted.Count == FailDeletionAfter)
@@ -325,6 +495,7 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
         return Task.CompletedTask;
     }
 
+    /// <summary>Records an uploaded snapshot and exposes it in simulated cloud history.</summary>
     public Task UploadAsync(ProfileSnapshot snapshot, CancellationToken cancellationToken)
     {
         if (Failure is not null)
@@ -337,5 +508,6 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
         return Task.CompletedTask;
     }
 
-    public void Dispose() { }
+    /// <summary>Records release of the simulated client for startup cleanup assertions.</summary>
+    public void Dispose() => Disposed = true;
 }

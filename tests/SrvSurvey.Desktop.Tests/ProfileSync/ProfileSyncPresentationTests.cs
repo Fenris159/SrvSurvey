@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ProfileSyncPresentationTests
 {
+    /// <summary>Verifies that backup controls fit and reveal cloud management or local recovery.</summary>
     [AvaloniaTheory]
     [InlineData("blue-dark", false)]
     [InlineData("blue-light", false)]
@@ -112,6 +113,7 @@ public sealed class ProfileSyncPresentationTests
         }
     }
 
+    /// <summary>Finds a rendered button by its visible text for backup panel assertions.</summary>
     private static Button FindButton(ProfileSyncView view, string text) =>
         view.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, text));
 }

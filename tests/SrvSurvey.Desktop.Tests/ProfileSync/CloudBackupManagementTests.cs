@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CloudBackupManagementTests
 {
+    /// <summary>Verifies that selected deletion requires confirmation and keeps the confirmed choice.</summary>
     [AvaloniaFact]
     public async Task SelectedDeletionRequiresConfirmationAndKeepsTheConfirmedChoice()
     {
@@ -35,6 +36,7 @@ public sealed class CloudBackupManagementTests
         Assert.True(vm.IsLinked);
     }
 
+    /// <summary>Verifies that cancel or missing confirmation never deletes files.</summary>
     [AvaloniaFact]
     public async Task CancelOrMissingConfirmationNeverDeletesFiles()
     {
@@ -57,6 +59,7 @@ public sealed class CloudBackupManagementTests
         Assert.Single(vm.Backups);
     }
 
+    /// <summary>Verifies that clear history leaves local state and backups created after confirmation intact.</summary>
     [AvaloniaFact]
     public async Task ClearHistoryLeavesLocalStateAndBackupsCreatedAfterConfirmationIntact()
     {
@@ -88,6 +91,7 @@ public sealed class CloudBackupManagementTests
         Assert.Single(vm.Backups);
     }
 
+    /// <summary>Verifies that disconnect dismisses a confirmation without deleting history.</summary>
     [AvaloniaFact]
     public async Task DisconnectDismissesAConfirmationWithoutDeletingHistory()
     {
@@ -104,6 +108,7 @@ public sealed class CloudBackupManagementTests
         Assert.False(vm.CanClearBackups);
     }
 
+    /// <summary>Verifies that download uses cloud bytes and does not capture or restore current settings.</summary>
     [AvaloniaFact]
     public async Task DownloadUsesCloudBytesAndDoesNotCaptureOrRestoreCurrentSettings()
     {
@@ -123,6 +128,7 @@ public sealed class CloudBackupManagementTests
         Assert.False(Directory.Exists(Path.Combine(root.Store.StateDirectory, "backups")));
     }
 
+    /// <summary>Verifies that invalid or mismatched cloud download never reaches file export.</summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -142,6 +148,7 @@ public sealed class CloudBackupManagementTests
         Assert.False(service.RestartRequired);
     }
 
+    /// <summary>Verifies that partial deletion reports remaining history and allows an explicit retry.</summary>
     [AvaloniaFact]
     public async Task PartialDeletionReportsRemainingHistoryAndAllowsAnExplicitRetry()
     {
@@ -165,6 +172,7 @@ public sealed class CloudBackupManagementTests
         Assert.Equal(2, cloud.Deleted.Count);
     }
 
+    /// <summary>Verifies that storage summary includes all computers and identifies unavailable sizes.</summary>
     [AvaloniaFact]
     public async Task StorageSummaryIncludesAllComputersAndIdentifiesUnavailableSizes()
     {

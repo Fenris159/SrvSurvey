@@ -344,6 +344,7 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.DoesNotContain("$parent[ListBoxItem]", foreground.Attribute("Value")?.Value, StringComparison.Ordinal);
     }
 
+    /// <summary>Verifies that selected muted list text uses the theme specific contrast resource.</summary>
     [Fact]
     public void SelectedMutedListTextUsesTheThemeSpecificContrastResource()
     {

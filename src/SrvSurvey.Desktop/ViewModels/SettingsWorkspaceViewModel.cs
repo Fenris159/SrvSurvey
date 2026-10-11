@@ -210,6 +210,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsDataSelected));
     }
 
+    /// <summary>Builds searchable settings entries and their navigation targets, including backup and synchronization.</summary>
     private static IReadOnlyList<SettingsSearchEntry> CreateCatalog() =>
         [
             new(

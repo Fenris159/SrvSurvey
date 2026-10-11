@@ -39690,6 +39690,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Profile sync skipped malformed JSON file: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "Profile sync: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -52338,6 +52346,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
   },
   {
+    "Text": "Startup profile sync skipped: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "Startup sync complete. Portable preferences and workspace data are up to date.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58886,6 +58902,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "The {0} window factory returned null.",
     "IsFormat": true,
     "SourceKinds": [
@@ -61695,14 +61719,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
-    "Text": "Use cloud conflicting values",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
-  },
-  {
     "Text": "Use compact/scrolling commodities list",
     "IsFormat": false,
     "SourceKinds": [
@@ -61869,6 +61885,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use the backup\u0027s conflicting values",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
   },
   {
     "Text": "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -67796,6 +67820,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "machine",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "mainengines",
     "IsFormat": false,
     "SourceKinds": [
@@ -68748,6 +68780,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "portable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "position",
     "IsFormat": false,
     "SourceKinds": [
@@ -68818,6 +68858,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "profile files and retained deletion history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "profile frontier id journal commander selection",
@@ -71547,6 +71595,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "{0} edits made after staging need a choice in Data \u0026 migration. Local data and the staged backup were retained.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
     "Text": "{0} events across {1} journal file(s), {2} to {3}.{4}",

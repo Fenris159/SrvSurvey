@@ -8,6 +8,7 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class LoopbackOAuthReceiverTests
 {
+    /// <summary>Verifies that invalid HTTP callbacks do not return an authorization code.</summary>
     [Theory]
     [InlineData("POST /?code=code&state=state HTTP/1.1")]
     [InlineData("GET /another?code=code&state=state HTTP/1.1")]
@@ -31,6 +32,7 @@ public sealed class LoopbackOAuthReceiverTests
         Assert.Contains("400 Bad Request", await reader.ReadToEndAsync(deadline.Token));
     }
 
+    /// <summary>Verifies that incomplete and oversized headers are bounded.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -49,6 +51,7 @@ public sealed class LoopbackOAuthReceiverTests
         await Assert.ThrowsAsync<InvalidDataException>(() => response);
     }
 
+    /// <summary>Verifies that cancelling while headers are incomplete releases the connection.</summary>
     [Fact]
     public async Task CancellingWhileHeadersAreIncompleteReleasesTheConnection()
     {
