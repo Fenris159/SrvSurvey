@@ -2,7 +2,8 @@
 
 RC.62 adds profile backup and Google Drive sync, reorganizes Guides into
 searchable subjects, and restores missing Firegroups choices with controls for
-cockpit-view visibility.
+cockpit-view visibility. Colonization overlay categories also gain independent
+colors and clearer default row shading.
 
 ## What's changed
 
@@ -47,6 +48,14 @@ cockpit-view visibility.
   checkboxes in Theme → Overlay Settings control cockpit-view visibility. Main
   is enabled by default; the overlay hides when a side panel is focused unless
   you enable that view, and stays hidden in other interface screens.
+
+- **Give colonization categories their own color.** In Theme → In-game overlay
+  appearance → Colonization, the new Item Category picker sits above Item.
+  Headings such as Metals, Technology, and Chemicals can use a different color
+  from commodity names such as Steel. Default categories use gold (#FFC100),
+  while the other presets use contrasting accents matched to their palettes.
+  The Default preset also uses a clearer grey commodity row fill at about 36%
+  opacity (#6666665C). Existing saved item colors and row fills are preserved.
 
 ## Update channel and packages
 
