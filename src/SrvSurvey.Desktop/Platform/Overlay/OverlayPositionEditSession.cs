@@ -8,6 +8,7 @@ public sealed class OverlayPositionEditSession
 {
     private readonly Dictionary<string, LegacyOverlayPlacement> original;
     private readonly double? originalDefaultOpacity;
+    private readonly int originalScaleIndex;
     private readonly LegacyOverlayLayout workingLayout;
     private double? workingDefaultOpacity;
 
@@ -21,9 +22,99 @@ public sealed class OverlayPositionEditSession
         );
         original = new Dictionary<string, LegacyOverlayPlacement>(placements, StringComparer.Ordinal);
         originalDefaultOpacity = activeLayout.DefaultOpacity;
+        originalScaleIndex = activeLayout.ScaleIndex;
         workingDefaultOpacity = originalDefaultOpacity;
         workingLayout = new LegacyOverlayLayout(placements, activeLayout.DefaultOpacity, null);
         workingLayout.SetScaleIndex(activeLayout.ScaleIndex);
+    }
+
+    /// <summary>Exposes the opening opacity for conflict detection against a newer persisted value.</summary>
+    internal double? OriginalDefaultOpacity => originalDefaultOpacity;
+
+    /// <summary>Indicates when preview geometry should replace a captured live panel size.</summary>
+    internal bool HasGeometryChanges(string plotterName)
+    {
+        LegacyOverlayPlacement current = GetPlacement(plotterName);
+        LegacyOverlayPlacement previous = GetOriginalPlacement(plotterName);
+        return originalScaleIndex != ScaleIndex
+            || current.ScaleIndex != previous.ScaleIndex
+            || current.TypographyScale != previous.TypographyScale
+            || current.SizeOverride != previous.SizeOverride;
+    }
+
+    /// <summary>Applies only edited fields to fresh persisted records and refuses conflicting edits to the same field.</summary>
+    internal IReadOnlyDictionary<string, LegacyOverlayPlacement> MergeWith(LegacyOverlayLayout latest)
+    {
+        var merged = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
+        foreach ((string name, LegacyOverlayPlacement requested) in Changes)
+        {
+            LegacyOverlayPlacement previous = GetOriginalPlacement(name);
+            LegacyOverlayPlacement current = latest.Placements.GetValueOrDefault(
+                name,
+                OverlayLayoutCatalog.GetRequired(name).DefaultPlacement
+            );
+            (
+                LegacyHorizontalAnchor Horizontal,
+                int HorizontalOffset,
+                LegacyVerticalAnchor Vertical,
+                int VerticalOffset,
+                OverlayPositionReference? PositionReference
+            ) position = MergeField(Position(previous), Position(requested), Position(current), name, "position");
+            merged[name] = current with
+            {
+                Horizontal = position.Horizontal,
+                HorizontalOffset = position.HorizontalOffset,
+                Vertical = position.Vertical,
+                VerticalOffset = position.VerticalOffset,
+                PositionReference = position.PositionReference,
+                Opacity = MergeField(previous.Opacity, requested.Opacity, current.Opacity, name, "opacity"),
+                ScaleIndex = MergeField(previous.ScaleIndex, requested.ScaleIndex, current.ScaleIndex, name, "scale"),
+                TypographyScale = MergeField(
+                    previous.TypographyScale,
+                    requested.TypographyScale,
+                    current.TypographyScale,
+                    name,
+                    "text scale"
+                ),
+                SizeOverride = MergeField(
+                    previous.SizeOverride,
+                    requested.SizeOverride,
+                    current.SizeOverride,
+                    name,
+                    "size"
+                ),
+            };
+        }
+        return merged;
+    }
+
+    /// <summary>Treats the coordinate reference and its anchors as one value so concurrent edits cannot split them.</summary>
+    private static (
+        LegacyHorizontalAnchor Horizontal,
+        int HorizontalOffset,
+        LegacyVerticalAnchor Vertical,
+        int VerticalOffset,
+        OverlayPositionReference? PositionReference
+    ) Position(LegacyOverlayPlacement value) =>
+        (value.Horizontal, value.HorizontalOffset, value.Vertical, value.VerticalOffset, value.PositionReference);
+
+    /// <summary>Preserves independent edits while requiring an explicit retry after a same-field conflict.</summary>
+    internal static T MergeField<T>(T previous, T requested, T current, string name, string field)
+    {
+        if (EqualityComparer<T>.Default.Equals(previous, requested))
+        {
+            return current;
+        }
+        if (
+            !EqualityComparer<T>.Default.Equals(current, previous)
+            && !EqualityComparer<T>.Default.Equals(current, requested)
+        )
+        {
+            throw new InvalidDataException(
+                $"The {field} for {name} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value."
+            );
+        }
+        return requested;
     }
 
     public bool HasChanges => Changes.Count > 0 || HasDefaultOpacityChange;

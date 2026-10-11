@@ -205,7 +205,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         File.WriteAllText(positionReferencesPath, originalPositionReferences);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        Assert.ThrowsAny<JsonException>(() =>
+        Assert.Throws<InvalidDataException>(() =>
             store.Save(
                 new Dictionary<string, LegacyOverlayPlacement>
                 {

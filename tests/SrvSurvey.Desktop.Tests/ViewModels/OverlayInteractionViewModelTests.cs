@@ -240,6 +240,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(1, platform.VisibleCursorSessionStarts);
         Assert.Equal(1, platform.ActiveVisibleCursorSessions);
         window.Position = new PixelPoint(420, 310);
+        registry.ReportUserPosition(window, window.Position);
         Assert.Contains("Moved live overlay", viewModel.StatusMessage);
 
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
@@ -502,6 +503,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
         window.Position = new PixelPoint(475, 325);
+        registry.ReportUserPosition(window, window.Position);
 
         Assert.True(viewModel.Begin());
 
@@ -619,6 +621,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.NotEqual(original, activeLayout.Placements["PlotJumpInfo"]);
 
         window.Position = new PixelPoint(500, 360);
+        registry.ReportUserPosition(window, window.Position);
 
         Assert.True(host.PositionRefreshCount > 0);
         Assert.Equal(activeLayout.Placements["PlotJumpInfo"], host.LastPositionRefreshPlacements["PlotJumpInfo"]);

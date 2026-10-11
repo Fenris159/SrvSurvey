@@ -418,6 +418,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
     }
 
+    /// <summary>Starts a combined-panel gesture and suspends automatic placement of that panel.</summary>
     private void OnPresenterPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (
@@ -447,6 +448,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             hostBounds,
             panelSize
         );
+        registry.SetCombinedDragging(entry.Window, true);
         drag = new DragState(
             entry,
             eventArgs.Pointer,
@@ -459,6 +461,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         eventArgs.Handled = true;
     }
 
+    /// <summary>Publishes accepted user positions through the shared placement signal.</summary>
     private void OnPresenterPointerMoved(object? sender, PointerEventArgs eventArgs)
     {
         DragState? current = drag;
@@ -480,7 +483,9 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             current.InitialWindowPosition.X + pointerPosition.X - current.InitialPointerPosition.X,
             current.InitialWindowPosition.Y + pointerPosition.Y - current.InitialPointerPosition.Y
         );
-        current.Entry.Window.Position = current.Options.ConstrainPosition?.Invoke(position) ?? position;
+        PixelPoint applied = current.Options.ConstrainPosition?.Invoke(position) ?? position;
+        current.Entry.Window.Position = applied;
+        registry.ReportUserPosition(current.Entry.Window, applied);
         eventArgs.Handled = true;
     }
 
@@ -498,10 +503,15 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         StopDrag(releasePointer: false, reason: "capture lost");
     }
 
+    /// <summary>Releases the combined gesture and allows automatic placement to resume.</summary>
     private void StopDrag(bool releasePointer, string reason = "interaction ended")
     {
         DragState? current = drag;
         drag = null;
+        if (current is not null)
+        {
+            registry.SetCombinedDragging(current.Entry.Window, false);
+        }
         current?.Diagnostics.Complete(reason, current.Entry.Window.Position);
         if (releasePointer)
         {

@@ -11,6 +11,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
     private readonly LegacyOverlayLayout activeLayout;
     private readonly DelegateCommand saveCommand;
     private readonly DelegateCommand resetSelectedCommand;
+    private readonly DelegateCommand recoverCommand;
     private OverlayPlacementEditorViewModel? selectedOverlay;
     private string statusMessage = string.Empty;
     private bool hasLoadError;
@@ -19,6 +20,8 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
+        recoverCommand = new DelegateCommand(RecoverLayout, () => hasLoadError);
+        RecoverCommand = recoverCommand;
         saveCommand = new DelegateCommand(Save, () => IsDirty && !hasLoadError);
         resetSelectedCommand = new DelegateCommand(ResetSelected, () => SelectedOverlay is not null);
         ReloadCommand = new DelegateCommand(Reload);
@@ -65,6 +68,32 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
     public ICommand ReloadCommand { get; }
 
+    /// <summary>Offers an explicit backed-up repair when a damaged file prevents editing.</summary>
+    public ICommand RecoverCommand { get; }
+
+    /// <summary>Shows recovery only while the layout reader reports a failure.</summary>
+    public bool CanRecoverLayout => hasLoadError;
+
+    /// <summary>Identifies the current profile's save location for remote troubleshooting.</summary>
+    public string SaveDirectory => store.DirectoryPath;
+
+    /// <summary>Runs explicit recovery without discarding malformed originals.</summary>
+    private void RecoverLayout()
+    {
+        try
+        {
+            string preserved = store.RecoverInvalidLayout();
+            activeLayout.ReplaceWith(store.Load());
+            Reload();
+            StatusMessage = "Overlay layout recovered. Previous files were preserved at " + preserved;
+        }
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
+        {
+            StatusMessage = "Overlay layout recovery could not finish: " + exception.Message;
+            store.ReportFailure("Layout recovery failed", exception);
+        }
+    }
+
     public LegacyOverlayScaleMigrationResult MigrateLegacyScaleOverrides(double renderScaling)
     {
         LegacyOverlayScaleMigrationResult result = store.MigrateLegacyScaleOverrides(renderScaling);
@@ -84,10 +113,13 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
         return result;
     }
 
+    /// <summary>Loads opacity rows with their complete placement metadata and exposes recoverable file errors.</summary>
     private void Reload()
     {
         LegacyOverlayLayout layout = store.Load();
         hasLoadError = layout.Error is not null;
+        OnPropertyChanged(nameof(CanRecoverLayout));
+        recoverCommand.RaiseCanExecuteChanged();
         double inheritedOpacity = (layout.DefaultOpacity ?? 1d) * 100d;
         Overlays = OverlayLayoutCatalog
             .Supported.Select(definition => new OverlayPlacementEditorViewModel(
@@ -103,6 +135,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
         OnEditorChanged();
     }
 
+    /// <summary>Merges only edited opacity or position fields into the latest persisted layout.</summary>
     private void Save()
     {
         OverlayPlacementEditorViewModel[] dirty = Overlays.Where(overlay => overlay.IsDirty).ToArray();
@@ -113,22 +146,23 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
         try
         {
-            LegacyOverlayLayout latest = store.Load();
-            if (latest.Error is not null)
-            {
-                throw new InvalidDataException(latest.Error);
-            }
-
-            Dictionary<string, LegacyOverlayPlacement> changed = dirty.ToDictionary(
-                overlay => overlay.Name,
-                overlay =>
-                    overlay.HasPositionChanges
-                        ? overlay.Placement
-                        : overlay.ApplyOpacityTo(latest.Placements.GetValueOrDefault(overlay.Name, overlay.Placement)),
-                StringComparer.Ordinal
+            var session = new OverlayPositionEditSession(
+                new LegacyOverlayLayout(
+                    dirty.ToDictionary(
+                        overlay => overlay.Name,
+                        overlay => overlay.OriginalPlacement,
+                        StringComparer.Ordinal
+                    ),
+                    null,
+                    null
+                )
             );
-            LegacyOverlayLayoutSaveResult result = store.Save(changed);
-            LegacyOverlayLayout updated = store.Load();
+            foreach (OverlayPlacementEditorViewModel overlay in dirty)
+            {
+                session.SetPlacement(overlay.Name, overlay.Placement);
+            }
+            LegacyOverlayLayoutSaveResult result = store.SaveChanges(session);
+            LegacyOverlayLayout updated = result.CommittedLayout ?? store.Load();
             if (updated.Error is not null)
             {
                 throw new InvalidDataException(updated.Error);
@@ -145,10 +179,10 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                 + "Visible overlays update immediately."
                 + (result.BackupPath is null ? string.Empty : $" Previous layout backup: {result.BackupPath}");
         }
-        catch (Exception exception)
-            when (exception is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
         {
             StatusMessage = "The overlay layout was not changed: " + exception.Message;
+            store.ReportFailure("Opacity save failed; draft retained", exception);
         }
 
         OnEditorChanged();
@@ -288,14 +322,19 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         set => SetField(ref customOpacityPercent, Math.Clamp(value, 0, 100));
     }
 
+    /// <summary>Provides the opening record for merging only this editor's changed fields.</summary>
+    internal LegacyOverlayPlacement OriginalPlacement => acceptedPlacement;
+
+    /// <summary>Preserves sidecar metadata while changing the fields supported by this editor.</summary>
     public LegacyOverlayPlacement Placement =>
-        new(
-            HorizontalAnchor,
-            HorizontalOffset,
-            VerticalAnchor,
-            VerticalOffset,
-            UseCustomOpacity ? CustomOpacityPercent / 100d : null
-        );
+        acceptedPlacement with
+        {
+            Horizontal = HorizontalAnchor,
+            HorizontalOffset = HorizontalOffset,
+            Vertical = VerticalAnchor,
+            VerticalOffset = VerticalOffset,
+            Opacity = UseCustomOpacity ? CustomOpacityPercent / 100d : null,
+        };
 
     public bool IsDirty => Placement != acceptedPlacement;
 

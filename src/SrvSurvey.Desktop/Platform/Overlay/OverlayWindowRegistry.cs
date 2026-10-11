@@ -14,6 +14,7 @@ public sealed class OverlayWindowRegistry
     private HashSet<string> vehicleExcludedPlotters = new(StringComparer.Ordinal);
     private bool galaxyMapContextActive;
     private bool editorSuppressed;
+    private readonly HashSet<Window> combinedDragWindows = [];
     private bool manualSuppressed;
     private bool suitSuppressed;
     private bool sessionSuppressed;
@@ -22,6 +23,29 @@ public sealed class OverlayWindowRegistry
     private bool reconcileAgain;
 
     public static OverlayWindowRegistry Shared { get; } = new();
+
+    /// <summary>Reports accepted user gestures from native and combined presenters, excluding automatic placement.</summary>
+    internal event Action<Window, PixelPoint>? UserPositionChanged;
+
+    /// <summary>Publishes a pointer-driven panel position to its active placement session.</summary>
+    internal void ReportUserPosition(Window window, PixelPoint position) =>
+        UserPositionChanged?.Invoke(window, position);
+
+    /// <summary>Prevents polling from repositioning a combined panel during a pointer gesture.</summary>
+    internal void SetCombinedDragging(Window window, bool dragging)
+    {
+        if (dragging)
+        {
+            combinedDragWindows.Add(window);
+        }
+        else
+        {
+            combinedDragWindows.Remove(window);
+        }
+    }
+
+    /// <summary>Indicates whether the combined presenter currently owns a panel gesture.</summary>
+    internal bool IsCombinedDragging(Window window) => combinedDragWindows.Contains(window);
 
     public event EventHandler? Changed;
 
@@ -451,6 +475,7 @@ public sealed class OverlayWindowRegistry
 
     private void Unregister(Window window)
     {
+        combinedDragWindows.Remove(window);
         Dispatcher.UIThread.VerifyAccess();
         if (!registrations.TryGetValue(window, out Registration? registration))
         {

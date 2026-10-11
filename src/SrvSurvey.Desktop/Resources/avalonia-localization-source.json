@@ -8947,6 +8947,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Calibration failed after layout commit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Calibration preview \u2014 saved trackers are unchanged.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14161,6 +14169,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
   },
   {
+    "Text": "Could not read overlay layout \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "Could not read overlay position references \u0027{0}\u0027: {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -16514,6 +16530,14 @@
   },
   {
     "Text": "Discard the unexported in-memory draft?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Discard unsaved positions",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -26725,6 +26749,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Invalid overlay layout data at \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Invalid overlay recovery journal: \u0027{0}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
+  },
+  {
     "Text": "Investment",
     "IsFormat": false,
     "SourceKinds": [
@@ -28340,6 +28380,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Layout recovery failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
     "Text": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28804,14 +28852,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
-    "Text": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
     "Text": "Live overlays returned to click-through mode; moved positions were restored without saving.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28834,6 +28874,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Live position save failed; draft retained",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -35653,6 +35709,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
   },
   {
+    "Text": "Opacity save failed; draft retained",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
     "Text": "Open / mark read",
     "IsFormat": false,
     "SourceKinds": [
@@ -37041,6 +37105,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Overlay editor cleanup failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditorHost.cs"
+  },
+  {
+    "Text": "Overlay editor closed because the display could not be updated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Overlay host \u0027{0}\u0027 {1} -\u003E {2}: {3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -37055,6 +37135,70 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Overlay layout is busy or inaccessible at \u0027{0}\u0027. Retry after the other writer finishes.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
+  },
+  {
+    "Text": "Overlay layout load failed at \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay layout load failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay layout recovered. Previous files were preserved at {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
+    "Text": "Overlay layout recovery could not finish: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
+    "Text": "Overlay layout save committed at \u0027{0}\u0027: {1} placement(s).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay layout save failed at \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay layout save requested at \u0027{0}\u0027: {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -37225,6 +37369,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Overlay presentation: {0}. {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -37247,6 +37399,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPriorityRules.cs"
+  },
+  {
+    "Text": "Overlay recovery journal contains invalid file names: \u0027{0}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
+  },
+  {
+    "Text": "Overlay recovery journal is too large: \u0027{0}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
   },
   {
     "Text": "Overlay scale",
@@ -37303,6 +37471,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayScaleSettingsViewModel.cs"
+  },
+  {
+    "Text": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
   },
   {
     "Text": "Overlay size dimensions must be positive.",
@@ -38083,6 +38259,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Pending live positions discarded. Previously saved positions were retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Pending live save failed; draft retained",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "PendingCargoAdjustments",
     "IsFormat": false,
     "SourceKinds": [
@@ -38763,6 +38963,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "Position editor cleanup failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Position editor display update failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Position editor opening failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Position editor save failed; draft retained",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -39857,6 +40089,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Profile restore preserved a machine setting edited after staging: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "Profile sync skipped malformed JSON file: {0}",
@@ -42741,6 +42981,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
+    "Text": "Recover overlay layout",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Recovered overlay file \u0027{0}\u0027; original retained at \u0027{1}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "Red",
     "IsFormat": false,
     "SourceKinds": [
@@ -44422,6 +44678,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
+    "Text": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Restored the last saved surface coordinates.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44548,6 +44812,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Retry position save",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Retry selected deliveries",
@@ -47105,6 +47377,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Saved pending live overlay positions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Saved route as {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -48989,6 +49269,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Settings remain bound to the commander at \u0027{0}\u0027; they will not be redirected to the shared profile.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
     "Text": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -51993,6 +52281,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "SrvSurvey-layout-validation-{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "SrvSurvey-replay-{0}.srvreplay",
@@ -57519,6 +57815,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The overlay editor could not open: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "The overlay has no renderable pixel dimensions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -59085,6 +59389,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
+  },
+  {
+    "Text": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
   },
   {
     "Text": "The {0} guide could not be opened: {1}",
@@ -64893,6 +65205,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "all overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "allcsv",
     "IsFormat": false,
     "SourceKinds": [
@@ -67293,6 +67613,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "global opacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "global regional first discovery biology",
     "IsFormat": false,
     "SourceKinds": [
@@ -68773,6 +69101,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "opacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
+  },
+  {
     "Text": "open",
     "IsFormat": false,
     "SourceKinds": [
@@ -69074,7 +69410,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
   },
   {
     "Text": "power",
@@ -69251,6 +69587,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "recovery-{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "red",
@@ -69499,6 +69843,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
   },
   {
     "Text": "scanned",
@@ -69794,7 +70146,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
   },
   {
     "Text": "sized {0}x{1}",
@@ -70219,6 +70571,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "text scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
   },
   {
     "Text": "text/csv",
@@ -71676,6 +72036,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} at \u0027{1}\u0027: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "{0} at {1}",

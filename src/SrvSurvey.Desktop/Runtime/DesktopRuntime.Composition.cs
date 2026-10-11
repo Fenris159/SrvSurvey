@@ -124,7 +124,10 @@ internal sealed partial class DesktopRuntime
         );
 
         LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
-        var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.OverlaySettingsDirectory);
+        var overlayLayoutStore = new LegacyOverlayLayoutStore(
+            appDataPaths.OverlaySettingsDirectory,
+            message => applicationLog.Append(message)
+        );
         LegacyOverlayLayout overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
 
         var themeService = new RavenThemeService(
@@ -428,6 +431,7 @@ internal sealed partial class DesktopRuntime
         ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
     }
 
+    /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
     private static AppDataPaths PrepareCommanderSettings(
         AppDataPaths paths,
         string? targetFrontierId,
@@ -453,7 +457,11 @@ internal sealed partial class DesktopRuntime
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             applicationLog.Append("Commander settings could not be initialized: " + exception.Message);
-            paths = paths with { SettingsFrontierId = null };
+            applicationLog.Append(
+                "Settings remain bound to the commander at '"
+                    + paths.OverlaySettingsDirectory
+                    + "'; they will not be redirected to the shared profile."
+            );
         }
 
         return paths;
