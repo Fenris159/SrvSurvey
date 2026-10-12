@@ -6,6 +6,13 @@
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=coverage)](https://sonarcloud.io/component_measures?id=Fenris159_SrvSurvey&metric=coverage)
 [![License](https://img.shields.io/github/license/Fenris159/SrvSurvey)](LICENSE)
 
+[![Active users (7d)](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge&label=active%20users%20%287d%29&color=blue)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Active users (30d)](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3D30d&label=active%20users%20%2830d%29&color=brightgreen)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Linux users](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3Dlinux&label=linux%20users&color=orange)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Windows users](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3Dwindows&label=windows%20users&color=0078d4)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+
+<sub>Counts represent anonymous installations. Activity badges use the last 7 or 30 days; Linux and Windows badges show lifetime totals.</sub>
+
 [![Application language](https://img.shields.io/badge/application-C%23-512BD4?logo=dotnet)](https://github.com/Fenris159/SrvSurvey/tree/SrvSurvey-Avalonia/src)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Avalonia 12.1](https://img.shields.io/badge/Avalonia-12.1.0-8B44AC)](https://avaloniaui.net/)

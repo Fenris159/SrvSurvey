@@ -7,6 +7,30 @@ namespace SrvSurvey.Core.Tests.Network;
 
 public sealed class DailyActiveUsersClientTests
 {
+    /// <summary>Maps .NET's Windows identifier to the Worker's badge bucket and accepts its expanded cached statistics.</summary>
+    [Theory]
+    [InlineData("win", "windows")]
+    [InlineData("WIN", "windows")]
+    [InlineData("windows", "windows")]
+    [InlineData("Linux", "linux")]
+    public async Task CachedWorkerContractUsesRecognizedOperatingSystemBuckets(string os, string expectedBucket)
+    {
+        using var fixture = new UsageFixture();
+        fixture.Handler.Stats = """
+            {"totalUnique":100,"active7d":42,"active30d":80,
+             "byVersion":{"2.1.3.0-rc.62":100},"byOs":{"linux":60,"windows":40},
+             "cachedAt":1791763200000}
+            """;
+        using var client = new DailyActiveUsersClient(fixture.Root, "test", os, fixture.Network, clock: fixture.Clock);
+
+        Assert.Equal(42, await client.RefreshAsync());
+        JsonElement report = Assert.Single(fixture.Handler.Reports);
+        string id = report.GetProperty("id").GetString()!;
+        Assert.InRange(id.Length, 8, 100);
+        Assert.Equal(expectedBucket, report.GetProperty("os").GetString()!.ToLowerInvariant());
+        Assert.Equal("test", report.GetProperty("version").GetString());
+    }
+
     /// <summary>Retains a random installation ID and suppresses repeat requests across restarts until the next UTC day.</summary>
     [Fact]
     public async Task DailyCheckInUsesOneAnonymousIdentityAcrossInstancesAndDays()
