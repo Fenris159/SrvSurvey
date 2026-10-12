@@ -30,6 +30,47 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Contains("No followed route", viewModel.StatusMessage);
     }
 
+    /// <summary>Verifies poi annotations preserve imported route and progress.</summary>
+    [Fact]
+    public async Task PoiAnnotationsPreserveImportedRouteAndProgress()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        RouteWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        SrvSurvey.Core.Routes.FollowRouteDocument before = model.CreateSnapshot()!;
+        var poi = new SrvSurvey.Core.Exploration.ExplorationPoi(
+            1,
+            "GEC",
+            "Scenic stop",
+            "Second",
+            null,
+            null,
+            "Sights and Scenery",
+            "",
+            "",
+            "",
+            7,
+            4,
+            12,
+            false
+        );
+        model.ApplyPoiCatalog(new SrvSurvey.Core.Exploration.ExplorationPoiCatalog([poi]));
+        FollowRouteDocument after = model.CreateSnapshot()!;
+        Assert.Equal(before.Hops, after.Hops);
+        Assert.Equal(before.LastReachedIndex, after.LastReachedIndex);
+        Assert.Equal(before.IsActive, after.IsActive);
+        Assert.Equal(before.AutoCopy, after.AutoCopy);
+        Assert.Equal(before.Notes, after.Notes);
+        Assert.False(model.IsDirty);
+        Assert.True(model.Hops[1].HasPois);
+        Assert.Equal("Scenic stop", model.Hops[1].PoiText);
+        Assert.False(model.Hops[0].HasPois);
+        model.SetProgressThrough(1, true);
+        Assert.True(model.Hops[1].HasPois);
+        model.ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog.Empty);
+        Assert.False(model.Hops[1].HasPois);
+    }
+
     [Fact]
     public async Task LegacyRouteDisplaysSegmentsAndSavesProgressAndPreferences()
     {

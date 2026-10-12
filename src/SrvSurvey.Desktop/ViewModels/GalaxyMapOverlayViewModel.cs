@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
@@ -11,6 +12,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposable
 {
+    private const string SelectedLabel = "SELECTED";
     private readonly ISystemSummaryClient summaryClient;
     private readonly GalaxyMapSettingsStore settingsStore;
     private readonly SystemNicknameViewModel systemNicknames;
@@ -19,6 +21,60 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapTarget? selectedTarget;
     private GalaxyMapTarget? primaryTarget;
     private GalaxyMapTarget? secondaryTarget;
+    private ExplorationPoiCatalog poiCatalog = ExplorationPoiCatalog.Empty;
+    public string PrimaryPoiText =>
+        string.Join(
+            "\n",
+            poiCatalog
+                .ForSystem(primaryTarget?.Name, primaryTarget?.SystemAddress)
+                .Select(p => new ExplorationPoiItemViewModel(p, null))
+                .Select(p => p.Name + " · " + p.Categories + " · " + p.RatingText)
+        );
+    public bool HasPrimaryPois => PrimaryPoiText.Length > 0;
+    public string SecondaryPoiText =>
+        string.Join(
+            " · ",
+            poiCatalog.ForSystem(secondaryTarget?.Name, secondaryTarget?.SystemAddress).Select(p => p.Name)
+        );
+    public bool HasSecondaryPois => SecondaryPoiText.Length > 0;
+
+    public IReadOnlyList<ExplorationPoiItemViewModel> PrimaryPois =>
+        PoiRows(primaryTarget?.Name ?? PrimarySystem?.Name, primaryTarget?.SystemAddress, PrimarySystemDisplay.Name);
+    public IReadOnlyList<ExplorationPoiItemViewModel> SecondaryPois =>
+        PoiRows(
+            secondaryTarget?.Name ?? SecondarySystem?.Name,
+            secondaryTarget?.SystemAddress,
+            SecondarySystemDisplay.Name
+        );
+
+    /// <summary>Builds catalogue context without repeating a matching system title as an attraction row.</summary>
+    private ExplorationPoiItemViewModel[] PoiRows(string? name, long? address, string displayedSystem) =>
+        poiCatalog
+            .ForSystem(name, address)
+            .Select(p => new ExplorationPoiItemViewModel(p, null)
+            {
+                ShowOverlayTitle = !string.Equals(p.Name, displayedSystem, StringComparison.OrdinalIgnoreCase),
+            })
+            .ToArray();
+
+    /// <summary>Applies a shared catalogue snapshot to the selected-system intelligence presentation.</summary>
+    public void ApplyPoiCatalog(ExplorationPoiCatalog catalog)
+    {
+        poiCatalog = catalog;
+        RaisePoiProperties();
+    }
+
+    /// <summary>Refreshes bound POI context after catalogue or target evidence changes.</summary>
+    private void RaisePoiProperties()
+    {
+        OnPropertyChanged(nameof(PrimaryPoiText));
+        OnPropertyChanged(nameof(HasPrimaryPois));
+        OnPropertyChanged(nameof(SecondaryPoiText));
+        OnPropertyChanged(nameof(HasSecondaryPois));
+        OnPropertyChanged(nameof(PrimaryPois));
+        OnPropertyChanged(nameof(SecondaryPois));
+    }
+
     private string? currentSystemName;
     private long? currentSystemAddress;
     private EliteStatus? status;
@@ -115,6 +171,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             {
                 OnPropertyChanged(nameof(HasPrimarySystem));
                 OnPropertyChanged(nameof(PrimarySystemDisplay));
+                RaisePoiProperties();
             }
         }
     }
@@ -132,6 +189,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             {
                 OnPropertyChanged(nameof(HasSecondarySystem));
                 OnPropertyChanged(nameof(SecondarySystemDisplay));
+                RaisePoiProperties();
             }
         }
     }
@@ -178,30 +236,28 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     internal void InstallEditorPreview(OverlayPreviewSimulationState state)
     {
         ArgumentNullException.ThrowIfNull(state);
+        poiCatalog = OverlayEditorPreviewFactories.CreateExplorationPoiCatalog();
+        ExplorationPoi poi = poiCatalog.Items[0];
+        primaryTarget = new GalaxyMapTarget(poi.SystemName, poi.SystemAddress ?? 0, SelectedLabel);
         PrimarySystem = new GalaxyMapSystemViewModel(
-            Label: "DESTINATION",
-            Name: state.DestinationSystem,
-            DiscoveryText: "First discovered by CMDR Raven",
+            Label: "SELECTED",
+            Name: poi.SystemName,
+            DiscoveryText: "Previously discovered",
             DiscoveredByText: "Discovered by CMDR Raven · 2 m ago",
-            DetailsText: "Population 18.2 M · Medium security · Industrial | Refinery",
+            DetailsText: "2 black holes · 5 T Tauri stars",
             UpdatedText: "Data updated 2 m ago",
-            IsQuestTagged: true
+            IsQuestTagged: false
         );
         SecondarySystem = new GalaxyMapSystemViewModel(
             Label: "CURRENT",
             Name: state.CurrentSystem,
             DiscoveryText: "Previously discovered",
             DiscoveredByText: "Discovered by CMDR Corvus",
-            DetailsText: "42.6 ly from destination",
+            DetailsText: string.Empty,
             UpdatedText: "Data updated 8 m ago"
         );
-        Factions =
-        [
-            new GalaxyMapFactionViewModel("Raven Colonial Initiative", "42.8%", "Expansion"),
-            new GalaxyMapFactionViewModel("Blue Fortune Corp", "31.2%", "War"),
-            new GalaxyMapFactionViewModel("System Authority", "18.4%", "Election"),
-        ];
-        RouteFooter = "ROUTE 4 / 9 · 138.7 LY REMAINING · QUEST DESTINATION";
+        Factions = [];
+        RouteFooter = string.Empty;
         OnPropertyChanged(nameof(RouteFooter));
         OnPropertyChanged(nameof(HasRouteFooter));
         DataStatus = "Galaxy Map data ready";
@@ -341,11 +397,22 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         PendingLoad = LoadTargetsAsync(targets.Primary, targets.Secondary, loadCancellation.Token);
     }
 
+    /// <summary>Selects the navigation target from journal, status and existing route evidence.</summary>
     private (GalaxyMapTarget? Primary, GalaxyMapTarget? Secondary) ResolveTargets()
     {
+        if (
+            status?.Destination is { Body: 0, System: > 0 } selected
+            && !string.IsNullOrWhiteSpace(selected.Name)
+            && selected.System != currentSystemAddress
+            && (navRoute is not { Route.Count: > 1 } plotted || selected.System != plotted.Route[1].SystemAddress)
+        )
+        {
+            return (new GalaxyMapTarget(selected.Name, selected.System, SelectedLabel), null);
+        }
+
         if (selectedTarget is not null)
         {
-            return (selectedTarget with { Label = "SELECTED" }, null);
+            return (selectedTarget with { Label = SelectedLabel }, null);
         }
 
         if (navRoute is { Route.Count: > 1 } route)
@@ -362,7 +429,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
         if (status?.Destination is { Body: 0, System: > 0 } destination && !string.IsNullOrWhiteSpace(destination.Name))
         {
-            return (new GalaxyMapTarget(destination.Name, destination.System, "SELECTED"), null);
+            return (new GalaxyMapTarget(destination.Name, destination.System, SelectedLabel), null);
         }
 
         if (!routeWasCleared && !string.IsNullOrWhiteSpace(currentSystemName))
@@ -524,6 +591,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             && route.Route[1].SystemAddress == target.SystemAddress;
     }
 
+    /// <summary>Reads a validated system target from the journal's target event.</summary>
     private static GalaxyMapTarget? ParseTarget(JsonElement payload)
     {
         if (
@@ -540,7 +608,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             && addressValue.TryGetInt64(out long parsedAddress)
                 ? parsedAddress
                 : 0;
-        return new GalaxyMapTarget(nameValue.GetString()!, address, "SELECTED");
+        return new GalaxyMapTarget(nameValue.GetString()!, address, SelectedLabel);
     }
 
     private string ResolveName(string name)

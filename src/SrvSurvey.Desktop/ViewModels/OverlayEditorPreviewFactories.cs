@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
@@ -27,6 +28,50 @@ internal static class OverlayEditorPreviewFactories
         Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", leaf);
 
     private static OverlayPlatformCapabilities Caps() => OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
+
+    /// <summary>Creates a POI panel preview for a system containing multiple attractions.</summary>
+    public static ExplorationPoiViewModel CreateExplorationPois()
+    {
+        string directory = SettingsDir("exploration-pois");
+        var model = new ExplorationPoiViewModel(
+            new EdAstroPoiClient(directory),
+            new ExplorationPoiSettingsStore(Path.Combine(directory, UiSettingsFileName))
+        );
+        model.InstallEditorPreview();
+        return model;
+    }
+
+    /// <summary>Builds the shared attraction fixture used by POI and Galaxy Map previews.</summary>
+    internal static ExplorationPoiCatalog CreateExplorationPoiCatalog()
+    {
+        var annihilator = new ExplorationPoi(
+            43,
+            "GEC",
+            "Great Annihilator",
+            "Great Annihilator",
+            2587943,
+            new GalacticCoordinate(354.844, -42.4375, 22997.2),
+            "Stellar Features",
+            string.Empty,
+            "A pair of black holes and five T Tauri stars.",
+            string.Empty,
+            6.92,
+            4.16,
+            25,
+            false
+        );
+        return new ExplorationPoiCatalog([
+            annihilator,
+            annihilator with
+            {
+                Id = 28,
+                Name = "Azura Initiative",
+                Category = "Community",
+                Summary = "A community expedition and settlement around the black holes.",
+                Rating = 6.76,
+            },
+        ]);
+    }
 
     public static RouteBioOverlayViewModel CreateRouteBio()
     {

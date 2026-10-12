@@ -428,6 +428,16 @@
       </StackPanel>
     </Border>
 
+    <Border x:Name="ExplorationPoiCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Current-system POIs" />
+        <CheckBox IsChecked="{Binding ExplorationPois.AutoShow, Mode=TwoWay}"
+                  Content="Auto-show known POIs in the current system" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility." />
+      </StackPanel>
+    </Border>
+
     <Border x:Name="GalaxyMapCard" Classes="card raised">
       <StackPanel Spacing="12">
         <StackPanel Spacing="4">

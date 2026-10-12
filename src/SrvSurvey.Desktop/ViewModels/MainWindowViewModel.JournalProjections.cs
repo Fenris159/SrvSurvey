@@ -2,6 +2,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel
 {
+    /// <summary>Connects existing workspaces and sharing adapters to the single journal projection.</summary>
     private JournalProjection CreateJournalProjection() =>
         new(
             new DesktopJournalProjectionAdapter(
@@ -18,6 +19,7 @@ public sealed partial class MainWindowViewModel
                     Notifications = Notifications,
                     PulseOverlay = PulseOverlay,
                     GalaxyMap = GalaxyMap,
+                    ExplorationPois = ExplorationPois,
                     NetworkPrivacy = NetworkPrivacy,
                     VoxStellar = VoxStellar,
                     Inara = Inara,
@@ -58,6 +60,7 @@ public sealed partial class MainWindowViewModel
                     greenGasGiantPublicationCoordinator = greenGasGiantPublicationCoordinator,
                     commanderCodexJournalTracker = commanderCodexJournalTracker,
                     eddnPublisher = eddnPublisher,
+                    edAstroPublisher = edAstroPublisher,
                     voxStellarPublisher = voxStellarPublisher,
                     inaraPublisher = inaraPublisher,
                     edsmPublisher = edsmPublisher,

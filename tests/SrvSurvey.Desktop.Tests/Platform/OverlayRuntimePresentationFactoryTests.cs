@@ -144,6 +144,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
         }
     }
 
+    /// <summary>Verifies remaining editors have non empty representative content.</summary>
     [Fact]
     public void RemainingEditorsHaveNonEmptyRepresentativeContent()
     {
@@ -169,7 +170,9 @@ public sealed class OverlayRuntimePresentationFactoryTests
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotGalMap")
         );
         Assert.True(galMap.HasPrimarySystem);
-        Assert.True(galMap.HasRouteFooter);
+        Assert.Equal("SELECTED", galMap.PrimarySystemDisplay.Label);
+        Assert.True(galMap.HasPrimaryPois);
+        Assert.Equal(2, galMap.PrimaryPois.Count);
 
         SurfaceSurveyOverlayViewModel surface = Assert.IsType<SurfaceSurveyOverlayViewModel>(
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotGrounded")

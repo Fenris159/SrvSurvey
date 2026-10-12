@@ -29,6 +29,18 @@ public static class WellKnownUris
     public static Uri EdsmCommanderApiSettings => RequireUri("EdsmCommanderApiSettings");
     public static Uri CanonnChallenge => RequireUri("CanonnChallenge");
     public static Uri EdastroCodexMap => RequireUri("EdastroCodexMap");
+    public static Uri EdastroPoiCatalog => RequireUri("EdastroPoiCatalog");
+
+    /// <summary>Opens the Galactic Exploration Catalog attraction submission form.</summary>
+    public static Uri EdastroNewPoi => RequireUri("EdastroNewPoi");
+
+    /// <summary>Returns the provider's currently accepted journal event names.</summary>
+    public static Uri EdastroAcceptedEvents => RequireUri("EdastroAcceptedEvents");
+
+    /// <summary>Receives consented journal batches with application metadata.</summary>
+    public static Uri EdastroJournalUpload => RequireUri("EdastroJournalUpload");
+
+    public static string EdastroPoiPagePrefix => Require("EdastroPoiPagePrefix");
     public static Uri CodexMissingForm => RequireUri("CodexMissingForm");
     public static Uri ColonisationWiki => RequireUri("ColonisationWiki");
     public static Uri EdGalaxyVisitedStars => RequireUri("EdGalaxyVisitedStars");

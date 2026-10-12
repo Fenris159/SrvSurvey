@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -26,6 +27,7 @@ internal sealed class JournalProjectionDependencies
     internal required NotificationViewModel Notifications { get; init; }
     internal required PulseOverlayViewModel PulseOverlay { get; init; }
     internal required GalaxyMapOverlayViewModel GalaxyMap { get; init; }
+    internal ExplorationPoiViewModel? ExplorationPois { get; init; }
     internal required NetworkPrivacyViewModel NetworkPrivacy { get; init; }
     internal required VoxStellarSharingViewModel VoxStellar { get; init; }
     internal required InaraSettingsViewModel Inara { get; init; }
@@ -65,6 +67,7 @@ internal sealed class JournalProjectionDependencies
     internal required BoxelSurveyStatsCoordinator boxelSurveyStats { get; init; }
     internal required GreenGasGiantPublicationCoordinator greenGasGiantPublicationCoordinator { get; init; }
     internal required CommanderCodexJournalTracker commanderCodexJournalTracker { get; init; }
+    internal required IEdAstroPublisher edAstroPublisher { get; init; }
     internal required IEddnPublisher eddnPublisher { get; init; }
     internal required IVoxStellarPublisher voxStellarPublisher { get; init; }
     internal required IInaraPublisher inaraPublisher { get; init; }

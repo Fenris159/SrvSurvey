@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
@@ -19,6 +20,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IBoxelSystemResolver? boxelSystemResolver;
     private DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore;
     private IEddnPublisher? eddnPublisher;
+    private IEdAstroPublisher? edAstroPublisher;
     private HttpClient? externalNetworkClient;
     private IFirstFootfallInferenceService? firstFootfallInferenceService;
     private CommanderProfileViewModel? frontierProfile;
@@ -32,6 +34,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IScreenshotProcessingService? screenshotProcessingService;
     private StationInfoSettingsStore? stationInfoSettingsStore;
     private ISystemBodyDataClient? systemBodyDataClient;
+    private IExplorationPoiClient? explorationPoiClient;
     private IEliteGameProcessDetector? eliteGameProcessDetector;
     private TimeSpan? systemBodyDataRetryDelay;
     private string? targetFrontierId;
@@ -54,6 +57,7 @@ internal sealed class MainWindowViewModelTestBuilder
         return builder.Build(configuredJournalDirectory);
     }
 
+    /// <summary>Provides build for the isolated test fixture.</summary>
     private MainWindowViewModel Build(string? configuredJournalDirectory)
     {
         return MainWindowViewModelFactory.CreateForTesting(
@@ -82,6 +86,7 @@ internal sealed class MainWindowViewModelTestBuilder
                     BoxelSystemResolver = boxelSystemResolver,
                     FirstFootfallInferenceService = firstFootfallInferenceService,
                     SystemBodyDataClient = systemBodyDataClient,
+                    ExplorationPoiClient = explorationPoiClient,
                     EliteGameProcessDetector = eliteGameProcessDetector,
                     SystemBodyDataRetryDelay = systemBodyDataRetryDelay,
                     HumanSiteSettingsStore = humanSiteSettingsStore,
@@ -94,6 +99,7 @@ internal sealed class MainWindowViewModelTestBuilder
                 Online = new MainWindowOnlineInputs
                 {
                     EddnPublisher = eddnPublisher,
+                    EdAstroPublisher = edAstroPublisher,
                     VoxStellarPublisher = voxStellarPublisher,
                     InaraPublisher = inaraPublisher,
                     EdsmPublisher = edsmPublisher,
@@ -106,6 +112,10 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public MainWindowViewModelTestBuilder WithAppDataPaths(AppDataPaths value) => Set(ref appDataPaths, value);
 
+    /// <summary>Injects exploration poi client into the isolated main-window fixture.</summary>
+    public MainWindowViewModelTestBuilder WithExplorationPoiClient(IExplorationPoiClient value) =>
+        Set(ref explorationPoiClient, value);
+
     public MainWindowViewModelTestBuilder WithApplicationLogService(ApplicationLogService value) =>
         Set(ref applicationLogService, value);
 
@@ -114,6 +124,10 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public MainWindowViewModelTestBuilder WithDesktopBehaviorSettingsStore(DesktopBehaviorSettingsStore value) =>
         Set(ref desktopBehaviorSettingsStore, value);
+
+    /// <summary>Injects ed astro publisher into the isolated main-window fixture.</summary>
+    public MainWindowViewModelTestBuilder WithEdAstroPublisher(IEdAstroPublisher value) =>
+        Set(ref edAstroPublisher, value);
 
     public MainWindowViewModelTestBuilder WithEddnPublisher(IEddnPublisher value) => Set(ref eddnPublisher, value);
 

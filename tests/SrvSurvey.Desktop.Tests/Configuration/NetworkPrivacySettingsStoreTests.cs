@@ -176,6 +176,48 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         Assert.DoesNotContain("EddnUseTestSchemas", File.ReadAllText(path));
     }
 
+    /// <summary>Verifies ed astro consent is independent persists and rolls back runtime failure.</summary>
+    [Fact]
+    public void EdAstroConsentIsIndependentPersistsAndRollsBackRuntimeFailure()
+    {
+        NetworkPrivacySettingsStore store = CreateStore();
+        var vm = new NetworkPrivacyViewModel(store);
+        Assert.False(vm.EdAstroUploadEnabled);
+        Assert.Equal("EDAstro sharing is disabled.", vm.EdAstroConsentSummary);
+        var changes = new List<bool>();
+        vm.EdAstroUploadEnabledChanged += changes.Add;
+        Assert.True(vm.TrySetEdAstroUploadEnabled(true));
+        Assert.True(vm.TrySetEdAstroUploadEnabled(true));
+        Assert.True(store.Load().EdAstroUploadEnabled);
+        Assert.False(store.Load().EddnUploadEnabled);
+        Assert.Contains("enabled", vm.EdAstroConsentSummary, StringComparison.Ordinal);
+        Assert.Equal([true], changes);
+        Assert.True(vm.TrySetEdAstroUploadEnabled(false));
+        vm.EdAstroUploadEnabledChanged += enabled =>
+        {
+            if (enabled)
+            {
+                throw new InvalidOperationException("unavailable runtime");
+            }
+        };
+        Assert.False(vm.TrySetEdAstroUploadEnabled(true));
+        Assert.False(store.Load().EdAstroUploadEnabled);
+        Assert.Contains("previous choice was restored", vm.StatusMessage, StringComparison.Ordinal);
+    }
+
+    /// <summary>Verifies ed astro failed save keeps consent disabled.</summary>
+    [Fact]
+    public void EdAstroFailedSaveKeepsConsentDisabled()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string blocked = Path.Combine(temporaryDirectory, "blocked");
+        File.WriteAllText(blocked, "occupied");
+        var vm = new NetworkPrivacyViewModel(new NetworkPrivacySettingsStore(Path.Combine(blocked, "settings.json")));
+        vm.EdAstroUploadEnabled = true;
+        Assert.False(vm.EdAstroUploadEnabled);
+        Assert.Contains("could not be saved", vm.StatusMessage, StringComparison.Ordinal);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

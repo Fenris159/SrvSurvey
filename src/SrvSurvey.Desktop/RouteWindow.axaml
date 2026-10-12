@@ -267,6 +267,8 @@
                                    IsVisible="{Binding HasNotes}"
                                    Text="{Binding RouteNotes}"
                                    TextWrapping="Wrap" />
+                        <TextBlock IsVisible="{Binding HasPois}" Classes="muted"
+                                   Text="{Binding PoiText, StringFormat='GEC POIs: {0}'}" TextWrapping="Wrap" />
                         <TextBlock Classes="muted"
                                    IsVisible="{Binding !HasGuidance}"
                                    Text="—" />

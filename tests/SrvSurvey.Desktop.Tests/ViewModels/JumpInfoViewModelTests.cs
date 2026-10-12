@@ -9,6 +9,47 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class JumpInfoViewModelTests : IDisposable
 {
+    /// <summary>Verifies destination poi names enrich existing jump information.</summary>
+    [Fact]
+    public async Task DestinationPoiNamesEnrichExistingJumpInformation()
+    {
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        var poi = new SrvSurvey.Core.Exploration.ExplorationPoi(
+            1,
+            "GEC",
+            "Scenic stop",
+            "Beta",
+            3,
+            null,
+            "Stellar Features",
+            "",
+            "",
+            "",
+            7,
+            4,
+            10,
+            false
+        );
+        model.ApplyPoiCatalog(new SrvSurvey.Core.Exploration.ExplorationPoiCatalog([poi]));
+        Assert.False(model.HasExplorationPois);
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                CreateNavRoute(),
+                [FsdTarget("Beta", 3, "K")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await model.PendingSummaryLoad;
+        Assert.Equal("Scenic stop", model.ExplorationPoiText);
+        Assert.True(model.HasExplorationPois);
+        model.ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog.Empty);
+        Assert.False(model.HasExplorationPois);
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-JumpInfoViewModel-" + Guid.NewGuid().ToString("N")

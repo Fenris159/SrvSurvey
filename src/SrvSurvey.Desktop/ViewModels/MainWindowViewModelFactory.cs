@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
@@ -227,6 +228,7 @@ internal sealed class MainWindowExplorationInputs
     public IFirstFootfallInferenceService? FirstFootfallInferenceService { get; init; }
 
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
+    public IExplorationPoiClient? ExplorationPoiClient { get; init; }
 
     public IEliteGameProcessDetector? EliteGameProcessDetector { get; init; }
 
@@ -247,6 +249,9 @@ internal sealed class MainWindowOnlineInputs
     public ICanonnHumanSiteClient? CanonnHumanSiteClient { get; init; }
 
     public ICanonnHumanSitePublisher? CanonnHumanSitePublisher { get; init; }
+
+    /// <summary>Optional EDAstro delivery adapter used by composition and isolated tests.</summary>
+    public IEdAstroPublisher? EdAstroPublisher { get; init; }
 
     public IEddnPublisher? EddnPublisher { get; init; }
 

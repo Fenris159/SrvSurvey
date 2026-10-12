@@ -36,8 +36,8 @@
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow type-header"
                      Text="{Binding PrimarySystemDisplay.Label}" />
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}">
+          <DockPanel>
+            <LayoutTransformControl DockPanel.Dock="Left" Margin="0,0,7,0" Classes="type-icon" IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}" ToolTip.Tip="Quest-tagged system">
               <Border Classes="badge">
                 <TextBlock Classes="overlay-caption"
                            Foreground="{DynamicResource RavenWarningBrush}"
@@ -48,8 +48,8 @@
             <TextBlock Classes="overlay-title type-title"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        Text="{Binding PrimarySystemDisplay.Name}"
-                       TextTrimming="CharacterEllipsis" />
-          </StackPanel>
+                       TextWrapping="Wrap" />
+          </DockPanel>
           <TextBlock Classes="overlay-body type-body"
                      Text="{Binding PrimarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
@@ -65,7 +65,27 @@
                      Classes="overlay-body type-body"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontWeight="SemiBold"
-                     Text="{Binding PrimarySystemDisplay.DetailsText}" />
+                       Text="{Binding PrimarySystemDisplay.DetailsText}" />
+          <StackPanel IsVisible="{Binding HasPrimaryPois}" Spacing="5">
+            <TextBlock Classes="overlay-header type-header" Text="EDAstro POIs" />
+            <ItemsControl ItemsSource="{Binding PrimaryPois}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExplorationPoiItemViewModel">
+                  <StackPanel Spacing="3" Margin="0,3">
+                    <TextBlock IsVisible="{Binding ShowOverlayTitle}" Classes="overlay-title type-title"
+                               Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Name}" TextWrapping="Wrap" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                      <TextBlock Classes="overlay-detail type-detail" Text="{Binding Categories}" TextWrapping="Wrap" />
+                      <TextBlock Grid.Column="1" Classes="muted type-detail" Text="{Binding RatingText}" />
+                    </Grid>
+                    <TextBlock Classes="overlay-body type-body" Text="{Binding Summary}" MaxLines="2"
+                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="muted type-detail" Text="GEC · CC BY-NC-SA 3.0" />
+          </StackPanel>
         </StackPanel>
       </Border>
 
@@ -78,8 +98,8 @@
         <StackPanel Spacing="4">
           <TextBlock Classes="eyebrow type-header"
                      Text="{Binding SecondarySystemDisplay.Label}" />
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}">
+          <DockPanel>
+            <LayoutTransformControl DockPanel.Dock="Left" Margin="0,0,7,0" Classes="type-icon" IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}" ToolTip.Tip="Quest-tagged system">
               <Border Classes="badge">
                 <TextBlock Classes="overlay-caption"
                            Foreground="{DynamicResource RavenWarningBrush}"
@@ -87,10 +107,10 @@
                            Text="Q" />
               </Border>
             </LayoutTransformControl>
-            <TextBlock Classes="overlay-value type-title"
+            <TextBlock Classes="overlay-title type-title"
                        Foreground="{DynamicResource RavenAccentBrush}"
-                       Text="{Binding SecondarySystemDisplay.Name}" />
-          </StackPanel>
+                       Text="{Binding SecondarySystemDisplay.Name}" TextWrapping="Wrap" />
+          </DockPanel>
           <TextBlock Classes="overlay-body type-body"
                      Text="{Binding SecondarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
@@ -105,7 +125,22 @@
           <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDetails}"
                      Classes="overlay-body type-body"
                      Foreground="{DynamicResource RavenSuccessBrush}"
-                     Text="{Binding SecondarySystemDisplay.DetailsText}" />
+                       Text="{Binding SecondarySystemDisplay.DetailsText}" />
+          <StackPanel IsVisible="{Binding HasSecondaryPois}" Spacing="5">
+            <TextBlock Classes="overlay-header type-header" Text="EDAstro POIs" />
+            <ItemsControl ItemsSource="{Binding SecondaryPois}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExplorationPoiItemViewModel">
+                  <StackPanel Spacing="3" Margin="0,3">
+                    <TextBlock IsVisible="{Binding ShowOverlayTitle}" Classes="overlay-title type-title"
+                               Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Name}" TextWrapping="Wrap" />
+                    <TextBlock Classes="overlay-detail type-detail" Text="{Binding Categories}" TextWrapping="Wrap" />
+                    <TextBlock Classes="muted type-detail" Text="{Binding RatingText}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
         </StackPanel>
       </Border>
 

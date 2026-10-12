@@ -559,6 +559,37 @@
         </Grid>
       </Border>
 
+      <Border x:Name="EdAstroCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="12">
+              <TextBlock Classes="card-title" Text="EDAstro" />
+              <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontWeight="SemiBold"
+                           Text="OPT-IN" />
+              </Border>
+            </Grid>
+            <TextBlock TextWrapping="Wrap"
+                       Text="Contribute supported live fleet-carrier and exploration journal data to EDAstro." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding NetworkPrivacy.EdAstroConsentSummary}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Review the event types, carrier locations, application identity, batching and delivery behavior before opting in." />
+          </StackPanel>
+          <Button x:Name="ConfigureEdAstroSharingButton"
+                  Grid.Column="1"
+                  Classes="primary"
+                  VerticalAlignment="Center"
+                  Click="ConfigureEdAstroSharing_Click"
+                  Content="Configure EDAstro Sharing" />
+        </Grid>
+      </Border>
+
       <Border x:Name="InaraCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">

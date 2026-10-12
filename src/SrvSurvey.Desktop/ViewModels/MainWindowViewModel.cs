@@ -8,6 +8,7 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -109,6 +110,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 #pragma warning restore CA2213, S2930
     private readonly GreenGasGiantPublicationCoordinator greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
+    private readonly IEdAstroPublisher edAstroPublisher;
     private readonly IVoxStellarPublisher voxStellarPublisher;
     private readonly IInaraPublisher inaraPublisher;
     private readonly IEdsmPublisher edsmPublisher;
@@ -275,6 +277,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         OverlayInteractionViewModel? overlayInteraction = overlay.OverlayInteraction;
         ICanonnHumanSiteClient? canonnHumanSiteClient = online.CanonnHumanSiteClient;
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = online.CanonnHumanSitePublisher;
+        IEdAstroPublisher? resolvedEdAstroPublisher = online.EdAstroPublisher;
         IEddnPublisher? resolvedEddnPublisher = online.EddnPublisher;
         IVoxStellarPublisher? resolvedVoxStellarPublisher = online.VoxStellarPublisher;
         ISystemBodyDataClient? resolvedSystemBodyDataClient = exploration.SystemBodyDataClient;
@@ -294,6 +297,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         rollback.Add(resolvedInaraPublisher);
         rollback.Add(resolvedEdsmPublisher);
         rollback.Add(resolvedEddnPublisher as IDisposable);
+        rollback.Add(resolvedEdAstroPublisher);
         rollback.Add(resolvedVoxStellarPublisher as IDisposable);
 
         try
@@ -518,6 +522,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
             this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+            this.edAstroPublisher =
+                resolvedEdAstroPublisher
+                ?? new EdAstroPublisher(
+                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    client: externalNetworkClient,
+                    log: message => resolvedApplicationLogService?.Append(message)
+                );
+            rollback.AddIfCreated(resolvedEdAstroPublisher, this.edAstroPublisher);
+            NetworkPrivacy.EdAstroUploadEnabledChanged += OnEdAstroUploadEnabledChanged;
+            rollback.Add(() => NetworkPrivacy.EdAstroUploadEnabledChanged -= OnEdAstroUploadEnabledChanged);
+            this.edAstroPublisher.SetEnabled(NetworkPrivacy.EdAstroUploadEnabled);
             this.voxStellarPublisher =
                 resolvedVoxStellarPublisher
                 ?? new VoxStellarPublisher(
@@ -685,6 +700,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 biologyCriteria: legacyReferences.BiologyCriteria,
                 regionalCodexCandidates: regionalCodexCandidates
             );
+            ExplorationPois = new ExplorationPoiViewModel(
+                exploration.ExplorationPoiClient
+                    ?? new EdAstroPoiClient(AppDataPaths.CacheDirectory, externalNetworkClient),
+                new ExplorationPoiSettingsStore(AppDataPaths.UiSettingsPath),
+                Bookmarks.Catalog,
+                sharedSystemResolver,
+                new CodexImageCache(Path.Combine(AppDataPaths.CacheDirectory, "poi-images"), externalNetworkClient)
+            );
+            rollback.Add(ExplorationPois.Dispose);
+            ExplorationPois.CatalogChanged += OnPoiCatalogChanged;
+            SystemSurvey.PropertyChanged += OnPoiExternalDataChanged;
+            rollback.Add(() => ExplorationPois.CatalogChanged -= OnPoiCatalogChanged);
+            rollback.Add(() => SystemSurvey.PropertyChanged -= OnPoiExternalDataChanged);
+            ExplorationPois.SetExternalEnabled(SystemSurvey.UseExternalData && !IsDiagnosticReplay);
             HumanSite = new HumanSiteViewModel(
                 new HumanSiteViewModelOptions
                 {
@@ -850,6 +879,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             gameWindowOwnership.Transfer();
             SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
             this.eddnPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
+            this.edAstroPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths,
@@ -1037,6 +1067,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public ProfileSyncViewModel ProfileSync { get; }
 
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
+    public ExplorationPoiViewModel ExplorationPois { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
@@ -4531,6 +4562,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(JournalHistory.Dispose);
         TryDispose(companionTimelineStore.Dispose);
         TryDispose(JumpInfo.Dispose);
+        TryDispose(() => ExplorationPois.CatalogChanged -= OnPoiCatalogChanged);
+        TryDispose(() => SystemSurvey.PropertyChanged -= OnPoiExternalDataChanged);
+        TryDispose(ExplorationPois.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         MineMap.PropertyChanged -= OnMineMapPropertyChanged;
@@ -4558,6 +4592,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(OverlayInteraction.Dispose);
         TryDispose(FrontierProfile.Dispose);
         TryDispose(() => visitedStarsHttpClient?.Dispose());
+        NetworkPrivacy.EdAstroUploadEnabledChanged -= OnEdAstroUploadEnabledChanged;
+        TryDispose(edAstroPublisher.Dispose);
         NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
         if (eddnPublisher is IDisposable disposableEddnPublisher)
         {
@@ -4594,6 +4630,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         throw new AggregateException("One or more main-window resources failed to dispose.", failures);
     }
 
+    /// <summary>Applies saved EDAstro consent immediately to the delivery module.</summary>
+    private void OnEdAstroUploadEnabledChanged(bool enabled) => edAstroPublisher.SetEnabled(enabled);
+
     private void OnEddnUploadEnabledChanged(bool enabled)
     {
         eddnPublisher.SetEnabled(enabled);
@@ -4608,6 +4647,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Pauses shared-data consumers and journal delivery when multiple game windows make attribution ambiguous.</summary>
     private void OnCommanderInstancesPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName != nameof(CommanderInstancesViewModel.HasMultipleGameWindows))
@@ -4618,6 +4658,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
         SetSharedCargoSuppressed(hasMultipleGameWindows);
         eddnPublisher.SetSuspended(hasMultipleGameWindows);
+        edAstroPublisher.SetSuspended(hasMultipleGameWindows);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 

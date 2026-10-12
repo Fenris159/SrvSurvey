@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
@@ -33,6 +34,23 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private JumpTarget? inFlightTarget;
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
+    private ExplorationPoiCatalog poiCatalog = ExplorationPoiCatalog.Empty;
+
+    public string ExplorationPoiText =>
+        string.Join(
+            " · ",
+            poiCatalog.ForSystem(routePlan?.Target.Name, routePlan?.Target.SystemAddress).Select(p => p.Name)
+        );
+    public bool HasExplorationPois => ExplorationPoiText.Length > 0;
+
+    /// <summary>Adds local attraction context to the existing next-jump presentation.</summary>
+    public void ApplyPoiCatalog(ExplorationPoiCatalog catalog)
+    {
+        poiCatalog = catalog;
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
+    }
+
     private IReadOnlyList<JumpInfoDetailLineViewModel> detailLines = [];
     private HashSet<string> questTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private double? maximumJumpRange;
@@ -289,6 +307,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasTraffic));
         OnPropertyChanged(nameof(PointsOfInterestText));
         OnPropertyChanged(nameof(HasPointsOfInterest));
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
         OnPropertyChanged(nameof(HasDetailLines));
         OnPropertyChanged(nameof(HasRefuelGuidance));
         OnPropertyChanged(nameof(HasNeutronGuidance));
@@ -643,6 +663,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             : string.Join(" and ", providers) + " data unavailable.";
     }
 
+    /// <summary>Refreshes the bound next-jump summary and its matching attraction context.</summary>
     private void RefreshSummaryProperties()
     {
         OnPropertyChanged(nameof(DiscoveryText));
@@ -651,6 +672,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasTraffic));
         OnPropertyChanged(nameof(PointsOfInterestText));
         OnPropertyChanged(nameof(HasPointsOfInterest));
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
         RefreshDetailLines();
     }
 
