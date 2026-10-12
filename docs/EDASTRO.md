@@ -64,7 +64,11 @@ The JSON array follows EDDiscovery's envelope: an `appName` of `SrvSurvey-XP`,
 `appVersion`, and session-captured `odyssey`, followed by journal objects.
 `GET /api/accepting` is intersected with locally disclosed `CarrierStats`,
 `CarrierJumpRequest`, `Docked`, `ScanOrganic`, and `CodexEntry`. Empty or failed
-lookups do not permit arbitrary events. CarrierStats is limited to public
+lookups do not permit arbitrary events. The provider list is refreshed after
+one day when reports are pending. Requested types outside the supported set are
+listed in the application log when that unsupported set changes; identical
+daily results do not repeat the notice. Those types are not uploaded.
+CarrierStats is limited to public
 carrier identity, fuel, access and service fields. Commander/FID fields,
 balances, carrier finances and `EDD*` additions are excluded. Startup/replay,
 Legacy sessions and ambiguous shared data are not collected.
@@ -74,8 +78,8 @@ most 200 events / 1 MiB, with responses bounded to 128 KiB. Request spacing is
 at least ten seconds, and the **shared process-wide** catalogue/upload budget
 allows at most 100 attempts in fifteen minutes. Provider `Retry-After` and
 quota headers extend that cooldown. Transient delivery failures retain data
-with exponential backoff; rejection of the application identity waits fifteen
-minutes. HTTP success alone is insufficient: the JSON result is checked.
+with exponential backoff; service rejection retains reports for a retry after
+fifteen minutes. HTTP success alone is insufficient: the JSON result is checked.
 
 Opt-out cancels in-flight requests and discards pending data. Multiple Elite
 windows pause collection/delivery while keeping already captured reports.
@@ -84,8 +88,8 @@ not persisted or backed up. Repeated delivery problems are consolidated and
 successes are summarized per fifteen-minute activity window. Enable this
 contribution in only one application to avoid duplicates.
 
-Application identity acceptance is not confirmed by public documentation.
-There is no API key in EDDiscovery's protocol; EDAstro can reject a new sender.
+EDAstro's developer confirmed that application registration or approval is not
+required. There is no personal API key or login in EDDiscovery's protocol.
 Tests exercise HTTP via controlled fixtures and never submit synthetic events
-to the live service. [Protocol research](research/edastro-exploration-integration.md),
+to the live service. [Current protocol audit](research/edastro-uploader-parity-audit-2026-10-12.md),
 [provider submission information](https://edastro.com/api-info.html).

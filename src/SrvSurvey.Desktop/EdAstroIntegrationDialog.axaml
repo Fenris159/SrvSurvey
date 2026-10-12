@@ -16,7 +16,7 @@
         <Border Classes="card" Padding="16">
           <StackPanel Spacing="10">
             <TextBlock FontSize="18" FontWeight="SemiBold" Text="What SrvSurvey-XP sends" />
-            <TextBlock TextWrapping="Wrap" Text="Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded." />
+            <TextBlock TextWrapping="Wrap" Text="Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded." />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="Reports can include carrier callsign, name, ID, fuel, docking access, services and planned destination; the station and system where you dock; and biological or Codex discoveries, bodies and recorded locations." />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="Commander names, Frontier IDs, credit balances, carrier finances and EDDiscovery extension fields are removed. Startup history, diagnostic replay, Legacy sessions and unattributed shared data are not submitted." />
           </StackPanel>
@@ -25,7 +25,7 @@
           <StackPanel Spacing="10">
             <TextBlock FontSize="18" FontWeight="SemiBold" Text="Identity and external service" />
             <TextBlock TextWrapping="Wrap" Text="Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity." />
-            <TextBlock Classes="muted" TextWrapping="Wrap" Text="EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown." />
           </StackPanel>
         </Border>
         <Border Classes="card" Padding="16">

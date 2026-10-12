@@ -136,6 +136,62 @@ public sealed class EdAstroPublisherTests
         Assert.Equal(0, fixture.Publisher.PendingCount);
     }
 
+    /// <summary>Reports unsupported requested types without uploading them or invalid list entries.</summary>
+    [Fact]
+    public async Task UnsupportedRequestedEventsAreReportedWithoutBroadeningUploads()
+    {
+        using var fixture = new Fixture();
+        fixture.Responses.Enqueue(
+            Response("[\"ScanOrganic\",\"FutureEventB\",\"FutureEventA\",\"FutureEventA\",null,\"\",\" \" ]")
+        );
+        fixture.Enable([Event(), Event("FutureEventA"), Event("FutureEventB")]);
+
+        await fixture.Send();
+
+        Assert.Equal(
+            "EDAstro requests event types this version does not support: FutureEventA, FutureEventB. These events are not uploaded.",
+            Assert.Single(fixture.Logs)
+        );
+        JsonArray payload = JsonNode.Parse(fixture.Wire[1].Json!)!.AsArray();
+        Assert.Equal(2, payload.Count);
+        Assert.Equal("ScanOrganic", payload[1]!["event"]!.GetValue<string>());
+        Assert.Equal(0, fixture.Publisher.PendingCount);
+    }
+
+    /// <summary>Reports changed unsupported sets once while ignoring ordering and duplicate names.</summary>
+    [Fact]
+    public async Task UnsupportedEventNoticeTracksPolicyChangesWithoutRepeatingDaily()
+    {
+        using var fixture = new Fixture();
+        string[] policies =
+        [
+            "[\"ScanOrganic\",\"FutureEventA\",\"FutureEventB\"]",
+            "[\"FutureEventB\",\"ScanOrganic\",\"FutureEventA\",\"FutureEventA\"]",
+            "[\"ScanOrganic\",\"FutureEventA\",\"FutureEventC\"]",
+            "[\"ScanOrganic\"]",
+            "[\"ScanOrganic\",\"FutureEventA\",\"FutureEventC\"]",
+        ];
+        int[] noticeCounts = [1, 1, 2, 2, 3];
+        for (int index = 0; index < policies.Length; index++)
+        {
+            fixture.Responses.Enqueue(Response(policies[index]));
+            fixture.Enable([Event(fields: $"\"Body\":{index}")]);
+            await fixture.Send();
+            Assert.Equal(
+                noticeCounts[index],
+                fixture.Logs.Count(message =>
+                    message.StartsWith("EDAstro requests event types", StringComparison.Ordinal)
+                )
+            );
+            Assert.Equal(0, fixture.Publisher.PendingCount);
+            fixture.Advance(86400);
+        }
+        Assert.Contains(
+            fixture.Logs,
+            message => message.Contains("FutureEventA, FutureEventC", StringComparison.Ordinal)
+        );
+    }
+
     /// <summary>Verifies invalid provider list fails closed and retries with backoff.</summary>
     [Theory]
     [InlineData("null")]
@@ -180,15 +236,12 @@ public sealed class EdAstroPublisherTests
         Assert.Equal(0, fixture.Publisher.PendingCount);
     }
 
-    /// <summary>Verifies rejected application identity is retained and does not cause rapid retries.</summary>
+    /// <summary>Verifies service rejection retains reports and does not cause rapid retries.</summary>
     [Theory]
     [InlineData(HttpStatusCode.BadRequest, "{}")]
     [InlineData(HttpStatusCode.Unauthorized, "{}")]
     [InlineData(HttpStatusCode.OK, "{\"status\":403}")]
-    public async Task RejectedApplicationIdentityIsRetainedAndDoesNotCauseRapidRetries(
-        HttpStatusCode status,
-        string body
-    )
+    public async Task RejectedBatchIsRetainedAndDoesNotCauseRapidRetries(HttpStatusCode status, string body)
     {
         using var fixture = new Fixture();
         fixture.Responses.Enqueue(Response(Fixture.Accepted));
@@ -202,7 +255,10 @@ public sealed class EdAstroPublisherTests
         fixture.Advance(1);
         await fixture.Publisher.ProcessPendingAsync();
         Assert.Equal(0, fixture.Publisher.PendingCount);
-        Assert.Single(fixture.Logs);
+        Assert.Equal(
+            "EDAstro rejected a journal batch; sharing will retry in fifteen minutes. Queued reports are retained.",
+            Assert.Single(fixture.Logs)
+        );
     }
 
     /// <summary>Verifies api results distinguish accepted and unwanted batches.</summary>
@@ -408,7 +464,7 @@ public sealed class EdAstroPublisherTests
     private sealed class Fixture : IDisposable
     {
         internal const string Accepted =
-            "[\"CarrierStats\",\"CarrierJumpRequest\",\"Docked\",\"ScanOrganic\",\"CodexEntry\",\"LoadGame\"]";
+            "[\"CarrierStats\",\"CarrierJumpRequest\",\"Docked\",\"ScanOrganic\",\"CodexEntry\"]";
         private DateTimeOffset now = DateTimeOffset.Parse(
             "2026-10-12T06:00:00Z",
             System.Globalization.CultureInfo.InvariantCulture

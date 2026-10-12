@@ -124,9 +124,11 @@
       </Grid>
 
       <StackPanel IsVisible="{Binding HasSelection}" Spacing="6">
-        <TextBlock Classes="card-title" Text="{Binding Selected.Name}" TextWrapping="Wrap" />
-        <TextBlock Classes="muted" Text="{Binding Selected.VotesText}" />
-        <TextBlock Text="{Binding Selected.Summary}" IsVisible="{Binding Selected.HasSummary}" TextWrapping="Wrap" />
+        <StackPanel DataContext="{Binding Selected}" x:DataType="vm:ExplorationPoiItemViewModel" Spacing="6">
+          <TextBlock Classes="card-title" Text="{Binding Name}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="{Binding VotesText}" />
+          <TextBlock Text="{Binding Summary}" IsVisible="{Binding HasSummary}" TextWrapping="Wrap" />
+        </StackPanel>
         <ScrollViewer x:Name="PoiDescriptionScroller" MaxHeight="480" HorizontalScrollBarVisibility="Disabled">
           <ItemsControl ItemsSource="{Binding DescriptionPreview.Blocks}" Margin="0,0,24,0">
             <ItemsControl.ItemTemplate>
