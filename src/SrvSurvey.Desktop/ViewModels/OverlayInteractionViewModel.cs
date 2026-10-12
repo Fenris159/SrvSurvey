@@ -595,14 +595,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         catch (Exception exception)
             when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception) || exception is NotSupportedException)
         {
-            try
-            {
-                editorHost.Close();
-            }
-            catch (Exception cleanupError) when (LegacyOverlayLayoutStore.IsPersistenceFailure(cleanupError))
-            {
-                layoutStore?.ReportFailure("Position editor cleanup failed", cleanupError);
-            }
+            CloseFailedPositionEditor();
             editSession = null;
             IsEditing = false;
             MiningDetection?.EndEdit();
@@ -616,6 +609,19 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = "The overlay position editor could not find a usable display.";
         MiningDetection?.EndEdit();
         return false;
+    }
+
+    /// <summary>Continues opening-failure cleanup even when the partially created editor cannot close normally.</summary>
+    private void CloseFailedPositionEditor()
+    {
+        try
+        {
+            editorHost?.Close();
+        }
+        catch (Exception cleanupError) when (LegacyOverlayLayoutStore.IsPersistenceFailure(cleanupError))
+        {
+            layoutStore?.ReportFailure("Position editor cleanup failed", cleanupError);
+        }
     }
 
     /// <summary>Shows explicit retry and discard actions after an unsuccessful live save.</summary>

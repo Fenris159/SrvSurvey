@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -33,6 +36,133 @@ public sealed class OverlayLayoutRecoveryTests : IDisposable
         var store = new LegacyOverlayLayoutStore(root);
         store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = Original });
         return store;
+    }
+
+    /// <summary>A failed rollback preserves the original exception and journal for a later leased recovery.</summary>
+    [Fact]
+    public void RollbackFailureDoesNotReplaceOriginalSaveError()
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        var originalError = new InvalidDataException("Original verification failure");
+        Exception? error = Record.Exception(
+            (Action)(
+                () =>
+                {
+                    using FileStream lease = OverlayLayoutFileAccess.Acquire(root);
+                    using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
+                        root
+                    );
+                    File.Delete(FilePath("plotters.json"));
+                    Directory.CreateDirectory(FilePath("plotters.json"));
+                    throw originalError;
+                }
+            )
+        );
+
+        Assert.Same(originalError, error);
+        Assert.True(File.Exists(FilePath("overlay-layout-pending.json")));
+        Directory.Delete(FilePath("plotters.json"));
+        Assert.Equal(Original, store.Load().Placements["PlotJumpInfo"]);
+        Assert.False(File.Exists(FilePath("overlay-layout-pending.json")));
+    }
+
+    /// <summary>Rolls back only opacity, retaining unrelated changes even when settings did not exist at transaction start.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TransactionPreservesUnrelatedSharedSettings(bool existed)
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        if (existed)
+        {
+            File.WriteAllText(FilePath("settings.json"), "{\"plotterOpacity\":55,\"theme\":\"original\"}");
+        }
+        using (FileStream lease = OverlayLayoutFileAccess.Acquire(root))
+        using (OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(root))
+        {
+            File.WriteAllText(
+                FilePath("settings.json"),
+                "{\"plotterOpacity\":90,\"theme\":\"updated\",\"newFlag\":true}"
+            );
+        }
+
+        Assert.True(File.Exists(FilePath("settings.json")));
+        JsonObject settings = JsonNode.Parse(File.ReadAllText(FilePath("settings.json")))!.AsObject();
+        Assert.Equal("updated", settings["theme"]!.GetValue<string>());
+        Assert.True(settings["newFlag"]!.GetValue<bool>());
+        Assert.Equal(existed ? .55 : (double?)null, store.Load().DefaultOpacity);
+    }
+
+    /// <summary>Journals contain only the overlay-owned property from the shared settings file.</summary>
+    [Fact]
+    public void JournalExcludesUnrelatedSharedSettings()
+    {
+        Seed();
+        File.WriteAllText(FilePath("settings.json"), "{\"plotterOpacity\":55,\"theme\":\"private setting\"}");
+        using FileStream lease = OverlayLayoutFileAccess.Acquire(root);
+        using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(root);
+
+        Dictionary<string, byte[]?> originals = JsonSerializer.Deserialize<Dictionary<string, byte[]?>>(
+            File.ReadAllBytes(FilePath("overlay-layout-pending.json"))
+        )!;
+        JsonObject settings = JsonNode.Parse(originals["settings.json"]!)!.AsObject();
+        Assert.Single(settings);
+        Assert.Equal(55, settings["plotterOpacity"]!.GetValue<int>());
+    }
+
+    /// <summary>Older whole-file journals also restore only opacity instead of overwriting newer shared preferences.</summary>
+    [Fact]
+    public void LegacyJournalPreservesNewerSharedSettings()
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        var originals = OverlayLayoutFileAccess
+            .FileNames.Where(name => name != "settings.json")
+            .ToDictionary(name => name, name => File.Exists(FilePath(name)) ? File.ReadAllBytes(FilePath(name)) : null);
+        originals["settings.json"] = Encoding.UTF8.GetBytes("{\"plotterOpacity\":55,\"theme\":\"original\"}");
+        File.WriteAllBytes(FilePath("overlay-layout-pending.json"), JsonSerializer.SerializeToUtf8Bytes(originals));
+        File.WriteAllText(FilePath("settings.json"), "{\"plotterOpacity\":90,\"theme\":\"updated\"}");
+
+        Assert.Equal(.55, store.Load().DefaultOpacity);
+        JsonObject settings = JsonNode.Parse(File.ReadAllText(FilePath("settings.json")))!.AsObject();
+        Assert.Equal("updated", settings["theme"]!.GetValue<string>());
+    }
+
+    /// <summary>Explicit opacity repair restores a valid field or defaults it without replacing unrelated settings.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OpacityRepairPreservesUnrelatedSharedSettings(bool backup)
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        File.WriteAllText(FilePath("settings.json"), "{\"plotterOpacity\":\"bad\",\"theme\":\"current\"}");
+        if (backup)
+        {
+            Directory.CreateDirectory(FilePath("overlay-layout-backups"));
+            File.WriteAllText(
+                FilePath("overlay-layout-backups/settings-old.json"),
+                "{\"plotterOpacity\":55,\"theme\":\"old\"}"
+            );
+        }
+
+        string preserved = store.RecoverInvalidLayout();
+
+        Assert.True(File.Exists(FilePath("settings.json")));
+        JsonObject settings = JsonNode.Parse(File.ReadAllText(FilePath("settings.json")))!.AsObject();
+        Assert.Equal("current", settings["theme"]!.GetValue<string>());
+        Assert.Equal(backup ? .55 : (double?)null, store.Load().DefaultOpacity);
+        Assert.True(File.Exists(Path.Combine(preserved, "settings.json")));
+    }
+
+    /// <summary>Unreadable shared JSON remains intact because an overlay repair cannot reconstruct unrelated properties.</summary>
+    [Fact]
+    public void MalformedSharedSettingsAreNeverDeletedByOverlayRepair()
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        const string damaged = "{\"theme\":\"unfinished\"";
+        File.WriteAllText(FilePath("settings.json"), damaged);
+
+        Assert.ThrowsAny<JsonException>(() => store.RecoverInvalidLayout());
+        Assert.Equal(damaged, File.ReadAllText(FilePath("settings.json")));
     }
 
     /// <summary>Emulates termination between layout replacements and verifies automatic byte-exact recovery on load.</summary>

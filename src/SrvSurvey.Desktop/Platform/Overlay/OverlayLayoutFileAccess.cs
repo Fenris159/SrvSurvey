@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -9,12 +10,16 @@ internal static class OverlayLayoutFileAccess
     internal static readonly string[] FileNames =
     [
         "plotters.json",
-        "settings.json",
         "overlay-scale-overrides.json",
         "overlay-typography-overrides.json",
         "overlay-size-overrides.json",
         "overlay-position-references.json",
     ];
+
+    // Only plotterOpacity belongs to overlays; the rest of settings.json is shared data.
+    internal const string SharedSettingsFileName = "settings.json";
+    internal static readonly string[] JournalFileNames = [.. FileNames, SharedSettingsFileName];
+    private const string OpacityProperty = "plotterOpacity";
     private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase
         : StringComparer.Ordinal;
@@ -54,7 +59,7 @@ internal static class OverlayLayoutFileAccess
         {
             foreach (
                 string directory in files
-                    .Where(file => FileNames.Contains(Path.GetFileName(file), StringComparer.Ordinal))
+                    .Where(file => JournalFileNames.Contains(Path.GetFileName(file), StringComparer.Ordinal))
                     .Select(file => Path.GetDirectoryName(Path.GetFullPath(file))!)
                     .Distinct(PathComparer)
                     .Order(PathComparer)
@@ -96,15 +101,18 @@ internal static class OverlayLayoutFileAccess
             throw new InvalidDataException($"Invalid overlay recovery journal: '{journal}'.", exception);
         }
         if (
-            originals.Count != FileNames.Length
-            || originals.Keys.Any(name => !FileNames.Contains(name, StringComparer.Ordinal))
+            originals.Count != JournalFileNames.Length
+            || originals.Keys.Any(name => !JournalFileNames.Contains(name, StringComparer.Ordinal))
         )
         {
             throw new InvalidDataException($"Overlay recovery journal contains invalid file names: '{journal}'.");
         }
-        foreach ((string name, byte[]? content) in originals)
+        // Older journals may contain a whole settings file; use only its opacity property.
+        RestoreSettingsOpacity(Path.Combine(directory, SharedSettingsFileName), originals[SharedSettingsFileName]);
+        foreach (string name in FileNames)
         {
             string path = Path.Combine(directory, name);
+            byte[]? content = originals[name];
             if (content is null)
             {
                 File.Delete(path);
@@ -121,10 +129,17 @@ internal static class OverlayLayoutFileAccess
     internal static Transaction BeginTransaction(string directory)
     {
         Recover(directory);
-        Dictionary<string, byte[]?> originals = FileNames.ToDictionary(
+        Dictionary<string, byte[]?> originals = JournalFileNames.ToDictionary(
             name => name,
             name =>
-                File.Exists(Path.Combine(directory, name)) ? File.ReadAllBytes(Path.Combine(directory, name)) : null,
+            {
+                string path = Path.Combine(directory, name);
+                if (name == SharedSettingsFileName)
+                {
+                    return SnapshotSettingsOpacity(path);
+                }
+                return File.Exists(path) ? File.ReadAllBytes(path) : null;
+            },
             StringComparer.Ordinal
         );
         byte[] journal = JsonSerializer.SerializeToUtf8Bytes(originals);
@@ -137,6 +152,50 @@ internal static class OverlayLayoutFileAccess
         WriteAtomic(Path.Combine(directory, JournalName), journal);
         return new Transaction(directory);
     }
+
+    /// <summary>Snapshots only opacity, excluding unrelated properties from the recovery journal.</summary>
+    internal static byte[]? SnapshotSettingsOpacity(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+        JsonObject settings = LegacyOverlayLayoutStore.ParseObject(path);
+        var snapshot = new JsonObject();
+        if (settings.TryGetPropertyValue(OpacityProperty, out JsonNode? opacity))
+        {
+            snapshot[OpacityProperty] = opacity?.DeepClone();
+        }
+        return JsonSerializer.SerializeToUtf8Bytes(snapshot);
+    }
+
+    /// <summary>Restores or removes only opacity while preserving the latest unrelated settings, including in old journals.</summary>
+    internal static void RestoreSettingsOpacity(string path, byte[]? content)
+    {
+        JsonObject? snapshot = content is null ? null : ReadSettingsSnapshot(content);
+        JsonObject settings = File.Exists(path) ? LegacyOverlayLayoutStore.ParseObject(path) : [];
+        if (snapshot?.ContainsKey(OpacityProperty) == true)
+        {
+            settings[OpacityProperty] = snapshot[OpacityProperty]?.DeepClone();
+        }
+        else if (!settings.Remove(OpacityProperty))
+        {
+            return;
+        }
+        WriteAtomic(path, JsonSerializer.SerializeToUtf8Bytes(settings));
+    }
+
+    /// <summary>Reads both old whole-file and new property-only settings snapshots using legacy JSON syntax.</summary>
+    private static JsonObject ReadSettingsSnapshot(byte[] content) =>
+        JsonNode.Parse(
+            content,
+            documentOptions: new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip,
+            }
+        ) as JsonObject
+        ?? throw new InvalidDataException("Invalid shared settings recovery data.");
 
     /// <summary>Flushes a recovery file before atomically replacing its destination on the same filesystem.</summary>
     internal static void WriteAtomic(string path, byte[] content)
@@ -172,12 +231,21 @@ internal static class OverlayLayoutFileAccess
             committed = true;
         }
 
-        /// <summary>Restores the opening generation when an operation exits without committing.</summary>
+        /// <summary>Attempts rollback without replacing the original failure; an incomplete journal remains retryable.</summary>
         public void Dispose()
         {
             if (!committed)
             {
-                Recover(directory);
+                try
+                {
+                    Recover(directory);
+                }
+                catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
+                {
+                    Trace.TraceWarning(
+                        $"Overlay rollback could not finish at '{directory}'; its journal was retained: {exception}"
+                    );
+                }
             }
         }
     }

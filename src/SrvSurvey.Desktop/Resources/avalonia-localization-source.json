@@ -26765,6 +26765,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
   },
   {
+    "Text": "Invalid shared settings recovery data.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
+  },
+  {
     "Text": "Investment",
     "IsFormat": false,
     "SourceKinds": [
@@ -37417,6 +37425,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
   },
   {
+    "Text": "Overlay rollback could not finish at \u0027{0}\u0027; its journal was retained: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
+  },
+  {
     "Text": "Overlay scale",
     "IsFormat": false,
     "SourceKinds": [
@@ -42990,6 +43006,14 @@
   },
   {
     "Text": "Recovered overlay file \u0027{0}\u0027; original retained at \u0027{1}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Recovered overlay opacity in \u0027{0}\u0027; original retained at \u0027{1}\u0027.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

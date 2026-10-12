@@ -13345,6 +13345,10 @@
       "translation": "Ungültiges Overlay-Wiederherstellungsjournal: „{0}“."
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Ungültige Wiederherstellungsdaten für freigegebene Einstellungen."
+    },
+    {
       "source": "Investment",
       "translation": "Investition"
     },
@@ -18653,6 +18657,10 @@
       "translation": "Das Overlay-Wiederherstellungsjournal ist zu groß: „{0}“."
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "Overlay-Rollback konnte bei „{0}“ nicht abgeschlossen werden; sein Journal wurde beibehalten: {1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "Overlay-Skala"
     },
@@ -21435,6 +21443,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Wiederhergestellte Overlay-Datei „{0}“; Original unter „{1}“ aufbewahrt."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Overlay-Deckkraft in „{0}“ wiederhergestellt; Original unter „{1}“ aufbewahrt."
     },
     {
       "source": "Red",
@@ -50239,6 +50251,10 @@
       "translation": "Diario de recuperación de superposición no válido: '{0}'."
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Datos de recuperación de configuración compartida no válidos."
+    },
+    {
       "source": "Investment",
       "translation": "Inversión"
     },
@@ -55547,6 +55563,10 @@
       "translation": "El diario de recuperación superpuesto es demasiado grande: '{0}'."
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "La reversión de superposición no pudo finalizar en '{0}'; se conservó su diario: {1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "escala de superposición"
     },
@@ -58329,6 +58349,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Archivo de superposición recuperado '{0}'; original conservado en '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacidad de superposición recuperada en '{0}'; original conservado en '{1}'."
     },
     {
       "source": "Red",
@@ -87133,6 +87157,10 @@
       "translation": "Journal de récupération de superposition non valide : « {0} »."
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Données de récupération des paramètres partagés non valides."
+    },
+    {
       "source": "Investment",
       "translation": "Investissement"
     },
@@ -92441,6 +92469,10 @@
       "translation": "Le journal de récupération de superposition est trop volumineux : « {0} »."
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "La restauration de la superposition n'a pas pu se terminer à « {0} » ; son journal a été retenu : {1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "Échelle de superposition"
     },
@@ -95223,6 +95255,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Fichier de superposition récupéré « {0} » ; original conservé à '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacité de superposition récupérée dans « {0} » ; original conservé à '{1}'."
     },
     {
       "source": "Red",
@@ -124027,6 +124063,10 @@
       "translation": "Diário de recuperação de sobreposição inválido: '{0}'."
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Dados de recuperação de configurações compartilhadas inválidos."
+    },
+    {
       "source": "Investment",
       "translation": "Investimento"
     },
@@ -129335,6 +129375,10 @@
       "translation": "O diário de recuperação de sobreposição é muito grande: '{0}'."
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "A reversão da sobreposição não pôde terminar em '{0}'; seu diário foi mantido: {1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "Escala de sobreposição"
     },
@@ -132117,6 +132161,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Arquivo de sobreposição recuperado '{0}'; original retido em '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacidade de sobreposição recuperada em '{0}'; original retido em '{1}'."
     },
     {
       "source": "Red",
@@ -160921,6 +160969,10 @@
       "translation": "Неверный журнал восстановления наложения: «{0}»."
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Неверные данные для восстановления общих настроек."
+    },
+    {
       "source": "Investment",
       "translation": "Инвестиции"
     },
@@ -166229,6 +166281,10 @@
       "translation": "Журнал восстановления наложения слишком велик: «{0}»."
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "Откат наложения не может завершиться на «{0}»; его журнал был сохранен: {1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "Масштаб наложения"
     },
@@ -169011,6 +169067,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Восстановлен файл наложения «{0}»; оригинал сохранен под номером «{1}»."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Восстановлена ​​непрозрачность наложения в «{0}»; оригинал сохранен под номером «{1}»."
     },
     {
       "source": "Red",
@@ -197815,6 +197875,10 @@
       "translation": "无效的覆盖恢复日志：“{0}”。"
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "共享设置恢复数据无效。"
+    },
+    {
       "source": "Investment",
       "translation": "投资"
     },
@@ -203123,6 +203187,10 @@
       "translation": "覆盖恢复日志太大：“{0}”。"
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "覆盖回滚无法在“{0}”处完成；其日志被保留：{1}"
+    },
+    {
       "source": "Overlay scale",
       "translation": "叠加比例"
     },
@@ -205905,6 +205973,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "恢复覆盖文件“{0}”；原始保留在“{1}”。"
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "恢复“{0}”中的覆盖不透明度；原始保留在“{1}”。"
     },
     {
       "source": "Red",
@@ -234709,6 +234781,10 @@
       "translation": "* INVALID OVERLAY RECOVERY JOURNAL: '{0}'. >>>!"
     },
     {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "* INVALID SHARED SETTINGS RECOVERY DATA. >>>!"
+    },
+    {
       "source": "Investment",
       "translation": "* INVESTMENT >>>!"
     },
@@ -240017,6 +240093,10 @@
       "translation": "* OVERLAY RECOVERY JOURNAL IS TOO LARGE: '{0}'. >>>!"
     },
     {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "* OVERLAY ROLLBACK COULD NOT FINISH AT '{0}'; ITS JOURNAL WAS RETAINED: {1} >>>!"
+    },
+    {
       "source": "Overlay scale",
       "translation": "* OVERLAY SCALE >>>!"
     },
@@ -242799,6 +242879,10 @@
     {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "* RECOVERED OVERLAY FILE '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "* RECOVERED OVERLAY OPACITY IN '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
     },
     {
       "source": "Red",

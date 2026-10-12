@@ -325,7 +325,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
     /// <summary>Provides the opening record for merging only this editor's changed fields.</summary>
     internal LegacyOverlayPlacement OriginalPlacement => acceptedPlacement;
 
-    /// <summary>Preserves sidecar metadata while changing the fields supported by this editor.</summary>
+    /// <summary>Retains metadata for opacity-only edits and drops a stale coordinate frame after a direct position edit.</summary>
     public LegacyOverlayPlacement Placement =>
         acceptedPlacement with
         {
@@ -334,6 +334,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
             Vertical = VerticalAnchor,
             VerticalOffset = VerticalOffset,
             Opacity = UseCustomOpacity ? CustomOpacityPercent / 100d : null,
+            PositionReference = HasPositionChanges ? null : acceptedPlacement.PositionReference,
         };
 
     public bool IsDirty => Placement != acceptedPlacement;

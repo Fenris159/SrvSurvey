@@ -13,6 +13,7 @@ public sealed class LegacyOverlayLayoutStore
 {
     private const string WidthProperty = "width";
     private const string HeightProperty = "height";
+    private const string BackupDirectoryName = "overlay-layout-backups";
     private static readonly ConcurrentDictionary<string, object> FileLocks = new(
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
@@ -55,7 +56,7 @@ public sealed class LegacyOverlayLayoutStore
             using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
             string preserved = Path.Combine(
                 dataDirectory,
-                "overlay-layout-backups",
+                BackupDirectoryName,
                 "recovery-" + Guid.NewGuid().ToString("N")
             );
             Directory.CreateDirectory(preserved);
@@ -82,7 +83,7 @@ public sealed class LegacyOverlayLayoutStore
                 File.Copy(target, Path.Combine(preserved, name));
                 string prefix = Path.GetFileNameWithoutExtension(name) + "-";
                 string? backup = Directory
-                    .EnumerateFiles(Path.Combine(dataDirectory, "overlay-layout-backups"), "*.json")
+                    .EnumerateFiles(Path.Combine(dataDirectory, BackupDirectoryName), "*.json")
                     .Where(path => Path.GetFileName(path).StartsWith(prefix, StringComparison.Ordinal))
                     .OrderByDescending(File.GetLastWriteTimeUtc)
                     .FirstOrDefault(IsValidRecoveryFile);
@@ -96,6 +97,7 @@ public sealed class LegacyOverlayLayoutStore
                 }
                 log($"Recovered overlay file '{target}'; original retained at '{preserved}'.");
             }
+            RecoverInvalidOpacity(preserved);
             LegacyOverlayLayout repaired = LoadCore();
             if (repaired.Error is not null)
             {
@@ -104,6 +106,27 @@ public sealed class LegacyOverlayLayoutStore
             transaction.Commit();
             return preserved;
         }
+    }
+
+    /// <summary>Repairs only the overlay-owned opacity property, retaining all other shared settings.</summary>
+    private void RecoverInvalidOpacity(string preserved)
+    {
+        var errors = new List<string>();
+        _ = LoadDefaultOpacity(errors);
+        if (errors.Count == 0)
+        {
+            return;
+        }
+        File.Copy(settingsPath, Path.Combine(preserved, OverlayLayoutFileAccess.SharedSettingsFileName));
+        string? backup = Directory
+            .EnumerateFiles(Path.Combine(dataDirectory, BackupDirectoryName), "settings-*.json")
+            .OrderByDescending(File.GetLastWriteTimeUtc)
+            .FirstOrDefault(IsValidRecoveryFile);
+        OverlayLayoutFileAccess.RestoreSettingsOpacity(
+            settingsPath,
+            backup is null ? null : OverlayLayoutFileAccess.SnapshotSettingsOpacity(backup)
+        );
+        log($"Recovered overlay opacity in '{settingsPath}'; original retained at '{preserved}'.");
     }
 
     /// <summary>Validates a single original or backup with the normal readers without touching the user's other settings.</summary>
@@ -117,7 +140,7 @@ public sealed class LegacyOverlayLayoutStore
         try
         {
             string stem = Path.GetFileNameWithoutExtension(path);
-            string? name = OverlayLayoutFileAccess.FileNames.FirstOrDefault(file =>
+            string? name = OverlayLayoutFileAccess.JournalFileNames.FirstOrDefault(file =>
                 Path.GetFileName(path) == file
                 || stem.StartsWith(Path.GetFileNameWithoutExtension(file) + "-", StringComparison.Ordinal)
             );
@@ -320,7 +343,6 @@ public sealed class LegacyOverlayLayoutStore
 
         lock (fileLock)
         {
-            bool settingsExisted = File.Exists(settingsPath);
             bool scaleOverridesExisted = File.Exists(scaleOverridesPath);
             bool typographyOverridesExisted = File.Exists(typographyOverridesPath);
             bool sizeOverridesExisted = File.Exists(sizeOverridesPath);
@@ -363,7 +385,7 @@ public sealed class LegacyOverlayLayoutStore
             {
                 try
                 {
-                    RestoreFileIfChanged(updateDefaultOpacity, settingsPath, settingsBackupPath, settingsExisted);
+                    // The outer recovery transaction rolls back only the shared opacity property.
                     RestoreFileIfChanged(
                         updatedScaleOverrideCount > 0,
                         scaleOverridesPath,
@@ -1107,7 +1129,7 @@ public sealed class LegacyOverlayLayoutStore
 
     private string CreateVerifiedBackup(string sourcePath, string filePrefix)
     {
-        string backupDirectory = Path.Combine(dataDirectory, "overlay-layout-backups");
+        string backupDirectory = Path.Combine(dataDirectory, BackupDirectoryName);
         Directory.CreateDirectory(backupDirectory);
         string backupPath = Path.Combine(
             backupDirectory,
@@ -1535,7 +1557,8 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private static JsonObject ParseObject(string path)
+    /// <summary>Reads legacy JSON objects while accepting comments and trailing commas.</summary>
+    internal static JsonObject ParseObject(string path)
     {
         return JsonNode.Parse(
                 File.ReadAllText(path),
