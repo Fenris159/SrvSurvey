@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Win32;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ProfileSync;
 
@@ -73,10 +74,16 @@ internal sealed class ProfileSyncStore
     /// <summary>Reads allowed profile data without including credentials, journals, or queued API reports.</summary>
     internal ProfileSnapshot Capture()
     {
+        Dictionary<string, byte[]> layouts = CaptureLayoutContents();
         var portable = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
         var machine = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
         Dictionary<string, SyncValue> baseline = LoadBaseline()?.Portable ?? [];
         var skippedFiles = new HashSet<string>(StringComparer.Ordinal);
+        foreach ((string file, byte[] bytes) in layouts)
+        {
+            string relative = Path.GetRelativePath(paths.DataDirectory, file).Replace('\\', '/');
+            CaptureContent("data", relative, bytes, portable, machine, skippedFiles);
+        }
         foreach ((string area, string root) in Roots())
         {
             if (!Directory.Exists(root))
@@ -92,37 +99,7 @@ internal sealed class ProfileSyncStore
                     continue;
                 }
 
-                byte[] bytes = File.ReadAllBytes(file);
-                if (bytes.Length > ProfileSnapshot.MaximumBytes)
-                {
-                    throw new InvalidDataException("A profile file exceeds the supported backup size.");
-                }
-
-                JsonNode? node;
-                try
-                {
-                    node = ReadContent(relative, bytes);
-                }
-                catch (JsonException)
-                {
-                    skippedFiles.Add(ProfileSyncPolicy.Key(area, relative, ""));
-                    log("Profile sync skipped malformed JSON file: " + file);
-                    continue;
-                }
-                ProfileSyncPolicy.RemoveLocalReferencesFromArrays(node);
-                foreach ((string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(node))
-                {
-                    bool? local = ProfileSyncPolicy.IsMachineValue(area, relative, pointer);
-                    if (local is null)
-                    {
-                        continue;
-                    }
-
-                    string key = ProfileSyncPolicy.Key(area, relative, pointer);
-                    Dictionary<string, JsonNode?> target = local.Value ? machine : portable;
-                    target[key] = value?.DeepClone();
-                    CheckValueLimit(target.Count, local.Value ? "machine" : "portable", file);
-                }
+                CaptureContent(area, relative, File.ReadAllBytes(file), portable, machine, skippedFiles);
             }
         }
         RetainSkippedValues(portable, baseline, skippedFiles);
@@ -138,6 +115,112 @@ internal sealed class ProfileSyncStore
             machine,
             Device.MachineHash
         );
+    }
+
+    /// <summary>Copies layout bytes under short-lived leases so large profile reads cannot block overlay saves.</summary>
+    private Dictionary<string, byte[]> CaptureLayoutContents()
+    {
+        string[] markers = LayoutFiles().ToArray();
+        using IDisposable leases = OverlayLayoutFileAccess.AcquireForFiles(markers);
+        var contents = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        foreach (string marker in markers)
+        {
+            foreach (string name in OverlayLayoutFileAccess.JournalFileNames)
+            {
+                string file = Path.Combine(Path.GetDirectoryName(marker)!, name);
+                string relative = Path.GetRelativePath(paths.DataDirectory, file).Replace('\\', '/');
+                if (
+                    File.Exists(file)
+                    && (File.GetAttributes(file) & FileAttributes.ReparsePoint) == 0
+                    && ProfileSyncPolicy.AllowsFile("data", relative)
+                )
+                {
+                    contents[file] = File.ReadAllBytes(file);
+                }
+            }
+        }
+        return contents;
+    }
+
+    /// <summary>Prevents rereading layout files after their coherent snapshot, including files created after the leases ended.</summary>
+    private static bool IsLayoutProfileFile(string area, string relative)
+    {
+        if (
+            area != "data"
+            || !OverlayLayoutFileAccess.JournalFileNames.Contains(Path.GetFileName(relative), StringComparer.Ordinal)
+        )
+        {
+            return false;
+        }
+        string[] parts = relative.Split('/');
+        return parts.Length == 1 || (parts.Length == 4 && parts[0] == "commanders" && parts[2] == "overlays");
+    }
+
+    /// <summary>Parses captured bytes and retains malformed-file baseline entries without extending layout leases.</summary>
+    private void CaptureContent(
+        string area,
+        string relative,
+        byte[] bytes,
+        Dictionary<string, JsonNode?> portable,
+        Dictionary<string, JsonNode?> machine,
+        HashSet<string> skippedFiles
+    )
+    {
+        if (bytes.Length > ProfileSnapshot.MaximumBytes)
+        {
+            throw new InvalidDataException("A profile file exceeds the supported backup size.");
+        }
+        string file = ResolveTarget(area, relative);
+        JsonNode? node;
+        try
+        {
+            node = ReadContent(relative, bytes);
+        }
+        catch (JsonException)
+        {
+            skippedFiles.Add(ProfileSyncPolicy.Key(area, relative, ""));
+            log("Profile sync skipped malformed JSON file: " + file);
+            return;
+        }
+        ProfileSyncPolicy.RemoveLocalReferencesFromArrays(node);
+        foreach ((string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(node))
+        {
+            bool? local = ProfileSyncPolicy.IsMachineValue(area, relative, pointer);
+            if (local is null)
+            {
+                continue;
+            }
+            string key = ProfileSyncPolicy.Key(area, relative, pointer);
+            Dictionary<string, JsonNode?> target = local.Value ? machine : portable;
+            target[key] = value?.DeepClone();
+            CheckValueLimit(target.Count, local.Value ? "machine" : "portable", file);
+        }
+    }
+
+    /// <summary>Finds real layout folders so backup captures cannot mix files from an in-progress save.</summary>
+    private IEnumerable<string> LayoutFiles()
+    {
+        if (Directory.Exists(paths.DataDirectory))
+        {
+            yield return Path.Combine(paths.DataDirectory, "plotters.json");
+        }
+        string commanders = Path.Combine(paths.DataDirectory, "commanders");
+        if (!Directory.Exists(commanders) || (File.GetAttributes(commanders) & FileAttributes.ReparsePoint) != 0)
+        {
+            yield break;
+        }
+        foreach (string commander in Directory.EnumerateDirectories(commanders))
+        {
+            string overlays = Path.Combine(commander, "overlays");
+            if (
+                Directory.Exists(overlays)
+                && (File.GetAttributes(commander) & FileAttributes.ReparsePoint) == 0
+                && (File.GetAttributes(overlays) & FileAttributes.ReparsePoint) == 0
+            )
+            {
+                yield return Path.Combine(overlays, "plotters.json");
+            }
+        }
     }
 
     /// <summary>Retains unreadable files' live values so capture also preserves their existing counters and deletions.</summary>
@@ -266,11 +349,49 @@ internal sealed class ProfileSyncStore
             conflicts = merge;
             return false;
         }
-        ProfileSnapshot snapshot = staged with { Portable = merge.Values };
+        ProfileSnapshot snapshot = staged with
+        {
+            Portable = merge.Values,
+            Machine = MergeStagedMachine(current, staged),
+        };
         Apply(snapshot, restoreMachine: true);
         SaveBaseline(snapshot);
         File.Delete(PendingPath);
         return true;
+    }
+
+    /// <summary>Preserves machine edits made after staging; the later explicit local edit takes precedence.</summary>
+    private Dictionary<string, JsonNode?> MergeStagedMachine(ProfileSnapshot current, ProfileSnapshot staged)
+    {
+        if (staged.Machine.Count == 0)
+        {
+            return [];
+        }
+        Dictionary<string, JsonNode?>? baseline = LoadBaseline()?.Machine;
+        if (baseline is null)
+        {
+            return staged.Machine;
+        }
+        var machine = new Dictionary<string, JsonNode?>(staged.Machine, StringComparer.Ordinal);
+        foreach (string key in current.Machine.Keys.Union(baseline.Keys, StringComparer.Ordinal))
+        {
+            bool hasCurrent = current.Machine.TryGetValue(key, out JsonNode? value);
+            bool hadBaseline = baseline.TryGetValue(key, out JsonNode? previous);
+            if (hasCurrent == hadBaseline && JsonNode.DeepEquals(value, previous))
+            {
+                continue;
+            }
+            if (hasCurrent)
+            {
+                machine[key] = value?.DeepClone();
+            }
+            else
+            {
+                machine.Remove(key);
+            }
+            log("Profile restore preserved a machine setting edited after staging: " + key);
+        }
+        return machine;
     }
 
     /// <summary>Detects competing edits against the staging baseline, including same-device counter collisions.</summary>
@@ -324,6 +445,18 @@ internal sealed class ProfileSyncStore
             );
         }
 
+        using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
+            snapshot
+                .Portable.Keys.Concat(restoreMachine ? snapshot.Machine.Keys : [])
+                .Select(key =>
+                {
+                    (string Area, string Relative, string Pointer) parsed = ProfileSyncPolicy.ParseKey(
+                        key,
+                        machine: snapshot.Machine.ContainsKey(key)
+                    );
+                    return ResolveTarget(parsed.Area, parsed.Relative);
+                })
+        );
         (Dictionary<string, JsonNode?> updates, Dictionary<string, byte[]?> originals) = ReadUpdates(
             snapshot,
             restoreMachine
@@ -647,6 +780,10 @@ internal sealed class ProfileSyncStore
     {
         foreach (string item in Directory.EnumerateFileSystemEntries(root))
         {
+            if (IsLayoutProfileFile(area, relative + Path.GetFileName(item)))
+            {
+                continue;
+            }
             FileAttributes attributes = File.GetAttributes(item);
             if ((attributes & FileAttributes.ReparsePoint) != 0)
             {

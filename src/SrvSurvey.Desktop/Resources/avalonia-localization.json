@@ -4465,6 +4465,10 @@
       "translation": "Kalibrieren Sie die sechs Rig-Kreise"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "Die Kalibrierung ist nach dem Festschreiben des Layouts fehlgeschlagen"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Kalibrierungsvorschau – gespeicherte Tracker bleiben unverändert."
     },
@@ -7065,6 +7069,10 @@
       "translation": "Das alte Overlay-Design „{0}“ konnte nicht gelesen werden: {1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "Das Overlay-Layout „{0}“ konnte nicht gelesen werden: {1}"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "Overlay-Positionsreferenzen „{0}“ konnten nicht gelesen werden: {1}"
     },
@@ -8239,6 +8247,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "Den nicht exportierten In-Memory-Entwurf verwerfen?"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "Nicht gespeicherte Positionen verwerfen"
     },
     {
       "source": "Disconnect",
@@ -13325,6 +13337,18 @@
       "translation": "Interstellare Faktoren"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "Ungültige Overlay-Layoutdaten bei „{0}“: {1}"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "Ungültiges Overlay-Wiederherstellungsjournal: „{0}“."
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Ungültige Wiederherstellungsdaten für freigegebene Einstellungen."
+    },
+    {
       "source": "Investment",
       "translation": "Investition"
     },
@@ -14129,6 +14153,10 @@
       "translation": "Layout"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "Die Wiederherstellung des Layouts ist fehlgeschlagen"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "Durch das Verlassen und spätere Zurückkehren zum System wird ein neues Besuchsbudget erstellt. Durch das Schließen und erneute Öffnen SrvSurvey während desselben Besuchs wird das Limit nicht umgangen."
     },
@@ -14361,10 +14389,6 @@
       "translation": "Live-Overlay-Positionen können erst bearbeitet werden, wenn der vorhandene Layoutfehler behoben ist: {0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "Live-Overlays kehrten in den Click-through-Modus zurück, ihre verschobenen Positionen wurden jedoch nicht gespeichert: {0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "Live-Overlays kehrten in den Click-through-Modus zurück; verschobene Positionen wurden ohne Speichern wiederhergestellt."
     },
@@ -14375,6 +14399,14 @@
     {
       "source": "Live position",
       "translation": "Live-Position"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "Speichern der Live-Position fehlgeschlagen; Entwurf beibehalten"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "Live-Positionen konnten nicht gespeichert werden: {0} Die verschobenen Positionen bleiben erhalten. Schalten Sie die Interaktion um oder öffnen Sie den Editor, um es erneut zu versuchen."
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -17773,6 +17805,10 @@
       "translation": "Die Deckkraftüberschreibungen sind fertig. Änderungen gelten nach dem Speichern für sichtbare Überlagerungen."
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "Das Speichern der Deckkraft ist fehlgeschlagen. Entwurf beibehalten"
+    },
+    {
       "source": "Open / mark read",
       "translation": "Öffnen / als gelesen markieren"
     },
@@ -18465,12 +18501,52 @@
       "translation": "Overlay-Bearbeitung geschlossen; Es wurden keine Positionen oder Deckkraftwerte geändert."
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "Bereinigung des Overlay-Editors fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "Der Overlay-Editor wurde geschlossen, da die Anzeige nicht aktualisiert werden konnte: {0}"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "Overlay-Host '{0}' {1} -> {2}: {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "Glossar für Overlay-Symbole"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "Das Overlay-Layout ist bei „{0}“ ausgelastet oder nicht zugänglich. Versuchen Sie es erneut, nachdem der andere Autor fertig ist."
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "Das Laden des Overlay-Layouts ist bei „{0}“ fehlgeschlagen: {1}"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "Das Laden des Overlay-Layouts ist fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "Overlay-Layout wiederhergestellt. Frühere Dateien wurden unter {0} beibehalten"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "Die Wiederherstellung des Overlay-Layouts konnte nicht abgeschlossen werden: {0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "Speichern des Overlay-Layouts bei „{0}“ festgeschrieben: {1}-Platzierung(en)."
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "Das Speichern des Overlay-Layouts ist bei „{0}“ fehlgeschlagen: {1}"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "Speichern des Overlay-Layouts bei „{0}“ angefordert: {1}."
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -18557,6 +18633,10 @@
       "translation": "Overlay-Positionen können erst bearbeitet werden, wenn der bestehende Layoutfehler behoben ist: {0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "Overlay-Positionen gespeichert; Mining-HUD-Kalibrierung konnte nicht gespeichert werden: {0} Versuchen Sie erneut, „Speichern“ zu speichern, um die Kalibrierung zu speichern."
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "Overlay-Präsentation: {0}. {1}"
     },
@@ -18567,6 +18647,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "Overlay-Prioritätsregeln enthalten einen Zyklus bei „{0}“."
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "Das Overlay-Wiederherstellungsjournal enthält ungültige Dateinamen: „{0}“."
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "Das Overlay-Wiederherstellungsjournal ist zu groß: „{0}“."
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "Overlay-Rollback konnte bei „{0}“ nicht abgeschlossen werden; sein Journal wurde beibehalten: {1}"
     },
     {
       "source": "Overlay scale",
@@ -18595,6 +18687,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "Overlay-Maßstab wurde nicht geändert: {0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "Die Overlay-Einstellungen überschreiten die unterstützte Wiederherstellungsgröße von 64 MiB. Es wurden keine Dateien geändert."
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -18985,6 +19081,18 @@
       "translation": "Pfirsich"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "Ausstehende Live-Positionen konnten nicht gespeichert werden: {0} Der Entwurf wird für einen erneuten Versuch aufbewahrt."
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "Ausstehende Live-Positionen werden verworfen. Zuvor gespeicherte Positionen blieben erhalten."
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "Ausstehende Live-Speicherung ist fehlgeschlagen; Entwurf beibehalten"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ausstehende Frachtanpassungen"
     },
@@ -19323,6 +19431,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasilien)"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "Die Bereinigung des Positionseditors ist fehlgeschlagen"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "Die Aktualisierung der Anzeige des Positionseditors ist fehlgeschlagen"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "Das Öffnen des Positionseditors ist fehlgeschlagen"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "Das Speichern des Positionseditors ist fehlgeschlagen. Entwurf beibehalten"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -19867,6 +19991,10 @@
     {
       "source": "Profile imported",
       "translation": "Profil importiert"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "Bei der Profilwiederherstellung wurde eine nach dem Staging bearbeitete Maschineneinstellung beibehalten: {0}"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -21309,6 +21437,18 @@
       "translation": "Erfasste {0} Abrechnungsmaterialstandorte."
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "Overlay-Layout wiederherstellen"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "Wiederhergestellte Overlay-Datei „{0}“; Original unter „{1}“ aufbewahrt."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Overlay-Deckkraft in „{0}“ wiederhergestellt; Original unter „{1}“ aufbewahrt."
+    },
+    {
       "source": "Red",
       "translation": "rot"
     },
@@ -22149,6 +22289,10 @@
       "translation": "Stellen Sie die ursprünglich gemessene Größe dieses Panels wieder her"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "Stellen Sie gültige Layoutsicherungen oder Standardeinstellungen wieder her, wenn keine gültige Sicherung vorhanden ist. Beschädigte Dateien bleiben erhalten."
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "Die zuletzt gespeicherten Oberflächenkoordinaten wurden wiederhergestellt."
     },
@@ -22211,6 +22355,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "Die ausgewählten Baulieferungen wurden erneut versucht."
+    },
+    {
+      "source": "Retry position save",
+      "translation": "Versuchen Sie erneut, die Position zu speichern"
     },
     {
       "source": "Retry selected deliveries",
@@ -23485,6 +23633,10 @@
       "translation": "Overlay-Theme-Status „{0}“ gespeichert."
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "Ausstehende Live-Overlay-Positionen gespeichert."
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "Route gespeichert als {0}."
     },
@@ -24423,6 +24575,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "Die Einstellungen sind in Anwendung, Desktop, globale Overlays, Eingabe, Datenschutz und Freigabe, Screenshots und Daten und Migration unterteilt. Durchsuchen Sie die Einstellungen, um direkt zu einem passenden Steuerelement zu springen."
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "Einstellungen bleiben an den Kommandanten bei „{0}“ gebunden; Sie werden nicht zum freigegebenen Profil weitergeleitet."
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -25923,6 +26079,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} ist aktuell auf dem Kanal {1}."
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-layout-validation-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -28681,6 +28841,10 @@
       "translation": "Das Overlay kann sich je nach Spielkontext und -einstellungen auf ein primäres Projekt, die angedockte Build-Site, ein lokales Aggregat oder alle sichtbaren Projekte konzentrieren."
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "Der Overlay-Editor konnte nicht geöffnet werden: {0}"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "Das Overlay hat keine darstellbaren Pixelabmessungen."
     },
@@ -29463,6 +29627,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "Die Umgebungsvariable {0} war nicht vorhanden."
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "Der {0} für {1} wurde in einem anderen Editor oder einer anderen Instanz geändert. Es wurden keine Änderungen gespeichert; Öffnen Sie den Editor erneut, um den gewünschten Wert auszuwählen."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -32361,6 +32529,10 @@
       "translation": "alle Mineralien"
     },
     {
+      "source": "all overlays",
+      "translation": "alle Overlays"
+    },
+    {
       "source": "allcsv",
       "translation": "allcsv"
     },
@@ -33561,6 +33733,10 @@
       "translation": "gleiten"
     },
     {
+      "source": "global opacity",
+      "translation": "globale Opazität"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "globale regionale Erstentdeckungsbiologie"
     },
@@ -34301,6 +34477,10 @@
       "translation": "zu Fuß"
     },
     {
+      "source": "opacity",
+      "translation": "Opazität"
+    },
+    {
       "source": "open",
       "translation": "offen"
     },
@@ -34541,6 +34721,10 @@
       "translation": "bereit"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "Wiederherstellung-{0}"
+    },
+    {
       "source": "red",
       "translation": "rot"
     },
@@ -34663,6 +34847,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "gespeicherte Auswahl erneuert."
+    },
+    {
+      "source": "scale",
+      "translation": "Skala"
     },
     {
       "source": "scanned",
@@ -35023,6 +35211,10 @@
     {
       "source": "testbuggy",
       "translation": "testbuggy"
+    },
+    {
+      "source": "text scale",
+      "translation": "Textskala"
     },
     {
       "source": "text/csv",
@@ -35751,6 +35943,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} wie gescannt · {1} falls zugeordnet"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} bei '{1}': {2}"
     },
     {
       "source": "{0} at {1}",
@@ -41175,6 +41371,10 @@
       "translation": "Calibrar los seis círculos del aparejo."
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "La calibración falló después de confirmar el diseño"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Vista previa de calibración: los rastreadores guardados no se modifican."
     },
@@ -43775,6 +43975,10 @@
       "translation": "No se pudo leer el tema de superposición heredado '{0}': {1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "No se pudo leer el diseño de superposición '{0}': {1}"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "No se pudieron leer las referencias de posición superpuestas '{0}': {1}"
     },
@@ -44949,6 +45153,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "¿Descartar el borrador en memoria no exportado?"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "Descartar posiciones no guardadas"
     },
     {
       "source": "Disconnect",
@@ -50035,6 +50243,18 @@
       "translation": "Factores interestelares"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "Datos de diseño de superposición no válidos en '{0}': {1}"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "Diario de recuperación de superposición no válido: '{0}'."
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Datos de recuperación de configuración compartida no válidos."
+    },
+    {
       "source": "Investment",
       "translation": "Inversión"
     },
@@ -50839,6 +51059,10 @@
       "translation": "Diseño"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "Error al recuperar el diseño"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "Al salir y luego regresar al sistema se inicia un nuevo presupuesto de visita. El cierre y reapertura SrvSurvey durante la misma visita no supera el límite."
     },
@@ -51071,10 +51295,6 @@
       "translation": "Las posiciones de superposición en vivo no se pueden editar hasta que se corrija el error de diseño existente: {0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "Las superposiciones en vivo regresaron al modo de clic, pero sus posiciones movidas no se guardaron: {0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "Las superposiciones en vivo volvieron al modo de clic; Las posiciones movidas se restauraron sin guardar."
     },
@@ -51085,6 +51305,14 @@
     {
       "source": "Live position",
       "translation": "Posición en vivo"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "Error al guardar la posición en vivo; borrador retenido"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "No se pudieron guardar las posiciones en vivo: {0} Las posiciones movidas se conservan. Alterna la interacción o abre el editor para volver a intentarlo."
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -54483,6 +54711,10 @@
       "translation": "Las anulaciones de opacidad están listas. Los cambios se aplican a las superposiciones visibles después de Guardar."
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "Error al guardar la opacidad; borrador retenido"
+    },
+    {
       "source": "Open / mark read",
       "translation": "Abrir/marcar leído"
     },
@@ -55175,12 +55407,52 @@
       "translation": "Edición de superposición cerrada; no se cambiaron posiciones ni valores de opacidad."
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "Error al limpiar el editor de superposición: {0}"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "El editor de superposición se cerró porque no se pudo actualizar la pantalla: {0}"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "Host de superposición '{0}' {1} -> {2}: {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "Glosario de iconos superpuestos"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "El diseño de superposición está ocupado o no se puede acceder a él en '{0}'. Vuelva a intentarlo después de que termine el otro escritor."
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "Error al cargar el diseño de superposición en '{0}': {1}"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "Error al cargar el diseño de superposición: {0}"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "Diseño de superposición recuperado. Los archivos anteriores se conservaron en {0}"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "La recuperación del diseño de superposición no pudo finalizar: {0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "Guardado del diseño de superposición confirmado en '{0}': ubicaciones de {1}."
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "Error al guardar el diseño de superposición en '{0}': {1}"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "Se solicitó guardar el diseño de superposición en '{0}': {1}."
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -55267,6 +55539,10 @@
       "translation": "Las posiciones de superposición no se pueden editar hasta que se corrija el error de diseño existente: {0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "Posiciones de superposición guardadas; No se pudo guardar la calibración del HUD de minería: {0} Vuelva a intentar guardar para guardar la calibración."
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "Presentación superpuesta: {0}. {1}"
     },
@@ -55277,6 +55553,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "Las reglas de prioridad de superposición contienen un ciclo en '{0}'."
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "El diario de recuperación superpuesto contiene nombres de archivos no válidos: '{0}'."
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "El diario de recuperación superpuesto es demasiado grande: '{0}'."
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "La reversión de superposición no pudo finalizar en '{0}'; se conservó su diario: {1}"
     },
     {
       "source": "Overlay scale",
@@ -55305,6 +55593,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "La escala de superposición no fue cambiada: {0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "La configuración de superposición supera el tamaño de recuperación admitido de 64 MiB. No se cambiaron archivos."
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -55695,6 +55987,18 @@
       "translation": "Durazno"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "No se pudieron guardar las posiciones en vivo pendientes: {0} El borrador se conserva para volver a intentarlo."
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "Posiciones vivas pendientes descartadas. Se mantuvieron las posiciones previamente guardadas."
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "Falló el guardado en vivo pendiente; borrador retenido"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes De Carga Pendientes"
     },
@@ -56033,6 +56337,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "Error al limpiar el editor de posiciones"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "Error en la actualización de la visualización del editor de posición"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "Error al abrir el editor de posiciones"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "Error al guardar el editor de posición; borrador retenido"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -56577,6 +56897,10 @@
     {
       "source": "Profile imported",
       "translation": "Perfil importado"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "La restauración del perfil conservó una configuración de la máquina editada después de la preparación: {0}"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -58019,6 +58343,18 @@
       "translation": "{0} ubicación(es) registrada(s) del material de liquidación."
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "Recuperar diseño superpuesto"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "Archivo de superposición recuperado '{0}'; original conservado en '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacidad de superposición recuperada en '{0}'; original conservado en '{1}'."
+    },
+    {
       "source": "Red",
       "translation": "rojo"
     },
@@ -58859,6 +59195,10 @@
       "translation": "Restaurar el tamaño medido original de este panel"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "Restaure copias de seguridad de diseño válidas o valores predeterminados donde no exista una copia de seguridad válida. Los archivos dañados se conservan."
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "Se restauraron las últimas coordenadas de superficie guardadas."
     },
@@ -58921,6 +59261,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "Reintentó las entregas de construcción seleccionadas."
+    },
+    {
+      "source": "Retry position save",
+      "translation": "Reintentar guardar posición"
     },
     {
       "source": "Retry selected deliveries",
@@ -60195,6 +60539,10 @@
       "translation": "Estado del tema de superposición guardado '{0}'."
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "Posiciones de superposición en vivo pendientes guardadas."
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "Ruta guardada como {0}."
     },
@@ -61133,6 +61481,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "La configuración se divide en Aplicación, Escritorio, Superposiciones globales, Entrada, Privacidad y uso compartido, Capturas de pantalla y Datos y migración. Busque configuraciones para saltar directamente a un control coincidente."
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "Las configuraciones permanecen vinculadas al comandante en '{0}'; no serán redirigidos al perfil compartido."
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -62633,6 +62985,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} está vigente en el canal {1}."
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-validación-de-diseño-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -65391,6 +65747,10 @@
       "translation": "La superposición puede centrarse en un proyecto principal, el sitio de construcción acoplado, un agregado local o todos los proyectos visibles según el contexto y la configuración del juego."
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "No se pudo abrir el editor de superposición: {0}"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "La superposición no tiene dimensiones de píxeles renderizables."
     },
@@ -66173,6 +66533,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "La variable de entorno {0} no estaba presente."
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "El {0} para {1} cambió en otro editor o instancia. No se guardaron cambios; Vuelva a abrir el editor para elegir el valor deseado."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -69071,6 +69435,10 @@
       "translation": "todos los minerales"
     },
     {
+      "source": "all overlays",
+      "translation": "todas las superposiciones"
+    },
+    {
       "source": "allcsv",
       "translation": "todocsv"
     },
@@ -70271,6 +70639,10 @@
       "translation": "planeo"
     },
     {
+      "source": "global opacity",
+      "translation": "opacidad global"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "biología del primer descubrimiento regional global"
     },
@@ -71011,6 +71383,10 @@
       "translation": "a pie"
     },
     {
+      "source": "opacity",
+      "translation": "opacidad"
+    },
+    {
       "source": "open",
       "translation": "abierto"
     },
@@ -71251,6 +71627,10 @@
       "translation": "listo"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "recuperación-{0}"
+    },
+    {
       "source": "red",
       "translation": "rojo"
     },
@@ -71373,6 +71753,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "selección guardada renovada."
+    },
+    {
+      "source": "scale",
+      "translation": "escala"
     },
     {
       "source": "scanned",
@@ -71733,6 +72117,10 @@
     {
       "source": "testbuggy",
       "translation": "error de prueba"
+    },
+    {
+      "source": "text scale",
+      "translation": "escala de texto"
     },
     {
       "source": "text/csv",
@@ -72461,6 +72849,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} como escaneado · {1} si está asignado"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} en '{1}': {2}"
     },
     {
       "source": "{0} at {1}",
@@ -77885,6 +78277,10 @@
       "translation": "Calibrer les six cercles de forage"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "L'étalonnage a échoué après la validation de la mise en page"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Aperçu de l'étalonnage : les trackers enregistrés restent inchangés."
     },
@@ -80485,6 +80881,10 @@
       "translation": "Impossible de lire le thème de superposition existant '{0}' : {1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "Impossible de lire la disposition de superposition « {0} » : {1}"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "Impossible de lire les références de position de superposition « {0} » : {1}"
     },
@@ -81659,6 +82059,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "Supprimer le brouillon en mémoire non exporté ?"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "Supprimer les positions non enregistrées"
     },
     {
       "source": "Disconnect",
@@ -86745,6 +87149,18 @@
       "translation": "Facteurs interstellaires"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "Données de mise en page de superposition non valides sur « {0} » : {1}"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "Journal de récupération de superposition non valide : « {0} »."
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Données de récupération des paramètres partagés non valides."
+    },
+    {
       "source": "Investment",
       "translation": "Investissement"
     },
@@ -87549,6 +87965,10 @@
       "translation": "Disposition"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "Échec de la récupération de la mise en page"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "Quitter puis revenir au système démarre un nouveau budget de visite. La fermeture et la réouverture SrvSurvey lors d'une même visite ne contournent pas la limite."
     },
@@ -87781,10 +88201,6 @@
       "translation": "Les positions de superposition en direct ne peuvent pas être modifiées tant que l'erreur de mise en page existante n'est pas corrigée : {0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "Les superpositions dynamiques sont revenues en mode clic, mais leurs positions déplacées n'ont pas été enregistrées : {0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "Les superpositions en direct sont revenues en mode clic ; les positions déplacées ont été restaurées sans sauvegarde."
     },
@@ -87795,6 +88211,14 @@
     {
       "source": "Live position",
       "translation": "Position en direct"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "La sauvegarde de la position en direct a échoué ; projet retenu"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "Les positions en direct n'ont pas pu être enregistrées : {0} Les positions déplacées sont conservées. Activez l'interaction ou ouvrez l'éditeur pour réessayer."
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -91193,6 +91617,10 @@
       "translation": "Les remplacements d'opacité sont prêts. Les modifications s'appliquent aux superpositions visibles après l'enregistrement."
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "L'enregistrement de l'opacité a échoué ; projet retenu"
+    },
+    {
       "source": "Open / mark read",
       "translation": "Ouvrir / marquer comme lu"
     },
@@ -91885,12 +92313,52 @@
       "translation": "Édition de superposition fermée ; aucune position ou valeur d'opacité n'a été modifiée."
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "Échec du nettoyage de l'éditeur de superposition : {0}"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "Éditeur de superposition fermé car l'affichage n'a pas pu être mis à jour : {0}"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "Hôte de superposition '{0}' {1} -> {2} : {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "Glossaire des icônes de superposition"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "La disposition de superposition est occupée ou inaccessible sur « {0} ». Réessayez une fois que l'autre rédacteur a terminé."
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "Échec du chargement de la mise en page de superposition à « {0} » : {1}"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "Échec du chargement de la mise en page de superposition : {0}"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "Disposition de superposition récupérée. Les fichiers précédents ont été conservés dans {0}"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "La récupération de la mise en page de superposition n'a pas pu se terminer : {0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "Enregistrement de la mise en page de superposition validé à « {0} » : emplacement(s) {1}."
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "L'enregistrement de la mise en page de superposition a échoué à « {0} » : {1}"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "Sauvegarde de la mise en page de superposition demandée dans « {0} » : {1}."
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -91977,6 +92445,10 @@
       "translation": "Les positions de superposition ne peuvent pas être modifiées tant que l'erreur de mise en page existante n'est pas corrigée : {0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "Positions de superposition enregistrées ; L'étalonnage du HUD minier n'a pas pu être enregistré : {0} Réessayez Enregistrer pour enregistrer l'étalonnage."
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "Présentation en superposition : {0}. {1}"
     },
@@ -91987,6 +92459,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "Les règles de priorité de superposition contiennent un cycle à « {0} »."
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "Le journal de récupération de superposition contient des noms de fichiers non valides : « {0} »."
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "Le journal de récupération de superposition est trop volumineux : « {0} »."
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "La restauration de la superposition n'a pas pu se terminer à « {0} » ; son journal a été retenu : {1}"
     },
     {
       "source": "Overlay scale",
@@ -92015,6 +92499,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "L'échelle de superposition n'a pas été modifiée : {0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "Les paramètres de superposition dépassent la taille de récupération prise en charge de 64 Mio. Aucun fichier n'a été modifié."
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -92405,6 +92893,18 @@
       "translation": "Pêche"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "Les positions actives en attente n'ont pas pu être enregistrées : {0} Le brouillon est conservé pour une nouvelle tentative."
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "Les positions en direct en attente sont supprimées. Les positions précédemment enregistrées ont été conservées."
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "La sauvegarde en direct en attente a échoué ; projet retenu"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustements de fret en attente"
     },
@@ -92743,6 +93243,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "Portugais (Brésil)"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "Échec du nettoyage de l'éditeur de position"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "La mise à jour de l'affichage de l'éditeur de position a échoué"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "L'ouverture de l'éditeur de poste a échoué"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "L'enregistrement de l'éditeur de position a échoué ; projet retenu"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -93287,6 +93803,10 @@
     {
       "source": "Profile imported",
       "translation": "Profil importé"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "La restauration de profil a conservé un paramètre de machine modifié après la préparation : {0}"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -94729,6 +95249,18 @@
       "translation": "{0} emplacement(s) de matériaux de règlement enregistré(s)."
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "Récupérer la disposition de superposition"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "Fichier de superposition récupéré « {0} » ; original conservé à '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacité de superposition récupérée dans « {0} » ; original conservé à '{1}'."
+    },
+    {
       "source": "Red",
       "translation": "rouge"
     },
@@ -95569,6 +96101,10 @@
       "translation": "Restaurer la taille mesurée d'origine de ce panneau"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "Restaurez les sauvegardes de mise en page valides ou les valeurs par défaut lorsqu'il n'existe aucune sauvegarde valide. Les fichiers endommagés sont conservés."
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "Restauration des dernières coordonnées de surface enregistrées."
     },
@@ -95631,6 +96167,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "Nouvelle tentative des livraisons de construction sélectionnées."
+    },
+    {
+      "source": "Retry position save",
+      "translation": "Réessayez d'enregistrer la position"
     },
     {
       "source": "Retry selected deliveries",
@@ -96905,6 +97445,10 @@
       "translation": "État du thème de superposition enregistré '{0}'."
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "Positions de superposition en direct en attente enregistrées."
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "Itinéraire enregistré sous {0}."
     },
@@ -97843,6 +98387,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "Les paramètres sont divisés en application, bureau, superpositions globales, saisie, confidentialité et partage, captures d'écran et données et migration. Recherchez les paramètres pour accéder directement à un contrôle correspondant."
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "Les paramètres restent liés au commandant à « {0} » ; ils ne seront pas redirigés vers le profil partagé."
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -99343,6 +99891,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} est actuel sur le canal {1}."
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-mise en page-validation-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -102101,6 +102653,10 @@
       "translation": "La superposition peut cibler un projet principal, le site de construction ancré, un agrégat local ou tous les projets visibles en fonction du contexte et des paramètres du jeu."
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "L'éditeur de superposition n'a pas pu s'ouvrir : {0}"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "La superposition n'a pas de dimensions en pixels pouvant être rendues."
     },
@@ -102883,6 +103439,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "La variable d'environnement {0} n'était pas présente."
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "Le {0} pour {1} a été modifié dans un autre éditeur ou instance. Aucune modification n'a été enregistrée ; rouvrez l'éditeur pour choisir la valeur souhaitée."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -105781,6 +106341,10 @@
       "translation": "tous les minéraux"
     },
     {
+      "source": "all overlays",
+      "translation": "toutes les superpositions"
+    },
+    {
       "source": "allcsv",
       "translation": "allcsv"
     },
@@ -106981,6 +107545,10 @@
       "translation": "glisser"
     },
     {
+      "source": "global opacity",
+      "translation": "opacité globale"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "première découverte régionale mondiale en biologie"
     },
@@ -107721,6 +108289,10 @@
       "translation": "à pied"
     },
     {
+      "source": "opacity",
+      "translation": "opacité"
+    },
+    {
       "source": "open",
       "translation": "ouvrir"
     },
@@ -107961,6 +108533,10 @@
       "translation": "prêt"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "récupération-{0}"
+    },
+    {
       "source": "red",
       "translation": "rouge"
     },
@@ -108083,6 +108659,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "sélection enregistrée renouvelée."
+    },
+    {
+      "source": "scale",
+      "translation": "échelle"
     },
     {
       "source": "scanned",
@@ -108443,6 +109023,10 @@
     {
       "source": "testbuggy",
       "translation": "buggy de test"
+    },
+    {
+      "source": "text scale",
+      "translation": "échelle du texte"
     },
     {
       "source": "text/csv",
@@ -109171,6 +109755,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} tel qu'analysé · {1} si mappé"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} à '{1}' : {2}"
     },
     {
       "source": "{0} at {1}",
@@ -114595,6 +115183,10 @@
       "translation": "Calibre os seis círculos da plataforma"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "A calibração falhou após a confirmação do layout"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Pré-visualização da calibração – os rastreadores salvos permanecem inalterados."
     },
@@ -117195,6 +117787,10 @@
       "translation": "Não foi possível ler o tema de sobreposição legado '{0}': {1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "Não foi possível ler o layout de sobreposição '{0}': {1}"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "Não foi possível ler as referências de posição de sobreposição '{0}': {1}"
     },
@@ -118369,6 +118965,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "Descartar o rascunho na memória não exportado?"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "Descartar posições não salvas"
     },
     {
       "source": "Disconnect",
@@ -123455,6 +124055,18 @@
       "translation": "Fatores Interestelares"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "Dados de layout de sobreposição inválidos em '{0}': {1}"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "Diário de recuperação de sobreposição inválido: '{0}'."
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Dados de recuperação de configurações compartilhadas inválidos."
+    },
+    {
       "source": "Investment",
       "translation": "Investimento"
     },
@@ -124259,6 +124871,10 @@
       "translation": "Disposição"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "Falha na recuperação do layout"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "Sair e depois retornar ao sistema inicia um novo orçamento de visitas. Fechar e reabrir SrvSurvey durante a mesma visita não ultrapassa o limite."
     },
@@ -124491,10 +125107,6 @@
       "translation": "As posições de sobreposição ao vivo não podem ser editadas até que o erro de layout existente seja corrigido: {0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "As sobreposições ao vivo retornaram ao modo click-through, mas suas posições movidas não foram salvas: {0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "As sobreposições ao vivo retornaram ao modo click-through; as posições movidas foram restauradas sem salvar."
     },
@@ -124505,6 +125117,14 @@
     {
       "source": "Live position",
       "translation": "Posição ao vivo"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "Falha ao salvar a posição ao vivo; rascunho retido"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "As posições ativas não puderam ser salvas: {0} As posições movidas são retidas. Alterne a interação ou abra o editor para tentar novamente."
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -127903,6 +128523,10 @@
       "translation": "As substituições de opacidade estão prontas. As alterações se aplicam às sobreposições visíveis após Salvar."
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "Falha ao salvar a opacidade; rascunho retido"
+    },
+    {
       "source": "Open / mark read",
       "translation": "Abrir/marcar como lido"
     },
@@ -128595,12 +129219,52 @@
       "translation": "Edição de sobreposição fechada; nenhuma posição ou valor de opacidade foi alterado."
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "Falha na limpeza do editor de sobreposição: {0}"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "Editor de sobreposição fechado porque a exibição não pôde ser atualizada: {0}"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "Host de sobreposição '{0}' {1} -> {2}: {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "Glossário de ícones de sobreposição"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "O layout de sobreposição está ocupado ou inacessível em '{0}'. Tente novamente depois que o outro escritor terminar."
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "Falha no carregamento do layout de sobreposição em '{0}': {1}"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "Falha no carregamento do layout de sobreposição: {0}"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "Layout de sobreposição recuperado. Os arquivos anteriores foram preservados em {0}"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "A recuperação do layout de sobreposição não pôde ser concluída: {0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "Salvamento de layout de sobreposição confirmado em '{0}': posicionamento(s) {1}."
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "Falha ao salvar o layout de sobreposição em '{0}': {1}"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "Salvamento do layout de sobreposição solicitado em '{0}': {1}."
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -128687,6 +129351,10 @@
       "translation": "As posições de sobreposição não podem ser editadas até que o erro de layout existente seja corrigido: {0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "Posições de sobreposição salvas; A calibração do HUD de mineração não pôde ser salva: {0} Tente Salvar novamente para salvar a calibração."
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "Apresentação de sobreposição: {0}. {1}"
     },
@@ -128697,6 +129365,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "As regras de prioridade de sobreposição contêm um ciclo em '{0}'."
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "O diário de recuperação de sobreposição contém nomes de arquivo inválidos: '{0}'."
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "O diário de recuperação de sobreposição é muito grande: '{0}'."
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "A reversão da sobreposição não pôde terminar em '{0}'; seu diário foi mantido: {1}"
     },
     {
       "source": "Overlay scale",
@@ -128725,6 +129405,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "A escala de sobreposição não foi alterada: {0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "As configurações de sobreposição excedem o tamanho de recuperação suportado de 64 MiB. Nenhum arquivo foi alterado."
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -129115,6 +129799,18 @@
       "translation": "Pêssego"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "Não foi possível salvar as posições ativas pendentes: {0} O rascunho é retido para nova tentativa."
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "Posições ativas pendentes descartadas. As posições salvas anteriormente foram mantidas."
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "Falha no salvamento ao vivo pendente; rascunho retido"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes de carga pendentes"
     },
@@ -129453,6 +130149,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "Falha na limpeza do editor de posição"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "Falha na atualização da exibição do editor de posição"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "Falha na abertura do editor de posição"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "Falha ao salvar o editor de posição; rascunho retido"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -129997,6 +130709,10 @@
     {
       "source": "Profile imported",
       "translation": "Perfil importado"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "A restauração do perfil preservou uma configuração de máquina editada após a preparação: {0}"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -131439,6 +132155,18 @@
       "translation": "{0} local(is) de material de liquidação registrado(s)."
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "Recuperar layout de sobreposição"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "Arquivo de sobreposição recuperado '{0}'; original retido em '{1}'."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Opacidade de sobreposição recuperada em '{0}'; original retido em '{1}'."
+    },
+    {
       "source": "Red",
       "translation": "vermelho"
     },
@@ -132279,6 +133007,10 @@
       "translation": "Restaure o tamanho medido original deste painel"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "Restaure backups de layout válidos ou padrões onde não existe nenhum backup válido. Arquivos danificados são preservados."
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "Restauradas as últimas coordenadas de superfície salvas."
     },
@@ -132341,6 +133073,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "Tentei novamente as entregas de construção selecionadas."
+    },
+    {
+      "source": "Retry position save",
+      "translation": "Tentar salvar novamente a posição"
     },
     {
       "source": "Retry selected deliveries",
@@ -133615,6 +134351,10 @@
       "translation": "Estado do tema de sobreposição salvo '{0}'."
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "Posições de sobreposição ao vivo pendentes salvas."
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "Rota salva como {0}."
     },
@@ -134553,6 +135293,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "As configurações são divididas em Aplicativo, Área de Trabalho, Sobreposições globais, Entrada, Privacidade e compartilhamento, Capturas de tela e Dados e migração. Configurações de pesquisa para ir diretamente para um controle correspondente."
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "As configurações permanecem vinculadas ao comandante em '{0}'; eles não serão redirecionados para o perfil compartilhado."
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -136053,6 +136797,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} está atual no canal {1}."
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-validação de layout-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -138811,6 +139559,10 @@
       "translation": "A sobreposição pode focar em um projeto primário, no site de construção encaixado, em um agregado local ou em todos os projetos visíveis, dependendo do contexto e das configurações do jogo."
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "O editor de sobreposição não pôde abrir: {0}"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "A sobreposição não possui dimensões de pixels renderizáveis."
     },
@@ -139593,6 +140345,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "A variável de ambiente {0} não estava presente."
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "O {0} para {1} foi alterado em outro editor ou instância. Nenhuma alteração foi salva; reabra o editor para escolher o valor desejado."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -142491,6 +143247,10 @@
       "translation": "todos os minerais"
     },
     {
+      "source": "all overlays",
+      "translation": "todas as sobreposições"
+    },
+    {
       "source": "allcsv",
       "translation": "tudocsv"
     },
@@ -143691,6 +144451,10 @@
       "translation": "deslizar"
     },
     {
+      "source": "global opacity",
+      "translation": "opacidade global"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "biologia da primeira descoberta regional global"
     },
@@ -144431,6 +145195,10 @@
       "translation": "a pé"
     },
     {
+      "source": "opacity",
+      "translation": "opacidade"
+    },
+    {
       "source": "open",
       "translation": "abrir"
     },
@@ -144671,6 +145439,10 @@
       "translation": "preparar"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "recuperação-{0}"
+    },
+    {
       "source": "red",
       "translation": "vermelho"
     },
@@ -144793,6 +145565,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "seleção salva renovada."
+    },
+    {
+      "source": "scale",
+      "translation": "escala"
     },
     {
       "source": "scanned",
@@ -145153,6 +145929,10 @@
     {
       "source": "testbuggy",
       "translation": "teste de erros"
+    },
+    {
+      "source": "text scale",
+      "translation": "escala de texto"
     },
     {
       "source": "text/csv",
@@ -145881,6 +146661,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} conforme verificado · {1} se mapeado"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} em '{1}': {2}"
     },
     {
       "source": "{0} at {1}",
@@ -151305,6 +152089,10 @@
       "translation": "Калибровка шести кругов буровой установки"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "Калибровка не удалась после фиксации макета"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Предварительный просмотр калибровки — сохраненные трекеры не изменяются."
     },
@@ -153905,6 +154693,10 @@
       "translation": "Не удалось прочитать устаревшую тему наложения '{0}': {1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "Не удалось прочитать макет наложения «{0}»: {1}."
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "Не удалось прочитать ссылки на позиции наложения «{0}»: {1}."
     },
@@ -155079,6 +155871,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "Удалить неэкспортированный черновик в памяти?"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "Отменить несохраненные позиции"
     },
     {
       "source": "Disconnect",
@@ -160165,6 +160961,18 @@
       "translation": "Межзвездные факторы"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "Неверные данные макета наложения по адресу «{0}»: {1}."
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "Неверный журнал восстановления наложения: «{0}»."
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "Неверные данные для восстановления общих настроек."
+    },
+    {
       "source": "Investment",
       "translation": "Инвестиции"
     },
@@ -160969,6 +161777,10 @@
       "translation": "Макет"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "Восстановление макета не удалось"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "Выход из системы и последующее возвращение в систему запускает новый бюджет посещения. Закрытие и повторное открытие SrvSurvey во время одного и того же посещения не обходит ограничение."
     },
@@ -161201,10 +162013,6 @@
       "translation": "Позиции наложения в реальном времени нельзя редактировать, пока не будет исправлена существующая ошибка макета: {0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "Живые наложения вернулись в режим перехода по клику, но их перемещенные позиции не были сохранены: {0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "Живые наложения вернулись в режим перехода по клику; перемещенные позиции восстанавливались без сохранения."
     },
@@ -161215,6 +162023,14 @@
     {
       "source": "Live position",
       "translation": "Живая позиция"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "Сохранение текущей позиции не удалось; проект сохранен"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "Не удалось сохранить текущие позиции: {0} Перемещенные позиции сохраняются. Переключите взаимодействие или откройте редактор, чтобы повторить попытку."
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -164613,6 +165429,10 @@
       "translation": "Переопределения непрозрачности готовы. Изменения применяются к видимым наложениям после сохранения."
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "Не удалось сохранить непрозрачность; проект сохранен"
+    },
+    {
       "source": "Open / mark read",
       "translation": "Открыть/отметить как прочитанное"
     },
@@ -165305,12 +166125,52 @@
       "translation": "Редактирование наложения закрыто; никакие позиции или значения непрозрачности не изменились."
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "Не удалось очистить редактор наложений: {0}."
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "Редактор наложений закрыт, поскольку не удалось обновить отображение: {0}."
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "Хост оверлея «{0}» {1} -> {2}: {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "Глоссарий значков наложения"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "Макет наложения занят или недоступен по адресу «{0}». Повторите попытку после того, как другой писатель завершит работу."
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "Не удалось загрузить макет наложения по адресу «{0}»: {1}."
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "Не удалось загрузить макет наложения: {0}."
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "Макет наложения восстановлен. Предыдущие файлы сохранились по адресу {0}."
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "Восстановление макета наложения не удалось завершить: {0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "Сохранение макета наложения зафиксировано в «{0}»: места размещения {1}."
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "Не удалось сохранить макет наложения по адресу «{0}»: {1}."
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "Сохранение макета наложения запрошено по адресу «{0}»: {1}."
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -165397,6 +166257,10 @@
       "translation": "Позиции наложения нельзя редактировать, пока не будет исправлена существующая ошибка макета: {0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "Позиции наложения сохранены; Не удалось сохранить калибровку HUD для майнинга: {0} Повторите попытку, чтобы сохранить калибровку."
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "Наложение презентации: {0}. {1}"
     },
@@ -165407,6 +166271,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "Правила приоритета наложения содержат цикл по адресу «{0}»."
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "Журнал восстановления наложения содержит недопустимые имена файлов: «{0}»."
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "Журнал восстановления наложения слишком велик: «{0}»."
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "Откат наложения не может завершиться на «{0}»; его журнал был сохранен: {1}"
     },
     {
       "source": "Overlay scale",
@@ -165435,6 +166311,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "Масштаб наложения не изменен: {0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "Параметры наложения превышают поддерживаемый размер восстановления в 64 МБ. Никакие файлы не были изменены."
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -165825,6 +166705,18 @@
       "translation": "Персик"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "Не удалось сохранить ожидающие текущие позиции: {0} Черновик сохраняется для повторной попытки."
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "Ожидающие действующие позиции отброшены. Ранее сохраненные позиции были сохранены."
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "Ожидание живого сохранения не удалось; проект сохранен"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ожидается корректировка груза"
     },
@@ -166163,6 +167055,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "Португальский (Бразилия)"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "Очистка редактора позиций не удалась."
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "Не удалось обновить отображение редактора позиций."
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "Не удалось открыть редактор позиций"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "Не удалось сохранить редактор позиции; проект сохранен"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -166707,6 +167615,10 @@
     {
       "source": "Profile imported",
       "translation": "Профиль импортирован"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "При восстановлении профиля сохраняются настройки компьютера, измененные после промежуточной установки: {0}."
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -168149,6 +169061,18 @@
       "translation": "Записано расположение материалов расчета {0} ."
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "Восстановить макет наложения"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "Восстановлен файл наложения «{0}»; оригинал сохранен под номером «{1}»."
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "Восстановлена ​​непрозрачность наложения в «{0}»; оригинал сохранен под номером «{1}»."
+    },
+    {
       "source": "Red",
       "translation": "красный"
     },
@@ -168989,6 +169913,10 @@
       "translation": "Восстановить исходный измеренный размер этой панели."
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "Восстановите действительные резервные копии макета или значения по умолчанию, если действующая резервная копия не существует. Поврежденные файлы сохраняются."
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "Восстановлены последние сохраненные координаты поверхности."
     },
@@ -169051,6 +169979,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "Повторная попытка выбранных строительных поставок."
+    },
+    {
+      "source": "Retry position save",
+      "translation": "Повторить попытку сохранения позиции"
     },
     {
       "source": "Retry selected deliveries",
@@ -170325,6 +171257,10 @@
       "translation": "Сохранено состояние темы наложения «{0}»."
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "Сохранено ожидающие позиции наложения в реальном времени."
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "Маршрут сохранен как {0}."
     },
@@ -171263,6 +172199,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "Настройки разделены на «Приложение», «Рабочий стол», «Глобальные наложения», «Ввод», «Конфиденциальность и обмен», «Снимки экрана» и «Данные и миграция». Найдите настройки, чтобы перейти непосредственно к соответствующему элементу управления."
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "Настройки остаются привязанными к командиру по адресу «{0}»; они не будут перенаправлены в общий профиль."
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -172763,6 +173703,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} текущий на канале {1}."
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-layout-validation-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -175521,6 +176465,10 @@
       "translation": "Наложение может фокусироваться на основном проекте, закрепленной площадке сборки, локальном агрегате или всех видимых проектах в зависимости от игрового контекста и настроек."
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "Не удалось открыть редактор наложений: {0}."
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "Наложение не имеет отображаемых размеров в пикселях."
     },
@@ -176303,6 +177251,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "Переменная среды {0} не присутствовала."
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "{0} для {1} изменен в другом редакторе или экземпляре. Никакие изменения не были сохранены; снова откройте редактор, чтобы выбрать нужное значение."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -179201,6 +180153,10 @@
       "translation": "все минералы"
     },
     {
+      "source": "all overlays",
+      "translation": "все наложения"
+    },
+    {
       "source": "allcsv",
       "translation": "allcsv"
     },
@@ -180401,6 +181357,10 @@
       "translation": "скользить"
     },
     {
+      "source": "global opacity",
+      "translation": "глобальная непрозрачность"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "глобальное региональное первое открытие биологии"
     },
@@ -181141,6 +182101,10 @@
       "translation": "пешком"
     },
     {
+      "source": "opacity",
+      "translation": "непрозрачность"
+    },
+    {
       "source": "open",
       "translation": "открыть"
     },
@@ -181381,6 +182345,10 @@
       "translation": "готовый"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "восстановление-{0}"
+    },
+    {
       "source": "red",
       "translation": "красный"
     },
@@ -181503,6 +182471,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "сохраненный выбор обновлен."
+    },
+    {
+      "source": "scale",
+      "translation": "шкала"
     },
     {
       "source": "scanned",
@@ -181863,6 +182835,10 @@
     {
       "source": "testbuggy",
       "translation": "тестбагги"
+    },
+    {
+      "source": "text scale",
+      "translation": "масштаб текста"
     },
     {
       "source": "text/csv",
@@ -182591,6 +183567,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} при сканировании · {1} при сопоставлении"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} в '{1}': {2}"
     },
     {
       "source": "{0} at {1}",
@@ -188015,6 +188995,10 @@
       "translation": "校准六个钻机圆"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "布局提交后校准失败"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "校准预览 - 保存的跟踪器未更改。"
     },
@@ -190615,6 +191599,10 @@
       "translation": "无法读取旧版叠加主题“{0}”：{1}"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "无法读取覆盖布局“{0}”：{1}"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "无法读取覆盖位置引用“{0}”：{1}"
     },
@@ -191789,6 +192777,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "丢弃未导出的内存草稿？"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "放弃未保存的位置"
     },
     {
       "source": "Disconnect",
@@ -196875,6 +197867,18 @@
       "translation": "星际因素"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "“{0}”处的覆盖布局数据无效：{1}"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "无效的覆盖恢复日志：“{0}”。"
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "共享设置恢复数据无效。"
+    },
+    {
       "source": "Investment",
       "translation": "投资"
     },
@@ -197679,6 +198683,10 @@
       "translation": "布局"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "布局恢复失败"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "离开并稍后返回系统开始新的访问预算。在同一访问期间关闭并重新打开SrvSurvey不会绕过限制。"
     },
@@ -197911,10 +198919,6 @@
       "translation": "在纠正现有布局错误之前，无法编辑实时叠加位置：{0}"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "实时叠加返回点击模式，但其移动位置未保存：{0}"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "实时叠加返回点击模式；移动的位置已恢复，无需保存。"
     },
@@ -197925,6 +198929,14 @@
     {
       "source": "Live position",
       "translation": "现场位置"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "实时位置保存失败；保留草稿"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "无法保存实时位置：{0} 移动的位置被保留。切换交互或打开编辑器重试。"
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -201323,6 +202335,10 @@
       "translation": "不透明度覆盖已准备就绪。保存后更改将应用​​于可见叠加层。"
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "不透明度保存失败；保留草稿"
+    },
+    {
       "source": "Open / mark read",
       "translation": "打开/标记已读"
     },
@@ -202015,12 +203031,52 @@
       "translation": "叠加编辑已关闭；位置或不透明度值没有改变。"
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "覆盖编辑器清理失败：{0}"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "由于无法更新显示，覆盖编辑器已关闭：{0}"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "覆盖主机 '{0}' {1} -> {2}: {3}"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "叠加图标词汇表"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "“{0}”处的覆盖布局繁忙或无法访问。其他作者完成后重试。"
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "“{0}”处叠加布局加载失败：{1}"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "覆盖布局加载失败：{0}"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "覆盖布局已恢复。以前的文件保存在 {0}"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "覆盖布局恢复无法完成：{0}"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "在“{0}”处提交的叠加布局保存：{1} 布局。"
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "“{0}”处叠加布局保存失败：{1}"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "“{0}”处请求覆盖布局保存：{1}。"
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -202107,6 +203163,10 @@
       "translation": "在纠正现有布局错误之前，无法编辑叠加位置：{0}"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "保存叠加位置；无法保存采矿 HUD 校准：{0} 重试保存以保存校准。"
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "叠加呈现：{0}。 {1}"
     },
@@ -202117,6 +203177,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "覆盖优先级规则在“{0}”处包含一个循环。"
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "覆盖恢复日志包含无效文件名：“{0}”。"
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "覆盖恢复日志太大：“{0}”。"
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "覆盖回滚无法在“{0}”处完成；其日志被保留：{1}"
     },
     {
       "source": "Overlay scale",
@@ -202145,6 +203217,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "叠加比例未更改：{0}"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "覆盖设置超出了支持的 64 MiB 恢复大小。没有更改任何文件。"
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -202535,6 +203611,18 @@
       "translation": "桃"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "无法保存挂起的实时位置：{0} 保留草稿以供重试。"
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "待处理的实时位置已被丢弃。先前保存的位置将被保留。"
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "等待实时保存失败；保留草稿"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "待定货物调整"
     },
@@ -202873,6 +203961,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "葡萄牙语（巴西）"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "位置编辑器清理失败"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "位置编辑器显示更新失败"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "职位编辑器打开失败"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "位置编辑器保存失败；保留草稿"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -203417,6 +204521,10 @@
     {
       "source": "Profile imported",
       "translation": "导入配置文件"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "配置文件恢复保留了暂存后编辑的计算机设置：{0}"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -204859,6 +205967,18 @@
       "translation": "已记录 {0} 沉降材料位置。"
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "恢复覆盖布局"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "恢复覆盖文件“{0}”；原始保留在“{1}”。"
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "恢复“{0}”中的覆盖不透明度；原始保留在“{1}”。"
+    },
+    {
       "source": "Red",
       "translation": "红色"
     },
@@ -205699,6 +206819,10 @@
       "translation": "恢复该面板的原始测量尺寸"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "恢复有效的布局备份，或在不存在有效备份的情况下恢复默认值。损坏的文件将被保留。"
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "恢复上次保存的表面坐标。"
     },
@@ -205761,6 +206885,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "重试选定的施工交付。"
+    },
+    {
+      "source": "Retry position save",
+      "translation": "重试位置保存"
     },
     {
       "source": "Retry selected deliveries",
@@ -207035,6 +208163,10 @@
       "translation": "已保存叠加主题状态“{0}”。"
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "已保存待处理的实时叠加位置。"
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "已将路线保存为 {0}。"
     },
@@ -207973,6 +209105,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "设置分为应用程序、桌面、全局覆盖、输入、隐私和共享、屏幕截图以及数据和迁移。搜索设置直接跳转到匹配的控件。"
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "设置仍与“{0}”处的指挥官绑定；他们不会被重定向到共享配置文件。"
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -209473,6 +210609,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "SrvSurvey-XP {0} 当前在 {1} 通道上。"
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "SrvSurvey-布局验证-{0}"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -212231,6 +213371,10 @@
       "translation": "叠加层可以聚焦主项目、停靠的构建站点、本地聚合或所有可见项目，具体取决于游戏上下文和设置。"
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "覆盖编辑器无法打开：{0}"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "覆盖层没有可渲染的像素尺寸。"
     },
@@ -213013,6 +214157,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "{0} 环境变量不存在。"
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "{1} 的 {0} 在另一个编辑器或实例中发生了更改。没有保存任何更改；重新打开编辑器以选择所需的值。"
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -215911,6 +217059,10 @@
       "translation": "所有矿物质"
     },
     {
+      "source": "all overlays",
+      "translation": "所有覆盖"
+    },
+    {
       "source": "allcsv",
       "translation": "全部csv"
     },
@@ -217111,6 +218263,10 @@
       "translation": "滑行"
     },
     {
+      "source": "global opacity",
+      "translation": "全局不透明度"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "全球区域首次发现生物学"
     },
@@ -217851,6 +219007,10 @@
       "translation": "步行"
     },
     {
+      "source": "opacity",
+      "translation": "不透明度"
+    },
+    {
       "source": "open",
       "translation": "打开"
     },
@@ -218091,6 +219251,10 @@
       "translation": "准备好"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "恢复-{0}"
+    },
+    {
       "source": "red",
       "translation": "红色"
     },
@@ -218213,6 +219377,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "已保存的选择已更新。"
+    },
+    {
+      "source": "scale",
+      "translation": "规模"
     },
     {
       "source": "scanned",
@@ -218573,6 +219741,10 @@
     {
       "source": "testbuggy",
       "translation": "测试车"
+    },
+    {
+      "source": "text scale",
+      "translation": "文字比例"
     },
     {
       "source": "text/csv",
@@ -219301,6 +220473,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} 扫描 · {1} 如果映射"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "{0} 在“{1}”：{2}"
     },
     {
       "source": "{0} at {1}",
@@ -224725,6 +225901,10 @@
       "translation": "* CALIBRATE THE SIX RIG CIRCLES >>>!"
     },
     {
+      "source": "Calibration failed after layout commit",
+      "translation": "* CALIBRATION FAILED AFTER LAYOUT COMMIT >>>!"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "* CALIBRATION PREVIEW — SAVED TRACKERS ARE UNCHANGED. >>>!"
     },
@@ -227325,6 +228505,10 @@
       "translation": "* COULD NOT READ LEGACY OVERLAY THEME '{0}': {1} >>>!"
     },
     {
+      "source": "Could not read overlay layout '{0}': {1}",
+      "translation": "* COULD NOT READ OVERLAY LAYOUT '{0}': {1} >>>!"
+    },
+    {
       "source": "Could not read overlay position references '{0}': {1}",
       "translation": "* COULD NOT READ OVERLAY POSITION REFERENCES '{0}': {1} >>>!"
     },
@@ -228499,6 +229683,10 @@
     {
       "source": "Discard the unexported in-memory draft?",
       "translation": "* DISCARD THE UNEXPORTED IN-MEMORY DRAFT? >>>!"
+    },
+    {
+      "source": "Discard unsaved positions",
+      "translation": "* DISCARD UNSAVED POSITIONS >>>!"
     },
     {
       "source": "Disconnect",
@@ -233585,6 +234773,18 @@
       "translation": "* INTERSTELLAR FACTORS >>>!"
     },
     {
+      "source": "Invalid overlay layout data at '{0}': {1}",
+      "translation": "* INVALID OVERLAY LAYOUT DATA AT '{0}': {1} >>>!"
+    },
+    {
+      "source": "Invalid overlay recovery journal: '{0}'.",
+      "translation": "* INVALID OVERLAY RECOVERY JOURNAL: '{0}'. >>>!"
+    },
+    {
+      "source": "Invalid shared settings recovery data.",
+      "translation": "* INVALID SHARED SETTINGS RECOVERY DATA. >>>!"
+    },
+    {
       "source": "Investment",
       "translation": "* INVESTMENT >>>!"
     },
@@ -234389,6 +235589,10 @@
       "translation": "* LAYOUT >>>!"
     },
     {
+      "source": "Layout recovery failed",
+      "translation": "* LAYOUT RECOVERY FAILED >>>!"
+    },
+    {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
       "translation": "* LEAVING AND LATER RETURNING TO THE SYSTEM STARTS A NEW VISIT BUDGET. CLOSING AND REOPENING SRVSURVEY DURING THE SAME VISIT DOES NOT BYPASS THE LIMIT. >>>!"
     },
@@ -234621,10 +235825,6 @@
       "translation": "* LIVE OVERLAY POSITIONS CANNOT BE EDITED UNTIL THE EXISTING LAYOUT ERROR IS CORRECTED: {0} >>>!"
     },
     {
-      "source": "Live overlays returned to click-through mode, but their moved positions were not saved: {0}",
-      "translation": "* LIVE OVERLAYS RETURNED TO CLICK-THROUGH MODE, BUT THEIR MOVED POSITIONS WERE NOT SAVED: {0} >>>!"
-    },
-    {
       "source": "Live overlays returned to click-through mode; moved positions were restored without saving.",
       "translation": "* LIVE OVERLAYS RETURNED TO CLICK-THROUGH MODE; MOVED POSITIONS WERE RESTORED WITHOUT SAVING. >>>!"
     },
@@ -234635,6 +235835,14 @@
     {
       "source": "Live position",
       "translation": "* LIVE POSITION >>>!"
+    },
+    {
+      "source": "Live position save failed; draft retained",
+      "translation": "* LIVE POSITION SAVE FAILED; DRAFT RETAINED >>>!"
+    },
+    {
+      "source": "Live positions could not be saved: {0} The moved positions are retained. Toggle interaction or open the editor to retry.",
+      "translation": "* LIVE POSITIONS COULD NOT BE SAVED: {0} THE MOVED POSITIONS ARE RETAINED. TOGGLE INTERACTION OR OPEN THE EDITOR TO RETRY. >>>!"
     },
     {
       "source": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
@@ -238033,6 +239241,10 @@
       "translation": "* OPACITY OVERRIDES ARE READY. CHANGES APPLY TO VISIBLE OVERLAYS AFTER SAVE. >>>!"
     },
     {
+      "source": "Opacity save failed; draft retained",
+      "translation": "* OPACITY SAVE FAILED; DRAFT RETAINED >>>!"
+    },
+    {
       "source": "Open / mark read",
       "translation": "* OPEN / MARK READ >>>!"
     },
@@ -238725,12 +239937,52 @@
       "translation": "* OVERLAY EDITING CLOSED; NO POSITIONS OR OPACITY VALUES CHANGED. >>>!"
     },
     {
+      "source": "Overlay editor cleanup failed: {0}",
+      "translation": "* OVERLAY EDITOR CLEANUP FAILED: {0} >>>!"
+    },
+    {
+      "source": "Overlay editor closed because the display could not be updated: {0}",
+      "translation": "* OVERLAY EDITOR CLOSED BECAUSE THE DISPLAY COULD NOT BE UPDATED: {0} >>>!"
+    },
+    {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
       "translation": "* OVERLAY HOST '{0}' {1} -> {2}: {3} >>>!"
     },
     {
       "source": "Overlay icon glossary",
       "translation": "* OVERLAY ICON GLOSSARY >>>!"
+    },
+    {
+      "source": "Overlay layout is busy or inaccessible at '{0}'. Retry after the other writer finishes.",
+      "translation": "* OVERLAY LAYOUT IS BUSY OR INACCESSIBLE AT '{0}'. RETRY AFTER THE OTHER WRITER FINISHES. >>>!"
+    },
+    {
+      "source": "Overlay layout load failed at '{0}': {1}",
+      "translation": "* OVERLAY LAYOUT LOAD FAILED AT '{0}': {1} >>>!"
+    },
+    {
+      "source": "Overlay layout load failed: {0}",
+      "translation": "* OVERLAY LAYOUT LOAD FAILED: {0} >>>!"
+    },
+    {
+      "source": "Overlay layout recovered. Previous files were preserved at {0}",
+      "translation": "* OVERLAY LAYOUT RECOVERED. PREVIOUS FILES WERE PRESERVED AT {0} >>>!"
+    },
+    {
+      "source": "Overlay layout recovery could not finish: {0}",
+      "translation": "* OVERLAY LAYOUT RECOVERY COULD NOT FINISH: {0} >>>!"
+    },
+    {
+      "source": "Overlay layout save committed at '{0}': {1} placement(s).",
+      "translation": "* OVERLAY LAYOUT SAVE COMMITTED AT '{0}': {1} PLACEMENT(S). >>>!"
+    },
+    {
+      "source": "Overlay layout save failed at '{0}': {1}",
+      "translation": "* OVERLAY LAYOUT SAVE FAILED AT '{0}': {1} >>>!"
+    },
+    {
+      "source": "Overlay layout save requested at '{0}': {1}.",
+      "translation": "* OVERLAY LAYOUT SAVE REQUESTED AT '{0}': {1}. >>>!"
     },
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
@@ -238817,6 +240069,10 @@
       "translation": "* OVERLAY POSITIONS CANNOT BE EDITED UNTIL THE EXISTING LAYOUT ERROR IS CORRECTED: {0} >>>!"
     },
     {
+      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
+      "translation": "* OVERLAY POSITIONS SAVED; MINING HUD CALIBRATION COULD NOT BE SAVED: {0} RETRY SAVE TO SAVE CALIBRATION. >>>!"
+    },
+    {
       "source": "Overlay presentation: {0}. {1}",
       "translation": "* OVERLAY PRESENTATION: {0}. {1} >>>!"
     },
@@ -238827,6 +240083,18 @@
     {
       "source": "Overlay priority rules contain a cycle at '{0}'.",
       "translation": "* OVERLAY PRIORITY RULES CONTAIN A CYCLE AT '{0}'. >>>!"
+    },
+    {
+      "source": "Overlay recovery journal contains invalid file names: '{0}'.",
+      "translation": "* OVERLAY RECOVERY JOURNAL CONTAINS INVALID FILE NAMES: '{0}'. >>>!"
+    },
+    {
+      "source": "Overlay recovery journal is too large: '{0}'.",
+      "translation": "* OVERLAY RECOVERY JOURNAL IS TOO LARGE: '{0}'. >>>!"
+    },
+    {
+      "source": "Overlay rollback could not finish at '{0}'; its journal was retained: {1}",
+      "translation": "* OVERLAY ROLLBACK COULD NOT FINISH AT '{0}'; ITS JOURNAL WAS RETAINED: {1} >>>!"
     },
     {
       "source": "Overlay scale",
@@ -238855,6 +240123,10 @@
     {
       "source": "Overlay scale was not changed: {0}",
       "translation": "* OVERLAY SCALE WAS NOT CHANGED: {0} >>>!"
+    },
+    {
+      "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
+      "translation": "* OVERLAY SETTINGS EXCEED THE SUPPORTED RECOVERY SIZE OF 64 MIB. NO FILES WERE CHANGED. >>>!"
     },
     {
       "source": "Overlay size dimensions must be positive.",
@@ -239245,6 +240517,18 @@
       "translation": "* PEACH >>>!"
     },
     {
+      "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
+      "translation": "* PENDING LIVE POSITIONS COULD NOT BE SAVED: {0} THE DRAFT IS RETAINED FOR RETRY. >>>!"
+    },
+    {
+      "source": "Pending live positions discarded. Previously saved positions were retained.",
+      "translation": "* PENDING LIVE POSITIONS DISCARDED. PREVIOUSLY SAVED POSITIONS WERE RETAINED. >>>!"
+    },
+    {
+      "source": "Pending live save failed; draft retained",
+      "translation": "* PENDING LIVE SAVE FAILED; DRAFT RETAINED >>>!"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "* PENDINGCARGOADJUSTMENTS >>>!"
     },
@@ -239583,6 +240867,22 @@
     {
       "source": "Português (Brasil)",
       "translation": "* PORTUGUÊS (BRASIL) >>>!"
+    },
+    {
+      "source": "Position editor cleanup failed",
+      "translation": "* POSITION EDITOR CLEANUP FAILED >>>!"
+    },
+    {
+      "source": "Position editor display update failed",
+      "translation": "* POSITION EDITOR DISPLAY UPDATE FAILED >>>!"
+    },
+    {
+      "source": "Position editor opening failed",
+      "translation": "* POSITION EDITOR OPENING FAILED >>>!"
+    },
+    {
+      "source": "Position editor save failed; draft retained",
+      "translation": "* POSITION EDITOR SAVE FAILED; DRAFT RETAINED >>>!"
     },
     {
       "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
@@ -240127,6 +241427,10 @@
     {
       "source": "Profile imported",
       "translation": "* PROFILE IMPORTED >>>!"
+    },
+    {
+      "source": "Profile restore preserved a machine setting edited after staging: {0}",
+      "translation": "* PROFILE RESTORE PRESERVED A MACHINE SETTING EDITED AFTER STAGING: {0} >>>!"
     },
     {
       "source": "Profile sync skipped malformed JSON file: {0}",
@@ -241569,6 +242873,18 @@
       "translation": "* RECORDED {0} SETTLEMENT MATERIAL LOCATION(S). >>>!"
     },
     {
+      "source": "Recover overlay layout",
+      "translation": "* RECOVER OVERLAY LAYOUT >>>!"
+    },
+    {
+      "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
+      "translation": "* RECOVERED OVERLAY FILE '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
+    },
+    {
+      "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
+      "translation": "* RECOVERED OVERLAY OPACITY IN '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
+    },
+    {
       "source": "Red",
       "translation": "* RED >>>!"
     },
@@ -242409,6 +243725,10 @@
       "translation": "* RESTORE THIS PANEL'S ORIGINAL MEASURED SIZE >>>!"
     },
     {
+      "source": "Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved.",
+      "translation": "* RESTORE VALID LAYOUT BACKUPS, OR DEFAULTS WHERE NO VALID BACKUP EXISTS. DAMAGED FILES ARE PRESERVED. >>>!"
+    },
+    {
       "source": "Restored the last saved surface coordinates.",
       "translation": "* RESTORED THE LAST SAVED SURFACE COORDINATES. >>>!"
     },
@@ -242471,6 +243791,10 @@
     {
       "source": "Retried the selected construction deliveries.",
       "translation": "* RETRIED THE SELECTED CONSTRUCTION DELIVERIES. >>>!"
+    },
+    {
+      "source": "Retry position save",
+      "translation": "* RETRY POSITION SAVE >>>!"
     },
     {
       "source": "Retry selected deliveries",
@@ -243745,6 +245069,10 @@
       "translation": "* SAVED OVERLAY THEME STATE '{0}'. >>>!"
     },
     {
+      "source": "Saved pending live overlay positions.",
+      "translation": "* SAVED PENDING LIVE OVERLAY POSITIONS. >>>!"
+    },
+    {
       "source": "Saved route as {0}.",
       "translation": "* SAVED ROUTE AS {0}. >>>!"
     },
@@ -244683,6 +246011,10 @@
     {
       "source": "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
       "translation": "* SETTINGS IS DIVIDED INTO APPLICATION, DESKTOP, GLOBAL OVERLAYS, INPUT, PRIVACY & SHARING, SCREENSHOTS, AND DATA & MIGRATION. SEARCH SETTINGS TO JUMP DIRECTLY TO A MATCHING CONTROL. >>>!"
+    },
+    {
+      "source": "Settings remain bound to the commander at '{0}'; they will not be redirected to the shared profile.",
+      "translation": "* SETTINGS REMAIN BOUND TO THE COMMANDER AT '{0}'; THEY WILL NOT BE REDIRECTED TO THE SHARED PROFILE. >>>!"
     },
     {
       "source": "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -246183,6 +247515,10 @@
     {
       "source": "SrvSurvey-XP {0} is current on the {1} channel.",
       "translation": "* SRVSURVEY-XP {0} IS CURRENT ON THE {1} CHANNEL. >>>!"
+    },
+    {
+      "source": "SrvSurvey-layout-validation-{0}",
+      "translation": "* SRVSURVEY-LAYOUT-VALIDATION-{0} >>>!"
     },
     {
       "source": "SrvSurvey-replay-{0}.srvreplay",
@@ -248941,6 +250277,10 @@
       "translation": "* THE OVERLAY CAN FOCUS A PRIMARY PROJECT, THE DOCKED BUILD SITE, A LOCAL AGGREGATE, OR ALL VISIBLE PROJECTS DEPENDING ON GAME CONTEXT AND SETTINGS. >>>!"
     },
     {
+      "source": "The overlay editor could not open: {0}",
+      "translation": "* THE OVERLAY EDITOR COULD NOT OPEN: {0} >>>!"
+    },
+    {
       "source": "The overlay has no renderable pixel dimensions.",
       "translation": "* THE OVERLAY HAS NO RENDERABLE PIXEL DIMENSIONS. >>>!"
     },
@@ -249723,6 +251063,10 @@
     {
       "source": "The {0} environment variable was not present.",
       "translation": "* THE {0} ENVIRONMENT VARIABLE WAS NOT PRESENT. >>>!"
+    },
+    {
+      "source": "The {0} for {1} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value.",
+      "translation": "* THE {0} FOR {1} CHANGED IN ANOTHER EDITOR OR INSTANCE. NO CHANGES WERE SAVED; REOPEN THE EDITOR TO CHOOSE THE DESIRED VALUE. >>>!"
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -252621,6 +253965,10 @@
       "translation": "* ALL MINERALS >>>!"
     },
     {
+      "source": "all overlays",
+      "translation": "* ALL OVERLAYS >>>!"
+    },
+    {
       "source": "allcsv",
       "translation": "* ALLCSV >>>!"
     },
@@ -253821,6 +255169,10 @@
       "translation": "* GLIDE >>>!"
     },
     {
+      "source": "global opacity",
+      "translation": "* GLOBAL OPACITY >>>!"
+    },
+    {
       "source": "global regional first discovery biology",
       "translation": "* GLOBAL REGIONAL FIRST DISCOVERY BIOLOGY >>>!"
     },
@@ -254561,6 +255913,10 @@
       "translation": "* ON-FOOT >>>!"
     },
     {
+      "source": "opacity",
+      "translation": "* OPACITY >>>!"
+    },
+    {
       "source": "open",
       "translation": "* OPEN >>>!"
     },
@@ -254801,6 +256157,10 @@
       "translation": "* READY >>>!"
     },
     {
+      "source": "recovery-{0}",
+      "translation": "* RECOVERY-{0} >>>!"
+    },
+    {
       "source": "red",
       "translation": "* RED >>>!"
     },
@@ -254923,6 +256283,10 @@
     {
       "source": "saved selection renewed.",
       "translation": "* SAVED SELECTION RENEWED. >>>!"
+    },
+    {
+      "source": "scale",
+      "translation": "* SCALE >>>!"
     },
     {
       "source": "scanned",
@@ -255283,6 +256647,10 @@
     {
       "source": "testbuggy",
       "translation": "* TESTBUGGY >>>!"
+    },
+    {
+      "source": "text scale",
+      "translation": "* TEXT SCALE >>>!"
     },
     {
       "source": "text/csv",
@@ -256011,6 +257379,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "* {0} AS SCANNED · {1} IF MAPPED >>>!"
+    },
+    {
+      "source": "{0} at '{1}': {2}",
+      "translation": "* {0} AT '{1}': {2} >>>!"
     },
     {
       "source": "{0} at {1}",

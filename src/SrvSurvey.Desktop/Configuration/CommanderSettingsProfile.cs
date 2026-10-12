@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -44,6 +45,7 @@ internal static class CommanderSettingsProfile
         return null;
     }
 
+    /// <summary>Initializes commander-specific layout files while excluding concurrent imports and saves.</summary>
     public static void Prepare(AppDataPaths paths)
     {
         if (paths.SettingsFrontierId is null)
@@ -62,6 +64,15 @@ internal static class CommanderSettingsProfile
             return;
         }
 
+        using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
+            OverlayFiles.SelectMany(file =>
+                new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
+            )
+        );
+        if (File.Exists(marker))
+        {
+            return;
+        }
         CopyIfMissing(paths.SharedUiSettingsPath, paths.UiSettingsPath);
         foreach (string fileName in OverlayFiles)
         {
@@ -82,6 +93,7 @@ internal static class CommanderSettingsProfile
         }
     }
 
+    /// <summary>Publishes imported layout files as a recoverable generation under source and destination leases.</summary>
     public static void PublishImportedOverlays(AppDataPaths paths, ProfileImportResult result)
     {
         if (Path.GetFullPath(paths.DataDirectory) == Path.GetFullPath(paths.OverlaySettingsDirectory))
@@ -89,10 +101,18 @@ internal static class CommanderSettingsProfile
             return;
         }
 
+        using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
+            OverlayFiles.SelectMany(file =>
+                new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
+            )
+        );
         var importedFiles = result
             .Manifest.Entries.Select(entry => entry.RelativePath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
+        using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
+            paths.OverlaySettingsDirectory
+        );
         foreach (string fileName in OverlayFiles)
         {
             if (!importedFiles.Contains(fileName))
@@ -116,6 +136,7 @@ internal static class CommanderSettingsProfile
                 }
             }
         }
+        transaction.Commit();
     }
 
     private static DateTime LatestJournalWriteTime(string directory)

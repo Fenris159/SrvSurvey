@@ -5,6 +5,60 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
 {
+    /// <summary>Direct position edits clear the old coordinate frame while opacity edits and reverted positions retain it.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void PositionEditsClearOnlyStaleFrameReferences(int field)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var reference = new OverlayPositionReference(1920, 1080);
+        var placement = new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 10, LegacyVerticalAnchor.Top, 20, .8)
+        {
+            PositionReference = reference,
+        };
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = placement });
+        var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
+        OverlayPlacementEditorViewModel editor = viewModel.Overlays.Single(row => row.Name == "PlotJumpInfo");
+
+        switch (field)
+        {
+            case 0:
+                editor.HorizontalAnchor = LegacyHorizontalAnchor.Right;
+                break;
+            case 1:
+                editor.HorizontalOffset = 99;
+                break;
+            case 2:
+                editor.VerticalAnchor = LegacyVerticalAnchor.Bottom;
+                break;
+            case 3:
+                editor.VerticalOffset = 99;
+                break;
+            default:
+                editor.CustomOpacityPercent = 25;
+                break;
+        }
+
+        Assert.Equal(field == 4 ? reference : null, editor.Placement.PositionReference);
+        LegacyOverlayPlacement edited = editor.Placement;
+        editor.HorizontalAnchor = placement.Horizontal;
+        editor.HorizontalOffset = placement.HorizontalOffset;
+        editor.VerticalAnchor = placement.Vertical;
+        editor.VerticalOffset = placement.VerticalOffset;
+        Assert.Equal(reference, editor.Placement.PositionReference);
+        editor.HorizontalAnchor = edited.Horizontal;
+        editor.HorizontalOffset = edited.HorizontalOffset;
+        editor.VerticalAnchor = edited.Vertical;
+        editor.VerticalOffset = edited.VerticalOffset;
+        viewModel.SaveCommand.Execute(null);
+        Assert.Equal(field == 4 ? reference : null, store.Load().Placements[editor.Name].PositionReference);
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-overlay-settings-tests-{Guid.NewGuid():N}"

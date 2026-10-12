@@ -578,8 +578,13 @@ internal sealed class HostedOverlayWindow : IDisposable
             ?? (snapshot.IsAvailable && snapshot.IsVisible && snapshot.IsForeground);
     }
 
+    /// <summary>Updates automatic placement without fighting an active user drag.</summary>
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
+        if (ManagedOverlayWindowDragSession.IsDragging(target) || windowRegistry.IsCombinedDragging(target))
+        {
+            return;
+        }
         if (definition.ApplyLayoutTheme)
         {
             OverlayThemeResources.ApplyOpacity(target, overlayLayout, definition.PlotterName);

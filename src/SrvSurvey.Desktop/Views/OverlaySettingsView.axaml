@@ -232,6 +232,12 @@
                                FormatString="N0"
                                Value="{Binding CustomOpacityPercent, Mode=TwoWay}" />
               </Grid>
+              <StackPanel IsVisible="{Binding OverlayLayout.CanRecoverLayout}" Spacing="6">
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved." />
+                <Button Classes="secondary" Command="{Binding OverlayLayout.RecoverCommand}" Content="Recover overlay layout" />
+              </StackPanel>
+              <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding OverlayLayout.SaveDirectory}" />
               <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                 <TextBlock VerticalAlignment="Center"
                            Classes="muted"
@@ -250,6 +256,10 @@
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="{Binding OverlayInteraction.StatusMessage}" />
+            <StackPanel IsVisible="{Binding OverlayInteraction.HasPendingLivePositions}" Orientation="Horizontal" Spacing="8">
+              <Button Classes="secondary" Command="{Binding OverlayInteraction.SaveCommand}" Content="Retry position save" />
+              <Button Classes="secondary" Command="{Binding OverlayInteraction.CancelCommand}" Content="Discard unsaved positions" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <TextBlock Classes="muted"

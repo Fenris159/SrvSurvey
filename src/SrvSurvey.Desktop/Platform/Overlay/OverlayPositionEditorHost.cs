@@ -39,6 +39,12 @@ public interface IOverlayPositionEditorHost : IDisposable
 
     void SetRuntimeOverlaysVisibleDuringEditing(bool visible);
 
+    /// <summary>Finishes pending gestures and measurements before the view model snapshots changed fields.</summary>
+    void PrepareSave(OverlayPositionEditSession session)
+    {
+        RefreshPreviewPositions(session);
+    }
+
     void Close(bool restoreRuntimeWindows = true);
 }
 
@@ -84,6 +90,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private PixelRect hostBounds;
     private double hostScaling = 1;
     private bool updatingPreviewLayout;
+    private bool updatingReferenceFrame;
+    private readonly Dictionary<string, PixelPoint> pendingGeometryOrigins = new(StringComparer.Ordinal);
+    private DispatcherTimer? boundsTimer;
     private bool closing;
     private bool disposed;
     private OverlayInteractionViewModel? viewModel;
@@ -162,6 +171,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         SynchronizeRuntimeWindows();
         ShowCategory(session, category);
         toolbar.Activate();
+        boundsTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        boundsTimer.Tick += OnReferenceFrameTick;
+        boundsTimer.Start();
         return true;
     }
 
@@ -235,15 +247,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;
             preview.PanelSizeChanged += OnPreviewSizeChanged;
+            preview.SizeChanged += OnPreviewMeasured;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             registry.PrepareWindow(preview);
             preview.Show();
             PositionPreview(preview, session);
-            if (session.GetSizeOverride(definition.Name) is not null)
-            {
-                Dispatcher.UIThread.Post(() => PositionPreviewAfterOpening(preview, session));
-            }
+            Dispatcher.UIThread.Post(() => PositionPreviewAfterOpening(preview, session), DispatcherPriority.Loaded);
         }
 
         editor.Activate();
@@ -258,6 +268,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Changes scale while retaining each edited panel's screen origin.</summary>
     public void RefreshPreviewScales(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -266,12 +277,16 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             foreach (OverlayPositionPreviewWindow preview in previews)
             {
+                RememberGeometryOrigin(preview, session);
                 preview.ConfigureScale(
                     session.ScaleIndex,
                     session.GetPlacement(preview.Definition.Name).ScaleIndex,
                     hostScaling
                 );
-                PositionPreview(preview, session);
+                if (!pendingGeometryOrigins.ContainsKey(preview.Definition.Name))
+                {
+                    PositionPreview(preview, session);
+                }
             }
         }
         finally
@@ -280,6 +295,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Changes text geometry while retaining the selected panel origin.</summary>
     public void RefreshPreviewTypography(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -288,8 +304,12 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             foreach (OverlayPositionPreviewWindow preview in previews)
             {
+                RememberGeometryOrigin(preview, session);
                 preview.ConfigureTypography(session.GetTypographyScale(preview.Definition.Name));
-                PositionPreview(preview, session);
+                if (!pendingGeometryOrigins.ContainsKey(preview.Definition.Name))
+                {
+                    PositionPreview(preview, session);
+                }
             }
         }
         finally
@@ -298,6 +318,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Updates size overrides and preserves their measured placement.</summary>
     public void RefreshPreviewSizes(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -306,8 +327,12 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             foreach (OverlayPositionPreviewWindow preview in previews)
             {
+                RememberGeometryOrigin(preview, session);
                 preview.ConfigureSize(session.GetSizeOverride(preview.Definition.Name));
-                PositionPreview(preview, session);
+                if (!pendingGeometryOrigins.ContainsKey(preview.Definition.Name))
+                {
+                    PositionPreview(preview, session);
+                }
             }
         }
         finally
@@ -316,9 +341,15 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Adopts rebased sessions and reapplies positions against current panel geometry.</summary>
     public void RefreshPreviewPositions(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
+        if (!ReferenceEquals(editSession, session))
+        {
+            editSession = session;
+            runtimePlacementReferences.Clear();
+        }
         updatingPreviewLayout = true;
         try
         {
@@ -330,6 +361,107 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         finally
         {
             updatingPreviewLayout = false;
+        }
+    }
+
+    /// <summary>Retains the visible panel origin across a user-requested geometry change.</summary>
+    private void RememberGeometryOrigin(OverlayPositionPreviewWindow preview, OverlayPositionEditSession session)
+    {
+        if (session.HasGeometryChanges(preview.Definition.Name))
+        {
+            pendingGeometryOrigins.TryAdd(preview.Definition.Name, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            runtimePlacementReferences.Remove(preview.Definition.Name);
+        }
+    }
+
+    /// <summary>Measures final panel dimensions and translates the preserved origin into the saved anchors.</summary>
+    private void OnPreviewMeasured(object? sender, SizeChangedEventArgs eventArgs)
+    {
+        if (
+            sender is OverlayPositionPreviewWindow preview
+            && pendingGeometryOrigins.Remove(preview.Definition.Name, out PixelPoint origin)
+        )
+        {
+            RecordMeasuredGeometry(preview, origin, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
+        }
+    }
+
+    /// <summary>Publishes a panel's stable screen origin using its new size.</summary>
+    private void RecordMeasuredGeometry(OverlayPositionPreviewWindow preview, PixelPoint origin, PixelSize size)
+    {
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        preview.Position = new PixelPoint(origin.X - metrics.OriginOffset.X, origin.Y - metrics.OriginOffset.Y);
+        PreviewMoved?.Invoke(this, new OverlayPreviewMovedEventArgs(preview.Definition.Name, origin, size, hostBounds));
+    }
+
+    /// <summary>Flushes accepted movement and geometry updates before Save reads the session.</summary>
+    public void PrepareSave(OverlayPositionEditSession session)
+    {
+        UpdateReferenceFrame();
+        foreach (OverlayPositionPreviewWindow preview in previews)
+        {
+            ManagedOverlayWindowDragSession.Cancel(preview);
+            if (pendingGeometryOrigins.Remove(preview.Definition.Name, out PixelPoint origin))
+            {
+                RecordMeasuredGeometry(preview, origin, preview.GetExpectedPixelSize(preview.RenderScaling));
+            }
+        }
+        RefreshPreviewPositions(session);
+    }
+
+    /// <summary>Reconciles monitor changes and changes of the game's reference rectangle without discarding draft values.</summary>
+    private void OnReferenceFrameTick(object? sender, EventArgs eventArgs)
+    {
+        try
+        {
+            UpdateReferenceFrame();
+        }
+        catch (Exception exception)
+            when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception) || exception is NotSupportedException)
+        {
+            viewModel?.HandleEditorFailure(exception);
+        }
+    }
+
+    /// <summary>Rebuilds previews against the current screen or game frame while retaining proportional saved coordinates.</summary>
+    internal void UpdateReferenceFrame()
+    {
+        if (updatingReferenceFrame)
+        {
+            return;
+        }
+        if (editor is not { } toolbar || viewModel is null || editSession is null)
+        {
+            return;
+        }
+        GameWindowSnapshot game = viewModel.EditorGameWindow;
+        MainWindowMonitor? monitor = ResolveFallbackMonitor(
+            MainWindowPlacement.DescribeScreens(toolbar.Screens.All),
+            viewModel.OverlayBehavior?.PreferredMonitorId
+        );
+        PixelRect current = game.IsAvailable ? game.ClientBounds : monitor?.Bounds ?? hostBounds;
+        double scaling = toolbar.Screens.ScreenFromBounds(current)?.Scaling ?? monitor?.Scaling ?? hostScaling;
+        if (current == hostBounds && Math.Abs(scaling - hostScaling) < .0001)
+        {
+            return;
+        }
+        updatingReferenceFrame = true;
+        try
+        {
+            hostBounds = current;
+            hostScaling = scaling;
+            foreach (OverlayPositionPreviewWindow preview in previews.ToArray())
+            {
+                ManagedOverlayWindowDragSession.Cancel(preview);
+            }
+            runtimePlacementReferences.Clear();
+            pendingGeometryOrigins.Clear();
+            ShowCategory(editSession, viewModel.SelectedCategory.Category);
+            PositionEditorToolbar(toolbar);
+        }
+        finally
+        {
+            updatingReferenceFrame = false;
         }
     }
 
@@ -393,6 +525,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     /// <summary>Closes previews and detaches their original settings sources before optionally restoring live overlays.</summary>
     public void Close(bool restoreRuntimeWindows = true)
     {
+        StopBoundsTimer();
         if (closing)
         {
             return;
@@ -409,7 +542,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbar.Closed -= OnEditorClosed;
             toolbar.SizeChanged -= OnEditorSizeChanged;
             toolbar.Screens.Changed -= OnScreensChanged;
-            toolbar.Close();
+            TryCleanup(toolbar.Close);
         }
 
         viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
@@ -418,7 +551,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         if (restoreRuntimeWindows)
         {
-            registry.SetEditorSuppressed(suppressed: false);
+            TryCleanup(() => registry.SetEditorSuppressed(suppressed: false));
         }
 
         closing = false;
@@ -455,6 +588,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         eventArgs.Handled = true;
     }
 
+    /// <summary>Records accepted pointer positions using the current frame and panel size.</summary>
     private void OnPreviewDragged(OverlayPositionPreviewWindow preview, PixelPoint position)
     {
         if (updatingPreviewLayout || !previews.Contains(preview))
@@ -462,6 +596,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
+        UpdateReferenceFrame();
+        if (!previews.Contains(preview))
+        {
+            return;
+        }
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var panelPosition = new PixelPoint(position.X + metrics.OriginOffset.X, position.Y + metrics.OriginOffset.Y);
         PreviewMoved?.Invoke(
@@ -531,6 +670,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         _ = platform.PrepareInteractiveWindow(preview);
     }
 
+    /// <summary>Detaches measurements and safely closes every category preview.</summary>
     private void ClosePreviews()
     {
         if (miningCalibration is not null && viewModel?.MiningDetection is { } detection)
@@ -538,19 +678,24 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             detection.PropertyChanged -= OnMiningDetectionChanged;
         }
 
-        miningCalibration?.Close();
+        if (miningCalibration is { } calibration)
+        {
+            TryCleanup(calibration.Close);
+        }
         miningCalibration = null;
         foreach (OverlayPositionPreviewWindow preview in previews)
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.SettingsRequested -= OnPreviewSettingsRequested;
             preview.PanelSizeChanged -= OnPreviewSizeChanged;
+            preview.SizeChanged -= OnPreviewMeasured;
             preview.Opened -= OnPreviewOpened;
             OverlayDragPolicy.SetOptionsFactory(preview, null);
-            preview.Close();
+            TryCleanup(preview.Close);
         }
 
         previews.Clear();
+        pendingGeometryOrigins.Clear();
     }
 
     private void OnMiningDetectionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -577,6 +722,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     /// <summary>Releases preview subscriptions and restores live overlays when the toolbar closes directly.</summary>
     private void OnEditorClosed(object? sender, EventArgs eventArgs)
     {
+        StopBoundsTimer();
         if (closing)
         {
             return;
@@ -603,6 +749,32 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         Closed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Continues releasing editor resources after an expected native close or restoration failure.</summary>
+    private static void TryCleanup(Action cleanup)
+    {
+        try
+        {
+            cleanup();
+        }
+        catch (Exception exception)
+            when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception) || exception is NotSupportedException)
+        {
+            System.Diagnostics.Trace.TraceWarning("Overlay editor cleanup failed: {0}", exception);
+        }
+    }
+
+    /// <summary>Detaches reference-frame polling at either editor cleanup point.</summary>
+    private void StopBoundsTimer()
+    {
+        if (boundsTimer is null)
+        {
+            return;
+        }
+        boundsTimer.Stop();
+        boundsTimer.Tick -= OnReferenceFrameTick;
+        boundsTimer = null;
+    }
+
     private void OnEditorOpened(object? sender, EventArgs eventArgs)
     {
         if (sender is Window toolbar)
@@ -623,8 +795,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Rebuilds the reference frame and toolbar when the screen configuration changes.</summary>
     private void OnScreensChanged(object? sender, EventArgs eventArgs)
     {
+        UpdateReferenceFrame();
         if (editor is { } toolbar)
         {
             PositionEditorToolbar(toolbar);
@@ -734,6 +908,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         CaptureVisibleRuntimePlacements(snapshot);
     }
 
+    /// <summary>Aligns a preview with live geometry only while that geometry remains unchanged.</summary>
     private void PositionPreview(OverlayPositionPreviewWindow preview, OverlayPositionEditSession session)
     {
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
@@ -741,7 +916,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.Definition.Name,
             out RuntimeOverlayGeometry runtimeReference
         );
-        PixelSize referenceSize = hasRuntimeReference ? runtimeReference.Size : metrics.PanelSize;
+        PixelSize referenceSize = GetReferenceSize(preview, metrics);
         PixelPoint panelPosition =
             hasRuntimeReference && !HasPositionChange(session, preview.Definition.Name)
                 ? runtimeReference.Position
@@ -753,9 +928,15 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         );
     }
 
+    /// <summary>Repositions after layout has measured scaling and editor chrome.</summary>
     private void PositionPreviewAfterOpening(OverlayPositionPreviewWindow preview, OverlayPositionEditSession session)
     {
-        if (disposed || !previews.Contains(preview) || !ReferenceEquals(editSession, session))
+        if (
+            disposed
+            || !previews.Contains(preview)
+            || !ReferenceEquals(editSession, session)
+            || ManagedOverlayWindowDragSession.IsDragging(preview)
+        )
         {
             return;
         }
@@ -797,12 +978,15 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         );
     }
 
+    /// <summary>Uses measured preview geometry after changes, otherwise retaining the opening live size.</summary>
     private PixelSize GetReferenceSize(OverlayPositionPreviewWindow preview, OverlayPreviewPanelMetrics metrics)
     {
-        return runtimePlacementReferences.TryGetValue(
-            preview.Definition.Name,
-            out RuntimeOverlayGeometry runtimeReference
-        )
+        return
+            editSession?.HasGeometryChanges(preview.Definition.Name) != true
+            && runtimePlacementReferences.TryGetValue(
+                preview.Definition.Name,
+                out RuntimeOverlayGeometry runtimeReference
+            )
             ? runtimeReference.Size
             : metrics.PanelSize;
     }

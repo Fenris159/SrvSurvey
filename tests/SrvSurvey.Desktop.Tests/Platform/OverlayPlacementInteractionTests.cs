@@ -45,6 +45,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
 
         Assert.True(interaction.Attach(registry.Snapshot().Single()));
         window.Position = new PixelPoint(420, 310);
+        registry.ReportUserPosition(window, window.Position);
 
         Assert.Equal(new PixelPoint(420, 310), activeLayout.GetPosition("PlotJumpInfo", GameBounds, new(600, 100)));
         OverlayPlacementMovedEventArgs moved = Assert.Single(moves);
@@ -89,6 +90,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         var movedPosition = new PixelPoint(420, 310);
 
         window.Position = movedPosition;
+        registry.ReportUserPosition(window, movedPosition);
 
         LegacyOverlayPlacement placement = interaction.Changes[plotterName];
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
@@ -119,7 +121,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             window.MouseMove(new Point(55, 70), RawInputModifiers.LeftMouseButton);
             window.MouseUp(new Point(55, 70), MouseButton.Left, RawInputModifiers.None);
 
-            Assert.Equal(1, platform.MoveDragStarts);
+            Assert.Equal(0, platform.MoveDragStarts);
             Assert.Equal(new PixelPoint(435, 345), window.Position);
             PixelSize size = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
             Assert.Equal(new PixelPoint(435, 345), activeLayout.GetPosition("PlotJumpInfo", GameBounds, size));
@@ -132,14 +134,13 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
     }
 
     [AvaloniaTheory]
-    [InlineData(true, true, false)]
-    [InlineData(true, false, true)]
-    [InlineData(false, true, true)]
-    [InlineData(false, false, true)]
-    public void PlatformCapabilityChoosesManagedOrPlatformDragForMonitorLock(
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void LiveDragUsesAcceptedPointerPositionsWithEitherMonitorPolicy(
         bool usesManagedDragForMonitorLock,
-        bool lockToMonitor,
-        bool expectsPlatformDrag
+        bool lockToMonitor
     )
     {
         var registry = new OverlayWindowRegistry();
@@ -162,8 +163,8 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             window.MouseMove(new Point(30, 45), RawInputModifiers.LeftMouseButton);
             window.MouseUp(new Point(30, 45), MouseButton.Left, RawInputModifiers.None);
 
-            Assert.Equal(expectsPlatformDrag ? 1 : 0, platform.MoveDragStarts);
-            Assert.Equal(expectsPlatformDrag ? new PixelPoint(400, 300) : new PixelPoint(410, 320), window.Position);
+            Assert.Equal(0, platform.MoveDragStarts);
+            Assert.Equal(new PixelPoint(410, 320), window.Position);
         }
         finally
         {
@@ -236,6 +237,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         );
         Assert.True(interaction.Attach(registry.Snapshot().Single()));
         window.Position = new PixelPoint(420, 310);
+        registry.ReportUserPosition(window, window.Position);
 
         LegacyOverlayLayoutSaveResult result = interaction.Save();
 
@@ -344,6 +346,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         );
         Assert.True(interaction.Attach(registry.Snapshot().Single()));
         window.Position = new PixelPoint(420, 310);
+        registry.ReportUserPosition(window, window.Position);
         Assert.NotEqual(original, activeLayout.Placements["PlotJumpInfo"]);
 
         IReadOnlyDictionary<string, LegacyOverlayPlacement> restored = interaction.Cancel();
@@ -398,6 +401,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         Assert.Same(owner, Assert.Single(interaction.Panels));
 
         owner.Position = new PixelPoint(510, 330);
+        registry.ReportUserPosition(owner, owner.Position);
 
         Assert.NotEqual(original, activeLayout.Placements["PlotGuardians"]);
     }
@@ -429,7 +433,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
         interaction.SetPlacement("PlotJumpInfo", edited);
 
         Assert.Equal(activeLayout.GetPosition("PlotJumpInfo", GameBounds, new(600, 100)), window.Position);
-        Assert.Equal(["PlotJumpInfo"], moves);
+        Assert.Empty(moves);
         Assert.Single(interaction.Changes);
 
         LegacyOverlayPlacement unowned = OverlayLayoutCatalog.GetRequired("PlotFSSInfo").DefaultPlacement with
@@ -492,7 +496,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
 
             window.MouseDown(new Point(20, 50), MouseButton.Left, RawInputModifiers.LeftMouseButton);
 
-            Assert.Equal(1, platform.MoveDragStarts);
+            Assert.True(ManagedOverlayWindowDragSession.IsDragging(window));
         }
         finally
         {
@@ -542,7 +546,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
 
             window.MouseDown(new Point(30, 40), MouseButton.Left, RawInputModifiers.LeftMouseButton);
 
-            Assert.Equal(ownsPointer ? 0 : 1, platform.MoveDragStarts);
+            Assert.Equal(!ownsPointer, ManagedOverlayWindowDragSession.IsDragging(window));
         }
         finally
         {
@@ -647,7 +651,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             );
             // Reset the headless mouse state after the gesture has already ended.
             window.MouseUp(window.PointToClient(releasePosition), MouseButton.Left, RawInputModifiers.None);
-            Assert.Equal(1, platform.MoveDragStarts);
+            Assert.Equal(0, platform.MoveDragStarts);
             Assert.Equal(new PixelPoint(120, 230), window.Position);
         }
         finally
@@ -696,7 +700,7 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
             window.MouseMove(start + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
             window.MouseUp(start + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
 
-            Assert.Equal(canPan ? 0 : 1, platform.MoveDragStarts);
+            Assert.Equal(0, platform.MoveDragStarts);
             Assert.Equal(canPan ? new PixelPoint(100, 200) : new PixelPoint(120, 230), window.Position);
         }
         finally

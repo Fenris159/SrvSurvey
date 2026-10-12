@@ -28,7 +28,8 @@ public sealed class DailyActiveUsersClient : IDisposable
     {
         directory = Path.Combine(dataDirectory, "usage");
         this.version = version;
-        this.os = os;
+        // .NET's Windows runtime identifier starts with "win"; the Worker counts "windows".
+        this.os = os.Equals("win", StringComparison.OrdinalIgnoreCase) ? "windows" : os;
         this.client = client ?? new HttpClient();
         ownsClient = client is null;
         this.log = log;

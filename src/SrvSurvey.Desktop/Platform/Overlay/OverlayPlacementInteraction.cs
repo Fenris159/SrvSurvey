@@ -9,11 +9,11 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 /// <summary>Owns one live overlay placement edit: panel drags, the working placements they produce, and their save or restore.</summary>
 internal sealed class OverlayPlacementInteraction
 {
-    private readonly IOverlayPlatformService platform;
     private readonly LegacyOverlayLayoutStore layoutStore;
     private readonly LegacyOverlayLayout activeLayout;
     private readonly OverlayWindowRegistry registry;
     private readonly PixelRect hostBounds;
+    private readonly Func<PixelRect> currentHostBounds;
     private readonly Func<OverlayBehaviorViewModel?> behavior;
     private readonly Dictionary<Window, AttachedPanel> panels = [];
     private OverlayPositionEditSession session;
@@ -25,15 +25,17 @@ internal sealed class OverlayPlacementInteraction
         LegacyOverlayLayout activeLayout,
         OverlayWindowRegistry registry,
         PixelRect hostBounds,
-        Func<OverlayBehaviorViewModel?> behavior
+        Func<OverlayBehaviorViewModel?> behavior,
+        Func<PixelRect>? currentHostBounds = null
     )
     {
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        ArgumentNullException.ThrowIfNull(platform);
         this.layoutStore = layoutStore ?? throw new ArgumentNullException(nameof(layoutStore));
         this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
         this.behavior = behavior ?? throw new ArgumentNullException(nameof(behavior));
         this.hostBounds = hostBounds;
+        this.currentHostBounds = currentHostBounds ?? (() => hostBounds);
         session = new OverlayPositionEditSession(activeLayout);
     }
 
@@ -47,6 +49,9 @@ internal sealed class OverlayPlacementInteraction
 
     internal IReadOnlyDictionary<string, LegacyOverlayPlacement> Changes => session.Changes;
 
+    /// <summary>Retains a failed save's immutable baseline and working values until the caller retries or discards them.</summary>
+    internal OverlayPositionEditSession EditSession => session;
+
     /// <summary>Lets a placement-owning panel be dragged; related windows that do not own the placement are ignored.</summary>
     internal bool Attach(RegisteredOverlayWindow registered)
     {
@@ -57,23 +62,25 @@ internal sealed class OverlayPlacementInteraction
             return false;
         }
 
-        EventHandler<PointerPressedEventArgs> pointerPressed = (_, eventArgs) => OnPointerPressed(window, eventArgs);
-        EventHandler<PixelPointEventArgs> positionChanged = (_, eventArgs) =>
-            OnPositionChanged(registered, eventArgs.Point);
+        EventHandler<PointerPressedEventArgs> pointerPressed = (_, eventArgs) =>
+            OnPointerPressed(registered, eventArgs);
         EventHandler closed = (_, _) => OnClosed(window);
-        panels.Add(window, new AttachedPanel(pointerPressed, positionChanged, closed));
+        panels.Add(window, new AttachedPanel(registered, pointerPressed, closed));
+        if (panels.Count == 1)
+        {
+            registry.UserPositionChanged += OnUserPositionChanged;
+        }
         OverlayDragPolicy.SetOptionsFactory(
             window,
             () =>
                 OverlayDragPolicy.CreateOptions(
                     window,
                     behavior(),
-                    hostBounds,
+                    GetHostBounds(),
                     OverlayWindowMetrics.GetPixelSize(registered)
                 )
         );
         window.AddHandler(InputElement.PointerPressedEvent, pointerPressed, RoutingStrategies.Bubble, true);
-        window.PositionChanged += positionChanged;
         window.Closed += closed;
         return true;
     }
@@ -81,15 +88,19 @@ internal sealed class OverlayPlacementInteraction
     /// <summary>Stops dragging and tracking a panel, applying its last accepted drag move first.</summary>
     internal void Detach(Window window)
     {
-        if (!panels.Remove(window, out AttachedPanel? panel))
+        if (!panels.TryGetValue(window, out AttachedPanel? panel))
         {
             return;
         }
 
         window.RemoveHandler(InputElement.PointerPressedEvent, panel.PointerPressed);
         ManagedOverlayWindowDragSession.Cancel(window);
+        panels.Remove(window);
+        if (panels.Count == 0)
+        {
+            registry.UserPositionChanged -= OnUserPositionChanged;
+        }
         OverlayDragPolicy.SetOptionsFactory(window, null);
-        window.PositionChanged -= panel.PositionChanged;
         window.Closed -= panel.Closed;
     }
 
@@ -151,8 +162,8 @@ internal sealed class OverlayPlacementInteraction
     internal LegacyOverlayLayoutSaveResult Save()
     {
         CompleteDrags();
-        LegacyOverlayLayoutSaveResult result = layoutStore.Save(session.Changes);
-        LegacyOverlayLayout updated = layoutStore.Load();
+        LegacyOverlayLayoutSaveResult result = layoutStore.SaveChanges(session);
+        LegacyOverlayLayout updated = result.CommittedLayout ?? layoutStore.Load();
         if (updated.Error is not null)
         {
             throw new InvalidDataException(updated.Error);
@@ -163,36 +174,43 @@ internal sealed class OverlayPlacementInteraction
         return result;
     }
 
-    private void OnPointerPressed(Window window, PointerPressedEventArgs eventArgs)
+    /// <summary>Records requested user drag positions, never asynchronous acknowledgements of host placement.</summary>
+    private void OnPointerPressed(RegisteredOverlayWindow registered, PointerPressedEventArgs eventArgs)
     {
+        Window window = registered.Window;
         if (!ManagedOverlayWindowDragSession.CanBeginFrom(window, eventArgs))
         {
             return;
         }
 
-        if (platform.Capabilities.UsesManagedDragForMonitorLock && behavior()?.LockToMonitor == true)
-        {
-            ManagedOverlayWindowDragSession.Begin(window, eventArgs);
-        }
-        else
-        {
-            platform.BeginMoveDrag(window, eventArgs);
-        }
+        ManagedOverlayWindowDragSession.Begin(
+            window,
+            eventArgs,
+            position => registry.ReportUserPosition(window, position)
+        );
         eventArgs.Handled = true;
     }
 
-    private void OnPositionChanged(RegisteredOverlayWindow registered, PixelPoint position)
+    /// <summary>Records accepted gestures for this session's placement-owning panels.</summary>
+    private void OnUserPositionChanged(Window window, PixelPoint position)
     {
-        string plotterName = registered.PlotterName;
-        if (!session.Move(plotterName, position, OverlayWindowMetrics.GetPixelSize(registered), hostBounds))
+        if (!panels.TryGetValue(window, out AttachedPanel? panel))
         {
             return;
         }
-
-        LegacyOverlayPlacement placement = session.GetPlacement(plotterName);
-        activeLayout.SetPlacement(plotterName, placement);
-        PlacementMoved?.Invoke(this, new OverlayPlacementMovedEventArgs(plotterName, placement));
+        RegisteredOverlayWindow registered = panel.Registration;
+        string name = registered.PlotterName;
+        if (session.Move(name, position, OverlayWindowMetrics.GetPixelSize(registered), GetHostBounds()))
+        {
+            LegacyOverlayPlacement placement = session.GetPlacement(name);
+            activeLayout.SetPlacement(name, placement);
+            PlacementMoved?.Invoke(this, new OverlayPlacementMovedEventArgs(name, placement));
+        }
     }
+
+    /// <summary>Uses the current tracked frame when available, retaining the opening frame during temporary game loss.</summary>
+    private PixelRect GetHostBounds() =>
+        currentHostBounds() is { Width: > 0, Height: > 0 } bounds ? bounds : hostBounds;
 
     private void OnClosed(Window window)
     {
@@ -202,8 +220,8 @@ internal sealed class OverlayPlacementInteraction
     }
 
     private sealed record AttachedPanel(
+        RegisteredOverlayWindow Registration,
         EventHandler<PointerPressedEventArgs> PointerPressed,
-        EventHandler<PixelPointEventArgs> PositionChanged,
         EventHandler Closed
     );
 }

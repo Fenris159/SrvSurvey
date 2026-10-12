@@ -288,7 +288,8 @@
                  Classes="muted"
                  FontSize="11"
                  Text="{Binding StatusMessage}"
-                 TextTrimming="CharacterEllipsis" />
+                 ToolTip.Tip="{Binding StatusMessage}"
+                 TextWrapping="Wrap" />
     </Grid>
   </Border>
 </Window>

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ProfileSync;
 using Xunit;
 
@@ -9,6 +10,46 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    /// <summary>Releases layout leases before processing large files while retaining the coherent layout bytes already captured.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LargeProfileCaptureDoesNotBlockLayoutSaves(bool deleteLayout)
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "plotters.json", "{\"PlotJumpInfo\":\"left:10,top:20\"}");
+        root.Write("data", "systems/large.json", "{" + new string(' ', 1024 * 1024));
+        bool inspected = false;
+        var store = new ProfileSyncStore(
+            root.Paths,
+            log: message =>
+            {
+                if (!message.Contains("systems", StringComparison.Ordinal))
+                {
+                    return;
+                }
+                using FileStream lease = OverlayLayoutFileAccess.Acquire(root.Paths.DataDirectory);
+                inspected = true;
+                if (deleteLayout)
+                {
+                    File.Delete(root.Path("data", "plotters.json"));
+                }
+                else
+                {
+                    root.Write("data", "plotters.json", "{\"PlotJumpInfo\":\"left:999,top:999\"}");
+                }
+            }
+        );
+
+        ProfileSnapshot snapshot = store.Capture();
+
+        Assert.True(inspected);
+        Assert.Equal(
+            "left:10,top:20",
+            snapshot.Machine[Key("data", "plotters.json", "/PlotJumpInfo")]!.GetValue<string>()
+        );
+    }
+
     /// <summary>Verifies that restore conflicts cannot bypass an untrusted pending snapshot's machine identity.</summary>
     [Fact]
     public void PendingRestoreValidatesHardwareIdentityBeforeOfferingConflictChoices()

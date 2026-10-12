@@ -5,10 +5,34 @@ searchable subjects, and restores missing Firegroups choices with controls for
 cockpit-view visibility. Colonization overlays gain clearer cargo counts,
 customizable colors, compact layouts, and previews that follow your settings.
 Live overlays have fewer status labels, the sidebar shows seven-day activity,
-and shutdown backups finish after the window disappears.
+and shutdown backups finish after the window disappears. Overlay position saves
+now handle changing panel sizes and multiple instances more reliably, with
+recovery and retry options when a save cannot finish.
 
 ## What's changed
 
+- **Keep overlay positions when their layout changes.** Dragging, resizing, and
+  changing font or panel scales in the position editor now preserve the panel's
+  intended location when saved and reopened. Live interaction distinguishes your
+  drags from automatic game-window movement, and an open editor follows changes
+  to the game's bounds and display scale. Live moves still save when interaction
+  is turned off or the position editor is opened.
+- **Save safely with multiple SrvSurvey instances.** Independent overlay edits
+  are combined with the latest saved layout. If two editors change the same
+  setting, SrvSurvey reports the conflict instead of overwriting the newer edit.
+  Interrupted saves recover their previous complete layout on the next load.
+- **Retry an overlay save without losing your edits.** Failed live-position saves
+  retain the draft and offer Retry position save and Discard unsaved positions
+  in Theme → Overlay Settings. Clearer error messages show the affected save
+  location. If positions save but mining HUD calibration fails, the message
+  identifies the calibration failure and keeps the editor available to retry.
+- **Recover a damaged overlay layout.** When saved layout data cannot be read,
+  Theme → Overlay Settings offers Recover overlay layout. It preserves the
+  damaged files, restores valid backups where available, and resets only the
+  affected files when no valid backup exists. Unaffected settings are retained.
+- **Keep recent overlay edits during a pending restore.** A same-machine backup
+  restore staged for restart now preserves newer local hardware-setting edits,
+  including overlay positions changed after the restore was requested.
 - **Continue on another computer with Google Drive.** Link your Google account
   in Settings → Data & migration. Portable preferences and saved work can follow
   you between computers, including themes and colors, overlay visibility,

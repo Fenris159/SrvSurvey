@@ -33,6 +33,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly DelegateCommand resetOverlaySizeCommand;
     private OverlayPositionEditSession? editSession;
     private OverlayPlacementInteraction? livePlacement;
+    private OverlayPositionEditSession? pendingLiveSession;
     private IDisposable? cursorVisibilitySession;
     private OverlayLayoutCategoryDefinition selectedCategory;
     private bool isEditing;
@@ -58,8 +59,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         selectedCategory = Categories[0];
         toggleCommand = new DelegateCommand(() => _ = Toggle(), () => IsAvailable);
         snapToCenterCommand = new DelegateCommand(SnapCurrentCategoryToCenter, () => IsEditing);
-        saveCommand = new DelegateCommand(Save, () => IsEditing);
-        cancelCommand = new DelegateCommand(Cancel, () => IsEditing);
+        saveCommand = new DelegateCommand(Save, () => IsEditing || HasPendingLivePositions);
+        cancelCommand = new DelegateCommand(Cancel, () => IsEditing || HasPendingLivePositions);
         toggleCategoryMenuCommand = new DelegateCommand(ToggleCategoryMenu, () => IsEditing);
         selectCategoryCommand = new DelegateCommand(SelectCategory, () => IsEditing);
         toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
@@ -108,8 +109,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         selectedCategory = Categories[0];
         toggleCommand = new DelegateCommand(() => _ = Toggle(), () => IsAvailable);
         snapToCenterCommand = new DelegateCommand(SnapCurrentCategoryToCenter, () => IsEditing);
-        saveCommand = new DelegateCommand(Save, () => IsEditing);
-        cancelCommand = new DelegateCommand(Cancel, () => IsEditing);
+        saveCommand = new DelegateCommand(Save, () => IsEditing || HasPendingLivePositions);
+        cancelCommand = new DelegateCommand(Cancel, () => IsEditing || HasPendingLivePositions);
         toggleCategoryMenuCommand = new DelegateCommand(ToggleCategoryMenu, () => IsEditing);
         selectCategoryCommand = new DelegateCommand(SelectCategory, () => IsEditing);
         toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
@@ -517,6 +518,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             $"Snapped {snappedCount:N0} {SelectedCategory.DisplayName} overlay(s) to the center. Rearrange them, then use ✓ to save or × to cancel.";
     }
 
+    /// <summary>Saves moved live positions when interaction is turned off; entering interaction does not autosave drags.</summary>
     public bool ToggleLiveOverlayInteraction()
     {
         if (IsLiveInteractionEnabled)
@@ -528,6 +530,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         return BeginLiveInteraction();
     }
 
+    /// <summary>Opens isolated previews and unwinds recoverable display failures.</summary>
     public bool Begin()
     {
         if (!IsAvailable || disposed)
@@ -542,6 +545,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
+        if (!TrySavePendingLiveSession())
+        {
+            return false;
+        }
         if (IsLiveInteractionEnabled)
         {
             if (!PersistPendingLivePositionsForEditor())
@@ -578,9 +585,23 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         PixelRect? preferredBounds = game.IsAvailable ? game.ClientBounds : (PixelRect?)null;
         StatusMessage =
             $"Showing {SelectedCategory.DisplayName} with simulated game data. Drag the previews, then use ✓ to save or ✕ to cancel.";
-        if (editorHost.Open(this, session, SelectedCategory.Category, preferredBounds))
+        try
         {
-            return true;
+            if (editorHost.Open(this, session, SelectedCategory.Category, preferredBounds))
+            {
+                return true;
+            }
+        }
+        catch (Exception exception)
+            when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception) || exception is NotSupportedException)
+        {
+            CloseFailedPositionEditor();
+            editSession = null;
+            IsEditing = false;
+            MiningDetection?.EndEdit();
+            StatusMessage = "The overlay editor could not open: " + exception.Message;
+            layoutStore?.ReportFailure("Position editor opening failed", exception);
+            return false;
         }
 
         editSession = null;
@@ -590,24 +611,56 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         return false;
     }
 
+    /// <summary>Continues opening-failure cleanup even when the partially created editor cannot close normally.</summary>
+    private void CloseFailedPositionEditor()
+    {
+        try
+        {
+            editorHost?.Close();
+        }
+        catch (Exception cleanupError) when (LegacyOverlayLayoutStore.IsPersistenceFailure(cleanupError))
+        {
+            layoutStore?.ReportFailure("Position editor cleanup failed", cleanupError);
+        }
+    }
+
+    /// <summary>Shows explicit retry and discard actions after an unsuccessful live save.</summary>
+    public bool HasPendingLivePositions => pendingLiveSession is not null;
+
+    /// <summary>Updates the retry draft and command availability together.</summary>
+    private void SetPendingLiveSession(OverlayPositionEditSession? session)
+    {
+        pendingLiveSession = session;
+        OnPropertyChanged(nameof(HasPendingLivePositions));
+        saveCommand.RaiseCanExecuteChanged();
+        cancelCommand.RaiseCanExecuteChanged();
+    }
+
+    /// <summary>Commits positions and calibration with accurate partial-success reporting and retryable drafts.</summary>
     public void Save()
     {
+        if (!IsEditing && HasPendingLivePositions)
+        {
+            _ = TrySavePendingLiveSession();
+            return;
+        }
         if (!IsEditing || editSession is null || layoutStore is null || activeLayout is null)
         {
             return;
         }
 
-        IReadOnlyDictionary<string, LegacyOverlayPlacement> changes = editSession.Changes;
-        bool saveDefaultOpacity = editSession.HasDefaultOpacityChange;
-        if (changes.Count == 0 && !saveDefaultOpacity && MiningDetection?.HasCalibrationChanges != true)
-        {
-            EndSession(closeHost: true, restoreRuntimeWindows: true);
-            StatusMessage = "Overlay editing closed; no positions or opacity values changed.";
-            return;
-        }
-
         try
         {
+            editorHost?.PrepareSave(editSession);
+            IReadOnlyDictionary<string, LegacyOverlayPlacement> changes = editSession.Changes;
+            bool saveDefaultOpacity = editSession.HasDefaultOpacityChange;
+            if (changes.Count == 0 && !saveDefaultOpacity && MiningDetection?.HasCalibrationChanges != true)
+            {
+                EndSession(closeHost: true, restoreRuntimeWindows: true);
+                StatusMessage = "Overlay editing closed; no positions or opacity values changed.";
+                return;
+            }
+
             bool saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
             if (changes.Count == 0 && !saveDefaultOpacity)
             {
@@ -617,20 +670,30 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 StatusMessage = "Saved mining HUD calibration.";
                 return;
             }
-            LegacyOverlayLayoutSaveResult result = layoutStore.Save(
-                changes,
-                editSession.DefaultOpacity,
-                saveDefaultOpacity
-            );
-            LegacyOverlayLayout updated = layoutStore.Load();
+            LegacyOverlayLayoutSaveResult result = layoutStore.SaveChanges(editSession);
+            LegacyOverlayLayout updated = result.CommittedLayout ?? layoutStore.Load();
             if (updated.Error is not null)
             {
                 throw new InvalidDataException(updated.Error);
             }
 
-            MiningDetection?.SaveEdit();
             activeLayout.ReplaceWith(updated);
             ApplySavedLayoutToRuntimeWindows();
+            editSession = new OverlayPositionEditSession(activeLayout);
+            editorHost?.RefreshPreviewPositions(editSession);
+            try
+            {
+                MiningDetection?.SaveEdit();
+            }
+            catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
+            {
+                StatusMessage =
+                    "Overlay positions saved; mining HUD calibration could not be saved: "
+                    + exception.Message
+                    + " Retry Save to save calibration.";
+                layoutStore.ReportFailure("Calibration failed after layout commit", exception);
+                return;
+            }
 
             EndSession(closeHost: true, restoreRuntimeWindows: true);
             StatusMessage =
@@ -639,21 +702,22 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 + (saveMiningCalibration ? " Saved mining HUD calibration." : string.Empty)
                 + (result.BackupPath is null ? string.Empty : $" Previous layout backup: {result.BackupPath}");
         }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException
-                        or InvalidOperationException
-                        or ArgumentException
-            )
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
         {
             StatusMessage = "Overlay positions and appearance were not saved: " + exception.Message;
+            layoutStore.ReportFailure("Position editor save failed; draft retained", exception);
         }
     }
 
+    /// <summary>Discards an editor or failed live draft without replacing persisted positions.</summary>
     public void Cancel()
     {
+        if (!IsEditing && HasPendingLivePositions)
+        {
+            SetPendingLiveSession(null);
+            StatusMessage = "Pending live positions discarded. Previously saved positions were retained.";
+            return;
+        }
         if (!IsEditing)
         {
             return;
@@ -663,6 +727,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = "Overlay position, opacity, and scale changes were cancelled.";
     }
 
+    /// <summary>Starts from current saved values and records gestures against the current game frame.</summary>
     private bool BeginLiveInteraction()
     {
         if (
@@ -679,6 +744,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
+        if (!TrySavePendingLiveSession())
+        {
+            return false;
+        }
         if (!IsEditing && !ReloadPersistedLayout("Live overlay positions cannot be edited"))
         {
             return false;
@@ -706,7 +775,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             activeLayout,
             registry,
             game.ClientBounds,
-            () => OverlayBehavior
+            () => OverlayBehavior,
+            () => gameWindowTracker.GetSnapshot().ClientBounds
         );
         placement.PlacementMoved += OnLivePlacementMoved;
         placement.PanelClosed += OnLivePanelClosed;
@@ -791,6 +861,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Completes gestures and restores passive windows before saving or cancelling the session.</summary>
     private void EndLiveInteraction(bool saveChanges)
     {
         OverlayPlacementInteraction? placement = livePlacement;
@@ -859,6 +930,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         livePlacement = null;
     }
 
+    /// <summary>Retains an explicitly requested live save for retry if persistence fails.</summary>
     private void SaveLiveInteractionChanges(OverlayPlacementInteraction placement, List<string> failures)
     {
         try
@@ -868,21 +940,53 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 $"Saved {result.UpdatedPlacementCount:N0} live overlay position(s) and restored click-through mode."
                 + FormatFailureSuffix(failures);
         }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException
-                        or InvalidOperationException
-                        or ArgumentException
-            )
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
         {
+            SetPendingLiveSession(placement.EditSession);
             RestoreLivePlacements(placement);
             StatusMessage =
-                "Live overlays returned to click-through mode, but their moved positions were not saved: "
-                + exception.Message;
+                "Live positions could not be saved: "
+                + exception.Message
+                + " The moved positions are retained. Toggle interaction or open the editor to retry.";
+            layoutStore?.ReportFailure("Live position save failed; draft retained", exception);
         }
     }
+
+    /// <summary>Retries a failed explicit live save before opening a new edit; ordinary unsaved interaction still cancels at shutdown.</summary>
+    private bool TrySavePendingLiveSession()
+    {
+        if (pendingLiveSession is null || layoutStore is null || activeLayout is null)
+        {
+            return true;
+        }
+        try
+        {
+            LegacyOverlayLayoutSaveResult result = layoutStore.SaveChanges(pendingLiveSession);
+            activeLayout.ReplaceWith(result.CommittedLayout ?? layoutStore.Load());
+            SetPendingLiveSession(null);
+            ApplySavedLayoutToRuntimeWindows();
+            StatusMessage = "Saved pending live overlay positions.";
+            return true;
+        }
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
+        {
+            StatusMessage =
+                "Pending live positions could not be saved: " + exception.Message + " The draft is retained for retry.";
+            layoutStore.ReportFailure("Pending live save failed; draft retained", exception);
+            return false;
+        }
+    }
+
+    /// <summary>Closes a failed native editor operation without leaving its edit state or suppression active.</summary>
+    internal void HandleEditorFailure(Exception exception)
+    {
+        EndSession(closeHost: true, restoreRuntimeWindows: true);
+        StatusMessage = "Overlay editor closed because the display could not be updated: " + exception.Message;
+        layoutStore?.ReportFailure("Position editor display update failed", exception);
+    }
+
+    /// <summary>Provides the current game frame for display-change reconciliation in the position editor.</summary>
+    internal GameWindowSnapshot EditorGameWindow => gameWindowTracker?.GetSnapshot() ?? GameWindowSnapshot.Unavailable;
 
     private bool PersistPendingLivePositionsForEditor()
     {
@@ -905,14 +1009,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             _ = placement.Save();
             return true;
         }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException
-                        or InvalidOperationException
-                        or ArgumentException
-            )
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
         {
             StatusMessage =
                 "Overlay positions cannot be edited because pending live positions could not be synchronized: "
@@ -1028,6 +1125,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         editorHost?.RefreshPreviewPositions(editSession);
     }
 
+    /// <summary>Loads current positions without overwriting a damaged layout.</summary>
     private bool ReloadPersistedLayout(string errorPrefix)
     {
         if (layoutStore is null || activeLayout is null)
@@ -1047,6 +1145,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         return true;
     }
 
+    /// <summary>Detaches runtime resources and discards ordinary unsaved interaction without autosaving.</summary>
     public void Dispose()
     {
         if (disposed)
@@ -1083,6 +1182,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         registry?.Changed -= OnRegistryChanged;
 
         editSession = null;
+        SetPendingLiveSession(null);
         IsEditing = false;
         gameWindowTracker?.Dispose();
         platform?.Dispose();
