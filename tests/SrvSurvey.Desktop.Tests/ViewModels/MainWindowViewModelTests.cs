@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -861,6 +862,7 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>Verifies eddn receives context but publishes only new live events.</summary>
     [Fact]
     public async Task EddnReceivesContextButPublishesOnlyNewLiveEvents()
     {
@@ -872,7 +874,7 @@ public sealed class MainWindowViewModelTests
             string journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true,\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Horizons\":true,\"Odyssey\":true}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
             );
@@ -883,18 +885,21 @@ public sealed class MainWindowViewModelTests
                 []
             );
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(true, true, false)
+                new NetworkPrivacyPreferences(true, true, false, EdAstroUploadEnabled: true)
             );
             var publisher = new RecordingEddnPublisher();
+            var edAstro = new RecordingEdAstroPublisher();
             using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
+                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher).WithEdAstroPublisher(edAstro)
             );
 
             await viewModel.RefreshAsync();
 
             EddnCall bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
+            Assert.True(edAstro.Enabled);
+            Assert.False(Assert.Single(edAstro.Calls).AllowPublishing);
             Assert.True(bootstrap.Enabled);
             Assert.Equal("Test Cmdr", bootstrap.CommanderName);
             Assert.Equal("F123", bootstrap.FrontierId);
@@ -912,8 +917,14 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(2, publisher.Calls.Count);
             EddnCall live = publisher.Calls[1];
             Assert.True(live.AllowPublishing);
+            Assert.True(edAstro.Calls[1].AllowPublishing);
+            Assert.True(edAstro.Calls[1].IsOdyssey);
+            Assert.True(edAstro.Calls[1].IsLiveGame);
+            Assert.Equal("Test Cmdr", edAstro.Calls[1].CommanderName);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains("Queued DockingGranted for EDDN.", viewModel.NetworkPrivacy.StatusMessage);
+            viewModel.NetworkPrivacy.EdAstroUploadEnabled = false;
+            Assert.False(edAstro.Enabled);
         }
         finally
         {
@@ -4859,6 +4870,24 @@ public sealed class MainWindowViewModelTests
 
         public void CancelPendingPublication() { }
 
+        public void Dispose() { }
+    }
+
+    private sealed class RecordingEdAstroPublisher : IEdAstroPublisher
+    {
+        internal bool Enabled { get; private set; }
+        internal List<EdAstroApplyRequest> Calls { get; } = [];
+
+        /// <summary>Provides apply for the isolated test fixture.</summary>
+        public void Apply(EdAstroApplyRequest request) => Calls.Add(request);
+
+        /// <summary>Provides set enabled for the isolated test fixture.</summary>
+        public void SetEnabled(bool enabled) => Enabled = enabled;
+
+        /// <summary>Provides set suspended for the isolated test fixture.</summary>
+        public void SetSuspended(bool suspended) { }
+
+        /// <summary>Releases the isolated test resources after assertions complete.</summary>
         public void Dispose() { }
     }
 

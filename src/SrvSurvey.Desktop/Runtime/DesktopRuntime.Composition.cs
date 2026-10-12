@@ -50,6 +50,7 @@ internal sealed partial class DesktopRuntime
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
+    private ExplorationPoiOverlayCoordinator? explorationPoiOverlayCoordinator;
     private MultiGameCommanderOverlayCoordinator? multiGameCommanderOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private ColonizationProjectPreviewWindowCoordinator? colonizationProjectPreviewWindowCoordinator;
@@ -245,6 +246,10 @@ internal sealed partial class DesktopRuntime
             message => applicationLog.Append(message)
         );
         mainWindow = new MainWindow(viewModel);
+        viewModel.ExplorationPois.UseActions(
+            WriteClipboardAsync,
+            async uri => await mainWindow.Launcher.LaunchUriAsync(uri)
+        );
         windowChromeThemeCoordinator = new WindowChromeThemeCoordinator(mainWindow, themeService);
         mainWindow.Opened += HandleMainWindowOpened;
         AttachMainWindow(mainWindow);
@@ -397,6 +402,10 @@ internal sealed partial class DesktopRuntime
             modeProvider: () => viewModel.CurrentVrOverlayMode
         );
         galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(viewModel.GalaxyMap, overlayPresentation);
+        explorationPoiOverlayCoordinator = new ExplorationPoiOverlayCoordinator(
+            viewModel.ExplorationPois,
+            overlayPresentation
+        );
         multiGameCommanderOverlayCoordinator = new MultiGameCommanderOverlayCoordinator(
             viewModel.CommanderInstances,
             viewModel.OverlayBehavior,
@@ -917,6 +926,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
+    /// <summary>Disposes the desktop-dependent overlay resources after application producers stop.</summary>
     private Task DisposeDesktopDependentsAsync()
     {
         DisposeResource(ref windowChromeThemeCoordinator);
@@ -955,6 +965,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref streamOverlayCoordinator);
         DisposeResource(ref vrOverlayCoordinator);
         DisposeResource(ref galaxyMapOverlayCoordinator);
+        DisposeResource(ref explorationPoiOverlayCoordinator);
         DisposeResource(ref systemSurveyOverlayCoordinator);
         DisposeResource(ref guardianOverlayCoordinator);
         return Task.CompletedTask;
@@ -1390,6 +1401,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
+    /// <summary>Applies shared overlay suppression consistently to all hosted gameplay panels.</summary>
     private void ApplyOverlaySuppression()
     {
         MainWindowViewModel? viewModel = mainViewModel;
@@ -1420,6 +1432,7 @@ internal sealed partial class DesktopRuntime
         notificationOverlayCoordinator?.SetSuppressed(suppress);
         pulseOverlayCoordinator?.SetSuppressed(suppress);
         galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
+        explorationPoiOverlayCoordinator?.SetSuppressed(suppress);
         multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
     }
 

@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 /// </summary>
 internal static class OverlayRuntimePresentationFactory
 {
+    /// <summary>Identifies panel IDs supported by the runtime presentation factory.</summary>
     public static bool IsSupported(string plotterName) =>
         plotterName
             is "PlotBioStatus"
@@ -23,6 +24,7 @@ internal static class OverlayRuntimePresentationFactory
                 or "PlotFSS"
                 or "PlotFSSInfo"
                 or "PlotGalMap"
+                or "PlotExplorationPois"
                 or "PlotMiningNotifications"
                 or "PlotMiningCargo"
                 or "PlotMiningReference"
@@ -103,6 +105,7 @@ internal static class OverlayRuntimePresentationFactory
         return CreateEditorDataContext(plotterName, previewStateIndex);
     }
 
+    /// <summary>Creates the requested live panel using its existing shared workspace model.</summary>
     public static Control? CreatePresentation(string plotterName) =>
         plotterName switch
         {
@@ -116,6 +119,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotFSS" => new LastFssBodyOverlayPresentation(),
             "PlotFSSInfo" => new FssInfoOverlayPresentation(),
             "PlotGalMap" => new GalaxyMapOverlayPresentation(),
+            "PlotExplorationPois" => new ExplorationPoiOverlayPresentation(),
             "PlotMiningNotifications" or "PlotMiningFiregroups" => new MiningActivityOverlayPresentation(),
             "PlotMiningCargo" => new MiningCargoOverlayPresentation(),
             "PlotMiningReference" => new MiningReferenceOverlayPresentation(),

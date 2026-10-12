@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
              x:Class="SrvSurvey.Desktop.Views.ExplorationView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -79,6 +80,7 @@
           </StackPanel>
         </StackPanel>
       </Border>
+      <views:ExplorationPoiView DataContext="{Binding ExplorationPois}" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

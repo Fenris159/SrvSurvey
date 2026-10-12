@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.ExplorationPoiOverlayPresentation"
+             x:DataType="vm:ExplorationPoiViewModel" Width="320">
+  <Border Padding="8" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5">
+    <StackPanel Spacing="6">
+      <TextBlock Classes="overlay-header type-header" Text="EXPLORATION POIs · EDAstro" TextWrapping="Wrap" />
+      <TextBlock IsVisible="{Binding HasDistinctOverlaySystem}" Classes="muted type-detail"
+                 Text="{Binding CurrentSystem, StringFormat='System: {0}'}" TextWrapping="Wrap" />
+      <ItemsControl ItemsSource="{Binding OverlayPois}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ExplorationPoiItemViewModel">
+            <StackPanel Spacing="3" Margin="0,5,0,5">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBlock Classes="overlay-title type-title" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Name}" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" Classes="muted type-detail" Text="{Binding RatingText}" />
+              </Grid>
+              <TextBlock Classes="overlay-detail type-detail" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Categories}" TextWrapping="Wrap" />
+              <TextBlock Classes="overlay-body type-body" Text="{Binding Summary}" MaxLines="3" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock IsVisible="{Binding HasMorePois}" Classes="muted type-detail" Text="{Binding MorePoisText}" />
+      <TextBlock Classes="muted type-detail" Text="EDAstro GEC · CC BY-NC-SA 3.0" />
+    </StackPanel>
+  </Border>
+</UserControl>

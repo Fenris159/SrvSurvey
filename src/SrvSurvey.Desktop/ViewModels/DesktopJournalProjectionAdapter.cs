@@ -1,6 +1,7 @@
 using System.Text.Json;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -389,6 +390,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ApplyScreenshotProcessingAsync(context, tick);
     }
 
+    /// <summary>Registers exploration projection stages and their workspace handoffs in the established journal order.</summary>
     private void BindExploration()
     {
         operations[JournalProjectionOperation.JumpInfo] = Sync(
@@ -408,6 +410,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         );
         operations[JournalProjectionOperation.GalaxyMap] = Sync(
             (context, tick) =>
+            {
                 dependencies.GalaxyMap.ApplyUpdate(
                     state.Session.SystemName,
                     state.Session.SystemAddress,
@@ -416,7 +419,16 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     context.Update.Status,
                     context.IsBootstrapRead,
                     state.Session.MusicTrack
-                )
+                );
+                dependencies.ExplorationPois?.UpdateContext(
+                    state.Session.SystemName,
+                    state.Session.SystemAddress,
+                    state.Session.StarPosition,
+                    context.Update.Status,
+                    context.IsBootstrapRead ? [] : context.JournalEvents,
+                    state.Session.MusicTrack
+                );
+            }
         );
         operations[JournalProjectionOperation.ExplorationEvents] = Sync(
             (context, tick) =>
@@ -1133,6 +1145,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         shell.StartSystemBodyDataRetryIfDue();
     }
 
+    /// <summary>Forwards captured journal evidence to isolated sharing modules using bootstrap and attribution gates.</summary>
     private async Task ApplyExternalPublicationAsync(JournalMonitorUpdate update, bool allowSharedCargo)
     {
         state.LastIdleHousekeepingAt = DateTimeOffset.UtcNow;
@@ -1170,6 +1183,28 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         {
             dependencies.applicationLogService?.Append(
                 "EDDN processing was isolated from journal tracking: " + exception.Message
+            );
+        }
+
+        try
+        {
+            bool ambiguous = dependencies.CommanderInstances.HasMultipleGameWindows;
+            dependencies.edAstroPublisher.SetSuspended(ambiguous);
+            dependencies.edAstroPublisher.Apply(
+                new EdAstroApplyRequest(
+                    update.JournalEvents,
+                    state.Session.CommanderName,
+                    update.JournalPath,
+                    state.Session.IsOdyssey == true,
+                    AllowPublishing: !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead && !ambiguous,
+                    IsLiveGame: state.Session.IsLegacy == false
+                )
+            );
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            dependencies.applicationLogService?.Append(
+                "EDAstro processing was isolated from journal tracking: " + exception.Message
             );
         }
 

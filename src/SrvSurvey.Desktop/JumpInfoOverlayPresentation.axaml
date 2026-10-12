@@ -134,6 +134,8 @@
         <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasPointsOfInterest}"
                    Text="{Binding JumpInfo.PointsOfInterestText}"
                    TextWrapping="Wrap" />
+        <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasExplorationPois}"
+                   Text="{Binding JumpInfo.ExplorationPoiText, StringFormat='GEC POIs: {0}'}" TextWrapping="Wrap" />
         <ItemsControl IsVisible="{Binding JumpInfo.HasDetailLines}"
                       ItemsSource="{Binding JumpInfo.DetailLines}">
           <ItemsControl.ItemTemplate>

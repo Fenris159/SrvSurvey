@@ -124,6 +124,15 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)
         ),
         Define(
+            "PlotExplorationPois",
+            "Exploration POIs",
+            "ExplorationPois.AutoShow",
+            OverlayLayoutCategory.ExplorationAndNavigation,
+            OverlaySettingsCategory.Exploration,
+            new(320, 340),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)
+        ),
+        Define(
             "PlotMiningNotifications",
             "Mining notifications",
             "MiningWorkspace.ShouldShowNotifications",

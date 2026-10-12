@@ -105,6 +105,7 @@ internal static class OverlayEditorPreviewCatalog
         return Create(plotterName, states[stateIndex].Key);
     }
 
+    /// <summary>Creates the requested panel preview using representative local workspace evidence.</summary>
     private static object Create(string plotterName, string previewState) =>
         plotterName switch
         {
@@ -124,6 +125,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotFloatie" => CreateNotificationPreview(),
             "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
             "PlotGalMap" => CreateGalaxyMapPreview(),
+            "PlotExplorationPois" => OverlayEditorPreviewFactories.CreateExplorationPois(),
             "PlotMiningNotifications" => new MiningActivityOverlayViewModel(null, false),
             "PlotMiningCargo" => new MiningCargoOverlayViewModel(null),
             "PlotMiningReference" => CreateMiningReferencePreview(),

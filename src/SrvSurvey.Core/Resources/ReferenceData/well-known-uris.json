@@ -19,6 +19,8 @@
   "CanonnUndiscoveredCodexCommander": "https://canonn-science.github.io/undiscovered-codex/?cmdr=",
   "CanonnChallenge": "https://canonn.science/codex/canonn-challenge/",
   "EdastroCodexMap": "https://edastro.com/mapcharts/codex.html",
+  "EdastroPoiCatalog": "https://edastro.com/gec/json/all",
+  "EdastroPoiPagePrefix": "https://edastro.com/gec/view/",
   "EdastroOrganicMapPrefix": "https://edastro.b-cdn.net/mapcharts/organic/organic-",
   "SpanshApiBase": "https://spansh.co.uk/api/",
   "SpanshBody": "https://spansh.co.uk/body/",
@@ -42,5 +44,8 @@
   "GoogleDriveUpload": "https://www.googleapis.com/upload/drive/v3/files",
   "GoogleDriveFilesDirectory": "https://www.googleapis.com/drive/v3/files/",
   "ActiveUsersPing": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/ping",
-  "ActiveUsersPublic": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public"
+  "ActiveUsersPublic": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public",
+  "EdastroNewPoi": "https://edastro.com/gec/new",
+  "EdastroAcceptedEvents": "https://edastro.com/api/accepting",
+  "EdastroJournalUpload": "https://edastro.com/api/journal"
 }

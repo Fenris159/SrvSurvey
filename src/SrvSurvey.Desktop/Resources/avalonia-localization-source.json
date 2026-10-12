@@ -600,14 +600,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "18.2 million",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
     "Text": "18.4216\u00B0S 74.0921\u00B0E",
     "IsFormat": false,
     "SourceKinds": [
@@ -696,6 +688,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
+    "Text": "2 black holes \u00B7 5 T Tauri stars",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+  },
+  {
     "Text": "2 commanders detected",
     "IsFormat": false,
     "SourceKinds": [
@@ -712,7 +712,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
-    "Text": "2 stations | 1 settlement",
+    "Text": "2 known POIs",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1014,22 +1014,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
-    "Text": "42.6 ly",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
-    "Text": "42.6 ly from destination",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "42.6 ly | inside 50 ly limit",
@@ -1512,6 +1496,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RamTahViewModel.cs"
   },
   {
+    "Text": "A community expedition and settlement around the black holes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "A compatible live construction depot is ready.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1806,6 +1798,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+  },
+  {
+    "Text": "A pair of black holes and five T Tauri stars.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "A parent contains eight child cubes at the next lower mass code. This nested layout explains why systems with different prefixes can be close together and systems sharing a large high-mass boxel can be far apart.",
@@ -5068,6 +5068,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
   },
   {
+    "Text": "Attraction / system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
+    "Text": "Attraction search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Audio announcements",
     "IsFormat": false,
     "SourceKinds": [
@@ -5250,6 +5266,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Auto-show known POIs in the current system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Auto-zoom if inside buildings",
@@ -5682,6 +5706,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Azura Initiative",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "B 1",
@@ -7649,6 +7681,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/SystemSurveySettingsStore.cs"
+  },
+  {
+    "Text": "Bookmark POI",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Bookmark details",
@@ -9730,9 +9770,10 @@
     "Text": "Category",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Caught up {0} Journey journal events.",
@@ -11008,6 +11049,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Clear the active search to use the other search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Clear unclaimed",
     "IsFormat": false,
     "SourceKinds": [
@@ -12084,6 +12133,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Commander names, Frontier IDs, credit balances, carrier finances and EDDiscovery extension fields are removed. Startup history, diagnostic replay, Legacy sessions and unattributed shared data are not submitted.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Commander notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -12390,6 +12447,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Community",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "Community Goal",
     "IsFormat": false,
     "SourceKinds": [
@@ -12428,6 +12493,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Community | 6.8 / 10",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "CommunityGoal",
@@ -12709,6 +12782,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FiregroupsView.axaml"
+  },
+  {
+    "Text": "Configure EDAstro Sharing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "Configure EDDN Sharing",
@@ -13488,6 +13569,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
+    "Text": "Contribute supported live fleet-carrier and exploration journal data to EDAstro.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Contributor count not supplied",
     "IsFormat": false,
     "SourceKinds": [
@@ -13910,7 +13999,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Copy system name",
@@ -14729,6 +14818,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
+  },
+  {
+    "Text": "Current-system POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Current-system coordinates are required before searching.",
@@ -15691,7 +15788,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
@@ -16695,7 +16792,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Distance (ly)",
@@ -16808,6 +16905,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Distances from {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Distances use Sol until a custom origin is selected.",
@@ -17324,12 +17429,53 @@
     "FirstSource": "src/SrvSurvey.Desktop/StationInfoOverlayPresentation.axaml"
   },
   {
+    "Text": "EDAstro",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "EDAstro Codex map",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "EDAstro GEC | CC BY-NC-SA 3.0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "EDAstro GEC \u00B7 CC BY-NC-SA 3.0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExplorationPoiOverlayPresentation.axaml"
+  },
+  {
+    "Text": "EDAstro POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"
+  },
+  {
+    "Text": "EDAstro exploration POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "EDAstro map",
@@ -17340,9 +17486,42 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
+    "Text": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
+    "Text": "EDAstro processing was isolated from journal tracking: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
+    "Text": "EDAstro sharing is disabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "EDAstro sharing is enabled for live Commander sessions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
     "Text": "EDDN",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
@@ -17623,6 +17802,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
   },
   {
+    "Text": "EXPLORATION POIs \u00B7 EDAstro",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExplorationPoiOverlayPresentation.axaml"
+  },
+  {
     "Text": "EXPORTS",
     "IsFormat": false,
     "SourceKinds": [
@@ -17645,6 +17832,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session\u0027s Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier\u0027s activity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
@@ -17757,6 +17952,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "EdAstroUploadEnabled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/NetworkPrivacySettingsStore.cs"
   },
   {
     "Text": "EddnCard",
@@ -17964,7 +18167,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
@@ -18176,6 +18379,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Enable EDAstro sharing for live Commander sessions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
+    "Text": "Enable EDAstro uploads in only one application at a time, such as SrvSurvey-XP, EDDiscovery or EDMC, to avoid duplicate submissions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Enable EDDN sharing for live Commander sessions",
     "IsFormat": false,
     "SourceKinds": [
@@ -18375,6 +18594,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Enable external data in Exploration Overlay Settings to resolve this system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
@@ -18695,6 +18922,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Enter a reference system or use the current system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Enter a star-system name to set a custom origin.",
@@ -19238,7 +19473,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Expected organism maximum {0} K",
@@ -19337,6 +19572,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "Exploration POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Exploration POIs \u00B7 EDAstro",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Exploration data",
     "IsFormat": false,
     "SourceKinds": [
@@ -19383,6 +19634,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "ExplorationPois",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ExplorationPoiSettingsStore.cs"
+  },
+  {
+    "Text": "ExplorationPois.AutoShow",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
     "Text": "Explore child boxels",
@@ -21072,14 +21339,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
-    "Text": "First discovered by CMDR Raven",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
-  },
-  {
     "Text": "First footfall confirmed",
     "IsFormat": false,
     "SourceKinds": [
@@ -22273,6 +22532,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "GEC",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "GEC | CC BY-NC-SA 3.0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "GEC \u00B7 CC BY-NC-SA 3.0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"
+  },
+  {
+    "Text": "GEC \u00B7 {0} entries \u00B7 updated {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "GENUS",
     "IsFormat": false,
     "SourceKinds": [
@@ -22488,6 +22779,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Galactic Exploration Catalog \u00B7 CC BY-NC-SA 3.0. Open the source entry for contributor credits and full details.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Galactic initiatives",
@@ -23290,6 +23589,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Great Annihilator",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Green",
@@ -25236,7 +25543,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Hyperspace jumps",
@@ -25537,6 +25844,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Identity and external service",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Identity and location",
     "IsFormat": false,
     "SourceKinds": [
@@ -25703,6 +26018,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
+  },
+  {
+    "Text": "Image could not be displayed. Open the GEC entry to view the original.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiDescriptionViewModel.cs"
+  },
+  {
+    "Text": "Image preview unavailable. Open the GEC entry to view photos.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiDescriptionViewModel.cs"
+  },
+  {
+    "Text": "Image unavailable. Open the GEC entry to view the original.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiDescriptionViewModel.cs"
   },
   {
     "Text": "Image unavailable: {0}",
@@ -26420,6 +26759,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "Include Legacy POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Incomplete",
     "IsFormat": false,
     "SourceKinds": [
@@ -26506,14 +26853,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "Industrial | Refinery",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Infrastructure Failure",
@@ -27380,7 +27719,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Jumps",
@@ -28900,6 +29239,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Live reports are batched in a bounded memory queue: at most 200 events per request, with at least ten seconds between requests and no more than 100 attempts per fifteen minutes. Retry-After and provider quota headers can extend the wait.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Live sample progress and legacy-compatible unclaimed Vista Genomics rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29346,6 +29693,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Loading image\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiDescriptionViewModel.cs"
   },
   {
     "Text": "Loading live Raven build data\u2026",
@@ -31551,6 +31906,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Minimum score / 10",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Minimum volume cannot exceed maximum volume.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32450,6 +32813,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ActiveUsersViewModel.cs"
   },
   {
+    "Text": "N1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "NAME",
     "IsFormat": false,
     "SourceKinds": [
@@ -32880,6 +33251,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Nearby radius (ly)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Nearby systems resolves biological search results around a known reference system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -33078,6 +33457,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "New POI",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "New bookmark",
@@ -33521,6 +33908,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "No POI catalogue is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "No Ram Tah log is available for this obelisk.",
     "IsFormat": false,
     "SourceKinds": [
@@ -33951,6 +34346,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "No coordinates found for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "No current active obelisk",
@@ -35264,7 +35667,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "OTHER",
@@ -35605,6 +36008,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider\u0027s list can change; unsupported types are excluded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35827,6 +36238,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
+  },
+  {
+    "Text": "Open GEC entry",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Open Green Gas Giant guide",
@@ -37898,6 +38317,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "POI bookmarked.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
+    "Text": "POI catalogue has not been loaded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "POI choice",
     "IsFormat": false,
     "SourceKinds": [
@@ -38620,6 +39055,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "PlotExplorationPois",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "PlotFSS",
     "IsFormat": false,
     "SourceKinds": [
@@ -38903,7 +39346,6 @@
     "Text": "Points of interest",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
@@ -38955,22 +39397,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "Population",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
-    "Text": "Population 18.2 M \u00B7 Medium security \u00B7 Industrial | Refinery",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "Portugu\u00EAs (Brasil)",
@@ -40579,14 +41005,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
-    "Text": "QUEST DESTINATION | DATA UPDATED 2 M AGO",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
     "Text": "QUEST SITE | DOCKING GRANTED | 1.8 KM",
     "IsFormat": false,
     "SourceKinds": [
@@ -40761,6 +41179,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
+    "Text": "Quest-tagged system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"
   },
   {
     "Text": "QuestWorkspace.IsEnabled",
@@ -40962,6 +41388,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "RARE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "RAVEN BUILD PREVIEW",
@@ -41301,14 +41735,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
-    "Text": "ROUTE 4 / 9 \u00B7 138.7 LY REMAINING \u00B7 QUEST DESTINATION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
-  },
-  {
     "Text": "ROUTE BODIES",
     "IsFormat": false,
     "SourceKinds": [
@@ -41493,6 +41919,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
+    "Text": "Rare POIs only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Rating (0\u20135)",
     "IsFormat": false,
     "SourceKinds": [
@@ -41530,7 +41964,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Raven Colonial Initiative \u00B7 Confederacy",
@@ -43173,6 +43607,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Reference system only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Reference system set to {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -43276,6 +43718,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Refresh catalogue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Refresh cloud history to see the backup count and storage used. Download the selected cloud backup to keep a separate copy. Delete selected backup or Clear all SrvSurvey cloud backups asks for confirmation before permanently removing cloud history; local data and Google linking stay intact.",
@@ -44134,6 +44584,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Reports can include carrier callsign, name, ID, fuel, docking access, services and planned destination; the station and system where you dock; and biological or Codex discoveries, bodies and recorded locations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Reports preserve the observations behind mining statistics.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44484,6 +44942,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Resolving {0}\u2026",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Resource Extraction Sites",
@@ -44988,6 +45454,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Review the event types, carrier locations, application identity, batching and delivery behavior before opting in.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Review the included sites and output path, then copy the bundle path or file, open its folder, or open the Guardian Science Corps destination.",
@@ -45640,14 +46114,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
-  },
-  {
-    "Text": "Route and system intelligence",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Route behavior",
@@ -46844,7 +47310,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "Save As...",
@@ -47809,6 +48275,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Score",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Scorpion",
     "IsFormat": false,
     "SourceKinds": [
@@ -48059,6 +48533,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Search attractions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
     "Text": "Search bounds",
     "IsFormat": false,
     "SourceKinds": [
@@ -48145,6 +48627,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Search systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -48306,14 +48796,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Security",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
@@ -48827,6 +49309,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Selected target \u00B7 2 known POIs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Selected {0} \u00B7 {1}.",
@@ -50762,6 +51252,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51721,6 +52219,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "SrvSurvey exploration POIs overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ExplorationPoiOverlayWindow.axaml"
   },
   {
     "Text": "SrvSurvey fleet carrier route overlay",
@@ -52776,7 +53282,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Started another SrvSurvey instance for {0}.",
@@ -53133,6 +53639,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
   },
   {
+    "Text": "Stellar Features",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Stellar Features | 6.9 / 10",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "Stock {0} \u00B7 Demand {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -53331,6 +53853,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Success logging is consolidated into fifteen-minute activity summaries. POI catalogue downloads and bookmarks use their separate exploration settings; journal reports do not create curated POIs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "SuccessDim",
@@ -54376,6 +54906,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
+  },
+  {
+    "Text": "System search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "System signals",
@@ -55439,30 +55977,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
   },
   {
-    "Text": "The EDDN runtime rollback failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
-  },
-  {
-    "Text": "The EDDN sharing choice could not be fully restored after the runtime transition failed: {0}{1}{2}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
-  },
-  {
-    "Text": "The EDDN sharing choice was not changed because the runtime transition failed; the previous choice was restored: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
-  },
-  {
     "Text": "The EDSM credentials were not saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -55549,6 +56063,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "The GEC entry could not be opened.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
+    "Text": "The GEC entry could not be opened: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "The GitHub crash report could not be opened.",
@@ -58207,6 +58737,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs"
   },
   {
+    "Text": "The reference system could not be resolved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "The release channel changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -59095,6 +59633,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "The system could not be copied: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "The system lookup failed without changing your limit: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -59447,6 +59993,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "The {0} runtime rollback failed: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "The {0} sharing choice could not be fully restored after the runtime transition failed: {1}{2}{3}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "The {0} sharing choice was not changed because the runtime transition failed; the previous choice was restored: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
     "Text": "The {0} window factory returned null.",
     "IsFormat": true,
     "SourceKinds": [
@@ -59622,6 +60192,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "This POI is already bookmarked; your notes were preserved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "This boxel is recorded as empty.",
@@ -60570,6 +61148,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
   },
   {
+    "Text": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
     "Text": "Translated {0} legacy UI preferences.",
     "IsFormat": true,
     "SourceKinds": [
@@ -61069,6 +61655,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
+    "Text": "Unable to open EDAstro\u0027s New POI page.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
+    "Text": "Unable to open EDAstro\u0027s New POI page: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "Unassigned",
     "IsFormat": false,
     "SourceKinds": [
@@ -61500,6 +62102,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Unrated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "Unread message counts are shown in the application and the compact quest indicator.",
@@ -62318,6 +62928,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use current system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
     "Text": "Use downloaded bio data from Canonn and Spansh",
@@ -63755,6 +64373,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
   },
   {
+    "Text": "Waiting for the current system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "Waiting for the selected OpenVR runtime.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64250,6 +64876,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+  },
+  {
+    "Text": "What SrvSurvey-XP sends",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "What a boxel is and why survey one",
@@ -67165,6 +67799,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
+    "Text": "exploration-pois",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "explorationdata",
     "IsFormat": false,
     "SourceKinds": [
@@ -69403,6 +70045,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "poi-images",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "polonium",
@@ -71710,6 +72360,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerDeviceProvider.cs"
   },
   {
+    "Text": "{0} / 5 stars \u00B7 {1} votes",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "{0} / body {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -72046,6 +72704,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
   },
   {
+    "Text": "{0} additional POIs \u00B7 see Exploration",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
     "Text": "{0} appearance",
     "IsFormat": true,
     "SourceKinds": [
@@ -72076,6 +72742,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "{0} attractions",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
     "Text": "{0} available",

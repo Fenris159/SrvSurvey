@@ -15,6 +15,9 @@ public sealed record GalacticBookmark
     public string Category { get; init; } = "Mining";
     public IReadOnlyList<string> CategoryAssignments { get; init; } = [];
     public string Notes { get; init; } = "";
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExternalPoiIdentity { get; init; }
     public string LastMined { get; init; } = "";
     public string Hotspot { get; init; } = "";
     public string AverageYield { get; init; } = "";
@@ -363,8 +366,20 @@ public sealed class BookmarkCatalog
         ValidateSurfaceMiningMap(bookmark);
     }
 
+    /// <summary>Keeps distinct provider POIs separate while preserving existing navigation bookmark identity rules.</summary>
     private static bool IsSameBookmark(GalacticBookmark existing, GalacticBookmark incoming)
     {
+        if (existing.ExternalPoiIdentity is not null || incoming.ExternalPoiIdentity is not null)
+        {
+            return existing.Id == incoming.Id
+                || existing.ExternalPoiIdentity is not null
+                    && string.Equals(
+                        existing.ExternalPoiIdentity,
+                        incoming.ExternalPoiIdentity,
+                        StringComparison.Ordinal
+                    );
+        }
+
         if (existing.Id == incoming.Id)
         {
             return true;

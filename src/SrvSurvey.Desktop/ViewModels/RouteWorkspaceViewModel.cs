@@ -17,6 +17,22 @@ namespace SrvSurvey.Desktop.ViewModels;
 )]
 public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 {
+    private SrvSurvey.Core.Exploration.ExplorationPoiCatalog poiCatalog = SrvSurvey
+        .Core
+        .Exploration
+        .ExplorationPoiCatalog
+        .Empty;
+
+    /// <summary>Annotates existing route hops with local attractions without replacing route planning.</summary>
+    public void ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog catalog)
+    {
+        poiCatalog = catalog;
+        foreach (RouteHopItemViewModel row in Hops)
+        {
+            row.ApplyPoiSummary(poiCatalog.ForSystem(row.Name, row.Hop.SystemAddress));
+        }
+    }
+
     private const string Unavailable = "\u2014";
 
     private readonly FollowRouteService routeService;
@@ -1730,6 +1746,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         RaiseCommands();
     }
 
+    /// <summary>Rebuilds route rows from route progress, visits and current catalogue annotations.</summary>
     private void RefreshHopRows()
     {
         bool canReuseRows = hops.Count == draftHops.Length;
@@ -1755,6 +1772,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         {
             Hops = rows;
         }
+        ApplyPoiCatalog(poiCatalog);
     }
 
     private void UpdateOrCreateHopRow(int index, bool canReuseRows, List<RouteHopItemViewModel>? rows)
@@ -2085,6 +2103,17 @@ public sealed record RouteHopItemPresentation(
 
 public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 {
+    public string PoiText { get; private set; } = string.Empty;
+    public bool HasPois => PoiText.Length > 0;
+
+    /// <summary>Adds the matching attractions to one existing route-hop presentation.</summary>
+    public void ApplyPoiSummary(IReadOnlyList<SrvSurvey.Core.Exploration.ExplorationPoi> pois)
+    {
+        PoiText = string.Join(" · ", pois.Select(p => p.Name));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PoiText)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasPois)));
+    }
+
     private FollowRouteHop hop;
     private string distance;
     private string notes;

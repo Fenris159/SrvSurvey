@@ -158,6 +158,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         Assert.Equal(saved, activeLayout.Placements[editor.Name]);
     }
 
+    /// <summary>Verifies notification overlay uses the legacy bottom center default.</summary>
     [Fact]
     public void NotificationOverlayUsesTheLegacyBottomCenterDefault()
     {
@@ -173,7 +174,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24, null),
             notification.Placement
         );
-        Assert.Equal(37, viewModel.Overlays.Count);
+        Assert.Equal(38, viewModel.Overlays.Count);
         Assert.Equal(
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, null),
             viewModel.Overlays.Single(overlay => overlay.Name == "PlotQuestMini").Placement

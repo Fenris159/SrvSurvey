@@ -23,6 +23,25 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public event Action<bool>? EddnUploadEnabledChanged;
 
+    /// <summary>Notifies the delivery module after a saved EDAstro consent transition.</summary>
+    public event Action<bool>? EdAstroUploadEnabledChanged;
+
+    /// <summary>Whether this installation contributes new live journal data to EDAstro.</summary>
+    public bool EdAstroUploadEnabled
+    {
+        get => preferences.EdAstroUploadEnabled;
+        set => TrySetEdAstroUploadEnabled(value);
+    }
+
+    /// <summary>Privacy card status for the persisted EDAstro choice.</summary>
+    public string EdAstroConsentSummary =>
+        EdAstroUploadEnabled
+            ? "EDAstro sharing is enabled for live Commander sessions."
+            : "EDAstro sharing is disabled.";
+
+    /// <summary>Saves EDAstro consent and rolls back the choice if delivery cannot transition.</summary>
+    public bool TrySetEdAstroUploadEnabled(bool value) => TrySetSharingEnabled(value, edAstro: true);
+
     public bool EddnUploadEnabled
     {
         get => preferences.EddnUploadEnabled;
@@ -32,32 +51,66 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     public string EddnConsentSummary =>
         EddnUploadEnabled ? "EDDN sharing is enabled for live Commander sessions." : "EDDN sharing is disabled.";
 
-    public bool TrySetEddnUploadEnabled(bool value)
+    /// <summary>Saves EDDN consent and restores the previous choice if its runtime transition fails.</summary>
+    public bool TrySetEddnUploadEnabled(bool value) => TrySetSharingEnabled(value, edAstro: false);
+
+    /// <summary>Commits one provider's sharing choice independently with persistence-first runtime notification.</summary>
+    private bool TrySetSharingEnabled(bool value, bool edAstro)
     {
-        if (preferences.EddnUploadEnabled == value)
+        bool current = edAstro ? preferences.EdAstroUploadEnabled : preferences.EddnUploadEnabled;
+        if (current == value)
         {
             return true;
         }
-
+        string provider = edAstro ? "EDAstro" : "EDDN";
+        Action<bool> notify = enabled => NotifySharingEnabled(enabled, edAstro);
         NetworkPrivacyPreferences previous = preferences;
-        if (!Update(previous with { EddnUploadEnabled = value }))
+        NetworkPrivacyPreferences updated = edAstro
+            ? previous with
+            {
+                EdAstroUploadEnabled = value,
+            }
+            : previous with
+            {
+                EddnUploadEnabled = value,
+            };
+        if (!Update(updated))
         {
             return false;
         }
-
         try
         {
-            EddnUploadEnabledChanged?.Invoke(value);
+            notify.Invoke(value);
             return true;
         }
         catch (Exception exception)
         {
-            RollBackEddnConsent(previous, exception);
+            RollBackSharingConsent(previous, current, notify, provider, exception);
             return false;
         }
     }
 
-    private void RollBackEddnConsent(NetworkPrivacyPreferences previous, Exception originalException)
+    /// <summary>Notifies the selected provider after a consent change or rollback.</summary>
+    private void NotifySharingEnabled(bool enabled, bool edAstro)
+    {
+        if (edAstro)
+        {
+            EdAstroUploadEnabledChanged?.Invoke(enabled);
+        }
+        else
+        {
+            EddnUploadEnabledChanged?.Invoke(enabled);
+        }
+    }
+
+    /// <summary>Restores saved consent and runtime delivery state after a failed transition, reporting rollback errors.</summary>
+    private void RollBackSharingConsent(
+        NetworkPrivacyPreferences previous,
+        bool enabled,
+        Action<bool> notify,
+        string provider,
+        Exception originalException
+    )
     {
         preferences = previous;
         List<string> rollbackErrors = [];
@@ -69,22 +122,20 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         {
             rollbackErrors.Add("The previous consent could not be saved: " + exception.Message);
         }
-
         try
         {
-            EddnUploadEnabledChanged?.Invoke(previous.EddnUploadEnabled);
+            notify.Invoke(enabled);
         }
         catch (Exception exception)
         {
-            rollbackErrors.Add("The EDDN runtime rollback failed: " + exception.Message);
+            rollbackErrors.Add($"The {provider} runtime rollback failed: " + exception.Message);
         }
-
         OnPropertyChanged(string.Empty);
         StatusMessage =
             rollbackErrors.Count == 0
-                ? "The EDDN sharing choice was not changed because the runtime transition failed; the previous choice was restored: "
+                ? $"The {provider} sharing choice was not changed because the runtime transition failed; the previous choice was restored: "
                     + originalException.Message
-                : "The EDDN sharing choice could not be fully restored after the runtime transition failed: "
+                : $"The {provider} sharing choice could not be fully restored after the runtime transition failed: "
                     + originalException.Message
                     + Environment.NewLine
                     + string.Join(Environment.NewLine, rollbackErrors);

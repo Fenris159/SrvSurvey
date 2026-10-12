@@ -267,6 +267,18 @@ public sealed partial class SettingsView : UserControl
         await dialog.ShowDialog<bool>(owner);
     }
 
+    /// <summary>Opens EDAstro's disclosure window for reviewing and saving the independent opt-in.</summary>
+    private async void ConfigureEdAstroSharing_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (TopLevel.GetTopLevel(this) is not Window owner || DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        var dialog = new EdAstroIntegrationDialog(viewModel.NetworkPrivacy);
+        await dialog.ShowDialog<bool>(owner);
+    }
+
     private async Task OpenSettingsUriAsync(Uri uri, string description)
     {
         if (DataContext is not MainWindowViewModel viewModel)

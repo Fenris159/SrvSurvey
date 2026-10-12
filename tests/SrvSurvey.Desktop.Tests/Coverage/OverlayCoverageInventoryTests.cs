@@ -20,6 +20,7 @@ public sealed partial class OverlayCoverageInventoryTests
         ["PlotFSS"] = "LastFssBodyOverlayWindow.axaml",
         ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
         ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
+        ["PlotExplorationPois"] = "ExplorationPoiOverlayWindow.axaml",
         ["PlotMiningNotifications"] = "MiningActivityOverlayWindow.axaml",
         ["PlotMiningCargo"] = "MiningCargoOverlayWindow.axaml",
         ["PlotMiningReference"] = "MiningReferenceOverlayWindow.axaml",
@@ -127,6 +128,14 @@ public sealed partial class OverlayCoverageInventoryTests
             "PlotGalMap",
             ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"],
             ["tests/SrvSurvey.Desktop.Tests/ViewModels/GalaxyMapOverlayViewModelTests.cs"]
+        ),
+        Map(
+            "PlotExplorationPois",
+            [
+                "src/SrvSurvey.Desktop/ExplorationPoiOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/ExplorationPoiOverlayPresentation.axaml",
+            ],
+            ["tests/SrvSurvey.Desktop.Tests/ViewModels/ExplorationPoiViewModelTests.cs"]
         ),
         Map(
             "PlotGrounded",
@@ -337,10 +346,11 @@ public sealed partial class OverlayCoverageInventoryTests
         ),
     ];
 
+    /// <summary>Verifies inventory contains every supported overlay exactly once.</summary>
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(39, Mappings.Length);
+        Assert.Equal(40, Mappings.Length);
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 

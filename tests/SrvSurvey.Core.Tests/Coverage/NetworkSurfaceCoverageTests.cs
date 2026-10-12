@@ -10,7 +10,9 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
         "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
         "src/SrvSurvey.Core/Exploration/SystemBodyDataClient.cs",
+        "src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs",
         "src/SrvSurvey.Core/Edsm/EdsmPublisher.cs",
+        "src/SrvSurvey.Core/EdAstro/EdAstroPublisher.cs",
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs",
@@ -60,6 +62,11 @@ public sealed class NetworkSurfaceCoverageTests
 
     private static readonly NetworkSurface[] Surfaces =
     [
+        new(
+            "edastro-exploration-pois",
+            ["src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs"],
+            ["tests/SrvSurvey.Core.Tests/Exploration/EdAstroPoiClientTests.cs"]
+        ),
         new(
             "anonymous-daily-active-users",
             ["src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs"],
@@ -148,6 +155,11 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Network/EddnOutboxTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnTransportTests.cs",
             ]
+        ),
+        new(
+            "edastro-publication",
+            ["src/SrvSurvey.Core/EdAstro/EdAstroPublisher.cs"],
+            ["tests/SrvSurvey.Core.Tests/EdAstro/EdAstroPublisherTests.cs"]
         ),
         new(
             "inara-publication",

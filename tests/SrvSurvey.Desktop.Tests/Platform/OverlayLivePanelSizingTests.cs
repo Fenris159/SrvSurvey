@@ -24,6 +24,7 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotFSS"] = typeof(LastFssBodyOverlayWindow),
         ["PlotFSSInfo"] = typeof(FssInfoOverlayWindow),
         ["PlotGalMap"] = typeof(GalaxyMapOverlayWindow),
+        ["PlotExplorationPois"] = typeof(ExplorationPoiOverlayWindow),
         ["PlotMiningNotifications"] = typeof(MiningActivityOverlayWindow),
         ["PlotMiningFiregroups"] = typeof(MiningActivityOverlayWindow),
         ["PlotMiningCargo"] = typeof(MiningCargoOverlayWindow),

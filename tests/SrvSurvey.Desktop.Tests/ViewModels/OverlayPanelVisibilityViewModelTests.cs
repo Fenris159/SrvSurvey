@@ -83,6 +83,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         Assert.True(new OverlayPanelVisibilitySettingsStore(GetSettingsPath()).Load()["PlotMineMap"]);
     }
 
+    /// <summary>Verifies settings categories preserve established panel groups.</summary>
     [Fact]
     public void SettingsCategoriesPreserveEstablishedPanelGroups()
     {
@@ -97,6 +98,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
                 "PlotFSS",
                 "PlotFSSInfo",
                 "PlotGalMap",
+                "PlotExplorationPois",
                 "PlotSphericalSearch",
                 "PlotSysStatus",
             ],

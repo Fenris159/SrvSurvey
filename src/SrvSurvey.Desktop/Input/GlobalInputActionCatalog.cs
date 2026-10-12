@@ -71,6 +71,7 @@ public enum GlobalInputAction
     ToggleMineMapVisibility,
     ToggleSurfaceMiningSurveyVisibility,
     ToggleVrOverlayInteraction,
+    ToggleExplorationPoisVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -393,6 +394,12 @@ public static class GlobalInputActionCatalog
             "toggleGalaxyMapSystemIntelligenceVisibility",
             "Galaxy Map system intelligence",
             "PlotGalMap"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleExplorationPoisVisibility,
+            "toggleExplorationPoisVisibility",
+            "Exploration POIs",
+            "PlotExplorationPois"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleSurfaceSurveyVisibility,
