@@ -170,18 +170,20 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
-    /// <summary>Preserves the transport-start consent fence with immediate and normally batched uploads.</summary>
+    /// <summary>Preserves the transport-start consent fence with immediate and explicitly timed batched uploads.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DisablingConsentWaitsUntilAuthorizedTransportHasStarted(bool useDefaultBatchInterval)
     {
+        var clock = new BatchClock();
         var handler = new TransportStartBlockingHandler();
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher(
             "1.0.0",
             "test-key",
             client,
+            timeProvider: clock,
             batchInterval: useDefaultBatchInterval ? null : TimeSpan.Zero
         );
         publisher.SetEnabled(true);
@@ -196,9 +198,20 @@ public sealed class VoxStellarPublisherTests
             }
         );
         Task? disableTask = null;
+        Task? batchTick = null;
         try
         {
-            // Startup includes the five-second batch interval and CI worker scheduling.
+            if (useDefaultBatchInterval)
+            {
+                ManualTimer timer = await clock.NextTimerAsync();
+                batchTick = Task.Factory.StartNew(
+                    timer.Fire,
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default
+                );
+            }
+
             await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
             var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -222,6 +235,10 @@ public sealed class VoxStellarPublisherTests
             if (disableTask is not null)
             {
                 await disableTask.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            if (batchTick is not null)
+            {
+                await batchTick.WaitAsync(TimeSpan.FromSeconds(10));
             }
         }
     }

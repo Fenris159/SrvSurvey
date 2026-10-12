@@ -183,6 +183,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         Assert.True(Directory.Exists(candidate));
     }
 
+    /// <summary>Uses explicit worker-start and release signals so cleanup serialization does not depend on runner timing.</summary>
     [Fact]
     public async Task CoordinatorSerializesCleanupOperations()
     {
@@ -195,7 +196,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
             "2.1.3.0-rc.20",
             Now.AddDays(-8)
         );
-        using var entered = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var release = new ManualResetEventSlim();
         var coordinator = new ReleaseUpdateHistoryCleanupCoordinator();
         Task<ReleaseInstallationCleanupResult> first = coordinator.CleanInstallationAsync(
@@ -205,24 +206,37 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
                 minimumAge: TimeSpan.Zero,
                 path =>
                 {
-                    entered.Set();
-                    release.Wait(TimeSpan.FromSeconds(2));
+                    entered.TrySetResult();
+                    release.Wait();
                     Directory.Delete(path, recursive: true);
                 }
             ),
             installation
         );
-        Assert.True(entered.Wait(TimeSpan.FromSeconds(2)));
+        Task<ReleasePackageCacheCleanupResult>? second = null;
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
-        Task<ReleasePackageCacheCleanupResult> second = coordinator.CleanPackageCacheAsync(
-            new ReleasePackageCacheCleaner(new FixedTimeProvider(Now), retainedVersions: 0, minimumAge: TimeSpan.Zero),
-            dataDirectory
-        );
-        Assert.False(second.IsCompleted);
-
-        release.Set();
-        await first;
-        await second;
+            second = coordinator.CleanPackageCacheAsync(
+                new ReleasePackageCacheCleaner(
+                    new FixedTimeProvider(Now),
+                    retainedVersions: 0,
+                    minimumAge: TimeSpan.Zero
+                ),
+                dataDirectory
+            );
+            Assert.False(second.IsCompleted);
+        }
+        finally
+        {
+            release.Set();
+            await first.WaitAsync(TimeSpan.FromSeconds(10));
+            if (second is not null)
+            {
+                await second.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+        }
     }
 
     public void Dispose()
