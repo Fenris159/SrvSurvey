@@ -8721,12 +8721,12 @@
       "translation": "EDAstro-Karte"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "EDAstro betreibt den Empfangsdienst. Die Akzeptanz einer neuen Anwendungsidentität hängt vom Anbieter ab; Abgelehnte Einsendungen unterliegen weiterhin einer Abklingzeit und nicht wiederholten sofortigen Anfragen."
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "Die EDAstro-Verarbeitung wurde von der Journalverfolgung isoliert: {0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro erfordert keine Registrierung oder Freigabe der Anwendung. Es werden die vom Dienst angeforderten Ereignistypen gesendet; abgelehnte Datenpakete werden protokolliert und nach einer Wartezeit erneut gesendet."
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -17957,8 +17957,8 @@
       "translation": "Es können nur Steuerelemente aktiviert werden, die bereits durch ein Live-Overlay SrvSurvey angezeigt werden. Bei der VR-Kalibrierung werden weiterhin „Overlays anpassen“ und die entsprechende Verknüpfung verwendet."
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "Nur von EDAstro angeforderte Ereignistypen in dieser offengelegten Liste: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic und CodexEntry. Die Liste des Anbieters kann sich ändern; Nicht unterstützte Typen sind ausgeschlossen."
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "Nur von EDAstro angeforderte Ereignistypen in dieser offengelegten Liste: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic und CodexEntry. Neu angeforderte Typen, die diese Version nicht unterstützt, werden im Anwendungsprotokoll aufgeführt und nicht hochgeladen."
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -45971,12 +45971,12 @@
       "translation": "Mapa EDAstro"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "EDAstro opera el servicio de recepción. La aceptación de una nueva identidad de aplicación depende del proveedor; los envíos rechazados permanecen sujetos a un tiempo de espera en lugar de solicitudes inmediatas repetidas."
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "El procesamiento de EDAstro se aisló del seguimiento del diario: {0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro no requiere registro ni aprobación de la aplicación. Los envíos siguen los tipos de eventos solicitados por el servicio; los lotes rechazados se registran y se vuelven a intentar tras una espera."
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -55207,8 +55207,8 @@
       "translation": "Solo se pueden activar los controles que ya se muestran en una superposición en vivo SrvSurvey. La calibración de realidad virtual todavía utiliza superposiciones de ajuste y su acceso directo dedicado."
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "Solo los tipos de eventos solicitados por EDAstro dentro de esta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic y CodexEntry. La lista de proveedores puede cambiar; Se excluyen los tipos no admitidos."
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "Solo los tipos de eventos solicitados por EDAstro dentro de esta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic y CodexEntry. Los tipos solicitados recientemente que esta versión no admite se enumeran en el registro de la aplicación y no se cargan."
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -83221,12 +83221,12 @@
       "translation": "Carte EDAstro"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "EDAstro exploite le service de réception. L'acceptation d'une nouvelle identité d'application dépend du fournisseur ; les soumissions rejetées restent soumises à un délai de récupération plutôt qu'à des demandes immédiates répétées."
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "Le traitement EDAstro a été isolé du suivi du journal : {0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro ne nécessite aucune inscription ni approbation de l'application. Les envois suivent les types d'événements demandés par le service ; les lots refusés sont consignés dans le journal et leur envoi est retenté après un délai."
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -92457,8 +92457,8 @@
       "translation": "Seules les commandes déjà affichées par une superposition en direct SrvSurvey peuvent être activées. L’étalonnage VR utilise toujours les superpositions Ajuster et son raccourci dédié."
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "Uniquement les types d'événements demandés par EDAstro dans cette liste divulguée : CarrierStats, CarrierJumpRequest, Docked, ScanOrganic et CodexEntry. La liste des prestataires peut changer ; les types non pris en charge sont exclus."
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "Uniquement les types d'événements demandés par EDAstro dans cette liste divulguée : CarrierStats, CarrierJumpRequest, Docked, ScanOrganic et CodexEntry. Les types nouvellement demandés que cette version ne prend pas en charge sont répertoriés dans le journal des applications et ne sont pas téléchargés."
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -120471,12 +120471,12 @@
       "translation": "Mapa EDAstro"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "A EDAstro opera o serviço de recebimento. A aceitação de uma nova identidade de aplicativo depende do provedor; Os envios rejeitados permanecem sujeitos a um período de espera, em vez de solicitações imediatas repetidas."
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "O processamento EDAstro foi isolado do rastreamento do diário: {0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro não exige registro nem aprovação do aplicativo. Os envios seguem os tipos de evento solicitados pelo serviço; os lotes rejeitados são registrados no log e reenviados após um intervalo."
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -129707,8 +129707,8 @@
       "translation": "Somente os controles já mostrados por uma sobreposição ao vivo SrvSurvey podem ser ativados. A calibração VR ainda usa sobreposições de ajuste e seu atalho dedicado."
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "Somente tipos de eventos solicitados pela EDAstro nesta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic e CodexEntry. A lista do provedor pode mudar; tipos não suportados são excluídos."
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "Somente tipos de eventos solicitados pela EDAstro nesta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic e CodexEntry. Os tipos recentemente solicitados que esta versão não suporta são listados no log do aplicativo e não são carregados."
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -157721,12 +157721,12 @@
       "translation": "Карта ЭДАстро"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "ЭДАстро управляет службой приема. Принятие нового идентификатора приложения зависит от поставщика; отклоненные заявки по-прежнему подлежат восстановлению, а не повторным немедленным запросам."
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "Обработка EDAstro была изолирована от отслеживания журнала: {0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro не требует регистрации или одобрения приложения. Отправляемые данные соответствуют типам событий, запрошенным службой; отклоненные пакеты записываются в журнал, и их отправка повторяется после паузы."
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -166957,8 +166957,8 @@
       "translation": "Могут быть активированы только элементы управления, уже отображенные в реальном наложении SrvSurvey. Калибровка VR по-прежнему использует наложения настройки и специальный ярлык."
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "Только типы событий, запрошенные EDAstro, в этом раскрытом списке: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic и CodexEntry. Список провайдеров может меняться; неподдерживаемые типы исключены."
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "Только типы событий, запрошенные EDAstro, в этом раскрытом списке: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic и CodexEntry. Новые запрошенные типы, которые не поддерживаются этой версией, перечислены в журнале приложения и не загружаются."
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -194971,12 +194971,12 @@
       "translation": "EDAastro地图"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "EDAstro 运营接收服务。是否接受新的应用程序身份取决于提供商；被拒绝的提交仍需等待冷却时间，而不是重复立即请求。"
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "EDAstro 处理与日志跟踪隔离：{0}"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "EDAstro 不需要应用程序注册或批准。提交遵循服务请求的事件类型；被拒绝的批次会记录到日志中，并在等待一段时间后重试。"
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -204207,8 +204207,8 @@
       "translation": "仅可激活实时 SrvSurvey 叠加层已显示的控件。 VR 校准仍然使用调整叠加及其专用快捷方式。"
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "此公开列表中仅 EDAstro 请求的事件类型：CarrierStats、CarrierJumpRequest、Docked、ScanOrganic 和 CodexEntry。提供商的列表可能会发生变化；不支持的类型被排除在外。"
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "此公开列表中仅 EDAstro 请求的事件类型：CarrierStats、CarrierJumpRequest、Docked、ScanOrganic 和 CodexEntry。该版本不支持的新请求类型会在应用程序日志中列出，并且不会上传。"
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
@@ -232221,12 +232221,12 @@
       "translation": "* EDASTRO MAP >>>!"
     },
     {
-      "source": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-      "translation": "* EDASTRO OPERATES THE RECEIVING SERVICE. ACCEPTANCE OF A NEW APPLICATION IDENTITY DEPENDS ON THE PROVIDER; REJECTED SUBMISSIONS REMAIN SUBJECT TO COOLDOWN RATHER THAN REPEATED IMMEDIATE REQUESTS. >>>!"
-    },
-    {
       "source": "EDAstro processing was isolated from journal tracking: {0}",
       "translation": "* EDASTRO PROCESSING WAS ISOLATED FROM JOURNAL TRACKING: {0} >>>!"
+    },
+    {
+      "source": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+      "translation": "* EDASTRO REQUIRES NO APPLICATION REGISTRATION OR APPROVAL. SUBMISSIONS FOLLOW THE EVENT TYPES REQUESTED BY THE SERVICE; REJECTED BATCHES ARE LOGGED AND RETRIED AFTER A COOLDOWN. >>>!"
     },
     {
       "source": "EDAstro sharing is disabled.",
@@ -241457,8 +241457,8 @@
       "translation": "* ONLY CONTROLS ALREADY SHOWN BY A LIVE SRVSURVEY OVERLAY CAN BE ACTIVATED. VR CALIBRATION STILL USES ADJUST OVERLAYS AND ITS DEDICATED SHORTCUT. >>>!"
     },
     {
-      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider's list can change; unsupported types are excluded.",
-      "translation": "* ONLY EVENT TYPES REQUESTED BY EDASTRO WITHIN THIS DISCLOSED LIST: CARRIERSTATS, CARRIERJUMPREQUEST, DOCKED, SCANORGANIC, AND CODEXENTRY. THE PROVIDER'S LIST CAN CHANGE; UNSUPPORTED TYPES ARE EXCLUDED. >>>!"
+      "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
+      "translation": "* ONLY EVENT TYPES REQUESTED BY EDASTRO WITHIN THIS DISCLOSED LIST: CARRIERSTATS, CARRIERJUMPREQUEST, DOCKED, SCANORGANIC, AND CODEXENTRY. NEWLY REQUESTED TYPES THAT THIS VERSION DOES NOT SUPPORT ARE LISTED IN THE APPLICATION LOG AND ARE NOT UPLOADED. >>>!"
     },
     {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",

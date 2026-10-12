@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -19,6 +20,76 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ExplorationPoiViewTests
 {
+    /// <summary>Checks empty startup, loaded details and cleared selection without nullable binding errors.</summary>
+    [AvaloniaFact]
+    public async Task EmptyAndClearedSelectionDoesNotLogBindingErrors()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-poi-bindings-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        using var model = new ExplorationPoiViewModel(
+            new PreviewClient(),
+            new ExplorationPoiSettingsStore(Path.Combine(directory, "ui.json"))
+        );
+        ILogSink? previousSink = Logger.Sink;
+        var bindingLog = new BindingLogSink();
+        Logger.Sink = bindingLog;
+        Window? window = null;
+        try
+        {
+            var view = new ExplorationPoiView { DataContext = model };
+            window = new Window
+            {
+                Content = view,
+                Width = 940,
+                Height = 1020,
+            };
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Assert.Null(model.Selected);
+            Assert.Empty(bindingLog.Messages);
+
+            model.UpdateContext("Sol", 1, new(0, 0, 0), null, []);
+            model.SetExternalEnabled(true);
+            await model.PendingLoad;
+            Dispatcher.UIThread.RunJobs();
+            ExplorationPoiItemViewModel selected = Assert.IsType<ExplorationPoiItemViewModel>(model.Selected);
+            TextBlock[] details = view.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text =>
+                    text.GetVisualAncestors()
+                        .OfType<StackPanel>()
+                        .Any(panel =>
+                            panel
+                                .Children.OfType<ScrollViewer>()
+                                .Any(scroller => scroller.Name == "PoiDescriptionScroller")
+                        )
+                )
+                .Where(text =>
+                    text.Text == selected.Name || text.Text == selected.VotesText || text.Text == selected.Summary
+                )
+                .ToArray();
+            Assert.Equal(3, details.Length);
+            Assert.True(Assert.Single(details, text => text.Text == selected.Summary).IsEffectivelyVisible);
+
+            model.Selected = model.Items[1];
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(model.Items[1].Summary, details[2].Text);
+            Assert.False(details[2].IsVisible);
+
+            model.AttractionQuery = "No matching attraction";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Null(model.Selected);
+            Assert.False(model.HasSelection);
+            Assert.Empty(bindingLog.Messages);
+        }
+        finally
+        {
+            window?.Close();
+            Logger.Sink = previousSink;
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     /// <summary>Verifies browser fills available width and aligns headers with rows without overlapping scrollbars.</summary>
     [AvaloniaFact]
     public async Task BrowserFillsAvailableWidthAndAlignsHeadersWithRowsWithoutOverlappingScrollbars()
@@ -151,6 +222,42 @@ public sealed class ExplorationPoiViewTests
         Assert.True(poi.IsEnabled);
     }
 
+    /// <summary>Records binding warnings so hidden controls cannot silently dereference an absent selection.</summary>
+    private sealed class BindingLogSink : ILogSink
+    {
+        /// <summary>Retains captured binding diagnostics for assertions across selection changes.</summary>
+        public List<string> Messages { get; } = [];
+
+        /// <summary>Captures binding warnings and errors while ignoring other diagnostic areas.</summary>
+        public bool IsEnabled(LogEventLevel level, string area) => level >= LogEventLevel.Warning && area == "Binding";
+
+        /// <summary>Records a binding diagnostic without structured values.</summary>
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate);
+            }
+        }
+
+        /// <summary>Records the binding path and error details alongside a structured diagnostic.</summary>
+        public void Log(
+            LogEventLevel level,
+            string area,
+            object? source,
+            string messageTemplate,
+            params object?[] propertyValues
+        )
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(
+                    messageTemplate + " " + string.Join(" ", propertyValues.Select(value => value?.ToString()))
+                );
+            }
+        }
+    }
+
     private sealed class PreviewClient : IExplorationPoiClient
     {
         /// <summary>Provides get async for the isolated test fixture.</summary>
@@ -172,7 +279,7 @@ public sealed class ExplorationPoiViewTests
                                 new GalacticCoordinate(id, 0, 0),
                                 "Stellar Features",
                                 "Historical",
-                                "Community synopsis of this attraction.",
+                                id == 2 ? string.Empty : "Community synopsis of this attraction.",
                                 "Full description and visiting information.",
                                 6.8,
                                 4,

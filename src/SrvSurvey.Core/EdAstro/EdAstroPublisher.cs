@@ -45,6 +45,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     private readonly HashSet<string> seen = new(StringComparer.Ordinal);
     private readonly Queue<string> seenOrder = new();
     private HashSet<string> acceptedEvents = new(StringComparer.Ordinal);
+    private HashSet<string> unsupportedEvents = new(StringComparer.Ordinal);
     private DateTimeOffset eventListExpiresAt;
     private DateTimeOffset nextRequestAt;
     private DateTimeOffset nextSummaryAt;
@@ -340,6 +341,9 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         string[] names =
             JsonSerializer.Deserialize<string[]>(bytes) ?? throw new InvalidDataException("Missing event list.");
         var accepted = names.Where(EdAstroJournalData.SupportedEvents.Contains).ToHashSet(StringComparer.Ordinal);
+        var unsupported = names
+            .Where(name => !string.IsNullOrWhiteSpace(name) && !EdAstroJournalData.SupportedEvents.Contains(name))
+            .ToHashSet(StringComparer.Ordinal);
         lock (sync)
         {
             if (!IsCurrent(captured))
@@ -351,6 +355,13 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             failureCount = 0;
             queue.RemoveAll(item => !accepted.Contains(GetEventName(item.Json)));
             lastProblem = null;
+            if (unsupported.Count > 0 && !unsupported.SetEquals(unsupportedEvents))
+            {
+                WriteLog(
+                    $"EDAstro requests event types this version does not support: {string.Join(", ", unsupported.Order(StringComparer.Ordinal))}. These events are not uploaded."
+                );
+            }
+            unsupportedEvents = unsupported;
         }
     }
 
@@ -448,7 +459,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         if (status != HttpStatusCode.OK || apiStatus is not (200 or 401))
         {
             DeferFailure(
-                "EDAstro rejected a journal batch; sharing is paused for fifteen minutes. Check the application identity and provider support."
+                "EDAstro rejected a journal batch; sharing will retry in fifteen minutes. Queued reports are retained."
             );
             nextRequestAt = utcNow() + TimeSpan.FromMinutes(15);
             return;

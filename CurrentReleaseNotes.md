@@ -1,4 +1,7 @@
-# SrvSurvey-XP 2.1.3.0-rc.64
+# SrvSurvey-XP 2.1.3.0-rc.64.1
+
+RC.64.1 improves EDAstro sharing diagnostics and clears harmless Exploration
+POI selection warnings. It includes the RC.64 and RC.63 changes below.
 
 RC.64 patches colonization overlay icon sizing and badge controls, and restores
 next-jump distances for individually selected destinations. It also includes
@@ -11,6 +14,17 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## What's changed
 
+- **See when EDAstro requests a new data type.** The application log
+  lists event types requested by EDAstro that this version cannot send. The
+  notice appears when that unsupported list changes, without repeating on
+  identical daily refreshes. Sharing continues to send only the supported,
+  disclosed event types.
+- **Understand EDAstro sharing requirements.** Configure EDAstro Sharing now
+  explains that no application registration or approval is needed. Rejected
+  batches are retained, and the log explains when sharing will retry.
+- **Keep Exploration POI selection quiet.** Opening the workspace or filtering
+  away every result no longer logs warnings about missing selected-POI details.
+  Selecting another attraction continues to show its information normally.
 - **Scale colonization checkmarks with the other icons.** Completion checkmarks
   now follow the Icons slider alongside row badges. Larger icons can extend
   beyond row edges without increasing row height; commodity and cargo-count
@@ -56,20 +70,20 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## Update channel and packages
 
-RC.64 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.1 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64`
-- Tag: `xp2-v2.1.3.0-rc.64`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.1`
+- Tag: `xp2-v2.1.3.0-rc.64.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.1-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.1-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
-This remains a development preview. The EDAstro upload protocol uses no personal
-API key; acceptance of the SrvSurvey-XP application identity depends on EDAstro.
-POI catalogue use and journal sharing have separate controls.
+This remains a development preview. The EDAstro upload protocol requires no
+personal API key or application approval. POI catalogue use and journal sharing
+have separate controls; journal sharing remains an opt-in choice.

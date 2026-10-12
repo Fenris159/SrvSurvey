@@ -17486,20 +17486,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
-    "Text": "EDAstro operates the receiving service. Acceptance of a new application identity depends on the provider; rejected submissions remain subject to cooldown rather than repeated immediate requests.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
-  },
-  {
     "Text": "EDAstro processing was isolated from journal tracking: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
+    "Text": "EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
     "Text": "EDAstro sharing is disabled.",
@@ -36024,7 +36024,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. The provider\u0027s list can change; unsupported types are excluded.",
+    "Text": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
