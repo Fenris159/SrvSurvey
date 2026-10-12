@@ -1,4 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.63
+# SrvSurvey-XP 2.1.3.0-rc.64
+
+RC.64 patches colonization overlay icon sizing and badge controls, and restores
+next-jump distances for individually selected destinations. It also includes
+the EDAstro features introduced in RC.63 below.
 
 RC.63 adds EDAstro exploration POIs to the workspace and existing navigation
 overlays, with attraction photos, bookmarks and an optional current-system
@@ -7,6 +11,20 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## What's changed
 
+- **Scale colonization checkmarks with the other icons.** Completion checkmarks
+  now follow the Icons slider alongside row badges. Larger icons can extend
+  beyond row edges without increasing row height; commodity and cargo-count
+  font sizes determine the height instead.
+- **Choose a quieter colonization table.** Carrier badges now read LOAD and
+  READY. READY still requires enough cargo on the carrier itself. The new Hide
+  row badges option hides status and assignment labels while keeping completion
+  checkmarks, cargo counts and loading highlights. Changes apply immediately to
+  live overlays and the position preview, and are saved for future sessions.
+- **See distances when selecting destinations individually.** Next-jump
+  information calculates the distance once matching destination coordinates are
+  available from the existing system lookup. Plotted routes also retain distance
+  information for their final jump, and arriving does not replace the displayed
+  jump distance with zero.
 - **Explore EDAstro attractions.** The Exploration POIs · EDAstro workspace
   searches systems or attractions, with system autocomplete and an editable
   reference system for nearby-radius searches. Category, score, rarity and
@@ -38,15 +56,15 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## Update channel and packages
 
-RC.63 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.63`
-- Tag: `xp2-v2.1.3.0-rc.63`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.63-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.63-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.63-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.63-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64`
+- Tag: `xp2-v2.1.3.0-rc.64`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

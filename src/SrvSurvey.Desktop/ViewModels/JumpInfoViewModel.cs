@@ -25,6 +25,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private string? currentSystemName;
     private long? currentSystemAddress;
     private GalacticCoordinate? currentPosition;
+    private GalacticCoordinate? displayedOriginPosition;
     private NavRouteSnapshot? navRoute;
     private FollowRouteDocument? followedRoute;
     private FollowRouteDocument? displayedFollowedRoute;
@@ -222,8 +223,25 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 : "DIRECT TARGET"
         );
 
+    /// <summary>Shows the plotted-route total or calculates an individual target's distance from matching system metadata.</summary>
     public string TotalDistance =>
-        routePlan is { Legs.Count: > 0 } plan ? $"{plan.TotalDistanceLy:N1} LY" : "DISTANCE UNAVAILABLE";
+        routePlan is { Legs.Count: > 0 } plan ? $"{plan.TotalDistanceLy:N1} LY" : CreateDirectDistanceText();
+
+    /// <summary>Uses the displayed jump's origin so arriving while the panel is held cannot change its distance to zero.</summary>
+    private string CreateDirectDistanceText()
+    {
+        if (
+            routePlan is not { Source: JumpInfoRouteSource.Direct } plan
+            || displayedOriginPosition is not { } origin
+            || summary is not { Position: { } targetPosition } targetSummary
+            || !SameTarget(plan.Target, new JumpTarget(targetSummary.SystemName, targetSummary.SystemAddress))
+        )
+        {
+            return "DISTANCE UNAVAILABLE";
+        }
+
+        return $"{origin.DistanceTo(targetPosition):N1} LY";
+    }
 
     public IReadOnlyList<JumpInfoRouteLeg> RouteLegs => routePlan?.Legs ?? [];
 
@@ -554,6 +572,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         );
         UpdateInFlightStarClass(nextPlan);
         routePlan = PreserveInFlightStarClass(nextPlan);
+        displayedOriginPosition = currentPosition;
         RaisePlanProperties();
 
         JumpTarget? nextTarget = routePlan?.Target;
@@ -666,6 +685,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Refreshes the bound next-jump summary and its matching attraction context.</summary>
     private void RefreshSummaryProperties()
     {
+        OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(DiscoveryText));
         OnPropertyChanged(nameof(HasDiscoveryText));
         OnPropertyChanged(nameof(TrafficText));

@@ -57,6 +57,7 @@ public static class JumpInfoRoutePlanner
 {
     private const string ScoopableStarClasses = "KGBFOAM";
 
+    /// <summary>Builds jump guidance from plotted or followed routes, retaining coordinates for a single remaining game jump.</summary>
     public static JumpInfoRoutePlan? Create(JumpInfoRoutePlannerRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -91,6 +92,17 @@ public static class JumpInfoRoutePlanner
         }
 
         RoutePoint? targetPoint = FindTarget(routePoints, target);
+        // A single remaining jump still supplies usable coordinates when no followed route contains the target.
+        if (targetPoint is null && navPoints.Count >= 2)
+        {
+            targetPoint = FindTarget(navPoints, target);
+            if (targetPoint is not null)
+            {
+                routePoints = navPoints;
+                source = JumpInfoRouteSource.NavRoute;
+            }
+        }
+
         if (targetPoint is not null && string.IsNullOrWhiteSpace(target.StarClass))
         {
             target = target with { StarClass = targetPoint.StarClass };

@@ -48,6 +48,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
         )
         {
             HideCollapsedGroups = GetBoolean(overlay, "HideCollapsedGroups", defaults.HideCollapsedGroups),
+            HideRowBadges = GetBoolean(overlay, "HideRowBadges", defaults.HideRowBadges),
         };
     }
 
@@ -144,6 +145,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
             overlay["InlineFleetCarrierCargo"] = preferences.InlineFleetCarrierCargo;
             overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
             overlay["HideCollapsedGroups"] = preferences.HideCollapsedGroups;
+            overlay["HideRowBadges"] = preferences.HideRowBadges;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
             overlay["UseCompactScrollingCommoditiesList"] = preferences.UseCompactScrollingCommoditiesList;
         });
@@ -311,6 +313,9 @@ public sealed record ColonizationOverlayPreferences(
 {
     /// <summary>Omits collapsed categories entirely instead of displaying their heading and summary.</summary>
     public bool HideCollapsedGroups { get; init; }
+
+    /// <summary>Hides status and assignment labels beside commodities while retaining completion checkmarks.</summary>
+    public bool HideRowBadges { get; init; }
 
     public static ColonizationOverlayPreferences Default { get; } =
         new(

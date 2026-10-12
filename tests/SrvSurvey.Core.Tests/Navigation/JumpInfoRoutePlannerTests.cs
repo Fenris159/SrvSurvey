@@ -7,6 +7,30 @@ namespace SrvSurvey.Core.Tests.Navigation;
 
 public sealed class JumpInfoRoutePlannerTests
 {
+    /// <summary>Retains the game's known coordinates when its route contains just the current system and next jump.</summary>
+    [Fact]
+    public void SingleJumpNavRouteStillProvidesDistance()
+    {
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
+            new JumpInfoRoutePlannerRequest
+            {
+                FsdTarget = new JumpTarget("Alpha", 2, "K"),
+                CurrentSystemName = "Sol",
+                CurrentSystemAddress = 1,
+                CurrentPosition = new GalacticCoordinate(0, 0, 0),
+                NavRoute = new NavRouteSnapshot(
+                    DateTimeOffset.UtcNow,
+                    "NavRoute",
+                    [Entry("Sol", 1, 0, "G"), Entry("Alpha", 2, 10, "K")]
+                ),
+            }
+        );
+
+        Assert.NotNull(plan);
+        Assert.Single(plan.Legs);
+        Assert.Equal(10, plan.TotalDistanceLy);
+    }
+
     [Fact]
     public void JournalFsdTargetTakesPrecedenceOverStatusDestination()
     {

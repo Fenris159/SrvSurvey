@@ -52,6 +52,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
         Assert.False(store.LoadOverlayPreferences().UseCompactScrollingCommoditiesList);
         Assert.False(store.LoadOverlayPreferences().HideCollapsedGroups);
+        Assert.False(store.LoadOverlayPreferences().HideRowBadges);
 
         ColonizationOverlayPreferences updated = ColonizationOverlayPreferences.Default with
         {
@@ -60,6 +61,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             InlineFleetCarrierCargo = true,
             CollapseCoveredGroups = false,
             HideCollapsedGroups = true,
+            HideRowBadges = true,
             HighlightAlmostCoveredFleetCarrierLoads = true,
             UseCompactScrollingCommoditiesList = true,
         };
@@ -81,6 +83,20 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
 
         Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideCollapsedGroups);
+    }
+
+    /// <summary>Keeps row badges enabled for older documents and malformed values of the new preference.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"HideCollapsedGroups\":true}")]
+    [InlineData("{\"HideRowBadges\":\"invalid\"}")]
+    public void OlderOverlayPreferencesKeepRowBadgesVisible(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideRowBadges);
     }
 
     [Fact]
