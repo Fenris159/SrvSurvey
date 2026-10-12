@@ -42,6 +42,9 @@ public sealed class ColonizationOverlaySettingsPresentationTests
             CheckBox collapse = view.FindControl<CheckBox>("CollapseCoveredCommodityGroupsCheckBox")!;
             CheckBox hide = view.FindControl<CheckBox>("HideCollapsedCommodityGroupsCheckBox")!;
             CheckBox autoHide = view.FindControl<CheckBox>("ColonizationAutoHideUntilDockedCheckBox")!;
+            CheckBox hideBadges = view.FindControl<CheckBox>("HideCommodityRowBadgesCheckBox")!;
+            Assert.Equal("Hide row badges", hideBadges.Content);
+            Assert.Equal(false, hideBadges.IsChecked);
             Assert.Equal("Auto hide colonization overlay until docked", autoHide.Content);
             Assert.Equal(true, autoHide.IsChecked);
             autoHide.IsChecked = false;
@@ -62,6 +65,14 @@ public sealed class ColonizationOverlaySettingsPresentationTests
             Assert.Contains("hidden", main.Colonization.CommodityOverlay.CollapseModeText);
             var store = new ColonizationSettingsStore(main.AppDataPaths.UiSettingsPath);
             Assert.True(store.LoadOverlayPreferences().HideCollapsedGroups);
+            hideBadges.IsChecked = true;
+            Assert.True(main.Colonization.HideCommodityRowBadges);
+            Assert.Contains(nameof(ColonizationViewModel.HideCommodityRowBadges), notifications);
+            Assert.True(main.Colonization.CommodityOverlay.Preferences.HideRowBadges);
+            Assert.True(store.LoadOverlayPreferences().HideRowBadges);
+            hideBadges.IsChecked = false;
+            Assert.False(main.Colonization.HideCommodityRowBadges);
+            Assert.False(store.LoadOverlayPreferences().HideRowBadges);
 
             collapse.IsChecked = false;
             Assert.False(hide.IsEnabled);

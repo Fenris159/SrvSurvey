@@ -1339,6 +1339,11 @@
                       Content="Hide collapsed groups" />
             <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
                       Content="Use compact/scrolling commodities list" />
+            <CheckBox x:Name="HideCommodityRowBadgesCheckBox"
+                      IsChecked="{Binding Colonization.HideCommodityRowBadges, Mode=TwoWay}"
+                      Content="Hide row badges" />
+            <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                       Text="Hide status and assignment labels beside commodity names. Completion checkmarks remain visible." />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="10">
             <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"

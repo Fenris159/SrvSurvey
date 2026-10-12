@@ -208,7 +208,22 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal("+4", polymers.OnFleetCarriersText);
         Assert.True(polymers.IsSatisfied);
         Assert.True(polymers.IsFleetCarrierLoadHighlighted);
-        Assert.Equal("FC LOAD", polymers.MarketBadgeText);
+        Assert.Equal("LOAD", polymers.MarketBadgeText);
+        Assert.True(polymers.HasMarketBadge);
+        colonization.HideCommodityRowBadges = true;
+        Assert.All(
+            preview.Groups.SelectMany(group => group.Rows),
+            row =>
+            {
+                Assert.False(row.HasMarketBadge);
+                Assert.False(row.HasAssignment);
+            }
+        );
+        Assert.True(settings.LoadOverlayPreferences().HideRowBadges);
+        colonization.HideCommodityRowBadges = false;
+        Assert.True(
+            preview.Groups.SelectMany(group => group.Rows).Single(row => row.Commodity == "polymers").HasMarketBadge
+        );
         ScrollViewer scroll = Assert.Single(window.RuntimePresentation.GetVisualDescendants().OfType<ScrollViewer>());
         Assert.Equal(300, scroll.MaxHeight);
         Assert.True(

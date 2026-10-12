@@ -243,6 +243,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         set => SaveOverlayPreferences(overlayPreferences with { HideCollapsedGroups = value });
     }
 
+    /// <summary>Persists row-badge visibility and updates live and editor commodity presentations immediately.</summary>
+    public bool HideCommodityRowBadges
+    {
+        get => overlayPreferences.HideRowBadges;
+        set => SaveOverlayPreferences(overlayPreferences with { HideRowBadges = value });
+    }
+
     public bool UseCompactScrollingCommoditiesList
     {
         get => overlayPreferences.UseCompactScrollingCommoditiesList;

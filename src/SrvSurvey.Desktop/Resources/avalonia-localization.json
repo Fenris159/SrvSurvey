@@ -10053,14 +10053,6 @@
       "translation": "FC Diff zeigt Trägerüberschuss (+) oder -mangel (-) an. Der Überschuss einer Ware kann eine andere nicht decken."
     },
     {
-      "source": "FC LOAD",
-      "translation": "FC-LADUNG"
-    },
-    {
-      "source": "FC READY",
-      "translation": "FC BEREIT"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "FC-Route-Arbeitsbereich"
     },
@@ -12437,6 +12429,14 @@
       "translation": "Ergebnisse ausblenden, die die Mineralschwellenwerte nicht erreichen"
     },
     {
+      "source": "Hide row badges",
+      "translation": "Reihenabzeichen ausblenden"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "Status- und Zuordnungsbezeichnungen neben Warennamen ausblenden. Abschlusshäkchen bleiben sichtbar."
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "Umfrage-Overlays ausblenden, während Build-Projekte aktiv sind"
     },
@@ -12483,6 +12483,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "HideOwnCanonnSignals"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "HideRowBadges"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -14071,6 +14075,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "LIVE-VORLAGENENTWURF"
+    },
+    {
+      "source": "LOAD",
+      "translation": "LADEN"
     },
     {
       "source": "LOCATION",
@@ -47295,14 +47303,6 @@
       "translation": "FC Diff muestra excedente de operador (+) o escasez (-). El excedente de un bien no puede cubrir otro."
     },
     {
-      "source": "FC LOAD",
-      "translation": "CARGA FC"
-    },
-    {
-      "source": "FC READY",
-      "translation": "FC LISTO"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "Espacio de trabajo de ruta FC"
     },
@@ -49679,6 +49679,14 @@
       "translation": "Ocultar resultados que no cumplan con los umbrales minerales"
     },
     {
+      "source": "Hide row badges",
+      "translation": "Ocultar insignias de fila"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "Oculte etiquetas de estado y asignación junto a los nombres de los productos. Las marcas de finalización permanecen visibles."
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "Ocultar superposiciones de encuestas mientras los proyectos de construcción están activos"
     },
@@ -49725,6 +49733,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "Ocultar señales propias de Canonn"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "OcultarFilaInsignias"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -51313,6 +51325,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "BORRADOR DE PLANTILLA EN VIVO"
+    },
+    {
+      "source": "LOAD",
+      "translation": "CARGA"
     },
     {
       "source": "LOCATION",
@@ -84537,14 +84553,6 @@
       "translation": "FC Diff affiche un excédent de transporteur (+) ou une pénurie (−). L’excédent d’un produit ne peut en couvrir un autre."
     },
     {
-      "source": "FC LOAD",
-      "translation": "CHARGE FC"
-    },
-    {
-      "source": "FC READY",
-      "translation": "PRÊT POUR LE FC"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "Espace de travail d’itinéraire FC"
     },
@@ -86921,6 +86929,14 @@
       "translation": "Masquer les résultats qui ne respectent pas les seuils minéraux"
     },
     {
+      "source": "Hide row badges",
+      "translation": "Masquer les badges de ligne"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "Masquez les étiquettes de statut et d’affectation à côté des noms de produits. Les coches d'achèvement restent visibles."
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "Masquer les superpositions d'enquête lorsque les projets de construction sont actifs"
     },
@@ -86967,6 +86983,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "MasquerPropresCanonnSignaux"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "Masquer les badges de ligne"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -88555,6 +88575,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "PROJET DE MODÈLE EN DIRECT"
+    },
+    {
+      "source": "LOAD",
+      "translation": "CHARGER"
     },
     {
       "source": "LOCATION",
@@ -121779,14 +121803,6 @@
       "translation": "FC Diff mostra excedente (+) ou escassez (-) da operadora. O excedente de uma mercadoria não pode cobrir outra."
     },
     {
-      "source": "FC LOAD",
-      "translation": "CARGA FC"
-    },
-    {
-      "source": "FC READY",
-      "translation": "FC PRONTO"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "Espaço de trabalho de rota FC"
     },
@@ -124163,6 +124179,14 @@
       "translation": "Ocultar resultados que não atendem aos Limites Minerais"
     },
     {
+      "source": "Hide row badges",
+      "translation": "Ocultar emblemas de linha"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "Oculte rótulos de status e atribuição ao lado dos nomes das mercadorias. As marcas de conclusão permanecem visíveis."
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "Ocultar sobreposições de pesquisa enquanto os projetos de construção estão ativos"
     },
@@ -124209,6 +124233,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "Ocultar sinais da Canonn"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "HideRowBadges"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -125797,6 +125825,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "ESBOÇO DE MODELO AO VIVO"
+    },
+    {
+      "source": "LOAD",
+      "translation": "CARREGAR"
     },
     {
       "source": "LOCATION",
@@ -159021,14 +159053,6 @@
       "translation": "FC Diff показывает избыток (+) или нехватку (-) операторов связи. Избыток одного товара не может покрыть другой."
     },
     {
-      "source": "FC LOAD",
-      "translation": "ФК НАГРУЗКА"
-    },
-    {
-      "source": "FC READY",
-      "translation": "ФК ГОТОВ"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "Рабочая область маршрута FC"
     },
@@ -161405,6 +161429,14 @@
       "translation": "Скрыть результаты, которые не соответствуют минеральным порогам"
     },
     {
+      "source": "Hide row badges",
+      "translation": "Скрыть значки строк"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "Скрывайте метки статуса и назначения рядом с названиями товаров. Галочки завершения остаются видимыми."
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "Скрыть наложения опросов, пока активны строительные проекты"
     },
@@ -161451,6 +161483,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "СкрытьСобственныйCanonnSignals"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "СкрытьСтрокаЗначки"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -163039,6 +163075,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "ЖИВОЙ ШАБЛОН ПРОЕКТ"
+    },
+    {
+      "source": "LOAD",
+      "translation": "НАГРУЗКА"
     },
     {
       "source": "LOCATION",
@@ -196263,14 +196303,6 @@
       "translation": "FC Diff 显示运营商盈余 (+) 或短缺 (−)。一种商品的剩余不能覆盖另一种商品。"
     },
     {
-      "source": "FC LOAD",
-      "translation": "FC负载"
-    },
-    {
-      "source": "FC READY",
-      "translation": "光纤通道就绪"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "FC 路线工作区"
     },
@@ -198647,6 +198679,14 @@
       "translation": "隐藏不符合矿物质阈值的结果"
     },
     {
+      "source": "Hide row badges",
+      "translation": "隐藏行徽章"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "隐藏商品名称旁边的状态和分配标签。完成复选标记仍然可见。"
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "构建项目处于活动状态时隐藏调查叠加"
     },
@@ -198693,6 +198733,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "隐藏自己的佳能信号"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "隐藏行徽章"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -200281,6 +200325,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "实时模板草稿"
+    },
+    {
+      "source": "LOAD",
+      "translation": "加载"
     },
     {
       "source": "LOCATION",
@@ -233505,14 +233553,6 @@
       "translation": "* FC DIFF SHOWS CARRIER SURPLUS (+) OR SHORTAGE (−). SURPLUS OF ONE COMMODITY CANNOT COVER ANOTHER. >>>!"
     },
     {
-      "source": "FC LOAD",
-      "translation": "* FC LOAD >>>!"
-    },
-    {
-      "source": "FC READY",
-      "translation": "* FC READY >>>!"
-    },
-    {
       "source": "FC Route Workspace",
       "translation": "* FC ROUTE WORKSPACE >>>!"
     },
@@ -235889,6 +235929,14 @@
       "translation": "* HIDE RESULTS THAT DON'T MEET MINERAL THRESHOLDS >>>!"
     },
     {
+      "source": "Hide row badges",
+      "translation": "* HIDE ROW BADGES >>>!"
+    },
+    {
+      "source": "Hide status and assignment labels beside commodity names. Completion checkmarks remain visible.",
+      "translation": "* HIDE STATUS AND ASSIGNMENT LABELS BESIDE COMMODITY NAMES. COMPLETION CHECKMARKS REMAIN VISIBLE. >>>!"
+    },
+    {
       "source": "Hide survey overlays while build projects are active",
       "translation": "* HIDE SURVEY OVERLAYS WHILE BUILD PROJECTS ARE ACTIVE >>>!"
     },
@@ -235935,6 +235983,10 @@
     {
       "source": "HideOwnCanonnSignals",
       "translation": "* HIDEOWNCANONNSIGNALS >>>!"
+    },
+    {
+      "source": "HideRowBadges",
+      "translation": "* HIDEROWBADGES >>>!"
     },
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -237523,6 +237575,10 @@
     {
       "source": "LIVE TEMPLATE DRAFT",
       "translation": "* LIVE TEMPLATE DRAFT >>>!"
+    },
+    {
+      "source": "LOAD",
+      "translation": "* LOAD >>>!"
     },
     {
       "source": "LOCATION",

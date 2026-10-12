@@ -14,6 +14,120 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ColonizationCommodityOverlayPresentationTests
 {
+    /// <summary>Removes badge space from the live panel and restores it without hiding completion or loading highlights.</summary>
+    [AvaloniaFact]
+    public void HidingRowBadgesUpdatesPresentationAndReleasesTheirWidth()
+    {
+        ColonizationCommodityPlan plan = CreatePlan("Test project");
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default with
+        {
+            HighlightAlmostCoveredFleetCarrierLoads = true,
+            InlineFleetCarrierCargo = true,
+        };
+        viewModel.ApplyPreferences(preferences);
+        viewModel.Apply(
+            plan with
+            {
+                Rows =
+                [
+                    plan.Rows[0] with
+                    {
+                        DisplayName = "Ceramic composites",
+                        IsAvailableAtCurrentMarket = true,
+                        IsAssignedToCommander = true,
+                        CanCompleteFleetCarrierLoad = true,
+                    },
+                ],
+            },
+            null
+        );
+        var window = new ColonizationCommodityOverlayWindow(viewModel);
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            window.Show();
+            window.UpdateLayout();
+            double badgeWidth = window.Bounds.Width;
+            Assert.Contains(VisibleTexts(), text => text.Text == "LOAD");
+            Assert.Contains(VisibleTexts(), text => text.Text == "PIN");
+
+            viewModel.ApplyPreferences(preferences with { HideRowBadges = true });
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            Assert.DoesNotContain(VisibleTexts(), text => text.Text is "LOAD" or "PIN");
+            Assert.Contains(VisibleTexts(), text => text.Text == "✓");
+            Assert.Contains(
+                window.GetVisualDescendants().OfType<Border>(),
+                row => row.Classes.Contains("carrier-load")
+            );
+            Assert.True(window.Bounds.Width < badgeWidth);
+
+            viewModel.ApplyPreferences(preferences);
+            Dispatcher.UIThread.RunJobs();
+            window.UpdateLayout();
+            Assert.Contains(VisibleTexts(), text => text.Text == "LOAD");
+            Assert.Contains(VisibleTexts(), text => text.Text == "PIN");
+            Assert.Equal(badgeWidth, window.Bounds.Width, 3);
+        }
+        finally
+        {
+            window.Close();
+        }
+
+        IEnumerable<TextBlock> VisibleTexts() =>
+            window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible);
+    }
+
+    /// <summary>Scales the visible completion glyph and row badge together without changing commodity-name sizing.</summary>
+    [AvaloniaFact]
+    public void CompletionCheckmarkScalesWithRowBadges()
+    {
+        ColonizationCommodityPlan plan = CreatePlan("Test project");
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        viewModel.Apply(
+            plan with
+            {
+                Rows = [plan.Rows[0] with { OnFleetCarriers = 100, InShip = 0, IsAvailableAtCurrentMarket = true }],
+            },
+            null
+        );
+        var presentation = new ColonizationCommodityOverlayPresentation { DataContext = viewModel };
+        var window = new Window { Content = presentation, SizeToContent = SizeToContent.WidthAndHeight };
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            window.Show();
+            window.UpdateLayout();
+            TextBlock checkmark = Assert.Single(
+                presentation.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "✓"
+            );
+            Viewbox checkmarkBox = Assert.Single(checkmark.GetVisualAncestors().OfType<Viewbox>());
+            TextBlock badge = Assert.Single(
+                presentation.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "MARKET"
+            );
+            TextBlock commodity = Assert.Single(
+                presentation.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Name == "CommodityNameText"
+            );
+            double checkmarkHeight = checkmarkBox.Bounds.Height;
+            double badgeSize = badge.FontSize;
+            double commoditySize = commodity.FontSize;
+
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 0, 0, 100));
+            window.UpdateLayout();
+            Assert.Equal(badgeSize * 2, badge.FontSize);
+            Assert.Equal(checkmarkHeight * 2, checkmarkBox.Bounds.Height, 3);
+            Assert.Equal(commoditySize, commodity.FontSize);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>Keeps FC and HAVE delta labels on the same baseline as the other column titles at every Title scale.</summary>
     [AvaloniaTheory]
     [InlineData(false, 0)]
@@ -65,13 +179,15 @@ public sealed class ColonizationCommodityOverlayPresentationTests
         }
     }
 
-    /// <summary>Measures identical commodity rows with and without the completed checkmark, including independent icon scaling.</summary>
+    /// <summary>Keeps row height driven by text while completion glyphs and visible badges scale independently.</summary>
     [AvaloniaTheory]
     [InlineData(0, 0)]
     [InlineData(100, 0)]
     [InlineData(0, 100)]
     [InlineData(-50, 100)]
-    public void CompletionCheckmarkDoesNotIncreaseRowHeight(int bodyScale, int iconScale)
+    [InlineData(0, 100, true)]
+    [InlineData(-50, 100, true)]
+    public void CompletionCheckmarkDoesNotIncreaseRowHeight(int bodyScale, int iconScale, bool showBadges = false)
     {
         ColonizationCommodityPlan plan = CreatePlan("Test project");
         var viewModel = new ColonizationCommodityOverlayViewModel();
@@ -84,11 +200,13 @@ public sealed class ColonizationCommodityOverlayPresentationTests
                     {
                         OnFleetCarriers = 100,
                         InShip = 0,
+                        IsAvailableAtCurrentMarket = showBadges,
                     },
                     plan.Rows[0] with
                     {
                         OnFleetCarriers = 80,
                         InShip = 0,
+                        IsAvailableAtCurrentMarket = showBadges,
                     },
                 ],
             },
@@ -100,7 +218,7 @@ public sealed class ColonizationCommodityOverlayPresentationTests
         {
             OverlayThemeResources.Apply(window);
             window.Show();
-            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, bodyScale, 0, 0, iconScale));
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, bodyScale, 0, 0));
             window.UpdateLayout();
             Border[] rows = presentation
                 .GetVisualDescendants()
@@ -109,6 +227,24 @@ public sealed class ColonizationCommodityOverlayPresentationTests
                 .ToArray();
             Assert.Equal(2, rows.Length);
             Assert.Equal(rows[1].Bounds.Height, rows[0].Bounds.Height, 3);
+            double textHeight = rows[0].Bounds.Height;
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, bodyScale, 0, 0, iconScale));
+            window.UpdateLayout();
+            Assert.All(rows, row => Assert.Equal(textHeight, row.Bounds.Height, 3));
+            if (iconScale == 100 && bodyScale <= 0)
+            {
+                TextBlock checkmark = Assert.Single(
+                    rows[0].GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == "✓"
+                );
+                Viewbox glyph = Assert.Single(checkmark.GetVisualAncestors().OfType<Viewbox>());
+                double glyphTop = glyph.TranslatePoint(default, rows[0])!.Value.Y;
+                Assert.True(glyphTop < 0);
+                Assert.True(glyphTop + glyph.Bounds.Height > rows[0].Bounds.Height);
+                OverlayTypographyResources.Apply(presentation, new(0, 0, 100, 100, 0, 0, iconScale));
+                window.UpdateLayout();
+                Assert.All(rows, row => Assert.True(row.Bounds.Height > textHeight));
+            }
         }
         finally
         {

@@ -322,6 +322,9 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                                 pendingCommodities.Contains(row.Commodity),
                                 rowIndex % 2 == 0
                             )
+                            {
+                                HideRowBadges = preferences.HideRowBadges,
+                            }
                     )
                     .ToArray();
                 bool canCollapse =
@@ -463,6 +466,9 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool IsAlternateRow { get; }
 
+    /// <summary>Suppresses textual row badges without changing cargo coverage or completion state.</summary>
+    public bool HideRowBadges { get; init; }
+
     /// <summary>Matches the heading's minimum width while allowing disabled carrier cells to collapse.</summary>
     public double FleetCarrierColumnMinWidth => ShowFleetCarrierCargo ? 34 : 0;
 
@@ -478,7 +484,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     /// <summary>Highlights carrier-loading guidance without excluding cargo shown in a combined total.</summary>
     public bool IsFleetCarrierLoadHighlighted => HighlightAlmostCoveredFleetCarrierLoads && CanCompleteFleetCarrierLoad;
 
-    public bool HasMarketBadge => IsAvailableAtCurrentMarket;
+    /// <summary>Shows market or carrier guidance only when row badges are enabled.</summary>
+    public bool HasMarketBadge => !HideRowBadges && IsAvailableAtCurrentMarket;
 
     /// <summary>Marks the carrier ready only when its stored cargo covers the requirement, excluding cargo still aboard the ship.</summary>
     public string MarketBadgeText
@@ -487,10 +494,10 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
         {
             if (HighlightAlmostCoveredFleetCarrierLoads && FleetCarriersHaveEnough)
             {
-                return "FC READY";
+                return "READY";
             }
 
-            return IsFleetCarrierLoadHighlighted ? "FC LOAD" : "MARKET";
+            return IsFleetCarrierLoadHighlighted ? "LOAD" : "MARKET";
         }
     }
 
@@ -565,5 +572,6 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
                 false => string.Empty,
             };
 
-    public bool HasAssignment => IsAssignedToCommander || IsAssignedToOther;
+    /// <summary>Shows commander assignment labels only when row badges are enabled.</summary>
+    public bool HasAssignment => !HideRowBadges && (IsAssignedToCommander || IsAssignedToOther);
 }
