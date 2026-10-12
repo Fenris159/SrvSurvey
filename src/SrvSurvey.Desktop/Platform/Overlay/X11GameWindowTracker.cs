@@ -30,6 +30,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                     ReadProcessId(window) is int pid
                     && TryGetBounds(window, out PixelRect bounds, out bool visible)
                     && visible
+                    && !ReadProperty(windowStateAtom, window).Contains(hiddenStateAtom)
                 )
                 {
                     result.Add(new GameWindowSnapshot(unchecked((nint)window), pid, bounds, visible, window == active));
@@ -47,6 +48,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private readonly nuint clientListAtom;
     private readonly nuint clientListStackingAtom;
     private readonly nuint processIdAtom;
+    private readonly nuint windowStateAtom;
+    private readonly nuint hiddenStateAtom;
     private readonly bool recoverTransientDisplay;
     private nuint gameWindow;
     private nuint inspectedActiveWindow;
@@ -62,6 +65,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         clientListAtom = GetAtom("_NET_CLIENT_LIST");
         clientListStackingAtom = GetAtom("_NET_CLIENT_LIST_STACKING");
         processIdAtom = GetAtom("_NET_WM_PID");
+        windowStateAtom = GetAtom("_NET_WM_STATE");
+        hiddenStateAtom = GetAtom("_NET_WM_STATE_HIDDEN");
     }
 
     /// <summary>Opens an X11 tracker, marking named transient displays for recovery.</summary>
@@ -170,7 +175,14 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 clientBounds,
                 isVisible,
                 activeWindow == gameWindow
-            );
+            )
+            {
+                DisplayBounds =
+                    X11Native.XGetWindowAttributes(display, rootWindow, out X11Native.XWindowAttributes rootAttributes)
+                    != 0
+                        ? new PixelRect(0, 0, rootAttributes.Width, rootAttributes.Height)
+                        : null,
+            };
             return HasFailedTransientDisplay() ? GameWindowSnapshot.Unavailable : snapshot;
         }
     }

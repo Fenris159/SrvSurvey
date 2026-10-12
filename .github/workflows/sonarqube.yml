@@ -27,10 +27,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-permissions:
-  contents: read
-  # Needed so the scanner can read PR metadata for SonarCloud PR decoration.
-  pull-requests: read
+permissions: {}
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -42,8 +39,70 @@ env:
   SONAR_USER_HOME: ${{ github.workspace }}/.sonar
 
 jobs:
+  linux-coverage:
+    name: Linux desktop coverage
+    permissions:
+      contents: read
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Detect desktop tests
+        id: layout
+        run: |
+          if test -f tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install .NET SDK
+        if: steps.layout.outputs.available == 'true'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install native test dependencies
+        if: steps.layout.outputs.available == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes desktop-file-utils xvfb libx11-6 libxext6 libxfixes3 libfontconfig1 libice6 libsm6 libpipewire-0.3-0
+
+      - name: Verify native focus publisher failure handling
+        if: steps.layout.outputs.available == 'true'
+        run: python3 tests/SrvSurvey.GamescopeSmoke/run-publisher.py
+
+      - name: Test Linux desktop with coverage
+        if: steps.layout.outputs.available == 'true'
+        timeout-minutes: 15
+        run: |
+          dotnet test tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj \
+            --configuration Release --logger trx --blame-hang-timeout 2m \
+            --blame-hang-dump-type mini --collect:"XPlat Code Coverage" \
+            --results-directory artifacts/linux-coverage -- \
+            DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          printf '%s\n' "$GITHUB_WORKSPACE" > artifacts/linux-coverage/source-root.txt
+
+      - name: Upload Linux coverage
+        if: steps.layout.outputs.available == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: sonar-linux-coverage
+          path: |
+            artifacts/linux-coverage/**/coverage.opencover.xml
+            artifacts/linux-coverage/source-root.txt
+          if-no-files-found: error
+          retention-days: 7
+
   analyze:
     name: Build and analyze
+    needs: linux-coverage
+    permissions:
+      contents: read
+      # Needed so the scanner can read PR metadata for SonarCloud PR decoration.
+      pull-requests: read
     # Skip fork PRs (no access to SONAR_TOKEN secrets on pull_request from forks).
     if: >-
       github.event_name != 'pull_request' ||
@@ -145,7 +204,8 @@ jobs:
             # paths. The desktop composition root is wiring over those same adapters;
             # its lifecycle contract and rollback checkpoints remain directly tested.
             '/d:sonar.coverage.exclusions=SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Program.cs,src/SrvSurvey.Desktop/Program.cs,SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs,src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs,SrvSurvey.Desktop/Input/ControllerInputBackend.cs,src/SrvSurvey.Desktop/Input/ControllerInputBackend.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs,src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs,SrvSurvey.Desktop/Platform/Overlay/GameWindowSwitcher.cs,src/SrvSurvey.Desktop/Platform/Overlay/GameWindowSwitcher.cs,SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs,src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs,SrvSurvey.Desktop/Platform/Overlay/X11GameWindowTracker.cs,src/SrvSurvey.Desktop/Platform/Overlay/X11GameWindowTracker.cs,SrvSurvey.Desktop/Platform/Overlay/X11Native.cs,src/SrvSurvey.Desktop/Platform/Overlay/X11Native.cs,SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs,src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs,SrvSurvey.Desktop/Platform/ApplicationInstanceManager.cs,src/SrvSurvey.Desktop/Platform/ApplicationInstanceManager.cs,SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs,src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs,SrvSurvey.Desktop/Platform/WindowsRestartManagerProcessFinder.cs,src/SrvSurvey.Desktop/Platform/WindowsRestartManagerProcessFinder.cs,SrvSurvey/**/*.Designer.cs',
-            '/d:sonar.exclusions=**/tools/**,**/artifacts/**,**/*.py,**/*.ps1,**/Assets/**,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.ttf,**/*.otf,**/*.woff,**/*.woff2,**/*.zip,**/*.dll,**/*.exe,**/*.pdb,**/*.so,**/*.dylib',
+            # The Gamescope smoke harness (including GNOME JavaScript) is test tooling.
+            '/d:sonar.exclusions=**/tools/**,**/artifacts/**,tests/SrvSurvey.GamescopeSmoke/**,**/*.py,**/*.ps1,**/Assets/**,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.ttf,**/*.otf,**/*.woff,**/*.woff2,**/*.zip,**/*.dll,**/*.exe,**/*.pdb,**/*.so,**/*.dylib',
             "/d:sonar.token=$env:SONAR_TOKEN"
           )
 
@@ -209,6 +269,35 @@ jobs:
             **/TestResults/**/*.dmp
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Download Linux coverage
+        if: steps.layout.outputs.kind == 'avalonia'
+        uses: actions/download-artifact@v8
+        with:
+          name: sonar-linux-coverage
+          path: tests/LinuxCoverage/TestResults
+
+      - name: Map Linux coverage paths to this checkout
+        if: steps.layout.outputs.kind == 'avalonia'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $directory = Join-Path $env:GITHUB_WORKSPACE "tests/LinuxCoverage/TestResults"
+          $sourceRoot = (Get-Content (Join-Path $directory "source-root.txt") -Raw).Trim().Replace('\', '/').TrimEnd('/') + '/'
+          $mapped = 0
+          foreach ($report in Get-ChildItem $directory -Filter coverage.opencover.xml -Recurse) {
+            [xml]$document = Get-Content $report.FullName -Raw
+            foreach ($file in $document.SelectNodes("//File[@fullPath]")) {
+              $path = $file.fullPath.Replace('\', '/')
+              if ($path.StartsWith($sourceRoot, [StringComparison]::Ordinal)) {
+                $file.fullPath = Join-Path $env:GITHUB_WORKSPACE $path.Substring($sourceRoot.Length)
+                $mapped++
+              }
+            }
+            $document.Save($report.FullName)
+          }
+          if ($mapped -eq 0) { throw "Linux coverage did not contain any checkout source paths." }
+          Write-Host "Mapped $mapped Linux coverage source paths for combined Windows/Linux import."
 
       - name: Skip tests (WinForms / main has no test projects)
         if: steps.layout.outputs.kind == 'winforms'

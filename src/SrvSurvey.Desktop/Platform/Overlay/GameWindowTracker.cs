@@ -27,9 +27,13 @@ public static class GameWindowTracker
 
         if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
         {
+            if (GamescopeOverlaySession.Current is { } session)
+            {
+                return GamescopeExternalGameWindowTracker.TryCreate(session) ?? new UnavailableGameWindowTracker();
+            }
             return new GamescopeGameWindowTracker(
                 X11GameWindowTracker.TryCreate() ?? new UnavailableGameWindowTracker(),
-                GamescopeGameWindowBridge.TryReadCurrent,
+                GamescopeGameWindowBridge.DiscoverCurrent,
                 X11GameWindowTracker.TryCreate
             );
         }
@@ -179,6 +183,10 @@ public sealed record GameWindowSnapshot(
     bool IsForeground
 )
 {
+    public PixelRect? DisplayBounds { get; init; }
+
+    public PixelRect? OverlayCanvasBounds { get; init; }
+
     public bool IsAvailable => NativeHandle != nint.Zero && ClientBounds.Width > 0 && ClientBounds.Height > 0;
 
     public static GameWindowSnapshot Unavailable { get; } =

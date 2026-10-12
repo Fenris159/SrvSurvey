@@ -127,9 +127,12 @@ public static class GameScreenCapture
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
         if (capabilities.UsesX11Compatibility)
         {
-            IGameScreenCapture x11Capture =
-                X11GameScreenCapture.TryCreate()
-                ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
+            IGameScreenCapture x11Capture = capabilities.UsesGamescopeExternalOverlay
+                ? new UnavailableGameScreenCapture(
+                    "Gamescope separates the game display from the overlay canvas. X11 screen-based detection is unavailable in this session."
+                )
+                : X11GameScreenCapture.TryCreate()
+                    ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
             IGameScreenCapture capture =
                 enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession()
                     ? new FallbackGameScreenCapture(

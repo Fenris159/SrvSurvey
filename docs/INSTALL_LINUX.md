@@ -364,7 +364,9 @@ Common launch and library problems are listed below. For a fuller set of issues
 - `cannot open shared object file`: install the distribution prerequisites
   above and start the application again from its complete container folder.
 - Overlays do not follow Elite: confirm `DISPLAY` is set, both applications are
-  on the same display, and neither was started as a different user.
+  accessible in the same user's graphical session. SteamOS Gaming Mode and
+  nested Gamescope can use different verified XWayland displays; see the
+  [SteamOS and Gamescope instructions](Overlay_Troubleshooting.md#steamos-gaming-mode).
   **On KDE Plasma**, current builds request KWin's advertised on-screen-display
   window type automatically. If that does not work, use the manual fallback in
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).

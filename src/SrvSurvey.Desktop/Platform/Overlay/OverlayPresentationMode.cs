@@ -34,6 +34,13 @@ public static class OverlayPresentationModeSelector
     {
         ArgumentNullException.ThrowIfNull(capabilities);
         string? requested = hostOverride?.Trim();
+        if (capabilities.UsesGamescopeExternalOverlay)
+        {
+            return new OverlayPresentationDecision(
+                OverlayPresentationMode.CombinedWindow,
+                "The verified Gamescope compositor has one external-overlay slot; panels share a passive output-sized canvas."
+            );
+        }
         if (IsMultipleWindowOverride(requested))
         {
             return new OverlayPresentationDecision(

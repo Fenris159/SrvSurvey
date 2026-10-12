@@ -51,6 +51,10 @@ public static class OverlayPlatformService
         }
 
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        if (GamescopeOverlaySession.UnavailableReason is not null)
+        {
+            return new PortableOverlayPlatformService(capabilities);
+        }
         if (capabilities.UsesX11Compatibility)
         {
             return X11OverlayPlatformService.TryCreate(capabilities.Host)

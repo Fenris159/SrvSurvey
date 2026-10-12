@@ -515,24 +515,19 @@ operation.
 
 ## 9. SrvSurvey and the Gamescope boundary
 
-Gamescope gives Elite its own nested XWayland display. A SrvSurvey process
-started on the ordinary GNOME desktop is outside that boundary and cannot
-reliably enumerate or track the inner Elite window.
+Gamescope gives Elite its own nested XWayland display. SrvSurvey can stay on the
+ordinary GNOME desktop and discover that display through the live Elite process
+and its Gamescope ancestor.
 
-For the SDL/X11 Gamescope wrapper documented in this guide, launch SrvSurvey
-on the same nested display as Elite. SrvSurvey detects Gamescope and uses its
-combined transparent overlay host. Its log should contain:
+For the SDL/X11 wrapper documented in this guide, SrvSurvey automatically maps
+the unique outer Gamescope window's desktop position, bounds, visibility, and
+focus. Alt-Tab hides ordinary desktop overlays even if Elite stays internally
+focused. This route supports normal Steam/Proton launches without a geometry
+marker or mini-ed-launcher. Keep the existing Gamescope options and explicit
+`SDL_VIDEODRIVER=x11 --backend sdl` selection.
 
-```text
-Overlay presentation: CombinedWindow
-```
-
-The wrapper in this guide reproduces the tested Elite launcher and confinement
-behavior; it does not automatically launch SrvSurvey. Use the same-session
-launch pattern described in
-[the CachyOS Gamescope guide](CACHYOS_GAMESCOPE.md#5-launch-elite-and-srvsurvey-in-the-same-gamescope-session)
-when overlays are required, preserving this guide's patched Gamescope path and
-runtime mouse toggling.
+Launching SrvSurvey inside the same Gamescope session instead uses the combined
+external-overlay route described in [the CachyOS guide](CACHYOS_GAMESCOPE.md#5-launch-elite-and-srvsurvey-in-the-same-gamescope-session).
 
 For **native Wayland Gamescope**, SrvSurvey can instead remain on the desktop
 display and draw normal interactive live overlays above the fullscreen game.
@@ -553,10 +548,13 @@ publishes and removes the bridge marker automatically. Keep SrvSurvey running
 normally on the desktop; the wrapper starts only Elite.
 
 This template needs Gamescope 3.16.29 with **both** repository patches: the
-runtime relative-mouse patch from section 3 and
-[the native Wayland host patch](patches/gamescope-3.16.29-native-wayland-host.patch).
-The second patch adds runtime fullscreen control, preferred-output selection,
-and a larger Wayland server message buffer. Apply it to the same source checkout
+runtime relative-mouse patch from section 3,
+[the native Wayland host patch](patches/gamescope-3.16.29-native-wayland-host.patch),
+and [the native Wayland focus patch](patches/gamescope-3.16.29-native-wayland-focus.patch).
+The host patch adds runtime fullscreen control, preferred-output selection,
+and a larger Wayland server message buffer. The focus patch publishes the owning
+compositor's keyboard enter/leave state for accurate desktop Alt-Tab behavior.
+Apply them to the same source checkout
 used in section 3, then rebuild and install:
 
 ```bash
@@ -564,6 +562,10 @@ git -C "$gamescope_source" apply --unidiff-zero --check \
   "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-host.patch"
 git -C "$gamescope_source" apply --unidiff-zero \
   "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-host.patch"
+git -C "$gamescope_source" apply --check \
+  "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-focus.patch"
+git -C "$gamescope_source" apply \
+  "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-focus.patch"
 ninja -C "$gamescope_source/build"
 meson install -C "$gamescope_source/build" --skip-subprojects
 ```
@@ -605,6 +607,16 @@ After launching Elite, verify that the bridge exists with
 Gamescope closes. SrvSurvey's live overlays should appear over the game while
 SrvSurvey stays on the desktop display. The bridge assumes the game fills the
 chosen monitor; it is not a placement solution for a small Gamescope window.
+
+The focus-patched compositor also publishes
+`GamescopeGameWindowFocus.<Gamescope PID>` in the same runtime directory. This
+contains its process start time and current host keyboard-focus state. SrvSurvey
+reads it without another launch option or launcher dependency. Existing custom
+launchers that advertise a one-byte `GAMESCOPE_HOST_FOCUS_FILE` or
+`ELITE_HOST_FOCUS_FILE` on the Gamescope process are supported too; they do not
+need this additional patch. Disable **Keep overlays visible when Elite loses
+focus** to have passive overlays hide after Alt-Tab. Live interaction and position
+editing retain their visibility override.
 
 If screen capture falls back to the Wayland portal, select the Elite window or
 the Gamescope surface when GNOME asks. See

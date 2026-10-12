@@ -9,21 +9,111 @@ that starts Elite and SrvSurvey in the same nested display, see
 [CachyOS: Elite Dangerous, SrvSurvey, KDE Plasma, and Gamescope](CACHYOS_GAMESCOPE.md).
 
 Ordinary Windows, X11, and XWayland sessions continue to use one native window
-per live overlay. When Gamescope is detected, SrvSurvey reparents the same live
-Avalonia controls into one transparent game-sized host. Opacity, positioning,
-suppression, stream capture, OpenVR capture, and edit-mode dragging continue to
-use the existing overlay models; only the native presentation strategy changes.
+per live overlay. A verified Gamescope session uses one transparent
+canvas registered with the compositor. The existing controls, positioning,
+opacity, and suppression models supply its content.
 
-Check the application log for either `Overlay presentation: CombinedWindow` or
-`Overlay presentation: MultipleWindows`. If Gamescope detection is missing,
-launch SrvSurvey in the same Gamescope environment as Elite or test explicitly:
+### SteamOS Gaming Mode
+
+SrvSurvey verifies the Gamescope window manager and XWayland server ID at startup.
+Before Avalonia initializes, it selects the compositor's primary server (ID `0`),
+whose actual `DISPLAY` can be `:2`, `:7`, or another value. If SrvSurvey inherits
+a game server instead, it finds the same user's Steam display and verifies that
+it belongs to the same compositor. An ambiguous or inaccessible primary display
+disables overlays and records the reason in the application log.
+
+Start the native Linux AppImage in the same user's Gaming Mode session. Elite
+can launch normally through Steam/Proton; mini-ed-launcher is optional. Its
+additional-process configuration can continue to launch the AppImage unchanged.
+SrvSurvey discovers Elite's display from the running process and follows game
+startup, focus changes, and restart. A separate non-Steam SrvSurvey shortcut is
+also supported by this discovery; return to Elite after configuring SrvSurvey.
+
+**Turn the Deck performance overlay off.** Gamescope exposes one external-overlay
+slot, which the performance HUD also uses. Simultaneous display is not supported.
+The SrvSurvey canvas covers the compositor output, while panel anchors follow
+Elite's projected viewport, including letterboxing and Gamescope scaling.
+Startup scaling comes from the verified compositor's command line. Subsequent
+new and legacy scaling requests are observed on its primary and active game
+displays. If conflicting requests predate SrvSurvey, their ordering is unknown;
+overlays wait for a fresh scaling selection instead of using uncertain bounds.
+Select a scaling mode again in Steam if the log reports
+`Gamescope scaling state is unknown`. Custom maximum and per-window scaling
+remain unsupported by this projection.
+
+The HUD starts passive. Use the existing live-interaction shortcut to click its
+controls or drag panels while playing, then press it again to save positions and
+return pointer input to Elite. Live mode reserves the entire canvas's pointer
+input, including blank areas; keyboard input stays with Elite. A separate
+transparent routing window selects pointer-only focus without replacing the
+game picture. Steam overlay and Quick Access Menu input requests temporarily
+release the routing; live mode resumes after those requests clear. Close Steam
+menus before first enabling live mode.
+The visible-cursor session leaves keyboard activation to Gamescope, including
+when a Steam menu opens or the session ends.
+
+The position editor remains available for positions, opacity, and scale.
+Desktop Mode is the recommended configuration environment until Deck controller
+navigation is validated. Configuration windows are not external overlays.
+Text entry in HUD controls is not supported by this pointer-only mode.
+
+X11 screen-based detection is unavailable in this mode because the primary
+overlay display does not contain Elite's composited game image. Journal-driven
+panels and capture of SrvSurvey's own overlay controls remain available. A
+separately supported screen-sharing backend is required for image-based features.
+
+Check the log for `Gamescope overlay display:` and `Overlay presentation:
+CombinedWindow`. `SRVSURVEY_OVERLAY_HOST=separate` cannot override a verified
+external-overlay session because only one canvas can occupy that slot.
+
+### Desktop Mode, including normal Steam/Proton launches
+
+SrvSurvey started on the ordinary desktop keeps its desktop overlay path,
+including when Elite runs inside nested Gamescope through Steam/Proton. It can
+discover Elite's nested display and map it through the visible X11/XWayland
+outer window owned by its Gamescope ancestor. This does not require
+mini-ed-launcher or a bridge file. SrvSurvey keeps its UI on the desktop so it
+survives the nested compositor closing.
+
+The outer window supplies desktop position, size, visibility, and focus.
+Switching to another desktop app makes Elite background even if Gamescope's
+internal focus stays on Elite. Moving or resizing the outer window updates
+overlay placement; hiding it removes the tracked game until it is visible
+again. Multiple ambiguous outer windows are not guessed.
+
+This path maps panels to the **outer client rectangle**. Use matching game and
+output aspect ratios so Elite fills that rectangle. Letterboxing, cropping,
+and custom Gamescope scaling need separate validation here; the SteamOS
+output-viewport projection does not establish desktop placement correctness.
+For a native Wayland outer window with no X11 geometry, the bridge described
+below is still required.
+
+To make the outer window visible to desktop X11 tracking on a Wayland desktop,
+a Gamescope build with the SDL backend can use this Steam launch option:
+
+```text
+SDL_VIDEODRIVER=x11 gamescope --backend sdl -f -- %command%
+```
+
+Keep any required resolution or mouse options before `--`. This selects
+X11/XWayland for the outer SDL window while Elite still runs through Proton
+inside Gamescope. It leaves SrvSurvey on the desktop. SDL2 documents
+[`SDL_VIDEODRIVER=x11`](https://wiki.libsdl.org/SDL2/SDL_HINT_VIDEODRIVER), and
+Gamescope defines the [`sdl` backend](https://github.com/ValveSoftware/gamescope/blob/8f212644c46460549035971ab914421180f61a7c/src/main.cpp#L419-L461).
+The [Ubuntu guide](UBUNTU_26_GAMESCOPE.md) records an existing SDL/X11 setup;
+installed backend availability and graphics-driver behavior still need testing.
+
+For an ordinary desktop launch, `Overlay presentation: MultipleWindows` is the
+expected default even while Elite uses Gamescope. To test combined desktop
+presentation explicitly:
 
 ```bash
 SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
 ```
 
-To diagnose a compositor regression, restore the previous behavior with
-`SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
+Outside a verified external-overlay session, diagnose a compositor regression with
+`SRVSURVEY_OVERLAY_HOST=separate`. These presentation overrides are read at
+startup; native Wayland geometry still requires the bridge.
 
 ### SrvSurvey on the desktop with native Wayland Gamescope
 
@@ -43,6 +133,31 @@ process before using the marker. It then tracks Elite on the nested display
 while placing its ordinary, separately interactive overlay windows on the
 desktop display. If there is no valid marker, SrvSurvey keeps using its normal
 desktop game-window tracker.
+
+The geometry marker remains compatible with older launchers. For desktop focus,
+SrvSurvey also reads `GamescopeGameWindowFocus.<Gamescope PID>` from the same
+runtime directory. This companion has two lines: the owning process start time
+and `1` for foreground or `0` for background. The native Wayland focus patch in
+[the Ubuntu guide](UBUNTU_26_GAMESCOPE.md#native-wayland-launch-template) publishes
+it from the outer compositor's keyboard enter/leave events. SrvSurvey requires
+both outer desktop focus and inner Elite focus, so Alt-Tab hides the overlays and
+returning to the game restores them.
+
+Existing launchers that advertise `GAMESCOPE_HOST_FOCUS_FILE` or
+`ELITE_HOST_FOCUS_FILE` in the live Gamescope process environment are also
+supported. These files contain one `0` or `1` byte; SrvSurvey discovers the path
+from that process rather than requiring its own launch environment to match.
+The stamped companion takes precedence. A stale or invalid signal, an unreadable
+declared file, or loss of an observed companion cannot claim foreground.
+Process identity is checked again after reading focus, and a new compositor
+session reconnects independently.
+
+Older bridges without a focus publisher retain their previous nested-focus
+behavior. Unpatched upstream native Wayland Gamescope does not expose this
+host-focus signal. Install the documented focus patch or use the SDL/X11 outer
+window route for accurate Alt-Tab tracking. The **Keep overlays visible when
+Elite loses focus** setting still overrides hiding; position editing and live
+overlay interaction also retain their existing visibility override.
 
 Keyboard shortcuts also follow this bridge. SrvSurvey listens for game keys on
 the nested display alongside its desktop keyboard listener, so shortcuts work

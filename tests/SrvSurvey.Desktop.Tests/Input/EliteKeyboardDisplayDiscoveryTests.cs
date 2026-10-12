@@ -33,6 +33,9 @@ public sealed class EliteKeyboardDisplayDiscoveryTests
                     ?.ProcessId
             );
             Assert.Null(EliteKeyboardDisplayDiscovery.Read(root));
+            Assert.Equal(20, EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: ":3.0")?.ProcessId);
+            Assert.Null(EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: ":99"));
+            Assert.Null(EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: "remote:3"));
             Assert.Null(
                 EliteKeyboardDisplayDiscovery.Read(
                     root,

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Avalonia;
+using SrvSurvey.Desktop.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -7,10 +8,69 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
 {
     internal const string MarkerPrefix = nameof(GamescopeGameWindowBridge) + ".";
 
+    /// <summary>Desktop focus from the outer X11 window or its native Wayland publisher.</summary>
+    internal bool? IsHostForeground { get; init; }
+
+    internal bool HasNativeHostFocusPublisher { get; init; }
+
+    internal ulong? ProcessStartTime { get; init; }
+
     /// <summary>Returns the latest validated bridge for existing overlay placement.</summary>
     public static GamescopeGameWindowBridge? TryReadCurrent()
     {
         return TryRead(Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR"));
+    }
+
+    /// <summary>Maps a normal Steam-launched nested compositor through its verified desktop window.</summary>
+    internal static GamescopeGameWindowBridge? DiscoverCurrent()
+    {
+        return TryReadCurrent()
+            ?? Discover(
+                "/proc",
+                X11GameWindowTracker.ReadDesktopWindows(),
+                Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR")
+            );
+    }
+
+    internal static GamescopeGameWindowBridge? Discover(
+        string procDirectory,
+        IReadOnlyList<GameWindowSnapshot> windows,
+        string? runtimeDirectory = null,
+        Func<int, ulong?>? readProcessStartTime = null
+    )
+    {
+        EliteKeyboardDisplay? game = EliteKeyboardDisplayDiscovery.Read(
+            procDirectory,
+            context: new KeyboardDisplayContext(null, windows, [])
+        );
+        int? parent = game is null
+            ? null
+            : EliteKeyboardDisplayDiscovery.FindGamescopeParent(procDirectory, game.ProcessId);
+        GameWindowSnapshot[] matches = windows
+            .Where(window => window.ProcessId == parent && parent is not null && window.IsAvailable && window.IsVisible)
+            .ToArray();
+        if (game is null || matches.Length != 1)
+        {
+            return null;
+        }
+        int processId = parent!.Value;
+        readProcessStartTime ??= X11OverlayInteractionMarker.TryReadProcessStartTime;
+        ulong? startTime = Path.IsPathFullyQualified(runtimeDirectory ?? string.Empty)
+            ? readProcessStartTime(processId)
+            : null;
+        bool? nativeForeground = startTime is ulong start
+            ? GamescopeGameWindowFocus.Read(runtimeDirectory!, processId, start, procDirectory)
+            : null;
+        if (startTime is not null && readProcessStartTime(processId) != startTime)
+        {
+            return null;
+        }
+        return new GamescopeGameWindowBridge(processId, game.Display, matches[0].ClientBounds)
+        {
+            IsHostForeground = matches[0].IsForeground && nativeForeground is not false,
+            HasNativeHostFocusPublisher = nativeForeground is not null,
+            ProcessStartTime = startTime,
+        };
     }
 
     internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory)
@@ -90,7 +150,15 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
                 return null;
             }
 
-            return new GamescopeGameWindowBridge(processId, lines[1], new PixelRect(x, y, width, height));
+            bool? hostForeground = GamescopeGameWindowFocus.Read(Path.GetDirectoryName(path)!, processId, startTime);
+            return readProcessStartTime(processId) == startTime
+                ? new GamescopeGameWindowBridge(processId, lines[1], new PixelRect(x, y, width, height))
+                {
+                    IsHostForeground = hostForeground,
+                    HasNativeHostFocusPublisher = hostForeground is not null,
+                    ProcessStartTime = startTime,
+                }
+                : null;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -107,6 +175,8 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
     private IGameWindowTracker? nestedTracker;
     private string? nestedDisplay;
     private int nestedProcessId;
+    private ulong? nestedProcessStartTime;
+    private bool hasNativeHostFocusPublisher;
 
     public GamescopeGameWindowTracker(
         IGameWindowTracker hostTracker,
@@ -134,19 +204,28 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
             return hostSnapshot;
         }
 
-        if (nestedTracker is null || nestedDisplay != bridge.Display || nestedProcessId != bridge.ProcessId)
+        if (
+            nestedTracker is null
+            || nestedDisplay != bridge.Display
+            || nestedProcessId != bridge.ProcessId
+            || nestedProcessStartTime != bridge.ProcessStartTime
+        )
         {
             ClearNestedTracker();
             nestedTracker = createNestedTracker(bridge.Display);
             nestedDisplay = bridge.Display;
             nestedProcessId = bridge.ProcessId;
+            nestedProcessStartTime = bridge.ProcessStartTime;
         }
+
+        hasNativeHostFocusPublisher |= bridge.HasNativeHostFocusPublisher;
 
         GameWindowSnapshot nestedSnapshot = nestedTracker?.GetSnapshot() ?? GameWindowSnapshot.Unavailable;
         return nestedSnapshot.IsAvailable && nestedSnapshot.IsVisible
             ? nestedSnapshot with
             {
                 ClientBounds = bridge.HostBounds,
+                IsForeground = nestedSnapshot.IsForeground && (bridge.IsHostForeground ?? !hasNativeHostFocusPublisher),
             }
             : hostSnapshot;
     }
@@ -163,5 +242,7 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
         nestedTracker = null;
         nestedDisplay = null;
         nestedProcessId = 0;
+        nestedProcessStartTime = null;
+        hasNativeHostFocusPublisher = false;
     }
 }
