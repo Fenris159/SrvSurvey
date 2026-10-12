@@ -69,6 +69,29 @@ public sealed class ExplorationPoiViewModelTests : IDisposable
         }
     }
 
+    /// <summary>Mixed-provider attractions cannot open an unrelated GEC page through the source command.</summary>
+    [Fact]
+    public async Task NonGecAttractionDisablesGecSourceCommand()
+    {
+        using ExplorationPoiViewModel vm = Create(new FakeClient([Poi(1) with { Source = "GMP" }]));
+        bool opened = false;
+        vm.UseActions(
+            _ => Task.CompletedTask,
+            _ =>
+            {
+                opened = true;
+                return Task.FromResult(true);
+            }
+        );
+        vm.SetExternalEnabled(true);
+        Update(vm, "Sol", 1);
+        await vm.PendingLoad;
+        vm.Selected = Assert.Single(vm.Items);
+        Assert.False(vm.OpenSourceCommand.CanExecute(null));
+        vm.OpenSourceCommand.Execute(null);
+        Assert.False(opened);
+    }
+
     /// <summary>Verifies current system panel appears passively clears during jump and hides when unmatched.</summary>
     [Fact]
     public async Task CurrentSystemPanelAppearsPassivelyClearsDuringJumpAndHidesWhenUnmatched()

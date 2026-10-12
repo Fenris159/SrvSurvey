@@ -23,7 +23,12 @@ public sealed record ExplorationPoi(
 )
 {
     public string Identity => Source + ":" + Id.ToString(CultureInfo.InvariantCulture);
-    public Uri SourceUri => new(WellKnownUris.EdastroPoiPagePrefix + Id.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>Returns the GEC source page only for GEC identities, avoiding links to unrelated provider IDs.</summary>
+    public Uri? SourceUri =>
+        string.Equals(Source, "GEC", StringComparison.OrdinalIgnoreCase)
+            ? new Uri(WellKnownUris.EdastroPoiPagePrefix + Id.ToString(CultureInfo.InvariantCulture))
+            : null;
     public bool IsLegacy => Category == "Legacy" || SecondaryCategory == "Legacy";
     public string CategoryText => string.Join(" · ", new[] { Category, SecondaryCategory }.Where(s => s.Length > 0));
     public IReadOnlyList<ExplorationPoiDescriptionBlock> DescriptionBlocks { get; init; } = [];

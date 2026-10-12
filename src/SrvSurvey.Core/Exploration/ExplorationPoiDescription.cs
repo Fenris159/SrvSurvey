@@ -6,7 +6,7 @@ namespace SrvSurvey.Core.Exploration;
 
 public sealed record ExplorationPoiDescriptionBlock(string Text, Uri? ImageUri = null, string Caption = "");
 
-public sealed partial class ExplorationPoiDescription
+public sealed class ExplorationPoiDescription
 {
     /// <summary>Captures source-ordered description blocks and the plain text summary.</summary>
     private ExplorationPoiDescription(IReadOnlyList<ExplorationPoiDescriptionBlock> blocks)
@@ -91,45 +91,75 @@ public sealed partial class ExplorationPoiDescription
     }
 
     /// <summary>Matches HTML or Markdown image references for source-ordered extraction.</summary>
-    [GeneratedRegex(
+    private static readonly Regex ImagesPattern = new(
         "!\\[(?<caption>[^\\]\\r\\n]*)\\]\\(\\s*(?<url><[^>\\r\\n]+>|(?:[^()\\s]|\\([^()\\r\\n]*\\))+)(?:[ \\t]+[\"'][^\"'\\r\\n]*[\"'])?\\s*\\)|<img\\b[^>]*>",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
-    )]
-    private static partial Regex Images();
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for images.</summary>
+    private static Regex Images() => ImagesPattern;
 
     /// <summary>Matches HTML attribute names and quoted or unquoted values.</summary>
-    [GeneratedRegex(
+    private static readonly Regex AttributesPattern = new(
         "\\b(?<name>src|alt)\\s*=\\s*(?:\"(?<value>[^\"]*)\"|'(?<value>[^']*)'|(?<value>[^\\s>]+))",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
-    )]
-    private static partial Regex Attributes();
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for attributes.</summary>
+    private static Regex Attributes() => AttributesPattern;
 
     /// <summary>Matches script and style sections excluded from description previews.</summary>
-    [GeneratedRegex(
+    private static readonly Regex HiddenHtmlPattern = new(
         "<(?:script|style)\\b[^>]*>.*?</(?:script|style)\\s*>",
-        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
-    )]
-    private static partial Regex HiddenHtml();
+        RegexOptions.IgnoreCase
+            | RegexOptions.Singleline
+            | RegexOptions.CultureInvariant
+            | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for hidden html.</summary>
+    private static Regex HiddenHtml() => HiddenHtmlPattern;
 
     /// <summary>Matches remaining image markup that should not appear as preview text.</summary>
-    [GeneratedRegex(
+    private static readonly Regex UnsupportedImagesPattern = new(
         "!\\[[^\\]]*\\](?:\\([^)]*\\)|\\[[^\\]]*\\])",
-        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
-    )]
-    private static partial Regex UnsupportedImages();
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for unsupported images.</summary>
+    private static Regex UnsupportedImages() => UnsupportedImagesPattern;
 
     /// <summary>Matches HTML line breaks and paragraph endings for readable text conversion.</summary>
-    [GeneratedRegex(
+    private static readonly Regex HtmlBreaksPattern = new(
         "</(?:p|div|h[1-6]|li)\\s*>|<br\\s*/?>",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking
-    )]
-    private static partial Regex HtmlBreaks();
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for html breaks.</summary>
+    private static Regex HtmlBreaks() => HtmlBreaksPattern;
 
     /// <summary>Matches remaining HTML tags removed from plain description text.</summary>
-    [GeneratedRegex("<[^>]*>", RegexOptions.CultureInvariant | RegexOptions.NonBacktracking)]
-    private static partial Regex HtmlTags();
+    private static readonly Regex HtmlTagsPattern = new(
+        "<[^>]*>",
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for html tags.</summary>
+    private static Regex HtmlTags() => HtmlTagsPattern;
 
     /// <summary>Matches Markdown links whose visible label is retained in plain text.</summary>
-    [GeneratedRegex("\\[(?<label>[^\\]]*)\\]\\([^)]*\\)", RegexOptions.CultureInvariant | RegexOptions.NonBacktracking)]
-    private static partial Regex Links();
+    private static readonly Regex LinksPattern = new(
+        "\\[(?<label>[^\\]]*)\\]\\([^)]*\\)",
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
+        TimeSpan.FromSeconds(1)
+    );
+
+    /// <summary>Returns the cached linear-time pattern for links.</summary>
+    private static Regex Links() => LinksPattern;
 }

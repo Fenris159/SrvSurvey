@@ -61,23 +61,20 @@ public sealed class ExplorationPoiDescriptionViewModel(CodexImageCache? imageCac
         CancellationTokenSource cancellation
     )
     {
+        CancellationToken token = cancellation.Token;
         try
         {
             foreach (
                 ExplorationPoiDescriptionBlockViewModel block in content.Where(block => block.ImageUri is not null)
             )
             {
-                cancellation.Token.ThrowIfCancellationRequested();
+                token.ThrowIfCancellationRequested();
                 block.Status = "Loading image…";
                 string url = block.ImageUri!.AbsoluteUri;
                 byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(url));
                 long key = Math.Max(1, BinaryPrimitives.ReadInt64LittleEndian(hash) & long.MaxValue);
-                CodexImageCacheResult result = await imageCache!.GetAsync(
-                    key,
-                    url,
-                    cancellationToken: cancellation.Token
-                );
-                cancellation.Token.ThrowIfCancellationRequested();
+                CodexImageCacheResult result = await imageCache!.GetAsync(key, url, cancellationToken: token);
+                token.ThrowIfCancellationRequested();
                 if (!result.IsSuccess)
                 {
                     block.Status = "Image unavailable. Open the GEC entry to view the original.";
@@ -149,6 +146,7 @@ public sealed class ExplorationPoiDescriptionViewModel(CodexImageCache? imageCac
     public void Dispose()
     {
         request?.Cancel();
+        request?.Dispose();
         request = null;
         ClearBlocks();
         imageCache?.Dispose();

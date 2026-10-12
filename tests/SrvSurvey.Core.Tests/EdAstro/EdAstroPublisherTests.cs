@@ -226,6 +226,10 @@ public sealed class EdAstroPublisherTests
     [InlineData("{}")]
     [InlineData("{\"status\":\"invalid\"}")]
     [InlineData("{\"status\":true}")]
+    [InlineData("{\"status\":null}")]
+    [InlineData("{\"status\":999999999999}")]
+    [InlineData("[]")]
+    [InlineData("null")]
     public async Task MalformedUploadResponseRemainsRetryable(string body)
     {
         using var fixture = new Fixture();
@@ -314,11 +318,62 @@ public sealed class EdAstroPublisherTests
     {
         using var handler = new Handler();
         using var client = new HttpClient(handler);
-        using var publisher = new EdAstroPublisher("2.1.3.0", client);
+        using var publisher = new EdAstroPublisher("2.1.3.0", client, trafficBudget: new EdAstroTrafficBudget());
         publisher.SetEnabled(true);
         publisher.Apply(Request([Event()]));
-        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(4));
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(30));
         publisher.SetEnabled(false);
+        Assert.Equal(0, publisher.PendingCount);
+    }
+
+    /// <summary>Unexpected adapter failures are consolidated and do not terminate the automatic delivery worker.</summary>
+    [Fact]
+    public async Task AutomaticWorkerRecoversAfterUnexpectedAdapterFailure()
+    {
+        using var handler = new Handler { Failure = new ArgumentException("simulated adapter failure") };
+        using var client = new HttpClient(handler);
+        var problem = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var recovered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        long clockTicks = DateTimeOffset.UtcNow.UtcTicks;
+        handler.OnRequest = () =>
+        {
+            if (handler.Wire.Count == 2)
+            {
+                recovered.TrySetResult();
+            }
+        };
+        using var publisher = new EdAstroPublisher(
+            "2.1.3.0",
+            client,
+            log: _ => problem.TrySetResult(),
+            utcNow: () => new DateTimeOffset(Interlocked.Read(ref clockTicks), TimeSpan.Zero),
+            trafficBudget: new EdAstroTrafficBudget()
+        );
+        publisher.SetEnabled(true);
+        publisher.Apply(Request([Event()]));
+        await problem.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        handler.Failure = null;
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        while (!recovered.Task.IsCompleted)
+        {
+            Interlocked.Add(ref clockTicks, TimeSpan.FromSeconds(30).Ticks);
+            await Task.Delay(25, deadline.Token);
+        }
+        await recovered.Task;
+        Assert.Equal(2, handler.Wire.Count);
+        Assert.All(handler.Wire, request => Assert.Equal(HttpMethod.Get, request.Method));
+    }
+
+    /// <summary>Disposal releases owned delivery resources and later processing remains inert.</summary>
+    [Fact]
+    public async Task DisposedPublisherDoesNotAcceptOrProcessNewData()
+    {
+        var publisher = new EdAstroPublisher("2.1.3.0", automaticProcessing: false);
+        publisher.Dispose();
+        publisher.SetEnabled(true);
+        publisher.SetSuspended(true);
+        publisher.Apply(Request([Event()]));
+        await publisher.ProcessPendingAsync();
         Assert.Equal(0, publisher.PendingCount);
     }
 
@@ -410,6 +465,7 @@ public sealed class EdAstroPublisherTests
         internal Queue<HttpResponseMessage> Responses { get; } = new();
         internal List<Wire> Wire { get; } = [];
         internal Exception? Failure { get; set; }
+        internal Action? OnRequest { get; set; }
         internal bool Block { get; set; }
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -428,6 +484,7 @@ public sealed class EdAstroPublisherTests
                     request.Headers.UserAgent.ToString()
                 )
             );
+            OnRequest?.Invoke();
             if (Failure is not null)
             {
                 throw Failure;

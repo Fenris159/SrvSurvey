@@ -203,7 +203,21 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     /// <summary>Processes at most one paced request; used by the worker and deterministic delivery tests.</summary>
     internal async Task ProcessPendingAsync(CancellationToken cancellationToken = default)
     {
-        if (!await sending.WaitAsync(0, cancellationToken).ConfigureAwait(false))
+        lock (sync)
+        {
+            if (disposed)
+            {
+                return;
+            }
+        }
+        try
+        {
+            if (!await sending.WaitAsync(0, cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+        }
+        catch (ObjectDisposedException)
         {
             return;
         }
@@ -425,11 +439,11 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         if (status == HttpStatusCode.OK)
         {
             using var document = JsonDocument.Parse(bytes);
-            JsonElement value = document.RootElement.GetProperty("status");
-            apiStatus =
-                value.ValueKind == JsonValueKind.Number
-                    ? value.GetInt32()
-                    : int.Parse(value.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+            if (!TryReadApiStatus(document.RootElement, out apiStatus))
+            {
+                DeferFailure("EDAstro delivery is unavailable; queued data will retry.");
+                return;
+            }
         }
         if (status != HttpStatusCode.OK || apiStatus is not (200 or 401))
         {
@@ -443,6 +457,27 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         completedCount += apiStatus == 200 ? batch.Length : 0;
         failureCount = 0;
         lastProblem = null;
+    }
+
+    /// <summary>Reads a numeric or textual result code without throwing on malformed provider status values.</summary>
+    private static bool TryReadApiStatus(JsonElement root, out int status)
+    {
+        status = 0;
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("status", out JsonElement value))
+        {
+            return false;
+        }
+        return value.ValueKind switch
+        {
+            JsonValueKind.Number => value.TryGetInt32(out status),
+            JsonValueKind.String => int.TryParse(
+                value.GetString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out status
+            ),
+            _ => false,
+        };
     }
 
     /// <summary>Reads the event discriminator from a previously validated queued journal object.</summary>
@@ -530,7 +565,21 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             while (!lifetime.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1), lifetime.Token).ConfigureAwait(false);
-                await ProcessPendingAsync(lifetime.Token).ConfigureAwait(false);
+                try
+                {
+                    await ProcessPendingAsync(lifetime.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception)
+                {
+                    lock (sync)
+                    {
+                        DeferFailure("EDAstro delivery encountered an unexpected failure; queued data will retry.");
+                    }
+                }
             }
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
@@ -555,6 +604,14 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         }
         lifetime.Cancel();
         worker?.GetAwaiter().GetResult();
+        sending.Wait(CancellationToken.None);
+        lock (sync)
+        {
+            activeRequest?.Dispose();
+            activeRequest = null;
+        }
+        sending.Release();
+        sending.Dispose();
         lifetime.Dispose();
         if (ownsClient)
         {

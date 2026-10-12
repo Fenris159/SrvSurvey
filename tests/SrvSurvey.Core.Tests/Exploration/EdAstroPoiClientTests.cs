@@ -38,11 +38,23 @@ public sealed class EdAstroPoiClientTests : IDisposable
         Assert.Equal(4.16, poi.AverageStars);
         Assert.Equal(25, poi.Votes);
         Assert.True(poi.IsRare);
-        Assert.Equal("https://edastro.com/gec/view/43", poi.SourceUri.AbsoluteUri);
+        Assert.Equal("https://edastro.com/gec/view/43", poi.SourceUri!.AbsoluteUri);
         Assert.True((await client.GetAsync(true)).IsCached);
         using var restored = new EdAstroPoiClient(directory, http, trafficBudget: new EdAstroTrafficBudget());
         Assert.Single((await restored.GetAsync()).Catalog.Items);
         Assert.Single(handler.Requests);
+    }
+
+    /// <summary>Non-GEC catalogue identities never open an unrelated GEC attraction with the same numeric ID.</summary>
+    [Fact]
+    public void OtherProviderIdentityDoesNotProduceGecSourceLink()
+    {
+        using var json = System.Text.Json.JsonDocument.Parse(
+            CatalogueJson.Replace("GEC", "GMP", StringComparison.Ordinal)
+        );
+        ExplorationPoi poi = Assert.Single(ExplorationPoiCatalog.Parse(json.RootElement).Items);
+        Assert.Equal("GMP:43", poi.Identity);
+        Assert.Null(poi.SourceUri);
     }
 
     /// <summary>Verifies bad refresh retains last good disk and memory snapshot.</summary>

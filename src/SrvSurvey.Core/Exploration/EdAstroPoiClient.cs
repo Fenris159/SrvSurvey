@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Exploration;
@@ -121,6 +122,7 @@ public sealed class EdAstroPoiClient : IExplorationPoiClient, IDisposable
                         or InvalidDataException
                         or UnauthorizedAccessException
                         or JsonException
+                        or RegexMatchTimeoutException
                         or OperationCanceledException
             )
         {
@@ -167,6 +169,7 @@ public sealed class EdAstroPoiClient : IExplorationPoiClient, IDisposable
                         or InvalidDataException
                         or UnauthorizedAccessException
                         or JsonException
+                        or RegexMatchTimeoutException
                         or KeyNotFoundException
                         or FormatException
                         or InvalidOperationException

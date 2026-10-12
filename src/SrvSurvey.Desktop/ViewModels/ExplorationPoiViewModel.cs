@@ -68,7 +68,10 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
         RefreshCommand = refreshCommand;
         NewPoiCommand = new AsyncCommand(OpenNewPoiAsync, () => launcher is not null);
         CopySystemCommand = new AsyncCommand(CopySystemAsync, () => selected is not null && clipboard is not null);
-        OpenSourceCommand = new AsyncCommand(OpenSourceAsync, () => selected is not null && launcher is not null);
+        OpenSourceCommand = new AsyncCommand(
+            OpenSourceAsync,
+            () => selected?.Poi.SourceUri is not null && launcher is not null
+        );
         SavePoiCommand = new WorkspaceCommand(SaveSelected, () => selected is not null && bookmarks is not null);
         UseCurrentSystemCommand = new WorkspaceCommand(() =>
         {
@@ -489,10 +492,11 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
     /// <summary>Looks up an edited reference system and applies only the latest lookup result.</summary>
     private async Task ResolveReferenceAsync(string name, CancellationTokenSource cancellation)
     {
+        CancellationToken token = cancellation.Token;
         try
         {
-            await Task.Delay(450, cancellation.Token);
-            IReadOnlyList<StarSystemReference> matches = await systemResolver.SearchAsync(name, cancellation.Token);
+            await Task.Delay(450, token);
+            IReadOnlyList<StarSystemReference> matches = await systemResolver.SearchAsync(name, token);
             if (!ReferenceEquals(referenceCancellation, cancellation) || cancellation.IsCancellationRequested)
             {
                 return;
@@ -567,11 +571,11 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
     /// <summary>Opens the selected attraction's original provider page with contributor context.</summary>
     private async Task OpenSourceAsync()
     {
-        if (selected is { } item && launcher is { } launch)
+        if (selected is { } item && launcher is { } launch && item.Poi.SourceUri is { } sourceUri)
         {
             try
             {
-                if (!await launch(item.Poi.SourceUri))
+                if (!await launch(sourceUri))
                 {
                     DataStatus = "The GEC entry could not be opened.";
                 }
@@ -623,8 +627,12 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
     /// <summary>Cancels catalogue and reference work and releases selected-description resources.</summary>
     public void Dispose()
     {
-        DescriptionPreview.Dispose();
         lifetime.Cancel();
+        requestCancellation?.Dispose();
+        requestCancellation = null;
+        referenceCancellation?.Dispose();
+        referenceCancellation = null;
+        DescriptionPreview.Dispose();
         lifetime.Dispose();
     }
 

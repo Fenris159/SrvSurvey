@@ -80,7 +80,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         try
         {
-            notify?.Invoke(value);
+            notify.Invoke(value);
             return true;
         }
         catch (Exception exception)
@@ -107,7 +107,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     private void RollBackSharingConsent(
         NetworkPrivacyPreferences previous,
         bool enabled,
-        Action<bool>? notify,
+        Action<bool> notify,
         string provider,
         Exception originalException
     )
@@ -124,7 +124,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         try
         {
-            notify?.Invoke(enabled);
+            notify.Invoke(enabled);
         }
         catch (Exception exception)
         {
