@@ -23,8 +23,8 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 - **See distances when selecting destinations individually.** Next-jump
   information calculates the distance once matching destination coordinates are
   available from the existing system lookup. Plotted routes also retain distance
-  information for their final jump, and arriving does not replace the displayed
-  jump distance with zero.
+  information for their final jump, stale route origins cannot supply misleading
+  distances, and arriving does not replace the displayed jump distance with zero.
 - **Explore EDAstro attractions.** The Exploration POIs · EDAstro workspace
   searches systems or attractions, with system autocomplete and an editable
   reference system for nearby-radius searches. Category, score, rarity and

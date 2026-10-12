@@ -31,6 +31,61 @@ public sealed class JumpInfoRoutePlannerTests
         Assert.Equal(10, plan.TotalDistanceLy);
     }
 
+    /// <summary>Rejects a retained one-jump route when its origin no longer identifies the current system.</summary>
+    [Theory]
+    [InlineData("Gamma", 3L)]
+    [InlineData("Gamma", null)]
+    [InlineData(null, 3L)]
+    [InlineData(null, null)]
+    public void SingleJumpNavRouteRejectsStaleOrUnknownOrigin(string? currentName, long? currentAddress)
+    {
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
+            new JumpInfoRoutePlannerRequest
+            {
+                FsdTarget = new JumpTarget("Alpha", 2, "K"),
+                CurrentSystemName = currentName,
+                CurrentSystemAddress = currentAddress,
+                CurrentPosition = new GalacticCoordinate(45, 0, 0),
+                NavRoute = new NavRouteSnapshot(
+                    DateTimeOffset.UtcNow,
+                    "NavRoute",
+                    [Entry("Sol", 1, 0, "G"), Entry("Alpha", 2, 10, "K")]
+                ),
+            }
+        );
+
+        Assert.NotNull(plan);
+        Assert.Equal(JumpInfoRouteSource.Direct, plan.Source);
+        Assert.Empty(plan.Legs);
+        Assert.Null(plan.TargetPosition);
+    }
+
+    /// <summary>Accepts either a known system address or a case-insensitive name for a single-jump route origin.</summary>
+    [Theory]
+    [InlineData("sOl", null)]
+    [InlineData(null, 1L)]
+    public void SingleJumpNavRouteAcceptsMatchingOrigin(string? currentName, long? currentAddress)
+    {
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
+            new JumpInfoRoutePlannerRequest
+            {
+                FsdTarget = new JumpTarget("Alpha", 2, "K"),
+                CurrentSystemName = currentName,
+                CurrentSystemAddress = currentAddress,
+                NavRoute = new NavRouteSnapshot(
+                    DateTimeOffset.UtcNow,
+                    "NavRoute",
+                    [Entry("Sol", 1, 0, "G"), Entry("Alpha", 2, 10, "K")]
+                ),
+            }
+        );
+
+        Assert.NotNull(plan);
+        Assert.Equal(JumpInfoRouteSource.NavRoute, plan.Source);
+        Assert.Single(plan.Legs);
+        Assert.Equal(10, plan.TotalDistanceLy);
+    }
+
     [Fact]
     public void JournalFsdTargetTakesPrecedenceOverStatusDestination()
     {

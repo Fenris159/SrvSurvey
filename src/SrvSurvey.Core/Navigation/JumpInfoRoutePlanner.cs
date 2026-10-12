@@ -92,8 +92,12 @@ public static class JumpInfoRoutePlanner
         }
 
         RoutePoint? targetPoint = FindTarget(routePoints, target);
-        // A single remaining jump still supplies usable coordinates when no followed route contains the target.
-        if (targetPoint is null && navPoints.Count >= 2)
+        // A single remaining jump supplies usable coordinates only when its origin is still the current system.
+        if (
+            targetPoint is null
+            && navPoints.Count >= 2
+            && MatchesCurrentSystem(navPoints[0], currentSystemName, currentSystemAddress)
+        )
         {
             targetPoint = FindTarget(navPoints, target);
             if (targetPoint is not null)
@@ -197,6 +201,14 @@ public static class JumpInfoRoutePlanner
     private static RoutePoint? FindTarget(IReadOnlyList<RoutePoint> route, JumpTarget target)
     {
         return route.FirstOrDefault(point => MatchesTarget(point.Name, point.SystemAddress, target));
+    }
+
+    /// <summary>Checks a retained route origin against the current system's known address or name before using its distance.</summary>
+    private static bool MatchesCurrentSystem(RoutePoint point, string? currentSystemName, long? currentSystemAddress)
+    {
+        return currentSystemAddress is > 0 && point.SystemAddress == currentSystemAddress
+            || !string.IsNullOrWhiteSpace(currentSystemName)
+                && string.Equals(point.Name, currentSystemName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static List<JumpInfoRouteLeg> CreateLegs(IReadOnlyList<RoutePoint> route, double? maximumJumpRange)
