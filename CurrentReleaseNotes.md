@@ -1,4 +1,9 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.1
+# SrvSurvey-XP 2.1.3.0-rc.64.2
+
+RC.64.2 keeps expanding overlays within the available screen space, adds a
+per-panel growth direction choice, and preserves existing saved positions.
+It also refines colonization text and checkmark scaling and starts Exploration
+POI searches with nearby systems included. It includes the earlier changes below.
 
 RC.64.1 improves EDAstro sharing diagnostics and clears harmless Exploration
 POI selection warnings. It includes the RC.64 and RC.63 changes below.
@@ -14,6 +19,21 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## What's changed
 
+- **Keep expanding overlays on screen.** Panels grow to the right on the left
+  half of a monitor and to the left on the right half. Taller content shifts
+  upward when it reaches the bottom edge. Panels retain their chosen corner
+  when content shrinks or settings refresh, and combined game overlays stay
+  within the game area.
+- **Choose each panel's growth direction.** In the position editor, the arrow
+  button beside Reset panel size cycles through Automatic, Grow left and Grow
+  right. The choice is saved per panel and remains in place after moving it.
+- **Keep your existing overlay layout.** Older saved positions load at their
+  expected locations and gain the new growth metadata when you save. Growth
+  direction changes preserve the panel's typography, spacing and wrapping.
+- **Include nearby Exploration POIs by default.** Reference system only now
+  starts unchecked, so searches include nearby systems within the chosen
+  distance. Enable it whenever you want attractions from the reference system
+  alone.
 - **See when EDAstro requests a new data type.** The application log
   lists event types requested by EDAstro that this version cannot send. The
   notice appears when that unsupported list changes, without repeating on
@@ -25,10 +45,11 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 - **Keep Exploration POI selection quiet.** Opening the workspace or filtering
   away every result no longer logs warnings about missing selected-POI details.
   Selecting another attraction continues to show its information normally.
-- **Scale colonization checkmarks with the other icons.** Completion checkmarks
-  now follow the Icons slider alongside row badges. Larger icons can extend
-  beyond row edges without increasing row height; commodity and cargo-count
-  font sizes determine the height instead.
+- **Scale colonization text and checkmarks separately.** Completion checkmarks
+  start 65% larger and follow the Icons slider. MARKET, LOAD and READY badges
+  use Detail; project lists and collapsed-category summaries use Caption.
+  Larger checkmarks and badges can extend beyond row edges without increasing
+  row height; commodity and cargo-count font sizes determine the height instead.
 - **Choose a quieter colonization table.** Carrier badges now read LOAD and
   READY. READY still requires enough cargo on the carrier itself. The new Hide
   row badges option hides status and assignment labels while keeping completion
@@ -70,15 +91,15 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## Update channel and packages
 
-RC.64.1 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.2 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.1`
-- Tag: `xp2-v2.1.3.0-rc.64.1`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.1-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.1-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.1-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.1-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.2`
+- Tag: `xp2-v2.1.3.0-rc.64.2`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.2-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.2-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.2-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.2-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

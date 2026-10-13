@@ -50,7 +50,7 @@
                         ItemsSource="{Binding ProjectNames}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <TextBlock FontSize="9" Classes="muted type-detail"
+                <TextBlock FontSize="9" Classes="muted type-caption"
                            Text="{Binding StringFormat='&#x203A; {0}'}"
                            TextWrapping="Wrap" />
               </DataTemplate>
@@ -136,7 +136,7 @@
                 <TextBlock FontSize="9" Classes="type-header" Foreground="{DynamicResource RavenColoniseCategoryBrush}"
                            FontWeight="Bold"
                            Text="{Binding Name}" />
-                <TextBlock FontSize="8" Classes="muted type-detail"
+                <TextBlock FontSize="8" Classes="muted type-caption"
                            IsVisible="{Binding IsCollapsed}"
                            Text="{Binding CollapsedSummary}" />
                 <ItemsControl ItemsSource="{Binding Rows}"
@@ -170,7 +170,7 @@
                               <controls:OverlayRowIconHost VerticalAlignment="Center" ClipToBounds="False"
                                                            IsVisible="{Binding IsSatisfied}">
                                 <Viewbox Height="{Binding #CompletionCheckmarkText.FontSize}">
-                                  <TextBlock x:Name="CompletionCheckmarkText" FontSize="10" Classes="type-icon" FontWeight="Bold"
+                                  <TextBlock x:Name="CompletionCheckmarkText" FontSize="16.5" Classes="type-icon" FontWeight="Bold"
                                              FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2"
                                              Foreground="{DynamicResource RavenColoniseSurplusBrush}" Text="&#x2713;" />
                                 </Viewbox>
@@ -191,7 +191,7 @@
                             </controls:OverlayRowIconHost>
                             <controls:OverlayRowIconHost VerticalAlignment="Center" ClipToBounds="False"
                                                          IsVisible="{Binding HasMarketBadge}">
-                              <TextBlock FontSize="8" Classes="type-icon" Foreground="{DynamicResource RavenColoniseHighlightBrush}"
+                              <TextBlock FontSize="8" Classes="type-detail" Foreground="{DynamicResource RavenColoniseHighlightBrush}"
                                          FontWeight="Bold" Text="{Binding MarketBadgeText}" />
                             </controls:OverlayRowIconHost>
                           </StackPanel>
