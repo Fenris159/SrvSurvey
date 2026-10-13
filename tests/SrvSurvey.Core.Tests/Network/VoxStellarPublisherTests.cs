@@ -426,6 +426,7 @@ public sealed class VoxStellarPublisherTests
         Assert.Empty(handler.Requests);
     }
 
+    /// <summary>Shutdown requests cancellation within its bounded deadline for an unresponsive upload.</summary>
     [Fact]
     public async Task ShutdownCancelsAnUnresponsiveUploadWithinItsDeadline()
     {
@@ -439,6 +440,7 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
+    /// <summary>Shutdown retains accepted outcomes while cancelling the remaining unresponsive request.</summary>
     [Fact]
     public async Task ShutdownRetainsCompletedOutcomesFromAnInterruptedBatch()
     {
@@ -468,6 +470,7 @@ public sealed class VoxStellarPublisherTests
         public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int CallCount { get; private set; }
 
+        /// <inheritdoc />
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -478,17 +481,12 @@ public sealed class VoxStellarPublisherTests
             {
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
+            using CancellationTokenRegistration registration = cancellationToken.Register(() =>
+                Cancelled.TrySetResult()
+            );
             Started.TrySetResult();
-            try
-            {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                return new HttpResponseMessage(HttpStatusCode.OK);
-            }
-            catch (OperationCanceledException)
-            {
-                Cancelled.TrySetResult();
-                throw;
-            }
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 
