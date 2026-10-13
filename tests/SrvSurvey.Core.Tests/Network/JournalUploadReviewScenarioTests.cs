@@ -93,53 +93,49 @@ public sealed partial class JournalUploadScenarioTests
         }
         else
         {
-            using (
-                var publisher = new VoxStellarPublisher(
-                    "2.1.3.0",
-                    "signing-key",
-                    new VoxStellarPublisherOptions
-                    {
-                        Client = http,
-                        BatchInterval = TimeSpan.Zero,
-                        OutboxDirectory = storage,
-                    }
-                )
-            )
-            {
-                await publisher.ApplyAsync(
-                    new()
-                    {
-                        JournalEvents = [],
-                        CommanderName = "Explorer",
-                        Enabled = true,
-                        AllowPublishing = false,
-                    }
-                );
-                string blocked = BlockUploadLog(storage, "voxstellar");
-                VoxStellarPublicationResult failed = await publisher.ApplyAsync(
-                    new()
-                    {
-                        JournalEvents = [entry, entry],
-                        CommanderName = "Explorer",
-                        Enabled = true,
-                        AllowPublishing = true,
-                    }
-                );
-                Assert.Empty(failed.QueuedEventNames);
-                Assert.Contains(failed.Warnings, warning => warning.Contains("2 event(s)", StringComparison.Ordinal));
-                Assert.Empty(handler.Posts);
-                Directory.Delete(blocked);
-                VoxStellarPublicationResult queued = await publisher.ApplyAsync(
-                    new()
-                    {
-                        JournalEvents = [entry],
-                        CommanderName = "Explorer",
-                        Enabled = true,
-                        AllowPublishing = true,
-                    }
-                );
-                Assert.Single(queued.QueuedEventNames);
-            }
+            using var publisher = new VoxStellarPublisher(
+                "2.1.3.0",
+                "signing-key",
+                new VoxStellarPublisherOptions
+                {
+                    Client = http,
+                    BatchInterval = TimeSpan.Zero,
+                    OutboxDirectory = storage,
+                }
+            );
+            await publisher.ApplyAsync(
+                new()
+                {
+                    JournalEvents = [],
+                    CommanderName = "Explorer",
+                    Enabled = true,
+                    AllowPublishing = false,
+                }
+            );
+            string blocked = BlockUploadLog(storage, "voxstellar");
+            VoxStellarPublicationResult failed = await publisher.ApplyAsync(
+                new()
+                {
+                    JournalEvents = [entry, entry],
+                    CommanderName = "Explorer",
+                    Enabled = true,
+                    AllowPublishing = true,
+                }
+            );
+            Assert.Empty(failed.QueuedEventNames);
+            Assert.Contains(failed.Warnings, warning => warning.Contains("2 event(s)", StringComparison.Ordinal));
+            Assert.Empty(handler.Posts);
+            Directory.Delete(blocked);
+            VoxStellarPublicationResult queued = await publisher.ApplyAsync(
+                new()
+                {
+                    JournalEvents = [entry],
+                    CommanderName = "Explorer",
+                    Enabled = true,
+                    AllowPublishing = true,
+                }
+            );
+            Assert.Single(queued.QueuedEventNames);
         }
         Assert.Single(handler.Posts);
     }
