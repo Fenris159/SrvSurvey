@@ -14,6 +14,7 @@ internal static class CommanderSettingsProfile
         "overlay-typography-overrides.json",
         "overlay-size-overrides.json",
         "overlay-position-references.json",
+        "overlay-growth-overrides.json",
         "theme.json",
         "overlay-theme-states.json",
     ];

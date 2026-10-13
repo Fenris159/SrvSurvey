@@ -14,6 +14,7 @@ internal static class OverlayLayoutFileAccess
         "overlay-typography-overrides.json",
         "overlay-size-overrides.json",
         "overlay-position-references.json",
+        "overlay-growth-overrides.json",
     ];
 
     // Only plotterOpacity belongs to overlays; the rest of settings.json is shared data.
@@ -101,8 +102,13 @@ internal static class OverlayLayoutFileAccess
             throw new InvalidDataException($"Invalid overlay recovery journal: '{journal}'.", exception);
         }
         if (
-            originals.Count != JournalFileNames.Length
-            || originals.Keys.Any(name => !JournalFileNames.Contains(name, StringComparer.Ordinal))
+            (
+                originals.Count != JournalFileNames.Length
+                && !(
+                    originals.Count == JournalFileNames.Length - 1
+                    && !originals.ContainsKey("overlay-growth-overrides.json")
+                )
+            ) || originals.Keys.Any(name => !JournalFileNames.Contains(name, StringComparer.Ordinal))
         )
         {
             throw new InvalidDataException($"Overlay recovery journal contains invalid file names: '{journal}'.");
@@ -112,7 +118,11 @@ internal static class OverlayLayoutFileAccess
         foreach (string name in FileNames)
         {
             string path = Path.Combine(directory, name);
-            byte[]? content = originals[name];
+            // An older generation did not own growth preferences; leave those untouched.
+            if (!originals.TryGetValue(name, out byte[]? content))
+            {
+                continue;
+            }
             if (content is null)
             {
                 File.Delete(path);

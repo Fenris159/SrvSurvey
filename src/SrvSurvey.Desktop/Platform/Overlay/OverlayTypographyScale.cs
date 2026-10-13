@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -81,6 +82,7 @@ public sealed record OverlayTypographyScale(
 
 internal static class OverlayTypographyResources
 {
+    private static readonly ConditionalWeakTable<Control, RealizedTypographyRegistration> RealizedRegistrations = [];
     private static readonly AttachedProperty<OverlayTypographyScale> PendingScaleProperty =
         AvaloniaProperty.RegisterAttached<Control, Control, OverlayTypographyScale>(
             nameof(PendingScaleProperty),
@@ -99,16 +101,12 @@ internal static class OverlayTypographyResources
         double
     >("BaselineFontSize", defaultValue: double.NaN);
 
-    static OverlayTypographyResources()
-    {
-        ScaleProperty.Changed.AddClassHandler<TextBlock>(static (text, _) => ApplyToText(text));
-        ScaleProperty.Changed.AddClassHandler<LayoutTransformControl>(static (control, _) => ApplyToIcon(control));
-    }
-
+    /// <summary>Applies saved role scaling after attachment and rechecks deferred templates when they are realized.</summary>
     public static void ApplyWhenAttached(Control root, OverlayTypographyScale? scale)
     {
         ArgumentNullException.ThrowIfNull(root);
         root.SetValue(PendingScaleProperty, scale ?? OverlayTypographyScale.Default);
+        _ = RealizedRegistrations.GetValue(root, static control => new RealizedTypographyRegistration(control));
         root.AttachedToVisualTree -= OnAttached;
         // Resolve role styles before capturing their unscaled font sizes, and
         // reapply them if the panel moves into the combined overlay window.
@@ -191,6 +189,7 @@ internal static class OverlayTypographyResources
         );
     }
 
+    /// <summary>Maps presentation role classes to independent typography settings.</summary>
     private static OverlayTypographyRole? GetRole(IReadOnlyList<string> classes)
     {
         if (classes.Contains("type-header"))
@@ -224,5 +223,41 @@ internal static class OverlayTypographyResources
         }
 
         return classes.Contains("type-icon") ? OverlayTypographyRole.Icons : null;
+    }
+
+    /// <summary>Applies saved typography after deferred item templates are realized, without refreshing on every layout.</summary>
+    private sealed class RealizedTypographyRegistration
+    {
+        private readonly Control root;
+        private readonly ConditionalWeakTable<Control, RealizedTypographyRegistration> realized = [];
+
+        /// <summary>Observes only the owning tree so closing or collecting a panel releases its registration.</summary>
+        public RealizedTypographyRegistration(Control root)
+        {
+            this.root = root;
+            root.LayoutUpdated += OnLayoutUpdated;
+            root.DetachedFromVisualTree += OnDetached;
+        }
+
+        /// <summary>Reapplies role sizes once for newly realized controls before later setting changes can reveal missing scaling.</summary>
+        private void OnLayoutUpdated(object? sender, EventArgs eventArgs)
+        {
+            bool added = false;
+            foreach (
+                Control control in root.GetVisualDescendants()
+                    .OfType<Control>()
+                    .Where(control => control is TextBlock or LayoutTransformControl)
+            )
+            {
+                added |= realized.TryAdd(control, this);
+            }
+            if (added)
+            {
+                Apply(root, root.GetValue(PendingScaleProperty));
+            }
+        }
+
+        /// <summary>Rechecks realized controls when a panel moves between native and combined hosts.</summary>
+        private void OnDetached(object? sender, VisualTreeAttachmentEventArgs eventArgs) => realized.Clear();
     }
 }

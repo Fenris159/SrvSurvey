@@ -79,16 +79,34 @@ public sealed class ColonizationCommodityOverlayPresentationTests
             window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible);
     }
 
-    /// <summary>Scales the visible completion glyph and row badge together without changing commodity-name sizing.</summary>
-    [AvaloniaFact]
-    public void CompletionCheckmarkScalesWithRowBadges()
+    /// <summary>Scales larger completion glyphs with Icons and market guidance with Detail without changing row text or height.</summary>
+    [AvaloniaTheory]
+    [InlineData(80, false, "MARKET")]
+    [InlineData(80, true, "LOAD")]
+    [InlineData(100, false, "READY")]
+    public void CompletionCheckmarkAndRowBadgesUseIndependentScaling(int carrierCargo, bool canLoad, string badgeText)
     {
         ColonizationCommodityPlan plan = CreatePlan("Test project");
         var viewModel = new ColonizationCommodityOverlayViewModel();
+        viewModel.ApplyPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                HighlightAlmostCoveredFleetCarrierLoads = true,
+                InlineFleetCarrierCargo = true,
+            }
+        );
         viewModel.Apply(
             plan with
             {
-                Rows = [plan.Rows[0] with { OnFleetCarriers = 100, InShip = 0, IsAvailableAtCurrentMarket = true }],
+                Rows =
+                [
+                    plan.Rows[0] with
+                    {
+                        OnFleetCarriers = carrierCargo,
+                        CanCompleteFleetCarrierLoad = canLoad,
+                        IsAvailableAtCurrentMarket = true,
+                    },
+                ],
             },
             null
         );
@@ -106,21 +124,41 @@ public sealed class ColonizationCommodityOverlayPresentationTests
             Viewbox checkmarkBox = Assert.Single(checkmark.GetVisualAncestors().OfType<Viewbox>());
             TextBlock badge = Assert.Single(
                 presentation.GetVisualDescendants().OfType<TextBlock>(),
-                text => text.Text == "MARKET"
+                text => text.Text == badgeText
             );
             TextBlock commodity = Assert.Single(
                 presentation.GetVisualDescendants().OfType<TextBlock>(),
                 text => text.Name == "CommodityNameText"
             );
-            double checkmarkHeight = checkmarkBox.Bounds.Height;
+            double checkmarkHeight = checkmarkBox.Height;
             double badgeSize = badge.FontSize;
             double commoditySize = commodity.FontSize;
+            Border row = Assert.Single(
+                presentation.GetVisualDescendants().OfType<Border>(),
+                border => border.Classes.Contains("commodity-row")
+            );
+            double rowHeight = row.Bounds.Height;
+            Assert.Equal(16.5, checkmarkHeight, 3);
 
             OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 0, 0, 100));
             window.UpdateLayout();
-            Assert.Equal(badgeSize * 2, badge.FontSize);
-            Assert.Equal(checkmarkHeight * 2, checkmarkBox.Bounds.Height, 3);
+            Assert.Equal(badgeSize, badge.FontSize);
+            Assert.Equal(checkmarkHeight * 2, checkmarkBox.Height, 3);
+            Assert.InRange(checkmarkBox.Bounds.Height, checkmarkBox.Height - 1, checkmarkBox.Height + 1);
             Assert.Equal(commoditySize, commodity.FontSize);
+            Assert.Equal(rowHeight, row.Bounds.Height, 3);
+
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 100, 0));
+            window.UpdateLayout();
+            Assert.Equal(badgeSize * 2, badge.FontSize);
+            Assert.Equal(checkmarkHeight, checkmarkBox.Height, 3);
+            Assert.Equal(commoditySize, commodity.FontSize);
+            Assert.Equal(rowHeight, row.Bounds.Height, 3);
+
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 0, 100));
+            window.UpdateLayout();
+            Assert.Equal(badgeSize, badge.FontSize);
+            Assert.Equal(checkmarkHeight, checkmarkBox.Height, 3);
         }
         finally
         {
@@ -228,7 +266,10 @@ public sealed class ColonizationCommodityOverlayPresentationTests
             Assert.Equal(2, rows.Length);
             Assert.Equal(rows[1].Bounds.Height, rows[0].Bounds.Height, 3);
             double textHeight = rows[0].Bounds.Height;
-            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, bodyScale, 0, 0, iconScale));
+            OverlayTypographyResources.Apply(
+                presentation,
+                new(0, 0, 0, bodyScale, showBadges ? iconScale : 0, 0, iconScale)
+            );
             window.UpdateLayout();
             Assert.All(rows, row => Assert.Equal(textHeight, row.Bounds.Height, 3));
             if (iconScale == 100 && bodyScale <= 0)
@@ -241,7 +282,10 @@ public sealed class ColonizationCommodityOverlayPresentationTests
                 double glyphTop = glyph.TranslatePoint(default, rows[0])!.Value.Y;
                 Assert.True(glyphTop < 0);
                 Assert.True(glyphTop + glyph.Bounds.Height > rows[0].Bounds.Height);
-                OverlayTypographyResources.Apply(presentation, new(0, 0, 100, 100, 0, 0, iconScale));
+                OverlayTypographyResources.Apply(
+                    presentation,
+                    new(0, 0, 100, 100, showBadges ? iconScale : 0, 0, iconScale)
+                );
                 window.UpdateLayout();
                 Assert.All(rows, row => Assert.True(row.Bounds.Height > textHeight));
             }
@@ -386,6 +430,55 @@ public sealed class ColonizationCommodityOverlayPresentationTests
             viewModel.Apply(CreatePlan("2 projects") with { ProjectNames = [longTitle, longTitle] }, null);
             window.UpdateLayout();
             Assert.True(presentation.Bounds.Width <= width + 0.1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Scales project lists and collapsed-category summaries with Caption independently of row badge Detail sizing.</summary>
+    [AvaloniaFact]
+    public void ProjectNamesAndCollapsedSummariesUseCaptionScaling()
+    {
+        ColonizationCommodityPlan plan = CreatePlan("Two projects");
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        viewModel.Apply(
+            plan with
+            {
+                ProjectNames = ["First project", "Second project"],
+                FleetCarriers = [new ColonizationFleetCarrier { MarketId = 1, Name = "ABC-123" }],
+                Rows = [plan.Rows[0] with { OnFleetCarriers = 100, InShip = 0 }],
+            },
+            null
+        );
+        var presentation = new ColonizationCommodityOverlayPresentation { DataContext = viewModel };
+        var window = new Window { Content = presentation, SizeToContent = SizeToContent.WidthAndHeight };
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            window.Show();
+            window.UpdateLayout();
+            TextBlock[] captions = presentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text =>
+                    text.Text is "› First project" or "› Second project" or "1 commodities covered by linked FCs"
+                )
+                .ToArray();
+            Assert.Equal(3, captions.Length);
+            double[] baselineSizes = captions.Select(text => text.FontSize).ToArray();
+
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 100, 0));
+            window.UpdateLayout();
+            Assert.Equal(baselineSizes, captions.Select(text => text.FontSize).ToArray());
+
+            OverlayTypographyResources.Apply(presentation, new(0, 0, 0, 0, 0, 100));
+            window.UpdateLayout();
+            Assert.Equal(
+                baselineSizes.Select(size => size * 2).ToArray(),
+                captions.Select(text => text.FontSize).ToArray()
+            );
         }
         finally
         {

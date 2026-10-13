@@ -127,6 +127,36 @@ public sealed class OverlayLayoutRecoveryTests : IDisposable
         Assert.Equal("updated", settings["theme"]!.GetValue<string>());
     }
 
+    /// <summary>Previous-release journals recover without deleting newer growth preferences or unrelated shared settings.</summary>
+    [Fact]
+    public void PreviousReleaseJournalRecoversBeforeSavingNewMetadata()
+    {
+        LegacyOverlayLayoutStore store = Seed();
+        var originals = OverlayLayoutFileAccess
+            .JournalFileNames.Where(name => name != "overlay-growth-overrides.json")
+            .ToDictionary(name => name, name => File.Exists(FilePath(name)) ? File.ReadAllBytes(FilePath(name)) : null);
+        File.WriteAllBytes(FilePath("overlay-layout-pending.json"), JsonSerializer.SerializeToUtf8Bytes(originals));
+        File.WriteAllText(FilePath("plotters.json"), "{\"PlotJumpInfo\":\"left:999,top:999\"}");
+        File.WriteAllText(FilePath("overlay-growth-overrides.json"), "{\"PlotTrackTarget\":\"left\"}");
+        File.WriteAllText(FilePath("settings.json"), "{\"theme\":\"current\"}");
+        LegacyOverlayLayout loaded = store.Load();
+        Assert.Null(loaded.Error);
+        Assert.Equal(Original, loaded.Placements["PlotJumpInfo"]);
+        Assert.Equal("{\"PlotTrackTarget\":\"left\"}", File.ReadAllText(FilePath("overlay-growth-overrides.json")));
+        Assert.Equal(
+            "current",
+            JsonNode.Parse(File.ReadAllText(FilePath("settings.json")))!["theme"]!.GetValue<string>()
+        );
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = Original with { GrowthDirection = OverlayGrowthDirection.Right },
+            }
+        );
+        Assert.Equal(OverlayGrowthDirection.Right, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
+        Assert.False(File.Exists(FilePath("overlay-layout-pending.json")));
+    }
+
     /// <summary>Explicit opacity repair restores a valid field or defaults it without replacing unrelated settings.</summary>
     [Theory]
     [InlineData(false)]
@@ -179,10 +209,12 @@ public sealed class OverlayLayoutRecoveryTests : IDisposable
                 FilePath("overlay-size-overrides.json"),
                 "{\"PlotJumpInfo\":{\"width\":999,\"height\":999}}"
             );
+            File.WriteAllText(FilePath("overlay-growth-overrides.json"), "{\"PlotJumpInfo\":\"left\"}");
         }
         Assert.Equal(Original, store.Load().Placements["PlotJumpInfo"]);
         Assert.Equal(original, File.ReadAllBytes(FilePath("plotters.json")));
         Assert.False(File.Exists(FilePath("overlay-size-overrides.json")));
+        Assert.False(File.Exists(FilePath("overlay-growth-overrides.json")));
         Assert.False(File.Exists(FilePath("overlay-layout-pending.json")));
     }
 

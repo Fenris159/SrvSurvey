@@ -178,6 +178,7 @@ public sealed class ExplorationPoiDescriptionViewModelTests : IDisposable
             new ExplorationPoiSettingsStore(Path.Combine(directory, "ui.json")),
             imageCache: new CodexImageCache(directory, http)
         );
+        model.CurrentOnly = true;
         model.UpdateContext("Sol", 1, new(0, 0, 0), null, []);
         model.SetExternalEnabled(true);
         await model.PendingLoad;

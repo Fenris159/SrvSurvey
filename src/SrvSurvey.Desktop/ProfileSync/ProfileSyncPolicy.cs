@@ -98,6 +98,7 @@ internal static partial class ProfileSyncPolicy
         "overlay-scale-overrides.json",
         "overlay-size-overrides.json",
         "overlay-position-references.json",
+        "overlay-growth-overrides.json",
         "settings.json",
     };
 
@@ -272,6 +273,7 @@ internal static partial class ProfileSyncPolicy
                 or "overlay-scale-overrides.json"
                 or "overlay-size-overrides.json"
                 or "overlay-position-references.json"
+                or "overlay-growth-overrides.json"
         )
         {
             return true;

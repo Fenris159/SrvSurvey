@@ -335,6 +335,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
             VerticalOffset = VerticalOffset,
             Opacity = UseCustomOpacity ? CustomOpacityPercent / 100d : null,
             PositionReference = HasPositionChanges ? null : acceptedPlacement.PositionReference,
+            GrowthAnchor = HasPositionChanges ? null : acceptedPlacement.GrowthAnchor,
         };
 
     public bool IsDirty => Placement != acceptedPlacement;

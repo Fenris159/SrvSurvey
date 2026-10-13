@@ -128,7 +128,7 @@ public sealed class ExplorationPoiViewModelTests : IDisposable
         Assert.False(restored.AutoShow);
     }
 
-    /// <summary>Verifies nearby filters and actions save distinct pois without replacing notes.</summary>
+    /// <summary>Browses nearby attractions by default while preserving reference-only filtering and bookmark actions.</summary>
     [Fact]
     public async Task NearbyFiltersAndActionsSaveDistinctPoisWithoutReplacingNotes()
     {
@@ -152,6 +152,9 @@ public sealed class ExplorationPoiViewModelTests : IDisposable
         vm.SetExternalEnabled(true);
         Update(vm, "Sol", 1);
         await vm.PendingLoad;
+        Assert.False(vm.CurrentOnly);
+        Assert.Equal(3, vm.Items.Count);
+        vm.CurrentOnly = true;
         Assert.Equal(2, vm.Items.Count);
         vm.Selected = vm.Items[0];
         vm.CopySystemCommand.Execute(null);
@@ -305,6 +308,7 @@ public sealed class ExplorationPoiViewModelTests : IDisposable
     {
         var client = new FakeClient([Poi(1), Poi(2, "Alpha"), Poi(4, category: "Legacy")]);
         using ExplorationPoiViewModel vm = Create(client);
+        vm.CurrentOnly = true;
         Update(vm, "Sol", 1);
         vm.SetExternalEnabled(true);
         await vm.PendingLoad;

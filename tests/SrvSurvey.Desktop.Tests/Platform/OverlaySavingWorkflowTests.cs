@@ -437,11 +437,11 @@ public sealed class OverlaySavingWorkflowTests : IDisposable
         }
     }
 
-    /// <summary>Changes to scale or text geometry retain the chosen panel origin in the saved layout.</summary>
+    /// <summary>Geometry changes preserve the corner until horizontal overflow requires a monitor clamp.</summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AppearanceGeometryChangeKeepsPanelOrigin(bool typography)
+    public void AppearanceGeometryChangeKeepsTheCornerWithinItsMonitorAndReopensAtTheSavedPosition(bool typography)
     {
         LegacyOverlayLayoutStore store = Store();
         store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = Placement() });
@@ -476,6 +476,14 @@ public sealed class OverlaySavingWorkflowTests : IDisposable
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             PixelPoint changedOrigin = preview.GetPanelScreenOrigin(preview.RenderScaling);
             PixelSize changedSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            PixelRect monitor = preview.Screens.Primary!.Bounds;
+            Assert.Equal(
+                new PixelPoint(
+                    Math.Clamp(origin.X, monitor.X, Math.Max(monitor.X, monitor.Right - changedSize.Width)),
+                    origin.Y
+                ),
+                changedOrigin
+            );
             vm.Save();
             LegacyOverlayPlacement committed = store.Load().Placements["PlotJumpInfo"];
             live.Close();
@@ -483,7 +491,7 @@ public sealed class OverlaySavingWorkflowTests : IDisposable
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             preview = host.PreviewWindows.Single(x => x.Definition.Name == "PlotJumpInfo");
             Assert.True(
-                origin == preview.GetPanelScreenOrigin(preview.RenderScaling),
+                changedOrigin == preview.GetPanelScreenOrigin(preview.RenderScaling),
                 $"original={origin}; after change={changedOrigin}; changed size={changedSize}; saved={committed}; reopened={preview.GetPanelScreenOrigin(preview.RenderScaling)}; reopened size={preview.GetPanelMetrics(preview.RenderScaling).PanelSize}"
             );
             vm.Cancel();

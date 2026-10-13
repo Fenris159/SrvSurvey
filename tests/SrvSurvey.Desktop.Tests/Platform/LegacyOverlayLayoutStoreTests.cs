@@ -12,6 +12,205 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         $"SrvSurvey-legacy-layout-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Growth preferences round-trip and reset without discarding appearance or other panels.</summary>
+    [Fact]
+    public void GrowthOverridesRoundTripResetIndependentlyAndKeepOtherMetadata()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var placement = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Left,
+            40,
+            LegacyVerticalAnchor.Top,
+            50,
+            0.7,
+            SizeOverride: new OverlayPanelSize(300, 200),
+            GrowthDirection: OverlayGrowthDirection.Left
+        );
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = placement,
+                ["PlotTrackTarget"] = placement with { GrowthDirection = OverlayGrowthDirection.Right },
+            }
+        );
+        Assert.Equal(placement, store.Load().Placements["PlotJumpInfo"]);
+        var session = new OverlayPositionEditSession(store.Load());
+        session.SetGrowthDirection("PlotJumpInfo", OverlayGrowthDirection.Automatic);
+        store.SaveChanges(session);
+        LegacyOverlayLayout loaded = store.Load();
+        Assert.Equal(
+            placement with
+            {
+                GrowthDirection = OverlayGrowthDirection.Automatic,
+            },
+            loaded.Placements["PlotJumpInfo"]
+        );
+        Assert.Equal(OverlayGrowthDirection.Right, loaded.Placements["PlotTrackTarget"].GrowthDirection);
+        Assert.DoesNotContain(
+            "PlotJumpInfo",
+            File.ReadAllText(Path.Combine(temporaryDirectory, "overlay-growth-overrides.json"))
+        );
+        Assert.Equal(OverlayGrowthDirection.Left, session.GetOriginalPlacement("PlotJumpInfo").GrowthDirection);
+    }
+
+    /// <summary>Legacy positions round-trip unchanged while the first geometry save persists an automatic growth corner.</summary>
+    [Fact]
+    public void LegacyCoordinatesSurviveConversionAndReopening()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(path, "{\"PlotJumpInfo\":\"left:400,top:50\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var bounds = new PixelRect(0, 0, 1000, 800);
+        LegacyOverlayLayout original = store.Load();
+        Assert.Null(original.Error);
+        var origin = new PixelPoint(400, 50);
+        Assert.Equal(origin, original.GetPosition("PlotJumpInfo", bounds, new PixelSize(100, 80)));
+        var session = new OverlayPositionEditSession(original);
+        session.Move("PlotJumpInfo", origin, new PixelSize(100, 80), bounds);
+        session.SetSizeOverride("PlotJumpInfo", new OverlayPanelSize(600, 200));
+        store.SaveChanges(session);
+        LegacyOverlayLayout reopened = store.Load();
+        Assert.Null(reopened.Error);
+        Assert.Equal(LegacyHorizontalAnchor.Left, reopened.Placements["PlotJumpInfo"].GrowthAnchor);
+        Assert.Equal(origin, reopened.GetPosition("PlotJumpInfo", bounds, new PixelSize(600, 200)));
+        var growth = new OverlayContentPlacement();
+        growth.Resolve(origin, new PixelSize(600, 200), bounds, bounds, reopened.Placements["PlotJumpInfo"]);
+        Assert.Equal(
+            origin,
+            growth.Resolve(origin, new PixelSize(100, 80), bounds, bounds, reopened.Placements["PlotJumpInfo"])
+        );
+    }
+
+    /// <summary>Older centered, bottom, right, and absolute positions retain their screen coordinates during the first converted save.</summary>
+    [Theory]
+    [InlineData(LegacyHorizontalAnchor.Center, LegacyVerticalAnchor.Middle)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom)]
+    [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Top)]
+    [InlineData(LegacyHorizontalAnchor.Screen, LegacyVerticalAnchor.Screen)]
+    public void FirstPositionSaveConvertsLegacyAnchorsWithoutMovingThePanel(
+        LegacyHorizontalAnchor horizontal,
+        LegacyVerticalAnchor vertical
+    )
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var bounds = new PixelRect(0, 0, 1000, 800);
+        var size = new PixelSize(100, 80);
+        var position = new PixelPoint(600, 200);
+        LegacyOverlayPlacement original = OverlayPositionEditSession.CreatePlacement(
+            new LegacyOverlayPlacement(horizontal, 0, vertical, 0, .7),
+            position,
+            size,
+            bounds
+        );
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = original });
+        LegacyOverlayLayout loaded = store.Load();
+        Assert.Equal(original, loaded.Placements["PlotJumpInfo"]);
+        Assert.Equal(position, loaded.GetPosition("PlotJumpInfo", bounds, size));
+        var session = new OverlayPositionEditSession(loaded);
+        session.Move("PlotJumpInfo", position, size, bounds);
+        store.SaveChanges(session);
+        LegacyOverlayLayout converted = store.Load();
+        Assert.Equal(position, converted.GetPosition("PlotJumpInfo", bounds, size));
+        Assert.Equal(LegacyHorizontalAnchor.Right, converted.Placements["PlotJumpInfo"].GrowthAnchor);
+        Assert.Equal(new PixelPoint(400, 200), converted.GetPosition("PlotJumpInfo", bounds, new PixelSize(300, 300)));
+    }
+
+    /// <summary>Rejects unsupported growth anchors rather than saving metadata that cannot be reopened.</summary>
+    [Fact]
+    public void InvalidGrowthAnchorCannotBeSaved()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            store.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotJumpInfo"] = new(
+                        LegacyHorizontalAnchor.Left,
+                        0,
+                        LegacyVerticalAnchor.Top,
+                        0,
+                        1,
+                        GrowthAnchor: LegacyHorizontalAnchor.Center
+                    ),
+                }
+            )
+        );
+    }
+
+    /// <summary>Only supported legacy and current growth records are accepted during loading.</summary>
+    [Theory]
+    [InlineData("{\"PlotJumpInfo\":\"automatic\"}", true)]
+    [InlineData("{\"PlotJumpInfo\":\"up\"}", false)]
+    [InlineData("{\"PlotJumpInfo\":3}", false)]
+    [InlineData("[]", false)]
+    [InlineData("{\"PlotJumpInfo\":{\"direction\":\"automatic\",\"anchor\":\"left\"}}", true)]
+    [InlineData("{\"PlotJumpInfo\":{\"direction\":\"right\",\"anchor\":\"right\"}}", true)]
+    [InlineData("{\"PlotJumpInfo\":{\"anchor\":\"automatic\"}}", false)]
+    [InlineData("{\"PlotJumpInfo\":{\"direction\":3}}", false)]
+    public void GrowthOverrideParsingValidatesDirections(string json, bool valid)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"left:40,top:50\"}");
+        File.WriteAllText(Path.Combine(temporaryDirectory, "overlay-growth-overrides.json"), json);
+        LegacyOverlayLayout loaded = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+        Assert.Equal(valid, loaded.Error is null);
+    }
+
+    /// <summary>Independent appearance edits merge while conflicting growth preferences require a retry.</summary>
+    [Fact]
+    public void GrowthOnlyEditsMergeWithConcurrentAppearanceEditsAndRejectConflictingDirections()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Left, 20, LegacyVerticalAnchor.Top, 30, 0.8),
+            }
+        );
+        var first = new OverlayPositionEditSession(store.Load());
+        var second = new OverlayPositionEditSession(store.Load());
+        first.SetGrowthDirection("PlotJumpInfo", OverlayGrowthDirection.Left);
+        second.SetOpacityOverride("PlotJumpInfo", 0.5);
+        store.SaveChanges(second);
+        store.SaveChanges(first);
+        Assert.Equal(0.5, store.Load().Placements["PlotJumpInfo"].Opacity);
+        Assert.Equal(OverlayGrowthDirection.Left, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
+        var conflicting = new OverlayPositionEditSession(store.Load());
+        var concurrent = new OverlayPositionEditSession(store.Load());
+        conflicting.SetGrowthDirection("PlotJumpInfo", OverlayGrowthDirection.Right);
+        concurrent.SetGrowthDirection("PlotJumpInfo", OverlayGrowthDirection.Automatic);
+        store.SaveChanges(concurrent);
+        Assert.Throws<InvalidDataException>(() => store.SaveChanges(conflicting));
+    }
+
+    /// <summary>Unsupported directions are rejected before committing layout changes.</summary>
+    [Fact]
+    public void InvalidGrowthCannotBeSaved()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            store.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotJumpInfo"] = new(
+                        LegacyHorizontalAnchor.Left,
+                        0,
+                        LegacyVerticalAnchor.Top,
+                        0,
+                        1,
+                        GrowthDirection: (OverlayGrowthDirection)99
+                    ),
+                }
+            )
+        );
+        var session = new OverlayPositionEditSession(LegacyOverlayLayout.Empty);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            session.SetGrowthDirection("PlotJumpInfo", (OverlayGrowthDirection)99)
+        );
+    }
+
+    /// <summary>Mining warnings inherit flight-warning placement only until their own settings are saved.</summary>
     [Fact]
     public void MiningWarningInitiallyCopiesFlightPlacementButKeepsIndependentSavedChanges()
     {

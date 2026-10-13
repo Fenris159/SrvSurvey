@@ -247,8 +247,9 @@ public sealed class OverlayEditorFolderTabTests
         }
     }
 
+    /// <summary>Changing survey sample content preserves the editor preview host position.</summary>
     [AvaloniaFact]
-    public void SurfaceMiningSurveyPreviewCyclesEveryStateAroundItsTopCenterAnchor()
+    public void SurfaceMiningSurveyPreviewCyclesEveryStateWithoutMovingItsHostWindow()
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMiningSurvey"));
         try
@@ -262,9 +263,7 @@ public sealed class OverlayEditorFolderTabTests
             SurfaceMiningSurveyOverlayPresentation presentation = Assert.IsType<SurfaceMiningSurveyOverlayPresentation>(
                 preview.RuntimePresentation
             );
-            OverlayPreviewPanelMetrics initialMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            double initialCenter =
-                preview.Position.X + initialMetrics.OriginOffset.X + (initialMetrics.PanelSize.Width / 2d);
+            PixelPoint initialPosition = preview.Position;
 
             Assert.Equal(
                 Avalonia.Layout.HorizontalAlignment.Center,
@@ -287,9 +286,9 @@ public sealed class OverlayEditorFolderTabTests
                 Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideCommandHint));
             }
 
-            OverlayPreviewPanelMetrics finalMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            double finalCenter = preview.Position.X + finalMetrics.OriginOffset.X + (finalMetrics.PanelSize.Width / 2d);
-            Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
+            // The position-editor host now owns growth anchoring; cycling data alone
+            // must not apply a second, competing top-center correction.
+            Assert.Equal(initialPosition, preview.Position);
         }
         finally
         {

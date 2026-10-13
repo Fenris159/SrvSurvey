@@ -28,7 +28,7 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
     private bool jumping;
     private bool includeLegacy;
     private bool rareOnly;
-    private bool currentOnly = true;
+    private bool currentOnly;
     private string systemQuery = string.Empty;
     private string attractionQuery = string.Empty;
     private string referenceSystem = string.Empty;

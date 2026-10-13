@@ -31,6 +31,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly DelegateCommand toggleTypographySettingsCommand;
     private readonly DelegateCommand resetTypographyCommand;
     private readonly DelegateCommand resetOverlaySizeCommand;
+    private readonly DelegateCommand cycleOverlayGrowthCommand;
     private OverlayPositionEditSession? editSession;
     private OverlayPlacementInteraction? livePlacement;
     private OverlayPositionEditSession? pendingLiveSession;
@@ -52,6 +53,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private bool isTypographySettingsOpen;
     private double editorControlsHeightPercent;
 
+    /// <summary>Initializes live interaction, layout persistence, and position editing with the supplied platform adapters.</summary>
     public OverlayInteractionViewModel(OverlayPlatformCapabilities capabilities)
     {
         Capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
@@ -66,6 +68,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
         resetTypographyCommand = new DelegateCommand(ResetTypography, () => IsOverlaySettingsOpen);
         resetOverlaySizeCommand = new DelegateCommand(ResetOverlaySize, () => IsOverlaySettingsOpen);
+        cycleOverlayGrowthCommand = new DelegateCommand(CycleOverlayGrowth, () => IsOverlaySettingsOpen);
         ToggleCommand = toggleCommand;
         SnapToCenterCommand = snapToCenterCommand;
         SaveCommand = saveCommand;
@@ -75,12 +78,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         ToggleTypographySettingsCommand = toggleTypographySettingsCommand;
         ResetTypographyCommand = resetTypographyCommand;
         ResetOverlaySizeCommand = resetOverlaySizeCommand;
+        CycleOverlayGrowthCommand = cycleOverlayGrowthCommand;
         TypographyRoles = CreateTypographyRoles();
         statusMessage = IsAvailable
             ? "Overlay position previews use an isolated simulated game state."
             : Capabilities.StatusText;
     }
 
+    /// <summary>Initializes live interaction, layout persistence, and position editing with the supplied platform adapters.</summary>
     public OverlayInteractionViewModel(
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
@@ -116,6 +121,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
         resetTypographyCommand = new DelegateCommand(ResetTypography, () => IsOverlaySettingsOpen);
         resetOverlaySizeCommand = new DelegateCommand(ResetOverlaySize, () => IsOverlaySettingsOpen);
+        cycleOverlayGrowthCommand = new DelegateCommand(CycleOverlayGrowth, () => IsOverlaySettingsOpen);
         ToggleCommand = toggleCommand;
         SnapToCenterCommand = snapToCenterCommand;
         SaveCommand = saveCommand;
@@ -125,6 +131,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         ToggleTypographySettingsCommand = toggleTypographySettingsCommand;
         ResetTypographyCommand = resetTypographyCommand;
         ResetOverlaySizeCommand = resetOverlaySizeCommand;
+        CycleOverlayGrowthCommand = cycleOverlayGrowthCommand;
         TypographyRoles = CreateTypographyRoles();
         statusMessage = IsAvailable
             ? "Choose Edit Overlay Positions to load categorized previews from an isolated simulated game state. Elite does not need to be running."
@@ -440,6 +447,34 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     public ICommand ResetOverlaySizeCommand { get; }
 
+    /// <summary>Cycles the selected panel between automatic, left and right content growth.</summary>
+    public ICommand CycleOverlayGrowthCommand { get; }
+
+    /// <summary>Reads the selected panel's pending preference, defaulting to automatic outside its settings.</summary>
+    public OverlayGrowthDirection SelectedOverlayGrowthDirection =>
+        editSession is not null && selectedOverlaySettingsPlotterName is { } name
+            ? editSession.GetPlacement(name).GrowthDirection
+            : OverlayGrowthDirection.Automatic;
+
+    /// <summary>Shows distinct symbols for automatic behavior and both forced growth directions.</summary>
+    public string SelectedOverlayGrowthSymbol =>
+        SelectedOverlayGrowthDirection switch
+        {
+            OverlayGrowthDirection.Left => "←",
+            OverlayGrowthDirection.Right => "→",
+            _ => "⇆",
+        };
+
+    /// <summary>Explains the current preference and what the next click will select.</summary>
+    public string SelectedOverlayGrowthTooltip =>
+        SelectedOverlayGrowthDirection switch
+        {
+            OverlayGrowthDirection.Left => "Growth: left. Click to force right.",
+            OverlayGrowthDirection.Right => "Growth: right. Click to restore automatic growth.",
+            _ => "Growth: automatic, toward the monitor center. Click to force left.",
+        };
+
+    /// <summary>Opens panel settings for the requested overlay within the active editor session.</summary>
     public void OpenOverlaySettings(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
@@ -483,6 +518,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         toggleTypographySettingsCommand.RaiseCanExecuteChanged();
         resetTypographyCommand.RaiseCanExecuteChanged();
         resetOverlaySizeCommand.RaiseCanExecuteChanged();
+        cycleOverlayGrowthCommand.RaiseCanExecuteChanged();
+        NotifyGrowthDirection();
         StatusMessage = $"Editing {definition.DisplayName}. Use the top ✓ to save all changes and close the editor.";
     }
 
@@ -1188,6 +1225,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         platform?.Dispose();
     }
 
+    /// <summary>Adopts an accepted preview gesture with its physical monitor's content-growth anchor.</summary>
     private void OnPreviewMoved(object? sender, OverlayPreviewMovedEventArgs eventArgs)
     {
         if (!IsEditing || editSession is null)
@@ -1195,7 +1233,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        if (!editSession.Move(eventArgs.PlotterName, eventArgs.Position, eventArgs.PreviewSize, eventArgs.HostBounds))
+        bool changed = eventArgs.GeometryPlacement is { } placement
+            ? editSession.SetPlacement(eventArgs.PlotterName, placement)
+            : editSession.Move(
+                eventArgs.PlotterName,
+                eventArgs.Position,
+                eventArgs.PreviewSize,
+                eventArgs.HostBounds,
+                eventArgs.MonitorBounds
+            );
+        if (!changed)
         {
             return;
         }
@@ -1387,6 +1434,34 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = $"Reset {displayName} text and icon scales to 0%. Use the top ✓ to save and close.";
     }
 
+    /// <summary>Changes the growth direction in place and retains it through drag, scale and save workflows.</summary>
+    private void CycleOverlayGrowth()
+    {
+        if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } name)
+        {
+            return;
+        }
+        OverlayGrowthDirection next = SelectedOverlayGrowthDirection switch
+        {
+            OverlayGrowthDirection.Automatic => OverlayGrowthDirection.Left,
+            OverlayGrowthDirection.Left => OverlayGrowthDirection.Right,
+            _ => OverlayGrowthDirection.Automatic,
+        };
+        editSession.SetGrowthDirection(name, next);
+        editorHost?.RefreshPreviewGrowth(editSession, name);
+        SynchronizeLiveOverlayFromPreview(name);
+        NotifyGrowthDirection();
+    }
+
+    /// <summary>Refreshes the settings button when its selected panel or pending direction changes.</summary>
+    private void NotifyGrowthDirection()
+    {
+        OnPropertyChanged(nameof(SelectedOverlayGrowthDirection));
+        OnPropertyChanged(nameof(SelectedOverlayGrowthSymbol));
+        OnPropertyChanged(nameof(SelectedOverlayGrowthTooltip));
+    }
+
+    /// <summary>Removes the selected panel size override and refreshes its preview.</summary>
     private void ResetOverlaySize()
     {
         if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
@@ -1424,6 +1499,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             $"{displayName} {role.ToString().ToLowerInvariant()} text set to {percent:+0;-0;0}% from baseline. Use the top ✓ to save and close.";
     }
 
+    /// <summary>Closes panel settings while retaining the current edit session.</summary>
     private void CloseOverlaySettings()
     {
         if (selectedOverlaySettingsPlotterName is null)
@@ -1438,6 +1514,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         toggleTypographySettingsCommand.RaiseCanExecuteChanged();
         resetTypographyCommand.RaiseCanExecuteChanged();
         resetOverlaySizeCommand.RaiseCanExecuteChanged();
+        cycleOverlayGrowthCommand.RaiseCanExecuteChanged();
+        NotifyGrowthDirection();
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

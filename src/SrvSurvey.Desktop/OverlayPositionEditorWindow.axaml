@@ -91,12 +91,25 @@
               CornerRadius="7"
               IsVisible="{Binding IsOverlaySettingsOpen}">
         <StackPanel Spacing="7">
-          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+          <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                        FontWeight="SemiBold"
                        VerticalAlignment="Center"
                        Text="{Binding SelectedOverlaySettingsTitle}" />
-            <Button Grid.Column="1"
+            <Button x:Name="GrowthDirectionButton"
+                    Grid.Column="1"
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    Command="{Binding CycleOverlayGrowthCommand}"
+                    FontSize="19"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="{Binding SelectedOverlayGrowthTooltip}"
+                    AutomationProperties.Name="{Binding SelectedOverlayGrowthTooltip}"
+                    Content="{Binding SelectedOverlayGrowthSymbol}" />
+            <Button x:Name="ResetOverlaySizeButton"
+                    Grid.Column="2"
                     Width="32"
                     Height="32"
                     Padding="0"
@@ -107,7 +120,7 @@
                     ToolTip.Tip="Restore this panel's original measured size"
                     Content="&#x2922;" />
             <Button x:Name="TypographyButton"
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Width="32"
                     Height="32"
                     Padding="0"
