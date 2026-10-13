@@ -1317,7 +1317,7 @@ public sealed class OverlayPresentationContractTests
         string pulseWindow = File.ReadAllText(Path.Combine(desktop, "PulseOverlayWindow.axaml"));
         string pulsePresentation = File.ReadAllText(Path.Combine(desktop, "PulseOverlayPresentation.axaml"));
 
-        Assert.Contains("RowDefinitions=\"Auto,Auto\"", notification);
+        Assert.Contains("RowDefinitions=\"*,Auto\"", notification);
         Assert.Contains("Value=\"{Binding ProgressPercent}\"", notification);
         Assert.Contains("Width=\"{Binding Guardian.PreferredOverlayWidth}\"", guardianSite);
         Assert.Contains("Height=\"{Binding Guardian.PreferredOverlayHeight}\"", guardianSite);

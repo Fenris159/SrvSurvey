@@ -7,6 +7,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Edsm;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EdsmPublisherTests
 {
     private static readonly EdsmPublicationOptions Options = new(
@@ -318,6 +319,7 @@ public sealed class EdsmPublisherTests
         Assert.Equal(2, sent.AcceptedEventCount);
     }
 
+    /// <summary>Verifies that transient EDSM failures retain the batch and respect the retry deadline.</summary>
     [Fact]
     public async Task TransientFailureRetainsBatchAndRetriesWithoutImmediateLoop()
     {
@@ -341,7 +343,7 @@ public sealed class EdsmPublisherTests
 
         Assert.Equal(1, deferred.PendingEventCount);
         Assert.Equal(1, handler.PostCount);
-        Assert.Contains(deferred.Warnings, warning => warning.Contains("retained in memory", StringComparison.Ordinal));
+        Assert.Contains(deferred.Warnings, warning => warning.Contains("retained for retry", StringComparison.Ordinal));
 
         handler.PostStatusCode = HttpStatusCode.OK;
         EdsmPublicationResult retried = await publisher.FlushAsync();

@@ -5,6 +5,7 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class ColonizationSettingsStoreTests : IDisposable
 {
     private readonly string directory = Path.Combine(

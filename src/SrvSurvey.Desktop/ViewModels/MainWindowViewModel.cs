@@ -494,7 +494,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     log: message => resolvedApplicationLogService?.Append(message),
                     acceptedEventLog: new InaraAcceptedEventLog(
                         Path.Combine(AppDataPaths.DataDirectory, "logs", "inara-accepted.txt")
-                    )
+                    ),
+                    outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
@@ -505,7 +506,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new EdsmPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     httpClient: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
             Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
@@ -527,7 +529,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new EdAstroPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     client: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedEdAstroPublisher, this.edAstroPublisher);
             NetworkPrivacy.EdAstroUploadEnabledChanged += OnEdAstroUploadEnabledChanged;
@@ -538,8 +541,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new VoxStellarPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     IsDiagnosticReplay ? string.Empty : VoxStellarSharedKeyProvider.GetSharedKey(),
-                    client: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    new VoxStellarPublisherOptions
+                    {
+                        Client = externalNetworkClient,
+                        Log = message => resolvedApplicationLogService?.Append(message),
+                        OutboxDirectory = JournalUploadStorageDirectory,
+                    }
                 );
             VoxStellar = new VoxStellarSharingViewModel(
                 new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
@@ -4468,15 +4475,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return string.IsNullOrWhiteSpace(value) ? Unavailable : value;
     }
 
+    /// <summary>Uses profile-scoped durable storage for live publication and keeps diagnostic replay free of upload persistence.</summary>
+    private string? JournalUploadStorageDirectory => IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory;
+
+    /// <summary>Applies a confirmed key edit immediately, retaining uploads on rotation and discarding them only on removal.</summary>
     private void OnInaraApiKeyChanged(object? sender, EventArgs eventArgs)
     {
         FrontierProfile.SetInaraApiKey(Inara.StoredApiKey);
-        inaraPublisher.CancelPendingPublication();
+        inaraPublisher.CancelPendingPublication(discardRetainedReports: string.IsNullOrWhiteSpace(Inara.StoredApiKey));
     }
 
+    /// <summary>Cancels stale credential use immediately and requests durable removal only for a confirmed clear.</summary>
     private void OnEdsmCredentialsChanged(object? sender, EventArgs eventArgs)
     {
-        edsmPublisher.CancelPendingPublication();
+        edsmPublisher.CancelPendingPublication(discardRetainedReports: string.IsNullOrWhiteSpace(Edsm.StoredApiKey));
     }
 
     private void OnVoxStellarUploadEnabledChanged(bool enabled)

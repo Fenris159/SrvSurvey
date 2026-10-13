@@ -8,6 +8,7 @@ using Xunit;
 
 namespace SrvSurvey.Core.Tests.Network;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EddnOutboxTests
 {
     [Fact]
@@ -771,6 +772,41 @@ public sealed class EddnOutboxTests
         releaseTransport.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
 
         await processing;
+    }
+
+    /// <summary>Once receipt history fills, individual acknowledgements append until twice the retained capacity is reached.</summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task ReceiptCompactionLeavesSlackForSubsequentCompletions(int capacityMultiple)
+    {
+        using var folder = new TemporaryFolder();
+        string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        byte[] receipts = new byte[65536 * capacityMultiple * 16];
+        for (int offset = 0; offset < receipts.Length; offset += 16)
+        {
+            Guid.NewGuid().TryWriteBytes(receipts.AsSpan(offset, 16));
+        }
+        await File.WriteAllBytesAsync(path + ".receipts", receipts);
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        using EddnOutbox queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))),
+            () => now
+        );
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        EddnQueuedMessage first = queued(now);
+        first.replayProtected = true;
+        Assert.True(queue.enqueue(first));
+        await queue.processDue();
+        long firstLength = capacityMultiple == 1 ? receipts.Length + 16L : 65536 * 16L;
+        Assert.Equal(firstLength, new FileInfo(path + ".receipts").Length);
+        EddnQueuedMessage second = queued(now);
+        second.replayProtected = true;
+        Assert.True(queue.enqueue(second));
+        now += TimeSpan.FromSeconds(1);
+        await queue.processDue();
+        Assert.Equal(firstLength + 16, new FileInfo(path + ".receipts").Length);
     }
 
     private static EddnOutbox outbox(string path, EddnTransport transport, Func<DateTimeOffset> clock)

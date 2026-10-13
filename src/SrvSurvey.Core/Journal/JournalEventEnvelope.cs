@@ -9,6 +9,11 @@ public sealed record JournalEventEnvelope(
     JsonElement Payload
 )
 {
+    /// <summary>Identifies the original file and byte position without conflating identical events at different positions.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? SourceRecordIdentity { get; init; }
+
     public static bool TryParse(string line, out JournalEventEnvelope? journalEvent, out string? error)
     {
         journalEvent = null;

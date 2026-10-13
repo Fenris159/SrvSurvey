@@ -7,6 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -15,6 +16,190 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayLivePanelSizingTests
 {
+    /// <summary>Collection bursts stay bounded, show the newest message, and shrink after expiry in live and combined hosts.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, 0, 0)]
+    [InlineData(false, 180, 0)]
+    [InlineData(false, 500, 0)]
+    [InlineData(false, 0, 10)]
+    [InlineData(true, 0, 0)]
+    [InlineData(true, 180, 0)]
+    public void NotificationBurstStaysWithinItsPanel(bool combined, double savedHeight, int scaleIndex)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-notification-sizing-{Guid.NewGuid():N}");
+        var clock = new NotificationTimeProvider();
+        var viewModel = new NotificationViewModel(
+            new NotificationSettingsStore(Path.Combine(directory, "ui-settings.json")),
+            clock
+        );
+        var window = new NotificationOverlayWindow(viewModel);
+        var host = new CombinedOverlayWindow { Width = 1200, Height = 900 };
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFloatie"] = new(
+                    LegacyHorizontalAnchor.Left,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    SizeOverride: savedHeight > 0 ? new(240, savedHeight) : null
+                ),
+            },
+            null,
+            null
+        );
+        layout.SetScaleIndex(scaleIndex);
+        try
+        {
+            for (int index = 0; index < 40; index++)
+            {
+                viewModel.ShowMessage($"Collected: 3x Shield Emitters, new total {index * 3}");
+            }
+            Assert.Equal(420, window.MaxHeight);
+            OverlayThemeResources.Apply(window, layout, "PlotFloatie", new OverlayWindowRegistry());
+            Window visibleWindow = window;
+            if (combined)
+            {
+                Control content = Assert.IsType<Control>(window.Content, exactMatch: false);
+                window.Content = null;
+                host.Add(new ContentControl { Content = content, DataContext = viewModel });
+                OverlayThemeResources.Apply(host);
+                visibleWindow = host;
+            }
+            visibleWindow.Show();
+            using WriteableBitmap? frame = visibleWindow.CaptureRenderedFrame();
+            NotificationOverlayPresentation presentation = Assert.Single(
+                visibleWindow.GetVisualDescendants().OfType<NotificationOverlayPresentation>()
+            );
+            double maximumHeight = savedHeight > 0 ? savedHeight : 420;
+            Assert.InRange(presentation.Bounds.Height, 1, maximumHeight);
+            if (!combined)
+            {
+                Assert.InRange(
+                    window.Bounds.Height,
+                    1,
+                    Math.Ceiling(maximumHeight * OverlayScaleCatalog.GetRelativeScale(scaleIndex, window.RenderScaling))
+                );
+            }
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.VisibleMessageLimit = 5;
+            using WriteableBitmap? expandedLimit = visibleWindow.CaptureRenderedFrame();
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.VisibleMessageLimit = 20;
+            using WriteableBitmap? maximumLimit = visibleWindow.CaptureRenderedFrame();
+            Assert.InRange(presentation.Bounds.Height, 1, maximumHeight);
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.ShowMessage("Collected: 3x Chemical Distillery, new total 12345");
+            using WriteableBitmap? updated = visibleWindow.CaptureRenderedFrame();
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            layout.SetPlacement("PlotFloatie", layout.Placements["PlotFloatie"] with { SizeOverride = null });
+            using WriteableBitmap? reset = visibleWindow.CaptureRenderedFrame();
+            Assert.InRange(presentation.Bounds.Height, 1, 420);
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            clock.Advance(TimeSpan.FromSeconds(7));
+            viewModel.Refresh();
+            viewModel.ShowMessage("Saved screenshot");
+            using WriteableBitmap? drained = visibleWindow.CaptureRenderedFrame();
+            Assert.Single(viewModel.Messages);
+            Assert.InRange(presentation.Bounds.Height, 1, 100);
+            AssertNewestNotificationVisible(presentation, "Saved screenshot");
+        }
+        finally
+        {
+            host.Close();
+            window.Close();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>Checks visible geometry rather than just collection membership so overflowing rows cannot hide newer notifications.</summary>
+    private static void AssertNewestNotificationVisible(NotificationOverlayPresentation presentation, string message)
+    {
+        ScrollViewer scroll = Assert.Single(presentation.GetVisualDescendants().OfType<ScrollViewer>());
+        Assert.InRange(Math.Abs(Math.Max(0, scroll.Extent.Height - scroll.Viewport.Height) - scroll.Offset.Y), 0, 1);
+        NotificationViewModel model = Assert.IsType<NotificationViewModel>(presentation.DataContext);
+        Assert.Equal(
+            model.VisibleMessages.Select(message => message.Text),
+            scroll.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text != "›").Select(text => text.Text)
+        );
+        TextBlock latest = Assert.Single(
+            presentation.GetVisualDescendants().OfType<TextBlock>(),
+            text => text.Text == message
+        );
+        Point top = Assert.IsType<Point>(latest.TranslatePoint(default, scroll));
+        Assert.InRange(top.Y, 0, scroll.Viewport.Height);
+        Assert.True(top.Y + latest.Bounds.Height <= scroll.Viewport.Height + 1);
+        ProgressBar timer = Assert.Single(presentation.GetVisualDescendants().OfType<ProgressBar>());
+        Point timerOrigin = Assert.IsType<Point>(timer.TranslatePoint(default, presentation));
+        Assert.True(timerOrigin.Y >= 0 && timerOrigin.Y + timer.Bounds.Height <= presentation.Bounds.Height);
+    }
+
+    /// <summary>Expires notification bursts deterministically without waiting for their real-time timeout.</summary>
+    private sealed class NotificationTimeProvider : TimeProvider
+    {
+        private DateTimeOffset now = new(2026, 10, 13, 12, 0, 0, TimeSpan.Zero);
+
+        /// <summary>Returns the deterministic notification test clock.</summary>
+        public override DateTimeOffset GetUtcNow() => now;
+
+        /// <summary>Advances notification expiration without waiting for real timers.</summary>
+        public void Advance(TimeSpan duration) => now += duration;
+    }
+
+    /// <summary>The passive notification settings bind the row limit in both directions and save it for the next launch.</summary>
+    [AvaloniaFact]
+    public void PassiveNotificationSettingsChangeTheVisibleMessageLimit()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-notification-control-{Guid.NewGuid():N}");
+        MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder =>
+                builder.WithAppDataPaths(
+                    new(
+                        Path.Combine(directory, "config"),
+                        Path.Combine(directory, "data"),
+                        Path.Combine(directory, "cache"),
+                        []
+                    )
+                )
+        );
+        var view = new Views.OverlaySettingsView(OverlaySettingsCategory.Global) { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1000,
+            Height = 900,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            NumericUpDown input = Assert.IsType<NumericUpDown>(
+                view.FindControl<NumericUpDown>("NotificationVisibleMessageLimitInput")
+            );
+            Assert.True(view.FindControl<Border>("PassiveNotificationCard")!.IsVisible);
+            Assert.Equal(3m, input.Value);
+            input.Value = 5;
+            Assert.Equal(5, main.Notifications.VisibleMessageLimit);
+            Assert.Equal(5, new NotificationSettingsStore(main.AppDataPaths.UiSettingsPath).Load().VisibleMessageLimit);
+            main.Notifications.VisibleMessageLimit = 1;
+            Assert.Equal(1m, input.Value);
+        }
+        finally
+        {
+            window.Close();
+            main.Dispose();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
     private static readonly Dictionary<string, Type> LiveWindows = new()
     {
         ["PlotBioStatus"] = typeof(BiologyStatusOverlayWindow),

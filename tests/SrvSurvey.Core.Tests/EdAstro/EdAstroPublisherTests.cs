@@ -6,6 +6,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.EdAstro;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EdAstroPublisherTests
 {
     /// <summary>Verifies consent replay legacy attribution and pause prevent collection.</summary>

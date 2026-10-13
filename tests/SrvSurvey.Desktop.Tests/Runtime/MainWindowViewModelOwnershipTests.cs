@@ -238,7 +238,8 @@ public sealed class MainWindowViewModelOwnershipTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication() { }
+        /// <summary>Implements the test publisher cancellation contract without contacting an external provider.</summary>
+        public void CancelPendingPublication(bool discardRetainedReports = false) { }
 
         public void Dispose()
         {

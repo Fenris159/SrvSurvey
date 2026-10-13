@@ -1,4 +1,9 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.2
+# SrvSurvey-XP 2.1.3.0-rc.64.3
+
+RC.64.3 recovers pending journal uploads after restarts and unexpected shutdowns,
+keeps sharing failures from interrupting the session, and limits passive
+notifications to three visible messages by default. It includes the earlier
+overlay and exploration changes below.
 
 RC.64.2 keeps expanding overlays within the available screen space, adds a
 per-panel growth direction choice, and preserves existing saved positions.
@@ -19,6 +24,25 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## What's changed
 
+- **Recover pending journal uploads.** EDDN, Inara, EDSM, EDAstro and VoxStellar
+  save captured reports locally before sending. Closing the app or an unexpected
+  shutdown preserves pending reports for the next session, with their original
+  timestamps and contents. Retries respect each provider's limits, and saved
+  acknowledgements prevent replaying reports already confirmed as accepted.
+- **Keep sharing tied to your commander and consent.** Retained reports stay
+  separate by commander and profile, and resume only with the appropriate
+  credentials and sharing enabled. Temporarily unavailable Inara or EDSM keys
+  preserve pending reports; explicitly removing a key or disabling sharing
+  clears the corresponding retained work. Retry files contain no API keys and
+  remain on the machine rather than joining Google Drive profile sync.
+- **Keep storage failures from interrupting journal processing.** A report that
+  cannot be saved is diagnosed in the log without stopping later journal events.
+  Recovery keeps valid queued reports alongside damaged entries.
+- **Keep passive notifications inside their panel.** Collection messages and
+  other notifications show only the newest three messages by default. Adjust
+  Visible message limit from 1 to 20 in the passive notification overlay
+  settings. The panel stays within its height limit as messages arrive, and
+  expiry continues normally.
 - **Keep expanding overlays on screen.** Panels grow to the right on the left
   half of a monitor and to the left on the right half. Taller content shifts
   upward when it reaches the bottom edge. Panels retain their chosen corner
@@ -85,21 +109,21 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
   sessions are excluded. Batches contain at most 200 events, wait at least ten
   seconds between requests and honor provider cooldowns. Transient errors retry
   with backoff, ambiguous multi-window sessions pause sharing, and disabling
-  sharing cancels requests and clears the bounded memory queue. Unsent data
-  expires after one day or when the application closes. Success logs use
+  sharing cancels requests and clears retained reports. Unsent data
+  expires after one day and can recover across application restarts. Success logs use
   fifteen-minute activity summaries.
 
 ## Update channel and packages
 
-RC.64.2 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.3 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.2`
-- Tag: `xp2-v2.1.3.0-rc.64.2`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.2-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.2-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.2-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.2-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.3`
+- Tag: `xp2-v2.1.3.0-rc.64.3`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.3-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.3-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.3-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.3-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

@@ -5,6 +5,7 @@ using SrvSurvey.Core.Settlements;
 
 namespace SrvSurvey.Core.Tests.Settlements;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class CanonnHumanSiteClientTests
 {
     [Fact]

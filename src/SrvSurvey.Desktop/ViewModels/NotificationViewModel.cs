@@ -18,6 +18,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     private readonly Dictionary<string, MaterialState> materials = new(StringComparer.OrdinalIgnoreCase);
     private NotificationPreferences preferences;
     private IReadOnlyList<NotificationMessageViewModel> messages = [];
+    private IReadOnlyList<NotificationMessageViewModel> visibleMessages = [];
     private string settingsStatus = string.Empty;
 
     public NotificationViewModel(NotificationSettingsStore settingsStore, TimeProvider? timeProvider = null)
@@ -65,6 +66,26 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         set => Update(preferences with { ShowScreenshot = value });
     }
 
+    /// <summary>The persisted number of newest notification messages displayed in the passive overlay.</summary>
+    public int VisibleMessageLimit
+    {
+        get => preferences.VisibleMessageLimit;
+        set =>
+            Update(
+                preferences with
+                {
+                    VisibleMessageLimit = Math.Clamp(
+                        value,
+                        NotificationPreferences.MinimumVisibleMessageLimit,
+                        NotificationPreferences.MaximumVisibleMessageLimit
+                    ),
+                }
+            );
+    }
+
+    /// <summary>Provides the newest active messages without letting a collection burst fill the display.</summary>
+    public IReadOnlyList<NotificationMessageViewModel> VisibleMessages => visibleMessages;
+
     public IReadOnlyList<NotificationMessageViewModel> Messages
     {
         get => messages;
@@ -72,6 +93,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         {
             if (SetField(ref messages, value))
             {
+                RefreshVisibleMessages();
                 OnPropertyChanged(nameof(HasMessages));
                 OnPropertyChanged(nameof(ShouldShow));
             }
@@ -387,6 +409,14 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         ShowMessage($"Deliver {cargoType}: {total.Value - delivered.Value} units remaining");
     }
 
+    /// <summary>Updates the cached presentation rows whenever the active messages or their limit changes.</summary>
+    private void RefreshVisibleMessages()
+    {
+        visibleMessages = Messages.TakeLast(VisibleMessageLimit).ToArray();
+        OnPropertyChanged(nameof(VisibleMessages));
+    }
+
+    /// <summary>Applies preference changes, refreshes visible rows, and reports persistence failures without losing session choices.</summary>
     private void Update(NotificationPreferences updated)
     {
         if (preferences == updated)
@@ -395,6 +425,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         }
 
         preferences = updated;
+        RefreshVisibleMessages();
         OnPropertyChanged(string.Empty);
         if (!Enabled && Messages.Count > 0)
         {

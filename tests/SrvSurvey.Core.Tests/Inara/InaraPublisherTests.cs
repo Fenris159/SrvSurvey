@@ -6,6 +6,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Inara;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class InaraPublisherTests
 {
     // Bound worker readiness without imposing a one-second CI scheduling deadline.

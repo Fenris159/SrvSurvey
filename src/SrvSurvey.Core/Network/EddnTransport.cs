@@ -201,6 +201,9 @@ internal sealed record EddnUploadResult(
 internal sealed class EddnQueuedMessage
 {
     public Guid id;
+
+    /// <summary>Marks source-derived identifiers eligible for durable replay suppression.</summary>
+    public bool replayProtected;
     public DateTimeOffset created;
     public DateTimeOffset nextAttempt;
     public int attempts;

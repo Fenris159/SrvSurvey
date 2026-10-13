@@ -6,6 +6,7 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Tests.Network;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EddnPublisherTests
 {
     [Theory]

@@ -72,6 +72,55 @@ public sealed class NotificationViewModelTests : IDisposable
         Assert.Single(viewModel.Messages);
     }
 
+    /// <summary>Only the newest messages are shown, and changing the persisted limit takes effect immediately.</summary>
+    [Fact]
+    public void VisibleMessagesFollowTheNewestEntriesAndPersistTheLimit()
+    {
+        var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
+        NotificationViewModel viewModel = CreateViewModel(time);
+        for (int index = 1; index <= 8; index++)
+        {
+            viewModel.ShowMessage($"message {index}");
+        }
+        Assert.Equal(3, viewModel.VisibleMessageLimit);
+        Assert.Equal(
+            "message 6|message 7|message 8",
+            string.Join("|", viewModel.VisibleMessages.Select(message => message.Text))
+        );
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+        viewModel.VisibleMessageLimit = 5;
+        Assert.Equal(
+            "message 4|message 5|message 6|message 7|message 8",
+            string.Join("|", viewModel.VisibleMessages.Select(message => message.Text))
+        );
+        Assert.Equal(5, CreateViewModel(time).VisibleMessageLimit);
+        Assert.Contains(string.Empty, changed);
+        changed.Clear();
+        viewModel.ShowMessage("message 1");
+        Assert.Contains(nameof(NotificationViewModel.VisibleMessages), changed);
+        Assert.Equal("message 1", viewModel.VisibleMessages[^1].Text);
+        Assert.Equal(8, viewModel.Messages.Count);
+        time.Advance(TimeSpan.FromSeconds(7));
+        viewModel.Refresh();
+        Assert.Empty(viewModel.VisibleMessages);
+    }
+
+    /// <summary>The row-limit setting rejects values outside the supported range and ignores unchanged limits.</summary>
+    [Fact]
+    public void VisibleMessageLimitClampsAndIgnoresUnchangedValues()
+    {
+        NotificationViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+        viewModel.VisibleMessageLimit = 3;
+        Assert.Empty(changed);
+        viewModel.VisibleMessageLimit = 0;
+        Assert.Equal(1, viewModel.VisibleMessageLimit);
+        viewModel.VisibleMessageLimit = 100;
+        Assert.Equal(20, viewModel.VisibleMessageLimit);
+    }
+
     [Fact]
     public void OverlayInteractionReportsBothModeTransitions()
     {
