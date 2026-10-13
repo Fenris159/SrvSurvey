@@ -689,6 +689,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(host.OpenedJumpInfoPlacement, activeLayout.Placements["PlotJumpInfo"]);
     }
 
+    /// <summary>Centering participates in the same saved edit session as other panel placement changes.</summary>
     [Fact]
     public void SnapToCenterCommandIsSavedWithTheOtherEditorChanges()
     {
@@ -732,6 +733,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(host.LastPositionRefreshPlacements["PlotGuardians"], persisted.Placements["PlotGuardians"]);
     }
 
+    /// <summary>Cancel restores opening placements while Save commits all accepted draft moves together.</summary>
     [Fact]
     public void CancelDiscardsMovesAndSaveCommitsThemAtomically()
     {
@@ -896,6 +898,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         );
     }
 
+    /// <summary>The toolbar Save command commits panel settings accepted from its inline pane.</summary>
     [Fact]
     public void ToolbarPaneSettingsAreCommittedByTheTopCheckmarkCommand()
     {
@@ -1224,6 +1227,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             );
         }
 
+        /// <summary>Simulates editor centering by moving a draft panel for command and persistence tests.</summary>
         public int SnapPreviewsToCenter(OverlayPositionEditSession session)
         {
             OverlayLayoutCategory category = ShownCategories[^1];

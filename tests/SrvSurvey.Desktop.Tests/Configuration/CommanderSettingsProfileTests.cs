@@ -19,6 +19,7 @@ public sealed class CommanderSettingsProfileTests
         Assert.False(Directory.Exists(root));
     }
 
+    /// <summary>Commander profiles inherit shared settings once while keeping independent overlay files and later edits.</summary>
     [Fact]
     public void CopiesExistingSettingsOnceAndKeepsCommanderOverlaysSeparate()
     {

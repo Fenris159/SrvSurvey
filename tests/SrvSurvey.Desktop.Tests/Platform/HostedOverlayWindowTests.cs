@@ -269,6 +269,7 @@ public sealed class HostedOverlayWindowTests
         );
     }
 
+    /// <summary>Mining warnings follow detection range, game focus, and the active vehicle through hosted visibility policy.</summary>
     [AvaloniaFact]
     public async Task MiningWarningHostFollowsRangeFocusAndVehicleChanges()
     {

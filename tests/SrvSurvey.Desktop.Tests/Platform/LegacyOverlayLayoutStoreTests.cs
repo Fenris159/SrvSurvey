@@ -210,6 +210,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         );
     }
 
+    /// <summary>Mining warnings inherit flight-warning placement only until their own settings are saved.</summary>
     [Fact]
     public void MiningWarningInitiallyCopiesFlightPlacementButKeepsIndependentSavedChanges()
     {

@@ -70,6 +70,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(original, File.ReadAllText(path));
     }
 
+    /// <summary>The configured monitor fallback respects virtual-desktop offsets and display scaling.</summary>
     [Theory]
     [InlineData(0, 1080, 1)]
     [InlineData(-5120, -240, 1.5)]
@@ -458,6 +459,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         viewModel.Cancel();
     }
 
+    /// <summary>Expanded panel settings occupy space above the editor toolbar without covering its controls.</summary>
     [AvaloniaFact]
     public void PerOverlaySettingsAreLaidOutAboveTheToolbar()
     {
@@ -530,6 +532,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(OverlayGrowthDirection.Automatic, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
     }
 
+    /// <summary>Editor window titles retain the names recognized by existing KDE overlay rules.</summary>
     [AvaloniaFact]
     public void EditorAndPreviewTitlesMatchTheKdeOverlayRule()
     {
@@ -813,6 +816,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Empty(overflowing);
     }
 
+    /// <summary>Saving a resized panel preserves its visible origin when the position editor is reopened.</summary>
     [AvaloniaFact]
     public void ResizedPanelReopensAtItsSavedTopLeft()
     {

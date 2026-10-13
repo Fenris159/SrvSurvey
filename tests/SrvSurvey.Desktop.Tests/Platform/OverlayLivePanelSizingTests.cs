@@ -79,6 +79,7 @@ public sealed class OverlayLivePanelSizingTests
         Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
     }
 
+    /// <summary>Compares a live panel and its editor presentation across sample states, geometry, typography, and growth directions.</summary>
     private static void AuditPanel(
         OverlayLayoutDefinition definition,
         string scenario,
@@ -241,6 +242,7 @@ public sealed class OverlayLivePanelSizingTests
         return result;
     }
 
+    /// <summary>Resetting panel size restores the current bound dimensions and original layout constraints.</summary>
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]

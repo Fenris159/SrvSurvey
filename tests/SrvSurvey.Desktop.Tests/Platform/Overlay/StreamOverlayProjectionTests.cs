@@ -72,6 +72,7 @@ public sealed class StreamOverlayProjectionTests
         );
     }
 
+    /// <summary>Invalid canvas dimensions or scaling reject projection before producing stream coordinates.</summary>
     [Theory]
     [InlineData(0, 100, 1)]
     [InlineData(100, 0, 1)]
