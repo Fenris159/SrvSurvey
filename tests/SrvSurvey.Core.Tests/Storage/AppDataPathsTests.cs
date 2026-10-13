@@ -52,6 +52,17 @@ public sealed class AppDataPathsTests
         Assert.Equal(Path.GetFullPath("/mnt/data/SrvSurvey"), paths.DataDirectory);
         Assert.Equal(Path.GetFullPath("/mnt/cache/SrvSurvey"), paths.CacheDirectory);
         Assert.Empty(paths.LegacyProfileCandidates);
+        Assert.Equal(Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads"), paths.JournalUploadDirectory);
+        AppDataPaths firstCommander = paths with { SettingsFrontierId = "F123" };
+        AppDataPaths secondCommander = paths with { SettingsFrontierId = "F456" };
+        Assert.Equal(
+            Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads/profiles/F123"),
+            firstCommander.JournalUploadDirectory
+        );
+        Assert.Equal(
+            Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads/profiles/F456"),
+            secondCommander.JournalUploadDirectory
+        );
     }
 
     [Fact]

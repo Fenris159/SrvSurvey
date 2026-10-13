@@ -5,6 +5,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Colonization;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
     private readonly InMemoryRecoveryStore store = new();

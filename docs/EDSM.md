@@ -193,9 +193,11 @@ Recommended invariants:
 - Fetch and validate the discard list before the first event can leave the
   application. Filtering remains independent of the UI thread and journal
   reducer.
-- Keep the private raw-event backlog bounded and memory-only. Do not persist the
-  API key with queued events. If a durable outbox is ever added, it needs a
-  separate privacy and credential-at-rest design review.
+- Keep the private raw-event backlog bounded and machine-local. Persist captured
+  messages, their source identities, and original game version/build before
+  transmission. Never store API keys in retry files; supply credentials from the
+  currently eligible originating account. Exclude operational queues from cloud
+  profile backup and synchronization.
 - Clearing credentials, switching Commander/journal series, disabling upload,
   entering diagnostic replay, or disposing the application cancels the active
   request and invalidates queued events from the old authorization generation.
@@ -233,7 +235,7 @@ A tailored disclosure should make these points visible before opt-in:
   alpha/beta, diagnostic replay, and multicrew activity are excluded.
 - The API key is stored only in the selected local Commander profile,
   never written to logs or placed in queued payload records. Clearing it stops
-  new uploads, cancels any active request, and removes pending in-memory events.
+  new uploads, cancels any active request, and removes retained pending events.
 - Only one EDSM uploader should be enabled at a time.
 
 ## Implementation verification checklist

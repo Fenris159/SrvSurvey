@@ -73,7 +73,7 @@ carrier identity, fuel, access and service fields. Commander/FID fields,
 balances, carrier finances and `EDD*` additions are excluded. Startup/replay,
 Legacy sessions and ambiguous shared data are not collected.
 
-The bounded memory queue holds at most 4,096 events / 4 MiB; POSTs contain at
+The bounded active queue holds at most 4,096 events / 4 MiB; POSTs contain at
 most 200 events / 1 MiB, with responses bounded to 128 KiB. Request spacing is
 at least ten seconds, and the **shared process-wide** catalogue/upload budget
 allows at most 100 attempts in fifteen minutes. Provider `Retry-After` and
@@ -83,8 +83,10 @@ fifteen minutes. HTTP success alone is insufficient: the JSON result is checked.
 
 Opt-out cancels in-flight requests and discards pending data. Multiple Elite
 windows pause collection/delivery while keeping already captured reports.
-Queued data expires after one day and is discarded on process shutdown; it is
-not persisted or backed up. Repeated delivery problems are consolidated and
+Captured reports and cooldowns are saved in a private local retry queue and
+survive shutdowns and unexpected process termination. A provider acknowledgement
+or an explicit opt-out retires them. Retry queues remain exclusive to this
+machine and are excluded from profile backup and synchronization. Repeated delivery problems are consolidated and
 successes are summarized per fifteen-minute activity window. Enable this
 contribution in only one application to avoid duplicates.
 

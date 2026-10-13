@@ -22,7 +22,10 @@ public sealed class NotificationSettingsStore
             GetBoolean(settings, "CurrentBoxelSearchStatus", defaults.CurrentBoxelSearchStatus),
             GetBoolean(settings, "ShowNextBoxelToSearch", defaults.ShowNextBoxelToSearch),
             GetBoolean(settings, "ShowScreenshot", defaults.ShowScreenshot)
-        );
+        )
+        {
+            VisibleMessageLimit = GetVisibleMessageLimit(settings),
+        };
     }
 
     public void Save(NotificationPreferences preferences)
@@ -44,7 +47,24 @@ public sealed class NotificationSettingsStore
             settings["CurrentBoxelSearchStatus"] = preferences.CurrentBoxelSearchStatus;
             settings["ShowNextBoxelToSearch"] = preferences.ShowNextBoxelToSearch;
             settings["ShowScreenshot"] = preferences.ShowScreenshot;
+            settings["VisibleMessageLimit"] = Math.Clamp(
+                preferences.VisibleMessageLimit,
+                NotificationPreferences.MinimumVisibleMessageLimit,
+                NotificationPreferences.MaximumVisibleMessageLimit
+            );
         });
+    }
+
+    /// <summary>Reads the persisted row limit, using three for older settings and bounding malformed numeric values.</summary>
+    private static int GetVisibleMessageLimit(JsonObject? settings)
+    {
+        return settings?["VisibleMessageLimit"] is JsonValue value && value.TryGetValue<int>(out int result)
+            ? Math.Clamp(
+                result,
+                NotificationPreferences.MinimumVisibleMessageLimit,
+                NotificationPreferences.MaximumVisibleMessageLimit
+            )
+            : NotificationPreferences.Default.VisibleMessageLimit;
     }
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
@@ -64,6 +84,15 @@ public sealed record NotificationPreferences(
     bool ShowScreenshot
 )
 {
+    /// <summary>The smallest permitted number of visible notification messages.</summary>
+    public const int MinimumVisibleMessageLimit = 1;
+
+    /// <summary>The largest permitted number of visible notification messages.</summary>
+    public const int MaximumVisibleMessageLimit = 20;
+
+    /// <summary>The maximum number of newest messages displayed at once; existing profiles default to three.</summary>
+    public int VisibleMessageLimit { get; init; } = 3;
+
     public static NotificationPreferences Default { get; } =
         new(
             Enabled: true,

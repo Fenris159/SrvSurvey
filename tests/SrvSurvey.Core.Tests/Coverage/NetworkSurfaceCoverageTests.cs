@@ -19,6 +19,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
+        "src/SrvSurvey.Core/Network/VoxStellarPublisherOptions.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/ArdentApi.cs",
@@ -54,6 +55,7 @@ public sealed class NetworkSurfaceCoverageTests
             && !path.EndsWith("ArdentSystemNameSuggestionClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("VoxStellarPublisherOptions.cs", StringComparison.Ordinal)
             && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
             && !path.EndsWith("DesktopRuntime.Composition.cs", StringComparison.Ordinal)
             && !path.EndsWith("MainWindowViewModelFactory.cs", StringComparison.Ordinal)

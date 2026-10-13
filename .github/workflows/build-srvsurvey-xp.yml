@@ -176,6 +176,10 @@ jobs:
           --blame-hang-timeout 2m
           --blame-hang-dump-type mini
 
+      - name: Enforce journal upload scenario matrix
+        shell: pwsh
+        run: ./tools/Test-JournalUploadScenarios.ps1 -ResultsDirectory .
+
       - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v7

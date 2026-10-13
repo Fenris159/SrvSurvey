@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Edsm;
 
@@ -20,7 +21,7 @@ public interface IEdsmPublisher : IDisposable
 
 /// <summary>
 /// Sends opted-in, live journal messages to EDSM's authenticated Journal API.
-/// Raw messages are retained only in a bounded in-memory queue and are filtered
+/// Captured messages are retained in a bounded private local retry queue and are filtered
 /// against EDSM's current discard list before transmission.
 /// </summary>
 public sealed class EdsmPublisher : IEdsmPublisher
@@ -53,6 +54,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private readonly Lock stateSync = new();
     private readonly Lock stopSync = new();
     private readonly List<EdsmQueuedEvent> pending = [];
+    private readonly JournalUploadOutbox<EdsmQueuedEvent>? outbox;
+    private long storageGeneration = -1;
     private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly EdsmJournalContext journalContext = new();
 
@@ -72,17 +75,33 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private volatile bool stopping;
     private volatile bool disposed;
 
+    /// <summary>Creates an account-scoped journal sender with injectable transport, timing, diagnostics, and private durable storage.</summary>
     public EdsmPublisher(
         string appVersion,
         HttpClient? httpClient = null,
         TimeProvider? timeProvider = null,
-        Action<string>? log = null
+        Action<string>? log = null,
+        string? outboxDirectory = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
         this.appVersion = appVersion;
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.log = log ?? (_ => { });
+        outbox = outboxDirectory is null
+            ? null
+            : new JournalUploadOutbox<EdsmQueuedEvent>(
+                outboxDirectory,
+                "edsm",
+                item => item.UploadIdentity,
+                item =>
+                    !string.IsNullOrWhiteSpace(item.UploadIdentity)
+                    && !string.IsNullOrWhiteSpace(item.EventName)
+                    && JournalEventEnvelope.TryParse(item.RawJson, out _, out _)
+                    && !string.IsNullOrWhiteSpace(item.GameVersion)
+                    && !string.IsNullOrWhiteSpace(item.GameBuild),
+                this.log
+            );
         successfulUploads = new UploadSuccessLogAggregator(() => this.timeProvider.GetUtcNow());
         if (httpClient is null)
         {
@@ -144,6 +163,30 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
 
         bool publicationAuthorized = PreparePublicationAuthorization(update.Options);
+        if (outbox is not null && storageGeneration != authorizationGeneration)
+        {
+            await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+        }
+        if (publicationAuthorized && !RestoreUploads())
+        {
+            ClearPublicationAuthorization();
+            publicationAuthorized = false;
+        }
+        if (
+            !publicationAuthorized
+            && string.IsNullOrWhiteSpace(update.Options.ApiKey)
+            && outbox is not null
+            && session is not null
+            && outbox.TryOpen(
+                session.FrontierId.ToUpperInvariant()
+                    + ":"
+                    + (update.Options.EdsmCommanderName ?? session.ActiveCommanderName).Trim().ToUpperInvariant(),
+                out _
+            )
+        )
+        {
+            outbox.Clear();
+        }
         HarvestDiscardList(warnings);
         if (publicationAuthorized)
         {
@@ -288,24 +331,26 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 }
 
                 JObject prepared = journalContext.AddTransientFields(entry);
-                var queued = new EdsmQueuedEvent(
-                    generation,
-                    journalEvent.EventName,
-                    prepared.ToString(Formatting.None)
-                );
-                int dropped = Enqueue(queued);
+                var queued = new EdsmQueuedEvent(generation, journalEvent.EventName, prepared.ToString(Formatting.None))
+                {
+                    UploadIdentity = JournalUploadIdentity.Capture(journalEvent),
+                    GameVersion = session!.GameVersion,
+                    GameBuild = session.GameBuild,
+                };
+                if (!Enqueue(queued, out int dropped))
+                {
+                    continue;
+                }
                 if (dropped > 0)
                 {
-                    warnings.Add(
-                        $"EDSM discarded {dropped} oldest queued event(s) to keep its in-memory backlog bounded."
-                    );
+                    warnings.Add($"EDSM discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
                 }
 
                 queuedNames.Add(journalEvent.EventName);
             }
-            catch (JsonException exception)
+            catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
             {
-                warnings.Add($"EDSM ignored {journalEvent.EventName}: {exception.Message}");
+                warnings.Add($"EDSM could not prepare {journalEvent.EventName}: {exception.Message}");
             }
         }
 
@@ -339,19 +384,91 @@ public sealed class EdsmPublisher : IEdsmPublisher
             || string.Equals(frontierId.Trim(), session.FrontierId, StringComparison.OrdinalIgnoreCase);
     }
 
-    private int Enqueue(EdsmQueuedEvent queued)
+    /// <summary>Captures new evidence without counting a source already pending or acknowledged as another queued report.</summary>
+    private bool Enqueue(EdsmQueuedEvent queued, out int dropped)
     {
         lock (stateSync)
         {
+            dropped = 0;
+            if (outbox is not null && outbox.Enqueue([queued]).Count == 0)
+            {
+                return false;
+            }
             pending.Add(queued);
             nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
-            int dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
+            dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
             }
 
-            return dropped;
+            return true;
+        }
+    }
+
+    /// <summary>Restores captured context only for the same Frontier identity and EDSM account.</summary>
+    private bool RestoreUploads()
+    {
+        if (outbox is null || session is null || authorizedCredentials is null)
+        {
+            return true;
+        }
+        if (
+            !outbox.TryOpen(
+                session.FrontierId.ToUpperInvariant() + ":" + authorizedCredentials.CommanderName.ToUpperInvariant(),
+                out IReadOnlyList<EdsmQueuedEvent>? recovered
+            )
+        )
+        {
+            return false;
+        }
+        lock (stateSync)
+        {
+            if (recovered is not null || storageGeneration != authorizationGeneration)
+            {
+                pending.Clear();
+                pending.AddRange(
+                    (recovered ?? outbox.ReadPending()).Select(item =>
+                        item with
+                        {
+                            AuthorizationGeneration = authorizationGeneration,
+                        }
+                    )
+                );
+                storageGeneration = authorizationGeneration;
+                nextSendAt = outbox.NotBefore ?? timeProvider.GetUtcNow() + SendInterval;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>Records only final per-event outcomes, keeping transient and uncertain responses recoverable.</summary>
+    private void CheckpointBatch(
+        EdsmQueuedEvent[] batch,
+        long generation,
+        EdsmCredentials credentials,
+        List<string> warnings
+    )
+    {
+        if (outbox is null || !IsPublicationAuthorized(generation, credentials))
+        {
+            return;
+        }
+        try
+        {
+            lock (stateSync)
+            {
+                outbox.Complete(
+                    batch
+                        .Select(item => item.UploadIdentity)
+                        .Except(pending.Select(item => item.UploadIdentity), StringComparer.Ordinal)
+                );
+                outbox.DeferUntil(nextSendAt is { } next && next > outbox.NotBefore ? next : outbox.NotBefore);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add("EDSM retained uploads could not be checkpointed: " + exception.Message);
         }
     }
 
@@ -478,6 +595,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return false;
             }
 
+            if (outbox?.NotBefore is { } retainedDeadline && timeProvider.GetUtcNow() < retainedDeadline)
+            {
+                return false;
+            }
             long generation = authorizationGeneration;
             EdsmCredentials sendCredentials = authorizedCredentials;
             EdsmSession sendSession = session;
@@ -534,8 +655,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return CreateSendResult(0, warnings);
         }
 
+        EdsmQueuedEvent[] capturedBatch = batch.ToArray();
         try
         {
+            outbox?.DeferUntil(timeProvider.GetUtcNow() + SendInterval);
             if (!IsPublicationAuthorized(generation, credentials))
             {
                 return DiscardUnauthorizedBatch(batch, warnings);
@@ -588,12 +711,13 @@ public sealed class EdsmPublisher : IEdsmPublisher
             Requeue(batch, warnings);
             ScheduleNextAttempt(transientFailure: true);
             warnings.Add(
-                $"EDSM upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained in memory."
+                $"EDSM upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained for retry."
             );
             return CreateSendResult(0, warnings);
         }
         finally
         {
+            CheckpointBatch(capturedBatch, generation, credentials, warnings);
             lock (stateSync)
             {
                 activeBatchCount = 0;
@@ -611,8 +735,19 @@ public sealed class EdsmPublisher : IEdsmPublisher
         lock (stateSync)
         {
             discardedForCredentials = pending.RemoveAll(item => item.AuthorizationGeneration != generation);
+            EdsmQueuedEvent[] unwanted = pending.Where(item => sendDiscardedEvents.Contains(item.EventName)).ToArray();
+            outbox?.Complete(unwanted.Select(item => item.UploadIdentity));
             discardedByEdsm = pending.RemoveAll(item => sendDiscardedEvents.Contains(item.EventName));
             int count = Math.Min(pending.Count, MaximumEventsPerRequest);
+            if (count > 0)
+            {
+                count = pending
+                    .Take(count)
+                    .TakeWhile(item =>
+                        item.GameVersion == pending[0].GameVersion && item.GameBuild == pending[0].GameBuild
+                    )
+                    .Count();
+            }
             List<EdsmQueuedEvent> batch = pending.GetRange(0, count);
             pending.RemoveRange(0, count);
             return batch;
@@ -635,8 +770,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 new("apiKey", credentials.ApiKey),
                 new("fromSoftware", "SrvSurvey"),
                 new("fromSoftwareVersion", appVersion),
-                new("fromGameVersion", sendSession.GameVersion),
-                new("fromGameBuild", sendSession.GameBuild),
+                new("fromGameVersion", batch[0].GameVersion ?? sendSession.GameVersion),
+                new("fromGameBuild", batch[0].GameBuild ?? sendSession.GameBuild),
                 new("message", message),
             ]);
             byte[] bytes = await form.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
@@ -679,7 +814,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return DeferBatch(
                 batch,
                 warnings,
-                $"EDSM upload was deferred after HTTP {(int)response.StatusCode} ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained in memory.",
+                $"EDSM upload was deferred after HTTP {(int)response.StatusCode} ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained for retry.",
                 MaxDelay(rateLimitDelay, GetRetryAfter(response.Headers.RetryAfter))
             );
         }
@@ -767,7 +902,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             Requeue(retryable, warnings);
             warnings.Add(
-                $"EDSM deferred {retryable.Count} event(s) whose catalog items are not known yet; they were retained in memory."
+                $"EDSM deferred {retryable.Count} event(s) whose catalog items are not known yet; they were retained for retry."
             );
             ScheduleNextAttempt(transientFailure: true, rateLimitDelay);
         }
@@ -852,7 +987,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
-                warnings.Add($"EDSM discarded {dropped} oldest queued event(s) to keep its in-memory backlog bounded.");
+                warnings.Add($"EDSM discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
             }
         }
     }
@@ -1173,6 +1308,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 }
 
                 lifetimeCancellation.Dispose();
+                outbox?.Dispose();
             }
             finally
             {

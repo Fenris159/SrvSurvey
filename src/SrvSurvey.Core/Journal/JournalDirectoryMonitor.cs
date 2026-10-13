@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -529,6 +530,11 @@ public sealed class JournalDirectoryMonitor
             && journalEvent is not null
         )
         {
+            journalEvent = journalEvent with
+            {
+                SourceRecordIdentity =
+                    Path.GetFileName(currentJournalPath) + ":" + byteOffset.ToString(CultureInfo.InvariantCulture),
+            };
             if (journalEvent.EventName != "SendText" || RememberTextEvent(byteOffset, journalEvent.RawJson))
             {
                 events.Add(journalEvent);

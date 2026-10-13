@@ -99,7 +99,17 @@ internal sealed record EdsmSession(
     }
 }
 
-internal sealed record EdsmQueuedEvent(long AuthorizationGeneration, string EventName, string RawJson);
+internal sealed record EdsmQueuedEvent(long AuthorizationGeneration, string EventName, string RawJson)
+{
+    /// <summary>Identifies captured source evidence independently of transient authorization generations.</summary>
+    public string UploadIdentity { get; init; } = Guid.NewGuid().ToString("N");
+
+    /// <summary>Retains the journal's game version for recovery after a game update.</summary>
+    public string? GameVersion { get; init; }
+
+    /// <summary>Retains the journal's build for recovery after a game update.</summary>
+    public string? GameBuild { get; init; }
+}
 
 internal sealed class EdsmJournalContext
 {

@@ -46,6 +46,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private readonly CancellationTokenSource disposal = new();
     private CancellationTokenSource companionActivity = new();
     private readonly List<JObject> pendingSignals = [];
+    private readonly List<string> pendingSignalIdentities = [];
     private readonly Dictionary<string, string> stationSignatures = new(StringComparer.Ordinal);
     private readonly HashSet<Task> companionTasks = [];
     private EddnSignalBatchContext? pendingSignalContext;
@@ -176,10 +177,30 @@ internal sealed class EddnSessionPublisher : IDisposable
                 continue;
             }
 
-            if (!ProcessJournalEvent(journalEvent.EventName, raw, request, published, warnings))
+            if (
+                !ProcessJournalEvent(
+                    journalEvent.EventName,
+                    raw,
+                    request,
+                    published,
+                    warnings,
+                    journalEvent.SourceRecordIdentity is null ? null : JournalUploadIdentity.Capture(journalEvent)
+                )
+            )
             {
                 break;
             }
+        }
+
+        // Flush each monitor batch, including trailing signals, before the publisher completes its durable write barrier.
+        SignalBatch? remaining;
+        lock (sync)
+        {
+            remaining = TakeSignalBatchLocked();
+        }
+        if (remaining is not null)
+        {
+            PublishSignalBatch(remaining, published, warnings);
         }
 
         return new EddnPublicationResult(published, warnings);
@@ -255,12 +276,14 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Projects one captured source record with its session context and replay identity.</summary>
     private bool ProcessJournalEvent(
         string eventName,
         JObject raw,
         EddnApplyRequest request,
         List<EddnPublishedEvent> published,
-        List<string> warnings
+        List<string> warnings,
+        string? sourceRecordIdentity
     )
     {
         if (!MatchesCapturedCommander(eventName, raw, warnings))
@@ -274,6 +297,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             return false;
         }
 
+        captured = captured with { SourceRecordIdentity = sourceRecordIdentity };
         if (captured.SignalBatch is not null)
         {
             PublishSignalBatch(captured.SignalBatch, published, warnings);
@@ -281,7 +305,13 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (eventName == "FSSSignalDiscovered")
         {
-            BufferSignal(raw, captured.Context, request.AllowPublishing, captured.SessionGeneration);
+            BufferSignal(
+                raw,
+                captured.Context,
+                request.AllowPublishing,
+                captured.SessionGeneration,
+                sourceRecordIdentity
+            );
             return true;
         }
 
@@ -391,6 +421,9 @@ internal sealed class EddnSessionPublisher : IDisposable
                 ingestionGeneration,
                 directory
             )
+            {
+                SourceRecordIdentity = captured.SourceRecordIdentity,
+            }
         );
         return true;
     }
@@ -417,11 +450,12 @@ internal sealed class EddnSessionPublisher : IDisposable
             return;
         }
 
-        if (TryEnqueue(prepared!, captured.SessionGeneration, ingestionGeneration))
+        prepared = prepared! with { SourceRecordIdentity = captured.SourceRecordIdentity };
+        if (TryEnqueue(prepared, captured.SessionGeneration, ingestionGeneration))
         {
             published.Add(
                 new EddnPublishedEvent(
-                    prepared!.eventName,
+                    prepared.eventName,
                     EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
                     UsesTestSchemas: EddnTransport.TestSchemasEnabled
                 )
@@ -433,11 +467,13 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Collects public signal evidence and its source identities for one durable monitor batch.</summary>
     private void BufferSignal(
         JObject raw,
         EddnMessageContext context,
         bool allowPublishing,
-        long currentSessionGeneration
+        long currentSessionGeneration,
+        string? sourceRecordIdentity
     )
     {
         if (!CanPublishNow(allowPublishing, currentSessionGeneration, out long ingestionGeneration))
@@ -466,6 +502,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             )
             {
                 pendingSignals.Clear();
+                pendingSignalIdentities.Clear();
                 pendingSignalContext = new EddnSignalBatchContext(
                     context.location,
                     context.horizons,
@@ -476,6 +513,10 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             pendingSignals.Add(new JObject(raw));
+            if (sourceRecordIdentity is not null)
+            {
+                pendingSignalIdentities.Add(sourceRecordIdentity);
+            }
         }
     }
 
@@ -510,18 +551,14 @@ internal sealed class EddnSessionPublisher : IDisposable
             return;
         }
 
+        prepared = prepared! with { SourceRecordIdentity = batch.SourceRecordIdentity };
         if (
-            TryEnqueue(
-                prepared!,
-                batch.Context.SessionGeneration,
-                batch.Context.IngestionGeneration,
-                allowDisposedBatch
-            )
+            TryEnqueue(prepared, batch.Context.SessionGeneration, batch.Context.IngestionGeneration, allowDisposedBatch)
         )
         {
             published?.Add(
                 new EddnPublishedEvent(
-                    prepared!.eventName,
+                    prepared.eventName,
                     EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
                     UsesTestSchemas: EddnTransport.TestSchemasEnabled
                 )
@@ -678,7 +715,14 @@ internal sealed class EddnSessionPublisher : IDisposable
                 return;
             }
 
-            QueueCompanionMessage(prepared!, candidate, eventName);
+            QueueCompanionMessage(
+                prepared! with
+                {
+                    SourceRecordIdentity = candidate.SourceRecordIdentity,
+                },
+                candidate,
+                eventName
+            );
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -828,8 +872,15 @@ internal sealed class EddnSessionPublisher : IDisposable
         var batch = new SignalBatch(
             pendingSignals.Select(signal => new JObject(signal)).ToArray(),
             pendingSignalContext
-        );
+        )
+        {
+            SourceRecordIdentity =
+                pendingSignalIdentities.Count == pendingSignals.Count
+                    ? string.Join("\n", pendingSignalIdentities)
+                    : null,
+        };
         pendingSignals.Clear();
+        pendingSignalIdentities.Clear();
         pendingSignalContext = null;
         return batch;
     }
@@ -839,6 +890,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         lock (sync)
         {
             pendingSignals.Clear();
+            pendingSignalIdentities.Clear();
             pendingSignalContext = null;
         }
     }
@@ -846,6 +898,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private void ClearTransientStateLocked()
     {
         pendingSignals.Clear();
+        pendingSignalIdentities.Clear();
         pendingSignalContext = null;
         stationSignatures.Clear();
     }
@@ -960,9 +1013,17 @@ internal sealed class EddnSessionPublisher : IDisposable
         EddnMessageContext Context,
         bool SuppressForCrew,
         long SessionGeneration
-    );
+    )
+    {
+        /// <summary>Retains the source record identity with asynchronous projection context.</summary>
+        public string? SourceRecordIdentity { get; init; }
+    }
 
-    private sealed record SignalBatch(IReadOnlyList<JObject> Signals, EddnSignalBatchContext Context);
+    private sealed record SignalBatch(IReadOnlyList<JObject> Signals, EddnSignalBatchContext Context)
+    {
+        /// <summary>Identifies the ordered physical records contributing to one committed signal batch.</summary>
+        public string? SourceRecordIdentity { get; init; }
+    }
 
     private sealed record CompanionCandidate(
         JObject JournalEvent,
@@ -970,5 +1031,9 @@ internal sealed class EddnSessionPublisher : IDisposable
         long SessionGeneration,
         long IngestionGeneration,
         string JournalDirectory
-    );
+    )
+    {
+        /// <summary>Retains the originating journal identity during an asynchronous sidecar read.</summary>
+        public string? SourceRecordIdentity { get; init; }
+    }
 }

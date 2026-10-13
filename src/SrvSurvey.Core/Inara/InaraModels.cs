@@ -72,7 +72,11 @@ internal sealed record InaraContext(
     bool? IsTaxi
 );
 
-internal sealed record InaraEvent(string Name, string Timestamp, JToken Data, string? ReplaceKey = null);
+internal sealed record InaraEvent(string Name, string Timestamp, JToken Data, string? ReplaceKey = null)
+{
+    /// <summary>Identifies captured journal evidence without adding metadata to the provider payload.</summary>
+    public string UploadIdentity { get; init; } = Guid.NewGuid().ToString("N");
+}
 
 internal sealed record InaraQueuedEvent(string ApiKey, InaraEvent Event)
 {
@@ -144,6 +148,15 @@ internal sealed class InaraEventQueue
             }
 
             return trimToMaximum(maximumCount);
+        }
+    }
+
+    /// <summary>Returns stable identities still awaiting transmission without consuming queued work.</summary>
+    public string[] PendingIdentities()
+    {
+        lock (sync)
+        {
+            return pending.Select(item => item.Event.UploadIdentity).ToArray();
         }
     }
 

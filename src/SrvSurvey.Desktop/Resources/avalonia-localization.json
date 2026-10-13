@@ -25361,6 +25361,10 @@
       "translation": "Zeigt nur Systeme an, die absichtlich für später übersprungen wurden."
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "Wenn dieses Limit überschritten wird, werden nur die neuesten Nachrichten angezeigt. Standard: 3."
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "Anforderungen an Baumaterialien ein- oder ausblenden."
     },
@@ -26077,10 +26081,6 @@
       "translation": "SrvSurvey Desktop-Anwendungsregistrierung ist nicht verfügbar: {0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey lädt den beim Start oder bei der Wiedergabe gelesenen Journalverlauf nicht hoch. Durch Deaktivieren der Option werden Einträge ungültig, die noch im Speicher warten, und mehrere gleichzeitige Elite-Fenster unterbrechen die Veröffentlichung neuer VoxStellar, um zu vermeiden, dass Daten dem falschen Kommandanten zugeordnet werden."
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey lädt vor dem Hochladen die aktuelle Verwerfungsrichtlinie von EDSM herunter. Die aktuelle Richtlinie schließt Chat, Screenshot-Pfade, Status.json, Market, Outfitting, Shipyard, NavRoute und andere nicht unterstützte Ereignisse aus."
     },
@@ -26643,10 +26643,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "Der Start ist bei {0} fehlgeschlagen."
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "Ausgenommen sind Startverlauf, Legacy, Alpha/Beta, Diagnosewiederholung, Multicrew und Sitzungen mit mehreren Elite-Fenstern. Die ausstehende Warteschlange dient nur dem Speicher und Anmeldeinformationen oder Ereignisse gehen niemals über Commander-Sitzungen hinweg."
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -31851,6 +31847,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "Sichtbare Live-Overlays sind anklickbar und können gezogen werden. Verwenden Sie die Verknüpfung erneut, um den Klickmodus zu speichern und wiederherzustellen."
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "Sichtbares Nachrichtenlimit"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "VisibleMessageLimit"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -62671,6 +62675,10 @@
       "translation": "Mostrar sólo los sistemas omitidos deliberadamente para más adelante."
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "Mostrar solo los mensajes más recientes cuando se supere este límite. Predeterminado: 3."
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "Mostrar u ocultar los requisitos de productos de construcción."
     },
@@ -63387,10 +63395,6 @@
       "translation": "SrvSurvey el registro de la aplicación de escritorio no está disponible: {0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey no carga el historial del diario leído durante el inicio o la reproducción. Desactivar la opción invalida las entradas que aún están esperando en la memoria y varias ventanas Elite simultáneas pausan la nueva VoxStellar publicación para evitar atribuir datos al Commander incorrecto."
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey descarga la política de descarte actual de EDSM antes de cargarlo. Su política actual excluye chat, rutas de captura de pantalla Status.json, Market, Outfitting, Shipyard, NavRoute y otros eventos no admitidos."
     },
@@ -63953,10 +63957,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "El inicio falló en {0}."
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "Se excluyen el historial de inicio, Legacy, alfa/beta, repetición de diagnóstico, multicrew y sesiones con múltiples ventanas Elite. La cola pendiente es sólo de memoria y las credenciales o eventos nunca cruzan las sesiones de Commander."
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -69161,6 +69161,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "Se puede hacer clic y arrastrar las superposiciones en vivo visibles. Utilice el acceso directo nuevamente para guardar y restaurar el modo de clic."
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "Límite de mensajes visibles"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "Límite de mensajes visibles"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -99981,6 +99989,10 @@
       "translation": "Afficher uniquement les systèmes délibérément ignorés pour plus tard."
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "Afficher uniquement les messages les plus récents lorsque cette limite est dépassée. Par défaut : 3."
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "Afficher ou masquer les exigences en matière de produits de construction."
     },
@@ -100697,10 +100709,6 @@
       "translation": "SrvSurvey l'enregistrement de l'application de bureau n'est pas disponible : {0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey ne télécharge pas l'historique du journal lu lors du démarrage ou de la relecture. La désactivation de l'option invalide les entrées qui sont toujours en attente en mémoire, et plusieurs fenêtres Elite simultanées suspendent la nouvelle publication VoxStellar pour éviter d'attribuer des données au mauvais commandant."
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey télécharge la politique de suppression actuelle de EDSM avant de la télécharger. Sa politique actuelle exclut le chat, les chemins de capture d'écran Status.json, le marché, les pourvoiries, le chantier naval, NavRoute et d'autres événements non pris en charge."
     },
@@ -101263,10 +101271,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "Le démarrage a échoué sur {0}."
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "L'historique de démarrage, Legacy, alpha/bêta, la relecture de diagnostic, le multicrew et les sessions avec plusieurs fenêtres Elite sont exclus. La file d'attente en attente est constituée uniquement de mémoire et les informations d'identification ou les événements ne traversent jamais les sessions Commander."
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -106471,6 +106475,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "Les superpositions visibles en direct sont cliquables et peuvent être glissées. Utilisez à nouveau le raccourci pour enregistrer et restaurer le mode clic."
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "Limite de messages visibles"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "VisibleMessageLimit"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -137291,6 +137303,10 @@
       "translation": "Mostrar apenas sistemas ignorados deliberadamente para uso posterior."
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "Mostrar apenas as mensagens mais recentes quando esse limite for excedido. Padrão: 3."
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "Mostre ou oculte os requisitos de commodities de construção."
     },
@@ -138007,10 +138023,6 @@
       "translation": "SrvSurvey o registro do aplicativo de desktop não está disponível: {0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey não carrega o histórico do diário lido durante a inicialização ou reprodução. Desativar a opção invalida as entradas que ainda estão aguardando na memória e várias janelas Elite simultâneas pausam a nova publicação VoxStellar para evitar a atribuição de dados ao Commander errado."
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey baixa a política de descarte atual de EDSM antes de fazer upload. Sua política atual exclui chat, caminhos de captura de tela Status.json, Market, Outfitting, Shipyard, NavRoute e outros eventos não suportados."
     },
@@ -138573,10 +138585,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "A inicialização falhou em {0}."
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "Histórico de inicialização, legado, alfa/beta, reprodução de diagnóstico, equipe múltipla e sessões com múltiplas janelas Elite são excluídos. A fila pendente é apenas de memória e as credenciais ou eventos nunca cruzam as sessões do Commander."
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -143781,6 +143789,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "As sobreposições ao vivo visíveis são clicáveis e podem ser arrastadas. Use o atalho novamente para salvar e restaurar o modo click-through."
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "Limite de mensagens visíveis"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "VisibleMessageLimit"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -174601,6 +174617,10 @@
       "translation": "Показать только системы, намеренно пропущенные на потом."
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "При превышении этого лимита показывать только самые новые сообщения. По умолчанию: 3."
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "Показать или скрыть требования к строительным товарам."
     },
@@ -175317,10 +175337,6 @@
       "translation": "SrvSurvey регистрация настольного приложения недоступна: {0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey не загружает историю журнала, прочитанную во время запуска или воспроизведения. Отключение этой опции делает недействительными записи, которые все еще ожидают в памяти, а несколько одновременных окон Elite приостанавливают новую публикацию VoxStellar во избежание отнесения данных к неправильному Commander."
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey перед загрузкой загружает текущую политику удаления EDSM. Текущая политика исключает чат, пути к скриншотам, Status.json, Market, Outfitting, Shipyard, NavRoute и другие неподдерживаемые события."
     },
@@ -175883,10 +175899,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "Ошибка запуска по адресу {0}."
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "История запуска, Legacy, альфа/бета, диагностический повтор, многопользовательская игра и сеансы с несколькими окнами Elite исключены. Ожидающая очередь занимает только память, а учетные данные или события никогда не пересекают сеансы Commander."
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -181091,6 +181103,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "Видимые живые наложения кликабельны и их можно перетаскивать. Используйте ярлык еще раз, чтобы сохранить и восстановить режим перехода по клику."
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "Видимый лимит сообщений"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "VisibleMessageLimit"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -211911,6 +211931,10 @@
       "translation": "仅显示稍后故意跳过的系统。"
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "超过此限制时仅显示最新消息。默认值：3。"
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "显示或隐藏建筑商品要求。"
     },
@@ -212627,10 +212651,6 @@
       "translation": "SrvSurvey 桌面应用程序注册不可用：{0}"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "SrvSurvey 不会上传启动或重播期间读取的日志历史记录。关闭该选项会使内存中仍在等待的条目无效，并且多个同时出现的 Elite 窗口会暂停新的 VoxStellar 发布，以避免将数据归因于错误的指挥官。"
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "SrvSurvey在上传之前下载EDSM当前的丢弃策略。其当前政策不包括聊天、屏幕截图路径、Status.json、市场、舾装、Shipyard、NavRoute 和其他不受支持的事件。"
     },
@@ -213193,10 +213213,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "{0} 启动失败。"
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "排除启动历史记录、Legacy、alpha/beta、诊断重播、multicrew 以及具有多个 Elite 窗口的会话。待处理队列仅包含内存，凭证或事件永远不会跨 Commander 会话。"
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -218401,6 +218417,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "可见的实时叠加层可点击且可拖动。再次使用快捷方式保存并恢复点击模式。"
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "可见消息限制"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "可见消息限制"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",
@@ -249221,6 +249245,10 @@
       "translation": "* SHOW ONLY SYSTEMS DELIBERATELY SKIPPED FOR LATER. >>>!"
     },
     {
+      "source": "Show only the newest messages when this limit is exceeded. Default: 3.",
+      "translation": "* SHOW ONLY THE NEWEST MESSAGES WHEN THIS LIMIT IS EXCEEDED. DEFAULT: 3. >>>!"
+    },
+    {
       "source": "Show or hide construction commodity requirements.",
       "translation": "* SHOW OR HIDE CONSTRUCTION COMMODITY REQUIREMENTS. >>>!"
     },
@@ -249937,10 +249965,6 @@
       "translation": "* SRVSURVEY DESKTOP APPLICATION REGISTRATION IS UNAVAILABLE: {0} >>>!"
     },
     {
-      "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-      "translation": "* SRVSURVEY DOES NOT UPLOAD JOURNAL HISTORY READ DURING STARTUP OR REPLAY. TURNING THE OPTION OFF INVALIDATES ENTRIES THAT ARE STILL WAITING IN MEMORY, AND MULTIPLE SIMULTANEOUS ELITE WINDOWS PAUSE NEW VOXSTELLAR PUBLICATION TO AVOID ATTRIBUTING DATA TO THE WRONG COMMANDER. >>>!"
-    },
-    {
       "source": "SrvSurvey downloads EDSM's current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
       "translation": "* SRVSURVEY DOWNLOADS EDSM'S CURRENT DISCARD POLICY BEFORE UPLOADING. ITS CURRENT POLICY EXCLUDES CHAT, SCREENSHOT PATHS, STATUS.JSON, MARKET, OUTFITTING, SHIPYARD, NAVROUTE, AND OTHER UNSUPPORTED EVENTS. >>>!"
     },
@@ -250503,10 +250527,6 @@
     {
       "source": "Startup failed at {0}.",
       "translation": "* STARTUP FAILED AT {0}. >>>!"
-    },
-    {
-      "source": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-      "translation": "* STARTUP HISTORY, LEGACY, ALPHA/BETA, DIAGNOSTIC REPLAY, MULTICREW, AND SESSIONS WITH MULTIPLE ELITE WINDOWS ARE EXCLUDED. THE PENDING QUEUE IS MEMORY-ONLY AND CREDENTIALS OR EVENTS NEVER CROSS COMMANDER SESSIONS. >>>!"
     },
     {
       "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
@@ -255711,6 +255731,14 @@
     {
       "source": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
       "translation": "* VISIBLE LIVE OVERLAYS ARE CLICKABLE AND CAN BE DRAGGED. USE THE SHORTCUT AGAIN TO SAVE AND RESTORE CLICK-THROUGH MODE. >>>!"
+    },
+    {
+      "source": "Visible message limit",
+      "translation": "* VISIBLE MESSAGE LIMIT >>>!"
+    },
+    {
+      "source": "VisibleMessageLimit",
+      "translation": "* VISIBLEMESSAGELIMIT >>>!"
     },
     {
       "source": "Visit the selected site before editing its commander survey.",

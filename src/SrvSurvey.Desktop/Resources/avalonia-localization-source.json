@@ -50868,6 +50868,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Show only the newest messages when this limit is exceeded. Default: 3.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show or hide construction commodity requirements.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52301,14 +52309,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
-    "Text": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "SrvSurvey downloads EDSM\u0027s current discard policy before uploading. Its current policy excludes chat, screenshot paths, Status.json, Market, Outfitting, Shipyard, NavRoute, and other unsupported events.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53435,14 +53435,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.cs"
-  },
-  {
-    "Text": "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance\u0027s commander.",
@@ -63873,6 +63865,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Visible message limit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "VisibleMessageLimit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/NotificationSettingsStore.cs"
   },
   {
     "Text": "Visit the selected site before editing its commander survey.",

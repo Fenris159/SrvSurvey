@@ -494,7 +494,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     log: message => resolvedApplicationLogService?.Append(message),
                     acceptedEventLog: new InaraAcceptedEventLog(
                         Path.Combine(AppDataPaths.DataDirectory, "logs", "inara-accepted.txt")
-                    )
+                    ),
+                    outboxDirectory: IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory
                 );
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
@@ -505,7 +506,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new EdsmPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     httpClient: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory
                 );
             rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
             Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
@@ -527,7 +529,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new EdAstroPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     client: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory
                 );
             rollback.AddIfCreated(resolvedEdAstroPublisher, this.edAstroPublisher);
             NetworkPrivacy.EdAstroUploadEnabledChanged += OnEdAstroUploadEnabledChanged;
@@ -538,8 +541,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new VoxStellarPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     IsDiagnosticReplay ? string.Empty : VoxStellarSharedKeyProvider.GetSharedKey(),
-                    client: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    new VoxStellarPublisherOptions
+                    {
+                        Client = externalNetworkClient,
+                        Log = message => resolvedApplicationLogService?.Append(message),
+                        OutboxDirectory = IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory,
+                    }
                 );
             VoxStellar = new VoxStellarSharingViewModel(
                 new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),

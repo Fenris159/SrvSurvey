@@ -50,6 +50,9 @@ internal sealed class EddnOutbox : IDisposable
     private List<EddnQueuedMessage> pending;
     private readonly Dictionary<Guid, long> persistedBytes = [];
     private readonly HashSet<Guid> loadCycleIds = [];
+    private readonly HashSet<Guid> completedRecordIds = [];
+    private readonly Queue<Guid> completedRecordOrder = new();
+    private const int MaximumReceipts = 65536;
     private long storeBytes;
     private FileStream? ownershipLease;
     private FileStream? sharedDisableLease;
@@ -309,6 +312,13 @@ internal sealed class EddnOutbox : IDisposable
                 return false;
             }
 
+            if (
+                message.replayProtected
+                && (completedRecordIds.Contains(message.id) || pending.Any(item => item.id == message.id))
+            )
+            {
+                return true;
+            }
             if (pending.Count >= maximumPendingMessages)
             {
                 persistenceLog =
@@ -515,8 +525,9 @@ internal sealed class EddnOutbox : IDisposable
         List<string> reloadLogs
     )
     {
+        string? persistenceLog = RememberCompletedRecord(next);
         pending.RemoveAll(item => item.id == next.id);
-        string? persistenceLog = deleteMessage(next);
+        persistenceLog ??= deleteMessage(next);
         if (pending.Count == 0)
         {
             if (loadingTruncated)
@@ -525,7 +536,7 @@ internal sealed class EddnOutbox : IDisposable
             }
             else
             {
-                persistenceLog ??= deleteStore();
+                persistenceLog ??= deleteStore(discardReceipts: false);
             }
         }
 
@@ -700,6 +711,7 @@ internal sealed class EddnOutbox : IDisposable
             loadCycleIds.Clear();
         }
 
+        LoadCompletedRecords(messages);
         persistedBytes.Clear();
         storeBytes = 0;
         loadingTruncated = false;
@@ -773,6 +785,11 @@ internal sealed class EddnOutbox : IDisposable
                     throw new InvalidDataException("the queue contained an invalid or duplicate entry");
                 }
 
+                if (item.replayProtected && completedRecordIds.Contains(item.id))
+                {
+                    File.Delete(path);
+                    continue;
+                }
                 loaded.Add(item);
                 persistedBytes[item.id] = length;
                 storeBytes += length;
@@ -860,6 +877,93 @@ internal sealed class EddnOutbox : IDisposable
         return migrated;
     }
 
+    /// <summary>Recovers bounded source-derived receipt identities under the existing exclusive queue lease.</summary>
+    private void LoadCompletedRecords(List<string> messages)
+    {
+        string receiptPath = filepath + ".receipts";
+        if (!File.Exists(receiptPath))
+        {
+            return;
+        }
+        try
+        {
+            using var file = new FileStream(receiptPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            long committed = file.Length / 16 * 16;
+            file.Position = Math.Max(0, committed - MaximumReceipts * 16L);
+            Span<byte> bytes = stackalloc byte[16];
+            while (file.Position < committed)
+            {
+                file.ReadExactly(bytes);
+                var id = new Guid(bytes);
+                if (completedRecordIds.Add(id))
+                {
+                    completedRecordOrder.Enqueue(id);
+                }
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            messages.Add("EDDN could not read its replay receipts: " + exception.Message);
+        }
+    }
+
+    /// <summary>Flushes a final outcome before removing its message and bounds acknowledged journal history.</summary>
+    private string? RememberCompletedRecord(EddnQueuedMessage item)
+    {
+        if (!item.replayProtected || !completedRecordIds.Add(item.id))
+        {
+            return null;
+        }
+        completedRecordOrder.Enqueue(item.id);
+        while (completedRecordOrder.Count > MaximumReceipts)
+        {
+            completedRecordIds.Remove(completedRecordOrder.Dequeue());
+        }
+        string path = filepath + ".receipts";
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+            bool compact = File.Exists(path) && new FileInfo(path).Length >= MaximumReceipts * 16L;
+            string target = compact ? path + ".tmp" : path;
+            using (
+                var file = new FileStream(
+                    target,
+                    compact ? FileMode.Create : FileMode.OpenOrCreate,
+                    FileAccess.Write,
+                    FileShare.Read,
+                    4096,
+                    FileOptions.WriteThrough
+                )
+            )
+            {
+                if (compact)
+                {
+                    foreach (Guid receipt in completedRecordOrder)
+                    {
+                        file.Write(receipt.ToByteArray());
+                    }
+                }
+                else
+                {
+                    long committed = file.Length / 16 * 16;
+                    file.SetLength(committed);
+                    file.Position = committed;
+                    file.Write(item.id.ToByteArray());
+                }
+                file.Flush(true);
+            }
+            if (compact)
+            {
+                File.Move(target, path, true);
+            }
+            return null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return "EDDN could not checkpoint an acknowledged journal record: " + exception.Message;
+        }
+    }
+
     private bool persistMessage(EddnQueuedMessage message, out string? errorLog)
     {
         errorLog = null;
@@ -877,7 +981,20 @@ internal sealed class EddnOutbox : IDisposable
 
             string path = messagePath(message.id);
             string temporary = path + ".tmp";
-            File.WriteAllText(temporary, json);
+            using (
+                var file = new FileStream(
+                    temporary,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    4096,
+                    FileOptions.WriteThrough
+                )
+            )
+            {
+                file.Write(Encoding.UTF8.GetBytes(json));
+                file.Flush(true);
+            }
             File.Move(temporary, path, true);
             persistedBytes[message.id] = bytes;
             storeBytes = storeBytes - previousBytes + bytes;
@@ -916,10 +1033,17 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
-    private string? deleteStore()
+    /// <summary>Clears retained payload storage; ordinary queue drainage preserves replay receipts.</summary>
+    private string? deleteStore(bool discardReceipts = true)
     {
         try
         {
+            if (discardReceipts)
+            {
+                File.Delete(filepath + ".receipts");
+                completedRecordIds.Clear();
+                completedRecordOrder.Clear();
+            }
             if (File.Exists(filepath))
             {
                 File.Delete(filepath);

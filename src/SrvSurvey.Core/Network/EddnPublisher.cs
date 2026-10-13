@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Journal;
@@ -166,8 +168,19 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 return Task.FromResult(EddnPublicationResult.Empty);
             }
 
-            return Task.FromResult(currentSession.Apply(request, cancellationToken));
+            EddnPublicationResult result = currentSession.Apply(request, cancellationToken);
+            return FinishCapturedWritesAsync(result, cancellationToken);
         }
+    }
+
+    /// <summary>Does not finish a captured journal update until its prepared messages have reached durable storage.</summary>
+    private async Task<EddnPublicationResult> FinishCapturedWritesAsync(
+        EddnPublicationResult result,
+        CancellationToken cancellationToken
+    )
+    {
+        await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
+        return result;
     }
 
     internal async Task ProcessPendingAsync(CancellationToken cancellationToken = default)
@@ -230,6 +243,16 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         }
 
         EddnQueuedMessage item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
+        if (prepared.SourceRecordIdentity is not null)
+        {
+            byte[] digest = SHA256.HashData(
+                Encoding.UTF8.GetBytes(
+                    header.uploaderID + "\n" + prepared.SourceRecordIdentity + "\n" + prepared.schemaRef
+                )
+            );
+            item.id = new Guid(digest.AsSpan(0, 16));
+            item.replayProtected = true;
+        }
         Interlocked.Increment(ref stagedWriteCount);
         if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(item, acceptedConsentGeneration, eventName, rejected)))
         {

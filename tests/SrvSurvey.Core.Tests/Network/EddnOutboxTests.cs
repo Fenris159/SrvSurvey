@@ -8,6 +8,7 @@ using Xunit;
 
 namespace SrvSurvey.Core.Tests.Network;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EddnOutboxTests
 {
     [Fact]

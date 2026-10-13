@@ -560,7 +560,7 @@ public static class GuideCatalog
                         [
                             "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
                             "Enable Send Journal to VoxStellar for boxel surveying to upload new live Scan, FSDTarget, FSDJump, FSSDiscoveryScan, SAASignalsFound, ScanOrganic, ScanBaryCentre, and CodexEntry events with your Commander name.",
-                            "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
+                            "SrvSurvey does not upload journal history read during startup or replay. Captured reports survive restarts in a private local retry queue. Turning the option off removes retained work, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
                         ],
                         [
                             "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
@@ -1098,7 +1098,7 @@ public static class GuideCatalog
                         ],
                         [
                             "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
-                            "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
+                            "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Captured reports and their original game context survive restarts in a private local retry queue. API keys are not saved in retry files and events never cross Commander accounts.",
                         ]
                     ),
                     Section(

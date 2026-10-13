@@ -22,6 +22,12 @@ public sealed record AppDataPaths(
             ? SharedUiSettingsPath
             : Path.Combine(ConfigDirectory, "commanders", SettingsFrontierId, "cross-platform-ui.json");
 
+    /// <summary>Stores private machine-local delivery queues independently of portable profile data.</summary>
+    public string JournalUploadDirectory =>
+        SettingsFrontierId is null
+            ? Path.Combine(DataDirectory, "journal-uploads")
+            : Path.Combine(DataDirectory, "journal-uploads", "profiles", SettingsFrontierId);
+
     public string OverlaySettingsDirectory =>
         SettingsFrontierId is null
             ? DataDirectory

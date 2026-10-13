@@ -375,6 +375,18 @@
                     IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}"
                     Content="Allow timed notification messages" />
         </Grid>
+        <Grid ColumnDefinitions="*,140" ColumnSpacing="20">
+          <StackPanel Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Visible message limit" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Show only the newest messages when this limit is exceeded. Default: 3." />
+          </StackPanel>
+          <NumericUpDown x:Name="NotificationVisibleMessageLimitInput"
+                         Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Minimum="1" Maximum="20" Increment="1" FormatString="N0"
+                         Value="{Binding Notifications.VisibleMessageLimit, Mode=TwoWay}" />
+        </Grid>
         <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="10">
             <CheckBox IsChecked="{Binding Notifications.MaterialCountAfterPickup, Mode=TwoWay}"

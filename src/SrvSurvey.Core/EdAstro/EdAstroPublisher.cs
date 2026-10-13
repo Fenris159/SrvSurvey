@@ -12,7 +12,7 @@ namespace SrvSurvey.Core.EdAstro;
 
 /// <summary>
 /// Sends consented live journal data using EDDiscovery's EDAstro JSON envelope.
-/// A bounded memory queue retains transient failures, sessions capture their own
+/// A bounded durable queue retains transient failures, sessions capture their own
 /// expansion flag, and the provider's event list is intersected with disclosed
 /// local types. No HTTP or per-event logging occurs on the journal thread.
 /// </summary>
@@ -35,6 +35,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     private readonly SemaphoreSlim sending = new(1, 1);
     private readonly HttpClient client;
     private readonly EdAstroTrafficBudget trafficBudget;
+    private readonly JournalUploadOutbox<QueuedEvent>? outbox;
     private readonly bool ownsClient;
     private readonly string version;
     private readonly Action<string> log;
@@ -55,6 +56,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     private int failureCount;
     private long generation;
     private bool enabled;
+    private bool consentInitialized;
     private bool suspended;
     private bool disposed;
 
@@ -65,7 +67,8 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         Action<string>? log = null,
         Func<DateTimeOffset>? utcNow = null,
         bool automaticProcessing = true,
-        EdAstroTrafficBudget? trafficBudget = null
+        EdAstroTrafficBudget? trafficBudget = null,
+        string? outboxDirectory = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
@@ -74,6 +77,15 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         this.trafficBudget = trafficBudget ?? EdAstroTrafficBudget.Shared;
         ownsClient = client is null;
         this.log = log ?? (_ => { });
+        outbox = outboxDirectory is null
+            ? null
+            : new JournalUploadOutbox<QueuedEvent>(
+                outboxDirectory,
+                "edastro",
+                entry => entry.Identity,
+                ValidateStoredEvent,
+                this.log
+            );
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         nextSummaryAt = this.utcNow() + LogInterval;
         if (automaticProcessing)
@@ -99,14 +111,20 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     {
         lock (sync)
         {
-            if (disposed || this.enabled == enabled)
+            if (disposed || (consentInitialized && this.enabled == enabled))
             {
                 return;
             }
+            consentInitialized = true;
             this.enabled = enabled;
+            if (enabled)
+            {
+                outbox?.AcceptConsent();
+            }
             generation++;
             if (!enabled)
             {
+                outbox?.ClearAll();
                 queue.Clear();
                 seen.Clear();
                 seenOrder.Clear();
@@ -144,10 +162,13 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
                 disposed
                 || !enabled
                 || suspended
-                || !request.AllowPublishing
                 || !request.IsLiveGame
                 || string.IsNullOrWhiteSpace(request.CommanderName)
             )
+            {
+                return;
+            }
+            if (!RestoreOwner(request.CommanderName) || !request.AllowPublishing)
             {
                 return;
             }
@@ -188,18 +209,67 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             ReportProblem("EDAstro's bounded local queue is full or an event is too large; new data was skipped.");
             return;
         }
-        string identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(session + "\n" + json)));
-        if (!seen.Add(identity))
+        string identity = entry.SourceRecordIdentity is null
+            ? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(session + "\n" + json)))
+            : JournalUploadIdentity.Capture(entry);
+        if (seen.Contains(identity))
         {
             return;
         }
+        var item = new QueuedEvent(identity, session, odyssey, json, utcNow());
+        if (outbox is not null && outbox.Enqueue([item]).Count == 0)
+        {
+            return;
+        }
+        seen.Add(identity);
         seenOrder.Enqueue(identity);
         while (seenOrder.Count > MaximumQueueSize)
         {
             seen.Remove(seenOrder.Dequeue());
         }
-        queue.Add(new QueuedEvent(session, odyssey, json, utcNow()));
+        queue.Add(item);
     }
+
+    /// <summary>Recovers only the attributable commander's captured reports, including during a bootstrap-only read.</summary>
+    private bool RestoreOwner(string commander)
+    {
+        if (outbox is null)
+        {
+            return true;
+        }
+        if (!outbox.TryOpen(commander.Trim().ToUpperInvariant(), out IReadOnlyList<QueuedEvent>? recovered))
+        {
+            return false;
+        }
+        if (recovered is not null)
+        {
+            generation++;
+            activeRequest?.Cancel();
+            queue.Clear();
+            queue.AddRange(recovered);
+            seen.Clear();
+            seenOrder.Clear();
+            foreach (string identity in recovered.Select(item => item.Identity))
+            {
+                seen.Add(identity);
+                seenOrder.Enqueue(identity);
+            }
+            nextRequestAt = outbox.NotBefore ?? DateTimeOffset.MinValue;
+            acceptedEvents.Clear();
+            eventListExpiresAt = DateTimeOffset.MinValue;
+        }
+        return true;
+    }
+
+    /// <summary>Rejects corrupted or unsanitized retained payloads before they can bypass the provider disclosure rules.</summary>
+    private static bool ValidateStoredEvent(QueuedEvent item) =>
+        !string.IsNullOrWhiteSpace(item.Identity)
+        && !string.IsNullOrWhiteSpace(item.Session)
+        && !string.IsNullOrWhiteSpace(item.Json)
+        && Encoding.UTF8.GetByteCount(item.Json) <= MaximumPayloadBytes / 2
+        && JournalEventEnvelope.TryParse(item.Json, out JournalEventEnvelope? entry, out _)
+        && entry is not null
+        && JsonNode.DeepEquals(JsonNode.Parse(item.Json), EdAstroJournalData.Prepare(entry));
 
     /// <summary>Processes at most one paced request; used by the worker and deterministic delivery tests.</summary>
     internal async Task ProcessPendingAsync(CancellationToken cancellationToken = default)
@@ -232,6 +302,9 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         }
     }
 
+    /// <summary>Attempts one pending policy or journal request while respecting the provider's pacing.</summary>
+    public Task FlushAsync(CancellationToken cancellationToken = default) => ProcessPendingAsync(cancellationToken);
+
     /// <summary>Owns one cancellation-scoped request and retains queued reports when delivery fails.</summary>
     private async Task ProcessRequestAsync(CancellationToken cancellationToken)
     {
@@ -241,18 +314,21 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         lock (sync)
         {
             WriteActivitySummary();
-            queue.RemoveAll(item => utcNow() - item.QueuedAt > TimeSpan.FromDays(1));
+            if (outbox is null)
+            {
+                queue.RemoveAll(item => utcNow() - item.QueuedAt > TimeSpan.FromDays(1));
+            }
             if (!CanRequest())
             {
                 return;
             }
             capturedGeneration = generation;
+            nextRequestAt = utcNow() + SendInterval;
+            outbox?.DeferUntil(nextRequestAt);
             cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
             cancellation.CancelAfter(TimeSpan.FromSeconds(25));
             activeRequest = cancellation;
             refresh = utcNow() >= eventListExpiresAt;
-
-            nextRequestAt = utcNow() + SendInterval;
         }
         using (cancellation)
         {
@@ -302,6 +378,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
                 {
                     activeRequest = null;
                     nextRequestAt = Max(nextRequestAt, utcNow() + SendInterval);
+                    PersistDeadline();
                 }
             }
         }
@@ -324,7 +401,8 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     }
 
     /// <summary>Checks that a request still belongs to the current consent and attribution generation.</summary>
-    private bool IsCurrent(long captured) => !disposed && enabled && !suspended && generation == captured;
+    private bool IsCurrent(long captured) =>
+        !disposed && enabled && !suspended && generation == captured && (outbox?.HasConsent ?? true);
 
     /// <summary>Refreshes the provider policy and discards reports outside the disclosed accepted-event intersection.</summary>
     private async Task RefreshAcceptedEventsAsync(long captured, CancellationToken token)
@@ -353,7 +431,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             acceptedEvents = accepted;
             eventListExpiresAt = utcNow() + EventListLifetime;
             failureCount = 0;
-            queue.RemoveAll(item => !accepted.Contains(GetEventName(item.Json)));
+            RemoveUnwantedReports(accepted);
             lastProblem = null;
             if (unsupported.Count > 0 && !unsupported.SetEquals(unsupportedEvents))
             {
@@ -376,7 +454,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             {
                 return;
             }
-            queue.RemoveAll(item => !acceptedEvents.Contains(GetEventName(item.Json)));
+            RemoveUnwantedReports(acceptedEvents);
             batch = queue.Count == 0 ? [] : TakeBatch();
             if (batch.Length == 0)
             {
@@ -464,6 +542,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             nextRequestAt = utcNow() + TimeSpan.FromMinutes(15);
             return;
         }
+        outbox?.Complete(batch.Select(item => item.Identity));
         queue.RemoveRange(0, batch.Length);
         completedCount += apiStatus == 200 ? batch.Length : 0;
         failureCount = 0;
@@ -528,6 +607,28 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             utcNow() + TimeSpan.FromSeconds(Math.Min(900, 30 * Math.Pow(2, failureCount - 1)))
         );
         ReportProblem(message);
+        PersistDeadline();
+    }
+
+    /// <summary>Retires provider-unwanted records durably before releasing their payloads from memory.</summary>
+    private void RemoveUnwantedReports(HashSet<string> accepted)
+    {
+        QueuedEvent[] unwanted = queue.Where(item => !accepted.Contains(GetEventName(item.Json))).ToArray();
+        outbox?.Complete(unwanted.Select(item => item.Identity));
+        queue.RemoveAll(item => !accepted.Contains(GetEventName(item.Json)));
+    }
+
+    /// <summary>Retains the provider deadline without allowing a failed checkpoint to crash the journal worker.</summary>
+    private void PersistDeadline()
+    {
+        try
+        {
+            outbox?.DeferUntil(nextRequestAt);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            ReportProblem("EDAstro could not checkpoint its retry deadline; retained journal reports remain on disk.");
+        }
     }
 
     /// <summary>Logs a changed delivery problem once instead of repeating it on every journal tick.</summary>
@@ -598,7 +699,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         }
     }
 
-    /// <summary>Cancels delivery, discards the memory queue, and emits one final activity summary.</summary>
+    /// <summary>Cancels delivery and releases storage leases while preserving captured uploads for the next eligible session.</summary>
     public void Dispose()
     {
         lock (sync)
@@ -624,11 +725,19 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         sending.Release();
         sending.Dispose();
         lifetime.Dispose();
+        outbox?.Dispose();
         if (ownsClient)
         {
             client.Dispose();
         }
     }
 
-    private sealed record QueuedEvent(string Session, bool Odyssey, string Json, DateTimeOffset QueuedAt);
+    /// <summary>Stores the immutable upload identity, captured session and sanitized journal event.</summary>
+    private sealed record QueuedEvent(
+        string Identity,
+        string Session,
+        bool Odyssey,
+        string Json,
+        DateTimeOffset QueuedAt
+    );
 }
