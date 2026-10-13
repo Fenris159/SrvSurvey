@@ -23,6 +23,53 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Editor sample states follow the same retained-corner policy as live panels.</summary>
+    [AvaloniaTheory]
+    [InlineData("left", false)]
+    [InlineData("right", true)]
+    public void CyclingContentStatesKeepsTheEditorsInwardTopCorner(string anchor, bool right)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
+        string original = $"{{\"PlotBioStatus\":\"{anchor}:20, top:100\"}}";
+        File.WriteAllText(path, original);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        viewModel.SelectedCategory = viewModel.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.BiologyAndSurface
+        );
+        Assert.True(viewModel.Begin());
+        Dispatcher.UIThread.RunJobs();
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioStatus"
+        );
+        OverlayPreviewPanelMetrics initial = preview.GetPanelMetrics(preview.RenderScaling);
+        PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        int edge = origin.X + (right ? initial.PanelSize.Width : 0);
+        for (int state = 0; state < preview.EditorPreviewStateCount; state++)
+        {
+            Assert.True(preview.CycleEditorPreviewState());
+            Dispatcher.UIThread.RunJobs();
+            OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            PixelPoint current = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            Assert.Equal(origin.Y, current.Y);
+            Assert.Equal(edge, current.X + (right ? metrics.PanelSize.Width : 0));
+        }
+        viewModel.Cancel();
+        Assert.Equal(original, File.ReadAllText(path));
+    }
+
     [Theory]
     [InlineData(0, 1080, 1)]
     [InlineData(-5120, -240, 1.5)]
@@ -423,11 +470,64 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.NotNull(settings);
             Assert.NotNull(toolbar);
             Assert.True(Grid.GetRow(settings) < Grid.GetRow(toolbar));
+            Button growth = Assert.IsType<Button>(window.FindControl<Button>("GrowthDirectionButton"));
+            Button reset = Assert.IsType<Button>(window.FindControl<Button>("ResetOverlaySizeButton"));
+            Assert.True(Grid.GetColumn(growth) < Grid.GetColumn(reset));
         }
         finally
         {
             window.Close();
         }
+    }
+
+    /// <summary>The growth button cycles through all modes without moving the panel or changing toolbar placement.</summary>
+    [AvaloniaFact]
+    public void GrowthButtonCyclesInPlaceAndRestoresAutomaticBehavior()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"left:400, top:100\"}"
+        );
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var vm = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1920, 1080), true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        Assert.False(vm.CycleOverlayGrowthCommand.CanExecute(null));
+        Assert.True(vm.Begin());
+        vm.OpenOverlaySettings("PlotJumpInfo");
+        Dispatcher.UIThread.RunJobs();
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(panel =>
+            panel.Definition.Name == "PlotJumpInfo"
+        );
+        PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        OverlayPositionEditorWindow toolbar = Assert.IsType<OverlayPositionEditorWindow>(host.EditorToolbar);
+        Button button = Assert.IsType<Button>(toolbar.FindControl<Button>("GrowthDirectionButton"));
+        Assert.Equal("⇆", button.Content);
+        foreach (string symbol in new[] { "←", "→", "⇆" })
+        {
+            Assert.True(button.Command!.CanExecute(null));
+            button.Command.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(symbol, button.Content);
+            Assert.Equal(origin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+        }
+        using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
+        Assert.NotNull(frame);
+        frame.Save(
+            Path.Combine(Path.GetTempPath(), "srvsurvey-overlay-growth-settings.png"),
+            new PngBitmapEncoderOptions()
+        );
+        vm.Save();
+        Assert.Equal(OverlayGrowthDirection.Automatic, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
     }
 
     [AvaloniaFact]
@@ -750,14 +850,13 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         preview.MouseMove(resizePoint + new Vector(120, 40), RawInputModifiers.LeftMouseButton);
         preview.MouseUp(resizePoint + new Vector(120, 40), MouseButton.Left, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
-        OverlayPreviewPanelMetrics resizedMetrics = preview.GetPanelMetrics(preview.RenderScaling);
         Assert.Equal(savedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
         viewModel.Save();
 
         LegacyOverlayLayout savedLayout = store.Load();
         OverlayPanelSize? savedSize = savedLayout.GetSizeOverride("PlotJumpInfo");
-        int expectedHorizontalOffset =
-            savedTopLeft.X - (hostBounds.X + ((hostBounds.Width - resizedMetrics.PanelSize.Width) / 2));
+        int expectedHorizontalOffset = savedTopLeft.X - hostBounds.X;
+        Assert.Equal(LegacyHorizontalAnchor.Left, savedLayout.Placements["PlotJumpInfo"].Horizontal);
         Assert.Equal(expectedHorizontalOffset, savedLayout.Placements["PlotJumpInfo"].HorizontalOffset);
         Assert.NotNull(savedSize);
         Assert.True(viewModel.Begin());

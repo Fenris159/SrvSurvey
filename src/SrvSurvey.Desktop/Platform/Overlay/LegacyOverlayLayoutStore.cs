@@ -24,9 +24,11 @@ public sealed class LegacyOverlayLayoutStore
     private readonly string typographyOverridesPath;
     private readonly string sizeOverridesPath;
     private readonly string positionReferencesPath;
+    private readonly string growthOverridesPath;
     private readonly object fileLock;
     private readonly Action<string> log;
 
+    /// <summary>Resolves the owning layout folder and its legacy and optional metadata files.</summary>
     public LegacyOverlayLayoutStore(string dataDirectory, Action<string>? log = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -38,6 +40,7 @@ public sealed class LegacyOverlayLayoutStore
         typographyOverridesPath = Path.Combine(this.dataDirectory, "overlay-typography-overrides.json");
         sizeOverridesPath = Path.Combine(this.dataDirectory, "overlay-size-overrides.json");
         positionReferencesPath = Path.Combine(this.dataDirectory, "overlay-position-references.json");
+        growthOverridesPath = Path.Combine(this.dataDirectory, "overlay-growth-overrides.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
@@ -365,6 +368,7 @@ public sealed class LegacyOverlayLayoutStore
                     placements
                 );
                 (sizeOverridesBackupPath, updatedSizeOverrideCount) = SaveSizeOverridesCore(placements);
+                SaveGrowthOverridesCore(placements);
                 LegacyOverlayLayoutSaveResult result =
                     placements.Count > 0
                         ? SaveCore(placements)
@@ -468,6 +472,7 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    /// <summary>Reads legacy coordinates and optional panel metadata as one layout generation.</summary>
     private LegacyOverlayLayout LoadCore()
     {
         var positions = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
@@ -509,6 +514,7 @@ public sealed class LegacyOverlayLayoutStore
         ApplyTypographyOverrides(positions, typographyOverrides);
         ApplySizeOverrides(positions, LoadSizeOverrides(errors));
         ApplyPositionReferences(positions, LoadPositionReferences(errors));
+        ApplyGrowthOverrides(positions, errors);
 
         // New mining warnings start at the player's flight-warning placement.
         // Once saved independently, never overwrite their position or scale.
@@ -662,6 +668,145 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    /// <summary>Reads per-panel growth preferences without changing their coordinate anchors.</summary>
+    private void ApplyGrowthOverrides(Dictionary<string, LegacyOverlayPlacement> positions, List<string> errors)
+    {
+        if (!File.Exists(growthOverridesPath))
+        {
+            return;
+        }
+        try
+        {
+            foreach ((string name, JsonNode? value) in ParseObject(growthOverridesPath))
+            {
+                (OverlayGrowthDirection direction, LegacyHorizontalAnchor? anchor) = ReadGrowthOverride(value, name);
+                if (positions.TryGetValue(name, out LegacyOverlayPlacement? placement))
+                {
+                    positions[name] = placement with { GrowthDirection = direction, GrowthAnchor = anchor };
+                }
+            }
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            errors.Add($"Could not read overlay growth overrides '{growthOverridesPath}': {exception.Message}");
+        }
+    }
+
+    /// <summary>Reads both previous named overrides and new records containing a retained growth anchor.</summary>
+    private static (OverlayGrowthDirection Direction, LegacyHorizontalAnchor? Anchor) ReadGrowthOverride(
+        JsonNode? value,
+        string name
+    )
+    {
+        if (value is JsonObject record)
+        {
+            OverlayGrowthDirection direction = ReadGrowthDirection(record["direction"], name);
+            LegacyHorizontalAnchor? anchor = record["anchor"] is null
+                ? null
+                : ReadGrowthDirection(record["anchor"], name) switch
+                {
+                    OverlayGrowthDirection.Left => LegacyHorizontalAnchor.Left,
+                    OverlayGrowthDirection.Right => LegacyHorizontalAnchor.Right,
+                    _ => throw new InvalidDataException($"Overlay growth anchor '{name}' must be left or right."),
+                };
+            return (direction, anchor);
+        }
+        return (ReadGrowthDirection(value, name), null);
+    }
+
+    /// <summary>Validates named directions, using automatic behavior when no override exists.</summary>
+    private static OverlayGrowthDirection ReadGrowthDirection(JsonNode? value, string name)
+    {
+        if (value is null)
+        {
+            return OverlayGrowthDirection.Automatic;
+        }
+        if (value is JsonValue scalar && scalar.TryGetValue<string>(out string? text))
+        {
+            return text.ToLowerInvariant() switch
+            {
+                "automatic" => OverlayGrowthDirection.Automatic,
+                "left" => OverlayGrowthDirection.Left,
+                "right" => OverlayGrowthDirection.Right,
+                _ => throw new InvalidDataException(
+                    $"Overlay growth override '{name}' must be automatic, left or right."
+                ),
+            };
+        }
+        throw new InvalidDataException($"Overlay growth override '{name}' must be a named direction.");
+    }
+
+    /// <summary>Writes only changed directions under the owning layout transaction, preserving other panels and verified backups.</summary>
+    private void SaveGrowthOverridesCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        JsonObject root = File.Exists(growthOverridesPath) ? ParseObject(growthOverridesPath) : [];
+        bool changed = false;
+        foreach ((string name, LegacyOverlayPlacement placement) in placements)
+        {
+            if (!Enum.IsDefined(placement.GrowthDirection))
+            {
+                throw new ArgumentOutOfRangeException(nameof(placements), "Overlay growth direction is invalid.");
+            }
+            if (placement.GrowthAnchor is not (null or LegacyHorizontalAnchor.Left or LegacyHorizontalAnchor.Right))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(placements),
+                    "Overlay growth anchor must be left or right."
+                );
+            }
+            if (
+                ReadGrowthOverride(root[name], name) == (placement.GrowthDirection, placement.GrowthAnchor)
+                && root[name] is not JsonValue
+            )
+            {
+                continue;
+            }
+            changed = true;
+            if (placement.GrowthDirection == OverlayGrowthDirection.Automatic && placement.GrowthAnchor is null)
+            {
+                root.Remove(name);
+            }
+            else
+            {
+                root[name] = new JsonObject
+                {
+                    ["direction"] = placement.GrowthDirection.ToString().ToLowerInvariant(),
+                    ["anchor"] = placement.GrowthAnchor?.ToString().ToLowerInvariant(),
+                };
+            }
+        }
+        if (!changed)
+        {
+            return;
+        }
+        Directory.CreateDirectory(dataDirectory);
+        if (File.Exists(growthOverridesPath))
+        {
+            _ = CreateVerifiedBackup(growthOverridesPath, "overlay-growth-overrides");
+        }
+        string temporaryPath = $"{growthOverridesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            JsonObject verified = ParseObject(temporaryPath);
+            foreach ((string name, LegacyOverlayPlacement placement) in placements)
+            {
+                if (ReadGrowthOverride(verified[name], name) != (placement.GrowthDirection, placement.GrowthAnchor))
+                {
+                    throw new InvalidDataException(
+                        $"Overlay growth override '{name}' could not be verified before saving."
+                    );
+                }
+            }
+            File.Move(temporaryPath, growthOverridesPath, true);
+        }
+        finally
+        {
+            DeleteFileIfPresent(temporaryPath);
+        }
+    }
+
+    /// <summary>Reads and validates coordinate reference sizes, reporting malformed files.</summary>
     private Dictionary<string, OverlayPositionReference> LoadPositionReferences(List<string> errors)
     {
         var references = new Dictionary<string, OverlayPositionReference>(StringComparer.Ordinal);
@@ -1846,8 +1991,18 @@ public sealed record LegacyOverlayPlacement(
     int? ScaleIndex = null,
     OverlayTypographyScale? TypographyScale = null,
     OverlayPositionReference? PositionReference = null,
-    OverlayPanelSize? SizeOverride = null
+    OverlayPanelSize? SizeOverride = null,
+    OverlayGrowthDirection GrowthDirection = OverlayGrowthDirection.Automatic,
+    LegacyHorizontalAnchor? GrowthAnchor = null
 );
+
+/// <summary>Selects automatic monitor-based growth or a persistent direction for an individual panel.</summary>
+public enum OverlayGrowthDirection
+{
+    Automatic,
+    Left,
+    Right,
+}
 
 public sealed record OverlayPositionReference(int Width, int Height);
 

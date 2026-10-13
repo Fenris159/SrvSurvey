@@ -2,6 +2,37 @@
 
 Overlays in SrvSurvey rely on X11 (or XWayland) window management features: click-through, always-on-top / layer placement, window tracking against the Elite Dangerous game window, and (where supported) global input. Most GNOME, Cinnamon, Xfce, and KDE Plasma setups should work out of the box once the display-server requirements in [INSTALL_LINUX.md](INSTALL_LINUX.md) are met.
 
+## Content growth and saved positions
+
+Overlay panels keep their top edge fixed while content fits below it. When taller
+content would extend below the display, the panel shifts upward by the amount
+needed to stay visible. Shrinking content returns to the preferred top position.
+A panel whose center
+is on the left half of its monitor grows to the right; one on the right half grows
+to the left. Moving the panel chooses its new corner. Growing across the midpoint
+does not switch direction. The position editor uses the same behavior.
+
+Right-click a preview to open its panel settings. The growth button immediately
+left of Reset panel size cycles through **⇆ Automatic**, **← Grow left**, and
+**→ Grow right**, then returns to automatic. Save with the toolbar checkmark to
+retain the panel's choice; Cancel discards the edit. Forced directions stay in
+effect when the panel is dragged or its font and size are changed.
+
+The choice uses the panel's physical monitor, including displays with negative
+desktop coordinates, rather than the size of a windowed game. Horizontal placement
+stays within that monitor when the panel fits. Combined and stream presentations
+also keep fitting panels inside their game-sized canvas. Content larger than the
+entire available area still needs a smaller font, scale, or content configuration
+to fit.
+
+Automatic content changes do not save new positions. Dragging in the editor or
+live interaction saves the chosen corner through the existing save workflow.
+Reopening the editor retains that corner even if expanded content has crossed
+the monitor midpoint. Older saved coordinates remain readable and keep their
+positions; the next position save records the growth anchor in the new metadata
+format. Interrupted-save journals from the preceding release are recovered
+before loading or saving, without removing newer growth preferences.
+
 ## Gamescope and the combined overlay host
 
 For the complete CachyOS workflow, including mouse confinement and a launcher

@@ -7113,6 +7113,10 @@
       "translation": "Das alte Overlay-Design „{0}“ konnte nicht gelesen werden: {1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "Overlay-Wachstumsüberschreibungen „{0}“ konnten nicht gelesen werden: {1}"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "Das Overlay-Layout „{0}“ konnte nicht gelesen werden: {1}"
     },
@@ -11871,6 +11875,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "Gruppenbeschriftungspositionen sind gemeinsam genutzte Kartengeometrie. Hier können Sie eine Beschriftung festlegen oder entfernen. Das Ergebnis wird beim Speichern des Kartenkatalogs berücksichtigt."
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "Ausdehnung: automatisch zur Monitormitte. Klicken, um die Ausdehnung nach links zu erzwingen."
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "Ausdehnung: links. Klicken, um die Ausdehnung nach rechts zu erzwingen."
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "Ausdehnung: rechts. Klicken, um die automatische Ausdehnung wiederherzustellen."
     },
     {
       "source": "Guardian",
@@ -18723,6 +18739,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "Der Overlay-Editor wurde geschlossen, da die Anzeige nicht aktualisiert werden konnte: {0}"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "Der Overlay-Wachstumsanker „{0}“ muss links oder rechts sein."
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "Der Overlay-Wachstumsanker muss links oder rechts sein."
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "Die Wachstumsrichtung des Overlays ist ungültig."
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "Overlay-Wachstumsüberschreibung „{0}“ konnte vor dem Speichern nicht überprüft werden."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "Overlay-Wachstumsüberschreibung „{0}“ muss eine benannte Richtung sein."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "Die Overlay-Wachstumsüberschreibung „{0}“ muss automatisch erfolgen, links oder rechts."
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -32893,6 +32933,10 @@
       "translation": "analysiert"
     },
     {
+      "source": "anchor",
+      "translation": "Anker"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "antike biologische Daten"
     },
@@ -33023,6 +33067,10 @@
     {
       "source": "auth capi",
       "translation": "Authentifizierungs-Capi"
+    },
+    {
+      "source": "automatic",
+      "translation": "automatisch"
     },
     {
       "source": "avares",
@@ -33653,6 +33701,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "direction",
+      "translation": "Richtung"
+    },
+    {
       "source": "disabled",
       "translation": "deaktiviert"
     },
@@ -34107,6 +34159,10 @@
     {
       "source": "ground-target",
       "translation": "Bodenziel"
+    },
+    {
+      "source": "growth direction",
+      "translation": "Wachstumsrichtung"
     },
     {
       "source": "guardian",
@@ -34859,6 +34915,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "Overlay-Thema, Erscheinungsbild, Deckkraft, Layout, Typografie, Farben"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "Overlay-Growth-Overrides"
     },
     {
       "source": "overlay-layout-backups",
@@ -44363,6 +44423,10 @@
       "translation": "No se pudo leer el tema de superposición heredado '{0}': {1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "No se pudieron leer las anulaciones de crecimiento de superposición '{0}': {1}"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "No se pudo leer el diseño de superposición '{0}': {1}"
     },
@@ -49121,6 +49185,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "Las posiciones de las etiquetas de grupo son geometría de mapa compartida. Establezca o elimine una etiqueta aquí; el resultado se incluye cuando se guarda el catálogo de mapas."
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "Expansión: automática, hacia el centro del monitor. Haz clic para forzarla hacia la izquierda."
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "Expansión: hacia la izquierda. Haz clic para forzarla hacia la derecha."
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "Expansión: hacia la derecha. Haz clic para restaurar la expansión automática."
     },
     {
       "source": "Guardian",
@@ -55973,6 +56049,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "El editor de superposición se cerró porque no se pudo actualizar la pantalla: {0}"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "El anclaje de crecimiento superpuesto '{0}' debe ser izquierdo o derecho."
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "El anclaje de crecimiento superpuesto debe ser izquierdo o derecho."
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "La dirección de crecimiento de la superposición no es válida."
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "No se pudo verificar la anulación del crecimiento de superposición '{0}' antes de guardar."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "La anulación de crecimiento de superposición '{0}' debe ser una dirección con nombre."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "La anulación del crecimiento de superposición '{0}' debe ser automática, izquierda o derecha."
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -70143,6 +70243,10 @@
       "translation": "analizado"
     },
     {
+      "source": "anchor",
+      "translation": "ancla"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "datos biológicos antiguos"
     },
@@ -70273,6 +70377,10 @@
     {
       "source": "auth capi",
       "translation": "capi de autenticación"
+    },
+    {
+      "source": "automatic",
+      "translation": "automático"
     },
     {
       "source": "avares",
@@ -70903,6 +71011,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "direction",
+      "translation": "dirección"
+    },
+    {
       "source": "disabled",
       "translation": "desactivado"
     },
@@ -71357,6 +71469,10 @@
     {
       "source": "ground-target",
       "translation": "objetivo terrestre"
+    },
+    {
+      "source": "growth direction",
+      "translation": "dirección de crecimiento"
     },
     {
       "source": "guardian",
@@ -72109,6 +72225,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "superposición tema apariencia opacidad diseño tipografía colores"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "anulaciones de crecimiento de superposición"
     },
     {
       "source": "overlay-layout-backups",
@@ -81613,6 +81733,10 @@
       "translation": "Impossible de lire le thème de superposition existant '{0}' : {1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "Impossible de lire les remplacements de croissance de superposition « {0} » : {1}"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "Impossible de lire la disposition de superposition « {0} » : {1}"
     },
@@ -86371,6 +86495,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "Les positions des étiquettes de groupe sont une géométrie de carte partagée. Définissez ou supprimez une étiquette ici ; le résultat est inclus lors de l'enregistrement du catalogue de cartes."
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "Expansion : automatique, vers le centre de l’écran. Cliquez pour forcer l’expansion vers la gauche."
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "Expansion : vers la gauche. Cliquez pour forcer l’expansion vers la droite."
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "Expansion : vers la droite. Cliquez pour rétablir l’expansion automatique."
     },
     {
       "source": "Guardian",
@@ -93223,6 +93359,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "Éditeur de superposition fermé car l'affichage n'a pas pu être mis à jour : {0}"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "L'ancre de croissance superposée « {0} » doit être à gauche ou à droite."
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "L’ancre de croissance superposée doit être à gauche ou à droite."
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "La direction de croissance de la superposition n'est pas valide."
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "Le remplacement de la croissance par superposition « {0} » n'a pas pu être vérifié avant l'enregistrement."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "Le remplacement de la croissance par superposition « {0} » doit être une direction nommée."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "Le remplacement de la croissance par superposition « {0} » doit être automatique, à gauche ou à droite."
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -107393,6 +107553,10 @@
       "translation": "analysé"
     },
     {
+      "source": "anchor",
+      "translation": "ancre"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "données biologiques anciennes"
     },
@@ -107523,6 +107687,10 @@
     {
       "source": "auth capi",
       "translation": "capi d'authentification"
+    },
+    {
+      "source": "automatic",
+      "translation": "automatique"
     },
     {
       "source": "avares",
@@ -108153,6 +108321,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "direction",
+      "translation": "direction"
+    },
+    {
       "source": "disabled",
       "translation": "désactivé"
     },
@@ -108607,6 +108779,10 @@
     {
       "source": "ground-target",
       "translation": "cible au sol"
+    },
+    {
+      "source": "growth direction",
+      "translation": "direction de la croissance"
     },
     {
       "source": "guardian",
@@ -109359,6 +109535,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "superposition thème apparence opacité mise en page typographie couleurs"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "superposition-croissance-remplacements"
     },
     {
       "source": "overlay-layout-backups",
@@ -118863,6 +119043,10 @@
       "translation": "Não foi possível ler o tema de sobreposição legado '{0}': {1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "Não foi possível ler as substituições de crescimento de sobreposição '{0}': {1}"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "Não foi possível ler o layout de sobreposição '{0}': {1}"
     },
@@ -123621,6 +123805,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "As posições dos rótulos de grupo são geometrias de mapas compartilhadas. Defina ou remova um rótulo aqui; o resultado é incluído quando o catálogo de mapas é salvo."
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "Expansão: automática, em direção ao centro do monitor. Clique para forçar a expansão à esquerda."
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "Expansão: à esquerda. Clique para forçar a expansão à direita."
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "Expansão: à direita. Clique para restaurar a expansão automática."
     },
     {
       "source": "Guardian",
@@ -130473,6 +130669,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "Editor de sobreposição fechado porque a exibição não pôde ser atualizada: {0}"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "A âncora de crescimento de sobreposição '{0}' deve estar à esquerda ou à direita."
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "A âncora de crescimento de sobreposição deve estar à esquerda ou à direita."
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "A direção de crescimento da sobreposição é inválida."
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "A substituição de crescimento de sobreposição '{0}' não pôde ser verificada antes de salvar."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "A substituição de crescimento de sobreposição '{0}' deve ser uma direção nomeada."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "A substituição de crescimento de sobreposição '{0}' deve ser automática, esquerda ou direita."
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -144643,6 +144863,10 @@
       "translation": "analisado"
     },
     {
+      "source": "anchor",
+      "translation": "âncora"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "dados biológicos antigos"
     },
@@ -144773,6 +144997,10 @@
     {
       "source": "auth capi",
       "translation": "autenticação capi"
+    },
+    {
+      "source": "automatic",
+      "translation": "automático"
     },
     {
       "source": "avares",
@@ -145403,6 +145631,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "direction",
+      "translation": "direção"
+    },
+    {
       "source": "disabled",
       "translation": "desabilitado"
     },
@@ -145857,6 +146089,10 @@
     {
       "source": "ground-target",
       "translation": "alvo terrestre"
+    },
+    {
+      "source": "growth direction",
+      "translation": "direção de crescimento"
     },
     {
       "source": "guardian",
@@ -146609,6 +146845,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "sobrepor tema aparência opacidade layout tipografia cores"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "substituições de crescimento de sobreposição"
     },
     {
       "source": "overlay-layout-backups",
@@ -156113,6 +156353,10 @@
       "translation": "Не удалось прочитать устаревшую тему наложения '{0}': {1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "Не удалось прочитать переопределения роста наложения «{0}»: {1}."
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "Не удалось прочитать макет наложения «{0}»: {1}."
     },
@@ -160871,6 +161115,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "Позиции групповых меток представляют собой общую геометрию карты. Здесь можно установить или удалить ярлык; результат включается при сохранении каталога карт."
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "Расширение: автоматически, к центру монитора. Нажмите, чтобы выбрать расширение влево."
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "Расширение: влево. Нажмите, чтобы выбрать расширение вправо."
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "Расширение: вправо. Нажмите, чтобы восстановить автоматическое расширение."
     },
     {
       "source": "Guardian",
@@ -167723,6 +167979,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "Редактор наложений закрыт, поскольку не удалось обновить отображение: {0}."
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "Якорь роста наложения «{0}» должен находиться слева или справа."
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "Якорь роста наложения должен быть слева или справа."
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "Недопустимое направление роста наложения."
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "Переопределение роста наложения «{0}» не удалось проверить перед сохранением."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "Переопределение роста наложения «{0}» должно быть именованным направлением."
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "Переопределение роста наложения «{0}» должно быть автоматическим, влево или вправо."
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -181893,6 +182173,10 @@
       "translation": "проанализировано"
     },
     {
+      "source": "anchor",
+      "translation": "якорь"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "древние биологические данные"
     },
@@ -182023,6 +182307,10 @@
     {
       "source": "auth capi",
       "translation": "авторизация капи"
+    },
+    {
+      "source": "automatic",
+      "translation": "автоматический"
     },
     {
       "source": "avares",
@@ -182653,6 +182941,10 @@
       "translation": "алмазбакксл"
     },
     {
+      "source": "direction",
+      "translation": "направление"
+    },
+    {
       "source": "disabled",
       "translation": "неполноценный"
     },
@@ -183107,6 +183399,10 @@
     {
       "source": "ground-target",
       "translation": "наземная цель"
+    },
+    {
+      "source": "growth direction",
+      "translation": "направление роста"
     },
     {
       "source": "guardian",
@@ -183859,6 +184155,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "наложение темы внешний вид непрозрачность макет типографика цвета"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "переопределения роста наложения"
     },
     {
       "source": "overlay-layout-backups",
@@ -193363,6 +193663,10 @@
       "translation": "无法读取旧版叠加主题“{0}”：{1}"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "无法读取覆盖增长覆盖“{0}”：{1}"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "无法读取覆盖布局“{0}”：{1}"
     },
@@ -198121,6 +198425,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "组标签位置是共享的地图几何图形。在此设置或删除标签；保存地图目录时会包含结果。"
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "扩展方向：自动朝向显示器中心。点击强制向左扩展。"
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "扩展方向：向左。点击强制向右扩展。"
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "扩展方向：向右。点击恢复自动扩展。"
     },
     {
       "source": "Guardian",
@@ -204973,6 +205289,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "由于无法更新显示，覆盖编辑器已关闭：{0}"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "覆盖生长锚点“{0}”必须位于左侧或右侧。"
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "覆盖生长锚点必须位于左侧或右侧。"
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "覆盖生长方向无效。"
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "保存前无法验证叠加增长覆盖“{0}”。"
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "覆盖增长覆盖“{0}”必须是指定方向。"
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "覆盖增长覆盖“{0}”必须是自动的，向左或向右。"
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -219143,6 +219483,10 @@
       "translation": "分析过的"
     },
     {
+      "source": "anchor",
+      "translation": "锚"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "古代生物数据"
     },
@@ -219273,6 +219617,10 @@
     {
       "source": "auth capi",
       "translation": "授权卡皮"
+    },
+    {
+      "source": "automatic",
+      "translation": "自动的"
     },
     {
       "source": "avares",
@@ -219903,6 +220251,10 @@
       "translation": "菱形背心XL"
     },
     {
+      "source": "direction",
+      "translation": "方向"
+    },
+    {
       "source": "disabled",
       "translation": "残疾人"
     },
@@ -220357,6 +220709,10 @@
     {
       "source": "ground-target",
       "translation": "地面目标"
+    },
+    {
+      "source": "growth direction",
+      "translation": "成长方向"
     },
     {
       "source": "guardian",
@@ -221109,6 +221465,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "覆盖主题外观不透明度布局排版颜色"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "覆盖增长覆盖"
     },
     {
       "source": "overlay-layout-backups",
@@ -230613,6 +230973,10 @@
       "translation": "* COULD NOT READ LEGACY OVERLAY THEME '{0}': {1} >>>!"
     },
     {
+      "source": "Could not read overlay growth overrides '{0}': {1}",
+      "translation": "* COULD NOT READ OVERLAY GROWTH OVERRIDES '{0}': {1} >>>!"
+    },
+    {
       "source": "Could not read overlay layout '{0}': {1}",
       "translation": "* COULD NOT READ OVERLAY LAYOUT '{0}': {1} >>>!"
     },
@@ -235371,6 +235735,18 @@
     {
       "source": "Group-label positions are shared map geometry. Set or remove a label here; the result is included when the map catalog is saved.",
       "translation": "* GROUP-LABEL POSITIONS ARE SHARED MAP GEOMETRY. SET OR REMOVE A LABEL HERE; THE RESULT IS INCLUDED WHEN THE MAP CATALOG IS SAVED. >>>!"
+    },
+    {
+      "source": "Growth: automatic, toward the monitor center. Click to force left.",
+      "translation": "* GROWTH: AUTOMATIC, TOWARD THE MONITOR CENTER. CLICK TO FORCE LEFT. >>>!"
+    },
+    {
+      "source": "Growth: left. Click to force right.",
+      "translation": "* GROWTH: LEFT. CLICK TO FORCE RIGHT. >>>!"
+    },
+    {
+      "source": "Growth: right. Click to restore automatic growth.",
+      "translation": "* GROWTH: RIGHT. CLICK TO RESTORE AUTOMATIC GROWTH. >>>!"
     },
     {
       "source": "Guardian",
@@ -242223,6 +242599,30 @@
     {
       "source": "Overlay editor closed because the display could not be updated: {0}",
       "translation": "* OVERLAY EDITOR CLOSED BECAUSE THE DISPLAY COULD NOT BE UPDATED: {0} >>>!"
+    },
+    {
+      "source": "Overlay growth anchor '{0}' must be left or right.",
+      "translation": "* OVERLAY GROWTH ANCHOR '{0}' MUST BE LEFT OR RIGHT. >>>!"
+    },
+    {
+      "source": "Overlay growth anchor must be left or right.",
+      "translation": "* OVERLAY GROWTH ANCHOR MUST BE LEFT OR RIGHT. >>>!"
+    },
+    {
+      "source": "Overlay growth direction is invalid.",
+      "translation": "* OVERLAY GROWTH DIRECTION IS INVALID. >>>!"
+    },
+    {
+      "source": "Overlay growth override '{0}' could not be verified before saving.",
+      "translation": "* OVERLAY GROWTH OVERRIDE '{0}' COULD NOT BE VERIFIED BEFORE SAVING. >>>!"
+    },
+    {
+      "source": "Overlay growth override '{0}' must be a named direction.",
+      "translation": "* OVERLAY GROWTH OVERRIDE '{0}' MUST BE A NAMED DIRECTION. >>>!"
+    },
+    {
+      "source": "Overlay growth override '{0}' must be automatic, left or right.",
+      "translation": "* OVERLAY GROWTH OVERRIDE '{0}' MUST BE AUTOMATIC, LEFT OR RIGHT. >>>!"
     },
     {
       "source": "Overlay host '{0}' {1} -> {2}: {3}",
@@ -256393,6 +256793,10 @@
       "translation": "* ANALYZED >>>!"
     },
     {
+      "source": "anchor",
+      "translation": "* ANCHOR >>>!"
+    },
+    {
       "source": "ancientbiologicaldata",
       "translation": "* ANCIENTBIOLOGICALDATA >>>!"
     },
@@ -256523,6 +256927,10 @@
     {
       "source": "auth capi",
       "translation": "* AUTH CAPI >>>!"
+    },
+    {
+      "source": "automatic",
+      "translation": "* AUTOMATIC >>>!"
     },
     {
       "source": "avares",
@@ -257153,6 +257561,10 @@
       "translation": "* DIAMONDBACKXL >>>!"
     },
     {
+      "source": "direction",
+      "translation": "* DIRECTION >>>!"
+    },
+    {
       "source": "disabled",
       "translation": "* DISABLED >>>!"
     },
@@ -257607,6 +258019,10 @@
     {
       "source": "ground-target",
       "translation": "* GROUND-TARGET >>>!"
+    },
+    {
+      "source": "growth direction",
+      "translation": "* GROWTH DIRECTION >>>!"
     },
     {
       "source": "guardian",
@@ -258359,6 +258775,10 @@
     {
       "source": "overlay theme appearance opacity layout typography colors",
       "translation": "* OVERLAY THEME APPEARANCE OPACITY LAYOUT TYPOGRAPHY COLORS >>>!"
+    },
+    {
+      "source": "overlay-growth-overrides",
+      "translation": "* OVERLAY-GROWTH-OVERRIDES >>>!"
     },
     {
       "source": "overlay-layout-backups",

@@ -24,7 +24,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
     private int previewStateIndex;
-    private Point? pendingPanelTopCenter;
     private OverlayPanelSize? sizeOverride;
     private double resizeWidth;
     private double resizeHeight;
@@ -36,7 +35,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
-        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
@@ -49,7 +47,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
-        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
@@ -361,6 +358,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         return true;
     }
 
+    /// <summary>Changes sample content while the editor host preserves the panel's inward-facing corner.</summary>
     internal bool CycleEditorPreviewState()
     {
         if (previewStates.Count <= 1 || runtimePresentation is null)
@@ -368,12 +366,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return false;
         }
 
-        double scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
-        OverlayPreviewPanelMetrics currentMetrics = GetPanelMetrics(scaling);
-        pendingPanelTopCenter = new Point(
-            Position.X + currentMetrics.OriginOffset.X + (currentMetrics.PanelSize.Width / 2d),
-            Position.Y + currentMetrics.OriginOffset.Y
-        );
         previewStateIndex = (previewStateIndex + 1) % previewStates.Count;
         object? previousDataContext = runtimePresentation.DataContext;
         runtimePresentation.DataContext = OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
@@ -386,21 +378,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewSurface.InvalidateMeasure();
         InvalidateMeasure();
         return true;
-    }
-
-    private void OnPreviewSurfaceLayoutUpdated(object? sender, EventArgs eventArgs)
-    {
-        if (pendingPanelTopCenter is not { } anchor)
-        {
-            return;
-        }
-
-        OverlayPreviewPanelMetrics metrics = GetPanelMetrics(RenderScaling);
-        Position = new PixelPoint(
-            (int)Math.Round(anchor.X - metrics.OriginOffset.X - (metrics.PanelSize.Width / 2d)),
-            (int)Math.Round(anchor.Y - metrics.OriginOffset.Y)
-        );
-        pendingPanelTopCenter = null;
     }
 
     private void UpdateEditorPreviewStateButton()

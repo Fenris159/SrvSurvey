@@ -139,6 +139,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         return gameBounds.Position;
     }
 
+    /// <summary>Projects visible overlay bitmaps into the stream canvas while retaining capture resources for presentation.</summary>
     private void RenderFrames(StreamOverlayWindow target, PixelRect gameBounds)
     {
         Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
@@ -166,7 +167,8 @@ public sealed class StreamOverlayCoordinator : IDisposable
                     gameBounds,
                     source.Position,
                     pixelSize,
-                    screen.Scaling
+                    screen.Scaling,
+                    keepInsideCanvas: true
                 );
                 if (projection is null)
                 {

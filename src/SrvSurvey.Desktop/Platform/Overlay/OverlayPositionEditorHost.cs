@@ -45,14 +45,23 @@ public interface IOverlayPositionEditorHost : IDisposable
         RefreshPreviewPositions(session);
     }
 
+    /// <summary>Ends the edit session and restores live overlay visibility when requested.</summary>
     void Close(bool restoreRuntimeWindows = true);
+
+    /// <summary>Applies a new growth preference while preserving the preview's current position.</summary>
+    void RefreshPreviewGrowth(OverlayPositionEditSession session, string plotterName)
+    {
+        RefreshPreviewPositions(session);
+    }
 }
 
 public sealed class OverlayPreviewMovedEventArgs(
     string plotterName,
     PixelPoint position,
     PixelSize previewSize,
-    PixelRect hostBounds
+    PixelRect hostBounds,
+    PixelRect? monitorBounds = null,
+    LegacyOverlayPlacement? geometryPlacement = null
 ) : EventArgs
 {
     public string PlotterName { get; } = plotterName;
@@ -62,6 +71,12 @@ public sealed class OverlayPreviewMovedEventArgs(
     public PixelSize PreviewSize { get; } = previewSize;
 
     public PixelRect HostBounds { get; } = hostBounds;
+
+    /// <summary>Identifies the physical monitor used to choose the growth corner, independently of game bounds.</summary>
+    public PixelRect? MonitorBounds { get; } = monitorBounds;
+
+    /// <summary>Retains the already chosen corner when recording an explicit size or typography edit.</summary>
+    public LegacyOverlayPlacement? GeometryPlacement { get; } = geometryPlacement;
 }
 
 public sealed class OverlayPreviewSettingsRequestedEventArgs(string plotterName) : EventArgs
@@ -92,6 +107,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private bool updatingPreviewLayout;
     private bool updatingReferenceFrame;
     private readonly Dictionary<string, PixelPoint> pendingGeometryOrigins = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, OverlayContentPlacement> contentPlacements = new(StringComparer.Ordinal);
     private DispatcherTimer? boundsTimer;
     private bool closing;
     private bool disposed;
@@ -374,6 +390,29 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Reanchors the selected panel in place before its growth preference is applied.</summary>
+    public void RefreshPreviewGrowth(OverlayPositionEditSession session, string plotterName)
+    {
+        OverlayPositionPreviewWindow? preview = previews.FirstOrDefault(candidate =>
+            candidate.Definition.Name == plotterName
+        );
+        if (preview is null)
+        {
+            return;
+        }
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        PixelPoint position = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        session.Move(
+            plotterName,
+            position,
+            GetReferenceSize(preview, metrics),
+            hostBounds,
+            OverlayContentPlacement.GetMonitorBounds(preview, position, metrics.PanelSize, hostBounds)
+        );
+        contentPlacements.Remove(plotterName);
+        PositionPreview(preview, session);
+    }
+
     /// <summary>Measures final panel dimensions and translates the preserved origin into the saved anchors.</summary>
     private void OnPreviewMeasured(object? sender, SizeChangedEventArgs eventArgs)
     {
@@ -384,14 +423,32 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             RecordMeasuredGeometry(preview, origin, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
         }
+        else if (sender is OverlayPositionPreviewWindow measured && editSession is { } session)
+        {
+            PositionPreviewAfterOpening(measured, session);
+        }
     }
 
     /// <summary>Publishes a panel's stable screen origin using its new size.</summary>
     private void RecordMeasuredGeometry(OverlayPositionPreviewWindow preview, PixelPoint origin, PixelSize size)
     {
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        origin = ResolveContentPosition(preview, origin, size);
         preview.Position = new PixelPoint(origin.X - metrics.OriginOffset.X, origin.Y - metrics.OriginOffset.Y);
-        PreviewMoved?.Invoke(this, new OverlayPreviewMovedEventArgs(preview.Definition.Name, origin, size, hostBounds));
+        PreviewMoved?.Invoke(
+            this,
+            new OverlayPreviewMovedEventArgs(
+                preview.Definition.Name,
+                origin,
+                size,
+                hostBounds,
+                OverlayContentPlacement.GetMonitorBounds(preview, origin, size, hostBounds),
+                editSession is { } session
+                    ? contentPlacements[preview.Definition.Name]
+                        .CapturePlacement(session.GetPlacement(preview.Definition.Name), size)
+                    : null
+            )
+        );
     }
 
     /// <summary>Flushes accepted movement and geometry updates before Save reads the session.</summary>
@@ -465,6 +522,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Centers previews using measured geometry and records inward-facing top anchors in the draft.</summary>
     public int SnapPreviewsToCenter(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -484,7 +542,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                     hostBounds.X + ((hostBounds.Width - referenceSize.Width) / 2),
                     hostBounds.Y + ((hostBounds.Height - referenceSize.Height) / 2)
                 );
-                session.MoveWithDefaultAnchors(preview.Definition.Name, center, referenceSize, hostBounds);
+                session.MoveWithContentAnchors(
+                    preview.Definition.Name,
+                    center,
+                    referenceSize,
+                    hostBounds,
+                    OverlayContentPlacement.GetMonitorBounds(preview, center, referenceSize, hostBounds)
+                );
                 PositionPreview(preview, session);
             }
 
@@ -609,9 +673,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 preview.Definition.Name,
                 panelPosition,
                 GetReferenceSize(preview, metrics),
-                hostBounds
+                hostBounds,
+                OverlayContentPlacement.GetMonitorBounds(preview, panelPosition, metrics.PanelSize, hostBounds)
             )
         );
+        contentPlacements.Remove(preview.Definition.Name);
     }
 
     private OverlayDragOptions CreatePreviewDragOptions(OverlayPositionPreviewWindow preview)
@@ -642,18 +708,15 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    /// <summary>Records an explicit resize using the same physical monitor as a drag.</summary>
     private void OnPreviewSizeChanged(object? sender, OverlayPreviewSizeChangedEventArgs eventArgs)
     {
         if (sender is OverlayPositionPreviewWindow preview)
         {
-            PreviewMoved?.Invoke(
-                this,
-                new OverlayPreviewMovedEventArgs(
-                    eventArgs.PlotterName,
-                    preview.GetPanelScreenOrigin(preview.RenderScaling),
-                    preview.GetConfiguredPanelPixelSize(eventArgs.Size, preview.RenderScaling),
-                    hostBounds
-                )
+            RecordMeasuredGeometry(
+                preview,
+                preview.GetPanelScreenOrigin(preview.RenderScaling),
+                preview.GetConfiguredPanelPixelSize(eventArgs.Size, preview.RenderScaling)
             );
         }
 
@@ -696,6 +759,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         previews.Clear();
         pendingGeometryOrigins.Clear();
+        contentPlacements.Clear();
     }
 
     private void OnMiningDetectionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -922,9 +986,27 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 ? runtimeReference.Position
                 : session.GetPosition(preview.Definition.Name, hostBounds, referenceSize);
         NormalizeStatefulPanelAnchor(preview.Definition, session, panelPosition, referenceSize, hostBounds);
+        panelPosition = ResolveContentPosition(preview, panelPosition, metrics.PanelSize);
         preview.Position = new PixelPoint(
             panelPosition.X - metrics.OriginOffset.X,
             panelPosition.Y - metrics.OriginOffset.Y
+        );
+    }
+
+    /// <summary>Shares live content-growth anchoring without treating automatic measurements as user drags.</summary>
+    private PixelPoint ResolveContentPosition(OverlayPositionPreviewWindow preview, PixelPoint position, PixelSize size)
+    {
+        if (!contentPlacements.TryGetValue(preview.Definition.Name, out OverlayContentPlacement? growth))
+        {
+            growth = new OverlayContentPlacement();
+            contentPlacements.Add(preview.Definition.Name, growth);
+        }
+        return growth.Resolve(
+            position,
+            size,
+            OverlayContentPlacement.GetMonitorBounds(preview, position, size, hostBounds),
+            hostBounds,
+            editSession?.GetPlacement(preview.Definition.Name)
         );
     }
 

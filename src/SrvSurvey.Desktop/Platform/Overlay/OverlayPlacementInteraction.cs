@@ -200,7 +200,10 @@ internal sealed class OverlayPlacementInteraction
         }
         RegisteredOverlayWindow registered = panel.Registration;
         string name = registered.PlotterName;
-        if (session.Move(name, position, OverlayWindowMetrics.GetPixelSize(registered), GetHostBounds()))
+        PixelSize size = OverlayWindowMetrics.GetPixelSize(registered);
+        PixelRect bounds = GetHostBounds();
+        PixelRect monitor = OverlayContentPlacement.GetMonitorBounds(window, position, size, bounds);
+        if (session.Move(name, position, size, bounds, monitor))
         {
             LegacyOverlayPlacement placement = session.GetPlacement(name);
             activeLayout.SetPlacement(name, placement);

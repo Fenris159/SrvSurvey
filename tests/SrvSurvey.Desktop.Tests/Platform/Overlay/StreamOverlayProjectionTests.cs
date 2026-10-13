@@ -33,6 +33,45 @@ public sealed class StreamOverlayProjectionTests
         Assert.Null(frame);
     }
 
+    /// <summary>A fitting stream panel is shifted back inside the canvas instead of clipping its growing edges.</summary>
+    [Theory]
+    [InlineData(762, 600, 400, 400, 500, 300)]
+    [InlineData(50, 50, 400, 400, 100, 100)]
+    [InlineData(50, 50, 1000, 1000, 100, 100)]
+    public void IntersectingPanelsStayInsideTheCaptureCanvas(
+        int x,
+        int y,
+        int width,
+        int height,
+        int expectedX,
+        int expectedY
+    )
+    {
+        var bounds = new PixelRect(100, 100, 800, 600);
+        StreamOverlayFrame frame = Assert.IsType<StreamOverlayFrame>(
+            StreamOverlayProjection.Create(
+                bounds,
+                new PixelPoint(x, y),
+                new PixelSize(width, height),
+                2,
+                keepInsideCanvas: true
+            )
+        );
+        Assert.Equal((expectedX - 100) / 2d, frame.Left);
+        Assert.Equal((expectedY - 100) / 2d, frame.Top);
+        Assert.Equal(width / 2d, frame.Width);
+        Assert.Equal(height / 2d, frame.Height);
+        Assert.Null(
+            StreamOverlayProjection.Create(
+                bounds,
+                new PixelPoint(-1000, -1000),
+                new PixelSize(50, 50),
+                1,
+                keepInsideCanvas: true
+            )
+        );
+    }
+
     [Theory]
     [InlineData(0, 100, 1)]
     [InlineData(100, 0, 1)]

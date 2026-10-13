@@ -90,6 +90,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         viewModel.ApplyPreparation(preparation);
     }
 
+    /// <summary>Measures the route panel and retains safe bottom clearance during content growth.</summary>
     private static PixelPoint PlaceWithinVisibleBounds(HostedOverlayPlacement placement)
     {
         Window target = placement.Window;
@@ -101,6 +102,12 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
                 .ToArray()
         );
         PixelRect visibleBounds = OverlayWindowPlacement.GetUsableBounds(placement.GameBounds, workingArea);
+        placement.VisibleBounds = new PixelRect(
+            visibleBounds.X,
+            visibleBounds.Y,
+            visibleBounds.Width,
+            Math.Max(1, visibleBounds.Height - 8)
+        );
         target.MaxHeight = Math.Max(target.MinHeight, Math.Min(680, (visibleBounds.Height - 16) / screen.Scaling));
         PixelSize size = placement.PrepareSize();
         PixelPoint position = placement.GetPosition(size);

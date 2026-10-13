@@ -159,11 +159,19 @@ public sealed class OverlayPresentationSession : IDisposable
         return hostDependencies.CreateGameWindowTracker();
     }
 
+    /// <summary>Creates a hosted live panel with bounds appropriate to the selected presentation mode.</summary>
     internal HostedOverlayWindow HostPassiveWindow(PassiveOverlayWindowDefinition definition)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(definition);
-        var hosted = new HostedOverlayWindow(definition, hostDependencies, RemoveHostedWindow);
+        var hosted = new HostedOverlayWindow(
+            definition,
+            hostDependencies with
+            {
+                ConstrainToGameBounds = Decision.Mode == OverlayPresentationMode.CombinedWindow,
+            },
+            RemoveHostedWindow
+        );
         hostedWindows.Add(hosted);
         return hosted;
     }

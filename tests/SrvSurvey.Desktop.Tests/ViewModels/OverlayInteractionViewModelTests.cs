@@ -715,8 +715,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         Assert.Equal(1, host.PositionRefreshCount);
         LegacyOverlayPlacement centered = host.LastPositionRefreshPlacements["PlotJumpInfo"];
-        Assert.Equal(LegacyHorizontalAnchor.Center, centered.Horizontal);
-        Assert.Equal(0, centered.HorizontalOffset);
+        Assert.Equal(LegacyHorizontalAnchor.Right, centered.Horizontal);
+        Assert.Equal(300, centered.HorizontalOffset);
         Assert.Equal(LegacyVerticalAnchor.Top, centered.Vertical);
         Assert.Equal(350, centered.VerticalOffset);
         Assert.Equal(
@@ -780,7 +780,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             activeLayout.GetPosition(definition.Name, bounds, definition.PreviewSize)
         );
         Assert.Contains("Saved 1 overlay position", viewModel.StatusMessage);
-        Assert.Contains("center:20, top:110", File.ReadAllText(path));
+        Assert.Contains("right:280, top:110", File.ReadAllText(path));
     }
 
     [Fact]
@@ -916,6 +916,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.True(viewModel.Begin());
         viewModel.OpenOverlaySettings("PlotJumpInfo");
         Assert.True(viewModel.IsOverlaySettingsOpen);
+        Assert.Equal("⇆", viewModel.SelectedOverlayGrowthSymbol);
+        viewModel.CycleOverlayGrowthCommand.Execute(null);
+        Assert.Equal("←", viewModel.SelectedOverlayGrowthSymbol);
         viewModel.ToggleTypographySettingsCommand.Execute(null);
         Assert.True(viewModel.IsTypographySettingsOpen);
         viewModel.ToggleTypographySettingsCommand.Execute(null);
@@ -937,12 +940,19 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(0.34, activeLayout.Placements["PlotJumpInfo"].Opacity);
         Assert.Equal(OverlayScaleCatalog.GetIndex(150), activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
         Assert.Equal(25, activeLayout.GetTypographyScale("PlotJumpInfo").Title);
+        Assert.Equal(OverlayGrowthDirection.Left, activeLayout.Placements["PlotJumpInfo"].GrowthDirection);
         Assert.Equal(1, host.TypographyRefreshCount);
 
         Assert.True(viewModel.Begin());
         viewModel.OpenOverlaySettings("PlotJumpInfo");
         Assert.Equal(25, viewModel.TypographyRoles.Single(role => role.Role == OverlayTypographyRole.Title).Percent);
+        Assert.Equal("←", viewModel.SelectedOverlayGrowthSymbol);
+        viewModel.CycleOverlayGrowthCommand.Execute(null);
+        Assert.Equal("→", viewModel.SelectedOverlayGrowthSymbol);
+        viewModel.CycleOverlayGrowthCommand.Execute(null);
+        Assert.Equal("⇆", viewModel.SelectedOverlayGrowthSymbol);
         viewModel.Cancel();
+        Assert.Equal(OverlayGrowthDirection.Left, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
     }
 
     [Fact]
@@ -1226,7 +1236,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                     bounds.X + ((bounds.Width - size.Width) / 2),
                     bounds.Y + ((bounds.Height - size.Height) / 2)
                 );
-                session.MoveWithDefaultAnchors(definition.Name, center, size, bounds);
+                session.MoveWithContentAnchors(definition.Name, center, size, bounds);
             }
 
             RefreshPreviewPositions(session);

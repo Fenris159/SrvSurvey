@@ -1,8 +1,11 @@
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -157,6 +160,7 @@ public sealed class OverlayLivePanelSizingTests
                 preview.ConfigureTypography(typography);
                 preview.ConfigureSize(size);
             }
+            Dispatcher.UIThread.RunJobs();
             using WriteableBitmap? liveFrame = window.CaptureRenderedFrame();
             using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
             Control actual = Assert.Single(
@@ -170,6 +174,47 @@ public sealed class OverlayLivePanelSizingTests
             )
             {
                 failures.Add($"{label}: live {actual.Bounds.Size}, preview {expected.Bounds.Size}");
+            }
+            string[] initialText = window
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
+                .ToArray();
+            Size initialSize = window.Bounds.Size;
+            byte[] initialPixels = ReadPixels(Assert.IsType<WriteableBitmap>(liveFrame));
+            foreach (
+                OverlayGrowthDirection direction in new[]
+                {
+                    OverlayGrowthDirection.Left,
+                    OverlayGrowthDirection.Right,
+                    OverlayGrowthDirection.Automatic,
+                }
+            )
+            {
+                layout.SetPlacement(
+                    definition.Name,
+                    layout.Placements[definition.Name] with
+                    {
+                        GrowthDirection = direction,
+                    }
+                );
+                Dispatcher.UIThread.RunJobs();
+                using WriteableBitmap? refreshed = window.CaptureRenderedFrame();
+                string[] refreshedText = window
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
+                    .ToArray();
+                if (
+                    initialSize != window.Bounds.Size
+                    || !initialText.SequenceEqual(refreshedText)
+                    || !initialPixels.SequenceEqual(ReadPixels(Assert.IsType<WriteableBitmap>(refreshed)))
+                )
+                {
+                    failures.Add(
+                        $"{label}/{direction}: growth settings changed typography or panel size from {initialSize} to {window.Bounds.Size}"
+                    );
+                }
             }
             Point start = Assert.IsType<Point>(actual.TranslatePoint(default, window));
             Point end = Assert.IsType<Point>(
@@ -185,6 +230,15 @@ public sealed class OverlayLivePanelSizingTests
             window?.Close();
             preview.Close();
         }
+    }
+
+    /// <summary>Compares actual rendered pixels so direction changes cannot silently alter row spacing, icons, or wrapping.</summary>
+    private static byte[] ReadPixels(WriteableBitmap bitmap)
+    {
+        using ILockedFramebuffer pixels = bitmap.Lock();
+        byte[] result = new byte[pixels.RowBytes * pixels.Size.Height];
+        Marshal.Copy(pixels.Address, result, 0, result.Length);
+        return result;
     }
 
     [AvaloniaTheory]

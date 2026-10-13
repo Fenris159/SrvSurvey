@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -14,6 +16,259 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class HostedOverlayWindowTests
 {
+    /// <summary>Live growth retains the chosen corner while leaving persisted coordinates unchanged.</summary>
+    [AvaloniaTheory]
+    [InlineData(30, false)]
+    [InlineData(1700, true)]
+    public void ResizingLiveContentKeepsItsInwardTopCornerWithoutEditingTheLayout(int x, bool right)
+    {
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        var timer = new ManualHostedOverlayTimer();
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotTrackTarget"] = new(LegacyHorizontalAnchor.Left, x, LegacyVerticalAnchor.Bottom, 900, 1),
+            },
+            null,
+            null
+        );
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Growth test"),
+            new OverlayPresentationSessionDependencies(() => platform, () => tracker, _ => timer, layout)
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 100, Height = 80 },
+                (_, _) => new PixelPoint(x, 100)
+            )
+        );
+        host.Reconcile(true);
+        Window window = Assert.IsType<Window>(host.CurrentWindow);
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        PixelPoint initial = window.Position;
+        PixelSize initialSize = OverlayWindowMetrics.GetPixelSize(
+            new RegisteredOverlayWindow(window, "PlotTrackTarget")
+        );
+        window.Width = 300;
+        window.Height = 200;
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        PixelSize grown = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, "PlotTrackTarget"));
+        Assert.Equal(initial.Y, window.Position.Y);
+        Assert.Equal(initial.X + (right ? initialSize.Width : 0), window.Position.X + (right ? grown.Width : 0));
+        window.Width = initialSize.Width;
+        window.Height = initialSize.Height;
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        Assert.Equal(initial, window.Position);
+        Assert.Equal(x, layout.Placements["PlotTrackTarget"].HorizontalOffset);
+        Assert.Equal(LegacyVerticalAnchor.Bottom, layout.Placements["PlotTrackTarget"].Vertical);
+    }
+
+    /// <summary>Hosted panels remain visible after height growth and respect a combined canvas smaller than its monitor.</summary>
+    [AvaloniaTheory]
+    [InlineData(OverlayPresentationMode.MultipleWindows)]
+    [InlineData(OverlayPresentationMode.CombinedWindow)]
+    public void GrowthFitsTheActivePresentationBounds(OverlayPresentationMode mode)
+    {
+        var bounds = new PixelRect(100, 100, 800, 600);
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true));
+        var timer = new ManualHostedOverlayTimer();
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotTrackTarget"] = new(LegacyHorizontalAnchor.Right, 10, LegacyVerticalAnchor.Top, 500, 1),
+            },
+            null,
+            null
+        );
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(mode, "Viewport regression"),
+            new OverlayPresentationSessionDependencies(() => platform, () => tracker, _ => timer, layout)
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 128, Height = 80 },
+                (_, _) => bounds.Position
+            )
+        );
+        host.Reconcile(true);
+        Window window = Assert.IsType<Window>(host.CurrentWindow);
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        PixelPoint original = window.Position;
+        window.Width = 400;
+        window.Height = 400;
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        PixelRect limit = mode == OverlayPresentationMode.CombinedWindow ? bounds : window.Screens.Primary!.Bounds;
+        PixelSize size = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, "PlotTrackTarget"));
+        Assert.InRange(window.Position.X + size.Width, limit.X, limit.Right);
+        Assert.InRange(window.Position.Y + size.Height, limit.Y, limit.Bottom);
+        if (mode == OverlayPresentationMode.CombinedWindow)
+        {
+            CombinedOverlayProjection projection = Assert.IsType<CombinedOverlayProjection>(
+                CombinedOverlayProjection.Create(bounds, window.Position, new Size(size.Width, size.Height), 1)
+            );
+            Assert.Equal(size.Width, projection.InputRegion.Width);
+        }
+        window.Width = 128;
+        window.Height = 80;
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        Assert.Equal(original, window.Position);
+    }
+
+    /// <summary>Growth anchoring retains a coordinator's bottom margin and safe working area.</summary>
+    [AvaloniaFact]
+    public void GrowthRetainsCustomPlacementSafetyBounds()
+    {
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var safeBounds = new PixelRect(0, 0, 1920, 1040);
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true));
+        var timer = new ManualHostedOverlayTimer();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Custom safety bounds"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => timer,
+                LegacyOverlayLayout.Empty
+            )
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 128, Height = 100 },
+                (_, _) => new PixelPoint(20, 900)
+            )
+            {
+                Placement = placement =>
+                {
+                    placement.VisibleBounds = safeBounds;
+                    return new PixelPoint(20, 900);
+                },
+            }
+        );
+        host.Reconcile(true);
+        Window window = Assert.IsType<Window>(host.CurrentWindow);
+        window.Height = 400;
+        Dispatcher.UIThread.RunJobs();
+        timer.Pulse();
+        Assert.Equal(new PixelPoint(20, 640), window.Position);
+    }
+
+    /// <summary>Legacy anchors use fully measured content on first opening instead of the window's provisional startup bounds.</summary>
+    [AvaloniaTheory]
+    [InlineData(LegacyHorizontalAnchor.Center, LegacyVerticalAnchor.Middle, 0)]
+    [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Top, 20)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom, 20)]
+    public void LegacyPositionsUseMeasuredContentOnFirstOpening(
+        LegacyHorizontalAnchor horizontal,
+        LegacyVerticalAnchor vertical,
+        int offset
+    )
+    {
+        const string name = "PlotBodyInfo";
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true));
+        var timer = new ManualHostedOverlayTimer();
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [name] = new(
+                    horizontal,
+                    offset,
+                    vertical,
+                    offset,
+                    1,
+                    TypographyScale: new(100, 100, 100, 100, 100, 100, 100)
+                ),
+            },
+            null,
+            null
+        );
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Legacy startup positions"),
+            new OverlayPresentationSessionDependencies(() => platform, () => tracker, _ => timer, layout)
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                name,
+                _ => new BodyInformationOverlayWindow(
+                    (SystemSurveyOverlayViewModel)OverlayEditorPreviewCatalog.Create(name, 0)
+                ),
+                (_, _) => default
+            )
+        );
+        host.Reconcile(true);
+        Window window = Assert.IsType<BodyInformationOverlayWindow>(host.CurrentWindow);
+        for (int i = 0; i < 3; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            timer.Pulse();
+        }
+        PixelSize size = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, name));
+        Assert.Equal(layout.GetPosition(name, bounds, size), window.Position);
+    }
+
+    /// <summary>Combined presentation bounds drive growth even when the native source window retains its size.</summary>
+    [AvaloniaFact]
+    public void ReparentedPresentationGrowthKeepsTheCornerWhenNativeWindowSizeIsUnchanged()
+    {
+        var platform = new RecordingOverlayPlatform();
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+        var timer = new ManualHostedOverlayTimer();
+        var registry = new OverlayWindowRegistry();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Presentation growth test"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => tracker,
+                _ => timer,
+                LegacyOverlayLayout.Empty
+            )
+            {
+                WindowRegistry = registry,
+            }
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => new Window { Width = 128, Height = 108 },
+                (_, _) => new PixelPoint(1700, 30)
+            )
+        );
+        host.Reconcile(true);
+        Dispatcher.UIThread.RunJobs();
+        Window window = Assert.IsType<Window>(host.CurrentWindow);
+        PixelPoint initial = window.Position;
+        PixelSize nativeSize = OverlayWindowMetrics.GetPixelSize(
+            new RegisteredOverlayWindow(window, "PlotTrackTarget")
+        );
+        var presentation = new Border();
+        presentation.Measure(new Size(nativeSize.Width, nativeSize.Height));
+        presentation.Arrange(new Rect(0, 0, nativeSize.Width, nativeSize.Height));
+        registry.SetPresentationVisual(window, presentation);
+        timer.Pulse();
+        presentation.Measure(new Size(300, 200));
+        presentation.Arrange(new Rect(0, 0, 300, 200));
+        timer.Pulse();
+        Assert.Equal(new PixelPoint(initial.X + nativeSize.Width - 300, initial.Y), window.Position);
+        Assert.Equal(
+            nativeSize,
+            OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, "PlotTrackTarget"))
+        );
+    }
+
     [AvaloniaFact]
     public async Task MiningWarningHostFollowsRangeFocusAndVehicleChanges()
     {

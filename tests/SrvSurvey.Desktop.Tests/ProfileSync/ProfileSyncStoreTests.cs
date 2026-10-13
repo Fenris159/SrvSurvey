@@ -10,6 +10,18 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    /// <summary>Profile backups retain growth preferences with machine-specific positions rather than portable preferences.</summary>
+    [Fact]
+    public void GrowthOverridesStayWithMachineSpecificOverlayPositions()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "overlay-growth-overrides.json", "{\"PlotJumpInfo\":\"left\"}");
+        ProfileSnapshot snapshot = root.Store.Capture();
+        string key = Key("data", "overlay-growth-overrides.json", "/PlotJumpInfo");
+        Assert.DoesNotContain(key, snapshot.Portable.Keys);
+        Assert.Contains(key, snapshot.Machine.Keys);
+    }
+
     /// <summary>Releases layout leases before processing large files while retaining the coherent layout bytes already captured.</summary>
     [Theory]
     [InlineData(false)]
