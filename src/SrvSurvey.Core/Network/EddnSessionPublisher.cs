@@ -144,6 +144,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Updates session context and projects eligible journal activity while flushing completed signal batches.</summary>
     internal EddnPublicationResult Apply(EddnApplyRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -387,6 +388,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Applies companion-file context before emitting its eligible EDDN projections.</summary>
     private bool ProcessCompanionEvent(
         string eventName,
         JObject raw,
@@ -428,6 +430,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return true;
     }
 
+    /// <summary>Projects a live journal event into its allowed EDDN schema while preserving its source identity.</summary>
     private void PublishJournalEvent(
         string eventName,
         JObject raw,
@@ -520,6 +523,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Combines accumulated body signals with stable identities for their captured source records.</summary>
     private void PublishSignalBatch(
         SignalBatch batch,
         List<EddnPublishedEvent>? published,
@@ -686,6 +690,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Reads a bounded companion snapshot once per source change and publishes only under current consent.</summary>
     private async Task ProcessCompanionFileAsync(CompanionCandidate candidate, CancellationToken cancellationToken)
     {
         string eventName = candidate.JournalEvent.Value<string>(EventProperty) ?? "companion file";
@@ -862,6 +867,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         );
     }
 
+    /// <summary>Drains accumulated signal records with their source identities while holding the session lock.</summary>
     private SignalBatch? TakeSignalBatchLocked()
     {
         if (pendingSignals.Count == 0 || pendingSignalContext is null)
@@ -885,6 +891,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return batch;
     }
 
+    /// <summary>Clears accumulated body signal data and its captured source identities.</summary>
     private void ClearSignals()
     {
         lock (sync)
@@ -895,6 +902,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
+    /// <summary>Resets transient system and signal state at a commander or journal boundary.</summary>
     private void ClearTransientStateLocked()
     {
         pendingSignals.Clear();

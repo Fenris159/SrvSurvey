@@ -319,6 +319,7 @@ public sealed class EdsmPublisherTests
         Assert.Equal(2, sent.AcceptedEventCount);
     }
 
+    /// <summary>Verifies that transient EDSM failures retain the batch and respect the retry deadline.</summary>
     [Fact]
     public async Task TransientFailureRetainsBatchAndRetriesWithoutImmediateLoop()
     {

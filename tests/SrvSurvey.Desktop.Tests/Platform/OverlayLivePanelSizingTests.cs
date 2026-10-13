@@ -143,8 +143,10 @@ public sealed class OverlayLivePanelSizingTests
     {
         private DateTimeOffset now = new(2026, 10, 13, 12, 0, 0, TimeSpan.Zero);
 
+        /// <summary>Returns the deterministic notification test clock.</summary>
         public override DateTimeOffset GetUtcNow() => now;
 
+        /// <summary>Advances notification expiration without waiting for real timers.</summary>
         public void Advance(TimeSpan duration) => now += duration;
     }
 

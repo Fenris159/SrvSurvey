@@ -416,6 +416,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(VisibleMessages));
     }
 
+    /// <summary>Applies preference changes, refreshes visible rows, and reports persistence failures without losing session choices.</summary>
     private void Update(NotificationPreferences updated)
     {
         if (preferences == updated)

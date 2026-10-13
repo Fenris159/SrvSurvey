@@ -42,6 +42,16 @@ try {
             $required.Add("*.JournalUploadScenarioTests.$scenario*provider: `"$provider`"*")
         }
     }
+    foreach ($provider in @("EDAstro", "VoxStellar")) {
+        $required.Add("*.JournalUploadScenarioTests.CaptureStorageFailureDoesNotStopJournalProcessing*provider: `"$provider`"*")
+    }
+    foreach ($provider in @("Inara", "EDSM")) {
+        $required.Add("*.JournalUploadScenarioTests.FailedLiveEvidenceSurvivesRestart*provider: `"$provider`"*missingCredentials: True*")
+        $required.Add("*.JournalUploadScenarioTests.ExplicitCredentialRemovalRetiresReportsAfterTemporaryCredentialFailure*provider: `"$provider`"*")
+    }
+    foreach ($capacity in @(1, 2)) {
+        $required.Add("*.EddnOutboxTests.ReceiptCompactionLeavesSlackForSubsequentCompletions*capacityMultiple: $capacity*")
+    }
     foreach ($scenario in @(
         "InaraPublisherTests.EventLevelTransientStatusIsRetriedAndRedirectIsRejected",
         "InaraPublisherTests.RetryAfterExtendsAutomaticRetryWindow",
@@ -54,6 +64,7 @@ try {
         "JournalUploadOutboxTests.TornAndMalformedRecordsDoNotDiscardOtherUploads",
         "JournalUploadOutboxTests.FailedAcknowledgementCheckpointDoesNotRequeueAcceptedPayloadInMemory",
         "JournalUploadOutboxTests.RevocationInvalidatesOtherLeasesAndUnselectedOwners",
+        "JournalUploadOutboxTests.CompactionPreservesReceiptEvictionOrderAcrossRestart",
         "ColonizationDeliveryRecoveryTests.LostCreditAcknowledgementRequiresVerificationAndPreservesItsRequirementTarget",
         "ColonizationDeliveryRecoveryTests.RecoveryMustBeDurableBeforeCreditCanBeSent",
         "ColonizationDeliveryRecoveryTests.LostAcknowledgedPhaseSaveCannotDoubleCreditAfterRestart",

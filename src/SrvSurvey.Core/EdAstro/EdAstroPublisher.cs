@@ -217,8 +217,16 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             return;
         }
         var item = new QueuedEvent(identity, session, odyssey, json, utcNow());
-        if (outbox is not null && outbox.Enqueue([item]).Count == 0)
+        try
         {
+            if (outbox is not null && outbox.Enqueue([item]).Count == 0)
+            {
+                return;
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            ReportProblem("EDAstro could not persist a captured report; the event was skipped.");
             return;
         }
         seen.Add(identity);

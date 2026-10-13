@@ -136,6 +136,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
     public bool IsConfigured => signingKey.Length > 0;
 
+    /// <summary>Changes publication consent and invalidates queued work and retained reports on explicit opt-out.</summary>
     public void SetEnabled(bool enabled)
     {
         lock (sync)
@@ -181,6 +182,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
+    /// <summary>Recovers eligible captured reports and queues opted-in live events for the attributable commander.</summary>
     public Task<VoxStellarPublicationResult> ApplyAsync(
         VoxStellarApplyRequest request,
         CancellationToken cancellationToken = default
@@ -258,6 +260,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         );
     }
 
+    /// <summary>Persists immutable webhook bodies before queueing them and reports failures without stopping journal processing.</summary>
     private VoxStellarPublicationResult QueueEvents(
         ChannelWriter<QueuedUpload> writer,
         long generation,
@@ -281,8 +284,19 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
                 }
                 string identity = JournalUploadIdentity.Capture(journalEvent);
                 JournalUploadOutbox<StoredUpload>? outbox = outboxes.GetValueOrDefault(commanderName);
-                if (outbox is not null && outbox.Enqueue([new StoredUpload(identity, commanderName, body)]).Count == 0)
+                try
                 {
+                    if (
+                        outbox is not null
+                        && outbox.Enqueue([new StoredUpload(identity, commanderName, body)]).Count == 0
+                    )
+                    {
+                        continue;
+                    }
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    dropped++;
                     continue;
                 }
                 if (writer.TryWrite(new QueuedUpload(generation, body, commanderName, identity)))
@@ -297,7 +311,9 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
         if (dropped > 0)
         {
-            warnings.Add($"VoxStellar could not queue {dropped} event(s) because its in-memory upload queue is full.");
+            warnings.Add(
+                $"VoxStellar could not queue {dropped} event(s) because its in-memory queue or durable outbox was unavailable."
+            );
         }
 
         return new VoxStellarPublicationResult(queued, warnings);
@@ -445,6 +461,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         return batch;
     }
 
+    /// <summary>Checks the captured consent generation before work may access transport or retained queues.</summary>
     private bool IsAuthorized(QueuedUpload upload)
     {
         lock (sync)
@@ -456,6 +473,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
+    /// <summary>Sends captured webhook bodies and checkpoints final outcomes while retaining retryable failures.</summary>
     private async Task SendBatchAsync(IReadOnlyList<QueuedUpload> batch, CancellationToken cancellationToken)
     {
         int accepted = 0;
@@ -516,6 +534,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         outcomes[outcome] = count + 1;
     }
 
+    /// <summary>Signs one captured body and uses successful HTTP headers as acknowledgement without reading an unused response body.</summary>
     private async Task<int?> SendAsync(QueuedUpload upload, CancellationToken cancellationToken)
     {
         DateTimeOffset deadline;
@@ -613,6 +632,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
+    /// <summary>Stops batching and releases queue leases after bounded worker shutdown without discarding pending reports.</summary>
     public void Dispose()
     {
         lock (sync)

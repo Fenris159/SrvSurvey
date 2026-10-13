@@ -522,7 +522,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            byte[] bytes = Encode(new Delta(pending.Values.ToArray(), [], seen.ToArray(), NotBefore, true));
+            byte[] bytes = Encode(new Delta(pending.Values.ToArray(), [], receipts.ToArray(), NotBefore, true));
             if (bytes.Length > MaximumFileBytes)
             {
                 throw new IOException("The durable journal upload checkpoint exceeds its storage limit.");

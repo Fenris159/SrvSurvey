@@ -21,7 +21,8 @@ public interface IInaraPublisher : IDisposable
 
     Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default);
 
-    void CancelPendingPublication();
+    /// <summary>Cancels active publication and optionally discards only this account's retained reports on explicit credential removal.</summary>
+    void CancelPendingPublication(bool discardRetainedReports = false);
 }
 
 /// <summary>
@@ -154,6 +155,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    /// <summary>Reconciles authorization, restores captured mapped events, and collects eligible live Inara activity.</summary>
     private async Task<InaraPublicationResult> ApplyCoreAsync(
         InaraPublicationUpdate update,
         CancellationToken cancellationToken
@@ -181,16 +183,6 @@ public sealed class InaraPublisher : IInaraPublisher
         {
             ClearPublicationAuthorization();
             publicationAuthorized = false;
-        }
-        if (
-            !publicationAuthorized
-            && string.IsNullOrWhiteSpace(options.ApiKey)
-            && outbox is not null
-            && session is not null
-            && outbox.TryOpen(session.FrontierId.ToUpperInvariant() + ":" + session.Commander.ToUpperInvariant(), out _)
-        )
-        {
-            outbox.Clear();
         }
         List<string> queuedNames = await CollectAllJournalEventsAsync(
                 update,
@@ -304,6 +296,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    /// <summary>Applies journal context and maps eligible activity without mixing another commander into this session.</summary>
     private async Task CollectJournalEventAsync(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
@@ -584,17 +577,47 @@ public sealed class InaraPublisher : IInaraPublisher
         return cancellationToken.CanBeCanceled ? sharedStop.WaitAsync(cancellationToken) : sharedStop;
     }
 
-    public void CancelPendingPublication()
+    /// <inheritdoc />
+    public void CancelPendingPublication(bool discardRetainedReports = false)
     {
         if (stopping || disposed)
         {
             return;
         }
 
+        InaraSession? capturedSession = session;
+        string? account = capturedSession is not null
+            ? capturedSession.FrontierId.ToUpperInvariant() + ":" + capturedSession.Commander.ToUpperInvariant()
+            : null;
         ClearPublicationAuthorization();
         queue.TakeAll();
+        if (discardRetainedReports)
+        {
+            ClearRetainedUploads(account);
+        }
     }
 
+    /// <summary>Clears one attributable account on explicit removal while preserving other commanders' queues.</summary>
+    private void ClearRetainedUploads(string? account)
+    {
+        if (outbox is null || account is null)
+        {
+            return;
+        }
+        try
+        {
+            if (outbox.TryOpen(account, out _))
+            {
+                outbox.Clear();
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            log("Inara could not clear this account's retained uploads: " + exception.Message);
+        }
+    }
+
+    /// <summary>Finalizes authorized session work and releases resources while preserving durable pending reports.</summary>
     private async Task<InaraPublicationResult> StopCoreAsync()
     {
         stopping = true;
@@ -806,6 +829,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    /// <summary>Starts one authorized batch within the provider rate limit and current retry deadline.</summary>
     private bool TryStartBackgroundSend(
         bool force,
         out Task<InaraPublicationResult> sendTask,
@@ -931,6 +955,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return Combine(completed, sent);
     }
 
+    /// <summary>Captures final session updates and flushes authorized work before a session transition or shutdown.</summary>
     private async Task<InaraPublicationResult> FinalizeCurrentSessionAsync(CancellationToken cancellationToken)
     {
         if (session is null)
@@ -977,6 +1002,7 @@ public sealed class InaraPublisher : IInaraPublisher
         );
     }
 
+    /// <summary>Submits mapped events and checkpoints only final outcomes while preserving deferred reports.</summary>
     private async Task<InaraPublicationResult> SendPendingAsync(
         InaraSession sendSession,
         string apiKey,
@@ -1516,6 +1542,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return normalized.Length <= maximumLength ? normalized : $"{normalized[..maximumLength]}...";
     }
 
+    /// <summary>Adds eligible cargo, materials, and backpack snapshots from the current monitor update.</summary>
     private static async Task<JObject> AddSidecarDataAsync(
         JObject entry,
         JournalEventEnvelope journalEvent,

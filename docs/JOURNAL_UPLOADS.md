@@ -59,8 +59,9 @@ events to live providers. Each of the five journal senders must pass:
 
 The gate also requires provider-specific policy, partial acknowledgement,
 credential isolation, consent revocation, unused acknowledgement-body failures,
-write-ahead storage failure, damaged
-record recovery, and Raven uncertain-credit scenarios. It validates executed TRX
+capture-storage failures, temporary credential loss versus explicit removal,
+receipt compaction and eviction order, damaged record recovery, and Raven
+uncertain-credit scenarios. It validates executed TRX
 results, so deleting, skipping, or failing a mandatory case fails validation.
 Both Windows and Linux PR/release builds enforce this gate. The local changed-code
 quality check enforces the same matrix alongside Sonar rules and the 80%

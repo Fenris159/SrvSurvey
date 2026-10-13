@@ -13,7 +13,7 @@ namespace SrvSurvey.Core.Tests.Network;
 
 /// <summary>Runs journal-to-HTTP recovery scenarios against authenticated providers without real external writes.</summary>
 [Trait("Category", "JournalUploadScenario")]
-public sealed class JournalUploadScenarioTests : IDisposable
+public sealed partial class JournalUploadScenarioTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
@@ -39,12 +39,14 @@ public sealed class JournalUploadScenarioTests : IDisposable
 
     /// <summary>Retains failed live evidence across reopening, without uploading bootstrap history or persisting credentials.</summary>
     [Theory]
-    [InlineData("Inara")]
-    [InlineData("EDSM")]
-    [InlineData("EDAstro")]
-    [InlineData("VoxStellar")]
-    [InlineData("EDDN")]
-    public async Task FailedLiveEvidenceSurvivesRestart(string provider)
+    [InlineData("Inara", false)]
+    [InlineData("EDSM", false)]
+    [InlineData("EDAstro", false)]
+    [InlineData("VoxStellar", false)]
+    [InlineData("EDDN", false)]
+    [InlineData("Inara", true)]
+    [InlineData("EDSM", true)]
+    public async Task FailedLiveEvidenceSurvivesRestart(string provider, bool missingCredentials)
     {
         Directory.CreateDirectory(directory);
         string journal = Path.Combine(directory, "Journal.2026-10-12T120000.01.log");
@@ -64,7 +66,7 @@ public sealed class JournalUploadScenarioTests : IDisposable
         var failure = new ProviderHandler(provider, HttpStatusCode.ServiceUnavailable);
         using (var http = new HttpClient(failure))
         {
-            await Run(provider, http, bootstrap, live);
+            await Run(provider, http, bootstrap, live, missingCredentials: missingCredentials);
         }
         Assert.NotEmpty(failure.Posts);
         clock.Now += TimeSpan.FromHours(1);
@@ -186,7 +188,9 @@ public sealed class JournalUploadScenarioTests : IDisposable
         HttpClient http,
         JournalMonitorUpdate bootstrap,
         JournalMonitorUpdate? live,
-        bool crashWorker = false
+        bool crashWorker = false,
+        bool missingCredentials = false,
+        bool discardRetainedReports = false
     )
     {
         string storage = Path.Combine(directory, "uploads");
@@ -234,7 +238,31 @@ public sealed class JournalUploadScenarioTests : IDisposable
             }
             await AwaitCrash(crashWorker);
             await publisher.FlushAsync();
-            publisher.CancelPendingPublication();
+            if (missingCredentials)
+            {
+                await publisher.ApplyAsync(
+                    new(
+                        [],
+                        null,
+                        null,
+                        bootstrap.JournalPath,
+                        false,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        InaraOptions with
+                        {
+                            ApiKey = null,
+                        }
+                    )
+                );
+            }
+            publisher.CancelPendingPublication(discardRetainedReports);
         }
         else if (provider == "EDSM")
         {
@@ -246,7 +274,11 @@ public sealed class JournalUploadScenarioTests : IDisposable
             }
             await AwaitCrash(crashWorker);
             await publisher.FlushAsync();
-            publisher.CancelPendingPublication();
+            if (missingCredentials)
+            {
+                await publisher.ApplyAsync(new([], bootstrap.JournalPath, false, EdsmOptions with { ApiKey = null }));
+            }
+            publisher.CancelPendingPublication(discardRetainedReports);
         }
         else if (provider == "EDAstro")
         {

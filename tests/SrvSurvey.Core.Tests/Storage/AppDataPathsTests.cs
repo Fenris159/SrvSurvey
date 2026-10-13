@@ -30,6 +30,7 @@ public sealed class AppDataPathsTests
         Assert.DoesNotContain(paths.LegacyProfileCandidates, candidate => candidate.Path == paths.DataDirectory);
     }
 
+    /// <summary>Verifies Linux XDG storage roots and the separate location for operational journal upload queues.</summary>
     [Fact]
     public void LinuxUsesXdgDirectories()
     {

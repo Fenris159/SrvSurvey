@@ -11,6 +11,7 @@ public sealed class NotificationSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
+    /// <summary>Loads notification preferences with backward-compatible defaults and a bounded visible-message limit.</summary>
     public NotificationPreferences Load()
     {
         NotificationPreferences defaults = NotificationPreferences.Default;
@@ -28,6 +29,7 @@ public sealed class NotificationSettingsStore
         };
     }
 
+    /// <summary>Persists notification preferences without replacing unrelated or unknown settings.</summary>
     public void Save(NotificationPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);

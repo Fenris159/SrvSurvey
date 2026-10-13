@@ -143,6 +143,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         outbox.setSuspended(suspended);
     }
 
+    /// <summary>Projects opted-in live journal activity and returns queue outcomes without submitting bootstrap history.</summary>
     public Task<EddnPublicationResult> ApplyAsync(
         EddnApplyRequest request,
         CancellationToken cancellationToken = default
@@ -214,6 +215,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         }
     }
 
+    /// <summary>Sanitizes a projected EDDN event and captures it with a stable source-record identity.</summary>
     bool IEddnSessionSink.TryEnqueue(
         EddnPreparedMessage prepared,
         UploadPayloadHeader header,

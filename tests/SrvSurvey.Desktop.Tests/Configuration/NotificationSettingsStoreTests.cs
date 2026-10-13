@@ -10,6 +10,7 @@ public sealed class NotificationSettingsStoreTests : IDisposable
         $"SrvSurvey-notification-settings-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Round-trips notification preferences and a custom message limit without overwriting unrelated settings.</summary>
     [Fact]
     public void SaveRoundTripsAndPreservesUnknownSettings()
     {

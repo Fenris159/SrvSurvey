@@ -137,6 +137,36 @@ public sealed class JournalUploadOutboxTests : IDisposable
         Assert.Empty(recovered.Enqueue([new("large", "same source")]));
     }
 
+    /// <summary>Compaction after bounded receipt eviction must not move a recent acknowledgement into the oldest slot.</summary>
+    [Fact]
+    public void CompactionPreservesReceiptEvictionOrderAcrossRestart()
+    {
+        using (JournalUploadOutbox<Payload> seed = Create())
+        {
+            seed.TryOpen("F123", out _);
+            seed.Enqueue([new("seed", "Sol")]);
+        }
+        string path = Assert.Single(Directory.GetFiles(Path.Combine(directory, "test"), "*.jsonl"));
+        var row = JObject.Parse(File.ReadAllText(path));
+        row["Change"]!["Added"] = new JArray();
+        row["Change"]!["Receipts"] = new JArray(Enumerable.Range(0, 65536).Select(index => "old-" + index));
+        File.WriteAllText(path, row.ToString(Newtonsoft.Json.Formatting.None) + "\n");
+        using (JournalUploadOutbox<Payload> outbox = Create())
+        {
+            Assert.True(outbox.TryOpen("F123", out _));
+            outbox.Enqueue([new("recent-one", "Sol")]);
+            outbox.Complete(["recent-one"]);
+            outbox.Enqueue([new("recent-two", "Sol")]);
+            outbox.Complete(["recent-two"]);
+            outbox.Enqueue([new("large", new string('x', 9 * 1024 * 1024))]);
+            outbox.Complete(["large"]);
+        }
+        using JournalUploadOutbox<Payload> reopened = Create();
+        Assert.True(reopened.TryOpen("F123", out _));
+        Assert.Empty(reopened.Enqueue([new("recent-two", "Sol")]));
+        Assert.Single(reopened.Enqueue([new("old-2", "Sol")]));
+    }
+
     /// <summary>Rejects capacity overflow instead of dropping the oldest reports to make room.</summary>
     [Fact]
     public void FullQueueRetainsPreviouslyCapturedReports()

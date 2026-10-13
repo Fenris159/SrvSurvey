@@ -16,7 +16,8 @@ public interface IEdsmPublisher : IDisposable
 
     Task<EdsmPublicationResult> StopAsync(CancellationToken cancellationToken = default);
 
-    void CancelPendingPublication();
+    /// <summary>Cancels active publication and optionally discards only this account's retained reports on explicit credential removal.</summary>
+    void CancelPendingPublication(bool discardRetainedReports = false);
 }
 
 /// <summary>
@@ -56,6 +57,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private readonly List<EdsmQueuedEvent> pending = [];
     private readonly JournalUploadOutbox<EdsmQueuedEvent>? outbox;
     private long storageGeneration = -1;
+    private string? retainedAccount;
     private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly EdsmJournalContext journalContext = new();
 
@@ -145,6 +147,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Reconciles session authorization, recovers retained reports, and schedules eligible live EDSM events.</summary>
     private async Task<EdsmPublicationResult> ApplyCoreAsync(
         EdsmPublicationUpdate update,
         CancellationToken cancellationToken
@@ -171,21 +174,6 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             ClearPublicationAuthorization();
             publicationAuthorized = false;
-        }
-        if (
-            !publicationAuthorized
-            && string.IsNullOrWhiteSpace(update.Options.ApiKey)
-            && outbox is not null
-            && session is not null
-            && outbox.TryOpen(
-                session.FrontierId.ToUpperInvariant()
-                    + ":"
-                    + (update.Options.EdsmCommanderName ?? session.ActiveCommanderName).Trim().ToUpperInvariant(),
-                out _
-            )
-        )
-        {
-            outbox.Clear();
         }
         HarvestDiscardList(warnings);
         if (publicationAuthorized)
@@ -247,6 +235,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return finalized;
     }
 
+    /// <summary>Resets transient context and account binding at a session boundary without deleting retained uploads.</summary>
     private void ResetSession(EdsmSession? next)
     {
         ClearPublicationAuthorization();
@@ -260,6 +249,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
         journalContext.Reset();
         session = next;
+        lock (stateSync)
+        {
+            retainedAccount = null;
+        }
     }
 
     private bool PreparePublicationAuthorization(EdsmPublicationOptions options)
@@ -290,6 +283,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return canPrepare;
     }
 
+    /// <summary>Captures eligible journal records with their original context while isolating the active commander.</summary>
     private List<string> CollectJournalEvents(
         EdsmPublicationUpdate update,
         bool publicationAuthorized,
@@ -413,17 +407,15 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             return true;
         }
-        if (
-            !outbox.TryOpen(
-                session.FrontierId.ToUpperInvariant() + ":" + authorizedCredentials.CommanderName.ToUpperInvariant(),
-                out IReadOnlyList<EdsmQueuedEvent>? recovered
-            )
-        )
+        string account =
+            session.FrontierId.ToUpperInvariant() + ":" + authorizedCredentials.CommanderName.ToUpperInvariant();
+        if (!outbox.TryOpen(account, out IReadOnlyList<EdsmQueuedEvent>? recovered))
         {
             return false;
         }
         lock (stateSync)
         {
+            retainedAccount = account;
             if (recovered is not null || storageGeneration != authorizationGeneration)
             {
                 pending.Clear();
@@ -572,6 +564,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Starts one paced, authorized EDSM batch only when no other send owns the transport.</summary>
     private bool TryStartBackgroundSend(bool force, out Task<EdsmPublicationResult> sendTask)
     {
         lock (stateSync)
@@ -621,6 +614,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Sends captured reports under current credentials and retains retryable or uncertain outcomes.</summary>
     private async Task<EdsmPublicationResult> SendPendingAsync(
         EdsmSession sendSession,
         EdsmCredentials credentials,
@@ -725,6 +719,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Selects a bounded batch with matching captured game versions and retires provider-discarded events.</summary>
     private List<EdsmQueuedEvent> TakeBatch(
         long generation,
         HashSet<string> sendDiscardedEvents,
@@ -754,6 +749,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Builds a size-bounded form request using captured event context and current account credentials.</summary>
     private async Task<byte[]?> BuildBoundedPayloadAsync(
         EdsmSession sendSession,
         EdsmCredentials credentials,
@@ -801,6 +797,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    /// <summary>Reads a bounded EDSM response and classifies acknowledged, retryable, and credential-paused outcomes.</summary>
     private async Task<EdsmPublicationResult> InterpretResponseAsync(
         HttpResponseMessage response,
         List<EdsmQueuedEvent> batch,
@@ -838,6 +835,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return ProcessResponseBody(body, batch, warnings, rateLimitDelay);
     }
 
+    /// <summary>Applies EDSM result codes without treating deferred or uncertain events as acknowledged.</summary>
     private EdsmPublicationResult ProcessResponseBody(
         string body,
         List<EdsmQueuedEvent> batch,
@@ -978,6 +976,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return CreateSendResult(0, warnings);
     }
 
+    /// <summary>Returns retryable reports to the authorized queue in their captured order.</summary>
     private void Requeue(IReadOnlyCollection<EdsmQueuedEvent> batch, List<string> warnings)
     {
         lock (stateSync)
@@ -1102,11 +1101,42 @@ public sealed class EdsmPublisher : IEdsmPublisher
         cancellation?.Cancel();
     }
 
-    public void CancelPendingPublication()
+    /// <inheritdoc />
+    public void CancelPendingPublication(bool discardRetainedReports = false)
     {
-        if (!stopping && !disposed)
+        if (stopping || disposed)
         {
-            ClearPublicationAuthorization();
+            return;
+        }
+        string? account;
+        lock (stateSync)
+        {
+            account = retainedAccount;
+        }
+        ClearPublicationAuthorization();
+        if (discardRetainedReports)
+        {
+            ClearRetainedUploads(account);
+        }
+    }
+
+    /// <summary>Clears the captured EDSM account on explicit removal even when its credentials are temporarily unavailable.</summary>
+    private void ClearRetainedUploads(string? account)
+    {
+        if (outbox is null || account is null)
+        {
+            return;
+        }
+        try
+        {
+            if (outbox.TryOpen(account, out _))
+            {
+                outbox.Clear();
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            log("EDSM could not clear this account's retained uploads: " + exception.Message);
         }
     }
 
@@ -1285,6 +1315,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return cancellationToken.CanBeCanceled ? sharedStop.WaitAsync(cancellationToken) : sharedStop;
     }
 
+    /// <summary>Finalizes eligible work within the shutdown deadline and preserves durable pending reports.</summary>
     private async Task<EdsmPublicationResult> StopCoreAsync()
     {
         stopping = true;

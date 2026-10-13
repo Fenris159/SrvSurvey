@@ -294,6 +294,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Validates and durably captures an EDDN message before making it eligible for a network attempt.</summary>
     internal bool enqueue(EddnQueuedMessage message, bool allowWhileSuspended = false)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -519,6 +520,7 @@ internal sealed class EddnOutbox : IDisposable
         return (persistenceLog, resultLog);
     }
 
+    /// <summary>Checkpoints a final upload outcome before removing its pending file and advancing the owned queue.</summary>
     private (string? PersistenceLog, string? ResultLog) CompleteUploadLocked(
         EddnQueuedMessage next,
         EddnUploadResult? result,
@@ -704,6 +706,7 @@ internal sealed class EddnOutbox : IDisposable
             .FirstOrDefault();
     }
 
+    /// <summary>Restores replay receipts, pending files, and legacy queue entries under the exclusive queue lease.</summary>
     private List<EddnQueuedMessage> load(List<string> messages, bool continueTruncatedLoad = false)
     {
         if (!continueTruncatedLoad)
@@ -742,6 +745,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Loads bounded pending files, skips acknowledged replays, and quarantines malformed entries independently.</summary>
     private List<EddnQueuedMessage> loadMessageFiles(List<string> messages, HashSet<Guid> ids)
     {
         if (!Directory.Exists(storeFolder))
@@ -773,21 +777,9 @@ internal sealed class EddnOutbox : IDisposable
                     break;
                 }
 
-                if (length <= 0)
+                EddnQueuedMessage? item = ReadPendingMessage(path, length, ids);
+                if (item is null)
                 {
-                    throw new InvalidDataException("the queue contained an empty entry");
-                }
-
-                EddnQueuedMessage? item = JsonConvert.DeserializeObject<EddnQueuedMessage>(File.ReadAllText(path));
-                normalize(item);
-                if (!isValid(item) || !ids.Add(item!.id))
-                {
-                    throw new InvalidDataException("the queue contained an invalid or duplicate entry");
-                }
-
-                if (item.replayProtected && completedRecordIds.Contains(item.id))
-                {
-                    File.Delete(path);
                     continue;
                 }
                 loaded.Add(item);
@@ -803,6 +795,27 @@ internal sealed class EddnOutbox : IDisposable
         }
 
         return loaded;
+    }
+
+    /// <summary>Validates one pending file and removes an already acknowledged replay without charging it to the backlog.</summary>
+    private EddnQueuedMessage? ReadPendingMessage(string path, long length, HashSet<Guid> ids)
+    {
+        if (length <= 0)
+        {
+            throw new InvalidDataException("the queue contained an empty entry");
+        }
+        EddnQueuedMessage? item = JsonConvert.DeserializeObject<EddnQueuedMessage>(File.ReadAllText(path));
+        normalize(item);
+        if (!isValid(item) || !ids.Add(item!.id))
+        {
+            throw new InvalidDataException("the queue contained an invalid or duplicate entry");
+        }
+        if (item.replayProtected && completedRecordIds.Contains(item.id))
+        {
+            File.Delete(path);
+            return null;
+        }
+        return item;
     }
 
     private void migrateLegacyStore(List<EddnQueuedMessage> loaded, List<string> messages)
@@ -923,7 +936,7 @@ internal sealed class EddnOutbox : IDisposable
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
-            bool compact = File.Exists(path) && new FileInfo(path).Length >= MaximumReceipts * 16L;
+            bool compact = File.Exists(path) && new FileInfo(path).Length >= 2L * MaximumReceipts * 16L;
             string target = compact ? path + ".tmp" : path;
             using (
                 var file = new FileStream(
@@ -964,6 +977,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Atomically writes and flushes one pending message within the byte quota while preserving the prior file on failure.</summary>
     private bool persistMessage(EddnQueuedMessage message, out string? errorLog)
     {
         errorLog = null;

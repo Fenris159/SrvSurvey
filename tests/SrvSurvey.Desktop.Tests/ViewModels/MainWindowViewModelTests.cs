@@ -1226,6 +1226,7 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>Verifies that confirmed key removal immediately cancels publication and requests retained-report deletion.</summary>
     [Fact]
     public async Task ClearingInaraKeyImmediatelyCancelsPendingPublication()
     {
@@ -1256,6 +1257,83 @@ public sealed class MainWindowViewModelTests
             }
 
             Assert.Equal(1, publisher.CancellationCount);
+            Assert.Equal(true, publisher.LastDiscardRetainedReports);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    /// <summary>Rotating credentials pauses sends but retains captured uploads; confirmed removal requests account-scoped deletion.</summary>
+    [Theory]
+    [InlineData("Inara", false)]
+    [InlineData("Inara", true)]
+    [InlineData("EDSM", false)]
+    [InlineData("EDSM", true)]
+    public async Task CredentialEditingDiscardsRetainedReportsOnlyForExplicitRemoval(string provider, bool remove)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-credential-edit-{Guid.NewGuid():N}");
+        try
+        {
+            var inara = new RecordingInaraPublisher();
+            var edsm = new RecordingEdsmPublisher();
+            using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "data"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithInaraPublisher(inara)
+                        .WithEdsmPublisher(edsm)
+            );
+            if (provider == "Inara")
+            {
+                main.Inara.SetCommanderProfile("F123", "Explorer", true, "old-key");
+                if (remove)
+                {
+                    main.Inara.RequestClearApiKeyCommand.Execute(null);
+                    main.Inara.ConfirmClearApiKeyCommand.Execute(null);
+                }
+                else
+                {
+                    main.Inara.ApiKey = "new-key";
+                    main.Inara.SaveApiKeyCommand.Execute(null);
+                }
+            }
+            else
+            {
+                main.Edsm.SetCommanderProfile("F123", "Explorer", true, "old-key");
+                if (remove)
+                {
+                    main.Edsm.RequestClearCredentialsCommand.Execute(null);
+                    main.Edsm.ConfirmClearCredentialsCommand.Execute(null);
+                }
+                else
+                {
+                    main.Edsm.ApiKey = "new-key";
+                    main.Edsm.SaveCredentialsCommand.Execute(null);
+                }
+            }
+            DateTimeOffset deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(3);
+            while (inara.CancellationCount + edsm.CancellationCount == 0 && DateTimeOffset.UtcNow < deadline)
+            {
+                await Task.Delay(10);
+            }
+            Assert.Equal(1, inara.CancellationCount + edsm.CancellationCount);
+            Assert.Equal(
+                remove,
+                provider == "Inara" ? inara.LastDiscardRetainedReports : edsm.LastDiscardRetainedReports
+            );
         }
         finally
         {
@@ -4782,6 +4860,9 @@ public sealed class MainWindowViewModelTests
 
         public int CancellationCount { get; private set; }
 
+        /// <summary>Records whether the workspace requested durable account-specific removal.</summary>
+        public bool? LastDiscardRetainedReports { get; private set; }
+
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
             CancellationToken cancellationToken = default
@@ -4804,9 +4885,11 @@ public sealed class MainWindowViewModelTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication()
+        /// <summary>Implements the test publisher cancellation contract without contacting an external provider.</summary>
+        public void CancelPendingPublication(bool discardRetainedReports = false)
         {
             CancellationCount++;
+            LastDiscardRetainedReports = discardRetainedReports;
         }
 
         public void Dispose() { }
@@ -4817,6 +4900,9 @@ public sealed class MainWindowViewModelTests
         public List<EdsmPublicationUpdate> Calls { get; } = [];
 
         public int CancellationCount { get; private set; }
+
+        /// <summary>Records whether the workspace requested durable account-specific removal.</summary>
+        public bool? LastDiscardRetainedReports { get; private set; }
 
         public Task<EdsmPublicationResult> ApplyAsync(
             EdsmPublicationUpdate update,
@@ -4840,9 +4926,11 @@ public sealed class MainWindowViewModelTests
             return Task.FromResult(EdsmPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication()
+        /// <summary>Implements the test publisher cancellation contract without contacting an external provider.</summary>
+        public void CancelPendingPublication(bool discardRetainedReports = false)
         {
             CancellationCount++;
+            LastDiscardRetainedReports = discardRetainedReports;
         }
 
         public void Dispose() { }
@@ -4868,7 +4956,8 @@ public sealed class MainWindowViewModelTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication() { }
+        /// <summary>Implements the test publisher cancellation contract without contacting an external provider.</summary>
+        public void CancelPendingPublication(bool discardRetainedReports = false) { }
 
         public void Dispose() { }
     }
