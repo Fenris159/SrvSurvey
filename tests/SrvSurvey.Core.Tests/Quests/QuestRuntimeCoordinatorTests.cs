@@ -809,6 +809,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             return Task.CompletedTask;
         }
 
+        /// <summary>Records quest-loading attempts and reproduces recoverable Raven failures.</summary>
         public Task<IReadOnlyList<RavenCommanderQuest>> LoadCommanderQuestsAsync(
             RavenQuestState state,
             string apiKey,

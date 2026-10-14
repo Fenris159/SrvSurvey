@@ -96,6 +96,7 @@ public sealed class FiregroupsPresentationTests
         finally
         {
             window.Close();
+            main.Dispose();
             Directory.Delete(directory, true);
         }
     }

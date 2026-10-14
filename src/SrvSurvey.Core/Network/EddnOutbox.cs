@@ -103,7 +103,9 @@ internal sealed class EddnOutbox : IDisposable
         filepath = payloadPath;
         storeFolder = payloadPath + ".d";
         ownershipPath = getOwnershipPath(payloadPath);
-        sharedDisablePath = (storage.SharedConsentPath ?? ownershipPath) + ".sharing-disabled";
+        sharedDisablePath =
+            (storage.SharedConsentPath is { } consent ? getOwnershipPath(consent) : ownershipPath)
+            + ".sharing-disabled";
         sharedDisableLeasePath = sharedDisablePath + ".lease";
         this.transport = transport;
         this.log = log ?? (_ => { });

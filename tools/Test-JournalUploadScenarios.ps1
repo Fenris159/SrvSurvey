@@ -56,6 +56,9 @@ try {
         $required.Add("*.JournalUploadScenarioTests.ExplicitCredentialRemovalRetiresReportsAfterTemporaryCredentialFailure*provider: `"$provider`"*")
         $required.Add("*.JournalUploadScenarioTests.ForeignCommanderBoundaryCannotRelabelFollowingEvents*provider: `"$provider`"*")
     }
+    foreach ($suspended in @("False", "True")) {
+        $required.Add("*.JournalUploadScenarioTests.SelectedEddnAccountRecoversWithoutJournalActivity*suspended: $suspended*")
+    }
     foreach ($capacity in @(1, 2)) {
         $required.Add("*.EddnOutboxTests.ReceiptCompactionLeavesSlackForSubsequentCompletions*capacityMultiple: $capacity*")
     }

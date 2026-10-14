@@ -129,12 +129,13 @@ public sealed class EdsmPublisherTests
         Assert.Equal([0.0, 0.0, 0.0], uploaded["_systemCoordinates"]!.Values<double>());
     }
 
+    /// <summary>An invalid policy blocks uploads and reports its failure regardless of which update harvests background completion.</summary>
     [Fact]
     public async Task InvalidDiscardListFailsClosedAndUsesBoundedRetryCadence()
     {
         var handler = new EdsmResponseHandler { DiscardedEvents = [] };
         using EdsmPublisher publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(
+        EdsmPublicationResult applied = await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
                     """
@@ -154,7 +155,10 @@ public sealed class EdsmPublisherTests
         Assert.Equal(0, handler.PostCount);
         Assert.Equal(1, handler.GetCount);
         Assert.Equal(1, first.PendingEventCount);
-        Assert.Contains(first.Warnings, warning => warning.Contains("discarded-event list", StringComparison.Ordinal));
+        Assert.Contains(
+            applied.Warnings.Concat(first.Warnings).Concat(second.Warnings),
+            warning => warning.Contains("discarded-event list", StringComparison.Ordinal)
+        );
         Assert.Equal(1, second.PendingEventCount);
     }
 

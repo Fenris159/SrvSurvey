@@ -104,6 +104,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ApplyCommanderChangeIfNeededAsync(context.Update, tick.PreviousFrontierId, tick.PreviousCommanderName);
     }
 
+    /// <summary>Keeps shared UI cargo and independently attributed provider cargo in separate projections.</summary>
     private void BindCargoAndStatus()
     {
         operations[JournalProjectionOperation.CargoInventory] = Sync(
@@ -171,6 +172,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         );
     }
 
+    /// <summary>Binds commander identity, quest context and profile transitions in projection order.</summary>
     private void BindCommanderContext()
     {
         operations[JournalProjectionOperation.CommanderCodex] = async (context, tick) =>
@@ -632,6 +634,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Publishes only fresh attributable cargo snapshots while suppressing historical bootstrap deliveries.</summary>
     private async Task ApplyColonizationCargoAsync(JournalProjectionContext context, JournalProjectionTick tick)
     {
         if (tick.RavenCargoChanged && state.ProviderCargoInventory.CreateSnapshot() is { } cargo)
@@ -1382,6 +1385,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Updates quests from the bound journal and allows companion cargo only for verified sources.</summary>
     private async Task ApplyQuestUpdateAsync(JournalMonitorUpdate update, bool allowCargoFile)
     {
         if (

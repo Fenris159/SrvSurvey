@@ -309,7 +309,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             IsDiagnosticReplay = foundation.IsDiagnosticReplay;
             DiagnosticReplayStatus = foundation.DiagnosticReplayStatus ?? string.Empty;
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
-            journalSources = new JournalSourceRegistry(AppDataPaths.DataDirectory);
+            journalSources = new JournalSourceRegistry(AppDataPaths.CacheDirectory);
             rollback.Add(journalSources);
             var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.SharedUiSettingsPath);
             IReadOnlyList<string> savedJournalDirectories = sharedJournalSettingsStore.Load().Directories;
@@ -528,6 +528,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
             this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+            if (this.eddnPublisher is EddnCommanderPublisher commanderPublisher)
+            {
+                commanderPublisher.RestorePendingAccount(targetFrontierId ?? AppDataPaths.SettingsFrontierId);
+            }
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
                 ?? new EdAstroPublisher(
@@ -4591,7 +4595,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
         TryDispose(FleetCarrierWorkspace.Dispose);
-        journalSources.Dispose();
+        TryDispose(journalSources.Dispose);
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;

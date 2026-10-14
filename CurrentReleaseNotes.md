@@ -25,8 +25,9 @@ quest error.
   Cargo files remain excluded whenever their owner cannot be verified.
 - **Keep EDDN queues separate.** Each commander has an independent persistent
   upload queue, so one instance cannot block another commander's reports.
-  Pending reports recover after a restart, and older queued reports retain
-  their original uploader identity.
+  Pending reports recover on startup for the selected commander, even before
+  new journal activity. Older queued reports retain their original uploader
+  identity.
 - **Prevent stale or foreign inventory reports.** Inara companion-file reads
   reject snapshots older than the journal event that requested them. Inara,
   EDSM and VoxStellar stop processing a batch at an unexpected commander change,
@@ -36,7 +37,6 @@ quest error.
   every update. Current warnings remain visible. When Raven returns a malformed
   Azure commander-name filter, the diagnostic identifies the server-side
   escaping problem instead of suggesting changes to the commander name or key.
-
 - **Update security dependencies.** The desktop packages use patched .NET XML
   and cryptography libraries.
 

@@ -55,8 +55,8 @@ public sealed class MultiCommanderJournalUploadTests
             await first.RefreshAsync();
             await AppendActivityAsync(secondFolder, "F2", "Second", 202, 98765);
             await second.RefreshAsync();
-            await firstSender.FlushAsync();
-            await secondSender.FlushAsync();
+            await firstSender.FlushAsync(provider == "VoxStellar" && !sharedFolder);
+            await secondSender.FlushAsync(provider == "VoxStellar" && !sharedFolder);
             bool journalAllowed = !sharedFolder || provider == "Inara";
             Assert.True(journalAllowed == !firstSender.Handler.Posts.IsEmpty, firstSender.Diagnostics);
             Assert.True(journalAllowed == !secondSender.Handler.Posts.IsEmpty, secondSender.Diagnostics);
@@ -150,8 +150,8 @@ public sealed class MultiCommanderJournalUploadTests
                 await first.RefreshAsync();
                 await AppendActivityAsync(secondFolder, "F2", "Second", 202, 98765);
                 await second.RefreshAsync();
-                await firstSender.FlushAsync();
-                await secondSender.FlushAsync();
+                await firstSender.FlushAsync(provider == "VoxStellar");
+                await secondSender.FlushAsync(provider == "VoxStellar");
                 Assert.False(firstSender.Handler.Posts.IsEmpty);
                 Assert.False(secondSender.Handler.Posts.IsEmpty);
             }
@@ -164,8 +164,8 @@ public sealed class MultiCommanderJournalUploadTests
             await firstRestart.RefreshAsync();
             await secondRestart.RefreshAsync();
             await firstRestart.RefreshAsync();
-            await recoveredFirst.FlushAsync();
-            await recoveredSecond.FlushAsync();
+            await recoveredFirst.FlushAsync(provider == "VoxStellar");
+            await recoveredSecond.FlushAsync(provider == "VoxStellar");
             AssertOwnPayloads(recoveredFirst, "First", "Second");
             AssertOwnPayloads(recoveredSecond, "Second", "First");
         }
@@ -305,6 +305,7 @@ public sealed class MultiCommanderJournalUploadTests
         public string Provider { get; }
         public ProviderHandler Handler { get; }
         private readonly ConcurrentQueue<string> logs = new();
+        private readonly TaskCompletionSource firstVoxBatch = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public string Diagnostics =>
             $"{Provider} pending={(publisher as EdAstroPublisher)?.PendingCount}; {string.Join("; ", logs)}";
 
@@ -345,6 +346,7 @@ public sealed class MultiCommanderJournalUploadTests
                         OutboxDirectory = storage,
                         TimeProvider = clock,
                         BatchInterval = TimeSpan.Zero,
+                        Log = CaptureLog,
                     }
                 ),
             };
@@ -377,7 +379,7 @@ public sealed class MultiCommanderJournalUploadTests
         public void Advance(TimeSpan duration) => clock.Now += duration;
 
         /// <summary>Advances real sender deadlines and waits for their bounded flush paths.</summary>
-        public async Task FlushAsync()
+        public async Task FlushAsync(bool expectVoxUpload = false)
         {
             clock.Now += TimeSpan.FromHours(3);
             switch (publisher)
@@ -396,9 +398,23 @@ public sealed class MultiCommanderJournalUploadTests
                 case EddnCommanderPublisher eddn:
                     await eddn.FlushAsync();
                     break;
-                case VoxStellarPublisher vox:
-                    vox.Dispose();
+                case VoxStellarPublisher:
+                    if (expectVoxUpload)
+                    {
+                        await firstVoxBatch.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    }
+                    await Task.Delay(TimeSpan.FromMilliseconds(50));
                     break;
+            }
+        }
+
+        /// <summary>Observes a completed webhook batch without stopping the sender before duplicate checks.</summary>
+        private void CaptureLog(string message)
+        {
+            logs.Enqueue(message);
+            if (message.StartsWith("VoxStellar upload batch:", StringComparison.Ordinal))
+            {
+                firstVoxBatch.TrySetResult();
             }
         }
 

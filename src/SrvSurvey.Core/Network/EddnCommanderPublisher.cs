@@ -54,18 +54,44 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
                 return Task.FromResult(EddnPublicationResult.Empty);
             }
             SetEnabled(request.Enabled);
-            string account = Convert.ToHexString(
-                SHA256.HashData(Encoding.UTF8.GetBytes(request.FrontierId.Trim().ToUpperInvariant()))
-            );
-            if (!publishers.TryGetValue(account, out EddnPublisher? publisher))
-            {
-                publisher = create(Path.Combine(directory, account, "outbox.json"), Path.Combine(directory, "consent"));
-                publisher.SetSuspended(suspended);
-                publisher.SetEnabled(enabled);
-                publishers.Add(account, publisher);
-            }
+            EddnPublisher publisher = GetOrCreatePublisher(AccountKey(request.FrontierId));
             return publisher.ApplyAsync(request, cancellationToken);
         }
+    }
+
+    /// <summary>Restores only the selected commander's persisted queue before journal activity, without leasing another instance's account.</summary>
+    public void RestorePendingAccount(string? frontierId)
+    {
+        lock (sync)
+        {
+            if (disposed || string.IsNullOrWhiteSpace(frontierId))
+            {
+                return;
+            }
+            string account = AccountKey(frontierId);
+            string path = Path.Combine(directory, account, "outbox.json");
+            if (File.Exists(path) || Directory.Exists(path + ".d"))
+            {
+                GetOrCreatePublisher(account);
+            }
+        }
+    }
+
+    /// <summary>Uses the same bounded, normalized account path for both startup recovery and live capture.</summary>
+    private static string AccountKey(string frontierId) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(frontierId.Trim().ToUpperInvariant())));
+
+    /// <summary>Opens a selected account with the current consent and suspension state while the routing lock is held.</summary>
+    private EddnPublisher GetOrCreatePublisher(string account)
+    {
+        if (!publishers.TryGetValue(account, out EddnPublisher? publisher))
+        {
+            publisher = create(Path.Combine(directory, account, "outbox.json"), Path.Combine(directory, "consent"));
+            publisher.SetSuspended(suspended);
+            publisher.SetEnabled(enabled);
+            publishers.Add(account, publisher);
+        }
+        return publisher;
     }
 
     /// <summary>Propagates consent to loaded queues; the shared marker also protects queues owned by other instances.</summary>

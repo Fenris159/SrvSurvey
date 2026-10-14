@@ -123,6 +123,84 @@ public sealed partial class JournalUploadScenarioTests
         Assert.DoesNotContain("Other", body, StringComparison.Ordinal);
     }
 
+    /// <summary>Selected accounts recover without journal activity, preserve suspension, and leave other commanders' leases available.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SelectedEddnAccountRecoversWithoutJournalActivity(bool suspended)
+    {
+        string accounts = Path.Combine(directory, "accounts");
+        string legacy = Path.Combine(directory, "legacy.json");
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"timestamp":"2026-10-14T12:00:01Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":1,"StarPos":[0,0,0],"JumpDist":1}""",
+                out JournalEventEnvelope? entry,
+                out string? error
+            ),
+            error
+        );
+        using (var client = new HttpClient(new ProviderHandler("EDDN", HttpStatusCode.ServiceUnavailable)))
+        using (var failed = new EddnCommanderPublisher("2.1.3.0", accounts, legacy, client, automaticProcessing: false))
+        {
+            foreach ((string fid, string name) in new[] { ("F123", "Explorer"), ("F999", "Other") })
+            {
+                await failed.ApplyAsync(
+                    new EddnApplyRequest
+                    {
+                        JournalEvents = [entry!],
+                        FrontierId = fid,
+                        CommanderName = name,
+                        JournalPath = Path.Combine(directory, "Journal." + fid + ".log"),
+                        GameVersion = "4.1.0.100",
+                        Enabled = true,
+                        AllowPublishing = true,
+                    }
+                );
+            }
+            await failed.FlushAsync();
+        }
+        clock.Now += TimeSpan.FromHours(1);
+        var handler = new ProviderHandler("EDDN", HttpStatusCode.OK);
+        using var http = new HttpClient(handler);
+        using var restored = new EddnCommanderPublisher(
+            "2.1.3.0",
+            accounts,
+            legacy,
+            http,
+            utcNow: () => clock.Now,
+            automaticProcessing: false
+        );
+        restored.SetEnabled(true);
+        restored.SetSuspended(suspended);
+        restored.RestorePendingAccount(null);
+        restored.RestorePendingAccount("missing");
+        restored.RestorePendingAccount("f123");
+        restored.RestorePendingAccount("F123");
+        await restored.FlushAsync();
+        Assert.Equal(suspended ? 0 : 1, handler.Posts.Count);
+        restored.SetSuspended(false);
+        await restored.FlushAsync();
+        Assert.Contains("Explorer", Assert.Single(handler.Posts), StringComparison.Ordinal);
+        var otherHandler = new ProviderHandler("EDDN", HttpStatusCode.OK);
+        using var otherHttp = new HttpClient(otherHandler);
+        using var other = new EddnCommanderPublisher(
+            "2.1.3.0",
+            accounts,
+            legacy,
+            otherHttp,
+            utcNow: () => clock.Now,
+            automaticProcessing: false
+        );
+        other.SetEnabled(true);
+        other.RestorePendingAccount("F999");
+        await other.FlushAsync();
+        Assert.Contains("Other", Assert.Single(otherHandler.Posts), StringComparison.Ordinal);
+        await restored.FlushAsync();
+        Assert.Single(handler.Posts);
+        restored.Dispose();
+        restored.RestorePendingAccount("F999");
+    }
+
     /// <summary>A missing identity cannot create an account queue, and disposed routing cannot restart delivery.</summary>
     [Fact]
     public async Task EddnRoutingRequiresIdentityAndStopsAfterDisposal()
