@@ -198,6 +198,7 @@ public sealed class SurfaceMiningOverlaySizingTests
         }
     }
 
+    /// <summary>Live and editor mining layouts share real monitor DPI across data and scale changes.</summary>
     [AvaloniaTheory]
     [InlineData(-50, 1.25)]
     [InlineData(0, 1)]
@@ -216,6 +217,8 @@ public sealed class SurfaceMiningOverlaySizingTests
         var live = new SurfaceMiningOverlayWindow(viewModel);
         try
         {
+            preview.SetRenderScaling(renderScaling);
+            live.SetRenderScaling(renderScaling);
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(0, scaleIndex, renderScaling);

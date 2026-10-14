@@ -96,7 +96,7 @@ internal static class OverlayEditorPreviewFactories
         return vm;
     }
 
-    /// <summary>Models a shopping stop with shortages, covered groups, unavailable stock, and a list long enough to scroll.</summary>
+    /// <summary>Models a shopping stop with five- and six-digit cargo values, shortages, covered groups, and unavailable stock.</summary>
     public static ColonizationCommodityOverlayViewModel CreateColonization()
     {
         const int capacity = 512;
@@ -105,7 +105,7 @@ internal static class OverlayEditorPreviewFactories
         const string chemicalsCategory = "Chemicals";
         ColonizationCommodityPlanRow[] rows =
         [
-            Row("steel", "Steel", metalsCategory, 2450, 96, 620),
+            Row("steel", "Steel", metalsCategory, 10_164, 96, 620),
             Row("power_generators", "Power generators", technologyCategory, 840, 32, 210),
             Row("polymers", "Polymers", chemicalsCategory, 610, 24, 590),
             Row("water_purifiers", "Water purifiers", technologyCategory, 420, 16, 120) with
@@ -121,7 +121,7 @@ internal static class OverlayEditorPreviewFactories
             Row("copper", "Copper", metalsCategory, 240, 0, 60),
             Row("aluminium", "Aluminium", metalsCategory, 420, 0, 90),
             Row("computer_components", "Computer components", technologyCategory, 140, 0, 90),
-            Row("building_fabricators", "Building fabricators", technologyCategory, 120, 0, 80),
+            Row("building_fabricators", "Building fabricators", technologyCategory, 123_456, 0, 20_000),
             Row("medical_diagnostic_equipment", "Medical diagnostic equipment", technologyCategory, 100, 0, 40),
             Row("insulating_membrane", "Insulating membrane", chemicalsCategory, 160, 0, 40),
             Row("ceramics", "Ceramics", chemicalsCategory, 280, 0, 60),

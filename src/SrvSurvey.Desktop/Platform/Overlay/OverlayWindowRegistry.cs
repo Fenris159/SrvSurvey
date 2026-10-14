@@ -541,6 +541,7 @@ public sealed record RegisteredOverlayWindow(
 
 internal static class OverlayWindowMetrics
 {
+    /// <summary>Measures the current shared presentation in physical pixels on its rendering surface before placement.</summary>
     public static PixelSize PrepareForPlacement(
         Window window,
         LegacyOverlayLayout layout,
@@ -552,21 +553,51 @@ internal static class OverlayWindowMetrics
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        double scaling = NormalizeScaling(targetScaling);
+        double scaling = NormalizeScaling(OverlayThemeResources.GetPresentationScaling(window, targetScaling));
         int scaleIndex = layout.GetScaleIndex(plotterName);
         OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
+        window.UpdateLayout();
         double fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
         PixelSize fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
-        return GetPixelSize(window, fallback, scaling);
+        return GetMeasuredPresentationSize(window, scaling) ?? GetPixelSize(window, fallback, scaling);
     }
 
+    /// <summary>Reports the rendered panel footprint, falling back to host or catalog geometry until measured.</summary>
     public static PixelSize GetPixelSize(RegisteredOverlayWindow registered)
     {
         ArgumentNullException.ThrowIfNull(registered);
-        double scaling = NormalizeScaling(registered.Window.RenderScaling);
+        double scaling = NormalizeScaling(
+            OverlayThemeResources.GetPresentationScaling(registered.Window, registered.Window.RenderScaling)
+        );
         PixelSize previewSize = OverlayLayoutCatalog.GetRequired(registered.PlotterName).PreviewSize;
         PixelSize fallback = ScalePixelSize(previewSize, scaling);
-        return GetPixelSize(registered.Window, fallback, scaling, registered.PresentationVisual);
+        return GetMeasuredPresentationSize(registered.Window, scaling)
+            ?? GetPixelSize(registered.Window, fallback, scaling, registered.PresentationVisual);
+    }
+
+    /// <summary>Measures the shared panel's transformed footprint without native resize lag or transparent host padding.</summary>
+    private static PixelSize? GetMeasuredPresentationSize(Window window, double scaling)
+    {
+        if (
+            OverlayThemeResources.GetPresentationRoot(window) is not UserControl panel
+            || panel.Bounds.Width <= 0
+            || panel.Bounds.Height <= 0
+            || TopLevel.GetTopLevel(panel) is not { } surface
+        )
+        {
+            return null;
+        }
+        if (
+            panel.TranslatePoint(default, surface) is not { } start
+            || panel.TranslatePoint(new Point(panel.Bounds.Width, panel.Bounds.Height), surface) is not { } end
+        )
+        {
+            return null;
+        }
+        return new PixelSize(
+            Math.Max(1, (int)Math.Ceiling((end.X - start.X) * scaling)),
+            Math.Max(1, (int)Math.Ceiling((end.Y - start.Y) * scaling))
+        );
     }
 
     private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>

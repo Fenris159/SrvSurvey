@@ -23,14 +23,13 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:MassacreMissionViewModel">
             <Grid Margin="0,1"
-                  ColumnDefinitions="Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,*,Auto"
                   ColumnSpacing="6"
                   Opacity="{Binding RowOpacity}">
               <TextBlock Classes="type-icon" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="&#x25B6;" />
               <StackPanel Grid.Column="1"
-                          MaxWidth="260"
                           Spacing="0">
                 <TextBlock FontSize="11" Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"

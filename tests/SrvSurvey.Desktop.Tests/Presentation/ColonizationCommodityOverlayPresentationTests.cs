@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -14,6 +15,198 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ColonizationCommodityOverlayPresentationTests
 {
+    /// <summary>Large sums and signed deltas grow shared columns while preserving readable gaps in both hosts.</summary>
+    [AvaloniaTheory]
+    [InlineData(10164, 0, true, false, 0)]
+    [InlineData(123456, 23456, false, false, 0)]
+    [InlineData(123456, 23456, true, false, 100)]
+    [InlineData(1234567, 2000000, true, false, 0)]
+    [InlineData(123456, 23456, false, true, 0)]
+    [InlineData(123456, 23456, true, true, 100)]
+    public void LargeNumericValuesKeepReadableColumnGaps(
+        int needed,
+        int carrier,
+        bool delta,
+        bool combined,
+        int valueScale
+    )
+    {
+        const string plotter = "PlotBuildCommodities";
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotter));
+        var model = (ColonizationCommodityOverlayViewModel)preview.RuntimePresentation!.DataContext!;
+        ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default with
+        {
+            ShowFleetCarrierDelta = delta,
+            InlineFleetCarrierCargo = combined,
+            CollapseCoveredGroups = false,
+            HideRowBadges = true,
+        };
+        preview.ConfigureColonizationPreferences(preferences);
+        ColonizationCommodityPlan plan = CreatePlan("Large cargo requirements");
+        model.Apply(
+            plan with
+            {
+                Rows = [plan.Rows[0] with { Needed = needed, OnFleetCarriers = carrier, InShip = 1173 }],
+            },
+            null
+        );
+        OverlayTypographyScale typography = OverlayTypographyScale.Default.WithPercent(
+            OverlayTypographyRole.Value,
+            valueScale
+        );
+        int panelScale = OverlayScaleCatalog.GetIndex(50);
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [plotter] = OverlayLayoutCatalog.GetRequired(plotter).DefaultPlacement with
+                {
+                    TypographyScale = typography,
+                    ScaleIndex = panelScale,
+                },
+            },
+            null,
+            null
+        );
+        var live = new ColonizationCommodityOverlayWindow(model);
+        try
+        {
+            preview.SetRenderScaling(1.5);
+            live.SetRenderScaling(1.5);
+            preview.ConfigureScale(layout.ScaleIndex, panelScale, 1.5);
+            preview.ConfigureTypography(typography);
+            preview.ConfigureSize(null);
+            OverlayThemeResources.Apply(preview);
+            OverlayThemeResources.Apply(live, layout, plotter, new OverlayWindowRegistry());
+            preview.Show();
+            live.Show();
+            Dispatcher.UIThread.RunJobs();
+            preview.UpdateLayout();
+            live.UpdateLayout();
+            foreach (
+                Control presentation in new Control[]
+                {
+                    preview.RuntimePresentation,
+                    live.GetVisualDescendants().OfType<ColonizationCommodityOverlayPresentation>().Single(),
+                }
+            )
+            {
+                Border row = Assert.Single(
+                    presentation.GetVisualDescendants().OfType<Border>(),
+                    border => border.Classes.Contains("commodity-row")
+                );
+                Grid grid = Assert.IsType<Grid>(row.Child);
+                TextBlock[] cells = grid
+                    .Children.OfType<TextBlock>()
+                    .Where(text => text.IsEffectivelyVisible && Grid.GetColumn(text) > 0)
+                    .OrderBy(Grid.GetColumn)
+                    .ToArray();
+                Assert.Equal(combined ? 2 : 3, cells.Length);
+                Assert.All(
+                    cells,
+                    cell => Assert.True(cell.TextLayout.WidthIncludingTrailingWhitespace <= cell.Bounds.Width + 0.01)
+                );
+                Rect[] rectangles = cells
+                    .Select(cell => new Rect(cell.Bounds.Size).TransformToAABB(cell.TransformToVisual(grid)!.Value))
+                    .ToArray();
+                foreach (double gap in rectangles.Zip(rectangles.Skip(1), (left, right) => right.Left - left.Right))
+                {
+                    Assert.InRange(gap, 7.99, double.PositiveInfinity);
+                }
+                Assert.All(
+                    cells,
+                    cell =>
+                    {
+                        Rect bounds = new Rect(cell.Bounds.Size).TransformToAABB(
+                            cell.TransformToVisual(presentation)!.Value
+                        );
+                        Assert.InRange(bounds.Left, 0, presentation.Bounds.Width);
+                        Assert.True(bounds.Right <= presentation.Bounds.Width + 1);
+                    }
+                );
+                Grid headers = Assert.Single(
+                    presentation.GetVisualDescendants().OfType<Grid>(),
+                    item => item.Name == "CommodityColumnHeaders"
+                );
+                Assert.Equal(
+                    headers.ColumnDefinitions.Select(column => column.ActualWidth),
+                    grid.ColumnDefinitions.Select(column => column.ActualWidth)
+                );
+                if (combined)
+                {
+                    Assert.Equal(0, grid.ColumnDefinitions[3].ActualWidth);
+                }
+            }
+        }
+        finally
+        {
+            live.Close();
+            preview.Close();
+        }
+    }
+
+    /// <summary>Short live commodity lists retain the editor's designed column footprint at each body font scale.</summary>
+    [AvaloniaTheory]
+    [InlineData(0, false)]
+    [InlineData(100, false)]
+    [InlineData(0, true)]
+    public void ShortListsKeepTheEditorsCommodityColumnLayout(int bodyScale, bool combinedCargo)
+    {
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotBuildCommodities");
+        var preview = new OverlayPositionPreviewWindow(definition);
+        var model = new ColonizationCommodityOverlayViewModel();
+        ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default with
+        {
+            HideRowBadges = true,
+            InlineFleetCarrierCargo = combinedCargo,
+        };
+        model.ApplyPreferences(preferences);
+        model.Apply(CreatePlan("IMPROBABLY COLD A [III42] (NOVA)"), null);
+        var live = new ColonizationCommodityOverlayWindow(model);
+        OverlayTypographyScale typography = OverlayTypographyScale.Default.WithPercent(
+            OverlayTypographyRole.Body,
+            bodyScale
+        );
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [definition.Name] = definition.DefaultPlacement with { TypographyScale = typography },
+            },
+            null,
+            null
+        );
+        try
+        {
+            preview.ConfigureColonizationPreferences(preferences);
+            preview.ConfigureTypography(typography);
+            preview.ConfigureSize(null);
+            OverlayThemeResources.Apply(preview);
+            OverlayThemeResources.Apply(live, layout, definition.Name, new OverlayWindowRegistry());
+            live.Show();
+            preview.Show();
+            Dispatcher.UIThread.RunJobs();
+            live.UpdateLayout();
+            preview.UpdateLayout();
+            Grid actual = Assert.Single(
+                live.GetVisualDescendants().OfType<Grid>(),
+                grid => grid.Name == "CommodityColumnHeaders"
+            );
+            Grid expected = Assert.Single(
+                preview.GetVisualDescendants().OfType<Grid>(),
+                grid => grid.Name == "CommodityColumnHeaders"
+            );
+            Assert.InRange(
+                Math.Abs(actual.ColumnDefinitions[0].ActualWidth - expected.ColumnDefinitions[0].ActualWidth),
+                0,
+                1
+            );
+        }
+        finally
+        {
+            live.Close();
+            preview.Close();
+        }
+    }
+
     /// <summary>Removes badge space from the live panel and restores it without hiding completion or loading highlights.</summary>
     [AvaloniaFact]
     public void HidingRowBadgesUpdatesPresentationAndReleasesTheirWidth()

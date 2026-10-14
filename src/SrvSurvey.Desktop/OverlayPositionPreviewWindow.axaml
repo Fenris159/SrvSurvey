@@ -64,7 +64,7 @@
               CornerRadius="7,7,0,0"
               BoxShadow="0 0 0 0 #00000000"
               ToolTip.Tip="{Binding Title}">
-        <Grid ColumnDefinitions="Auto,Auto,Auto"
+        <Grid ColumnDefinitions="*,Auto,Auto"
               ColumnSpacing="6">
           <TextBlock x:Name="EditorFolderTabLabel"
                      MaxWidth="280"

@@ -1,4 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.3
+# SrvSurvey-XP 2.1.3.0-rc.64.4
+
+RC.64.4 makes live overlays match their position-editor previews, improves
+column spacing for large colonization cargo counts, and makes panel resizing
+follow the mouse consistently. It includes the earlier changes below.
 
 RC.64.3 recovers pending journal uploads after restarts and unexpected shutdowns,
 keeps sharing failures from interrupting the session, and limits passive
@@ -24,6 +28,20 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## What's changed
 
+- **Match your overlay preview in game.** Live panels and position previews
+  use the same presentation, typography and measured dimensions. Display scaling
+  is taken from the screen actually rendering the panel, keeping its size and
+  saved position consistent across separate windows and combined overlays.
+- **Resize panels with predictable control.** The resize handle follows the
+  pointer at reduced and enlarged panel scales, and manual resizing keeps the
+  panel's top-left corner steady. Editor tabs no longer create a dead zone when
+  starting or reversing a resize. Sizes and positions remain in place after
+  saving and reopening the editor. Colonization backgrounds fill the resized
+  frame, and narrowing massacre mission panels keeps the kill counts visible.
+- **Keep large cargo counts readable.** Colonization count columns retain
+  clear spacing for five- and six-digit values, including carrier deltas and
+  combined cargo totals. The position-editor sample includes larger counts so
+  you can check the layout before using it in game.
 - **Recover pending journal uploads.** EDDN, Inara, EDSM, EDAstro and VoxStellar
   save captured reports locally before sending. Closing the app or an unexpected
   shutdown preserves pending reports for the next session, with their original
@@ -115,15 +133,15 @@ EDAstro, with disclosure, paced batches and consolidated activity logging.
 
 ## Update channel and packages
 
-RC.64.3 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.4 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.3`
-- Tag: `xp2-v2.1.3.0-rc.64.3`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.3-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.3-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.3-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.3-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.4`
+- Tag: `xp2-v2.1.3.0-rc.64.4`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.4-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.4-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.4-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.4-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

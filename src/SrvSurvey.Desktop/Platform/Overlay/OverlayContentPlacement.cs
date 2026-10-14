@@ -80,6 +80,10 @@ internal sealed class OverlayContentPlacement
     /// <summary>Forgets the corner when the desktop screen configuration changes.</summary>
     public void Reset() => key = null;
 
+    /// <summary>Moves the retained corner to match a manual resize while preserving its growth direction.</summary>
+    public void Reanchor(PixelPoint position, PixelSize size) =>
+        corner = new PixelPoint(position.X + (alignRight ? size.Width : 0), position.Y);
+
     /// <summary>Chooses the panel's left or right edge using its center within its own physical monitor.</summary>
     public static LegacyHorizontalAnchor SelectHorizontalAnchor(
         PixelPoint position,

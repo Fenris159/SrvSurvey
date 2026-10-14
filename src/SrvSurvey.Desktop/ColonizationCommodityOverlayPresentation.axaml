@@ -32,7 +32,6 @@
   <!-- Slim shopping list: shared column widths, content-sized commodity. Compact mode caps ~15 rows. -->
   <Border Margin="0"
           Padding="4"
-          HorizontalAlignment="Left"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
@@ -92,16 +91,26 @@
                               MinWidth="{Binding ShipColumnMinWidth}"
                               SharedSizeGroup="ColoniseShip" />
           </Grid.ColumnDefinitions>
+          <!-- A zero-height measurement keeps short live lists at the editor's
+               designed name-column width. Body scaling changes this guide too;
+               longer names can grow it, and optional cargo columns remain Auto. -->
+          <controls:OverlayRowIconHost Opacity="0" IsHitTestVisible="False">
+            <TextBlock FontSize="10" Classes="type-body"
+                       Foreground="{DynamicResource RavenPrimaryBrush}"
+                       AutomationProperties.AccessibilityView="Raw"
+                       Text="Medical diagnostic equipment" />
+          </controls:OverlayRowIconHost>
           <TextBlock FontSize="8" Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}" Text="COMMODITY" />
+          <!-- Visible numeric cells own the gap so hidden columns still release their entire width. -->
           <TextBlock FontSize="8" Grid.Column="1"
-                     Margin="3,0,0,0"
+                     Margin="8,0,0,0"
                      Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}"
                      HorizontalAlignment="Right"
                      Text="NEED" />
           <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right"
-                      VerticalAlignment="Top" Margin="3,0,0,0"
+                      VerticalAlignment="Top" Margin="8,0,0,0"
                       IsVisible="{Binding ShowFleetCarrierColumn}"
                       AutomationProperties.Name="{Binding FleetCarrierColumnHeader}">
             <TextBlock x:Name="FleetCarrierHeaderText" FontSize="8" Classes="type-title commodity-column-label"
@@ -113,7 +122,7 @@
             </Viewbox>
           </StackPanel>
           <TextBlock FontSize="8" Grid.Column="3"
-                     Margin="3,0,0,0"
+                     Margin="8,0,0,0"
                      Classes="type-title commodity-column-label"
                      Foreground="{DynamicResource RavenPrimaryBrush}"
                      IsVisible="{Binding ShowShipColumn}"
@@ -196,43 +205,43 @@
                             </controls:OverlayRowIconHost>
                           </StackPanel>
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="1"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseNeedBrush}"
                                      Text="{Binding NeededText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      Classes.carrier-load="{Binding IsFleetCarrierLoadHighlighted}"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseHaveBrush}"
                                      IsVisible="{Binding ShowFleetCarrierSum}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitBrush}"
                                      IsVisible="{Binding IsActiveDeficit}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitDimBrush}"
                                      IsVisible="{Binding IsDimmedDeficit}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusBrush}"
                                      IsVisible="{Binding IsActiveSurplus}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="2"
-                                     Margin="3,0,0,0"
+                                     Margin="8,0,0,0"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusDimBrush}"
                                      IsVisible="{Binding IsDimmedSurplus}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock FontSize="10" Classes="type-value" Grid.Column="3"
-                                     Margin="3,0,0,0" IsVisible="{Binding !InlineFleetCarrierCargo}"
+                                     Margin="8,0,0,0" IsVisible="{Binding !InlineFleetCarrierCargo}"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseShipBrush}"

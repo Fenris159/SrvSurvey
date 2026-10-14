@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -200,6 +201,24 @@ public sealed class OverlayLivePanelSizingTests
         }
     }
 
+    /// <summary>A sample list awaiting attachment must not busy retry viewport measurement before it has row containers.</summary>
+    [AvaloniaFact]
+    public void UnattachedRouteListDoesNotSpinWaitingForRows()
+    {
+        using var model = (RouteBioOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotRouteBio");
+        Assert.True(model.Targets.Count > RouteBioTargetList.MaxVisibleItemCount);
+        var list = new RouteBioTargetList { ItemsSource = model.Targets };
+        var frame = new DispatcherFrame();
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using CancellationTokenRegistration cancellation = deadline.Token.Register(() =>
+            Dispatcher.UIThread.Post(() => frame.Continue = false, DispatcherPriority.Send)
+        );
+        Dispatcher.UIThread.Post(() => frame.Continue = false, DispatcherPriority.Background);
+        Dispatcher.UIThread.PushFrame(frame);
+        Assert.False(deadline.IsCancellationRequested);
+        Assert.Null(TopLevel.GetTopLevel(list));
+    }
+
     private static readonly Dictionary<string, Type> LiveWindows = new()
     {
         ["PlotBioStatus"] = typeof(BiologyStatusOverlayWindow),
@@ -242,12 +261,16 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotTrackTarget"] = typeof(GroundTargetOverlayWindow),
     };
 
+    /// <summary>Every sample state retains the editor's spacing, colors, fonts, and measured footprint in live windows.</summary>
     [AvaloniaTheory]
     [InlineData("default")]
     [InlineData("compact")]
     [InlineData("expanded")]
     [InlineData("typography")]
     [InlineData("scaled")]
+    [InlineData("panel-scaled")]
+    [InlineData("combined")]
+    [InlineData("mixed-dpi")]
     [InlineData("updated")]
     [InlineData("reset")]
     public void EveryLivePanelFitsAndMatchesItsEditorPresentation(string scenario)
@@ -274,6 +297,7 @@ public sealed class OverlayLivePanelSizingTests
     {
         var preview = new OverlayPositionPreviewWindow(definition);
         Window? window = null;
+        CombinedOverlayWindow? host = null;
         try
         {
             OverlayThemeResources.Apply(preview);
@@ -283,6 +307,21 @@ public sealed class OverlayLivePanelSizingTests
                 preview.CycleEditorPreviewState();
             }
             Control expected = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+            if (expected.DataContext is NotificationViewModel notifications)
+            {
+                // Compare layout at one instant rather than sampling two different countdown values.
+                var frozen = new NotificationViewModel(
+                    new NotificationSettingsStore(
+                        Path.Combine(Path.GetTempPath(), $"notification-parity-{Guid.NewGuid():N}.json")
+                    ),
+                    new NotificationTimeProvider()
+                );
+                foreach (NotificationMessageViewModel message in notifications.Messages)
+                {
+                    frozen.ShowMessage(message.Text);
+                }
+                expected.DataContext = frozen;
+            }
             double sizeFactor = scenario == "compact" ? 0.8 : 1.3;
             OverlayPanelSize? size = scenario is "compact" or "expanded" or "reset"
                 ? new(
@@ -301,6 +340,7 @@ public sealed class OverlayLivePanelSizingTests
                         LegacyVerticalAnchor.Top,
                         8,
                         null,
+                        ScaleIndex: scenario == "panel-scaled" ? OverlayScaleCatalog.GetIndex(50) : null,
                         TypographyScale: typography,
                         SizeOverride: size
                     ),
@@ -312,7 +352,7 @@ public sealed class OverlayLivePanelSizingTests
             {
                 layout.SetScaleIndex(10);
             }
-            preview.ConfigureScale(layout.ScaleIndex, null, 1);
+            preview.ConfigureScale(layout.ScaleIndex, layout.Placements[definition.Name].ScaleIndex, 1);
             preview.ConfigureTypography(typography);
             preview.ConfigureSize(size);
             Type windowType = LiveWindows[definition.Name];
@@ -323,6 +363,11 @@ public sealed class OverlayLivePanelSizingTests
                     && parameter.ParameterType.IsInstanceOfType(expected.DataContext)
             );
             window = Assert.IsType<Window>(constructor.Invoke([expected.DataContext]), exactMatch: false);
+            if (scenario == "mixed-dpi")
+            {
+                window.SetRenderScaling(1.5);
+                preview.SetRenderScaling(1.5);
+            }
             OverlayThemeResources.Apply(window, layout, definition.Name, new OverlayWindowRegistry());
             window.Show();
             preview.Show();
@@ -346,14 +391,51 @@ public sealed class OverlayLivePanelSizingTests
                 preview.ConfigureTypography(typography);
                 preview.ConfigureSize(size);
             }
+            Window visibleWindow = window;
+            if (scenario == "combined")
+            {
+                window.UpdateLayout();
+                Control content = Assert.IsType<Control>(window.Content, exactMatch: false);
+                host = new CombinedOverlayWindow
+                {
+                    Width = window.Bounds.Width + 100,
+                    Height = window.Bounds.Height + 100,
+                };
+                host.SetRenderScaling(1.5);
+                preview.SetRenderScaling(1.5);
+                window.Content = new Border { Width = window.Bounds.Width + 100, Height = window.Bounds.Height + 100 };
+                // Flush the source's queued layout before reparenting its content to another LayoutManager.
+                using WriteableBitmap? detachedFrame = window.CaptureRenderedFrame();
+                host.Add(new ContentControl { Content = content, DataContext = window.DataContext });
+                OverlayThemeResources.Apply(host);
+                host.Show();
+                visibleWindow = host;
+            }
             Dispatcher.UIThread.RunJobs();
-            using WriteableBitmap? liveFrame = window.CaptureRenderedFrame();
+            using WriteableBitmap? liveFrame = visibleWindow.CaptureRenderedFrame();
             using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
             Control actual = Assert.Single(
-                window.GetVisualDescendants().OfType<Control>(),
+                visibleWindow.GetVisualDescendants().OfType<Control>(),
                 control => control.GetType() == expected.GetType()
             );
             string label = $"{definition.Name}/{state}/{scenario}";
+            ComparePresentationLayout(expected, actual, label, failures);
+            Point actualStart = Assert.IsType<Point>(actual.TranslatePoint(default, visibleWindow));
+            Point actualEnd = Assert.IsType<Point>(
+                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), visibleWindow)
+            );
+            PixelSize expectedPixels = preview.GetPanelMetrics(visibleWindow.RenderScaling).PanelSize;
+            var actualPixels = new PixelSize(
+                (int)Math.Ceiling((actualEnd.X - actualStart.X) * visibleWindow.RenderScaling),
+                (int)Math.Ceiling((actualEnd.Y - actualStart.Y) * visibleWindow.RenderScaling)
+            );
+            if (
+                Math.Abs(actualPixels.Width - expectedPixels.Width) > 1
+                || Math.Abs(actualPixels.Height - expectedPixels.Height) > 1
+            )
+            {
+                failures.Add($"{label}: live visual footprint {actualPixels} differs from editor {expectedPixels}");
+            }
             if (
                 Math.Abs(actual.Bounds.Width - expected.Bounds.Width) > 1
                 || Math.Abs(actual.Bounds.Height - expected.Bounds.Height) > 1
@@ -361,12 +443,12 @@ public sealed class OverlayLivePanelSizingTests
             {
                 failures.Add($"{label}: live {actual.Bounds.Size}, preview {expected.Bounds.Size}");
             }
-            string[] initialText = window
+            string[] initialText = visibleWindow
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
                 .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
                 .ToArray();
-            Size initialSize = window.Bounds.Size;
+            Size initialSize = visibleWindow.Bounds.Size;
             byte[] initialPixels = ReadPixels(Assert.IsType<WriteableBitmap>(liveFrame));
             foreach (
                 OverlayGrowthDirection direction in new[]
@@ -385,38 +467,97 @@ public sealed class OverlayLivePanelSizingTests
                     }
                 );
                 Dispatcher.UIThread.RunJobs();
-                using WriteableBitmap? refreshed = window.CaptureRenderedFrame();
-                string[] refreshedText = window
+                using WriteableBitmap? refreshed = visibleWindow.CaptureRenderedFrame();
+                string[] refreshedText = visibleWindow
                     .GetVisualDescendants()
                     .OfType<TextBlock>()
                     .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
                     .ToArray();
                 if (
-                    initialSize != window.Bounds.Size
+                    initialSize != visibleWindow.Bounds.Size
                     || !initialText.SequenceEqual(refreshedText)
                     || !initialPixels.SequenceEqual(ReadPixels(Assert.IsType<WriteableBitmap>(refreshed)))
                 )
                 {
                     failures.Add(
-                        $"{label}/{direction}: growth settings changed typography or panel size from {initialSize} to {window.Bounds.Size}"
+                        $"{label}/{direction}: growth settings changed typography or panel size from {initialSize} to {visibleWindow.Bounds.Size}"
                     );
                 }
             }
-            Point start = Assert.IsType<Point>(actual.TranslatePoint(default, window));
+            Point start = Assert.IsType<Point>(actual.TranslatePoint(default, visibleWindow));
             Point end = Assert.IsType<Point>(
-                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), window)
+                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), visibleWindow)
             );
-            if (start.X < -1 || start.Y < -1 || end.X > window.Bounds.Width + 1 || end.Y > window.Bounds.Height + 1)
+            if (
+                start.X < -1
+                || start.Y < -1
+                || end.X > visibleWindow.Bounds.Width + 1
+                || end.Y > visibleWindow.Bounds.Height + 1
+            )
             {
-                failures.Add($"{label}: content [{start} - {end}] clipped by live window {window.Bounds.Size}");
+                failures.Add($"{label}: content [{start} - {end}] clipped by live window {visibleWindow.Bounds.Size}");
             }
         }
         finally
         {
+            host?.Close();
             window?.Close();
             preview.Close();
         }
     }
+
+    /// <summary>Checks internal geometry and style so matching outer bounds cannot conceal tighter columns or rows.</summary>
+    private static void ComparePresentationLayout(Control expected, Control actual, string label, List<string> failures)
+    {
+        Control[] expectedControls = expected.GetVisualDescendants().OfType<Control>().ToArray();
+        Control[] actualControls = actual.GetVisualDescendants().OfType<Control>().ToArray();
+        if (expectedControls.Length != actualControls.Length)
+        {
+            failures.Add($"{label}: live/editor control counts differ");
+            return;
+        }
+        for (int index = 0; index < expectedControls.Length; index++)
+        {
+            Control editor = expectedControls[index];
+            Control live = actualControls[index];
+            if (DescribeStyle(editor) != DescribeStyle(live))
+            {
+                failures.Add(
+                    $"{label}/{index}: style {DescribeStyle(live)} differs from editor {DescribeStyle(editor)}"
+                );
+            }
+            if (!editor.IsEffectivelyVisible || !live.IsEffectivelyVisible)
+            {
+                continue;
+            }
+            Point editorOrigin = Assert.IsType<Point>(editor.TranslatePoint(default, expected));
+            Point liveOrigin = Assert.IsType<Point>(live.TranslatePoint(default, actual));
+            if (
+                Math.Abs(editorOrigin.X - liveOrigin.X) > 1
+                || Math.Abs(editorOrigin.Y - liveOrigin.Y) > 1
+                || Math.Abs(editor.Bounds.Width - live.Bounds.Width) > 1
+                || Math.Abs(editor.Bounds.Height - live.Bounds.Height) > 1
+            )
+            {
+                failures.Add(
+                    $"{label}/{index}/{editor.GetType().Name}: live [{liveOrigin}, {live.Bounds.Size}] differs from editor [{editorOrigin}, {editor.Bounds.Size}]"
+                );
+            }
+        }
+    }
+
+    /// <summary>Includes column padding, row spacing, wrapping, and brushes in the shared presentation contract.</summary>
+    private static string DescribeStyle(Control control) =>
+        control switch
+        {
+            TextBlock text =>
+                $"{text.Text}|{text.FontFamily}|{text.FontSize}|{text.FontWeight}|{text.TextWrapping}|{text.Foreground}|{text.LineHeight}",
+            Border border =>
+                $"{border.Padding}|{border.Margin}|{border.BorderThickness}|{border.Background}|{border.CornerRadius}",
+            Grid grid => $"{grid.RowSpacing}|{grid.ColumnSpacing}|{grid.Margin}",
+            StackPanel stack => $"{stack.Spacing}|{stack.Margin}|{stack.Orientation}",
+            _ => $"{control.GetType().Name}|{control.Margin}|{control.IsVisible}",
+        };
 
     /// <summary>Compares actual rendered pixels so direction changes cannot silently alter row spacing, icons, or wrapping.</summary>
     private static byte[] ReadPixels(WriteableBitmap bitmap)
