@@ -27,7 +27,7 @@ quest error.
   upload queue, so one instance cannot block another commander's reports.
   Pending reports recover on startup for the selected commander, even before
   new journal activity. Older queued reports retain their original uploader
-  identity.
+  identity and respect the original shared opt-out controls.
 - **Prevent stale or foreign inventory reports.** Inara companion-file reads
   reject snapshots older than the journal event that requested them. Inara,
   EDSM and VoxStellar stop processing a batch at an unexpected commander change,

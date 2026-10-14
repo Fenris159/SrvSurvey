@@ -76,9 +76,11 @@ public sealed partial class JournalUploadScenarioTests
         Assert.All(handler.Posts, body => Assert.DoesNotContain("Foreign System", body, StringComparison.Ordinal));
     }
 
-    /// <summary>Upgrading from the shared EDDN queue preserves old headers while new commanders use independent queues.</summary>
-    [Fact]
-    public async Task LegacyEddnQueueDrainsWithoutRelabelingTheCommander()
+    /// <summary>Legacy reports preserve their original uploader and shared opt-out while new commanders use independent queues.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyEddnQueueDrainsWithoutRelabelingTheCommander(bool otherProfileOptedOut)
     {
         Directory.CreateDirectory(directory);
         string journal = Path.Combine(directory, "Journal.Legacy.log");
@@ -107,6 +109,14 @@ public sealed partial class JournalUploadScenarioTests
             utcNow: () => clock.Now,
             automaticProcessing: false
         );
+        using var other = new EddnCommanderPublisher(
+            "2.1.3.0",
+            Path.Combine(directory, "other-profile"),
+            Path.Combine(directory, "uploads", "eddn.json"),
+            client,
+            automaticProcessing: false
+        );
+        other.SetEnabled(!otherProfileOptedOut);
         await publisher.ApplyAsync(
             new EddnApplyRequest
             {
@@ -117,6 +127,11 @@ public sealed partial class JournalUploadScenarioTests
             }
         );
         await publisher.FlushAsync();
+        if (otherProfileOptedOut)
+        {
+            Assert.Empty(handler.Posts);
+            return;
+        }
         string body = Assert.Single(handler.Posts);
         Assert.Contains("Explorer", body, StringComparison.Ordinal);
         Assert.Contains("Sol", body, StringComparison.Ordinal);

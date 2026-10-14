@@ -36,7 +36,7 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
                 utcNow: utcNow,
                 automaticProcessing: automaticProcessing
             );
-        legacy = create(legacyOutboxPath, Path.Combine(directory, "consent"));
+        legacy = create(legacyOutboxPath, null);
     }
 
     /// <summary>Routes an immutable commander session to its own queue rather than competing for another client's lease.</summary>

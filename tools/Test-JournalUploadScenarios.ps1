@@ -56,6 +56,9 @@ try {
         $required.Add("*.JournalUploadScenarioTests.ExplicitCredentialRemovalRetiresReportsAfterTemporaryCredentialFailure*provider: `"$provider`"*")
         $required.Add("*.JournalUploadScenarioTests.ForeignCommanderBoundaryCannotRelabelFollowingEvents*provider: `"$provider`"*")
     }
+    foreach ($optedOut in @("False", "True")) {
+        $required.Add("*.JournalUploadScenarioTests.LegacyEddnQueueDrainsWithoutRelabelingTheCommander*otherProfileOptedOut: $optedOut*")
+    }
     foreach ($suspended in @("False", "True")) {
         $required.Add("*.JournalUploadScenarioTests.SelectedEddnAccountRecoversWithoutJournalActivity*suspended: $suspended*")
     }
@@ -74,7 +77,6 @@ try {
         "EdAstroPublisherTests.WireEnvelopeMatchesEdDiscoveryWithDisclosedPublicFieldsAndNoCredentials",
         "EdAstroPublisherTests.ConsentRevocationCancelsActiveDeliveryWhilePausePreservesQueuedData",
         "JournalUploadScenarioTests.SuccessfulWebhookHeadersRetireReportEvenIfUnusedBodyIsBroken",
-        "JournalUploadScenarioTests.LegacyEddnQueueDrainsWithoutRelabelingTheCommander",
         "JournalUploadScenarioTests.EddnRoutingRequiresIdentityAndStopsAfterDisposal",
         "JournalUploadOutboxTests.TornAndMalformedRecordsDoNotDiscardOtherUploads",
         "JournalUploadOutboxTests.FailedAcknowledgementCheckpointDoesNotRequeueAcceptedPayloadInMemory",
