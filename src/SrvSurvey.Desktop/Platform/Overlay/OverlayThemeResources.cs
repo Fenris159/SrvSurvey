@@ -259,6 +259,7 @@ public static class OverlayThemeResources
         }
     }
 
+    /// <summary>Weakly tracks windows without duplicate registrations and prunes collected entries.</summary>
     private static void TrackThemeWindow(Window window)
     {
         lock (ThemeWindowsLock)
@@ -476,6 +477,7 @@ public static class OverlayThemeResources
         return definition?.PreviewSize.Width;
     }
 
+    /// <summary>Applies the panel opacity override or the layout global opacity.</summary>
     public static void ApplyOpacity(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -601,6 +603,7 @@ public static class OverlayThemeResources
         ApplyScale(window, layout.GetScaleIndex(plotterName), GetPresentationScaling(window, window.RenderScaling));
     }
 
+    /// <summary>Scales the shared presentation for the given rendering scale without replacing its content.</summary>
     public static void ApplyScale(Window window, int scaleIndex, double renderScaling)
     {
         ArgumentNullException.ThrowIfNull(window);

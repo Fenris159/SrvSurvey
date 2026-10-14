@@ -73,6 +73,7 @@ internal static class OverlayEditorPreviewFactories
         ]);
     }
 
+    /// <summary>Builds representative route biology targets for the shared editor presentation.</summary>
     public static RouteBioOverlayViewModel CreateRouteBio()
     {
         string temporaryDirectory = SettingsDir("route-bio");

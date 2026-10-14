@@ -234,6 +234,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewSurface.Opacity = 1d;
     }
 
+    /// <summary>Applies the editor text and icon scales to the shared presentation.</summary>
     public void ConfigureTypography(OverlayTypographyScale scale)
     {
         ArgumentNullException.ThrowIfNull(scale);
@@ -417,6 +418,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         );
     }
 
+    /// <summary>Cycles the panel sample state without starting a move or resize gesture.</summary>
     private void OnEditorFolderTabStateButtonClick(object? sender, RoutedEventArgs eventArgs)
     {
         _ = CycleEditorPreviewState();
@@ -435,6 +437,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     /// <summary>Resolves legacy and relative scale settings on the monitor actually rendering this preview.</summary>
     private void OnRenderSurfaceChanged(object? sender, EventArgs eventArgs) => ApplyConfiguredScale();
 
+    /// <summary>Opens per-panel appearance settings for a right-click on the preview.</summary>
     private void OnPreviewSurfacePointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (!eventArgs.GetCurrentPoint(this).Properties.IsRightButtonPressed)
@@ -491,6 +494,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         eventArgs.Handled = true;
     }
 
+    /// <summary>Rejects nonfinite opacity and values outside the supported zero-to-one range.</summary>
     private static void ValidateOpacity(double opacity, string parameterName)
     {
         if (!double.IsFinite(opacity) || opacity is < 0 or > 1)

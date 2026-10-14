@@ -93,6 +93,7 @@ public sealed class SurfaceMiningOverlaySizingTests
         }
     }
 
+    /// <summary>An empty mining session keeps the preview width and tracker size at two-times display scaling.</summary>
     [AvaloniaTheory]
     [InlineData("Wille 2 d")]
     [InlineData("Synuefe NL-N c23-4 B 3 with a much longer body name")]

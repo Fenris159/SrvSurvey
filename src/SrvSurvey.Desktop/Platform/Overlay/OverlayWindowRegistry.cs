@@ -600,6 +600,7 @@ internal static class OverlayWindowMetrics
         );
     }
 
+    /// <summary>Converts a logical footprint to positive enclosing physical pixel dimensions.</summary>
     private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>
         new(
             Math.Max(1, (int)Math.Ceiling(size.Width * scaling)),

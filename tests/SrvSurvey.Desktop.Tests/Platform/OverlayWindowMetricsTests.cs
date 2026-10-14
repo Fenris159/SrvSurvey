@@ -131,6 +131,7 @@ public sealed class OverlayWindowMetricsTests
         }
     }
 
+    /// <summary>Unmeasured content-sized windows retain a positive footprint at the requested display scale.</summary>
     [AvaloniaFact]
     public void UnmeasuredContentSizedWindowUsesPositiveScaledCatalogFallback()
     {

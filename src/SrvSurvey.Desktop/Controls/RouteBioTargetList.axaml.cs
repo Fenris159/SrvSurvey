@@ -66,6 +66,7 @@ public sealed partial class RouteBioTargetList : UserControl
         set => SetValue(ExpandToAvailableHeightProperty, value);
     }
 
+    /// <summary>Rebinds target rows and requests their viewport measurements after layout.</summary>
     private void ApplyItemsSource(IReadOnlyList<RouteBioTargetItemViewModel>? items)
     {
         BodyItems.ItemsSource = items;

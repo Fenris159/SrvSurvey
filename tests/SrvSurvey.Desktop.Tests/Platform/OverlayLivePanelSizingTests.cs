@@ -366,7 +366,7 @@ public sealed class OverlayLivePanelSizingTests
             if (scenario == "mixed-dpi")
             {
                 window.SetRenderScaling(1.5);
-                preview.SetRenderScaling(1.5);
+                preview.SetRenderScaling(1.0);
             }
             OverlayThemeResources.Apply(window, layout, definition.Name, new OverlayWindowRegistry());
             window.Show();
