@@ -42,12 +42,19 @@ try {
             $required.Add("*.JournalUploadScenarioTests.$scenario*provider: `"$provider`"*")
         }
     }
+    foreach ($provider in @("EDDN", "Inara", "EDSM", "EDAstro", "VoxStellar")) {
+        foreach ($sharedFolder in @("False", "True")) {
+            $required.Add("*.MultiCommanderJournalUploadTests.InterleavedCommandersUseOnlyTheirOwnJournalAndCompanions*provider: `"$provider`"*sharedFolder: $sharedFolder*")
+        }
+        $required.Add("*.MultiCommanderJournalUploadTests.TwoCommanderRetainedUploadsStayWithTheirOwnersAfterRestart*provider: `"$provider`"*")
+    }
     foreach ($provider in @("EDAstro", "VoxStellar")) {
         $required.Add("*.JournalUploadScenarioTests.CaptureStorageFailureDoesNotStopJournalProcessing*provider: `"$provider`"*")
     }
     foreach ($provider in @("Inara", "EDSM")) {
         $required.Add("*.JournalUploadScenarioTests.FailedLiveEvidenceSurvivesRestart*provider: `"$provider`"*missingCredentials: True*")
         $required.Add("*.JournalUploadScenarioTests.ExplicitCredentialRemovalRetiresReportsAfterTemporaryCredentialFailure*provider: `"$provider`"*")
+        $required.Add("*.JournalUploadScenarioTests.ForeignCommanderBoundaryCannotRelabelFollowingEvents*provider: `"$provider`"*")
     }
     foreach ($capacity in @(1, 2)) {
         $required.Add("*.EddnOutboxTests.ReceiptCompactionLeavesSlackForSubsequentCompletions*capacityMultiple: $capacity*")
@@ -56,11 +63,16 @@ try {
         "InaraPublisherTests.EventLevelTransientStatusIsRetriedAndRedirectIsRejected",
         "InaraPublisherTests.RetryAfterExtendsAutomaticRetryWindow",
         "InaraPublisherTests.SessionSwitchUsesOnlyTheMatchingCommanderAndApiKey",
+        "InaraPublisherTests.CargoEnrichmentRequiresAFreshSnapshot",
+        "InaraPublisherTests.LockerEnrichmentRequiresMatchingFreshEvidence",
+        "VoxStellarPublisherTests.ForeignCommanderStopsTheCapturedBatch",
         "EdsmPublisherTests.ApiStatus402RetriesOnlyUnknownCatalogEvent",
         "EdsmPublisherTests.InvalidDiscardListFailsClosedAndUsesBoundedRetryCadence",
         "EdAstroPublisherTests.WireEnvelopeMatchesEdDiscoveryWithDisclosedPublicFieldsAndNoCredentials",
         "EdAstroPublisherTests.ConsentRevocationCancelsActiveDeliveryWhilePausePreservesQueuedData",
         "JournalUploadScenarioTests.SuccessfulWebhookHeadersRetireReportEvenIfUnusedBodyIsBroken",
+        "JournalUploadScenarioTests.LegacyEddnQueueDrainsWithoutRelabelingTheCommander",
+        "JournalUploadScenarioTests.EddnRoutingRequiresIdentityAndStopsAfterDisposal",
         "JournalUploadOutboxTests.TornAndMalformedRecordsDoNotDiscardOtherUploads",
         "JournalUploadOutboxTests.FailedAcknowledgementCheckpointDoesNotRequeueAcceptedPayloadInMemory",
         "JournalUploadOutboxTests.RevocationInvalidatesOtherLeasesAndUnselectedOwners",

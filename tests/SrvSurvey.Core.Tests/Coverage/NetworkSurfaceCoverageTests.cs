@@ -16,6 +16,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs",
+        "src/SrvSurvey.Core/Network/EddnCommanderPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
@@ -54,6 +55,7 @@ public sealed class NetworkSurfaceCoverageTests
             && !path.EndsWith("MiningSearchClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("ArdentSystemNameSuggestionClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("EddnCommanderPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisherOptions.cs", StringComparison.Ordinal)
             && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
@@ -144,6 +146,7 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "eddn-publication",
             [
+                "src/SrvSurvey.Core/Network/EddnCommanderPublisher.cs",
                 "src/SrvSurvey.Core/Network/EddnPublisher.cs",
                 "src/SrvSurvey.Core/Network/EddnMessageSanitizer.cs",
                 "src/SrvSurvey.Core/Network/EddnCompanionFileReader.cs",
@@ -152,6 +155,7 @@ public sealed class NetworkSurfaceCoverageTests
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Network/EddnPublisherTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/ViewModels/MultiCommanderJournalUploadTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnMessageSanitizerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnCompanionFileReaderTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnOutboxTests.cs",

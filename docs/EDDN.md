@@ -23,10 +23,15 @@ them.
 
 Disabling sharing immediately stops new queue entries and removes the local
 pending-upload records. Startup journal history and multicrew activity are not
-published. When multiple Elite windows are detected, all EDDN queueing and
-delivery pauses because shared companion files and active-window state cannot
-be attributed safely. Pending uploads are preserved and resume in order after
-only one Elite window remains.
+published. Each commander has an independent durable queue, allowing separate
+SrvSurvey instances to upload concurrently. With multiple Elite clients, uploads
+require a live binding for every client, distinct commander FIDs, and distinct
+physical journal folders. Steam/Epic folder names alone do not prove ownership:
+folder aliases resolving to the same location and shared folders remain blocked.
+Pending uploads are preserved while attribution is uncertain. Companion files
+are read only from the actual journal's verified parent folder; their existing
+freshness and market checks remain in force. Legacy pending queues can still
+drain with their original immutable uploader headers.
 
 Enable EDDN uploads in only one application at a time, such as SrvSurvey or
 EDMC. Running multiple EDDN uploaders can create duplicate submissions.

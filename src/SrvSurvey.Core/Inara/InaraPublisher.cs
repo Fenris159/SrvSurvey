@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
@@ -260,6 +261,7 @@ public sealed class InaraPublisher : IInaraPublisher
         session = next;
     }
 
+    /// <summary>Processes only the attributable prefix of a captured batch, stopping at a foreign commander boundary.</summary>
     private async Task<List<string>> CollectAllJournalEventsAsync(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
@@ -272,16 +274,21 @@ public sealed class InaraPublisher : IInaraPublisher
         foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await CollectJournalEventAsync(
-                    update,
-                    options,
-                    journalEvent,
-                    publicationAuthorized,
-                    queuedNames,
-                    warnings,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            if (
+                !await CollectJournalEventAsync(
+                        update,
+                        options,
+                        journalEvent,
+                        publicationAuthorized,
+                        queuedNames,
+                        warnings,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
+            {
+                break;
+            }
         }
 
         return queuedNames;
@@ -297,7 +304,7 @@ public sealed class InaraPublisher : IInaraPublisher
     }
 
     /// <summary>Applies journal context and maps eligible activity without mixing another commander into this session.</summary>
-    private async Task CollectJournalEventAsync(
+    private async Task<bool> CollectJournalEventAsync(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
         JournalEventEnvelope journalEvent,
@@ -315,7 +322,7 @@ public sealed class InaraPublisher : IInaraPublisher
                 warnings.Add(
                     $"Inara ignored {journalEvent.EventName} because its commander identity did not match the active journal session."
                 );
-                return;
+                return false;
             }
 
             if (publicationAuthorized)
@@ -348,6 +355,7 @@ public sealed class InaraPublisher : IInaraPublisher
         {
             warnings.Add($"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
         }
+        return true;
     }
 
     /// <summary>Maps attributable live evidence and reports only newly captured provider events.</summary>
@@ -1565,7 +1573,13 @@ public sealed class InaraPublisher : IInaraPublisher
             return entry;
         }
 
-        if (needsCargo && cargo is not null && string.Equals(cargo.Vessel, "Ship", StringComparison.OrdinalIgnoreCase))
+        if (
+            needsCargo
+            && cargo is not null
+            && string.Equals(cargo.Vessel, "Ship", StringComparison.OrdinalIgnoreCase)
+            && journalEvent.Timestamp is { } cargoEventTime
+            && cargo.Timestamp >= cargoEventTime
+        )
         {
             var augmented = (JObject)entry.DeepClone();
             augmented["Inventory"] = new JArray(
@@ -1610,6 +1624,21 @@ public sealed class InaraPublisher : IInaraPublisher
             using var reader = new StreamReader(stream, Encoding.UTF8);
             string content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             var sidecar = JObject.Parse(content);
+            if (
+                sidecar.Value<string>("event") != "ShipLocker"
+                || !DateTimeOffset.TryParse(
+                    sidecar.Value<string>(TimestampKey),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
+                    out DateTimeOffset capturedAt
+                )
+                || journalEvent.Timestamp is not { } eventTime
+                || capturedAt < eventTime
+            )
+            {
+                warnings.Add("Inara ignored a stale or mismatched ShipLocker.json snapshot.");
+                return entry;
+            }
             sidecar["event"] = journalEvent.EventName;
             sidecar[TimestampKey] = entry[TimestampKey]?.DeepClone();
             return sidecar;

@@ -8901,6 +8901,10 @@
       "translation": "Jeder Stapel identifiziert die Anwendung als SrvSurvey-XP und enthält ihre Version und das Odyssey-Flag der erfassten Sitzung. Dieses Protokoll verwendet keinen persönlichen API-Schlüssel oder Login. Die Kennungen und Standorte des Mobilfunkanbieters können Aufschluss über die Aktivitäten Ihres Mobilfunkanbieters geben."
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "Jeder Kommandant verfügt über eine unabhängige Wiederholungswarteschlange. Mehrere Elite-Clients können hochladen, wenn ihre Kommandanten an unterschiedliche physische Journalordner gebunden sind. Nicht verifizierte oder freigegebene Ordner unterbrechen die Warteschlange und Zustellung; Ausstehende Nachrichten bleiben lokal, bis die Zuordnung sicher ist."
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "Jedes ausgerüstete Modul kann nur einmal pro Auslöser erscheinen. Verwenden Sie seinen Steckplatz, um doppelte Module zu unterscheiden."
     },
@@ -9065,8 +9069,8 @@
       "translation": "Wahl"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "Berechtigte Live-Ereignisse werden in eine begrenzte dauerhafte Wiederholungswarteschlange eingegeben. Der Startverlauf und die Multicrew-Aktivität werden nicht hochgeladen, und die Zustellung wird unterbrochen, wenn mehrere Elite-Fenster den Besitz der Begleitdatei unklar machen."
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "Berechtigte Live-Ereignisse werden in eine begrenzte dauerhafte Wiederholungswarteschlange eingegeben. Der Startverlauf und die Multicrew-Aktivität werden nicht hochgeladen. Mehrere Elite-Clients können hochladen, wenn jeder Kommandant an einen eigenen physischen Journalordner gebunden ist, z. B. über separate Steam- und Epic-Präfixe. Freigegebene Ordner und Ordner-Aliase sind nicht qualifiziert."
     },
     {
       "source": "Elite Dangerous",
@@ -17977,20 +17981,12 @@
       "translation": "Nur von EDAstro angeforderte Ereignistypen in dieser offengelegten Liste: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic und CodexEntry. Neu angeforderte Typen, die diese Version nicht unterstützt, werden im Anwendungsprotokoll aufgeführt und nicht hochgeladen."
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "Es werden nur zukünftige, zurechenbare Live-Aktivitäten hochgeladen. Ausgenommen sind Startverlauf, Legacy, Alpha/Beta, Diagnosewiederholung, Multicrew und Sitzungen mit mehreren Elite-Fenstern. Rohe Journalinhalte und API-Schlüssel werden niemals in normale Protokolle oder eine dauerhafte Upload-Warteschlange geschrieben."
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "In einer inhaltsadressierten ZIP-Datei sind nur sinnvolle Unterschiede enthalten. Beim Packen wird niemals der alte Staging-Ordner gelöscht oder die veröffentlichten Kataloge geändert."
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "Es werden nur neue zuordenbare Live-Journal-Ereignisse berücksichtigt. SrvSurvey lädt zunächst die aktuelle Verwerfungsrichtlinie von EDSM und sendet dann begrenzte geordnete Stapel mit EDSM-sanktioniertem System-, Stations- und Schiffskontext, sofern bekannt."
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "Nur ein Prozess SrvSurvey kann Eigentümer der Warteschlange sein. Warteschlange und Zustellung pausieren, während mehrere Elite-Fenster gemeinsame Status- und Begleitdateien mehrdeutig machen; Ausstehende Nachrichten bleiben lokal, bis die Zuordnung sicher ist."
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -26645,8 +26641,8 @@
       "translation": "Der Start ist bei {0} fehlgeschlagen."
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "Startverlauf, Legacy-/Alpha-/Beta-Sitzungen und Multicrew-Aktivitäten werden nicht hochgeladen. Bei mehreren Elite-Fenstern werden gemeinsame Cargo.json-, ShipLocker.json- und Status.json-Daten unterdrückt, während die zurechenbare Journalaktivität für den Kommandanten dieser Instanz fortgesetzt wird."
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "Startverlauf, Legacy-/Alpha-/Beta-Sitzungen und Multicrew-Aktivitäten werden nicht hochgeladen. Bei mehreren Elite-Clients wird die zuordenbare Journalaktivität für den Kommandanten dieser Instanz fortgesetzt. Cargo.json, ShipLocker.json und Status.json Anreicherung ist nur zulässig, wenn jeder Client an einen bestimmten physischen Journalordner und Commander gebunden ist."
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -30537,10 +30533,6 @@
       "translation": "Der übertragene Update-Besitz hat keinen Installationsplan."
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "Bei vorübergehenden Fehlern wird der Versuch mit Backoff wiederholt. Abholung und Zustellung werden unterbrochen, während mehrere Elite-Fenster die Zuordnung mehrdeutig machen. Wenn Sie die Freigabe deaktivieren, werden ausstehende Anfragen abgebrochen und die Warteschlange geleert. Nicht gesendete Berichte verfallen nach einem Tag und werden verworfen, wenn SrvSurvey geschlossen wird. Sie werden nicht in Backups gespeichert."
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "{0} ältere UI-Einstellungen übersetzt."
     },
@@ -33755,6 +33747,10 @@
     {
       "source": "earth like",
       "translation": "erdähnlich"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -46215,6 +46211,10 @@
       "translation": "Cada lote identifica la aplicación como SrvSurvey-XP e incluye su versión y el indicador Odyssey de la sesión capturada. Este protocolo no utiliza ninguna clave API personal ni inicio de sesión. Los identificadores y ubicaciones del operador pueden revelar la actividad de su operador."
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "Cada comandante tiene una cola de reintento independiente. Varios clientes Elite pueden realizar cargas cuando sus comandantes están vinculados a distintas carpetas de diarios físicos. Las carpetas compartidas o no verificadas pausan la cola y la entrega; Los mensajes pendientes permanecen locales hasta que la atribución sea segura."
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "Cada módulo equipado puede aparecer solo una vez por activador. Utilice su ranura para distinguir módulos duplicados."
     },
@@ -46379,8 +46379,8 @@
       "translation": "Elección"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "Los eventos en vivo elegibles ingresan a una cola de reintento duradera limitada. El historial de inicio y la actividad de varios equipos no se cargan, y la entrega se detiene cuando varias ventanas Elite hacen que la propiedad del archivo complementario sea ambigua."
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "Los eventos en vivo elegibles ingresan a una cola de reintento duradera limitada. El historial de inicio y la actividad multicrew no se cargan. Varios clientes Elite pueden realizar cargas cuando cada comandante está vinculado a una carpeta de diario física distinta, como prefijos separados de Steam y Epic. Las carpetas compartidas y los alias de carpetas no califican."
     },
     {
       "source": "Elite Dangerous",
@@ -55291,20 +55291,12 @@
       "translation": "Solo los tipos de eventos solicitados por EDAstro dentro de esta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic y CodexEntry. Los tipos solicitados recientemente que esta versión no admite se enumeran en el registro de la aplicación y no se cargan."
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "Solo se carga la actividad en vivo atribuible futura. Se excluyen el historial de inicio, Legacy, alfa/beta, repetición de diagnóstico, multicrew y sesiones con múltiples ventanas Elite. El contenido del diario sin procesar y las claves API nunca se escriben en registros normales ni en una cola de carga duradera."
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "Sólo las diferencias significativas se incluyen en un ZIP dirigido al contenido. Packaging nunca borra la carpeta provisional heredada ni modifica los catálogos publicados."
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "Solo se consideran los nuevos eventos del diario Live atribuibles. SrvSurvey primero carga la política de descarte actual de EDSM, luego envía lotes ordenados delimitados con el sistema, la estación y el contexto del barco autorizados por EDSM cuando se conocen."
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "Solo un proceso SrvSurvey puede ser propietario de la cola. Las colas y la entrega se pausan mientras varias ventanas Elite hacen que el estado compartido y los archivos complementarios sean ambiguos; Los mensajes pendientes permanecen locales hasta que la atribución sea segura."
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -63959,8 +63951,8 @@
       "translation": "El inicio falló en {0}."
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "El historial de inicio, las sesiones heredadas/alfa/beta y la actividad multicrew no se cargan. Con múltiples ventanas Elite, los datos compartidos Cargo.json, ShipLocker.json y Status.json se suprimen mientras la actividad del diario atribuible continúa para el comandante de esta instancia."
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "El historial de inicio, las sesiones heredadas/alfa/beta y la actividad multicrew no se cargan. Con varios clientes Elite, la actividad del diario atribuible continúa para el comandante de esta instancia. El enriquecimiento Cargo.json, ShipLocker.json y Status.json se permite solo cuando cada cliente está vinculado a una carpeta de diario física distinta y a un comandante."
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -67851,10 +67843,6 @@
       "translation": "La propiedad de la actualización transferida no tiene plan de instalación."
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "Las fallas transitorias reintentan con retroceso. La recolección y la entrega se detienen mientras las múltiples ventanas Elite hacen que la atribución sea ambigua. Al desactivar el uso compartido se cancelan las solicitudes pendientes y se borra la cola. Los informes no enviados caducan después de un día y se descartan cuando se cierra SrvSurvey; no se almacenan en copias de seguridad."
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "Se tradujeron las {0} preferencias de interfaz de usuario heredadas."
     },
@@ -71069,6 +71057,10 @@
     {
       "source": "earth like",
       "translation": "como la tierra"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -83529,6 +83521,10 @@
       "translation": "Chaque lot identifie l'application comme SrvSurvey-XP et inclut sa version ainsi que l'indicateur Odyssey de la session capturée. Ce protocole n'utilise aucune clé API personnelle ni connexion. Les identifiants et emplacements du transporteur peuvent révéler l'activité de votre transporteur."
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "Chaque commandant dispose d'une file d'attente de nouvelles tentatives indépendante. Plusieurs clients Elite peuvent télécharger lorsque leurs commandants sont liés à des dossiers de journaux physiques distincts. Les dossiers non vérifiés ou partagés suspendent la file d'attente et la livraison ; les messages en attente restent locaux jusqu'à ce que l'attribution soit sécurisée."
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "Chaque module équipé ne peut apparaître qu'une seule fois par déclencheur. Utilisez son emplacement pour distinguer les modules en double."
     },
@@ -83693,8 +83689,8 @@
       "translation": "Élection"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "Les événements en direct éligibles entrent dans une file d’attente de nouvelles tentatives durable et limitée. L'historique de démarrage et l'activité multi-équipage ne sont pas téléchargés, et la livraison s'interrompt lorsque plusieurs fenêtres Elite rendent ambiguë la propriété des fichiers compagnon."
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "Les événements en direct éligibles entrent dans une file d’attente de nouvelles tentatives durable et limitée. L'historique de démarrage et l'activité multi-équipage ne sont pas téléchargés. Plusieurs clients Elite peuvent télécharger lorsque chaque commandant est lié à un dossier de journal physique distinct, tel que des préfixes Steam et Epic distincts. Les dossiers partagés et les alias de dossiers ne sont pas éligibles."
     },
     {
       "source": "Elite Dangerous",
@@ -92605,20 +92601,12 @@
       "translation": "Uniquement les types d'événements demandés par EDAstro dans cette liste divulguée : CarrierStats, CarrierJumpRequest, Docked, ScanOrganic et CodexEntry. Les types nouvellement demandés que cette version ne prend pas en charge sont répertoriés dans le journal des applications et ne sont pas téléchargés."
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "Seules les futures activités Live attribuables sont téléchargées. L'historique de démarrage, Legacy, alpha/bêta, la relecture de diagnostic, le multicrew et les sessions avec plusieurs fenêtres Elite sont exclus. Le contenu brut du journal et les clés API ne sont jamais écrits dans des journaux normaux ou dans une file d'attente de téléchargement durable."
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "Seules les différences significatives sont incluses dans un ZIP adressé par le contenu. L’empaquetage n’efface jamais le dossier intermédiaire hérité ni ne modifie les catalogues publiés."
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "Seuls les nouveaux événements du journal Live attribuables sont pris en compte. SrvSurvey charge d'abord la politique de rejet actuelle de EDSM, puis envoie des lots ordonnés limités avec le contexte du système, de la station et du navire sanctionné par EDSM lorsqu'il est connu."
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "Un seul processus SrvSurvey peut être propriétaire de la file d'attente. La file d'attente et la livraison s'interrompent tandis que plusieurs fenêtres Elite rendent ambigus les fichiers d'état et d'accompagnement partagés ; les messages en attente restent locaux jusqu'à ce que l'attribution soit sécurisée."
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -101273,8 +101261,8 @@
       "translation": "Le démarrage a échoué sur {0}."
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "L'historique de démarrage, les sessions héritées/alpha/bêta et l'activité multi-équipage ne sont pas téléchargés. Avec plusieurs fenêtres Elite, les données partagées Cargo.json, ShipLocker.json et Status.json sont supprimées tandis que l'activité du journal attribuable se poursuit pour le commandant de cette instance."
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "L'historique de démarrage, les sessions héritées/alpha/bêta et l'activité multi-équipage ne sont pas téléchargés. Avec plusieurs clients Elite, l'activité de journal attribuable continue pour le commandant de cette instance. L'enrichissement Cargo.json, ShipLocker.json et Status.json est autorisé uniquement lorsque chaque client est lié à un dossier de journal physique et à un commandant distincts."
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -105165,10 +105153,6 @@
       "translation": "La propriété des mises à jour transférées n’a pas de plan d’installation."
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "Les échecs transitoires réessayent avec interruption. La collecte et la livraison s'interrompent tandis que plusieurs fenêtres Elite rendent l'attribution ambiguë. La désactivation du partage annule les demandes en attente et efface la file d'attente. Les rapports non envoyés expirent au bout d'un jour et sont supprimés à la fermeture de SrvSurvey ; ils ne sont pas stockés dans les sauvegardes."
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "Traduction des préférences d'interface utilisateur héritées de {0}"
     },
@@ -108383,6 +108367,10 @@
     {
       "source": "earth like",
       "translation": "la terre comme"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -120843,6 +120831,10 @@
       "translation": "Cada lote identifica o aplicativo como SrvSurvey-XP e inclui sua versão e o sinalizador Odyssey da sessão capturada. Este protocolo não usa chave de API pessoal ou login. Os identificadores e locais da operadora podem revelar a atividade da sua operadora."
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "Cada comandante possui uma fila de novas tentativas independente. Vários clientes Elite podem fazer upload quando seus comandantes estão vinculados a pastas de diários físicos distintos. Pastas não verificadas ou compartilhadas pausam o enfileiramento e a entrega; as mensagens pendentes permanecem locais até que a atribuição seja segura."
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "Cada módulo equipado pode aparecer apenas uma vez por gatilho. Use seu slot para distinguir módulos duplicados."
     },
@@ -121007,8 +120999,8 @@
       "translation": "Eleição"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "Os eventos ao vivo qualificados entram em uma fila de novas tentativas durável e limitada. O histórico de inicialização e a atividade da equipe múltipla não são carregados e a entrega é interrompida quando várias janelas Elite tornam ambígua a propriedade do arquivo complementar."
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "Os eventos ao vivo qualificados entram em uma fila de novas tentativas durável e limitada. O histórico de inicialização e a atividade multitripulação não são carregados. Vários clientes Elite podem fazer upload quando cada comandante estiver vinculado a uma pasta física de diário distinta, como prefixos Steam e Epic separados. Pastas compartilhadas e aliases de pasta não se qualificam."
     },
     {
       "source": "Elite Dangerous",
@@ -129919,20 +129911,12 @@
       "translation": "Somente tipos de eventos solicitados pela EDAstro nesta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic e CodexEntry. Os tipos recentemente solicitados que esta versão não suporta são listados no log do aplicativo e não são carregados."
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "Somente atividades ao vivo atribuíveis futuras são carregadas. Histórico de inicialização, legado, alfa/beta, reprodução de diagnóstico, equipe múltipla e sessões com múltiplas janelas Elite são excluídos. O conteúdo bruto do diário e as chaves de API nunca são gravados em logs normais ou em uma fila de upload durável."
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "Apenas diferenças significativas são incluídas em um ZIP com conteúdo endereçado. O empacotamento nunca limpa a pasta de teste herdada nem modifica os catálogos publicados."
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "Apenas novos eventos atribuíveis do Live Journal são considerados. SrvSurvey primeiro carrega a política de descarte atual de EDSM e, em seguida, envia lotes ordenados limitados com sistema, estação e contexto de envio sancionados por EDSM, quando conhecido."
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "Apenas um processo SrvSurvey pode possuir a fila. Enfileiramento e pausa na entrega enquanto múltiplas janelas Elite tornam o status compartilhado e os arquivos complementares ambíguos; as mensagens pendentes permanecem locais até que a atribuição seja segura."
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -138587,8 +138571,8 @@
       "translation": "A inicialização falhou em {0}."
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "O histórico de inicialização, sessões legadas/alfa/beta e atividades de equipe múltipla não são carregados. Com múltiplas janelas Elite, os dados compartilhados de Cargo.json, ShipLocker.json e Status.json são suprimidos enquanto a atividade de diário atribuível continua para o comandante desta instância."
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "O histórico de inicialização, sessões legadas/alfa/beta e atividades de equipe múltipla não são carregados. Com vários clientes Elite, a atividade de diário atribuível continua para o comandante desta instância. O enriquecimento Cargo.json, ShipLocker.json e Status.json é permitido somente quando cada cliente está vinculado a uma pasta de diário físico e comandante distintos."
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -142479,10 +142463,6 @@
       "translation": "A propriedade da atualização transferida não tem plano de instalação."
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "Falhas transitórias tentam novamente com espera. A coleta e a entrega são pausadas enquanto várias janelas Elite tornam a atribuição ambígua. Desativar o compartilhamento cancela solicitações pendentes e limpa a fila. Os relatórios não enviados expiram após um dia e são descartados quando SrvSurvey fecha; eles não são armazenados em backups."
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "Preferências de UI legadas {0} traduzidas."
     },
@@ -145697,6 +145677,10 @@
     {
       "source": "earth like",
       "translation": "terra como"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -158157,6 +158141,10 @@
       "translation": "Каждый пакет идентифицирует приложение как SrvSurvey-XP и включает его версию и флаг Odyssey захваченного сеанса. Этот протокол не использует личный ключ API или логин. Идентификаторы и местоположения операторов связи могут раскрыть деятельность вашего оператора связи."
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "У каждого командира есть независимая очередь повторов. Несколько клиентов Elite могут загружать данные, если их командиры привязаны к отдельным физическим папкам журналов. Непроверенные или общие папки приостанавливают очередь и доставку; ожидающие сообщения остаются локальными до тех пор, пока атрибуция не станет безопасной."
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "Каждый оснащенный модуль может появиться только один раз за триггер. Используйте его слот, чтобы отличить дублирующиеся модули."
     },
@@ -158321,8 +158309,8 @@
       "translation": "Выборы"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "Соответствующие события Live попадают в ограниченную устойчивую очередь повторов. История запуска и действия нескольких команд не загружаются, а доставка приостанавливается, когда несколько окон Elite делают право собственности на сопутствующий файл неоднозначным."
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "Соответствующие требованиям прямые события помещаются в ограниченную устойчивую очередь повторов. История запусков и активность многочленного экипажа не загружаются. Несколько клиентов Elite могут загружать файлы, если каждый командир привязан к отдельной физической папке журнала, например, к отдельным префиксам Steam и Epic. Общие папки и псевдонимы папок не подходят."
     },
     {
       "source": "Elite Dangerous",
@@ -167233,20 +167221,12 @@
       "translation": "Только типы событий, запрошенные EDAstro, в этом раскрытом списке: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic и CodexEntry. Новые запрошенные типы, которые не поддерживаются этой версией, перечислены в журнале приложения и не загружаются."
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "Загружаются только будущие действия в прямом эфире. История запуска, Legacy, альфа/бета, диагностический повтор, многопользовательская игра и сеансы с несколькими окнами Elite исключены. Необработанное содержимое журнала и ключи API никогда не записываются в обычные журналы или в постоянную очередь загрузки."
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "В ZIP-архив с адресацией по содержимому включаются только значимые различия. Упаковка никогда не очищает устаревшую промежуточную папку и не изменяет опубликованные каталоги."
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "Учитываются только новые события Живого журнала, связанные с ними. SrvSurvey сначала загружает текущую политику сброса EDSM, затем отправляет ограниченные упорядоченные пакеты с EDSM-санкционированным контекстом системы, станции и корабля, если он известен."
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "Очередью может владеть только один процесс SrvSurvey. Очередь и приостановка доставки, в то время как несколько окон Elite делают общий статус и сопутствующие файлы неоднозначными; ожидающие сообщения остаются локальными до тех пор, пока атрибуция не станет безопасной."
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -175901,8 +175881,8 @@
       "translation": "Ошибка запуска по адресу {0}."
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "История запуска, сеансы Legacy/alpha/beta и активность нескольких экипажей не загружаются. При наличии нескольких окон Elite общие данные Cargo.json, ShipLocker.json и Status.json подавляются, в то время как активность, связанная с журналом, продолжается для командира этого экземпляра."
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "История запуска, сеансы Legacy/alpha/beta и активность нескольких экипажей не загружаются. При наличии нескольких клиентов Elite активность, связанная с журналом, продолжается для командира этого экземпляра. Пополнение Cargo.json, ShipLocker.json и Status.json разрешено только в том случае, если каждый клиент привязан к отдельной физической папке журнала и командиру."
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -179793,10 +179773,6 @@
       "translation": "Переданное право собственности на обновление не имеет плана установки."
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "Временные сбои повторяют попытку с отсрочкой. Сбор и доставка приостанавливаются, а несколько окон Elite делают атрибуцию неоднозначной. Отключение общего доступа отменяет ожидающие запросы и очищает очередь. Срок действия неотправленных отчетов истекает через один день и удаляется после закрытия SrvSurvey; они не сохраняются в резервных копиях."
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "Переведены {0} устаревшие настройки пользовательского интерфейса."
     },
@@ -183011,6 +182987,10 @@
     {
       "source": "earth like",
       "translation": "земля как"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -195471,6 +195451,10 @@
       "translation": "每个批次将应用程序标识为 SrvSurvey-XP，并包括其版本和捕获的会话的 Odyssey 标志。该协议不使用个人 API 密钥或登录。运营商标识符和位置可以揭示您的运营商的活动。"
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "每个指挥官都有一个独立的重试队列。当指挥官绑定到不同的物理日志文件夹时，多个精英客户端可以上传。未经验证或共享的文件夹会暂停排队和传送；待处理的消息将保留在本地，直到归属安全为止。"
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "每个装备的模块每次触发只能出现一次。使用其插槽来区分重复的模块。"
     },
@@ -195635,8 +195619,8 @@
       "translation": "选举"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "符合条件的实时事件进入有界持久重试队列。不会上传启动历史记录和多人活动，并且当多个 Elite 窗口导致伴随文件所有权不明确时，传输会暂停。"
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "符合条件的实时事件进入有界持久重试队列。不会上传启动历史记录和多人活动。当每个指挥官都绑定到不同的物理日志文件夹（例如单独的 Steam 和 Epic 前缀）时，多个精英客户端可以上传。共享文件夹和文件夹别名不符合条件。"
     },
     {
       "source": "Elite Dangerous",
@@ -204547,20 +204531,12 @@
       "translation": "此公开列表中仅 EDAstro 请求的事件类型：CarrierStats、CarrierJumpRequest、Docked、ScanOrganic 和 CodexEntry。该版本不支持的新请求类型会在应用程序日志中列出，并且不会上传。"
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "仅上传未来可归因的实时活动。排除启动历史记录、Legacy、alpha/beta、诊断重播、multicrew 以及具有多个 Elite 窗口的会话。原始日志内容和 API 密钥永远不会写入普通日志或持久上传队列。"
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "内容寻址 ZIP 中仅包含有意义的差异。打包永远不会清除旧的暂存文件夹或修改已发布的目录。"
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "仅考虑新的可归因的 Live 日志事件。 SrvSurvey 首先加载 EDSM 的当前丢弃策略，然后在已知时使用 EDSM 认可的系统、站和船舶上下文发送有界有序批次。"
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "只有一个 SrvSurvey 进程可以拥有该队列。多个 Elite 窗口时的排队和传送暂停使共享状态和配套文件不明确；待处理的消息将保留在本地，直到归属安全为止。"
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -213215,8 +213191,8 @@
       "translation": "{0} 启动失败。"
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "不会上传启动历史记录、旧版/alpha/beta 会话和多人活动。对于多个 Elite 窗口，共享的 Cargo.json、ShipLocker.json 和 Status.json 数据将被抑制，而该实例的指挥官的可归因日志活动将继续。"
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "不会上传启动历史记录、旧版/alpha/beta 会话和多人活动。对于多个精英客户端，该实例的指挥官的可归因日志活动仍在继续。仅当每个客户端都绑定到不同的物理日志文件夹和命令时，才允许 Cargo.json、ShipLocker.json 和 Status.json 丰富。"
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -217107,10 +217083,6 @@
       "translation": "转移的更新所有权没有安装计划。"
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "暂时性失败通过退避重试。收集和交付暂停，同时多个精英窗口使归属变得模糊。关闭共享会取消待处理的请求并清除队列。未发送的报告一天后过期，并在SrvSurvey关闭时被丢弃；它们不存储在备份中。"
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "已翻译的 {0} 旧版 UI 首选项。"
     },
@@ -220325,6 +220297,10 @@
     {
       "source": "earth like",
       "translation": "像地球一样"
+    },
+    {
+      "source": "eddn",
+      "translation": "eddn"
     },
     {
       "source": "elite",
@@ -232785,6 +232761,10 @@
       "translation": "* EACH BATCH IDENTIFIES THE APPLICATION AS SRVSURVEY-XP AND INCLUDES ITS VERSION AND THE CAPTURED SESSION'S ODYSSEY FLAG. THIS PROTOCOL USES NO PERSONAL API KEY OR LOGIN. CARRIER IDENTIFIERS AND LOCATIONS CAN REVEAL YOUR CARRIER'S ACTIVITY. >>>!"
     },
     {
+      "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+      "translation": "* EACH COMMANDER HAS AN INDEPENDENT RETRY QUEUE. MULTIPLE ELITE CLIENTS CAN UPLOAD WHEN THEIR COMMANDERS ARE BOUND TO DISTINCT PHYSICAL JOURNAL FOLDERS. UNVERIFIED OR SHARED FOLDERS PAUSE QUEUEING AND DELIVERY; PENDING MESSAGES REMAIN LOCAL UNTIL ATTRIBUTION IS SAFE. >>>!"
+    },
+    {
       "source": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
       "translation": "* EACH EQUIPPED MODULE CAN APPEAR ONLY ONCE PER TRIGGER. USE ITS SLOT TO DISTINGUISH DUPLICATE MODULES. >>>!"
     },
@@ -232949,8 +232929,8 @@
       "translation": "* ELECTION >>>!"
     },
     {
-      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
-      "translation": "* ELIGIBLE LIVE EVENTS ENTER A BOUNDED DURABLE RETRY QUEUE. STARTUP HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED, AND DELIVERY PAUSES WHEN MULTIPLE ELITE WINDOWS MAKE COMPANION-FILE OWNERSHIP AMBIGUOUS. >>>!"
+      "source": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
+      "translation": "* ELIGIBLE LIVE EVENTS ENTER A BOUNDED DURABLE RETRY QUEUE. STARTUP HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED. MULTIPLE ELITE CLIENTS CAN UPLOAD WHEN EVERY COMMANDER IS BOUND TO A DISTINCT PHYSICAL JOURNAL FOLDER, SUCH AS SEPARATE STEAM AND EPIC PREFIXES. SHARED FOLDERS AND FOLDER ALIASES DO NOT QUALIFY. >>>!"
     },
     {
       "source": "Elite Dangerous",
@@ -241861,20 +241841,12 @@
       "translation": "* ONLY EVENT TYPES REQUESTED BY EDASTRO WITHIN THIS DISCLOSED LIST: CARRIERSTATS, CARRIERJUMPREQUEST, DOCKED, SCANORGANIC, AND CODEXENTRY. NEWLY REQUESTED TYPES THAT THIS VERSION DOES NOT SUPPORT ARE LISTED IN THE APPLICATION LOG AND ARE NOT UPLOADED. >>>!"
     },
     {
-      "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-      "translation": "* ONLY FUTURE ATTRIBUTABLE LIVE ACTIVITY IS UPLOADED. STARTUP HISTORY, LEGACY, ALPHA/BETA, DIAGNOSTIC REPLAY, MULTICREW, AND SESSIONS WITH MULTIPLE ELITE WINDOWS ARE EXCLUDED. RAW JOURNAL CONTENT AND API KEYS ARE NEVER WRITTEN TO NORMAL LOGS OR A DURABLE UPLOAD QUEUE. >>>!"
-    },
-    {
       "source": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
       "translation": "* ONLY MEANINGFUL DIFFERENCES ARE INCLUDED IN A CONTENT-ADDRESSED ZIP. PACKAGING NEVER CLEARS THE LEGACY STAGING FOLDER OR MODIFIES THE PUBLISHED CATALOGS. >>>!"
     },
     {
       "source": "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
       "translation": "* ONLY NEW ATTRIBUTABLE LIVE JOURNAL EVENTS ARE CONSIDERED. SRVSURVEY FIRST LOADS EDSM'S CURRENT DISCARD POLICY, THEN SENDS BOUNDED ORDERED BATCHES WITH EDSM-SANCTIONED SYSTEM, STATION, AND SHIP CONTEXT WHEN KNOWN. >>>!"
-    },
-    {
-      "source": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-      "translation": "* ONLY ONE SRVSURVEY PROCESS CAN OWN THE QUEUE. QUEUEING AND DELIVERY PAUSE WHILE MULTIPLE ELITE WINDOWS MAKE SHARED STATUS AND COMPANION FILES AMBIGUOUS; PENDING MESSAGES REMAIN LOCAL UNTIL ATTRIBUTION IS SAFE. >>>!"
     },
     {
       "source": "Only relic towers store an individual site-survey heading.",
@@ -250529,8 +250501,8 @@
       "translation": "* STARTUP FAILED AT {0}. >>>!"
     },
     {
-      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander.",
-      "translation": "* STARTUP HISTORY, LEGACY/ALPHA/BETA SESSIONS, AND MULTICREW ACTIVITY ARE NOT UPLOADED. WITH MULTIPLE ELITE WINDOWS, SHARED CARGO.JSON, SHIPLOCKER.JSON, AND STATUS.JSON DATA IS SUPPRESSED WHILE ATTRIBUTABLE JOURNAL ACTIVITY CONTINUES FOR THIS INSTANCE'S COMMANDER. >>>!"
+      "source": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
+      "translation": "* STARTUP HISTORY, LEGACY/ALPHA/BETA SESSIONS, AND MULTICREW ACTIVITY ARE NOT UPLOADED. WITH MULTIPLE ELITE CLIENTS, ATTRIBUTABLE JOURNAL ACTIVITY CONTINUES FOR THIS INSTANCE'S COMMANDER. CARGO.JSON, SHIPLOCKER.JSON, AND STATUS.JSON ENRICHMENT IS ALLOWED ONLY WHEN EVERY CLIENT IS BOUND TO A DISTINCT PHYSICAL JOURNAL FOLDER AND COMMANDER. >>>!"
     },
     {
       "source": "Startup is pinned to {0} ({1}).",
@@ -254421,10 +254393,6 @@
       "translation": "* TRANSFERRED UPDATE OWNERSHIP HAS NO INSTALLATION PLAN. >>>!"
     },
     {
-      "source": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-      "translation": "* TRANSIENT FAILURES RETRY WITH BACKOFF. COLLECTION AND DELIVERY PAUSE WHILE MULTIPLE ELITE WINDOWS MAKE ATTRIBUTION AMBIGUOUS. TURNING SHARING OFF CANCELS PENDING REQUESTS AND CLEARS THE QUEUE. UNSENT REPORTS EXPIRE AFTER ONE DAY AND ARE DISCARDED WHEN SRVSURVEY CLOSES; THEY ARE NOT STORED IN BACKUPS. >>>!"
-    },
-    {
       "source": "Translated {0} legacy UI preferences.",
       "translation": "* TRANSLATED {0} LEGACY UI PREFERENCES. >>>!"
     },
@@ -257639,6 +257607,10 @@
     {
       "source": "earth like",
       "translation": "* EARTH LIKE >>>!"
+    },
+    {
+      "source": "eddn",
+      "translation": "* EDDN >>>!"
     },
     {
       "source": "elite",

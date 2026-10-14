@@ -18,6 +18,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     )]
     private readonly SemaphoreSlim coordinatorLock = new(1, 1);
     private readonly Dictionary<QuestIdentity, RuntimeRegistration> runtimes = [];
+    private readonly HashSet<string> loggedWarnings = new(StringComparer.Ordinal);
     private QuestRuntimeConfiguration? configuration;
     private bool disposed;
 
@@ -75,6 +76,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         }
     }
 
+    /// <summary>Updates commander quest state from attributable live events and suppresses repeated diagnostics until recovery.</summary>
     public async Task<QuestRuntimeUpdateResult> ApplyUpdateAsync(
         QuestRuntimeConfiguration nextConfiguration,
         string journalDirectory,
@@ -104,6 +106,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             }
 
             configuration = nextConfiguration;
+            if (allowCargoFile)
+            {
+                loggedWarnings.Remove("cargo-attribution");
+            }
             contextTracker.Apply(journalEvents);
             QuestCommanderContext context = contextTracker.CreateContext(
                 nextConfiguration.CommanderName,
@@ -135,7 +141,11 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                     QuestJournalPayloadResult resolved = await QuestJournalPayloadResolver
                         .ResolveAsync(journalDirectory, journalEvent, allowCargoFile, cancellationToken)
                         .ConfigureAwait(false);
-                    AddWarning(warnings, resolved.Warning);
+                    AddWarning(
+                        warnings,
+                        resolved.Warning,
+                        !allowCargoFile && journalEvent.EventName == "Cargo" ? "cargo-attribution" : null
+                    );
                     await ProcessEventAsync(resolved.Payload, warnings, cancellationToken).ConfigureAwait(false);
                     processedEvents++;
                 }
@@ -653,6 +663,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         }
     }
 
+    /// <summary>Loads authenticated commander quests and local development progress without allowing a remote failure to stop the session.</summary>
     private async Task LoadRuntimesAsync(
         QuestRuntimeConfiguration current,
         QuestCommanderContext context,
@@ -667,6 +678,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 IReadOnlyList<RavenCommanderQuest> remoteQuests = await ravenClient
                     .LoadCommanderQuestsAsync(RavenQuestState.active, current.RavenApiKey, cancellationToken)
                     .ConfigureAwait(false);
+                loggedWarnings.Remove("quest-load:" + current.FrontierId);
                 foreach (RavenCommanderQuest progress in remoteQuests)
                 {
                     await TryAddRemoteRuntimeAsync(progress, current, context, warnings, cancellationToken)
@@ -675,7 +687,11 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             }
             catch (Exception exception) when (IsRecoverable(exception))
             {
-                AddWarning(warnings, "Active Raven quests could not be loaded: " + exception.Message);
+                AddWarning(
+                    warnings,
+                    "Active Raven quests could not be loaded: " + exception.Message,
+                    "quest-load:" + current.FrontierId
+                );
             }
         }
 
@@ -1205,15 +1221,26 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         return exception is not OperationCanceledException;
     }
 
-    private void AddWarning(ICollection<string> warnings, string? warning)
+    /// <summary>Keeps current warnings visible while logging a persistent failure once until its recovery.</summary>
+    private void AddWarning(ICollection<string> warnings, string? warning, string? logKey = null)
     {
         if (string.IsNullOrWhiteSpace(warning))
         {
             return;
         }
 
-        warnings.Add(warning);
-        log?.Invoke(warning);
+        if (!warnings.Contains(warning))
+        {
+            warnings.Add(warning);
+        }
+        if (loggedWarnings.Count >= 256)
+        {
+            loggedWarnings.Clear();
+        }
+        if (loggedWarnings.Add(logKey ?? warning))
+        {
+            log?.Invoke(warning);
+        }
     }
 
     private void ThrowIfDisposed()

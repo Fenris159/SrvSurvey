@@ -32,7 +32,7 @@
           <StackPanel Spacing="10">
             <TextBlock FontSize="18" FontWeight="SemiBold" Text="Delivery and local storage" />
             <TextBlock TextWrapping="Wrap" Text="Live reports are batched in a bounded memory queue: at most 200 events per request, with at least ten seconds between requests and no more than 100 attempts per fifteen minutes. Retry-After and provider quota headers can extend the wait." />
-            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Transient failures retry with backoff. Multiple Elite clients can contribute when each commander is bound to a distinct physical journal folder; uncertain attribution pauses collection and delivery. Turning sharing off cancels pending requests and clears the queue. Captured reports survive restarts in a private local retry queue and are not included in backups." />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="Success logging is consolidated into fifteen-minute activity summaries. POI catalogue downloads and bookmarks use their separate exploration settings; journal reports do not create curated POIs." />
           </StackPanel>
         </Border>

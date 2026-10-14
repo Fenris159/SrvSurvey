@@ -13,6 +13,9 @@ public sealed class VoxStellarApplyRequest
 
     public string? CommanderName { get; init; }
 
+    /// <summary>Identifies the journal commander independently of a display name.</summary>
+    public string? FrontierId { get; init; }
+
     public bool Enabled { get; init; }
 
     public bool AllowPublishing { get; init; }
@@ -199,7 +202,8 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
 
         JournalEventEnvelope[] matchingEvents = request
-            .JournalEvents.Where(journalEvent => AllowedEvents.Contains(journalEvent.EventName))
+            .JournalEvents.TakeWhile(journalEvent => MatchesCommander(journalEvent, request))
+            .Where(journalEvent => AllowedEvents.Contains(journalEvent.EventName))
             .ToArray();
         if (matchingEvents.Length == 0 && outboxDirectory is null)
         {
@@ -259,6 +263,28 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             QueueEvents(uploads.Writer, generation, commanderName, matchingEvents, cancellationToken)
         );
     }
+
+    /// <summary>Stops at a foreign commander boundary so subsequent records cannot inherit the requested commander's name.</summary>
+    private static bool MatchesCommander(JournalEventEnvelope entry, VoxStellarApplyRequest request)
+    {
+        if (entry.EventName is not ("Commander" or "LoadGame"))
+        {
+            return true;
+        }
+        string nameKey = entry.EventName == "Commander" ? "Name" : "Commander";
+        return MatchesField(entry, nameKey, request.CommanderName) && MatchesField(entry, "FID", request.FrontierId);
+    }
+
+    /// <summary>Rejects mismatching or malformed declared identities without requiring optional fields in older records.</summary>
+    private static bool MatchesField(JournalEventEnvelope entry, string key, string? expected) =>
+        !entry.Payload.TryGetProperty(key, out JsonElement actual)
+        || (
+            actual.ValueKind == JsonValueKind.String
+            && (
+                string.IsNullOrWhiteSpace(expected)
+                || string.Equals(actual.GetString()?.Trim(), expected.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
+        );
 
     /// <summary>Persists immutable webhook bodies before queueing them and reports failures without stopping journal processing.</summary>
     private VoxStellarPublicationResult QueueEvents(

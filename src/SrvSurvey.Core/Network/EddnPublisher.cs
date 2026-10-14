@@ -65,6 +65,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     private long consentGeneration;
     private int stagedWriteCount;
 
+    /// <summary>Creates a sender using the existing single-queue storage contract.</summary>
     public EddnPublisher(
         string softwareVersion,
         HttpClient? client = null,
@@ -74,18 +75,32 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         Func<DateTimeOffset>? utcNow = null,
         bool automaticProcessing = true
     )
+        : this(
+            softwareVersion,
+            new EddnOutboxStorage(outboxPath ?? Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-v1.json")),
+            client,
+            endpoint,
+            log,
+            utcNow,
+            automaticProcessing
+        ) { }
+
+    /// <summary>Creates an independently owned queue with consent shared across this settings profile.</summary>
+    internal EddnPublisher(
+        string softwareVersion,
+        EddnOutboxStorage storage,
+        HttpClient? client = null,
+        Uri? endpoint = null,
+        Action<string>? log = null,
+        Func<DateTimeOffset>? utcNow = null,
+        bool automaticProcessing = true
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
         var transport = new EddnTransport(client, endpoint, $"SrvSurvey/{this.softwareVersion}");
-        outbox = new EddnOutbox(
-            outboxPath ?? Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-v1.json"),
-            transport,
-            WriteLog,
-            utcNow,
-            automaticProcessing
-        );
+        outbox = new EddnOutbox(storage, transport, WriteLog, utcNow, automaticProcessing);
         outboxWrites = Channel.CreateBounded<OutboxWriteCommand>(
             new BoundedChannelOptions(4096)
             {

@@ -9,6 +9,7 @@ public sealed partial class MainWindowViewModel
                 new JournalProjectionDependencies
                 {
                     State = projectionState,
+                    JournalSources = journalSources,
                     IsDiagnosticReplay = () => IsDiagnosticReplay,
                     FrontierProfile = FrontierProfile,
                     OverlayExceptions = OverlayExceptions,

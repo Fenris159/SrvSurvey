@@ -109,6 +109,46 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(request.Signature.ToLowerInvariant(), request.Signature);
     }
 
+    /// <summary>A foreign identity boundary stops later events from being assigned to the requested commander.</summary>
+    [Theory]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Other\",\"FID\":\"F123\"}")]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F999\"}")]
+    [InlineData("{\"event\":\"Commander\",\"Name\":\"Other\"}")]
+    [InlineData("{\"event\":\"Commander\",\"Name\":42}")]
+    public async Task ForeignCommanderStopsTheCapturedBatch(string boundary)
+    {
+        var handler = new RecordingHandler();
+        using var client = new HttpClient(handler);
+        var publisher = new VoxStellarPublisher("2.1.3.0", "test-key", client, batchInterval: TimeSpan.Zero);
+        try
+        {
+            VoxStellarPublicationResult result = await publisher.ApplyAsync(
+                new VoxStellarApplyRequest
+                {
+                    CommanderName = "Test Cmdr",
+                    FrontierId = "F123",
+                    Enabled = true,
+                    AllowPublishing = true,
+                    JournalEvents =
+                    [
+                        Parse("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\"}"),
+                        Parse("{\"event\":\"Scan\",\"BodyName\":\"Own Body\"}"),
+                        Parse(boundary),
+                        Parse("{\"event\":\"Scan\",\"BodyName\":\"Foreign Body\"}"),
+                    ],
+                }
+            );
+            Assert.Equal(["Scan"], result.QueuedEventNames);
+        }
+        finally
+        {
+            publisher.Dispose();
+        }
+        RecordedRequest request = Assert.Single(handler.Requests);
+        Assert.Contains("Own Body", Encoding.UTF8.GetString(request.Body), StringComparison.Ordinal);
+        Assert.DoesNotContain("Foreign Body", Encoding.UTF8.GetString(request.Body), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task BootstrapAndDisabledUpdatesNeverReachTheWebhook()
     {

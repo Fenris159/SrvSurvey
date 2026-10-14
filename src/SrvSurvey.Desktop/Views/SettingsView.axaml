@@ -667,7 +667,7 @@
 
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander." />
+                     Text="Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Inara.HasPublicationStatus}"
                      TextWrapping="Wrap"
@@ -752,7 +752,7 @@
 
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue." />
+                     Text="Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay and multicrew are excluded. Multiple Elite clients can upload when each commander is bound to a distinct physical journal folder. Captured reports survive restarts in a private local retry queue; API keys are not stored in retry files or normal logs." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Edsm.HasPublicationStatus}"
                      TextWrapping="Wrap"

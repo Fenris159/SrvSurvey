@@ -187,8 +187,10 @@ Recommended invariants:
 - Only newly observed live events from an active non-replay session are
   eligible. Do not upload startup history merely because credentials were
   saved.
-- Suppress Legacy, alpha/beta, and multicrew activity. When multiple Elite
-  processes exist, suppress any synthetic or shared-file snapshots that cannot
+- Suppress Legacy, alpha/beta, and multicrew activity. Concurrent Live clients
+  may upload when every detected client has a distinct commander FID and a live
+  binding to a distinct physical journal folder. Shared folders and aliases to
+  the same directory remain blocked. Suppress any shared-file snapshots that cannot
   be attributed to one Commander.
 - Fetch and validate the discard list before the first event can leave the
   application. Filtering remains independent of the UI thread and journal

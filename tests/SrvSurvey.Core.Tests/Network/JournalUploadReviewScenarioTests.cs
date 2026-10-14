@@ -46,6 +46,113 @@ public sealed partial class JournalUploadScenarioTests
         Assert.DoesNotContain(restored.Posts, body => body.Contains(ExpectedEvent(provider), StringComparison.Ordinal));
     }
 
+    /// <summary>An unexpected foreign identity cannot relabel the remainder of a monitored batch under the current account.</summary>
+    [Theory]
+    [InlineData("Inara")]
+    [InlineData("EDSM")]
+    public async Task ForeignCommanderBoundaryCannotRelabelFollowingEvents(string provider)
+    {
+        Directory.CreateDirectory(directory);
+        string journal = Path.Combine(directory, "Journal.Identity.log");
+        await File.WriteAllTextAsync(
+            journal,
+            "{\"timestamp\":\"2026-10-14T12:00:00Z\",\"event\":\"LoadGame\",\"Commander\":\"Explorer\",\"FID\":\"F123\",\"Odyssey\":true}\n"
+        );
+        var monitor = new JournalDirectoryMonitor(directory, "F123");
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync();
+        await File.AppendAllTextAsync(
+            journal,
+            """
+            {"timestamp":"2026-10-14T12:00:01Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":1,"StarPos":[0,0,0],"JumpDist":1}
+            {"timestamp":"2026-10-14T12:00:02Z","event":"LoadGame","Commander":"Other","FID":"F999","Odyssey":true}
+            {"timestamp":"2026-10-14T12:00:03Z","event":"FSDJump","StarSystem":"Foreign System","SystemAddress":2,"StarPos":[1,0,0],"JumpDist":1}
+
+            """
+        );
+        var handler = new ProviderHandler(provider, HttpStatusCode.OK);
+        using var client = new HttpClient(handler);
+        await Run(provider, client, bootstrap, await monitor.PollAsync());
+        Assert.Contains(handler.Posts, body => body.Contains("Sol", StringComparison.Ordinal));
+        Assert.All(handler.Posts, body => Assert.DoesNotContain("Foreign System", body, StringComparison.Ordinal));
+    }
+
+    /// <summary>Upgrading from the shared EDDN queue preserves old headers while new commanders use independent queues.</summary>
+    [Fact]
+    public async Task LegacyEddnQueueDrainsWithoutRelabelingTheCommander()
+    {
+        Directory.CreateDirectory(directory);
+        string journal = Path.Combine(directory, "Journal.Legacy.log");
+        await File.WriteAllTextAsync(
+            journal,
+            "{\"timestamp\":\"2026-10-14T12:00:00Z\",\"event\":\"LoadGame\",\"Commander\":\"Explorer\",\"FID\":\"F123\",\"Odyssey\":true}\n"
+        );
+        var monitor = new JournalDirectoryMonitor(directory, "F123");
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync();
+        await File.AppendAllTextAsync(
+            journal,
+            "{\"timestamp\":\"2026-10-14T12:00:01Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Sol\",\"SystemAddress\":1,\"StarPos\":[0,0,0],\"JumpDist\":1}\n"
+        );
+        using (var failed = new HttpClient(new ProviderHandler("EDDN", HttpStatusCode.ServiceUnavailable)))
+        {
+            await Run("EDDN", failed, bootstrap, await monitor.PollAsync());
+        }
+        clock.Now += TimeSpan.FromHours(1);
+        var handler = new ProviderHandler("EDDN", HttpStatusCode.OK);
+        using var client = new HttpClient(handler);
+        using var publisher = new EddnCommanderPublisher(
+            "2.1.3.0",
+            Path.Combine(directory, "accounts"),
+            Path.Combine(directory, "uploads", "eddn.json"),
+            client,
+            utcNow: () => clock.Now,
+            automaticProcessing: false
+        );
+        await publisher.ApplyAsync(
+            new EddnApplyRequest
+            {
+                JournalEvents = [],
+                FrontierId = "F999",
+                CommanderName = "Other",
+                Enabled = true,
+            }
+        );
+        await publisher.FlushAsync();
+        string body = Assert.Single(handler.Posts);
+        Assert.Contains("Explorer", body, StringComparison.Ordinal);
+        Assert.Contains("Sol", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("Other", body, StringComparison.Ordinal);
+    }
+
+    /// <summary>A missing identity cannot create an account queue, and disposed routing cannot restart delivery.</summary>
+    [Fact]
+    public async Task EddnRoutingRequiresIdentityAndStopsAfterDisposal()
+    {
+        using var client = new HttpClient(new ProviderHandler("EDDN", HttpStatusCode.OK));
+        using var publisher = new EddnCommanderPublisher(
+            "2.1.3.0",
+            Path.Combine(directory, "accounts"),
+            Path.Combine(directory, "legacy.json"),
+            client,
+            automaticProcessing: false
+        );
+        EddnPublicationResult missing = await publisher.ApplyAsync(
+            new EddnApplyRequest { JournalEvents = [], Enabled = true }
+        );
+        Assert.Empty(missing.Published);
+        publisher.Dispose();
+        publisher.SetEnabled(true);
+        publisher.SetSuspended(false);
+        EddnPublicationResult stopped = await publisher.ApplyAsync(
+            new EddnApplyRequest
+            {
+                JournalEvents = [],
+                FrontierId = "F123",
+                Enabled = true,
+            }
+        );
+        Assert.Empty(stopped.Published);
+    }
+
     /// <summary>A failed durable append stays local, reports the failure, and cannot stop later journal capture.</summary>
     [Theory]
     [InlineData("EDAstro")]
