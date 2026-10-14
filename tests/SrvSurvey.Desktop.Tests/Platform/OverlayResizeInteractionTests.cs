@@ -82,7 +82,7 @@ public sealed class OverlayResizeInteractionTests
             preview.ConfigureSize(new(600, 400));
             preview.Show();
             using WriteableBitmap? frame = preview.CaptureRenderedFrame();
-            UserControl panel = Assert.IsAssignableFrom<UserControl>(preview.RuntimePresentation);
+            UserControl panel = Assert.IsType<UserControl>(preview.RuntimePresentation, exactMatch: false);
             Border background = Assert.IsType<Border>(panel.Content);
             Assert.Equal(panel.Bounds.Size, background.Bounds.Size);
         }
@@ -126,9 +126,9 @@ public sealed class OverlayResizeInteractionTests
     }
 
     /// <summary>Checks every shared presentation at natural and explicit sizes with reduced and enlarged scaling.</summary>
-    public static IEnumerable<object[]> ResizeCases() =>
+    public static IEnumerable<TheoryDataRow<string, int, bool>> ResizeCases() =>
         from definition in OverlayLayoutCatalog.Supported
         from percent in ScalePercents
         from configured in ConfiguredSizes
-        select new object[] { definition.Name, percent, configured };
+        select new TheoryDataRow<string, int, bool>(definition.Name, percent, configured);
 }
