@@ -23,6 +23,99 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Manual resizing keeps the top-left fixed and the bottom-right grip beneath the pointer.</summary>
+    [AvaloniaTheory]
+    [InlineData("PlotBuildCommodities", false)]
+    [InlineData("PlotBuildCommodities", true)]
+    [InlineData("PlotMassacre", false)]
+    [InlineData("PlotMassacre", true)]
+    [InlineData("PlotSysStatus", false)]
+    [InlineData("PlotSysStatus", true)]
+    [InlineData("PlotFootCombat", false)]
+    [InlineData("PlotFootCombat", true)]
+    public void ManualResizeTracksPointerRegardlessOfContentGrowth(string name, bool right)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            name,
+            new(
+                right ? LegacyHorizontalAnchor.Right : LegacyHorizontalAnchor.Left,
+                300,
+                LegacyVerticalAnchor.Top,
+                100,
+                null,
+                SizeOverride: new(420, 300)
+            )
+        );
+        store.Save(layout.Placements);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var vm = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            layout,
+            registry,
+            host
+        );
+        vm.SelectedCategory = vm.Categories.Single(category =>
+            category.Category == OverlayLayoutCatalog.GetRequired(name).Category
+        );
+        Assert.True(vm.Begin());
+        try
+        {
+            Dispatcher.UIThread.RunJobs();
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+                candidate.Definition.Name == name
+            );
+            using WriteableBitmap? first = preview.CaptureRenderedFrame();
+            Thumb grip = preview.FindControl<Thumb>("PanelResizeThumb")!;
+            Point start = grip.TranslatePoint(new Point(11, 11), preview)!.Value;
+            PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            PixelPoint pointerStart = preview.PointToScreen(start);
+            preview.MouseMove(start, RawInputModifiers.None);
+            preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            for (int step = 1; step <= 8; step++)
+            {
+                PixelPoint pointer = new(pointerStart.X + step * 12, pointerStart.Y + step * 8);
+                Point relative = preview.PointToClient(pointer);
+                preview.MouseMove(relative, RawInputModifiers.LeftMouseButton);
+                Dispatcher.UIThread.RunJobs();
+                using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+                PixelPoint actual = preview.PointToScreen(grip.TranslatePoint(new Point(11, 11), preview)!.Value);
+                Assert.True(
+                    Math.Abs(actual.X - pointer.X) <= 1 && Math.Abs(actual.Y - pointer.Y) <= 1,
+                    $"{name} right={right} step {step}: pointer={pointer}, grip={actual}; origin={origin}, current={preview.GetPanelScreenOrigin(preview.RenderScaling)}"
+                );
+            }
+            preview.MouseUp(
+                preview.PointToClient(new PixelPoint(pointerStart.X + 96, pointerStart.Y + 64)),
+                MouseButton.Left,
+                RawInputModifiers.None
+            );
+            Dispatcher.UIThread.RunJobs();
+            PixelPoint releasedOrigin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            PixelSize releasedSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            Assert.Equal(origin, releasedOrigin);
+            vm.Save();
+            Assert.False(vm.IsEditing);
+            Assert.True(vm.Begin());
+            Dispatcher.UIThread.RunJobs();
+            preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == name);
+            using WriteableBitmap? reopened = preview.CaptureRenderedFrame();
+            Assert.Equal(releasedOrigin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            Assert.Equal(releasedSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
+        }
+        finally
+        {
+            vm.Cancel();
+        }
+    }
+
     /// <summary>Editor sample states follow the same retained-corner policy as live panels.</summary>
     [AvaloniaTheory]
     [InlineData("left", false)]

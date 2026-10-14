@@ -429,10 +429,20 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
-    /// <summary>Publishes a panel's stable screen origin using its new size.</summary>
-    private void RecordMeasuredGeometry(OverlayPositionPreviewWindow preview, PixelPoint origin, PixelSize size)
+    /// <summary>Publishes measured geometry, preserving the top-left during a manual bottom-right resize.</summary>
+    private void RecordMeasuredGeometry(
+        OverlayPositionPreviewWindow preview,
+        PixelPoint origin,
+        PixelSize size,
+        bool manualResize = false
+    )
     {
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        if (manualResize && contentPlacements.TryGetValue(preview.Definition.Name, out OverlayContentPlacement? growth))
+        {
+            // Content growth retains a corner; dragging the resize grip explicitly moves that corner.
+            growth.Reanchor(origin, size);
+        }
         origin = ResolveContentPosition(preview, origin, size);
         preview.Position = new PixelPoint(origin.X - metrics.OriginOffset.X, origin.Y - metrics.OriginOffset.Y);
         PreviewMoved?.Invoke(
@@ -716,7 +726,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             RecordMeasuredGeometry(
                 preview,
                 preview.GetPanelScreenOrigin(preview.RenderScaling),
-                preview.GetConfiguredPanelPixelSize(eventArgs.Size, preview.RenderScaling)
+                preview.GetConfiguredPanelPixelSize(eventArgs.Size, preview.RenderScaling),
+                manualResize: true
             );
         }
 

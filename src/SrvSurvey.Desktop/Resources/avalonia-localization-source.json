@@ -31401,9 +31401,10 @@
     "Text": "Medical diagnostic equipment",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationCommodityOverlayPresentation.axaml"
   },
   {
     "Text": "Medium",

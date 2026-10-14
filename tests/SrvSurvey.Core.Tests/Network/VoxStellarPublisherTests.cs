@@ -440,31 +440,54 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
-    /// <summary>Shutdown retains accepted outcomes while cancelling the remaining unresponsive request.</summary>
+    /// <summary>Accepted outcomes are reported even when cancellation unwinds after bounded shutdown returns.</summary>
     [Fact]
     public async Task ShutdownRetainsCompletedOutcomesFromAnInterruptedBatch()
     {
         var clock = new BatchClock();
-        var handler = new CancellationHandler(acceptFirstRequest: true);
+        var cancellationCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new CancellationHandler(
+            acceptFirstRequest: true,
+            cancellationCompletion: cancellationCompletion.Task
+        );
         using var client = new HttpClient(handler);
         var logs = new ConcurrentQueue<string>();
+        var summaryLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var publisher = new VoxStellarPublisher(
             "1.0.0",
             "test-key",
             client,
-            log: logs.Enqueue,
+            log: message =>
+            {
+                logs.Enqueue(message);
+                summaryLogged.TrySetResult();
+            },
             timeProvider: clock
         );
-        await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
-        (await clock.NextTimerAsync()).Fire();
-        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(handler.Cancelled.Task.IsCompleted);
-        Assert.Equal(2, handler.CallCount);
-        Assert.Contains("1 accepted", Assert.Single(logs), StringComparison.Ordinal);
+        try
+        {
+            await publisher.ApplyAsync(
+                CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")])
+            );
+            (await clock.NextTimerAsync()).Fire();
+            await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(handler.Cancelled.Task.IsCompleted);
+            Assert.Equal(2, handler.CallCount);
+            Assert.Empty(logs);
+            cancellationCompletion.TrySetResult();
+            await summaryLogged.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Contains("1 accepted", Assert.Single(logs), StringComparison.Ordinal);
+        }
+        finally
+        {
+            cancellationCompletion.TrySetResult();
+        }
     }
 
-    private sealed class CancellationHandler(bool acceptFirstRequest = false) : HttpMessageHandler
+    /// <summary>Simulates cancellation whose transport continuation can resume after the bounded shutdown deadline.</summary>
+    private sealed class CancellationHandler(bool acceptFirstRequest = false, Task? cancellationCompletion = null)
+        : HttpMessageHandler
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -485,7 +508,17 @@ public sealed class VoxStellarPublisherTests
                 Cancelled.TrySetResult()
             );
             Started.TrySetResult();
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (cancellationCompletion is not null)
+                {
+                    await cancellationCompletion.ConfigureAwait(false);
+                }
+            }
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
