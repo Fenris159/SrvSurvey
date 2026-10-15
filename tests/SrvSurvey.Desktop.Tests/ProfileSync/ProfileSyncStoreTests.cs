@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ProfileSync;
 using Xunit;
@@ -10,6 +11,62 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    /// <summary>Backup and restore preserve distinct commander scale, exception, and position keys across one shared installation.</summary>
+    [Fact]
+    public void BackupRestoreKeepsBothCommanderOverlaySettingsSeparate()
+    {
+        using var source = new ProfileSyncTestRoot();
+        source.Write(
+            "config",
+            "commanders/F123/cross-platform-ui.json",
+            """{"OverlayScale":{"Index":1033},"OverlayVehicleAllowLists":{"Exploration":["python"]}}"""
+        );
+        source.Write(
+            "config",
+            "commanders/F456/cross-platform-ui.json",
+            """{"OverlayScale":{"Index":1020},"OverlayVehicleAllowLists":{"Exploration":["anaconda"]}}"""
+        );
+        source.Write("data", "commanders/F123/overlays/plotters.json", """{"PlotJumpInfo":"left:120, top:80"}""");
+        source.Write("data", "commanders/F456/overlays/plotters.json", """{"PlotJumpInfo":"left:450, top:80"}""");
+        using var destination = new ProfileSyncTestRoot();
+
+        var restored = new ProfileSyncStore(destination.Paths, () => source.MachineIdentity);
+        restored.Apply(source.Store.Capture(), restoreMachine: true);
+
+        AppDataPaths first = destination.Paths with { SettingsFrontierId = "F123" };
+        AppDataPaths second = destination.Paths with { SettingsFrontierId = "F456" };
+        Assert.Equal(
+            65,
+            OverlayScaleCatalog.GetPercent(new OverlayScaleSettingsStore(first.UiSettingsPath).Load().Index)
+        );
+        Assert.Equal(
+            0,
+            OverlayScaleCatalog.GetPercent(new OverlayScaleSettingsStore(second.UiSettingsPath).Load().Index)
+        );
+        Assert.Equal(
+            ["python"],
+            new OverlayVehicleSettingsStore(first.UiSettingsPath).Load(OverlaySettingsCategory.Exploration)
+        );
+        Assert.Equal(
+            ["anaconda"],
+            new OverlayVehicleSettingsStore(second.UiSettingsPath).Load(OverlaySettingsCategory.Exploration)
+        );
+        Assert.Equal(
+            120,
+            new LegacyOverlayLayoutStore(first.OverlaySettingsDirectory)
+                .Load()
+                .Placements["PlotJumpInfo"]
+                .HorizontalOffset
+        );
+        Assert.Equal(
+            450,
+            new LegacyOverlayLayoutStore(second.OverlaySettingsDirectory)
+                .Load()
+                .Placements["PlotJumpInfo"]
+                .HorizontalOffset
+        );
+    }
+
     /// <summary>Profile backups retain growth preferences with machine-specific positions rather than portable preferences.</summary>
     [Fact]
     public void GrowthOverridesStayWithMachineSpecificOverlayPositions()

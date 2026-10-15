@@ -62,9 +62,19 @@ public sealed class LocalizationSettingsStore
         });
     }
 
+    /// <summary>Loads the assigned commander's language, inheriting shared settings before its first migration.</summary>
     public static string ResolveCurrent(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
+        if (
+            paths.SettingsFrontierId is not null
+            && !File.Exists(paths.UiSettingsPath)
+            && !File.Exists(Path.Combine(paths.OverlaySettingsDirectory, "settings.json"))
+        )
+        {
+            // A new commander inherits shared settings only after legacy migration runs during composition.
+            return new LocalizationSettingsStore(paths.SharedUiSettingsPath, paths.DataDirectory).Load();
+        }
         return new LocalizationSettingsStore(paths.UiSettingsPath, paths.OverlaySettingsDirectory).Load();
     }
 }

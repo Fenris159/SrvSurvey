@@ -8,6 +8,7 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ProfileSync;
@@ -22,6 +23,49 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    /// <summary>The app always passes resolved paths; doing so must still initialize an automatic commander's private settings.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NormalStartupWithResolvedPathsStillSelectsCommanderSettings(bool selectBeforeComposition)
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.2026-10-15T010000.01.log"),
+            """{"event":"Commander","Name":"First","FID":"F123"}"""
+        );
+        AppDataPaths paths = temp.Paths;
+        new OverlayScaleSettingsStore(paths.SharedUiSettingsPath).Save(new(OverlayScaleCatalog.GetIndex(65)));
+        string[] arguments = ["--journal-directory", journals];
+        DesktopStartupContext context = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => paths,
+            CancellationToken.None
+        );
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var applicationLog = new ApplicationLogService(paths.DataDirectory);
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = selectBeforeComposition ? context.AppDataPaths : paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.OverlayInfrastructureReady
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+
+        AppDataPaths commander = paths with { SettingsFrontierId = "F123" };
+        Assert.True(File.Exists(Path.Combine(commander.OverlaySettingsDirectory, ".profile-initialized")));
+        Assert.Equal(
+            OverlayScaleCatalog.GetIndex(65),
+            new OverlayScaleSettingsStore(commander.UiSettingsPath).Load().Index
+        );
+    }
+
     /// <summary>Both colonization actions show a hidden available panel on their first press and keep checkbox state synchronized.</summary>
     [AvaloniaTheory]
     [InlineData(GlobalInputAction.ToggleColonizationCommoditiesVisibility)]
