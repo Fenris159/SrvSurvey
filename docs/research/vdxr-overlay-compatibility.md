@@ -27,6 +27,54 @@ compatibility.
   translation layer, drivers, and headset behave identically to the reviewed
   sources.
 
+## Supported baseline and dated release snapshot
+
+Per the requested support scope, the target is **Quest 3 on the current stable
+Quest-store Virtual Desktop client, the matching current Windows x64 Streamer
+from the official download, its bundled VDXR, and the current OpenComposite
+`openxr` build for Elite**. Use the normal release channels and update the client
+and Streamer together. Keep VDXR bundled with the Streamer rather than copying a
+runtime built from a newer source commit. Validate the real game's
+`Runtime: VDXR` indication and record the installed component versions; this
+baseline is a support target, not an already completed headset test
+([official downloads](https://www.vrdesktop.net/),
+[Quest product](https://www.meta.com/experiences/virtual-desktop/2017050365004772/),
+[VDXR distribution](https://github.com/mbucchia/VirtualDesktop-OpenXR/wiki)).
+
+Snapshot on **2026-10-14**:
+
+- The official homepage advertises **1.34.22**. The normal
+  [Windows Streamer installer](https://files.vrdesktop.net/files/VirtualDesktop.Streamer.Setup.exe)
+  was inspected without execution using an HTTP range read of its PE resources:
+  `ProductName=Virtual Desktop Streamer`, `FileVersion=1.34.22.0`, and
+  `ProductVersion=1.34.22.0`. HTTP `Last-Modified` was
+  `2026-08-25 18:48:32 UTC`; that is artifact metadata, not a verified release
+  announcement date. The inspected public Quest product page does not expose
+  its deployed client version.
+- The first-party GitHub release metadata is behind that artifact: the newest
+  published entry is **1.34.16**, dated **2026-04-01**, with
+  `draft=false` and `prerelease=false`; `/releases/latest` still identifies
+  **1.34.10**, dated **2025-10-20**. None of the 20 visible release entries was
+  marked prerelease. Accordingly, the GitHub Latest badge cannot identify the
+  current Quest/Streamer pair in this snapshot
+  ([release list](https://github.com/guygodin/VirtualDesktop/releases),
+  [1.34.16](https://github.com/guygodin/VirtualDesktop/releases/tag/v1.34.16),
+  [Latest endpoint](https://github.com/guygodin/VirtualDesktop/releases/latest)).
+- OpenComposite's current remote `openxr` HEAD remains
+  `cff07db75c4823afe93ed7027b03d5f7bc86f164` (2025-07-21). Public VDXR `main`
+  remains `6da20fe478e331c05672243fd82a9a1500cd39f5` (2026-10-03). These are
+  source review snapshots, not proof of the revision inside the current
+  Streamer installer.
+
+Recent upstream changes worth retaining in regression testing are Virtual
+Desktop's color-gradient/codec improvements in 1.34.16 and VDXR's October 3
+session/swapchain leak fixes. VDXR also added OpenXR 1.1 support on August 6;
+SrvSurvey's layer manifest declares API 1.0 compatibility and uses the established
+D3D11/quad path. These changes do not add SrvSurvey controller interaction
+([Virtual Desktop changes](https://github.com/guygodin/VirtualDesktop/releases/tag/v1.34.16),
+[VDXR resource fix](https://github.com/mbucchia/VirtualDesktop-OpenXR/commit/6da20fe478e331c05672243fd82a9a1500cd39f5),
+[VDXR 1.1 change](https://github.com/mbucchia/VirtualDesktop-OpenXR/commit/666a46be41b98ba23d2a269b1d1644bcc3b4334f)).
+
 ## Source versions and evidence limits
 
 The source review uses VirtualDesktop-OpenXR commit
@@ -71,8 +119,8 @@ composition layers
 ([graphics transition and submission](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/DrvOpenXR/XrBackend.cpp),
 [temporary session setup](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/DrvOpenXR/DrvOpenXR.cpp)).
 That establishes a compatible code path, not a certification of every Elite
-build. Preserve the user's working Elite-to-VDXR setup and record its exact
-OpenComposite version rather than replacing it speculatively.
+build. Use the current OpenComposite `openxr` build for the support target above
+and record its exact version during real-session validation.
 
 Khronos allows API layers to intercept, modify, and insert OpenXR calls. Layers
 load when the game creates its OpenXR instance. The per-user installer registers

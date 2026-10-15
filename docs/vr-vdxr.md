@@ -5,6 +5,21 @@ session using Virtual Desktop's VDXR runtime, without SteamVR in the rendering
 path. This integration requires Windows x64 and Direct3D 11. Physical
 Quest 3 validation is still required before treating it as supported.
 
+## Version target
+
+The integration targets the latest stable Virtual Desktop app available for
+Quest 3 through the [Meta store](https://www.meta.com/experiences/virtual-desktop/2017050365004772/),
+paired with the normal Windows Streamer download from
+[Virtual Desktop](https://www.vrdesktop.net/) and its bundled VDXR runtime.
+Use the current OpenComposite `openxr` build when Elite needs OpenVR-to-OpenXR
+translation. Beta channels and older-version downgrades are not prerequisites.
+
+At the 2026-10-14 source check, the official Windows Streamer installer reports
+version **1.34.22.0**. That is a dated compatibility target, not a requirement
+to stay on that version after stable updates. Record the actual Quest app,
+Streamer, and OpenComposite versions when performing headset acceptance checks;
+those results establish which installed combination has been verified.
+
 ## Try the integration
 
 1. Use an Elite setup that already works with VDXR. Elite's OpenVR-to-OpenXR
@@ -50,6 +65,28 @@ resolution, angular size, runtime filtering, headset optics, and Virtual Desktop
 streaming settings. This path currently captures panels every 250 ms; it is not
 an independent headset-rate animation renderer. The compositor presents the
 latest texture each game frame.
+
+### 3D placement and perspective
+
+A flat panel can still be angled in the headset. Its image stays rectangular;
+the runtime projects its position and rotation into each eye's view. Moving it
+to the side, tilting it toward the pilot, or changing its distance gives normal
+stereo perspective. The source image does not need an artificial perspective
+warp or curved geometry
+([OpenXR quad geometry](https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrCompositionLayerQuad.html)).
+
+Both implemented backends, SteamVR/OpenVR and VDXR/OpenXR, apply the same saved
+per-panel calibration. In **Settings > Global overlays > VR overlays**, choose
+**Adjust overlays**, select a panel and vehicle/game mode, then change:
+
+- **Position X / Y / Z** to move it sideways, vertically, and nearer or farther.
+- **Pitch / yaw / roll** to tilt, turn, and rotate it.
+- **Scale** to change its physical size while preserving its image aspect ratio.
+
+Changes preview in the connected VR session. Save preserves the calibration for
+that panel and mode. These controls are available on the VDXR route even though
+controller-pointer interaction is not implemented. Editing a panel's 3D
+placement and clicking controls inside that panel are separate operations.
 
 **Toggle VR overlay interaction** currently requires the SteamVR backend's
 controller-pointer events. The shortcut is registered on VDXR, but its backend
