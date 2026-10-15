@@ -1,48 +1,61 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.6
+# SrvSurvey-XP 2.1.3.0-rc.64.7
 
-RC.64.6 fixes commander settings being mixed when one SrvSurvey instance starts
-normally and another is launched for a different commander. Overlay positions,
-scaling and exceptions now stay with the selected commander through startup,
-editing, restart and restore.
+RC.64.7 brings Spansh route planning into SrvSurvey. Search from the ship or
+Fleet Carrier Route Workspace, load the result straight into the itinerary,
+and keep following it across closes and restarts. Updated EDSY module data
+also lets the Galaxy Plotter use the ship you are currently piloting.
 
 ## What's changed
 
-- **Keep overlay settings separate for each commander.** Normal startup now
-  selects the commander's own settings folder, and the instance remains attached
-  to that commander when another client writes a newer journal. Saved positions,
-  global scale, individual panel scale overrides and overlay exceptions stay
-  independent. One commander can use +65% scaling while another uses normal scale.
-- **Preserve commander assignments through restarts and updates.** An automatic
-  instance retains its commander when restarting for language changes, profile
-  imports or application updates. Choosing a different startup commander still
-  applies that requested change.
-- **Keep VR calibration private to each commander.** VR position and scale edits
-  now use the commander's overlay folder. Existing vehicle-specific calibrations
-  are copied once without replacing calibrations already saved in that profile.
-- **Load the selected commander's language at startup.** The application selects
-  the commander profile before initializing its language, so another profile's
-  shared preference does not replace the saved selection. New profiles retain
-  the shared language until their own settings are initialized.
-- **Prevent startup waits from freezing the interface.** Journal identity reads
-  can complete while commander settings are being selected on the UI thread.
+- **Plan routes without leaving the workspace.** The new **Spansh Search**
+  window offers Neutron Plotter, Road to Riches, Tourist Planner, Galaxy
+  Plotter, Expressway to Exomastery and Colonisation Plotter. Fleet Carrier
+  Router is available in the FC Route Workspace. Successful searches load
+  directly into the appropriate itinerary.
+- **Build destination lists with familiar system lookup.** System fields use
+  the existing name autocomplete. Planners with multiple destinations share
+  a reusable **+ Add** entry and an ordered list with edit, remove and reorder
+  controls. Carrier searches also support refuelling destinations.
+- **Use your current ship in Galaxy Plotter.** Updated EDSY module data and
+  fitting rules cover mercenary equipment and hangar changes. SrvSurvey can
+  export the equipped ship in EDSY-compatible SLEF, including its confirmed
+  engineering, and automatically supply it to Galaxy Plotter. Eligible
+  mercenary weapons and utilities also receive updated firegroup labels.
+- **Keep working routes until you replace or clear them.** Imported and
+  searched routes retain their itinerary, progress, notes and tracking
+  settings across repeated workspace opens and application restarts, even
+  when their selected saved file has been removed. Ship and carrier routes
+  stay separate for each commander. **Save As** adds a named library copy.
+- **Choose when your carrier restocks.** FC imports and searches now retain
+  tank fuel, restock flags and recommended transfer amounts. The optional
+  **Restock only when low** behavior transfers market tritium only when the
+  tank cannot fund the next jump, respecting the 1,000 t tank limit and
+  remaining stock. Rows show balances after each transfer and identify an
+  unfunded jump. Turning the option off restores the original Spansh values.
+- **See estimated carrier travel time.** The main window, FC Route Workspace,
+  overlay panel and overlay preview show **ETR** at 20 minutes per remaining
+  jump. The estimate refreshes as jumps are completed, omits zero-valued time
+  units and disappears when no jumps remain.
 
 ## Update channel and packages
 
-RC.64.6 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.7 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.6`
-- Tag: `xp2-v2.1.3.0-rc.64.6`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.6-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.6-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.6-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.6-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.7`
+- Tag: `xp2-v2.1.3.0-rc.64.7`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.7-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.7-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.7-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.7-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
-This remains a development preview. Multi-commander sharing requires separate
-physical journal folders and a verified live commander binding for each client;
-Steam or Epic folder names alone do not establish ownership. Shared UI inventory
-continues to use its existing multi-client safeguards.
+This remains a development preview. Galaxy Plotter needs a complete, confirmed
+Loadout for the current ship; incomplete or unverifiable ship data requires
+a fresh Loadout or a manually supplied build. FC fuel reinterpretation uses
+Spansh's reported jump costs and does not recalculate mass-dependent fuel costs
+or assume future mining. Carrier ETR is a jump-based estimate rather than a
+live countdown.

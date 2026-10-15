@@ -52,6 +52,7 @@ internal sealed class JournalProjectionDependencies
     internal required MineMapViewModel MineMap { get; init; }
     internal required MiningWorkspaceViewModel MiningWorkspace { get; init; }
     internal required FiregroupsWorkspaceViewModel Firegroups { get; init; }
+    internal required CurrentShipExportViewModel CurrentShipExport { get; init; }
     internal required CombatViewModel Combat { get; init; }
     internal required BiologyCodexViewModel BiologyCodex { get; init; }
     internal required BiologyCodexBingoViewModel CodexBingo { get; init; }

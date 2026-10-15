@@ -2,6 +2,13 @@ namespace SrvSurvey.Core.Routes;
 
 public sealed class FollowRouteService(FollowRouteStore store)
 {
+    /// <summary>Retains a working itinerary without adding or overwriting a saved route.</summary>
+    public Task SaveWorkspaceAsync(
+        FollowRouteDocument route,
+        bool hasSavedRoute,
+        CancellationToken cancellationToken = default
+    ) => store.SaveWorkspaceAsync(route, hasSavedRoute, cancellationToken);
+
     public Task<FollowRouteLoadResult> LoadAsync(string frontierId, CancellationToken cancellationToken = default)
     {
         return store.LoadAsync(frontierId, cancellationToken);
@@ -259,10 +266,20 @@ public sealed class FollowRouteService(FollowRouteStore store)
         return updated;
     }
 
+    /// <summary>Advances and saves a library route when the next destination is reached.</summary>
+    public Task<FollowRouteArrivalResult> ApplyArrivalAsync(
+        FollowRouteDocument route,
+        string systemName,
+        long? systemAddress,
+        CancellationToken cancellationToken = default
+    ) => ApplyArrivalAsync(route, systemName, systemAddress, persist: true, cancellationToken);
+
+    /// <summary>Advances a working route, optionally persisting its saved library document.</summary>
     public async Task<FollowRouteArrivalResult> ApplyArrivalAsync(
         FollowRouteDocument route,
         string systemName,
         long? systemAddress,
+        bool persist,
         CancellationToken cancellationToken = default
     )
     {
@@ -284,7 +301,10 @@ public sealed class FollowRouteService(FollowRouteStore store)
             LastReachedIndex = reachedIndex,
             IsActive = reachedIndex < route.Hops.Count - 1,
         };
-        await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        if (persist)
+        {
+            await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        }
         return new FollowRouteArrivalResult(updated, true, reachedIndex);
     }
 

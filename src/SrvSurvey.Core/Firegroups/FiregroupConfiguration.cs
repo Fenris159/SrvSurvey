@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Ships;
 
 namespace SrvSurvey.Core.Firegroups;
 
@@ -98,10 +99,12 @@ public static class FiregroupLoadout
             string slot = Text(module, "Slot");
             string localizedName = Text(module, "Item_Localised");
             string specializedKey = $"{symbol}|{localizedName.ToLowerInvariant()}";
-            if (
-                slot.Length == 0
-                || (!Names.TryGetValue(specializedKey, out string? label) && !Names.TryGetValue(symbol, out label))
-            )
+            string? label =
+                Names.GetValueOrDefault(specializedKey)
+                ?? ShipModuleCatalog.Default.GetMercenaryFiregroupName(module)
+                ?? Names.GetValueOrDefault(symbol)
+                ?? ShipModuleCatalog.Default.GetFiregroupName(module);
+            if (slot.Length == 0 || label is null)
             {
                 continue;
             }

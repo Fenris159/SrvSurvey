@@ -25,12 +25,13 @@
           <TextBlock Classes="eyebrow" Text="{Binding WorkspaceEyebrow}" />
           <TextBlock Classes="page-title" FontSize="24" Text="{Binding WorkspaceHeading}" />
           <TextBlock Classes="muted"
-                     Text="{Binding WorkspaceDescription}" />
+                     Text="{Binding WorkspaceDescription}" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Grid.Column="1"
                     Orientation="Horizontal"
                     VerticalAlignment="Center"
                     Spacing="10">
+          <Button Classes="primary" Content="Spansh Search" Click="SpanshSearch_Click" IsEnabled="{Binding CanSearchSpansh}" />
           <Button Classes="secondary"
                   Command="{Binding NotesCommand}"
                   Content="Notes" />
@@ -72,6 +73,11 @@
                 <TextBlock Classes="muted"
                            Text="{Binding ProgressSummary}"
                            TextWrapping="Wrap" />
+                <TextBlock x:Name="CarrierEstimatedTimeRemainingReadout"
+                           Classes="muted"
+                           IsVisible="{Binding HasCarrierEstimatedTimeRemaining}"
+                           Text="{Binding CarrierEstimatedTimeRemaining}"
+                           TextWrapping="Wrap" />
                 <Button Classes="primary"
                         HorizontalAlignment="Left"
                         Command="{Binding CopyNextHopCommand}"
@@ -90,6 +96,16 @@
                 <TextBlock Classes="muted"
                            FontSize="11"
                            Text="{Binding AutoCopySummary}"
+                           TextWrapping="Wrap" />
+                <CheckBox x:Name="CarrierRestockOnlyWhenLowCheckBox"
+                          IsVisible="{Binding IsFleetCarrierWorkspace}"
+                          IsEnabled="{Binding HasRoute}"
+                          IsChecked="{Binding RestockOnlyWhenLow, Mode=TwoWay}"
+                          Content="Restock only when low" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           IsVisible="{Binding HasCarrierFuelPlanMessage}"
+                           Text="{Binding CarrierFuelPlanMessage}"
                            TextWrapping="Wrap" />
               </StackPanel>
             </Border>

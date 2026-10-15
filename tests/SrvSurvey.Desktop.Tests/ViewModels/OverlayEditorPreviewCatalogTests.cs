@@ -6,6 +6,18 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayEditorPreviewCatalogTests
 {
+    /// <summary>
+    /// Checks that carrier preview shows jump based estimated time remaining.
+    /// </summary>
+    [Fact]
+    public void CarrierPreviewShowsJumpBasedEstimatedTimeRemaining()
+    {
+        using FleetCarrierRouteOverlayViewModel preview = Assert.IsType<FleetCarrierRouteOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotFleetCarrierRoute", 0)
+        );
+        Assert.Equal("44 JUMPS LEFT • ETR: 14h 40min", preview.JumpsLeft);
+    }
+
     [Fact]
     public async Task SphericalPreviewRejectsSessionMutationsWithoutFaulting()
     {

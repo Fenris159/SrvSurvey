@@ -81,13 +81,10 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
     {
         get
         {
-            if (editorPreview is not null)
-            {
-                return editorPreview.JumpsLeft;
-            }
-
-            int count = Math.Max(0, route.RouteCount - route.ReachedCount - 1);
-            return $"{count:N0} {(count == 1 ? "JUMP" : "JUMPS")} LEFT";
+            int count = editorPreview?.RemainingJumps ?? route.RemainingJumps;
+            string jumps = $"{count:N0} {(count == 1 ? "JUMP" : "JUMPS")} LEFT";
+            string estimate = RouteWorkspaceViewModel.FormatCarrierEstimatedTimeRemaining(count);
+            return estimate.Length == 0 ? jumps : $"{jumps} • {estimate}";
         }
     }
 
@@ -255,7 +252,7 @@ internal sealed record FleetCarrierRouteEditorPreview(
     string HopProgress,
     string SystemName,
     string JumpSummary,
-    string JumpsLeft,
+    int RemainingJumps,
     string FuelLeft,
     string TritiumInMarket,
     string JumpFuel,

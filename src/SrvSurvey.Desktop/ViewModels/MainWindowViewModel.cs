@@ -665,9 +665,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 systemNotesSettingsStore
             );
             var spanshRouteClient = new SpanshRouteClient(externalNetworkClient);
+            var spanshPlannerClient = new SpanshPlannerClient(externalNetworkClient);
             var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
             var routeService = new FollowRouteService(new FollowRouteStore(AppDataPaths.DataDirectory));
-            Route = new RouteWorkspaceViewModel(routeService, routeNameImporter, spanshRouteClient);
+            Route = new RouteWorkspaceViewModel(
+                routeService,
+                routeNameImporter,
+                spanshRouteClient,
+                plannerClient: spanshPlannerClient,
+                currentShip: CurrentShipExport
+            );
+            rollback.Add(Route.SpanshSearch!.Dispose);
             RouteManager = new RouteManagerViewModel(routeService, Route);
             var fleetCarrierRouteService = new FollowRouteService(
                 new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier)
@@ -676,8 +684,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 fleetCarrierRouteService,
                 routeNameImporter,
                 spanshRouteClient,
-                FollowRouteKind.FleetCarrier
+                FollowRouteKind.FleetCarrier,
+                plannerClient: spanshPlannerClient,
+                currentShip: CurrentShipExport
             );
+            rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
             FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
             routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(Route, FleetCarrierRoute, boxelSearchSession);
             rollback.Add(routeAutoCopyCoordinator.Dispose);
@@ -1264,6 +1275,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public JournalHistoryViewModel JournalHistory { get; }
 
     public JournalSettingsViewModel JournalSettings { get; }
+
+    public CurrentShipExportViewModel CurrentShipExport { get; } = new();
 
     public JournalPostProcessorViewModel JournalPostProcessor { get; }
 
@@ -4571,6 +4584,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         await TryDisposeAsync(ActiveUsers.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
+        TryDispose(Route.SpanshSearch!.Dispose);
+        TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
+        await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
+        await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
         TryDispose(boxelNameSuggestions.Dispose);

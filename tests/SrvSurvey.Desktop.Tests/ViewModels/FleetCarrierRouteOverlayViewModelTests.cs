@@ -1,5 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Routes;
@@ -10,13 +12,17 @@ using SrvSurvey.Desktop.ViewModels;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
+public sealed class FleetCarrierRouteOverlayViewModelTests : IAsyncLifetime
 {
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-fc-overlay-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>
+    /// Checks carrier logistics and its ETR as one compact overlay readout.
+    /// </summary>
     [Fact]
     public async Task FormatsNextCarrierHopAsCompactLogisticsReadout()
     {
@@ -44,6 +50,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F123", "Sol", null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -53,7 +60,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal("HOP 1 / 2", viewModel.HopProgress);
         Assert.Equal("Col 359 Sector EE-X b16-1", viewModel.SystemName);
         Assert.Equal($"{499.76:N2} LY JUMP  •  {21502.09:N2} LY REMAINING", viewModel.JumpSummary);
-        Assert.Equal("1 JUMP LEFT", viewModel.JumpsLeft);
+        Assert.Equal("1 JUMP LEFT • ETR: 20min", viewModel.JumpsLeft);
         Assert.Equal($"{1000:N0} t", viewModel.FuelLeft);
         Assert.Equal($"{2799:N0} t", viewModel.TritiumInMarket);
         Assert.Equal($"{93:N0} t", viewModel.JumpFuel);
@@ -63,6 +70,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal($"{3892:N0} t", viewModel.RestockAmount);
     }
 
+    /// <summary>
+    /// Checks that an empty route offers no invented fuel, restock or time estimate.
+    /// </summary>
     [Fact]
     public async Task FormatsEmptyRouteWithoutInventingCarrierLogistics()
     {
@@ -77,6 +87,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal("NO ROUTE", viewModel.HopProgress);
         Assert.Equal("\u2014 LY JUMP  \u2022  \u2014 LY REMAINING", viewModel.JumpSummary);
         Assert.Equal("0 JUMPS LEFT", viewModel.JumpsLeft);
+        Assert.False(route.HasCarrierEstimatedTimeRemaining);
         Assert.Equal("\u2014", viewModel.FuelLeft);
         Assert.Equal("\u2014", viewModel.TritiumInMarket);
         Assert.Equal("\u2014", viewModel.JumpFuel);
@@ -88,6 +99,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.False(viewModel.HasCountdownPhaseTime);
     }
 
+    /// <summary>
+    /// Checks that not started route labels its first system as start.
+    /// </summary>
     [Fact]
     public async Task NotStartedRouteLabelsItsFirstSystemAsStart()
     {
@@ -110,8 +124,13 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
 
         Assert.Equal("START", viewModel.HopProgress);
         Assert.Equal("Sol", viewModel.SystemName);
+        Assert.True(route.HasCarrierEstimatedTimeRemaining);
+        Assert.Equal("ETR: 20min", route.CarrierEstimatedTimeRemaining);
     }
 
+    /// <summary>
+    /// Checks that final carrier arrival shows finished for three seconds.
+    /// </summary>
     [Fact]
     public async Task FinalCarrierArrivalShowsFinishedForThreeSeconds()
     {
@@ -135,6 +154,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => time.GetUtcNow()
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F321", "Second", 2, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -154,6 +174,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal("FINISHED", viewModel.HopProgress);
         Assert.Equal("Colonia", viewModel.SystemName);
         Assert.True(viewModel.ShouldShow);
+        Assert.Empty(route.CarrierEstimatedTimeRemaining);
+        Assert.False(route.HasCarrierEstimatedTimeRemaining);
+        Assert.Equal("0 JUMPS LEFT", viewModel.JumpsLeft);
 
         time.Advance(TimeSpan.FromMilliseconds(2999));
         viewModel.AdvanceTimedTransitions();
@@ -164,6 +187,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShow);
     }
 
+    /// <summary>
+    /// Checks that route and countdown changes raise their complete property groups.
+    /// </summary>
     [Fact]
     public async Task RouteAndCountdownChangesRaiseTheirCompletePropertyGroups()
     {
@@ -191,6 +217,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => now
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F789", "Sol", 1, null);
         var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -199,7 +226,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         var notifications = new List<string>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName!);
 
-        Assert.Equal("2 JUMPS LEFT", viewModel.JumpsLeft);
+        Assert.Equal("2 JUMPS LEFT • ETR: 40min", viewModel.JumpsLeft);
         Assert.True(viewModel.HasIcyRing);
         Assert.Equal("ICY RING", viewModel.IcyRingLabel);
         await route.ApplyJournalEventsAsync([
@@ -214,6 +241,8 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.SystemName), notifications);
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.JumpSummary), notifications);
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.RestockAmount), notifications);
+        Assert.Equal("1 JUMP LEFT • ETR: 20min", viewModel.JumpsLeft);
+        Assert.Equal("ETR: 20min", route.CarrierEstimatedTimeRemaining);
 
         notifications.Clear();
         route.ApplyFleetCarrierJumpEvents([
@@ -233,11 +262,140 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.CountdownTitle), notifications);
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.CountdownPhaseTime), notifications);
 
+        now = now.AddMinutes(1);
+        notifications.Clear();
+        route.RefreshCarrierJumpCountdown();
+        Assert.Equal("14:00", viewModel.Countdown);
+        Assert.Equal("1 JUMP LEFT • ETR: 20min", viewModel.JumpsLeft);
+        Assert.DoesNotContain(nameof(FleetCarrierRouteOverlayViewModel.JumpsLeft), notifications);
+
         notifications.Clear();
         viewModel.Dispose();
         now = now.AddMinutes(1);
         route.RefreshCarrierJumpCountdown();
         Assert.Empty(notifications);
+    }
+
+    /// <summary>
+    /// Checks minute, hour and day boundaries and omission of zero-valued ETR units.
+    /// </summary>
+    [Theory]
+    [InlineData(0, "")]
+    [InlineData(1, "ETR: 20min")]
+    [InlineData(3, "ETR: 1h")]
+    [InlineData(44, "ETR: 14h 40min")]
+    [InlineData(71, "ETR: 23h 40min")]
+    [InlineData(72, "ETR: 1d")]
+    [InlineData(73, "ETR: 1d 20min")]
+    [InlineData(144, "ETR: 2d")]
+    [InlineData(1000, "ETR: 13d 21h 20min")]
+    public async Task CarrierEstimateUsesTwentyMinutesPerRemainingJump(int jumps, string expected)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
+        await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                IsActive = true,
+                LastReachedIndex = -1,
+                Hops = Enumerable.Range(0, jumps + 1).Select(index => Hop("System " + index, null)).ToArray(),
+            },
+            "Carrier estimate"
+        );
+        RouteWorkspaceViewModel route = CreateRoute(store);
+        await route.UpdateContextAsync("F123", null, null, null);
+
+        Assert.Equal(jumps, route.RemainingJumps);
+        Assert.Equal(expected, route.CarrierEstimatedTimeRemaining);
+        Assert.Equal(jumps > 0, route.HasCarrierEstimatedTimeRemaining);
+        route.IsActive = false;
+        Assert.Equal(expected, route.CarrierEstimatedTimeRemaining);
+    }
+
+    /// <summary>
+    /// Checks live ETR updates, typography and final visibility in both overlay hosts.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task EstimateBindingsRefreshInWorkspaceAndBothOverlayHosts(bool separateWindow)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
+        await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                IsActive = true,
+                LastReachedIndex = 0,
+                Hops = Enumerable.Range(0, 46).Select(index => Hop("System " + index, null)).ToArray(),
+            },
+            "Carrier estimate"
+        );
+        RouteWorkspaceViewModel route = CreateRoute(store);
+        await route.UpdateContextAsync("F123", null, null, null);
+        using var overlay = new FleetCarrierRouteOverlayViewModel(
+            route,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
+        Window window = separateWindow
+            ? new FleetCarrierRouteOverlayWindow(overlay)
+            : new Window { Content = new FleetCarrierRouteOverlayPresentation { DataContext = overlay } };
+        var workspace = new RouteWindow(route);
+        try
+        {
+            window.Show();
+            workspace.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            using WriteableBitmap? workspaceFrame = workspace.CaptureRenderedFrame();
+            TextBlock summary = window
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(block => block.Text == "44 JUMPS LEFT • ETR: 14h 40min");
+            Assert.Contains("muted", summary.Classes);
+            Assert.Contains("overlay-detail", summary.Classes);
+            Assert.Contains("type-detail", summary.Classes);
+            TextBlock readout = workspace.FindControl<TextBlock>("CarrierEstimatedTimeRemainingReadout")!;
+            Assert.True(readout.IsEffectivelyVisible);
+            Assert.Equal(route.CarrierEstimatedTimeRemaining, readout.Text);
+            SaveEstimateFrame(window, separateWindow ? "carrier-overlay.png" : "carrier-inline.png");
+            SaveEstimateFrame(workspace, "carrier-workspace.png");
+
+            var changes = new List<string>();
+            route.PropertyChanged += (_, args) => changes.Add(args.PropertyName!);
+            route.SetProgressThrough(1, true);
+            using WriteableBitmap? updated = window.CaptureRenderedFrame();
+            using WriteableBitmap? updatedWorkspace = workspace.CaptureRenderedFrame();
+            Assert.Equal("43 JUMPS LEFT • ETR: 14h 20min", summary.Text);
+            Assert.Equal("ETR: 14h 20min", readout.Text);
+            Assert.Contains(nameof(RouteWorkspaceViewModel.CarrierEstimatedTimeRemaining), changes);
+            route.SetProgressThrough(0, false);
+            Assert.Equal("ETR: 15h", route.CarrierEstimatedTimeRemaining);
+            route.SetProgressThrough(45, true);
+            using WriteableBitmap? completedWorkspace = workspace.CaptureRenderedFrame();
+            using WriteableBitmap? completedOverlay = window.CaptureRenderedFrame();
+            Assert.False(readout.IsVisible);
+            Assert.Equal(string.Empty, readout.Text);
+            Assert.Equal("0 JUMPS LEFT", summary.Text);
+        }
+        finally
+        {
+            workspace.Close();
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// Optionally captures ETR layouts for visual verification.
+    /// </summary>
+    private static void SaveEstimateFrame(Window window, string name)
+    {
+        string? output = Environment.GetEnvironmentVariable("SRVSURVEY_CARRIER_ETR_RENDER_OUTPUT");
+        if (output is null)
+        {
+            return;
+        }
+        Directory.CreateDirectory(output);
+        using WriteableBitmap frame = window.CaptureRenderedFrame()!;
+        using FileStream stream = File.Create(Path.Combine(output, name));
+        frame.Save(stream, PngBitmapEncoderOptions.Default);
     }
 
     /// <summary>
@@ -258,6 +416,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => now
         );
+        workspaces.Add(route);
         JournalEventEnvelope request = Parse(
             """
             {"timestamp":"2026-10-11T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-10-11T12:15:00Z"}
@@ -337,8 +496,15 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         }
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
@@ -350,14 +516,16 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         return new FollowRouteHop(name, systemAddress, null, null, false, false, Carrier: carrier);
     }
 
-    private static RouteWorkspaceViewModel CreateRoute(FollowRouteStore store)
+    private RouteWorkspaceViewModel CreateRoute(FollowRouteStore store)
     {
-        return new RouteWorkspaceViewModel(
+        var route = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier
         );
+        workspaces.Add(route);
+        return route;
     }
 
     private static JournalEventEnvelope Parse(string json)
