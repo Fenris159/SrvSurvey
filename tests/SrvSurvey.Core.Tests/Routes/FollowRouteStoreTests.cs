@@ -28,6 +28,110 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.False(File.Exists(result.Path));
     }
 
+    /// <summary>Working itineraries are isolated by commander and route type and stay out of the library.</summary>
+    [Theory]
+    [InlineData(FollowRouteKind.Standard)]
+    [InlineData(FollowRouteKind.FleetCarrier)]
+    public async Task WorkspaceDraftRoundTripsWithoutCreatingASavedRoute(FollowRouteKind kind)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, kind);
+        FollowRouteDocument draft = (await store.CreateNewAsync("F123")) with
+        {
+            IsActive = false,
+            AutoCopy = false,
+            LastReachedIndex = 0,
+            Notes = "Working route notes",
+            SourceSpanshKind =
+                kind == FollowRouteKind.FleetCarrier ? SpanshRouteKind.FleetCarrier : SpanshRouteKind.Neutron,
+            Hops =
+            [
+                new("Sol", 1, new(0, 0, 0), "Refuel here", true, true),
+                new("Achenar", 2, null, null, false, false),
+            ],
+        };
+
+        await store.SaveWorkspaceAsync(draft, hasSavedRoute: false);
+        FollowRouteLoadResult restored = await new FollowRouteStore(temporaryDirectory, kind).LoadAsync("F123");
+
+        Assert.True(restored.IsSuccess, restored.Error);
+        Assert.False(restored.Exists);
+        Assert.Empty(restored.Route!.Hops);
+        FollowRouteDocument working = Assert.IsType<FollowRouteDocument>(restored.WorkspaceDraft);
+        Assert.Equal(["Sol", "Achenar"], working.Hops.Select(hop => hop.Name));
+        Assert.Equal(draft.Notes, working.Notes);
+        Assert.Equal(draft.SourceSpanshKind, working.SourceSpanshKind);
+        Assert.False(working.IsActive);
+        Assert.False(working.AutoCopy);
+        Assert.Equal(0, working.LastReachedIndex);
+        Assert.Equal(new GalacticCoordinate(0, 0, 0), working.Hops[0].Position);
+        Assert.True(working.Hops[0].Refuel);
+        Assert.True(working.Hops[0].Neutron);
+        Assert.Empty(await store.ListAsync("F123"));
+        Assert.Null((await store.LoadAsync("F456")).WorkspaceDraft);
+        FollowRouteKind other =
+            kind == FollowRouteKind.Standard ? FollowRouteKind.FleetCarrier : FollowRouteKind.Standard;
+        Assert.Null((await new FollowRouteStore(temporaryDirectory, other).LoadAsync("F123")).WorkspaceDraft);
+
+        await store.CreateNewAsync("F123");
+        Assert.Null((await store.LoadAsync("F123")).WorkspaceDraft);
+    }
+
+    /// <summary>A working copy retains the selected saved baseline without writing edits into that file.</summary>
+    [Fact]
+    public async Task WorkspaceDraftDoesNotOverwriteSavedBaselineAndSaveAsReplacesIt()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [new("Sol", 1, null, null, false, false)],
+            },
+            "Original"
+        );
+        byte[] original = await File.ReadAllBytesAsync(saved.FilePath);
+        await store.SaveWorkspaceAsync(saved with { Hops = [new("Achenar", 2, null, null, false, false)] }, true);
+
+        FollowRouteLoadResult restored = await store.LoadAsync("F123");
+        Assert.True(restored.Exists);
+        Assert.Equal("Sol", Assert.Single(restored.Route!.Hops).Name);
+        Assert.Equal("Achenar", Assert.Single(restored.WorkspaceDraft!.Hops).Name);
+        Assert.Equal(original, await File.ReadAllBytesAsync(saved.FilePath));
+        Assert.Single(await store.ListAsync("F123"));
+
+        await store.SaveAsAsync(restored.WorkspaceDraft, "New route");
+        Assert.Null((await store.LoadAsync("F123")).WorkspaceDraft);
+        Assert.Equal("Achenar", Assert.Single((await store.LoadAsync("F123")).Route!.Hops).Name);
+        await store.LoadNamedAsync("F123", "Original.json", false);
+        Assert.Null((await store.LoadAsync("F123")).WorkspaceDraft);
+    }
+
+    /// <summary>Invalid working snapshots produce errors without replacing the stored evidence.</summary>
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("{\"hops\":42}")]
+    public async Task InvalidWorkspaceDraftIsReportedWithoutRewritingIt(string draft)
+    {
+        string path = Path.Combine(temporaryDirectory, "Routes", "F123", ".workspace.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        string json = "{\"draft\":" + draft + "}";
+        await File.WriteAllTextAsync(path, json);
+
+        FollowRouteLoadResult result = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
+
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.Error);
+        Assert.Equal(json, await File.ReadAllTextAsync(path));
+    }
+
+    /// <summary>Workspace persistence rejects routes belonging to the other library.</summary>
+    [Fact]
+    public async Task WorkspaceDraftRejectsAnotherRouteKind()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument route = (await store.CreateNewAsync("F123")) with { Kind = FollowRouteKind.FleetCarrier };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.SaveWorkspaceAsync(route, false));
+    }
+
     [Fact]
     public async Task LoadReadsLegacyRouteShapeAndComputedState()
     {

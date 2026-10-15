@@ -109,11 +109,11 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public bool CanExport => HasSelection && !IsBusy && !IsDialogVisible;
 
-    public bool CanDeactivate => workspace.HasSavedRoute && !workspace.IsBusy && !IsBusy;
+    public bool CanDeactivate => workspace.HasRoute && !workspace.IsBusy && !IsBusy;
 
     public bool AutoCopy => workspace.AutoCopy;
 
-    public bool CanToggleAutoCopy => workspace.HasSavedRoute && !workspace.IsBusy && !IsBusy;
+    public bool CanToggleAutoCopy => workspace.HasRoute && !workspace.IsBusy && !IsBusy;
 
     public string SelectionSummary
     {
@@ -682,6 +682,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             );
             route.SetNotes(saved.Notes);
             workspace.ApplyExternalNotes(route.FilePath, saved.Notes);
+            await workspace.FlushWorkspaceAsync();
             StatusMessage = $"Saved notes for {route.Name}.";
             CloseDialogs();
         }
@@ -862,6 +863,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         if (
             eventArgs.PropertyName
             is nameof(RouteWorkspaceViewModel.HasSavedRoute)
+                or nameof(RouteWorkspaceViewModel.HasRoute)
                 or nameof(RouteWorkspaceViewModel.IsBusy)
         )
         {

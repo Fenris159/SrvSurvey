@@ -34,6 +34,137 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Contains("No followed route", viewModel.StatusMessage);
     }
 
+    /// <summary>Imported drafts survive workspace reloads and application sessions without becoming saved routes.</summary>
+    [Theory]
+    [InlineData(FollowRouteKind.Standard, false)]
+    [InlineData(FollowRouteKind.FleetCarrier, false)]
+    [InlineData(FollowRouteKind.Standard, true)]
+    [InlineData(FollowRouteKind.FleetCarrier, true)]
+    public async Task UnsavedImportedRouteSurvivesReopeningAndRestarting(FollowRouteKind kind, bool search)
+    {
+        FollowRouteHop[] hops =
+        [
+            Hop("Sol", 1, new GalacticCoordinate(0, 0, 0)),
+            Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
+            Hop("Third", 3, new GalacticCoordinate(3, 4, 12)),
+        ];
+        RouteWorkspaceViewModel model = CreateViewModel(
+            spanshClient: new StubSpanshClient(hops),
+            routeKind: kind,
+            plannerClient: search ? new StubPlannerClient() : null
+        );
+        using SpanshSearchViewModel? searchModel = model.SpanshSearch;
+        await model.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        string planner = kind == FollowRouteKind.FleetCarrier ? "fleet-carrier" : "plotter";
+        if (search)
+        {
+            SpanshPlannerDefinition definition =
+                kind == FollowRouteKind.FleetCarrier
+                    ? SpanshPlannerCatalog.CarrierPlanners[0]
+                    : SpanshPlannerCatalog.ShipPlanners[0];
+            Assert.True(
+                await model.SearchSpanshAsync(new StubPlannerClient(), new(definition, []), CancellationToken.None)
+            );
+        }
+        else
+        {
+            await model.ImportSpanshUrlAsync(
+                $"https://spansh.co.uk/{planner}/results/74FA2952-2048-11F1-8302-B948FF6DF5C1"
+            );
+        }
+
+        for (int opening = 0; opening < 2; opening++)
+        {
+            await model.RefreshAsync();
+            Assert.Equal(hops, model.CreateSnapshot()!.Hops);
+            Assert.True(model.IsActive);
+            Assert.Equal("Second", model.NextHopName);
+            Assert.False(model.HasSavedRoute);
+            Assert.Empty(model.SavedRoutes);
+        }
+
+        RouteWorkspaceViewModel restarted = CreateViewModel(routeKind: kind);
+        await restarted.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        Assert.Equal(hops, restarted.CreateSnapshot()!.Hops);
+        Assert.True(restarted.IsActive);
+        Assert.Equal("Second", restarted.NextHopName);
+        Assert.False(restarted.HasSavedRoute);
+        Assert.True(await restarted.SetAutoCopyAsync(true));
+        await restarted.RefreshAsync();
+        Assert.True(restarted.AutoCopy);
+        Assert.Empty(restarted.SavedRoutes);
+    }
+
+    /// <summary>Unsaved routes retain manual edits, notes, and journal arrivals across commander switches and restarts.</summary>
+    [Theory]
+    [InlineData(FollowRouteKind.Standard, "FSDJump")]
+    [InlineData(FollowRouteKind.FleetCarrier, "CarrierJump")]
+    public async Task UnsavedRouteKeepsProgressAndPreferencesAndNewClearsRecovery(FollowRouteKind kind, string arrival)
+    {
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: kind);
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        await model.ImportNamesAsync(["Sol", "Second", "Third"]);
+        model.SetProgressThrough(0, true);
+        model.AutoCopy = false;
+        model.IsActive = false;
+        model.NotesDraft = "Check the fuel before departure.";
+        await model.SaveNotesAsync();
+        await model.UpdateContextAsync("F456", "Elsewhere", 99, null);
+        Assert.False(model.HasRoute);
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        Assert.Equal(1, model.ReachedCount);
+        Assert.False(model.AutoCopy);
+        Assert.False(model.IsActive);
+        Assert.Equal("Check the fuel before departure.", model.CreateSnapshot()!.Notes);
+
+        model.IsActive = true;
+        await model.ApplyJournalEventsAsync([
+            Parse($$"""{"event":"{{arrival}}","StarSystem":"Second","SystemAddress":2}"""),
+        ]);
+        await model.FlushWorkspaceAsync();
+        RouteWorkspaceViewModel restarted = CreateViewModel(routeKind: kind);
+        await restarted.UpdateContextAsync("F123", "Second", 2, null);
+        Assert.Equal(2, restarted.ReachedCount);
+        Assert.True(restarted.IsActive);
+        Assert.Equal("Third", restarted.NextHopName);
+        Assert.False(restarted.HasSavedRoute);
+        if (kind == FollowRouteKind.FleetCarrier)
+        {
+            Assert.True(restarted.ShouldShowFleetCarrierRouteOverlay);
+        }
+        await restarted.ResetAsync();
+        await restarted.RefreshAsync();
+        Assert.Equal(0, restarted.ReachedCount);
+        await restarted.ConfirmNewAsync();
+        await restarted.RefreshAsync();
+        Assert.False(restarted.HasRoute);
+        Assert.Empty(restarted.SavedRoutes);
+
+        await restarted.ImportNamesAsync(["Sol", "Achenar"]);
+        Assert.True(await restarted.DeactivateCurrentRouteAsync());
+        await restarted.RefreshAsync();
+        Assert.False(restarted.HasRoute);
+    }
+
+    /// <summary>Replacing a working route updates recovery while storage errors keep the active in-memory itinerary.</summary>
+    [Fact]
+    public async Task ReplacementAndStorageFailuresDoNotSilentlyLoseWorkingRoutes()
+    {
+        RouteWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        await model.ImportNamesAsync(["Sol", "Second"]);
+        await model.ImportNamesAsync(["Achenar", "Third"]);
+        await model.RefreshAsync();
+        Assert.Equal(["Achenar", "Third"], model.Hops.Select(hop => hop.Name));
+
+        string workspace = Path.Combine(temporaryDirectory, "Routes", "F123", ".workspace.json");
+        File.Delete(workspace);
+        Directory.CreateDirectory(workspace);
+        await model.ImportNamesAsync(["Muang", "Shinrarta Dezhra"]);
+        Assert.Equal(["Muang", "Shinrarta Dezhra"], model.Hops.Select(hop => hop.Name));
+        Assert.Contains("could not be retained", model.StatusMessage);
+    }
+
     /// <summary>Verifies poi annotations preserve imported route and progress.</summary>
     [Fact]
     public async Task PoiAnnotationsPreserveImportedRouteAndProgress()
@@ -497,6 +628,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.ImportNamesAsync(["Beagle Point"]);
         Assert.True(viewModel.HasDefinitionChanges);
         Assert.False(viewModel.CanSaveChanges);
+        await viewModel.RefreshAsync();
+        Assert.Equal("Beagle Point", Assert.Single(viewModel.Hops).Name);
         await viewModel.DiscardAsync();
 
         Assert.Equal(["Sol", "Achenar"], viewModel.Hops.Select(hop => hop.Name));
@@ -735,6 +868,11 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Contains(nameof(RouteBioTargetItemViewModel.IsCompleted), notifications);
         FollowRouteLoadResult reloaded = await store.LoadAsync("F123");
         Assert.True(reloaded.Route!.Hops[0].BioTargets[0].IsCompleted);
+        RouteWorkspaceViewModel restarted = CreateViewModel();
+        await restarted.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        Assert.True(Assert.Single(restarted.CurrentBioTargets).IsCompleted);
+        Assert.False(restarted.HasDefinitionChanges);
+        Assert.False(restarted.IsDirty);
 
         notifications.Clear();
         await viewModel.SetBioTargetCompletedAsync(target, true);
@@ -828,7 +966,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         IStarSystemResolver? resolver = null,
         ISpanshRouteClient? spanshClient = null,
         FollowRouteKind routeKind = FollowRouteKind.Standard,
-        Func<DateTimeOffset>? utcNow = null
+        Func<DateTimeOffset>? utcNow = null,
+        ISpanshPlannerClient? plannerClient = null
     )
     {
         var store = new FollowRouteStore(temporaryDirectory, routeKind);
@@ -837,7 +976,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             new RouteNameImporter(resolver ?? new StubResolver(new Dictionary<string, StarSystemReference>())),
             spanshClient ?? new StubSpanshClient([]),
             routeKind,
-            utcNow
+            utcNow,
+            plannerClient: plannerClient
         );
     }
 
@@ -908,5 +1048,17 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             CallCount++;
             return Task.FromResult(hops);
         }
+    }
+
+    private sealed class StubPlannerClient : ISpanshPlannerClient
+    {
+        /// <summary>Returns a deterministic planner job for testing the real search-to-route handoff.</summary>
+        public Task<SpanshRouteReference> SubmitAsync(
+            SpanshPlannerRequest request,
+            CancellationToken cancellationToken = default
+        ) =>
+            Task.FromResult(
+                new SpanshRouteReference(Guid.Parse("74FA2952-2048-11F1-8302-B948FF6DF5C1"), request.Planner.Kind)
+            );
     }
 }

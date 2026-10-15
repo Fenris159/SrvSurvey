@@ -16,6 +16,8 @@ public sealed class FollowRouteStore
     private const string RouteFileExtension = ".json";
     private const string WorkspaceFileName = ".workspace.json";
     private const string NotePropertyName = "notes";
+    private const string SelectedFilePropertyName = "selectedFile";
+    private const string DraftPropertyName = "draft";
     private const string SavedRouteMissingMessage = "The saved route no longer exists.";
     private const string SavedRouteMustBeJsonFileMessage = "The selected route must be a JSON file.";
     private const string SelectedRouteMissingMessage = "The selected route file no longer exists:";
@@ -49,6 +51,40 @@ public sealed class FollowRouteStore
             return new FollowRouteLoadResult(GetPath(frontierId), true, null, selection.Error);
         }
 
+        FollowRouteLoadResult loaded = await LoadSelectionAsync(frontierId, selection, cancellationToken)
+            .ConfigureAwait(false);
+        if (loaded.Route is null || selection.Draft is null)
+        {
+            return loaded;
+        }
+
+        try
+        {
+            return loaded with { WorkspaceDraft = ParseWorkspaceDraft(loaded.Route, selection.Draft) };
+        }
+        catch (InvalidDataException exception)
+        {
+            return loaded with { Route = null, Error = exception.Message };
+        }
+    }
+
+    /// <summary>Reuses unchanged baseline hops so recovered body lists do not appear to be edited definitions.</summary>
+    private FollowRouteDocument ParseWorkspaceDraft(FollowRouteDocument baseline, JsonObject root)
+    {
+        FollowRouteDocument draft = Parse(baseline.FrontierId, baseline.FilePath, root);
+        bool sameHops =
+            draft.Hops.Count == baseline.Hops.Count
+            && JsonNode.DeepEquals(MergeHops(null, draft.Hops), MergeHops(null, baseline.Hops));
+        return sameHops ? draft with { Hops = baseline.Hops } : draft;
+    }
+
+    /// <summary>Loads the selected library route or the empty baseline beneath a workspace draft.</summary>
+    private async Task<FollowRouteLoadResult> LoadSelectionAsync(
+        string frontierId,
+        WorkspaceSelectionReadResult selection,
+        CancellationToken cancellationToken
+    )
+    {
         if (selection.Exists)
         {
             if (selection.FileName is null)
@@ -82,6 +118,42 @@ public sealed class FollowRouteStore
         }
 
         return await LoadFromPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Persists the working itinerary separately from the commander's saved route library.</summary>
+    public async Task SaveWorkspaceAsync(
+        FollowRouteDocument route,
+        bool hasSavedRoute,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        ValidateFileName(route.FrontierId, nameof(route.FrontierId));
+        if (route.Kind != routeKind)
+        {
+            throw new InvalidOperationException("The route belongs to a different route library.");
+        }
+
+        string? path = hasSavedRoute ? ResolveWritablePath(route) : null;
+        var root = new JsonObject();
+        WriteOptional(root, SelectedFilePropertyName, path is null ? null : Path.GetFileName(path));
+        if (path is not null)
+        {
+            root["legacy"] = GetLegacyPaths(route.FrontierId).Contains(path, StringComparer.OrdinalIgnoreCase);
+        }
+
+        var draft = new JsonObject();
+        WriteRoute(draft, route);
+        root[DraftPropertyName] = draft;
+        await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await WriteObjectAsync(GetWorkspacePath(route.FrontierId), root, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            saveLock.Release();
+        }
     }
 
     public async Task<IReadOnlyList<FollowRouteCatalogEntry>> ListAsync(
@@ -862,6 +934,13 @@ public sealed class FollowRouteStore
             root = [];
         }
 
+        WriteRoute(root, route);
+        await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Writes route fields into either a saved document or a recoverable workspace snapshot.</summary>
+    private static void WriteRoute(JsonObject root, FollowRouteDocument route)
+    {
         WriteOptional(root, "name", NormalizeOptionalText(route.Name));
         WriteOptional(root, NotePropertyName, NormalizeNotes(route.Notes));
         WriteOptional(root, "spanshRouteKind", route.SourceSpanshKind?.ToString());
@@ -878,7 +957,6 @@ public sealed class FollowRouteStore
         root["autoCopy"] = route.AutoCopy;
         root["last"] = route.LastReachedIndex;
         root["hops"] = MergeHops(root["hops"] as JsonArray, route.Hops);
-        await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<JsonObject> ReadRequiredObjectAsync(string path, CancellationToken cancellationToken)
@@ -909,12 +987,12 @@ public sealed class FollowRouteStore
             return new WorkspaceSelectionReadResult(true, null, false, read.Error);
         }
 
-        string? fileName = GetString(read.Root, "selectedFile");
+        string? fileName = GetString(read.Root, SelectedFilePropertyName);
         if (fileName is not null)
         {
             try
             {
-                ValidateFileName(fileName, "selectedFile");
+                ValidateFileName(fileName, SelectedFilePropertyName);
             }
             catch (ArgumentException exception)
             {
@@ -927,7 +1005,23 @@ public sealed class FollowRouteStore
             }
         }
 
-        return new WorkspaceSelectionReadResult(true, fileName, GetBoolean(read.Root, "legacy") ?? false, null);
+        if (read.Root.ContainsKey(DraftPropertyName) && read.Root[DraftPropertyName] is not JsonObject)
+        {
+            return new WorkspaceSelectionReadResult(
+                true,
+                null,
+                false,
+                $"Could not read {path}: draft is not an object."
+            );
+        }
+
+        return new WorkspaceSelectionReadResult(
+            true,
+            fileName,
+            GetBoolean(read.Root, "legacy") ?? false,
+            null,
+            read.Root[DraftPropertyName] as JsonObject
+        );
     }
 
     private async Task WriteSelectionAsync(
@@ -956,7 +1050,7 @@ public sealed class FollowRouteStore
     )
     {
         var root = new JsonObject();
-        WriteOptional(root, "selectedFile", fileName);
+        WriteOptional(root, SelectedFilePropertyName, fileName);
         if (fileName is not null)
         {
             root["legacy"] = isLegacy;
@@ -1614,5 +1708,11 @@ public sealed class FollowRouteStore
 
     private sealed record JsonObjectReadResult(JsonObject? Root, string? Error);
 
-    private sealed record WorkspaceSelectionReadResult(bool Exists, string? FileName, bool IsLegacy, string? Error);
+    private sealed record WorkspaceSelectionReadResult(
+        bool Exists,
+        string? FileName,
+        bool IsLegacy,
+        string? Error,
+        JsonObject? Draft = null
+    );
 }

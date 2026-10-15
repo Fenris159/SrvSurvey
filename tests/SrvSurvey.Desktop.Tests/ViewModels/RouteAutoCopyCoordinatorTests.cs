@@ -242,6 +242,35 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.False(carrier.IsDirty);
     }
 
+    /// <summary>Recovered unsaved itineraries participate in exclusive next-hop clipboard ownership.</summary>
+    [Fact]
+    public async Task ReconcilePreservesAutoCopyForUnsavedRoutesAndPersistsTheOtherSelection()
+    {
+        RouteWorkspaceViewModel standard = await CreateUnsavedWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateUnsavedWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        await standard.ImportNamesAsync(["Sol", "Achenar"]);
+        await carrier.ImportNamesAsync(["Sol", "Colonia"]);
+        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, CreateInactiveBoxel().Session);
+
+        await coordinator.ReconcileAsync();
+        await carrier.FlushWorkspaceAsync();
+        await carrier.RefreshAsync();
+        Assert.True(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        Assert.Equal(2, carrier.RouteCount);
+        await coordinator.ClaimAsync(carrier);
+        Assert.True(standard.AutoCopy);
+
+        carrier.AutoCopy = true;
+        await coordinator.ClaimAsync(carrier);
+        await standard.FlushWorkspaceAsync();
+        await standard.RefreshAsync();
+        Assert.False(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+        Assert.False(standard.HasSavedRoute);
+        Assert.False(carrier.HasSavedRoute);
+    }
+
     private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(FollowRouteKind kind, bool isActive = true)
     {
         var store = new FollowRouteStore(temporaryDirectory, kind);

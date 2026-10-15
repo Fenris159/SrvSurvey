@@ -4583,6 +4583,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(routeAutoCopyCoordinator.Dispose);
         TryDispose(Route.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
+        await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
+        await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
         TryDispose(boxelNameSuggestions.Dispose);

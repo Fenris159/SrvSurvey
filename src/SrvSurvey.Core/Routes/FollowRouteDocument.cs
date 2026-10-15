@@ -80,7 +80,13 @@ public sealed record FollowRouteBioTarget(
     bool IsBiological = false
 );
 
-public sealed record FollowRouteLoadResult(string Path, bool Exists, FollowRouteDocument? Route, string? Error)
+public sealed record FollowRouteLoadResult(
+    string Path,
+    bool Exists,
+    FollowRouteDocument? Route,
+    string? Error,
+    FollowRouteDocument? WorkspaceDraft = null
+)
 {
     public bool IsSuccess => Route is not null;
 }

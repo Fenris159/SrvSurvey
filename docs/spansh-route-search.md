@@ -4,8 +4,17 @@ The **Spansh Search** button in the Route Workspace header opens a dedicated
 search window. Choose a planner, fill its inputs, and select **Search**. SrvSurvey
 submits the form, waits for the Spansh job, and automatically loads the result
 into the navigation itinerary through the existing route importer. The search
-window closes on success. Results are an active on-screen draft; **Save As**
-keeps the route, just as with a Spansh URL imported from the clipboard.
+window closes on success. Results become the active working route. SrvSurvey
+automatically retains this itinerary, its progress, notes, and tracking settings
+when the workspace closes or the application restarts. **Save As** separately
+adds a named copy to the route library. Clipboard imports behave the same way.
+
+Working routes are separate for each commander and for the ship and Fleet Carrier
+workspaces. Reopening or reloading either workspace restores its working route.
+A successful new search or import replaces it; an empty, failed, or cancelled
+search preserves it. **New** clears the working route, **Reset** restarts its
+progress, and **Undo** restores the saved baseline. Retaining a working copy
+does not overwrite a saved route's definition or add an unnamed library entry.
 
 The ship workspace offers Neutron Plotter, Road to Riches, Tourist Planner,
 Galaxy Plotter, Expressway to Exomastery, and Colonisation Plotter. Ammonia,

@@ -70,7 +70,10 @@ public sealed class SpanshSearchPresentationTests
             }
             SaveFrame(window, carrier ? "carrier-workspace.png" : "route-workspace.png");
             SaveFrame(dialog, carrier ? "carrier-search.png" : "neutron-search.png");
+            var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            dialog.Closed += (_, _) => closed.TrySetResult();
             dialog.FindControl<Button>("SearchButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(dialog.IsVisible);
             Assert.Empty(window.OwnedWindows);
             Assert.Equal(2, route.RouteCount);
@@ -84,6 +87,7 @@ public sealed class SpanshSearchPresentationTests
         {
             window.Close();
             route.SpanshSearch!.Dispose();
+            await route.FlushWorkspaceAsync();
             if (Directory.Exists(directory))
             {
                 Directory.Delete(directory, true);

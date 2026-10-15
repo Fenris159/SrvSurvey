@@ -74,6 +74,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
 
         Assert.False(manager.IsDialogVisible);
         Assert.Equal("Watch the neutron jump near waypoint five.", beta.Notes);
+        await workspace.RefreshAsync();
+        Assert.Equal(beta.Notes, workspace.CreateSnapshot()!.Notes);
 
         beta.IsSelected = true;
         manager.RequestDeleteCommand.Execute(null);

@@ -22821,6 +22821,10 @@
       "translation": "Die zuletzt gespeicherten Oberflächenkoordinaten wurden wiederhergestellt."
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "Die funktionierende Route wurde wiederhergestellt. Speichern unter... fügt es Ihrer Routenbibliothek hinzu."
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "{0} importierte Kolonisierungsprojekte aus {1}.{2} wiederhergestellt"
     },
@@ -30263,6 +30267,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "Das weiße oder separat thematisierte PIP bedeutet, dass in externen Kandidatendaten keine Entdeckung für diesen vorhergesagten Organismus in der aktuellen galaktischen Region gemeldet wurde. Es ist beratend, bis ein Tagebuchereignis im Spiel das Ergebnis bestätigt; Das Schlüpfen bleibt bestehen, da der Organismus vorhergesagt wird."
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "Die Arbeitsroute konnte nicht beibehalten werden: {0}"
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -60659,6 +60667,10 @@
       "translation": "Se restauraron las últimas coordenadas de superficie guardadas."
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "Restableció la ruta de trabajo. Guardar como... lo agrega a su biblioteca de rutas."
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Proyecto(s) de colonización importados {0} restaurados de {1}.{2}"
     },
@@ -68101,6 +68113,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "El PIP blanco o con un tema separado significa que los datos externos de los candidatos no han reportado ningún descubrimiento para este organismo predicho en la región galáctica actual. Es una recomendación hasta que un evento del diario del juego confirme el resultado; La eclosión permanece porque el organismo está predicho."
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "No se pudo conservar la ruta de trabajo: {0}"
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -98497,6 +98513,10 @@
       "translation": "Restauration des dernières coordonnées de surface enregistrées."
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "Restauration de l'itinéraire de travail. Enregistrer sous... l'ajoute à votre bibliothèque d'itinéraires."
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Projet(s) de colonisation importé(s) {0} restauré(s) à partir de {1}.{2}"
     },
@@ -105939,6 +105959,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "Le PIP blanc ou à thème séparé signifie que les données candidates externes n'ont aucune découverte signalée pour cet organisme prédit dans la région galactique actuelle. Il s'agit d'un avis jusqu'à ce qu'un événement du journal du jeu confirme le résultat ; l'éclosion demeure car l'organisme est prédit."
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "L'itinéraire de travail n'a pas pu être conservé : {0}"
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -136335,6 +136359,10 @@
       "translation": "Restauradas as últimas coordenadas de superfície salvas."
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "Restaurou a rota de trabalho. Salvar como... adiciona-o à sua biblioteca de rotas."
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Projeto(s) de colonização importado {0} restaurado(s) de {1}.{2}"
     },
@@ -143777,6 +143805,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "O PIP branco ou com tema separado significa que os dados de candidatos externos não têm nenhuma descoberta relatada para este organismo previsto na atual região galáctica. É consultivo até que um evento do diário do jogo confirme o resultado; a eclosão permanece porque o organismo está previsto."
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "A rota de trabalho não pôde ser mantida: {0}"
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -174173,6 +174205,10 @@
       "translation": "Восстановлены последние сохраненные координаты поверхности."
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "Восстановил рабочий маршрут. Сохранить как... добавит его в вашу библиотеку маршрутов."
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Восстановлены {0} импортированные проекты колонизации из {1}.{2}."
     },
@@ -181615,6 +181651,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "Белый PIP или PIP с отдельной темой означает, что данные внешних кандидатов не содержат сообщений об открытии этого предсказанного организма в текущем регионе Галактики. Это носит рекомендательный характер до тех пор, пока событие внутриигрового журнала не подтвердит результат; вылупление остается, потому что организм прогнозируется."
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "Не удалось сохранить рабочий маршрут: {0}."
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -212011,6 +212051,10 @@
       "translation": "恢复上次保存的表面坐标。"
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "恢复了工作路线。另存为... 将其添加到您的路线库中。"
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "恢复了 {0} 从 {1}.{2} 导入的殖民项目"
     },
@@ -219453,6 +219497,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "白色或单独主题的 PIP 意味着外部候选数据在当前银河区域没有报告发现这种预测的生物体。在游戏内日志活动确认结果之前，此信息仅供参考；孵化仍然存在，因为有机体是被预测的。"
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "无法保留工作路线：{0}"
     },
     {
       "source": "The written overlay theme did not verify.",
@@ -249849,6 +249897,10 @@
       "translation": "* RESTORED THE LAST SAVED SURFACE COORDINATES. >>>!"
     },
     {
+      "source": "Restored the working route. Save As... adds it to your route library.",
+      "translation": "* RESTORED THE WORKING ROUTE. SAVE AS... ADDS IT TO YOUR ROUTE LIBRARY. >>>!"
+    },
+    {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "* RESTORED {0} IMPORTED COLONIZATION PROJECT(S) FROM {1}.{2} >>>!"
     },
@@ -257291,6 +257343,10 @@
     {
       "source": "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
       "translation": "* THE WHITE OR SEPARATELY THEMED PIP MEANS EXTERNAL CANDIDATE DATA HAS NO REPORTED DISCOVERY FOR THIS PREDICTED ORGANISM IN THE CURRENT GALACTIC REGION. IT IS ADVISORY UNTIL AN IN-GAME JOURNAL EVENT CONFIRMS THE RESULT; HATCHING REMAINS BECAUSE THE ORGANISM IS PREDICTED. >>>!"
+    },
+    {
+      "source": "The working route could not be retained: {0}",
+      "translation": "* THE WORKING ROUTE COULD NOT BE RETAINED: {0} >>>!"
     },
     {
       "source": "The written overlay theme did not verify.",
