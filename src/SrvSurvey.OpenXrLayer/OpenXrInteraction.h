@@ -64,7 +64,7 @@ class InteractionActions
     std::vector<XrActionSuggestedBinding> bindings;
     std::atomic<bool> ready{false};
     bool everAttached = false;
-    XrResult error = XR_SUCCESS;
+    std::atomic<XrResult> error{XR_SUCCESS};
 
     InteractionActions(XrInstance handle, PFN_xrGetInstanceProcAddr next) : instance(handle), getProc(next)
     {
@@ -261,7 +261,7 @@ class InteractionSession
     }
     void Report(int64_t now)
     {
-        XrResult failure = error != XR_SUCCESS ? error : (actions ? actions->error : XR_SUCCESS);
+        XrResult failure = error != XR_SUCCESS ? error : (actions ? actions->error.load() : XR_SUCCESS);
         mailbox.Report(now, failure != XR_SUCCESS ? 2u : (attached && actions->ready ? 1u : 0u), failure);
     }
     void Publish(const PointerUpdate &update, int64_t now)
