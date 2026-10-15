@@ -13,6 +13,30 @@ public sealed class RouteManagerViewModelTests : IAsyncLifetime
         $"SrvSurvey-route-manager-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Awaiting a coalesced refresh must wait until the route manager can accept another command.</summary>
+    [Fact]
+    public async Task ACoalescedRefreshWaitsForTheRunningRefreshToFinish()
+    {
+        (FollowRouteStore _, RouteWorkspaceViewModel _, RouteManagerViewModel manager) = await CreateViewModelsAsync();
+        Task? coalesced = null;
+        bool completedDuringRefresh = false;
+        manager.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(RouteManagerViewModel.IsBusy) && manager.IsBusy && coalesced is null)
+            {
+                coalesced = manager.RefreshAsync();
+                completedDuringRefresh = coalesced.IsCompleted;
+            }
+        };
+
+        await manager.RefreshAsync();
+
+        Assert.NotNull(coalesced);
+        Assert.False(completedDuringRefresh);
+        await coalesced;
+        Assert.False(manager.IsBusy);
+    }
+
     [Fact]
     public async Task SameCommanderAndCatalogRefreshPreserveCollectionAndRows()
     {

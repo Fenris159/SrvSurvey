@@ -11305,6 +11305,10 @@
       "translation": "Kraftstoffsprünge"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "Für die Kraftstoffberechnung werden Anfangswerte für Tank und Markt sowie der Verbrauch pro Sprung benötigt."
+    },
+    {
       "source": "Fuel left",
       "translation": "Kraftstoff übrig"
     },
@@ -13631,6 +13635,10 @@
     {
       "source": "Instructions",
       "translation": "Anweisungen"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "Nicht genug Tritium für den Sprung nach {0}."
     },
     {
       "source": "Insulating membrane",
@@ -22747,6 +22755,10 @@
     {
       "source": "Restock",
       "translation": "Auffüllen"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "Nur bei niedrigem Füllstand nachfüllen"
     },
     {
       "source": "Restore",
@@ -49147,6 +49159,10 @@
       "translation": "Saltos de combustible"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "Para calcular el combustible se necesitan los valores iniciales del depósito y del mercado, y el consumo por salto."
+    },
+    {
       "source": "Fuel left",
       "translation": "Queda combustible"
     },
@@ -51473,6 +51489,10 @@
     {
       "source": "Instructions",
       "translation": "Instrucciones"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "Tritio insuficiente para saltar a {0}."
     },
     {
       "source": "Insulating membrane",
@@ -60589,6 +60609,10 @@
     {
       "source": "Restock",
       "translation": "Reabastecer"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "Repostar solo cuando quede poco combustible"
     },
     {
       "source": "Restore",
@@ -86989,6 +87013,10 @@
       "translation": "Sauts de carburant"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "Le calcul nécessite les quantités initiales du réservoir et du marché, ainsi que le carburant consommé par saut."
+    },
+    {
       "source": "Fuel left",
       "translation": "Carburant restant"
     },
@@ -89315,6 +89343,10 @@
     {
       "source": "Instructions",
       "translation": "Instructions"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "Tritium insuffisant pour le saut vers {0}."
     },
     {
       "source": "Insulating membrane",
@@ -98431,6 +98463,10 @@
     {
       "source": "Restock",
       "translation": "Réapprovisionner"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "Ravitailler uniquement quand le niveau est bas"
     },
     {
       "source": "Restore",
@@ -124831,6 +124867,10 @@
       "translation": "Saltos de combustível"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "Os cálculos de combustível requerem os valores iniciais do tanque, do mercado e do combustível por salto."
+    },
+    {
       "source": "Fuel left",
       "translation": "Combustível restante"
     },
@@ -127157,6 +127197,10 @@
     {
       "source": "Instructions",
       "translation": "Instruções"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "Trítio insuficiente para o salto para {0}."
     },
     {
       "source": "Insulating membrane",
@@ -136273,6 +136317,10 @@
     {
       "source": "Restock",
       "translation": "Reabastecer"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "Reabastecer apenas quando houver pouco combustível"
     },
     {
       "source": "Restore",
@@ -162673,6 +162721,10 @@
       "translation": "Скачки топлива"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "Для расчёта топлива нужны начальные запасы в баке и на рынке, а также расход на прыжок."
+    },
+    {
       "source": "Fuel left",
       "translation": "Осталось топлива"
     },
@@ -164999,6 +165051,10 @@
     {
       "source": "Instructions",
       "translation": "Инструкции"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "Недостаточно трития для прыжка в {0}."
     },
     {
       "source": "Insulating membrane",
@@ -174115,6 +174171,10 @@
     {
       "source": "Restock",
       "translation": "Пополнение запасов"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "Пополнять бак только при нехватке топлива"
     },
     {
       "source": "Restore",
@@ -200515,6 +200575,10 @@
       "translation": "燃料跳跃"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "燃料计算需要油箱和市场的初始存量，以及每次跃迁的燃料消耗量。"
+    },
+    {
       "source": "Fuel left",
       "translation": "剩余燃油"
     },
@@ -202841,6 +202905,10 @@
     {
       "source": "Instructions",
       "translation": "指示"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "氚不足，无法跃迁至 {0}。"
     },
     {
       "source": "Insulating membrane",
@@ -211957,6 +212025,10 @@
     {
       "source": "Restock",
       "translation": "补货"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "仅在燃料不足时补充"
     },
     {
       "source": "Restore",
@@ -238357,6 +238429,10 @@
       "translation": "* FUEL JUMPS >>>!"
     },
     {
+      "source": "Fuel calculations require starting tank, market, and jump fuel values.",
+      "translation": "* FUEL CALCULATIONS REQUIRE STARTING TANK, MARKET, AND JUMP FUEL VALUES. >>>!"
+    },
+    {
       "source": "Fuel left",
       "translation": "* FUEL LEFT >>>!"
     },
@@ -240683,6 +240759,10 @@
     {
       "source": "Instructions",
       "translation": "* INSTRUCTIONS >>>!"
+    },
+    {
+      "source": "Insufficient tritium for the jump to {0}.",
+      "translation": "* INSUFFICIENT TRITIUM FOR THE JUMP TO {0}. >>>!"
     },
     {
       "source": "Insulating membrane",
@@ -249799,6 +249879,10 @@
     {
       "source": "Restock",
       "translation": "* RESTOCK >>>!"
+    },
+    {
+      "source": "Restock only when low",
+      "translation": "* RESTOCK ONLY WHEN LOW >>>!"
     },
     {
       "source": "Restore",

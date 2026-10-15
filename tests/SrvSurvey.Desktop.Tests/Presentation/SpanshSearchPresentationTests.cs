@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Controls;
@@ -16,6 +17,103 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SpanshSearchPresentationTests
 {
+    /// <summary>The carrier-only behavior checkbox updates actual rows, saves its mode, and restores the source table.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CarrierRestockBehaviorCheckboxReinterpretsRowsAndPersistsOnlyTheOption(bool carrier)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-CarrierFuel-UI-" + Guid.NewGuid().ToString("N"));
+        FollowRouteKind kind = carrier ? FollowRouteKind.FleetCarrier : FollowRouteKind.Standard;
+        double[] fuelCosts = [0, 400, 400, 400];
+        var store = new FollowRouteStore(directory, kind);
+        await store.SaveAsAsync(
+            (await store.CreateNewAsync("F1")) with
+            {
+                IsActive = true,
+                LastReachedIndex = 0,
+                Hops = Enumerable
+                    .Range(0, 4)
+                    .Select(index => new FollowRouteHop(
+                        "Stop " + index,
+                        index + 1,
+                        null,
+                        null,
+                        false,
+                        false,
+                        Carrier: carrier
+                            ? new(400, 1200 - index * 400, 1000, 1500, fuelCosts[index], false, false, false, null)
+                            : null
+                    ))
+                    .ToArray(),
+            },
+            "Fuel test"
+        );
+        var route = new RouteWorkspaceViewModel(
+            new FollowRouteService(store),
+            new RouteNameImporter(new Resolver()),
+            new Client(),
+            kind
+        );
+        var window = new RouteWindow(route);
+        try
+        {
+            await route.UpdateContextAsync("F1", "Stop 0", 1, null);
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            CheckBox checkbox = window.FindControl<CheckBox>("CarrierRestockOnlyWhenLowCheckBox")!;
+            Assert.Equal(carrier, checkbox.IsEffectivelyVisible);
+            Assert.False(checkbox.IsChecked);
+            if (!carrier)
+            {
+                route.RestockOnlyWhenLow = true;
+                Assert.False(route.RestockOnlyWhenLow);
+                return;
+            }
+
+            checkbox.IsChecked = true;
+            Assert.True(route.RestockOnlyWhenLow);
+            Assert.Equal($"{600:N0}", route.Hops[1].CarrierFuelRemaining);
+            Assert.Equal("YES", route.Hops[2].CarrierRestock);
+            Assert.Equal($"{800:N0}", route.Hops[2].CarrierRestockAmount);
+            Assert.False(route.HasCarrierFuelPlanMessage);
+            Assert.False(route.HasDefinitionChanges);
+            Assert.True(route.CanSaveChanges);
+            SaveFrame(window, "carrier-restock-only-when-low.png");
+
+            await route.SaveAsync();
+            Assert.False(route.IsDirty);
+            FollowRouteDocument saved = (await store.LoadAsync("F1")).Route!;
+            Assert.True(saved.RestockOnlyWhenLow);
+            Assert.All(saved.Hops, hop => Assert.Equal(1000, hop.Carrier!.FuelRemainingTonnes));
+
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    """{"event":"CarrierJump","StarSystem":"Stop 1","SystemAddress":2}""",
+                    out JournalEventEnvelope? arrival,
+                    out string? error
+                ),
+                error
+            );
+            await route.ApplyJournalEventsAsync([arrival!]);
+            Assert.Equal(2, route.ReachedCount);
+            Assert.True(route.RestockOnlyWhenLow);
+            Assert.Equal($"{600:N0}", route.Hops[1].CarrierFuelRemaining);
+
+            checkbox.IsChecked = false;
+            Assert.Equal($"{1000:N0}", route.Hops[1].CarrierFuelRemaining);
+            Assert.Empty(route.Hops[2].CarrierRestock);
+            await route.SaveAsync();
+            Assert.False((await store.LoadAsync("F1")).Route!.RestockOnlyWhenLow);
+        }
+        finally
+        {
+            window.Close();
+            await route.FlushWorkspaceAsync();
+            Directory.Delete(directory, true);
+        }
+    }
+
     /// <summary>
     /// Checks that header opens dedicated search and successful search returns to its own itinerary.
     /// </summary>

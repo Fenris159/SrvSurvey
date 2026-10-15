@@ -39,6 +39,7 @@ public sealed class FollowRouteStoreTests : IDisposable
         {
             IsActive = false,
             AutoCopy = false,
+            RestockOnlyWhenLow = kind == FollowRouteKind.FleetCarrier,
             LastReachedIndex = 0,
             Notes = "Working route notes",
             SourceSpanshKind =
@@ -62,6 +63,7 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.Equal(draft.SourceSpanshKind, working.SourceSpanshKind);
         Assert.False(working.IsActive);
         Assert.False(working.AutoCopy);
+        Assert.Equal(kind == FollowRouteKind.FleetCarrier, working.RestockOnlyWhenLow);
         Assert.Equal(0, working.LastReachedIndex);
         Assert.Equal(new GalacticCoordinate(0, 0, 0), working.Hops[0].Position);
         Assert.True(working.Hops[0].Refuel);
@@ -630,6 +632,32 @@ public sealed class FollowRouteStoreTests : IDisposable
             StringComparison.Ordinal
         );
         Assert.Contains("499.76,21502.09,0,1000,2799,93,true,true,true,3892", csv, StringComparison.Ordinal);
+    }
+
+    /// <summary>Saving carrier behavior retains the original fuel rows and defaults older routes to off.</summary>
+    [Fact]
+    public async Task CarrierFuelBehaviorRoundTripsWithoutReplacingSourceValues()
+    {
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
+        var original = new FollowRouteCarrierHop(100, 500, 1000, 941, 107, false, false, false, null);
+        FollowRouteDocument saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                RestockOnlyWhenLow = true,
+                Hops = [new("Sol", 1, null, null, false, false, Carrier: original)],
+            },
+            "Deferred transfers"
+        );
+
+        FollowRouteDocument restored = (await store.ReloadAsync(saved)).Route!;
+        Assert.True(restored.RestockOnlyWhenLow);
+        Assert.Equal(original, Assert.Single(restored.Hops).Carrier);
+        await store.SaveProgressAsync(restored with { RestockOnlyWhenLow = false });
+        FollowRouteDocument disabled = (await store.ReloadAsync(saved)).Route!;
+        Assert.False(disabled.RestockOnlyWhenLow);
+        Assert.Equal(original, Assert.Single(disabled.Hops).Carrier);
+        JsonObject json = JsonNode.Parse(await File.ReadAllTextAsync(saved.FilePath))!.AsObject();
+        Assert.False(json.ContainsKey("restockOnlyWhenLow"));
     }
 
     [Fact]

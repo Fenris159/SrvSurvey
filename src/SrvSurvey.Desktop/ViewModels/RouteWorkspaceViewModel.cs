@@ -76,10 +76,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool isSaveAsVisible;
     private bool isNotesVisible;
     private FollowRouteHop[] draftHops = [];
+    private IReadOnlyList<FollowRouteHop> presentedHops = [];
     private IReadOnlyList<RouteHopItemViewModel> hops = [];
     private int lastReachedIndex = -1;
     private bool isActive;
     private bool autoCopy;
+    private bool restockOnlyWhenLow;
+    private string carrierFuelPlanMessage = string.Empty;
     private bool isBusy;
     private EliteStatus? status;
     private string? musicTrack;
@@ -334,6 +337,34 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public bool CanActivate => HasRoute && lastReachedIndex < draftHops.Length - 1;
 
+    /// <summary>Applies a reversible carrier fuel forecast while retaining the imported source rows.</summary>
+    public bool RestockOnlyWhenLow
+    {
+        get => restockOnlyWhenLow;
+        set
+        {
+            if (SetField(ref restockOnlyWhenLow, IsFleetCarrierWorkspace && value))
+            {
+                RefreshPresentation();
+                _ = RetainWorkspaceAsync();
+            }
+        }
+    }
+
+    public string CarrierFuelPlanMessage
+    {
+        get => carrierFuelPlanMessage;
+        private set
+        {
+            if (SetField(ref carrierFuelPlanMessage, value))
+            {
+                OnPropertyChanged(nameof(HasCarrierFuelPlanMessage));
+            }
+        }
+    }
+
+    public bool HasCarrierFuelPlanMessage => CarrierFuelPlanMessage.Length > 0;
+
     public bool IsComplete => HasRoute && lastReachedIndex >= draftHops.Length - 1;
 
     public bool HasDefinitionChanges => loadedRoute is not null && !loadedRoute.Hops.SequenceEqual(draftHops);
@@ -343,6 +374,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         && (
             (loadedRoute.IsActive && loadedRoute.Hops.Count > 0 && !loadedRoute.IsComplete) != IsActive
             || loadedRoute.AutoCopy != AutoCopy
+            || loadedRoute.RestockOnlyWhenLow != RestockOnlyWhenLow
             || loadedRoute.LastReachedIndex != lastReachedIndex
         );
 
@@ -396,7 +428,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         get
         {
             int nextIndex = lastReachedIndex + 1;
-            return IsActive && nextIndex >= 0 && nextIndex < draftHops.Length ? draftHops[nextIndex] : null;
+            return IsActive && nextIndex >= 0 && nextIndex < presentedHops.Count ? presentedHops[nextIndex] : null;
         }
     }
 
@@ -410,6 +442,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 LastReachedIndex = lastReachedIndex,
                 IsActive = IsActive,
                 AutoCopy = AutoCopy,
+                RestockOnlyWhenLow = RestockOnlyWhenLow,
                 Notes = draftNotes,
             };
     }
@@ -784,7 +817,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            ApplyDraft(result.Route.Hops, result.Route.LastReachedIndex, result.Route.IsActive, result.Route.AutoCopy);
+            ApplyDraft(
+                result.Route.Hops,
+                result.Route.LastReachedIndex,
+                result.Route.IsActive,
+                result.Route.AutoCopy,
+                result.Route.RestockOnlyWhenLow
+            );
             StatusMessage = result.Route.IsComplete
                 ? $"Route complete after arriving at {name}."
                 : $"Arrived at hop #{result.ReachedIndex + 1:N0}: {name}.";
@@ -1261,6 +1300,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     LastReachedIndex = lastReachedIndex,
                     IsActive = IsActive,
                     AutoCopy = AutoCopy,
+                    RestockOnlyWhenLow = RestockOnlyWhenLow,
                 }
             );
             ApplyDocument(saved, requestAutoCopyOwnership: true);
@@ -1667,7 +1707,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         bool loadedIsActive = loadedRoute.IsActive && loadedRoute.Hops.Count > 0 && !loadedRoute.IsComplete;
-        bool hasTrackingChanges = loadedIsActive != IsActive || loadedRoute.LastReachedIndex != lastReachedIndex;
+        bool hasTrackingChanges =
+            loadedIsActive != IsActive
+            || loadedRoute.LastReachedIndex != lastReachedIndex
+            || loadedRoute.RestockOnlyWhenLow != RestockOnlyWhenLow;
         if (HasDefinitionChanges || HasNotesChanges || hasTrackingChanges)
         {
             StatusMessage = "Save or undo the current Route Workspace changes before changing next-hop auto-copy here.";
@@ -1691,6 +1734,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     LastReachedIndex = lastReachedIndex,
                     IsActive = IsActive,
                     AutoCopy = enabled,
+                    RestockOnlyWhenLow = RestockOnlyWhenLow,
                 }
             );
             ApplyDocument(saved, requestAutoCopyOwnership: true);
@@ -1749,6 +1793,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     LastReachedIndex = lastReachedIndex,
                     IsActive = IsActive,
                     AutoCopy = false,
+                    RestockOnlyWhenLow = RestockOnlyWhenLow,
                 }
             );
             ApplyDocument(saved);
@@ -1819,7 +1864,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             {
                 loadedRoute = result.Route with { SourceSpanshKind = draft.SourceSpanshKind };
                 draftNotes = draft.Notes;
-                ApplyDraft(draft.Hops, draft.LastReachedIndex, draft.IsActive, draft.AutoCopy);
+                ApplyDraft(
+                    draft.Hops,
+                    draft.LastReachedIndex,
+                    draft.IsActive,
+                    draft.AutoCopy,
+                    draft.RestockOnlyWhenLow
+                );
                 RaiseRouteMetadataProperties();
             }
             await RefreshCatalogAsync();
@@ -1930,7 +1981,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     {
         loadedRoute = route;
         draftNotes = route.Notes;
-        ApplyDraft(route.Hops, route.LastReachedIndex, route.IsActive && !route.IsComplete, route.AutoCopy);
+        ApplyDraft(
+            route.Hops,
+            route.LastReachedIndex,
+            route.IsActive && !route.IsComplete,
+            route.AutoCopy,
+            route.RestockOnlyWhenLow
+        );
         RaiseRouteMetadataProperties();
         if (requestAutoCopyOwnership && HasRoute && AutoCopy)
         {
@@ -1981,23 +2038,49 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         IReadOnlyList<FollowRouteHop> nextHops,
         int nextLastReachedIndex,
         bool nextIsActive,
-        bool nextAutoCopy
+        bool nextAutoCopy,
+        bool nextRestockOnlyWhenLow = false
     )
     {
         draftHops = nextHops.ToArray();
         lastReachedIndex = draftHops.Length == 0 ? -1 : Math.Clamp(nextLastReachedIndex, -1, draftHops.Length - 1);
         isActive = nextIsActive && draftHops.Length > 0 && lastReachedIndex < draftHops.Length - 1;
         autoCopy = nextAutoCopy;
+        restockOnlyWhenLow = IsFleetCarrierWorkspace && nextRestockOnlyWhenLow;
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(AutoCopy));
+        OnPropertyChanged(nameof(RestockOnlyWhenLow));
         RefreshPresentation();
     }
 
     /// <summary>
-    /// Refreshes route rows, estimates, guidance and commands from the current route state.
+    /// Computes displayed fuel balances from the unchanged source itinerary and selected behavior.
     /// </summary>
+    private void RefreshCarrierFuelPlan()
+    {
+        presentedHops = draftHops;
+        CarrierFuelPlanMessage = string.Empty;
+        if (!RestockOnlyWhenLow || !HasRoute)
+        {
+            return;
+        }
+
+        FleetCarrierFuelPlan plan = FleetCarrierFuelPlanner.Calculate(draftHops);
+        presentedHops = plan.Hops;
+        if (!plan.HasRequiredData)
+        {
+            CarrierFuelPlanMessage = "Fuel calculations require starting tank, market, and jump fuel values.";
+        }
+        else if (plan.UnfundedHopIndex is { } index)
+        {
+            CarrierFuelPlanMessage = $"Insufficient tritium for the jump to {draftHops[index].Name}.";
+        }
+    }
+
+    /// <summary>Refreshes guidance and commands using the current working route and displayed fuel plan.</summary>
     private void RefreshPresentation()
     {
+        RefreshCarrierFuelPlan();
         destinationMatchesNextHop = IsGalaxyMapOpen && IsNextHop(lastDestination);
         if (!string.Equals(lastCopiedHopName, NextHop?.Name, StringComparison.Ordinal))
         {
@@ -2067,7 +2150,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private void UpdateOrCreateHopRow(int index, bool canReuseRows, List<RouteHopItemViewModel>? rows)
     {
-        FollowRouteHop hop = draftHops[index];
+        FollowRouteHop hop = presentedHops[index];
         GalacticCoordinate? from;
         if (index == 0)
         {

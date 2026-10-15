@@ -22668,6 +22668,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "Fuel calculations require starting tank, market, and jump fuel values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Fuel left",
     "IsFormat": false,
     "SourceKinds": [
@@ -27342,6 +27350,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Insufficient tritium for the jump to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Insulating membrane",
@@ -45625,6 +45641,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Restock only when low",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Restore",

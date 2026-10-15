@@ -13,7 +13,8 @@ public sealed record FollowRouteDocument(
     string? Notes = null,
     bool IsFavorite = false,
     FollowRouteKind Kind = FollowRouteKind.Standard,
-    SpanshRouteKind? SourceSpanshKind = null
+    SpanshRouteKind? SourceSpanshKind = null,
+    bool RestockOnlyWhenLow = false
 )
 {
     public bool IsStarted => LastReachedIndex >= 0;

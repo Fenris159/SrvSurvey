@@ -320,6 +320,11 @@ public sealed class FollowRouteStore
             JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             root["active"] = route.IsActive;
             root["autoCopy"] = route.AutoCopy;
+            WriteTrue(
+                root,
+                "restockOnlyWhenLow",
+                route.Kind == FollowRouteKind.FleetCarrier && route.RestockOnlyWhenLow
+            );
             root["last"] = route.LastReachedIndex;
             MergeBioProgress(root["hops"] as JsonArray, route.Hops);
             await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
@@ -955,6 +960,7 @@ public sealed class FollowRouteStore
         WriteTrue(root, "favorite", route.IsFavorite);
         root["active"] = route.IsActive;
         root["autoCopy"] = route.AutoCopy;
+        WriteTrue(root, "restockOnlyWhenLow", route.Kind == FollowRouteKind.FleetCarrier && route.RestockOnlyWhenLow);
         root["last"] = route.LastReachedIndex;
         root["hops"] = MergeHops(root["hops"] as JsonArray, route.Hops);
     }
@@ -1151,7 +1157,8 @@ public sealed class FollowRouteStore
             NormalizeNotes(GetString(root, NotePropertyName)),
             GetBoolean(root, "favorite") ?? false,
             parsedKind,
-            ParseSpanshRouteKind(path, GetString(root, "spanshRouteKind"))
+            ParseSpanshRouteKind(path, GetString(root, "spanshRouteKind")),
+            parsedKind == FollowRouteKind.FleetCarrier && GetBoolean(root, "restockOnlyWhenLow") == true
         );
     }
 

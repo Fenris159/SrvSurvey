@@ -97,6 +97,16 @@
                            FontSize="11"
                            Text="{Binding AutoCopySummary}"
                            TextWrapping="Wrap" />
+                <CheckBox x:Name="CarrierRestockOnlyWhenLowCheckBox"
+                          IsVisible="{Binding IsFleetCarrierWorkspace}"
+                          IsEnabled="{Binding HasRoute}"
+                          IsChecked="{Binding RestockOnlyWhenLow, Mode=TwoWay}"
+                          Content="Restock only when low" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           IsVisible="{Binding HasCarrierFuelPlanMessage}"
+                           Text="{Binding CarrierFuelPlanMessage}"
+                           TextWrapping="Wrap" />
               </StackPanel>
             </Border>
 

@@ -37,6 +37,27 @@ recommendations are stored as null. A genuine zero fuel balance still shows
 the same captured 46-stop Sol → Colonia route, including its 953 t and 937 t
 restocks.
 
+The FC workspace's **Restock only when low** behavior optionally reinterprets
+the imported logistics. Each arrival spends that jump's reported fuel cost.
+Only when the remaining tank cannot fund the next jump does the plan transfer
+market tritium, up to a full 1,000 t tank or the remaining market stock,
+whichever is smaller. That stop shows **YES**, the amount transferred, and
+the tank and market balances **after** the transfer. An exact fuel match
+does not trigger a transfer, and the final stop never receives an unnecessary
+top-up. After market stock runs out, the plan spends the remaining tank fuel.
+If that cannot fund a jump, the workspace identifies the first unfunded
+destination and leaves subsequent tank predictions unavailable. Missing
+starting balances or jump costs keep the source table visible with an explanation.
+
+The checkbox starts off for a newly imported or searched route. It retains
+its setting with that working route across closes and restarts, and with
+named routes when saved. Source rows remain unchanged in storage, so turning
+the option off restores their exact original fuel/restock values and notes.
+The overlay follows the same displayed fuel plan. Progress updates recalculate
+from the original starting balances without charging earlier jumps twice.
+This changes transfer timing using the supplied jump costs; it does not
+recalculate the carrier's mass-dependent fuel cost or assume future mining.
+
 Fleet-carrier route displays also show **ETR** at 20 minutes per remaining
 jump, formatted as days, hours, and minutes with zero-valued units omitted
 (for example, `ETR: 14h 40min` for 44 jumps or `ETR: 1d` for 72 jumps).

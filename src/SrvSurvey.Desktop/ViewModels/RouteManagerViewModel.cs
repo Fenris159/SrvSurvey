@@ -28,6 +28,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     private string? frontierId;
     private bool isBusy;
     private bool isRefreshing;
+    private Task refreshCompletion = Task.CompletedTask;
     private bool refreshPending;
     private bool favoritesFirst = true;
     private RouteManagerSortColumn sortColumn = RouteManagerSortColumn.Name;
@@ -502,6 +503,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         await workspace.OpenWorkspaceAsync();
     }
 
+    /// <summary>Coalesces repeated refreshes while keeping every caller awaiting the completed catalogue update.</summary>
     public async Task RefreshAsync()
     {
         if (frontierId is null)
@@ -512,9 +514,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         if (isRefreshing)
         {
             refreshPending = true;
+            await refreshCompletion;
             return;
         }
 
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        refreshCompletion = completion.Task;
         try
         {
             isRefreshing = true;
@@ -536,8 +541,9 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
         finally
         {
-            IsBusy = false;
             isRefreshing = false;
+            IsBusy = false;
+            completion.TrySetResult();
         }
     }
 
