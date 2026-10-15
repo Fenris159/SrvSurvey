@@ -44785,6 +44785,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Requires Windows x64.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61904,6 +61912,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Unavailable on Windows 11 24H2 or newer.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Uncatalogued site",
     "IsFormat": false,
     "SourceKinds": [
@@ -63812,6 +63828,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
+    "Text": "VR overlays require Windows or Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63826,6 +63850,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
+  },
+  {
+    "Text": "VR route unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -65566,6 +65598,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Windows only.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",

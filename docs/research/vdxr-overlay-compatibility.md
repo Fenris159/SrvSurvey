@@ -405,3 +405,29 @@ No physical Quest 3/VDXR result was obtained in this investigation. The reviewed
 architecture is feasible and the rendering contracts align; the evidence does
 not support promising that every user configuration will work without a real
 session test.
+
+## Route picker platform availability
+
+The settings menu retains all eight routes and disables incompatible choices.
+Linux permits SteamVR, ALVR and custom OpenVR; Meta Link, Quest Steam Link,
+Virtual Desktop, VDXR and Microsoft's WMR bridge require Windows. VDXR also
+requires an x64 process. WMR is disabled on Windows builds 26100 and newer,
+where Microsoft removed that bridge
+([Valve requirements](https://help.steampowered.com/en/faqs/view/0E2C-406B-9135-38A4),
+[Meta Link requirements](https://developers.meta.com/vr/documentation/unity/unity-development-requirements/),
+[WMR removal](https://learn.microsoft.com/en-us/windows/whats-new/deprecated-features)).
+
+The picker uses disabled `ComboBoxItem` controls so native closed-menu arrow and
+wheel navigation can see availability before visual containers are realized.
+Avalonia's built-in type-ahead does not exclude disabled matches, so the picker
+searches available, translated labels. Headless tests cover open/closed keyboard
+navigation, wheel and click input, type-ahead, template updates and a saved
+unsupported selection
+([ComboBox navigation](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Controls/ComboBox.cs#L554-L588),
+[type-ahead lookup](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Controls/Primitives/SelectingItemsControl.cs#L1476-L1497)).
+
+A saved incompatible route remains readable; its enabled flag is cleared and
+Enable VR overlays stays disabled until the user chooses an available route.
+The view model also validates route IDs against its host-specific catalog.
+Installation and headset readiness continue to be runtime checks, so a compatible
+route can be configured before its runtime starts.

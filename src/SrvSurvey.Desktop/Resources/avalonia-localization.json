@@ -22329,6 +22329,10 @@
       "translation": "Erfordert FSSAllBodiesFound für neue lokale Besuche. Die aktivierten Abschlussregeln für frühere Besuche und ältere Spansh gelten weiterhin."
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "Erfordert Windows x64."
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "Erfordert Unterstützung und Genehmigung des Desktop-Portals für alle konfigurierten Tastaturkürzel. Verwenden Sie Desktop-Verknüpfungseinstellungen, um Bindungen zu genehmigen oder zu ändern. Der Desktop kann angeforderte Schlüssel überschreiben; Die zugelassenen Schlüssel sind unten aufgeführt. Native Wayland zeigt möglicherweise nicht an, welches Fenster den Fokus hat."
     },
@@ -30869,6 +30873,10 @@
       "translation": "Nicht verfügbar"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "Nicht verfügbar unter Windows 11 24H2 oder neuer."
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "Nicht katalogisierte Website"
     },
@@ -31821,12 +31829,20 @@
       "translation": "VR-Overlays sind deaktiviert"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "VR-Overlays erfordern Windows oder Linux."
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "VR-Overlays bleiben durchklickbar, bis Sie die Controller-Zeiger-Interaktion auf der ausgewählten Route SteamVR oder VDXR explizit aktivieren."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "Die VR-Überschreibung „{0}/{1}“ konnte vor dem Speichern nicht überprüft werden."
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "VR-Route nicht verfügbar"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -32695,6 +32711,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Windows- und Linux-Setup"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "Nur Windows."
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -59767,6 +59787,10 @@
       "translation": "Requiere FSSAllBodiesFound para nuevas visitas locales. Las reglas de finalización habilitadas para visitas anteriores y anteriores Spansh aún se aplican."
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "Requiere Windows x64."
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "Requiere soporte y aprobación del portal de escritorio para todos los métodos abreviados de teclado configurados. Utilice la configuración de accesos directos del escritorio para aprobar o cambiar enlaces. El escritorio puede anular las claves solicitadas; sus claves aprobadas se muestran a continuación. Es posible que Native Wayland no muestre qué ventana tiene el foco."
     },
@@ -68307,6 +68331,10 @@
       "translation": "No disponible"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "No disponible en Windows 11 24H2 o posterior."
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "Sitio no catalogado"
     },
@@ -69259,12 +69287,20 @@
       "translation": "Las superposiciones de realidad virtual están desactivadas"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "Las superposiciones de realidad virtual requieren Windows o Linux."
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "Las superposiciones de realidad virtual permanecen activas hasta que habilites explícitamente la interacción entre el controlador y el puntero en la ruta seleccionada SteamVR o VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "La anulación de VR '{0}/{1}' no se pudo verificar antes de guardar."
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "Ruta de realidad virtual no disponible"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -70133,6 +70169,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Configuración de Windows y Linux"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "Sólo Windows."
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -97205,6 +97245,10 @@
       "translation": "Nécessite FSSAllBodiesFound pour les nouvelles visites locales. Les règles d'achèvement des visites antérieures activées et des anciennes-Spansh s'appliquent toujours."
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "Nécessite Windows x64."
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "Nécessite la prise en charge et l’approbation du portail de bureau pour tous les raccourcis clavier configurés. Utilisez les paramètres de raccourci du bureau pour approuver ou modifier les liaisons. Le bureau peut remplacer les clés demandées ; ses clés approuvées sont indiquées ci-dessous. Native Wayland peut ne pas révéler quelle fenêtre a le focus."
     },
@@ -105745,6 +105789,10 @@
       "translation": "Indisponible"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "Indisponible sur Windows 11 24H2 ou version ultérieure."
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "Site non catalogué"
     },
@@ -106697,12 +106745,20 @@
       "translation": "Les superpositions VR sont désactivées"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "Les superpositions VR nécessitent Windows ou Linux."
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "Les superpositions VR restent cliquables jusqu'à ce que vous activiez explicitement l'interaction contrôleur-pointeur sur l'itinéraire sélectionné SteamVR ou VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "Le remplacement VR '{0}/{1}' n'a pas pu être vérifié avant l'enregistrement."
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "Itinéraire VR indisponible"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -107571,6 +107627,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Configuration Windows et Linux"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "Windows uniquement."
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -134643,6 +134703,10 @@
       "translation": "Requer FSSAllBodiesFound para novas visitas locais. Regras de conclusão de visita anterior e de Spansh ativadas ainda se aplicam."
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "Requer Windows x64."
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "Requer suporte e aprovação do portal de desktop para todos os atalhos de teclado configurados. Use as configurações de atalho da área de trabalho para aprovar ou alterar vinculações. A área de trabalho pode substituir as chaves solicitadas; suas chaves aprovadas são mostradas abaixo. O Native Wayland pode não expor qual janela está em foco."
     },
@@ -143183,6 +143247,10 @@
       "translation": "Indisponível"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "Indisponível no Windows 11 24H2 ou mais recente."
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "Site não catalogado"
     },
@@ -144135,12 +144203,20 @@
       "translation": "As sobreposições de VR estão desativadas"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "As sobreposições de VR requerem Windows ou Linux."
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "As sobreposições de VR permanecem clicadas até que você habilite explicitamente a interação controlador-ponteiro na rota selecionada SteamVR ou VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "A substituição de VR '{0}/{1}' não pôde ser verificada antes de salvar."
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "Rota VR indisponível"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -145009,6 +145085,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Configuração do Windows e Linux"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "Somente Windows."
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -172081,6 +172161,10 @@
       "translation": "Требуется FSSAllBodiesFound для новых локальных посещений. Включенные правила раннего посещения и более старых правил завершения Spansh по-прежнему применяются."
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "Требуется Windows x64."
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "Требуется поддержка и одобрение портала настольных компьютеров для всех настроенных сочетаний клавиш. Используйте настройки ярлыков на рабочем столе, чтобы утвердить или изменить привязки. Рабочий стол может переопределить запрошенные клавиши; утвержденные ключи показаны ниже. Native Wayland может не показывать, какое окно находится в фокусе."
     },
@@ -180621,6 +180705,10 @@
       "translation": "Недоступно"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "Недоступно в Windows 11 24H2 или более поздней версии."
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "Некаталогизированный сайт"
     },
@@ -181573,12 +181661,20 @@
       "translation": "Оверлеи VR отключены"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "Для наложений VR требуется Windows или Linux."
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "Наложения виртуальной реальности остаются интерактивными до тех пор, пока вы явно не включите взаимодействие контроллера и указателя на выбранном SteamVR или VDXR маршруте."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "Переопределение VR '{0}/{1}' не удалось проверить перед сохранением."
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "VR-маршрут недоступен."
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -182447,6 +182543,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Настройка Windows и Linux"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "Только Windows."
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -209519,6 +209619,10 @@
       "translation": "需要 FSSAllBodiesFound 才能进行新的本地访问。启用的早期访问和较早的Spansh完成规则仍然适用。"
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "需要 Windows x64。"
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "需要桌面门户支持并批准所有配置的键盘快捷键。使用桌面快捷方式设置来批准或更改绑定。桌面可能会覆盖请求的键；其批准的密钥如下所示。 Native Wayland 可能不会公开哪个窗口具有焦点。"
     },
@@ -218059,6 +218163,10 @@
       "translation": "不可用"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "在 Windows 11 24H2 或更高版本上不可用。"
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "未编目网站"
     },
@@ -219011,12 +219119,20 @@
       "translation": "VR 叠加已关闭"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "VR 覆盖需要 Windows 或 Linux。"
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "VR 叠加层将保持点击状态，直到您在选定的 SteamVR 或 VDXR 路线上明确启用控制器指针交互。"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "VR 覆盖“{0}/{1}”在保存前无法验证。"
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "VR路线不可用"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -219885,6 +220001,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "Windows 和 Linux 设置"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "仅限 Windows。"
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -246957,6 +247077,10 @@
       "translation": "* REQUIRES FSSALLBODIESFOUND FOR NEW LOCAL VISITS. ENABLED EARLIER-VISIT AND OLDER-SPANSH COMPLETION RULES STILL APPLY. >>>!"
     },
     {
+      "source": "Requires Windows x64.",
+      "translation": "* REQUIRES WINDOWS X64. >>>!"
+    },
+    {
       "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
       "translation": "* REQUIRES DESKTOP PORTAL SUPPORT AND APPROVAL FOR ALL CONFIGURED KEYBOARD SHORTCUTS. USE DESKTOP SHORTCUT SETTINGS TO APPROVE OR CHANGE BINDINGS. THE DESKTOP MAY OVERRIDE REQUESTED KEYS; ITS APPROVED KEYS ARE SHOWN BELOW. NATIVE WAYLAND MAY NOT EXPOSE WHICH WINDOW HAS FOCUS. >>>!"
     },
@@ -255497,6 +255621,10 @@
       "translation": "* UNAVAILABLE >>>!"
     },
     {
+      "source": "Unavailable on Windows 11 24H2 or newer.",
+      "translation": "* UNAVAILABLE ON WINDOWS 11 24H2 OR NEWER. >>>!"
+    },
+    {
       "source": "Uncatalogued site",
       "translation": "* UNCATALOGUED SITE >>>!"
     },
@@ -256449,12 +256577,20 @@
       "translation": "* VR OVERLAYS ARE OFF >>>!"
     },
     {
+      "source": "VR overlays require Windows or Linux.",
+      "translation": "* VR OVERLAYS REQUIRE WINDOWS OR LINUX. >>>!"
+    },
+    {
       "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
       "translation": "* VR OVERLAYS STAY CLICK-THROUGH UNTIL YOU EXPLICITLY ENABLE CONTROLLER-POINTER INTERACTION ON THE SELECTED STEAMVR OR VDXR ROUTE. >>>!"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
       "translation": "* VR OVERRIDE '{0}/{1}' COULD NOT BE VERIFIED BEFORE SAVING. >>>!"
+    },
+    {
+      "source": "VR route unavailable",
+      "translation": "* VR ROUTE UNAVAILABLE >>>!"
     },
     {
       "source": "VR scale must be from 0.1 to 50 and all coordinates must be finite.",
@@ -257323,6 +257459,10 @@
     {
       "source": "Windows and Linux setup",
       "translation": "* WINDOWS AND LINUX SETUP >>>!"
+    },
+    {
+      "source": "Windows only.",
+      "translation": "* WINDOWS ONLY. >>>!"
     },
     {
       "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",

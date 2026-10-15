@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class VrPlatformProfileCatalog
@@ -112,6 +114,61 @@ public static class VrPlatformProfileCatalog
         ),
     ];
 
+    public static IReadOnlyList<VrPlatformProfile> ForCurrentPlatform()
+    {
+        OSPlatform platform = OSPlatform.OSX;
+        if (OperatingSystem.IsWindows())
+        {
+            platform = OSPlatform.Windows;
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            platform = OSPlatform.Linux;
+        }
+        return ForPlatform(platform, RuntimeInformation.ProcessArchitecture, Environment.OSVersion.Version.Build);
+    }
+
+    public static IReadOnlyList<VrPlatformProfile> ForPlatform(
+        OSPlatform platform,
+        Architecture architecture,
+        int windowsBuild = 0
+    )
+    {
+        return All.Select(profile =>
+            {
+                string reason = GetUnavailableReason(profile.Id, platform, architecture, windowsBuild);
+                return profile with { IsAvailable = reason.Length == 0, UnavailableReason = reason };
+            })
+            .ToArray();
+    }
+
+    private static string GetUnavailableReason(
+        string profileId,
+        OSPlatform platform,
+        Architecture architecture,
+        int windowsBuild
+    )
+    {
+        if (platform != OSPlatform.Windows && platform != OSPlatform.Linux)
+        {
+            return "VR overlays require Windows or Linux.";
+        }
+        bool supportsLinux = profileId is SteamVrProfileId or MetaAlvrProfileId or CustomOpenVrProfileId;
+        if (platform == OSPlatform.Linux && !supportsLinux)
+        {
+            return "Windows only.";
+        }
+        if (profileId == MetaVdxrProfileId && architecture != Architecture.X64)
+        {
+            return "Requires Windows x64.";
+        }
+        if (profileId == WindowsMixedRealityProfileId && windowsBuild >= 26100)
+        {
+            return "Unavailable on Windows 11 24H2 or newer.";
+        }
+        return string.Empty;
+    }
+
     public static VrPlatformProfile Get(string? profileId)
     {
         return All.FirstOrDefault(profile => string.Equals(profile.Id, profileId, StringComparison.Ordinal)) ?? All[0];
@@ -126,7 +183,11 @@ public sealed record VrPlatformProfile(
     string CompatibilityNote,
     IReadOnlyList<string> PairingSteps,
     bool IsCustom = false
-);
+)
+{
+    public bool IsAvailable { get; init; } = true;
+    public string UnavailableReason { get; init; } = string.Empty;
+}
 
 public enum VrOverlayConnectionState
 {

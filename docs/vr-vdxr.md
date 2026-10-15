@@ -40,6 +40,13 @@ those results establish which installed combination has been verified.
    game process. The same applies if an elevated launcher starts Elite.
 3. Restart Elite so its OpenXR loader discovers the layer. In SrvSurvey's VR
    settings, choose **Meta Quest — VDXR** and enable VR overlays.
+   The route menu keeps every option visible. Unsupported options are dimmed and
+   cannot be selected, with a reason such as **Windows only**. VDXR requires an
+   x64 process; Windows Mixed Reality is unavailable on Windows 11 24H2 or newer.
+   On Linux, SteamVR, ALVR, and custom OpenVR remain selectable. A saved
+   incompatible route is still shown, but overlays are off until an available
+   route is chosen. Runtime installation and headset readiness are checked after
+   choosing a compatible route.
 4. Wait for the connection status to identify an active VDXR session. Trigger
    a visible gameplay panel, then adjust its saved VR position, rotation, scale,
    and opacity. **Reset headset orientation** captures a new placement origin.

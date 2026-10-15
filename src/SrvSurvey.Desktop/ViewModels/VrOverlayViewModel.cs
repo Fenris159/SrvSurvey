@@ -13,7 +13,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     private const string OverlaysOffHeadline = "VR overlays are off";
     private readonly VrOverlaySettingsStore settingsStore;
     private readonly VrOverlayCalibrationStore calibrationStore;
-    private readonly IReadOnlyList<VrPlatformProfile> platformProfiles = VrPlatformProfileCatalog.All;
+    private readonly IReadOnlyList<VrPlatformProfile> platformProfiles;
     private readonly RelayCommand saveCommand;
     private readonly RelayCommand resetCommand;
     private readonly RelayCommand cancelCommand;
@@ -39,13 +39,25 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     private string connectionDetail;
     private string platformSupportMessage;
 
-    public VrOverlayViewModel(VrOverlaySettingsStore settingsStore, VrOverlayCalibrationStore calibrationStore)
+    public VrOverlayViewModel(
+        VrOverlaySettingsStore settingsStore,
+        VrOverlayCalibrationStore calibrationStore,
+        IReadOnlyList<VrPlatformProfile>? platformProfiles = null
+    )
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.calibrationStore = calibrationStore ?? throw new ArgumentNullException(nameof(calibrationStore));
+        this.platformProfiles = platformProfiles ?? VrPlatformProfileCatalog.ForCurrentPlatform();
         platformSupportMessage = CreatePlatformSupportMessage();
         preferences = settingsStore.Load();
-        selectedPlatformProfile = VrPlatformProfileCatalog.Get(preferences.RuntimeProfileId);
+        selectedPlatformProfile =
+            this.platformProfiles.FirstOrDefault(profile => profile.Id == preferences.RuntimeProfileId)
+            ?? this.platformProfiles[0];
+        if (!selectedPlatformProfile.IsAvailable && preferences.Enabled)
+        {
+            preferences = preferences with { Enabled = false };
+            settingsStore.Save(preferences);
+        }
         connectionState = preferences.Enabled
             ? VrOverlayConnectionState.WaitingForRuntime
             : VrOverlayConnectionState.Disabled;
@@ -53,10 +65,19 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         connectionDetail = preferences.Enabled
             ? $"Start {selectedPlatformProfile.DisplayName} and complete the pairing checklist."
             : "Choose a connection route, complete its pairing steps, then enable VR overlays.";
+        if (!selectedPlatformProfile.IsAvailable)
+        {
+            connectionHeadline = "VR route unavailable";
+            connectionDetail = selectedPlatformProfile.UnavailableReason;
+        }
         try
         {
             catalog = calibrationStore.Load();
             statusMessage = preferences.Enabled ? "Waiting for the selected VR session." : "VR overlays are disabled.";
+            if (!selectedPlatformProfile.IsAvailable)
+            {
+                statusMessage = selectedPlatformProfile.UnavailableReason;
+            }
         }
         catch (Exception exception)
             when (exception
@@ -91,6 +112,11 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         get => preferences.Enabled;
         set
         {
+            if (value && !CanEnableOverlays)
+            {
+                SetRuntimeStatus(SelectedPlatformProfile.UnavailableReason);
+                return;
+            }
             if (preferences.Enabled == value)
             {
                 return;
@@ -127,6 +153,12 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            VrPlatformProfile? option = platformProfiles.FirstOrDefault(profile => profile.Id == value.Id);
+            if (option?.IsAvailable != true)
+            {
+                return;
+            }
+            value = option;
             if (selectedPlatformProfile == value)
             {
                 return;
@@ -137,6 +169,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsCustomRuntime));
+            OnPropertyChanged(nameof(CanEnableOverlays));
             OnPropertyChanged(nameof(PlatformSupportMessage));
             SetConnectionStatus(
                 Enabled ? VrOverlayConnectionState.WaitingForRuntime : VrOverlayConnectionState.Disabled,
@@ -149,12 +182,23 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool CanEnableOverlays => SelectedPlatformProfile.IsAvailable;
+
     public bool IsCustomRuntime => SelectedPlatformProfile.IsCustom;
 
-    public string PlatformSupportMessage =>
-        SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId
-            ? "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
-            : platformSupportMessage;
+    public string PlatformSupportMessage
+    {
+        get
+        {
+            if (!SelectedPlatformProfile.IsAvailable)
+            {
+                return SelectedPlatformProfile.UnavailableReason;
+            }
+            return SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId
+                ? "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
+                : platformSupportMessage;
+        }
+    }
 
     private static string CreatePlatformSupportMessage()
     {

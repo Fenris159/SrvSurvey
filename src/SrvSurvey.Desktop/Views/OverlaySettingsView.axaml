@@ -554,20 +554,31 @@
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"
                     IsChecked="{Binding VrOverlay.Enabled, Mode=TwoWay}"
+                    IsEnabled="{Binding VrOverlay.CanEnableOverlays}"
                     Content="Enable VR overlays" />
         </Grid>
 
         <Grid ColumnDefinitions="300,*" ColumnSpacing="20">
           <StackPanel Spacing="6">
             <TextBlock Classes="eyebrow" Text="1 · CHOOSE YOUR HEADSET ROUTE" />
-            <ComboBox ItemsSource="{Binding VrOverlay.PlatformProfiles}"
-                      SelectedItem="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+            <controls:VrPlatformPicker x:Name="VrRoutePicker"
+                                      Profiles="{Binding VrOverlay.PlatformProfiles}"
+                                      SelectedProfile="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+              <ComboBox.Styles>
+                <Style Selector="ComboBoxItem:disabled">
+                  <Setter Property="Opacity" Value="0.45" />
+                </Style>
+              </ComboBox.Styles>
               <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="overlay:VrPlatformProfile">
-                  <TextBlock Text="{Binding DisplayName}" />
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding DisplayName}" />
+                    <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding !IsAvailable}"
+                               FontSize="11" TextWrapping="Wrap" />
+                  </StackPanel>
                 </DataTemplate>
               </ComboBox.ItemTemplate>
-            </ComboBox>
+            </controls:VrPlatformPicker>
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Bottom">
             <TextBlock FontWeight="SemiBold"

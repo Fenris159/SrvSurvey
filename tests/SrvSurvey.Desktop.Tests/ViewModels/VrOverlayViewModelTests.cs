@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -153,6 +154,50 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Contains("ALVR", viewModel.ConnectionDetail, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LinuxRejectsUnsupportedRoutesEvenWhenCallerUsesTheUnrestrictedCatalog()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel(OSPlatform.Linux);
+        int connectionChecks = 0;
+        viewModel.ConnectionCheckRequested += (_, _) => connectionChecks++;
+        VrPlatformProfile before = viewModel.SelectedPlatformProfile;
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.Equal(before, viewModel.SelectedPlatformProfile);
+        Assert.Equal(0, connectionChecks);
+        Assert.Equal(
+            VrPlatformProfileCatalog.SteamVrProfileId,
+            new VrOverlaySettingsStore(SettingsPath).Load().RuntimeProfileId
+        );
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SavedUnavailableRouteStaysVisibleWithOverlaysOffUntilAnAvailableRouteIsChosen(bool enabled)
+    {
+        var store = new VrOverlaySettingsStore(SettingsPath);
+        store.Save(new VrOverlayPreferences(enabled, VrPlatformProfileCatalog.MetaVdxrProfileId, "vrserver"));
+        VrOverlayViewModel viewModel = CreateViewModel(OSPlatform.Linux);
+        Assert.Equal(VrPlatformProfileCatalog.MetaVdxrProfileId, viewModel.SelectedPlatformProfile.Id);
+        Assert.False(viewModel.Enabled);
+        Assert.False(viewModel.CanEnableOverlays);
+        Assert.Contains("Windows only", viewModel.PlatformSupportMessage);
+        Assert.Contains("unavailable", viewModel.ConnectionHeadline);
+        Assert.Contains("Windows only", viewModel.StatusMessage);
+        Assert.False(store.Load().Enabled);
+        int checks = 0;
+        viewModel.ConnectionCheckRequested += (_, _) => checks++;
+        viewModel.Enabled = true;
+        Assert.False(viewModel.Enabled);
+        Assert.Equal(0, checks);
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaAlvrProfileId);
+        Assert.True(viewModel.CanEnableOverlays);
+        Assert.False(viewModel.Enabled);
+        Assert.Equal(VrPlatformProfileCatalog.MetaAlvrProfileId, store.Load().RuntimeProfileId);
+        viewModel.Enabled = true;
+        Assert.True(viewModel.Enabled);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -163,7 +208,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
 
     private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
-    private VrOverlayViewModel CreateViewModel()
+    private VrOverlayViewModel CreateViewModel(OSPlatform? platform = null)
     {
         string data = Path.Combine(temporaryDirectory, "data");
         string factoryDirectory = Path.Combine(temporaryDirectory, "factory");
@@ -173,7 +218,8 @@ public sealed class VrOverlayViewModelTests : IDisposable
         File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
         return new VrOverlayViewModel(
             new VrOverlaySettingsStore(SettingsPath),
-            new VrOverlayCalibrationStore(data, factory)
+            new VrOverlayCalibrationStore(data, factory),
+            VrPlatformProfileCatalog.ForPlatform(platform ?? OSPlatform.Windows, Architecture.X64, 22000)
         );
     }
 }
