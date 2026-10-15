@@ -107,6 +107,82 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.Null((await store.LoadAsync("F123")).WorkspaceDraft);
     }
 
+    /// <summary>Missing saved selections recover retained working routes without altering storage.</summary>
+    [Theory]
+    [InlineData(FollowRouteKind.Standard, false, false)]
+    [InlineData(FollowRouteKind.Standard, false, true)]
+    [InlineData(FollowRouteKind.Standard, true, true)]
+    [InlineData(FollowRouteKind.FleetCarrier, false, false)]
+    [InlineData(FollowRouteKind.FleetCarrier, false, true)]
+    public async Task MissingSelectedFileRecoversOnlyWhenAWorkspaceDraftExists(
+        FollowRouteKind kind,
+        bool legacy,
+        bool hasDraft
+    )
+    {
+        var store = new FollowRouteStore(temporaryDirectory, kind);
+        FollowRouteDocument saved = (await store.CreateNewAsync("F123")) with
+        {
+            Hops = [new("Sol", 1, null, null, false, false)],
+        };
+        if (legacy)
+        {
+            await store.SaveAsync(saved);
+        }
+        else
+        {
+            saved = await store.SaveAsAsync(saved, "Missing selection");
+        }
+
+        FollowRouteDocument working = saved with
+        {
+            IsActive = true,
+            AutoCopy = false,
+            LastReachedIndex = 0,
+            Notes = "Keep the working route",
+            RestockOnlyWhenLow = kind == FollowRouteKind.FleetCarrier,
+            Hops = [new("Sol", 1, null, null, false, false), new("Achenar", 2, null, "Next stop", true, false)],
+        };
+        await store.SaveWorkspaceAsync(working, hasSavedRoute: true);
+        string workspacePath = Path.Combine(Path.GetDirectoryName(store.GetPath("F123"))!, "F123", ".workspace.json");
+        if (!hasDraft)
+        {
+            JsonObject workspace = JsonNode.Parse(await File.ReadAllTextAsync(workspacePath))!.AsObject();
+            workspace.Remove("draft");
+            await File.WriteAllTextAsync(workspacePath, workspace.ToJsonString());
+        }
+        byte[] retainedWorkspace = await File.ReadAllBytesAsync(workspacePath);
+        File.Delete(saved.FilePath);
+
+        FollowRouteLoadResult restored = await new FollowRouteStore(temporaryDirectory, kind).LoadAsync("F123");
+
+        Assert.Equal(retainedWorkspace, await File.ReadAllBytesAsync(workspacePath));
+        Assert.False(File.Exists(saved.FilePath));
+        Assert.Equal(saved.FilePath, restored.Path);
+        if (!hasDraft)
+        {
+            Assert.False(restored.IsSuccess);
+            Assert.True(restored.Exists);
+            Assert.Null(restored.WorkspaceDraft);
+            Assert.Contains("selected route file no longer exists", restored.Error);
+            return;
+        }
+
+        Assert.True(restored.IsSuccess, restored.Error);
+        Assert.False(restored.Exists);
+        Assert.Null(restored.Error);
+        Assert.Empty(restored.Route!.Hops);
+        Assert.Equal(kind, restored.Route.Kind);
+        FollowRouteDocument recovered = Assert.IsType<FollowRouteDocument>(restored.WorkspaceDraft);
+        Assert.Equal(["Sol", "Achenar"], recovered.Hops.Select(hop => hop.Name));
+        Assert.Equal(working.Notes, recovered.Notes);
+        Assert.Equal(working.LastReachedIndex, recovered.LastReachedIndex);
+        Assert.True(recovered.IsActive);
+        Assert.False(recovered.AutoCopy);
+        Assert.Equal(working.RestockOnlyWhenLow, recovered.RestockOnlyWhenLow);
+        Assert.Empty(await store.ListAsync("F123"));
+    }
+
     /// <summary>Invalid working snapshots produce errors without replacing the stored evidence.</summary>
     [Theory]
     [InlineData("[]")]

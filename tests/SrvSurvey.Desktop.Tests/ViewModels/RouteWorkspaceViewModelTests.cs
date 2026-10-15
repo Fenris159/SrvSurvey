@@ -96,6 +96,48 @@ public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
         Assert.Empty(restarted.SavedRoutes);
     }
 
+    /// <summary>A retained working route reopens as unsaved when its selected library file has been deleted.</summary>
+    [Theory]
+    [InlineData(FollowRouteKind.Standard)]
+    [InlineData(FollowRouteKind.FleetCarrier)]
+    public async Task RetainedWorkingRouteReopensAfterItsSelectedSavedFileIsDeleted(FollowRouteKind kind)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, kind);
+        FollowRouteDocument saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [Hop("Sol", 1, new(0, 0, 0)), Hop("Second", 2, new(1, 2, 3))],
+            },
+            "Removed route"
+        );
+        await store.SaveWorkspaceAsync(
+            saved with
+            {
+                IsActive = true,
+                LastReachedIndex = 0,
+                Notes = "Retained notes",
+            },
+            true
+        );
+        File.Delete(saved.FilePath);
+
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: kind);
+        await model.UpdateContextAsync("F123", "Sol", 1, new(0, 0, 0));
+
+        Assert.True(model.HasRoute);
+        Assert.False(model.HasSavedRoute);
+        Assert.True(model.IsActive);
+        Assert.Equal(1, model.ReachedCount);
+        Assert.Equal("Second", model.NextHopName);
+        Assert.Equal("Retained notes", model.CreateSnapshot()!.Notes);
+        Assert.Contains("Restored the working route", model.StatusMessage);
+        Assert.Empty(model.SavedRoutes);
+        await model.RefreshAsync();
+        Assert.True(model.HasRoute);
+        Assert.Equal("Second", model.NextHopName);
+        Assert.False(File.Exists(saved.FilePath));
+    }
+
     /// <summary>Unsaved routes retain manual edits, notes, and journal arrivals across commander switches and restarts.</summary>
     [Theory]
     [InlineData(FollowRouteKind.Standard, "FSDJump")]

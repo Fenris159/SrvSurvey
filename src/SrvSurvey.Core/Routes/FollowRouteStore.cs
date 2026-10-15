@@ -97,9 +97,29 @@ public sealed class FollowRouteStore
                 );
             }
 
-            string selectedPath = ResolveCatalogPath(frontierId, selection.FileName, selection.IsLegacy);
+            string selectedPath;
+            try
+            {
+                selectedPath = ResolveCatalogPath(frontierId, selection.FileName, selection.IsLegacy);
+            }
+            catch (FileNotFoundException) when (selection.Draft is not null)
+            {
+                string defaultPath = GetPath(frontierId);
+                return new FollowRouteLoadResult(defaultPath, false, CreateDefault(frontierId, defaultPath), null);
+            }
+
             if (!File.Exists(selectedPath))
             {
+                if (selection.Draft is not null)
+                {
+                    return new FollowRouteLoadResult(
+                        selectedPath,
+                        false,
+                        CreateDefault(frontierId, selectedPath),
+                        null
+                    );
+                }
+
                 return new FollowRouteLoadResult(
                     selectedPath,
                     true,
