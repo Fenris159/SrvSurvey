@@ -292,7 +292,7 @@ public sealed class GuidesViewModelTests
         Assert.Contains("Meta Quest or Rift", instructions, StringComparison.Ordinal);
         Assert.Contains("Windows Mixed Reality", instructions, StringComparison.Ordinal);
         Assert.Contains("SrvSurvey OpenXR layer", instructions, StringComparison.Ordinal);
-        Assert.Contains("experimental VDXR route", instructions, StringComparison.Ordinal);
+        Assert.Contains("Meta Quest — VDXR", instructions, StringComparison.Ordinal);
         Assert.Contains("Meta compatibility bridge", instructions, StringComparison.Ordinal);
         Assert.Contains("OpenComposite is not a compatible workaround", instructions, StringComparison.Ordinal);
         Assert.Contains("no custom library location is required", instructions, StringComparison.Ordinal);

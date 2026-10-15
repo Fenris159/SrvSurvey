@@ -186,6 +186,10 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.True(runtime.Probe().HeadsetPresent);
         Assert.True(runtime.Initialize().Succeeded);
         Assert.True(runtime.IsInitialized);
+        VrRuntimeResult interaction = runtime.SetInteractionEnabled(true);
+        Assert.False(interaction.Succeeded);
+        Assert.Contains("Toggle VR overlay interaction shortcut requires SteamVR", interaction.Message);
+        Assert.Empty(runtime.PollPointerEvents());
         OpenXrOverlayFrame frame = Overlay();
         Assert.True(runtime.PublishOverlay("A", frame.Frame, frame.Calibration, frame.Alpha).Succeeded);
         Assert.True(runtime.CompleteFrame().Succeeded);
@@ -313,11 +317,20 @@ public sealed class OpenXrOverlayTests : IDisposable
 
     private void WriteState(OpenXrLayerState state, long heartbeat)
     {
-        using var mapping = MemoryMappedFile.CreateFromFile(
+        // Match the native reader's shared file access, including on Windows.
+        using var file = new FileStream(
             MailboxPath,
             FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var mapping = MemoryMappedFile.CreateFromFile(
+            file,
             null,
-            OpenXrFramePacket.Capacity
+            OpenXrFramePacket.Capacity,
+            MemoryMappedFileAccess.ReadWrite,
+            HandleInheritability.None,
+            leaveOpen: true
         );
         using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
         view.Write(40, (uint)state);

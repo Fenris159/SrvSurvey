@@ -1,15 +1,66 @@
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Tests.Infrastructure;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class VrOverlayCoordinatorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-vr-coordinator-tests-{Guid.NewGuid():N}"
     );
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VrCapturePreservesPanelColorAndAppliesHostOpacityOnce(bool combinedPresentation)
+    {
+        var panel = new Border { Background = new SolidColorBrush(Color.FromRgb(220, 50, 20)) };
+        var window = new Window
+        {
+            Width = 40,
+            Height = 20,
+            WindowDecorations = WindowDecorations.None,
+            Background = Brushes.Transparent,
+            TransparencyBackgroundFallback = Brushes.Transparent,
+            TransparencyLevelHint = [WindowTransparencyLevel.Transparent],
+            Content = panel,
+            Opacity = 0.5,
+        };
+        var registry = new OverlayWindowRegistry();
+        registry.Register(window, "PlotJumpInfo");
+        try
+        {
+            window.Show();
+            if (combinedPresentation)
+            {
+                registry.SetPresentationVisual(window, panel);
+            }
+
+            VrOverlayViewModel viewModel = CreateViewModel();
+            viewModel.Enabled = true;
+            var runtime = new StubOpenVrRuntime();
+            using var coordinator = new VrOverlayCoordinator(viewModel, registry, runtime, _ => true);
+
+            VrOverlayFrame frame = Assert.IsType<VrOverlayFrame>(runtime.LastFrame);
+            Assert.Equal(2, (double)frame.Width / frame.Height);
+            int center = ((frame.Height / 2 * frame.Width) + frame.Width / 2) * 4;
+            Assert.InRange(frame.RgbaBytes[center], 218, 222);
+            Assert.InRange(frame.RgbaBytes[center + 1], 48, 52);
+            Assert.InRange(frame.RgbaBytes[center + 2], 18, 22);
+            Assert.InRange(frame.RgbaBytes[center + 3] / 255f * runtime.LastAlpha, 0.49f, 0.51f);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 
     [Fact]
     public void ResetOrientationUsesActiveRuntimeAndReportsResult()
@@ -176,6 +227,10 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public bool InteractionEnabled { get; private set; }
 
+        public VrOverlayFrame? LastFrame { get; private set; }
+
+        public float LastAlpha { get; private set; }
+
         public Queue<VrOverlayPointerEvent> PointerEvents { get; } = new();
 
         public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
@@ -199,6 +254,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             float alpha
         )
         {
+            LastFrame = frame;
+            LastAlpha = alpha;
             return VrRuntimeResult.Success("Published.");
         }
 

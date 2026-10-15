@@ -1352,7 +1352,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+    "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -10256,7 +10256,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest \u2014 VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+    "Text": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest \u2014 VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18547,7 +18547,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
+    "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -19538,22 +19538,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
-  },
-  {
-    "Text": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Experimental rig bar detection",
@@ -21900,7 +21884,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
+    "Text": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31568,7 +31552,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Meta Quest \u2014 VDXR (experimental)",
+    "Text": "Meta Quest \u2014 VDXR",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31584,7 +31568,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
+    "Text": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -41078,7 +41062,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+    "Text": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -44913,7 +44897,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
+    "Text": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -53720,7 +53704,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
-    "Text": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+    "Text": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -53728,7 +53712,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+    "Text": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -54089,14 +54073,6 @@
   },
   {
     "Text": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
-  },
-  {
-    "Text": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -56650,6 +56626,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
+    "Text": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "The VR calibration backup did not match its source.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57632,22 +57632,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
-  },
-  {
-    "Text": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -60634,6 +60618,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
+  },
+  {
+    "Text": "This selection uses Virtual Desktop\u0027s SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest \u2014 VDXR instead.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -63635,6 +63627,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
+    "Text": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "VEHICLE / GAME MODE",
     "IsFormat": false,
     "SourceKinds": [
@@ -65502,6 +65502,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
+    "Text": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Windows Mixed Reality",

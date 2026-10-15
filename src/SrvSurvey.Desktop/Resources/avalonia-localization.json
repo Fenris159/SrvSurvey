@@ -677,8 +677,8 @@
       "translation": "Ein SHA-256-Manifest zeichnet die importierten Dateien auf, sodass Teilkopien und stille Beschädigungen erkannt werden können."
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "Eine SteamVR Route ohne SrvSurvey Panels: Bestätigen Sie, dass Elite über SteamVR gestartet wurde. Die experimentelle Route VDXR erfordert eine Live-Direct3D 11-Sitzung VDXR und die registrierte Ebene SrvSurvey OpenXR."
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "Eine SteamVR Route ohne SrvSurvey Panels: Bestätigen Sie, dass Elite über SteamVR gestartet wurde. Die Route VDXR erfordert eine Live-Direct3D 11-Sitzung VDXR und die registrierte Ebene SrvSurvey OpenXR."
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -5117,8 +5117,8 @@
       "translation": "Wählen Sie das SteamVR-Headset für Index, Vive, Pimax, Bigscreen Beyond, Pico oder ein anderes Headset, das bereits SteamVR ausgesetzt ist."
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "Wählen Sie Virtual Desktop als Modus SteamVR. Wählen Sie Meta Quest – VDXR (experimentell) für ein bestehendes Elite-Setup VDXR; Registrieren Sie die Ebene OpenXR aus dem Windows-Paket und starten Sie Elite neu."
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "Wählen Sie Virtual Desktop als Modus SteamVR. Wählen Sie Meta Quest – VDXR für ein bestehendes Elite-Setup VDXR; Registrieren Sie die Ebene OpenXR aus dem Windows-Paket und starten Sie Elite neu."
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -9249,8 +9249,8 @@
       "translation": "Aktivieren Sie „Flugwarnungen anzeigen“ und wählen Sie in den Explorations-Overlay-Einstellungen einen Schwerkraftschwellenwert aus. Die Warnung erscheint nur, wenn SrvSurvey einen landbaren Körper in der Nähe in einem unterstützten Schiffs-, Kampfflugzeug- oder SRV-Flugkontext identifizieren kann."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "Aktivieren Sie SrvSurvey VR-Overlays und warten Sie auf eine verbundene VDXR Sitzung. Verwenden Sie die vorhandenen Kalibrierungssteuerungen, um Panels zu platzieren. Controller-Interaktion ist auf dieser experimentellen Route nicht verfügbar."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "Aktivieren Sie SrvSurvey VR-Overlays und warten Sie auf eine verbundene VDXR Sitzung. Verwenden Sie die vorhandenen Kalibrierungssteuerungen, um Panels zu platzieren. Controller-Interaktion ist auf dieser Route nicht verfügbar."
     },
     {
       "source": "Enable Surface mining",
@@ -9743,14 +9743,6 @@
     {
       "source": "Expedition workspace",
       "translation": "Expeditionsarbeitsbereich"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "Experimentell VDXR: Registrieren Sie die Ebene OpenXR aus dem Windows x64-Paket und starten Sie Elite dann neu. Direct3D 11 ist erforderlich."
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Experimentelle Windows Direct3D 11-Route ohne SteamVR. Zeigt passive Panels an; erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Die Headset-Validierung steht noch aus."
     },
     {
       "source": "Experimental rig bar detection",
@@ -10921,8 +10913,8 @@
       "translation": "Nur für Benutzer von Linux Wayland oder XWayland, wenn die normale X11-Erfassung fehlschlägt und SrvSurvey den Desktop-ScreenCast- und PipeWire-Fallback verwendet. Windows- und native X11-Benutzer benötigen dies nicht."
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "Wählen Sie für Meta Quest oder Rift genau die Bridge aus, die Sie verwenden: Link / Air Link, Steam Link, Virtual Desktop oder experimentelle ALVR."
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "Wählen Sie für Meta Quest oder Rift genau die Bridge aus, die Sie verwenden: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR oder experimentelle ALVR."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -15737,16 +15729,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest – VDXR (experimentell)"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Meta Headsets können eine SteamVR Bridge oder die experimentelle VDXR Route verwenden. Wählen Sie die Route aus, die der von Elite tatsächlich verwendeten Laufzeit entspricht."
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Meta Headsets können eine SteamVR Bridge oder die VDXR Route verwenden. Wählen Sie die Route aus, die der von Elite tatsächlich verwendeten Laufzeit entspricht."
     },
     {
       "source": "Metal Rich",
@@ -20477,8 +20469,8 @@
       "translation": "Kaufaufteilung"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "Fügen Sie Live-Panels SrvSurvey über SteamVR oder die experimentelle Route VDXR in Ihr Headset ein, mit Positions-, Rotations-, Skalierungs-, Deckkraft- und Fahrzeugmodus-Überschreibungen pro Overlay."
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "Fügen Sie Live-Panels SrvSurvey über SteamVR oder die Route VDXR in Ihr Headset ein, mit Positions-, Rotations-, Skalierungs-, Deckkraft- und Fahrzeugmodus-Überschreibungen pro Overlay."
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -22393,8 +22385,8 @@
       "translation": "VR-Ausrichtung zurücksetzen"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "„VR-Ausrichtung zurücksetzen“ erfasst die aktuelle Gierbewegung des Headsets als Overlay-Ursprung, ohne die gespeicherte Panel-Platzierung zu ändern."
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "Beim Zurücksetzen der VR-Ausrichtung wird die aktuelle Gierbewegung des Headsets SteamVR oder die Headset-Pose VDXR als Overlay-Ursprung erfasst, ohne dass die gespeicherte Panel-Platzierung geändert wird."
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -26785,12 +26777,12 @@
       "translation": "SteamVR ist verfügbar, es wurde jedoch kein bereites Headset erkannt."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR Routen erfordern ein fertiges SteamVR Headset. Die experimentelle Route VDXR wartet auf eine Live-Elite-Sitzung VDXR und unterstützt keine Controller-Zeiger-Interaktion."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "SteamVR Routen erfordern ein fertiges SteamVR Headset. Die Route VDXR wartet auf eine Live-Elite-Sitzung VDXR und unterstützt keine Controller-Zeiger-Interaktion."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "SteamVR Routen verwenden das Overlay-Backend OpenVR. Die experimentelle Route VDXR verwendet die Ebene SrvSurvey OpenXR unter Windows x64 mit Direct3D 11; Die Headset-Validierung steht noch aus."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "SteamVR Routen verwenden das Overlay-Backend OpenVR. Die Route VDXR verwendet die Ebene SrvSurvey OpenXR unter Windows x64 mit Direct3D 11; Die Headset-Validierung steht noch aus."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -26971,10 +26963,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "Unterstützt unter Windows. SteamVR muss weiterhin ausgeführt werden, da SrvSurvey in seinem Overlay-Compositor OpenVR veröffentlicht."
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "Unterstützt unter Windows. Virtual Desktop muss seinen SteamVR Pfad verwenden; VDXR umgeht SteamVR und kann keine SrvSurvey Overlays übertragen."
     },
     {
       "source": "Supporting data",
@@ -28245,6 +28233,18 @@
       "translation": "Die Schicht VDXR OpenXR ist nicht verbunden."
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "Die Overlay-Ebene VDXR erfordert Windows x64 und Direct3D 11."
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "Die Route VDXR zeigt passive Panels an und unterstützt diese Controller-Zeiger-Verknüpfung nicht. Die Verknüpfungen zur Panelkalibrierung und zum Zurücksetzen der VR-Ausrichtung bleiben weiterhin verfügbar."
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "Die Route VDXR zeigt passive Panels an. Für die Verknüpfung „VR-Overlay-Interaktion umschalten“ ist SteamVR erforderlich. VDXR Controller-Eingang ist nicht implementiert."
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "Die VR-Kalibrierungssicherung stimmte nicht mit ihrer Quelle überein."
     },
@@ -28735,14 +28735,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Die vorhandenen Live-Overlays sind nicht mehr durchklickbar und können an die richtige Stelle gezogen werden."
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "Die experimentelle Overlay-Ebene VDXR erfordert Windows x64 und Direct3D 11."
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "Die experimentelle Route VDXR zeigt passive Panels an. Die Controller-Zeiger-Interaktion ist über SteamVR verfügbar."
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -30235,6 +30227,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Dadurch werden die gespeicherte Konfiguration und ihre Gruppen aus SrvSurvey entfernt. Es ändert nichts an Ihrer Steuerung in Elite."
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "Diese Auswahl verwendet den Pfad SteamVR von Virtual Desktop unter Windows. Für direkte VDXR Overlays wählen Sie stattdessen Meta Quest – VDXR."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -31733,6 +31729,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR: Registrieren Sie die Ebene OpenXR aus dem Windows x64-Paket und starten Sie Elite dann neu. Direct3D 11 ist erforderlich."
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "FAHRZEUG-/SPIELMODUS"
     },
@@ -32663,6 +32663,10 @@
     {
       "source": "Windows",
       "translation": "Windows"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Windows Direct3D 11-Route ohne SteamVR. Zeigt passive Panels an; erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Die Headset-Validierung steht noch aus."
     },
     {
       "source": "Windows Mixed Reality",
@@ -38115,8 +38119,8 @@
       "translation": "Un manifiesto SHA-256 registra los archivos importados para que se puedan detectar copias parciales y corrupción silenciosa."
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "Una ruta SteamVR sin paneles SrvSurvey: confirme que Elite se lanzó a través de SteamVR. La ruta experimental VDXR requiere una sesión activa de Direct3D 11 VDXR y la capa registrada SrvSurvey OpenXR."
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "Una ruta SteamVR sin paneles SrvSurvey: confirme que Elite se lanzó a través de SteamVR. La ruta VDXR requiere una sesión activa de Direct3D 11 VDXR y la capa registrada SrvSurvey OpenXR."
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -42555,8 +42559,8 @@
       "translation": "Elija los auriculares SteamVR para Index, Vive, Pimax, Bigscreen Beyond, Pico u otros auriculares que ya estén expuestos a SteamVR."
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "Elija Virtual Desktop para su modo SteamVR. Elija Meta Quest — VDXR (experimental) para una configuración Elite VDXR existente; registre la capa OpenXR del paquete de Windows y reinicie Elite."
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "Elija Virtual Desktop para su modo SteamVR. Elija Meta Quest — VDXR para una configuración Elite existente VDXR; registre la capa OpenXR del paquete de Windows y reinicie Elite."
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -46687,8 +46691,8 @@
       "translation": "Habilite Mostrar advertencias de vuelo y elija un umbral de gravedad en la configuración de superposición de exploración. La advertencia aparece solo cuando SrvSurvey puede identificar un cuerpo cercano que se puede aterrizar en un contexto de vuelo de barco, caza o SRV apoyado."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual y espere una sesión conectada VDXR. Utilice los controles de calibración existentes para colocar paneles; La interacción del controlador no está disponible en esta ruta experimental."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual y espere una sesión conectada VDXR. Utilice los controles de calibración existentes para colocar paneles; La interacción del controlador no está disponible en esta ruta."
     },
     {
       "source": "Enable Surface mining",
@@ -47181,14 +47185,6 @@
     {
       "source": "Expedition workspace",
       "translation": "Espacio de trabajo de expedición"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "Experimental VDXR: registre la capa OpenXR del paquete Windows x64, luego reinicie Elite. Se requiere Direct3D 11."
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Ruta experimental de Windows Direct3D 11 sin SteamVR. Muestra paneles pasivos; requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La validación de los auriculares está pendiente."
     },
     {
       "source": "Experimental rig bar detection",
@@ -48359,8 +48355,8 @@
       "translation": "Solo para usuarios de Linux Wayland o XWayland, cuando falla la captura normal de X11 y SrvSurvey utiliza el respaldo ScreenCast y PipeWire del escritorio. Los usuarios de Windows y X11 nativo no lo necesitan."
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "Para Meta Quest o Rift, elija el puente exacto que utiliza: Enlace / Air Link, Steam Link, Virtual Desktop o ALVR experimental."
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "Para Meta Quest o Rift, elija el puente exacto que utiliza: Enlace / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR o ALVR experimental."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -53175,16 +53171,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest — VDXR (experimental)"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Los auriculares Meta pueden utilizar un puente SteamVR o la ruta experimental VDXR. Seleccione la ruta que coincida con el tiempo de ejecución realmente utilizado por Elite."
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Los auriculares Meta pueden utilizar un puente SteamVR o la ruta VDXR. Seleccione la ruta que coincida con el tiempo de ejecución realmente utilizado por Elite."
     },
     {
       "source": "Metal Rich",
@@ -57915,8 +57911,8 @@
       "translation": "Asignación de compras"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "Coloque paneles en vivo SrvSurvey en sus auriculares a través de SteamVR o la ruta experimental VDXR, con anulaciones de posición, rotación, escala, opacidad y modo de vehículo por superposición."
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "Coloque paneles en vivo SrvSurvey en sus auriculares a través de SteamVR o la ruta VDXR, con anulaciones de posición, rotación, escala, opacidad y modo de vehículo por superposición."
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -59831,8 +59827,8 @@
       "translation": "Restablecer la orientación de la realidad virtual"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "Restablecer la orientación de VR captura la orientación actual del visor como origen de superposición sin cambiar la ubicación guardada del panel."
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "Restablecer la orientación de VR captura la orientación actual del visor SteamVR, o la posición del visor VDXR, como origen de superposición sin cambiar la ubicación guardada del panel."
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -64223,12 +64219,12 @@
       "translation": "SteamVR está disponible, pero no se detectó ningún auricular listo."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR las rutas requieren un auricular listo SteamVR. La ruta experimental VDXR espera una sesión Elite en vivo VDXR y no admite la interacción controlador-puntero."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "SteamVR las rutas requieren un auricular listo SteamVR. La ruta VDXR espera una sesión Elite en vivo VDXR y no admite la interacción controlador-puntero."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Las rutas SteamVR utilizan el backend superpuesto OpenVR. La ruta experimental VDXR utiliza la capa SrvSurvey OpenXR en Windows x64 con Direct3D 11; La validación del auricular está pendiente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "Las rutas SteamVR utilizan el backend superpuesto OpenVR. La ruta VDXR utiliza la capa SrvSurvey OpenXR en Windows x64 con Direct3D 11; La validación del auricular está pendiente."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -64409,10 +64405,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "Compatible con Windows. SteamVR debe seguir ejecutándose porque SrvSurvey publica en su compositor de superposición OpenVR."
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "Compatible con Windows. Virtual Desktop debe utilizar su ruta SteamVR; VDXR pasa por alto SteamVR y no puede transportar superposiciones SrvSurvey."
     },
     {
       "source": "Supporting data",
@@ -65683,6 +65675,18 @@
       "translation": "La capa VDXR OpenXR no está conectada."
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "La capa de superposición VDXR requiere Windows x64 y Direct3D 11."
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "La ruta VDXR muestra paneles pasivos y no admite este acceso directo al puntero del controlador. Los atajos de calibración del panel y Restablecer orientación VR siguen estando disponibles."
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "La ruta VDXR muestra paneles pasivos. El acceso directo de interacción de superposición de VR requiere SteamVR; VDXR la entrada del controlador no está implementada."
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "La copia de seguridad de la calibración de realidad virtual no coincidía con su fuente."
     },
@@ -66173,14 +66177,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Las superposiciones en vivo existentes dejan de ser accesibles con clics y se pueden arrastrar a su lugar."
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "La capa de superposición experimental VDXR requiere Windows x64 y Direct3D 11."
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "La ruta experimental VDXR muestra paneles pasivos. La interacción controlador-puntero está disponible a través de SteamVR."
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -67673,6 +67669,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Esto elimina la configuración guardada y sus grupos de SrvSurvey. No cambia tus controles en Elite."
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "Esta selección utiliza la ruta Virtual Desktop SteamVR en Windows. Para superposiciones directas VDXR, elija Meta Quest — VDXR en su lugar."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -69171,6 +69171,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR: registre la capa OpenXR del paquete de Windows x64, luego reinicie Elite. Se requiere Direct3D 11."
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "VEHÍCULO / MODO JUEGO"
     },
@@ -70101,6 +70105,10 @@
     {
       "source": "Windows",
       "translation": "ventanas"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Ruta Windows Direct3D 11 sin SteamVR. Muestra paneles pasivos; requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La validación de los auriculares está pendiente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -75553,8 +75561,8 @@
       "translation": "Un manifeste SHA-256 enregistre les fichiers importés afin que les copies partielles et la corruption silencieuse puissent être détectées."
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "Un itinéraire SteamVR sans panneaux SrvSurvey : confirmez qu'Elite a été lancé via SteamVR. La route expérimentale VDXR nécessite une session Direct3D 11 en direct VDXR et la couche enregistrée SrvSurvey OpenXR."
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "Un itinéraire SteamVR sans panneaux SrvSurvey : confirmez qu'Elite a été lancé via SteamVR. L'itinéraire VDXR nécessite une session Direct3D 11 en direct VDXR et la couche enregistrée SrvSurvey OpenXR."
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -79993,8 +80001,8 @@
       "translation": "Choisissez le casque SteamVR pour Index, Vive, Pimax, Bigscreen Beyond, Pico ou un autre casque déjà exposé à SteamVR."
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "Choisissez Virtual Desktop pour son mode SteamVR. Choisissez Meta Quest — VDXR (expérimental) pour une configuration Elite VDXR existante ; enregistrez la couche OpenXR du package Windows et redémarrez Elite."
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "Choisissez Virtual Desktop pour son mode SteamVR. Choisissez Meta Quest — VDXR pour une configuration Elite existante VDXR ; enregistrez la couche OpenXR du package Windows et redémarrez Elite."
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -84125,8 +84133,8 @@
       "translation": "Activez Afficher les avertissements de vol et choisissez un seuil de gravité dans les paramètres de superposition d'exploration. L'avertissement apparaît uniquement lorsque SrvSurvey peut identifier un corps atterrissable à proximité dans un contexte de vol de navire, de chasseur ou SRV pris en charge."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "Activez les superpositions VR SrvSurvey et attendez une session connectée VDXR. Utiliser les contrôles d'étalonnage existants pour placer les panneaux ; l’interaction du contrôleur n’est pas disponible sur cette route expérimentale."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "Activez les superpositions VR SrvSurvey et attendez une session connectée VDXR. Utiliser les contrôles d'étalonnage existants pour placer les panneaux ; l’interaction du contrôleur n’est pas disponible sur cet itinéraire."
     },
     {
       "source": "Enable Surface mining",
@@ -84619,14 +84627,6 @@
     {
       "source": "Expedition workspace",
       "translation": "Espace de travail d'expédition"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "Expérimental VDXR : enregistrez la couche OpenXR du package Windows x64, puis redémarrez Elite. Direct3D 11 est requis."
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Route expérimentale Windows Direct3D 11 sans SteamVR. Affiche les panneaux passifs ; nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. La validation du casque est en attente."
     },
     {
       "source": "Experimental rig bar detection",
@@ -85797,8 +85797,8 @@
       "translation": "Pour les utilisateurs de Linux Wayland ou XWayland uniquement, lorsque la capture X11 normale échoue et SrvSurvey utilise la solution de secours ScreenCast et PipeWire du bureau. Les utilisateurs Windows et X11 natifs n’en ont pas besoin."
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "Pour Meta Quest ou Rift, choisissez le pont exact que vous utilisez : Link / Air Link, Steam Link, Virtual Desktop ou ALVR expérimental."
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "Pour Meta Quest ou Rift, choisissez le pont exact que vous utilisez : Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR ou ALVR expérimental."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -90613,16 +90613,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest — VDXR (expérimental)"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Les casques Meta peuvent utiliser un pont SteamVR ou la voie expérimentale VDXR. Sélectionnez l'itinéraire qui correspond au temps d'exécution réellement utilisé par Elite."
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Les casques Meta peuvent utiliser un pont SteamVR ou la route VDXR. Sélectionnez l'itinéraire qui correspond au temps d'exécution réellement utilisé par Elite."
     },
     {
       "source": "Metal Rich",
@@ -95353,8 +95353,8 @@
       "translation": "Allocation d'achat"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "Insérez des panneaux en direct SrvSurvey dans votre casque via SteamVR ou la voie expérimentale VDXR, avec des remplacements de position, de rotation, d'échelle, d'opacité et de mode véhicule par superposition."
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "Insérez des panneaux en direct SrvSurvey dans votre casque via SteamVR ou l'itinéraire VDXR, avec des remplacements de position, de rotation, d'échelle, d'opacité et de mode véhicule par superposition."
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -97269,8 +97269,8 @@
       "translation": "Réinitialiser l'orientation VR"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "Réinitialiser l'orientation VR capture le lacet actuel du casque comme origine de superposition sans modifier le placement du panneau enregistré."
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "La réinitialisation de l'orientation VR capture le lacet actuel du casque SteamVR ou la pose du casque VDXR, comme origine de superposition sans modifier le placement du panneau enregistré."
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -101661,12 +101661,12 @@
       "translation": "SteamVR est disponible, mais aucun casque prêt n'a été détecté."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "Les itinéraires SteamVR nécessitent un casque SteamVR. L'itinéraire expérimental VDXR attend une session Elite en direct VDXR et ne prend pas en charge l'interaction contrôleur-pointeur."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "Les itinéraires SteamVR nécessitent un casque SteamVR. L'itinéraire VDXR attend une session Elite en direct VDXR et ne prend pas en charge l'interaction contrôleur-pointeur."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Les itinéraires SteamVR utilisent le backend de superposition OpenVR. La route expérimentale VDXR utilise la couche SrvSurvey OpenXR sur Windows x64 avec Direct3D 11 ; la validation du casque est en attente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "Les itinéraires SteamVR utilisent le backend de superposition OpenVR. La route VDXR utilise la couche SrvSurvey OpenXR sur Windows x64 avec Direct3D 11 ; la validation du casque est en attente."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -101847,10 +101847,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "Pris en charge sous Windows. SteamVR doit rester en cours d'exécution car SrvSurvey publie sur son compositeur de superposition OpenVR."
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "Pris en charge sous Windows. Virtual Desktop doit utiliser son chemin SteamVR ; VDXR contourne SteamVR et ne peut pas transporter de superpositions SrvSurvey."
     },
     {
       "source": "Supporting data",
@@ -103121,6 +103117,18 @@
       "translation": "La couche VDXR OpenXR n'est pas connectée."
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "La couche de superposition VDXR nécessite Windows x64 et Direct3D 11."
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "L'itinéraire VDXR affiche des panneaux passifs et ne prend pas en charge ce raccourci contrôleur-pointeur. Ses raccourcis d’étalonnage du panneau et de réinitialisation de l’orientation VR restent disponibles."
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "L'itinéraire VDXR affiche des panneaux passifs. Le raccourci d'interaction Toggle VR overlay nécessite SteamVR ; L’entrée du contrôleur VDXR n’est pas implémentée."
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "La sauvegarde d'étalonnage VR ne correspondait pas à sa source."
     },
@@ -103611,14 +103619,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Les superpositions en direct existantes ne sont plus cliquables et peuvent être glissées en place."
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "La couche de superposition expérimentale VDXR nécessite Windows x64 et Direct3D 11."
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "L'itinéraire expérimental VDXR affiche des panneaux passifs. L'interaction contrôleur-pointeur est disponible via SteamVR."
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -105111,6 +105111,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Cela supprime la configuration enregistrée et ses groupes de SrvSurvey. Cela ne change pas vos commandes dans Elite."
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "Cette sélection utilise le chemin Virtual Desktop SteamVR sous Windows. Pour les superpositions directes VDXR, choisissez plutôt Meta Quest — VDXR."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -106609,6 +106613,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR : enregistrez la couche OpenXR du package Windows x64, puis redémarrez Elite. Direct3D 11 est requis."
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "VÉHICULE / MODE DE JEU"
     },
@@ -107539,6 +107547,10 @@
     {
       "source": "Windows",
       "translation": "Fenêtres"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Route Windows Direct3D 11 sans SteamVR. Affiche les panneaux passifs ; nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. La validation du casque est en attente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -112991,8 +113003,8 @@
       "translation": "Um manifesto SHA-256 registra os arquivos importados para que cópias parciais e corrupção silenciosa possam ser detectadas."
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "Uma rota SteamVR sem painéis SrvSurvey: confirme que o Elite foi lançado por meio de SteamVR. A rota experimental VDXR requer uma sessão Direct3D 11 VDXR ao vivo e a camada registrada SrvSurvey OpenXR."
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "Uma rota SteamVR sem painéis SrvSurvey: confirme que o Elite foi lançado por meio de SteamVR. A rota VDXR requer uma sessão Direct3D 11 VDXR ao vivo e a camada registrada SrvSurvey OpenXR."
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -117431,8 +117443,8 @@
       "translation": "Escolha o headset SteamVR para Index, Vive, Pimax, Bigscreen Beyond, Pico ou outro headset já exposto ao SteamVR."
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "Escolha Virtual Desktop para seu modo SteamVR. Escolha Meta Quest — VDXR (experimental) para uma configuração Elite existente VDXR; registre a camada OpenXR do pacote do Windows e reinicie o Elite."
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "Escolha Virtual Desktop para seu modo SteamVR. Escolha Meta Quest — VDXR para uma configuração Elite existente VDXR; registre a camada OpenXR do pacote do Windows e reinicie o Elite."
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -121563,8 +121575,8 @@
       "translation": "Ative Mostrar avisos de voo e escolha um limite de gravidade nas configurações de sobreposição de exploração. O aviso aparece apenas quando SrvSurvey consegue identificar um corpo próximo que pode ser pousado em um contexto de navio, caça ou voo SRV apoiado."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "Ative as sobreposições de VR SrvSurvey e aguarde uma sessão conectada VDXR. Use os controles de calibração existentes para colocar painéis; a interação do controlador não está disponível nesta rota experimental."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "Ative as sobreposições de VR SrvSurvey e aguarde uma sessão conectada VDXR. Use os controles de calibração existentes para colocar painéis; a interação do controlador não está disponível nesta rota."
     },
     {
       "source": "Enable Surface mining",
@@ -122057,14 +122069,6 @@
     {
       "source": "Expedition workspace",
       "translation": "Espaço de trabalho de expedição"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "Experimental VDXR: registre a camada OpenXR do pacote Windows x64 e reinicie o Elite. Direct3D 11 é necessário."
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Rota experimental do Windows Direct3D 11 sem SteamVR. Exibe painéis passivos; requer a camada SrvSurvey OpenXR e uma configuração Elite que já é executada em VDXR. A validação do fone de ouvido está pendente."
     },
     {
       "source": "Experimental rig bar detection",
@@ -123235,8 +123239,8 @@
       "translation": "Somente para usuários do Linux Wayland ou XWayland, quando a captura normal do X11 falha e SrvSurvey usa o substituto ScreenCast e PipeWire da área de trabalho. Usuários do Windows e do X11 nativo não precisam disso."
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "Para Meta Quest ou Rift, escolha a ponte exata que você usa: Link / Air Link, Steam Link, Virtual Desktop ou ALVR experimental."
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "Para Meta Quest ou Rift, escolha a ponte exata que você usa: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR ou ALVR experimental."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -128051,16 +128055,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest — VDXR (experimental)"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Os headsets Meta podem usar uma ponte SteamVR ou a rota experimental VDXR. Selecione a rota que corresponde ao tempo de execução realmente usado pelo Elite."
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Os headsets Meta podem usar uma ponte SteamVR ou a rota VDXR. Selecione a rota que corresponde ao tempo de execução realmente usado pelo Elite."
     },
     {
       "source": "Metal Rich",
@@ -132791,8 +132795,8 @@
       "translation": "Alocação de compra"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "Coloque painéis ao vivo SrvSurvey em seu headset por meio da rota SteamVR ou experimental VDXR, com substituições de posição, rotação, escala, opacidade e modo de veículo por sobreposição."
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "Coloque painéis ao vivo SrvSurvey em seu headset por meio da rota SteamVR ou VDXR, com substituições de posição, rotação, escala, opacidade e modo de veículo por sobreposição."
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -134707,8 +134711,8 @@
       "translation": "Redefinir orientação VR"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "A redefinição da orientação VR captura a guinada atual do headset como origem da sobreposição sem alterar o posicionamento salvo do painel."
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "A redefinição da orientação VR captura a guinada atual do headset ativada SteamVR ou a pose do headset ativada VDXR, como a origem da sobreposição sem alterar o posicionamento salvo do painel."
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -139099,12 +139103,12 @@
       "translation": "O SteamVR está disponível, mas nenhum headset pronto foi detectado."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR exigem um fone de ouvido pronto SteamVR. A rota experimental VDXR aguarda uma sessão Elite ao vivo VDXR e não oferece suporte à interação controlador-ponteiro."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "SteamVR exigem um fone de ouvido pronto SteamVR. A rota VDXR aguarda uma sessão Elite VDXR ativa e não oferece suporte à interação controlador-ponteiro."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "As rotas SteamVR usam o backend de sobreposição OpenVR. A rota experimental VDXR usa a camada SrvSurvey OpenXR no Windows x64 com Direct3D 11; a validação do fone de ouvido está pendente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "As rotas SteamVR usam o backend de sobreposição OpenVR. A rota VDXR usa a camada SrvSurvey OpenXR no Windows x64 com Direct3D 11; a validação do fone de ouvido está pendente."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -139285,10 +139289,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "Compatível com Windows. SteamVR deve permanecer em execução porque SrvSurvey publica em seu compositor de sobreposição OpenVR."
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "Compatível com Windows. Virtual Desktop deve utilizar seu caminho SteamVR; VDXR ignora SteamVR e não pode transportar sobreposições SrvSurvey."
     },
     {
       "source": "Supporting data",
@@ -140559,6 +140559,18 @@
       "translation": "A camada VDXR OpenXR não está conectada."
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "A camada de sobreposição VDXR requer Windows x64 e Direct3D 11."
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "A rota VDXR exibe painéis passivos e não suporta este atalho de ponteiro de controlador. Os atalhos de calibração do painel e redefinição de orientação VR permanecem disponíveis."
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "A rota VDXR exibe painéis passivos. O atalho de interação Alternar sobreposição de VR requer SteamVR; A entrada do controlador VDXR não está implementada."
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "O backup de calibração VR não correspondeu à sua origem."
     },
@@ -141049,14 +141061,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "As sobreposições ao vivo existentes deixam de ser clicadas e podem ser arrastadas no lugar."
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "A camada de sobreposição experimental VDXR requer Windows x64 e Direct3D 11."
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "A rota experimental VDXR exibe painéis passivos. A interação controlador-ponteiro está disponível por meio de SteamVR."
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -142549,6 +142553,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Isso remove a configuração salva e seus grupos de SrvSurvey. Isso não altera seus controles no Elite."
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "Esta seleção usa o caminho Virtual Desktop SteamVR no Windows. Para sobreposições diretas VDXR, escolha Meta Quest — VDXR."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -144047,6 +144055,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR: registre a camada OpenXR do pacote Windows x64 e reinicie o Elite. Direct3D 11 é necessário."
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "VEÍCULO / MODO DE JOGO"
     },
@@ -144977,6 +144989,10 @@
     {
       "source": "Windows",
       "translation": "Windows"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Rota do Windows Direct3D 11 sem SteamVR. Exibe painéis passivos; requer a camada SrvSurvey OpenXR e uma configuração Elite que já é executada em VDXR. A validação do fone de ouvido está pendente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -150429,8 +150445,8 @@
       "translation": "Манифест SHA-256 записывает импортированные файлы, поэтому можно обнаружить частичные копии и скрытое повреждение."
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "Маршрут SteamVR без панелей SrvSurvey: подтвердите, что Elite был запущен через SteamVR. Для экспериментального маршрута VDXR требуется работающий сеанс Direct3D 11 VDXR и зарегистрированный слой SrvSurvey OpenXR."
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "Маршрут SteamVR без панелей SrvSurvey: подтвердите, что Elite был запущен через SteamVR. Маршрут VDXR требует активного сеанса Direct3D 11 VDXR и зарегистрированного слоя SrvSurvey OpenXR."
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -154869,8 +154885,8 @@
       "translation": "Выберите гарнитуру SteamVR для Index, Vive, Pimax, Bigscreen Beyond, Pico или другую гарнитуру, уже подключенную к SteamVR."
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "Выберите Virtual Desktop для его режима SteamVR. Выберите Meta Quest — VDXR (экспериментальный) для существующей элитной установки VDXR; зарегистрируйте слой OpenXR из пакета Windows и перезапустите Elite."
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "Выберите Virtual Desktop для его режима SteamVR. Выберите Meta Quest — VDXR для существующей установки Elite VDXR; зарегистрируйте слой OpenXR из пакета Windows и перезапустите Elite."
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -159001,8 +159017,8 @@
       "translation": "Включите «Показывать предупреждения о полетах» и выберите порог гравитации в настройках наложения «Исследование». Предупреждение появляется только тогда, когда SrvSurvey может идентифицировать близлежащий приземляемый объект в контексте полета поддерживаемого корабля, истребителя или SRV."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "Включите SrvSurvey наложения VR и дождитесь подключения VDXR сеанса. Используйте существующие элементы управления калибровкой для размещения панелей; Взаимодействие с контроллером недоступно на этом экспериментальном маршруте."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "Включите SrvSurvey наложения VR и дождитесь подключения VDXR сеанса. Используйте существующие элементы управления калибровкой для размещения панелей; Взаимодействие с контроллером на этом маршруте недоступно."
     },
     {
       "source": "Enable Surface mining",
@@ -159495,14 +159511,6 @@
     {
       "source": "Expedition workspace",
       "translation": "Рабочее пространство экспедиции"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "Экспериментальный VDXR: зарегистрируйте слой OpenXR из пакета Windows x64, затем перезапустите Elite. Требуется Direct3D 11."
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Экспериментальный маршрут Windows Direct3D 11 без SteamVR. Отображает пассивные панели; требуется уровень SrvSurvey OpenXR и установка Elite, которая уже работает через VDXR. Ожидается проверка гарнитуры."
     },
     {
       "source": "Experimental rig bar detection",
@@ -160673,8 +160681,8 @@
       "translation": "Только для пользователей Linux Wayland или XWayland, когда обычный захват X11 не удался и SrvSurvey использует резервный вариант ScreenCast и PipeWire рабочего стола. Пользователям Windows и родным X11 это не нужно."
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "Для Meta Quest или Rift выберите точный мост, который вы используете: Link / Air Link, Steam Link, Virtual Desktop или экспериментальный ALVR."
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "Для Meta Quest или Rift выберите точный мост, который вы используете: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR или экспериментальный ALVR."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -165489,16 +165497,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest — VDXR (экспериментальный)"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Гарнитуры Meta могут использовать мост SteamVR или экспериментальный маршрут VDXR. Выберите маршрут, соответствующий среде выполнения, фактически используемой Elite."
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Гарнитуры Meta могут использовать мост SteamVR или маршрут VDXR. Выберите маршрут, соответствующий среде выполнения, фактически используемой Elite."
     },
     {
       "source": "Metal Rich",
@@ -170229,8 +170237,8 @@
       "translation": "Распределение закупок"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "Поместите живые панели SrvSurvey в гарнитуру с помощью SteamVR или экспериментального VDXR маршрута с возможностью изменения положения, поворота, масштаба, непрозрачности и режима транспортного средства для каждого наложения."
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "Поместите живые панели SrvSurvey в гарнитуру с помощью маршрута SteamVR или VDXR с возможностью изменения положения, поворота, масштаба, непрозрачности и режима транспортного средства для каждого наложения."
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -172145,8 +172153,8 @@
       "translation": "Сбросить ориентацию VR"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "Сброс ориентации VR фиксирует текущее отклонение гарнитуры в качестве исходной точки наложения без изменения сохраненного расположения панели."
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "Сброс ориентации VR фиксирует текущее положение гарнитуры SteamVR или положение гарнитуры VDXR в качестве исходной точки наложения без изменения сохраненного расположения панели."
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -176537,12 +176545,12 @@
       "translation": "SteamVR доступен, но готовая гарнитура не обнаружена."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "Для маршрутов SteamVR требуется готовая гарнитура SteamVR. Экспериментальный маршрут VDXR ожидает активного сеанса Elite VDXR и не поддерживает взаимодействие контроллера и указателя."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "Для маршрутов SteamVR требуется готовая гарнитура SteamVR. Маршрут VDXR ожидает активного сеанса Elite VDXR и не поддерживает взаимодействие контроллера и указателя."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Маршруты SteamVR используют оверлейный сервер OpenVR. Экспериментальный маршрут VDXR использует слой SrvSurvey OpenXR в Windows x64 с Direct3D 11; Ожидается проверка гарнитуры."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "Маршруты SteamVR используют оверлейный сервер OpenVR. Маршрут VDXR использует слой SrvSurvey OpenXR в Windows x64 с Direct3D 11; Ожидается проверка гарнитуры."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -176723,10 +176731,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "Поддерживается в Windows. SteamVR должен продолжать работать, поскольку SrvSurvey публикует в своем OpenVR наборщике оверлеев."
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "Поддерживается в Windows. Virtual Desktop должен использовать свой путь SteamVR; VDXR обходит SteamVR и не может переносить SrvSurvey наложения."
     },
     {
       "source": "Supporting data",
@@ -177997,6 +178001,18 @@
       "translation": "Уровень VDXR OpenXR не подключен."
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "Для слоя наложения VDXR требуется Windows x64 и Direct3D 11."
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "Маршрут VDXR отображает пассивные панели и не поддерживает этот ярлык указателя контроллера. Ярлыки калибровки панели и сброса ориентации VR остаются доступными."
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "Маршрут VDXR отображает пассивные панели. Для использования ярлыка взаимодействия с наложением Toggle VR требуется SteamVR; VDXR вход контроллера не реализован."
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "Резервная копия калибровки VR не соответствует источнику."
     },
@@ -178487,14 +178503,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Существующие живые наложения перестают быть кликабельными, и их можно перетаскивать на место."
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "Экспериментальный слой наложения VDXR требует Windows x64 и Direct3D 11."
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "Экспериментальный маршрут VDXR отображает пассивные панели. Взаимодействие контроллера и указателя доступно через SteamVR."
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -179987,6 +179995,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "При этом сохраненная конфигурация и ее группы будут удалены из SrvSurvey. Это не меняет ваши элементы управления в Elite."
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "Этот выбор использует путь Virtual Desktop SteamVR в Windows. Для прямых наложений VDXR вместо этого выберите Meta Quest — VDXR."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -181485,6 +181497,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR: зарегистрируйте слой OpenXR из пакета Windows x64, затем перезапустите Elite. Требуется Direct3D 11."
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "АВТОМОБИЛЬ/РЕЖИМ ИГРЫ"
     },
@@ -182415,6 +182431,10 @@
     {
       "source": "Windows",
       "translation": "Окна"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Маршрут Windows Direct3D 11 без SteamVR. Отображает пассивные панели; требуется уровень SrvSurvey OpenXR и установка Elite, которая уже работает через VDXR. Ожидается проверка гарнитуры."
     },
     {
       "source": "Windows Mixed Reality",
@@ -187867,8 +187887,8 @@
       "translation": "SHA-256 清单记录导入的文件，以便可以检测到部分副本和静默损坏。"
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "没有SrvSurvey面板的SteamVR路线：确认Elite是通过SteamVR启动的。实验 VDXR 路线需要实时 Direct3D 11 VDXR 会话和注册的 SrvSurvey OpenXR 层。"
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "没有SrvSurvey面板的SteamVR路线：确认Elite是通过SteamVR启动的。 VDXR 路由需要实时 Direct3D 11 VDXR 会话和注册的 SrvSurvey OpenXR 层。"
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -192307,8 +192327,8 @@
       "translation": "选择适用于 Index、Vive、Pimax、Bigscreen Beyond、Pico 的 SteamVR 耳机，或其他已接触 SteamVR 的耳机。"
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "选择Virtual Desktop作为其SteamVR模式。为现有 Elite VDXR 设置选择 Meta Quest — VDXR（实验）；从 Windows 软件包中注册 OpenXR 层并重新启动 Elite。"
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "选择Virtual Desktop作为其SteamVR模式。为现有 Elite VDXR 设置选择 Meta Quest — VDXR；从 Windows 软件包中注册 OpenXR 层并重新启动 Elite。"
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -196439,8 +196459,8 @@
       "translation": "启用显示飞行警告并在探索叠加设置中选择重力阈值。仅当 SrvSurvey 可以在受支持的船舶、战斗机或 SRV 飞行环境中识别附近的可着陆物体时，才会出现该警告。"
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "启用 SrvSurvey VR 覆盖并等待连接的 VDXR 会话。使用现有的校准控件来放置面板；控制器交互在此实验路线上不可用。"
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "启用 SrvSurvey VR 覆盖并等待连接的 VDXR 会话。使用现有的校准控件来放置面板；控制器交互在此路线上不可用。"
     },
     {
       "source": "Enable Surface mining",
@@ -196933,14 +196953,6 @@
     {
       "source": "Expedition workspace",
       "translation": "探险工作区"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "实验 VDXR：从 Windows x64 包注册 OpenXR 层，然后重新启动 Elite。需要 Direct3D 11。"
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "实验性 Windows Direct3D 11 路线，无 SteamVR。显示无源面板；需要 SrvSurvey OpenXR 层和已运行 VDXR 的 Elite 设置。耳机验证正在等待中。"
     },
     {
       "source": "Experimental rig bar detection",
@@ -198111,8 +198123,8 @@
       "translation": "仅适用于 Linux Wayland 或 XWayland 用户，当正常 X11 捕获失败并且 SrvSurvey 使用桌面 ScreenCast 和 PipeWire 后备时。 Windows 和本机 X11 用户不需要这个。"
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "对于 Meta Quest 或 Rift，请选择您使用的确切网桥：Link / Air Link、Steam Link、Virtual Desktop 或实验性 ALVR。"
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "对于 Meta Quest 或 Rift，请选择您使用的确切桥接：Link / Air Link、Steam Link、Virtual Desktop、SteamVR、VDXR 或实验性 ALVR。"
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -202927,16 +202939,16 @@
       "translation": "Meta Quest — Steam Link"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "Meta Quest — VDXR（实验）"
+      "source": "Meta Quest — VDXR",
+      "translation": "Meta Quest — VDXR"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "Meta Quest — Virtual Desktop"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "Meta 耳机可以使用 SteamVR 桥接器或实验性 VDXR 路由。选择与Elite实际使用时间相匹配的路线。"
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "Meta 耳机可以使用 SteamVR 桥接器或 VDXR 路由。选择与Elite实际使用时间相匹配的路线。"
     },
     {
       "source": "Metal Rich",
@@ -207667,8 +207679,8 @@
       "translation": "采购分配"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "通过 SteamVR 或实验 VDXR 路线将实时 SrvSurvey 面板放入耳机中，并具有每个叠加位置、旋转、缩放、不透明度和车辆模式覆盖。"
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "通过 SteamVR 或 VDXR 路线将实时 SrvSurvey 面板放入耳机中，并具有每个叠加位置、旋转、缩放、不透明度和车辆模式覆盖。"
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -209583,8 +209595,8 @@
       "translation": "重置 VR 方向"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "重置 VR 方向捕获当前耳机偏航作为叠加原点，而不更改已保存的面板位置。"
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "重置 VR 方向捕获当前耳机偏航 SteamVR 或耳机姿势 VDXR 作为叠加原点，而不更改已保存的面板位置。"
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -213975,12 +213987,12 @@
       "translation": "SteamVR 可用，但未检测到就绪的耳机。"
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR 路线需要准备好的 SteamVR 耳机。实验性 VDXR 路由等待实时 Elite VDXR 会话，并且不支持控制器指针交互。"
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "SteamVR 路线需要准备好的 SteamVR 耳机。 VDXR 路由等待实时 Elite VDXR 会话，并且不支持控制器指针交互。"
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "SteamVR 路由使用 OpenVR 覆盖后端。实验 VDXR 路线使用 Windows x64 上的 SrvSurvey OpenXR 层和 Direct3D 11；耳机验证正在等待中。"
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "SteamVR 路由使用 OpenVR 覆盖后端。 VDXR 路线在具有 Direct3D 11 的 Windows x64 上使用 SrvSurvey OpenXR 层；耳机验证正在等待中。"
     },
     {
       "source": "SteamVR/OpenVR",
@@ -214161,10 +214173,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "在 Windows 上受支持。 SteamVR 必须保持运行，因为 SrvSurvey 发布到其 OpenVR 覆盖合成器。"
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "在 Windows 上受支持。 Virtual Desktop必须使用其SteamVR路径； VDXR 绕过 SteamVR 并且不能承载 SrvSurvey 覆盖。"
     },
     {
       "source": "Supporting data",
@@ -215435,6 +215443,18 @@
       "translation": "VDXR OpenXR 层未连接。"
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "VDXR 覆盖层需要 Windows x64 和 Direct3D 11。"
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "VDXR 路线显示被动面板，并且不支持此控制器指针快捷方式。其面板校准和重置 VR 方向快捷方式仍然可用。"
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "VDXR路线展示无源面板。切换VR叠加交互快捷方式需要SteamVR； VDXR 控制器输入未实现。"
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "VR 校准备份与其源不匹配。"
     },
@@ -215925,14 +215945,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "现有的实时叠加不再需要点击，可以拖动到位。"
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "实验性 VDXR 覆盖层需要 Windows x64 和 Direct3D 11。"
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "实验VDXR路线显示无源面板。控制器指针交互可通过 SteamVR 实现。"
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -217425,6 +217437,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "这将从 SrvSurvey 中删除已保存的配置及其组。它不会改变您在 Elite 中的控制。"
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "此选择在 Windows 上使用 Virtual Desktop 的 SteamVR 路径。对于直接 VDXR 叠加，请选择 Meta Quest — VDXR。"
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -218923,6 +218939,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "VDXR：从 Windows x64 包注册 OpenXR 层，然后重新启动 Elite。需要 Direct3D 11。"
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "车辆/游戏模式"
     },
@@ -219853,6 +219873,10 @@
     {
       "source": "Windows",
       "translation": "视窗"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Windows Direct3D 11 路线没有 SteamVR。显示无源面板；需要 SrvSurvey OpenXR 层和已运行 VDXR 的 Elite 设置。耳机验证正在等待中。"
     },
     {
       "source": "Windows Mixed Reality",
@@ -225305,8 +225329,8 @@
       "translation": "* A SHA-256 MANIFEST RECORDS THE IMPORTED FILES SO PARTIAL COPIES AND SILENT CORRUPTION CAN BE DETECTED. >>>!"
     },
     {
-      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
-      "translation": "* A STEAMVR ROUTE WITH NO SRVSURVEY PANELS: CONFIRM ELITE WAS LAUNCHED THROUGH STEAMVR. THE EXPERIMENTAL VDXR ROUTE REQUIRES A LIVE DIRECT3D 11 VDXR SESSION AND THE REGISTERED SRVSURVEY OPENXR LAYER. >>>!"
+      "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+      "translation": "* A STEAMVR ROUTE WITH NO SRVSURVEY PANELS: CONFIRM ELITE WAS LAUNCHED THROUGH STEAMVR. THE VDXR ROUTE REQUIRES A LIVE DIRECT3D 11 VDXR SESSION AND THE REGISTERED SRVSURVEY OPENXR LAYER. >>>!"
     },
     {
       "source": "A VR override must contain only a calibration block.",
@@ -229745,8 +229769,8 @@
       "translation": "* CHOOSE STEAMVR HEADSET FOR INDEX, VIVE, PIMAX, BIGSCREEN BEYOND, PICO, OR ANOTHER HEADSET ALREADY EXPOSED TO STEAMVR. >>>!"
     },
     {
-      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
-      "translation": "* CHOOSE VIRTUAL DESKTOP FOR ITS STEAMVR MODE. CHOOSE META QUEST — VDXR (EXPERIMENTAL) FOR AN EXISTING ELITE VDXR SETUP; REGISTER THE OPENXR LAYER FROM THE WINDOWS PACKAGE AND RESTART ELITE. >>>!"
+      "source": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+      "translation": "* CHOOSE VIRTUAL DESKTOP FOR ITS STEAMVR MODE. CHOOSE META QUEST — VDXR FOR AN EXISTING ELITE VDXR SETUP; REGISTER THE OPENXR LAYER FROM THE WINDOWS PACKAGE AND RESTART ELITE. >>>!"
     },
     {
       "source": "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
@@ -233877,8 +233901,8 @@
       "translation": "* ENABLE SHOW FLIGHT WARNINGS AND CHOOSE A GRAVITY THRESHOLD IN EXPLORATION OVERLAY SETTINGS. THE WARNING APPEARS ONLY WHEN SRVSURVEY CAN IDENTIFY A NEARBY LANDABLE BODY IN A SUPPORTED SHIP, FIGHTER, OR SRV FLIGHT CONTEXT. >>>!"
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
-      "translation": "* ENABLE SRVSURVEY VR OVERLAYS AND WAIT FOR A CONNECTED VDXR SESSION. USE THE EXISTING CALIBRATION CONTROLS TO PLACE PANELS; CONTROLLER INTERACTION IS NOT AVAILABLE ON THIS EXPERIMENTAL ROUTE. >>>!"
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+      "translation": "* ENABLE SRVSURVEY VR OVERLAYS AND WAIT FOR A CONNECTED VDXR SESSION. USE THE EXISTING CALIBRATION CONTROLS TO PLACE PANELS; CONTROLLER INTERACTION IS NOT AVAILABLE ON THIS ROUTE. >>>!"
     },
     {
       "source": "Enable Surface mining",
@@ -234371,14 +234395,6 @@
     {
       "source": "Expedition workspace",
       "translation": "* EXPEDITION WORKSPACE >>>!"
-    },
-    {
-      "source": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
-      "translation": "* EXPERIMENTAL VDXR: REGISTER THE OPENXR LAYER FROM THE WINDOWS X64 PACKAGE, THEN RESTART ELITE. DIRECT3D 11 IS REQUIRED. >>>!"
-    },
-    {
-      "source": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "* EXPERIMENTAL WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. DISPLAYS PASSIVE PANELS; REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. HEADSET VALIDATION IS PENDING. >>>!"
     },
     {
       "source": "Experimental rig bar detection",
@@ -235549,8 +235565,8 @@
       "translation": "* FOR LINUX WAYLAND OR XWAYLAND USERS ONLY, WHEN NORMAL X11 CAPTURE FAILS AND SRVSURVEY USES THE DESKTOP SCREENCAST AND PIPEWIRE FALLBACK. WINDOWS AND NATIVE X11 USERS DO NOT NEED THIS. >>>!"
     },
     {
-      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-      "translation": "* FOR META QUEST OR RIFT, CHOOSE THE EXACT BRIDGE YOU USE: LINK / AIR LINK, STEAM LINK, VIRTUAL DESKTOP, OR EXPERIMENTAL ALVR. >>>!"
+      "source": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+      "translation": "* FOR META QUEST OR RIFT, CHOOSE THE EXACT BRIDGE YOU USE: LINK / AIR LINK, STEAM LINK, VIRTUAL DESKTOP STEAMVR, VDXR, OR EXPERIMENTAL ALVR. >>>!"
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -240365,16 +240381,16 @@
       "translation": "* META QUEST — STEAM LINK >>>!"
     },
     {
-      "source": "Meta Quest — VDXR (experimental)",
-      "translation": "* META QUEST — VDXR (EXPERIMENTAL) >>>!"
+      "source": "Meta Quest — VDXR",
+      "translation": "* META QUEST — VDXR >>>!"
     },
     {
       "source": "Meta Quest — Virtual Desktop",
       "translation": "* META QUEST — VIRTUAL DESKTOP >>>!"
     },
     {
-      "source": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
-      "translation": "* META HEADSETS CAN USE A STEAMVR BRIDGE OR THE EXPERIMENTAL VDXR ROUTE. SELECT THE ROUTE THAT MATCHES THE RUNTIME ACTUALLY USED BY ELITE. >>>!"
+      "source": "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
+      "translation": "* META HEADSETS CAN USE A STEAMVR BRIDGE OR THE VDXR ROUTE. SELECT THE ROUTE THAT MATCHES THE RUNTIME ACTUALLY USED BY ELITE. >>>!"
     },
     {
       "source": "Metal Rich",
@@ -245105,8 +245121,8 @@
       "translation": "* PURCHASE ALLOCATION >>>!"
     },
     {
-      "source": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-      "translation": "* PUT LIVE SRVSURVEY PANELS INTO YOUR HEADSET THROUGH STEAMVR OR THE EXPERIMENTAL VDXR ROUTE, WITH PER-OVERLAY POSITION, ROTATION, SCALE, OPACITY, AND VEHICLE-MODE OVERRIDES. >>>!"
+      "source": "Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+      "translation": "* PUT LIVE SRVSURVEY PANELS INTO YOUR HEADSET THROUGH STEAMVR OR THE VDXR ROUTE, WITH PER-OVERLAY POSITION, ROTATION, SCALE, OPACITY, AND VEHICLE-MODE OVERRIDES. >>>!"
     },
     {
       "source": "Pylon P3 | 64 m",
@@ -247021,8 +247037,8 @@
       "translation": "* RESET VR ORIENTATION >>>!"
     },
     {
-      "source": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-      "translation": "* RESET VR ORIENTATION CAPTURES THE CURRENT HEADSET YAW AS THE OVERLAY ORIGIN WITHOUT CHANGING SAVED PANEL PLACEMENT. >>>!"
+      "source": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+      "translation": "* RESET VR ORIENTATION CAPTURES THE CURRENT HEADSET YAW ON STEAMVR, OR THE HEADSET POSE ON VDXR, AS THE OVERLAY ORIGIN WITHOUT CHANGING SAVED PANEL PLACEMENT. >>>!"
     },
     {
       "source": "Reset cancelled; totals were not changed.",
@@ -251413,12 +251429,12 @@
       "translation": "* STEAMVR IS AVAILABLE, BUT NO READY HEADSET WAS DETECTED. >>>!"
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "* STEAMVR ROUTES REQUIRE A READY STEAMVR HEADSET. THE EXPERIMENTAL VDXR ROUTE WAITS FOR A LIVE ELITE VDXR SESSION AND DOES NOT SUPPORT CONTROLLER-POINTER INTERACTION. >>>!"
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+      "translation": "* STEAMVR ROUTES REQUIRE A READY STEAMVR HEADSET. THE VDXR ROUTE WAITS FOR A LIVE ELITE VDXR SESSION AND DOES NOT SUPPORT CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "* STEAMVR ROUTES USE THE OPENVR OVERLAY BACKEND. THE EXPERIMENTAL VDXR ROUTE USES THE SRVSURVEY OPENXR LAYER ON WINDOWS X64 WITH DIRECT3D 11; HEADSET VALIDATION IS PENDING. >>>!"
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+      "translation": "* STEAMVR ROUTES USE THE OPENVR OVERLAY BACKEND. THE VDXR ROUTE USES THE SRVSURVEY OPENXR LAYER ON WINDOWS X64 WITH DIRECT3D 11; HEADSET VALIDATION IS PENDING. >>>!"
     },
     {
       "source": "SteamVR/OpenVR",
@@ -251599,10 +251615,6 @@
     {
       "source": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
       "translation": "* SUPPORTED ON WINDOWS. STEAMVR MUST STAY RUNNING BECAUSE SRVSURVEY PUBLISHES TO ITS OPENVR OVERLAY COMPOSITOR. >>>!"
-    },
-    {
-      "source": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
-      "translation": "* SUPPORTED ON WINDOWS. VIRTUAL DESKTOP MUST USE ITS STEAMVR PATH; VDXR BYPASSES STEAMVR AND CANNOT CARRY SRVSURVEY OVERLAYS. >>>!"
     },
     {
       "source": "Supporting data",
@@ -252873,6 +252885,18 @@
       "translation": "* THE VDXR OPENXR LAYER IS NOT CONNECTED. >>>!"
     },
     {
+      "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
+      "translation": "* THE VDXR OVERLAY LAYER REQUIRES WINDOWS X64 AND DIRECT3D 11. >>>!"
+    },
+    {
+      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+      "translation": "* THE VDXR ROUTE DISPLAYS PASSIVE PANELS AND DOES NOT SUPPORT THIS CONTROLLER-POINTER SHORTCUT. ITS PANEL CALIBRATION AND RESET VR ORIENTATION SHORTCUTS REMAIN AVAILABLE. >>>!"
+    },
+    {
+      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
+      "translation": "* THE VDXR ROUTE DISPLAYS PASSIVE PANELS. THE TOGGLE VR OVERLAY INTERACTION SHORTCUT REQUIRES STEAMVR; VDXR CONTROLLER INPUT IS NOT IMPLEMENTED. >>>!"
+    },
+    {
       "source": "The VR calibration backup did not match its source.",
       "translation": "* THE VR CALIBRATION BACKUP DID NOT MATCH ITS SOURCE. >>>!"
     },
@@ -253363,14 +253387,6 @@
     {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "* THE EXISTING LIVE OVERLAYS STOP BEING CLICK-THROUGH AND CAN BE DRAGGED IN PLACE. >>>!"
-    },
-    {
-      "source": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
-      "translation": "* THE EXPERIMENTAL VDXR OVERLAY LAYER REQUIRES WINDOWS X64 AND DIRECT3D 11. >>>!"
-    },
-    {
-      "source": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
-      "translation": "* THE EXPERIMENTAL VDXR ROUTE DISPLAYS PASSIVE PANELS. CONTROLLER-POINTER INTERACTION IS AVAILABLE THROUGH STEAMVR. >>>!"
     },
     {
       "source": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -254863,6 +254879,10 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "* THIS REMOVES THE SAVED CONFIGURATION AND ITS GROUPS FROM SRVSURVEY. IT DOES NOT CHANGE YOUR CONTROLS IN ELITE. >>>!"
+    },
+    {
+      "source": "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
+      "translation": "* THIS SELECTION USES VIRTUAL DESKTOP'S STEAMVR PATH ON WINDOWS. FOR DIRECT VDXR OVERLAYS, CHOOSE META QUEST — VDXR INSTEAD. >>>!"
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -256361,6 +256381,10 @@
       "translation": "* VDXR / OPENXR >>>!"
     },
     {
+      "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+      "translation": "* VDXR: REGISTER THE OPENXR LAYER FROM THE WINDOWS X64 PACKAGE, THEN RESTART ELITE. DIRECT3D 11 IS REQUIRED. >>>!"
+    },
+    {
       "source": "VEHICLE / GAME MODE",
       "translation": "* VEHICLE / GAME MODE >>>!"
     },
@@ -257291,6 +257315,10 @@
     {
       "source": "Windows",
       "translation": "* WINDOWS >>>!"
+    },
+    {
+      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "* WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. DISPLAYS PASSIVE PANELS; REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. HEADSET VALIDATION IS PENDING. >>>!"
     },
     {
       "source": "Windows Mixed Reality",

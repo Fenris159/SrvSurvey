@@ -54,7 +54,7 @@ public static class VrPlatformProfileCatalog
             "Meta Quest — Virtual Desktop",
             "Quest 1, 2, 3, 3S, and Pro using Virtual Desktop's SteamVR mode",
             "Virtual Desktop Streamer bridged into SteamVR",
-            "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
+            "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
             [
                 "Install Virtual Desktop on the Quest and Virtual Desktop Streamer on the Windows PC.",
                 "Connect in Virtual Desktop, launch SteamVR from its VR menu, and confirm the headset is ready.",
@@ -63,14 +63,14 @@ public static class VrPlatformProfileCatalog
         ),
         new(
             MetaVdxrProfileId,
-            "Meta Quest — VDXR (experimental)",
+            "Meta Quest — VDXR",
             "Quest 3 and other Virtual Desktop headsets on Windows x64",
             "SrvSurvey OpenXR layer direct to VDXR",
-            "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+            "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
             [
                 "Run Install-OpenXrLayer.ps1 from the OpenXR folder in the Windows package to register the layer for your Windows account.",
                 "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",
-                "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
+                "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
             ]
         ),
         new(

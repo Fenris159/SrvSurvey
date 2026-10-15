@@ -1393,12 +1393,12 @@ public static class GuideCatalog
             [
                 "Open Settings > Global overlays and find VR overlays.",
                 "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
-                "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
+                "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
                 "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
                 "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
             ],
             [
-                "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+                "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
                 "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
             ]
         );
@@ -1426,18 +1426,18 @@ public static class GuideCatalog
     {
         return Section(
             "Choose a Meta compatibility bridge",
-            "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
+            "Meta headsets can use a SteamVR bridge or the VDXR route. Select the route that matches the runtime actually used by Elite.",
             [
                 "Choose Link / Air Link for Meta's wired or wireless Windows PC-VR connection, then start SteamVR inside it.",
                 "Choose Steam Link for Valve's free wireless Quest app and pair it directly with the Windows PC running SteamVR.",
-                "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
+                "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest — VDXR for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
                 "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
             ],
             [
                 "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
                 "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
                 "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-                "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+                "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
             ]
         );
     }
@@ -1469,7 +1469,7 @@ public static class GuideCatalog
                 "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
             ],
             [
-                "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
+                "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
                 "Desktop overlay placement and VR calibration are stored independently.",
             ]
         );
@@ -1486,6 +1486,7 @@ public static class GuideCatalog
                 "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
             ],
             [
+                "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
                 "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
                 "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
             ]
@@ -1504,7 +1505,7 @@ public static class GuideCatalog
                 "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
                 "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
                 "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
-                "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+                "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
             ]
         );
     }

@@ -153,7 +153,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public string PlatformSupportMessage =>
         SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId
-            ? "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
+            ? "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
             : platformSupportMessage;
 
     private static string CreatePlatformSupportMessage()

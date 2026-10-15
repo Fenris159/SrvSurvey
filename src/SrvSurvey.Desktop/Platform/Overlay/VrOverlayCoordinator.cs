@@ -362,7 +362,7 @@ public sealed class VrOverlayCoordinator : IDisposable
                 registration.PlotterName,
                 frame,
                 calibration,
-                (float)registration.Window.Opacity
+                registration.PresentationVisual is null ? 1f : (float)registration.Window.Opacity
             );
             if (result.Succeeded)
             {

@@ -549,7 +549,7 @@
             <TextBlock Classes="card-title" Text="VR overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+                       Text="Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
           </StackPanel>
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"

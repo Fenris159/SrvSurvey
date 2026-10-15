@@ -206,17 +206,45 @@ struct Session
     std::mutex mutex;
     std::atomic<bool> shouldRender{false};
     bool running = false, anchored = false, failed = false;
+    bool uploadsPending = false;
     XrResult lastError = XR_SUCCESS;
     uint32_t originRevision = 0, maximumLayers = 0;
     XrTime pendingSpaceChange = 0;
     XrPosef anchor{{0, 0, 0, 1}, {0, 0, 0}};
 
+    XrResult CompleteUploads()
+    {
+        if (!uploadsPending)
+            return XR_SUCCESS;
+        D3D11_QUERY_DESC info{D3D11_QUERY_EVENT, 0};
+        ID3D11Query *completion = nullptr;
+        if (FAILED(device->CreateQuery(&info, &completion)))
+            return XR_ERROR_RUNTIME_FAILURE;
+        context->End(completion);
+        context->Flush();
+        HRESULT result;
+        do
+        {
+            result = context->GetData(completion, nullptr, 0, D3D11_ASYNC_GETDATA_DONOTFLUSH);
+            if (result == S_FALSE)
+                SwitchToThread();
+        } while (result == S_FALSE);
+        completion->Release();
+        if (result != S_OK)
+            return XR_ERROR_RUNTIME_FAILURE;
+        uploadsPending = false;
+        return XR_SUCCESS;
+    }
+
     void Clear()
     {
+        // xrDestroySwapchain requires submitted application GPU work to be complete.
+        // On a device failure, leave child destruction to the downstream session teardown.
+        bool completed = CompleteUploads() == XR_SUCCESS;
         for (auto &[id, texture] : textures)
         {
             (void)id;
-            if (texture.handle)
+            if (texture.handle && completed)
                 instance->destroySwapchain(texture.handle);
         }
         textures.clear();
@@ -232,6 +260,7 @@ struct Session
             device->Release();
         context = nullptr;
         device = nullptr;
+        uploadsPending = false;
         running = false;
         if (instance->elite)
             mailbox.Report(0);
@@ -307,6 +336,7 @@ void Upload(Session &session, const Descriptor &descriptor, uint32_t version)
     auto &texture = session.textures[descriptor.id];
     if (texture.handle && (texture.width != descriptor.width || texture.height != descriptor.height))
     {
+        Check(session.CompleteUploads());
         Check(session.instance->destroySwapchain(texture.handle));
         texture = {};
     }
@@ -360,6 +390,7 @@ void Upload(Session &session, const Descriptor &descriptor, uint32_t version)
     }
     session.context->UpdateSubresource(texture.images[texture.acquiredIndex].texture, 0, nullptr, pixels.data(),
                                        descriptor.width * 4, 0);
+    session.uploadsPending = true;
     XrSwapchainImageReleaseInfo release{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     Check(session.instance->release(texture.handle, &release));
     texture.acquired = false;
@@ -445,6 +476,7 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
         {
             if (std::find(active.begin(), active.end(), it->first) == active.end())
             {
+                Check(s.CompleteUploads());
                 Check(s.instance->destroySwapchain(it->second.handle));
                 it = s.textures.erase(it);
             }

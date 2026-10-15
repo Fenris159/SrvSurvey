@@ -12,6 +12,7 @@ void Require(bool condition, const char *message)
         throw std::runtime_error(message);
 }
 ID3D11Device *testDevice = nullptr;
+Session *uploadOwner = nullptr;
 bool omitProc = false, advancedChain = false, timeoutNext = false, formatSupported = true;
 uint32_t destroyedInstances = 0, destroyedTextures = 0, locateCount = 0, endCount = 0;
 uint32_t submittedLayers = 0;
@@ -94,6 +95,7 @@ XrResult XRAPI_CALL CreateTexture(XrSession, const XrSwapchainCreateInfo *info, 
 }
 XrResult XRAPI_CALL DestroyTexture(XrSwapchain handle)
 {
+    Require(!uploadOwner || !uploadOwner->uploadsPending, "Complete GPU uploads before destroying a swapchain");
     auto *texture = reinterpret_cast<TestTexture *>(handle);
     texture->texture->Release();
     delete texture;
@@ -283,6 +285,7 @@ int main()
             std::wstring(directory) + L"SrvSurvey-OpenXR-" + std::to_wstring(GetCurrentProcessId()) + L".bin";
         WritePacket(path, 2);
         auto session = std::make_shared<Session>(path);
+        uploadOwner = session.get();
         session->handle = reinterpret_cast<XrSession>(uintptr_t(3));
         session->instance = instance;
         instance->elite = true;
@@ -305,6 +308,7 @@ int main()
                 "Timeout defers upload without blocking game");
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 2,
                 "Retry acquired image and append panel");
+        Require(session->uploadsPending, "Defer GPU completion waits until resource retirement");
         Require((submittedFlags & XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT) != 0,
                 "Correct straight-alpha composition flag");
         Require(submittedPose.position.x == 1 && submittedPose.position.y == 2 && submittedPose.position.z == 1,
@@ -333,6 +337,7 @@ int main()
         WritePacket(path, 8, 0);
         LayerEndFrame(session->handle, &frame);
         Require(destroyedTextures == 1 && submittedLayers == 1, "Remove stale overlay resources");
+        Require(!session->uploadsPending, "Wait for GPU completion when retiring a panel");
         WritePacket(path, 10);
         formatSupported = false;
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && lastInfo == &frame,
@@ -342,6 +347,7 @@ int main()
                 "A failed overlay remains passive on subsequent frames");
         Require(LayerDestroySession(session->handle) == XR_SUCCESS, "Release session resources before runtime destroy");
         session.reset();
+        uploadOwner = nullptr;
         DeleteFileW(path.c_str());
         testDevice->Release();
         testDevice = nullptr;

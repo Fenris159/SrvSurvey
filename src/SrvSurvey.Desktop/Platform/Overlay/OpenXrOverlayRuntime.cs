@@ -26,9 +26,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     {
         if (!platformSupported())
         {
-            return VrRuntimeProbe.RuntimeUnavailable(
-                "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11."
-            );
+            return VrRuntimeProbe.RuntimeUnavailable("The VDXR overlay layer requires Windows x64 and Direct3D 11.");
         }
 
         try
@@ -119,7 +117,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
 
     public VrRuntimeResult SetInteractionEnabled(bool enabled) =>
         VrRuntimeResult.Failure(
-            "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR."
+            "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented."
         );
 
     public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents() => [];
