@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              x:DataType="vm:NotificationViewModel"
              mc:Ignorable="d"
              MinWidth="160"
@@ -37,13 +38,13 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </ScrollViewer>
-      <ProgressBar Grid.Row="1"
+      <controls:NotificationLifetimeBar Grid.Row="1"
                    Height="2"
-                   Minimum="0"
-                   Maximum="100"
                    IsHitTestVisible="False"
                    ToolTip.Tip="Notification time remaining"
-                   Value="{Binding ProgressPercent}" />
+                   TrackBrush="{DynamicResource RavenAccentMutedBrush}"
+                   FillBrush="{DynamicResource RavenAccentBrush}"
+                   Percent="{Binding ProgressPercent}" />
     </Grid>
   </Border>
 </UserControl>

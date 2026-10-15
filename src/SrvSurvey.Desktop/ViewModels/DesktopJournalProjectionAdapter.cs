@@ -104,6 +104,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ApplyCommanderChangeIfNeededAsync(context.Update, tick.PreviousFrontierId, tick.PreviousCommanderName);
     }
 
+    /// <summary>Keeps shared UI cargo and independently attributed provider cargo in separate projections.</summary>
     private void BindCargoAndStatus()
     {
         operations[JournalProjectionOperation.CargoInventory] = Sync(
@@ -111,6 +112,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             {
                 tick.AllowSharedCargo = !dependencies.CommanderInstances.HasMultipleGameWindows;
                 tick.CargoChanged = ApplyCargoInventoryUpdate(context.Update, tick.AllowSharedCargo);
+                tick.AllowRavenCargo = UpdateJournalSource(context.Update);
+                tick.RavenCargoChanged = ApplyProviderCargoInventory(context.Update, tick.AllowRavenCargo);
             }
         );
         operations[JournalProjectionOperation.MiningWorkspace] = Sync(
@@ -169,6 +172,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         );
     }
 
+    /// <summary>Binds commander identity, quest context and profile transitions in projection order.</summary>
     private void BindCommanderContext()
     {
         operations[JournalProjectionOperation.CommanderCodex] = async (context, tick) =>
@@ -260,7 +264,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             tick.LoadedExistingProfile = loadedExistingProfile;
         };
         operations[JournalProjectionOperation.Quests] = (context, tick) =>
-            ApplyQuestUpdateAsync(context.Update, tick.AllowSharedCargo);
+            ApplyQuestUpdateAsync(context.Update, tick.AllowRavenCargo);
         operations[JournalProjectionOperation.ColonizationCommander] = (_, _) =>
             dependencies.Colonization.SetCommanderAsync(state.Session.CommanderName);
         operations[JournalProjectionOperation.ColonizationProjects] = (context, tick) =>
@@ -563,19 +567,19 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     {
         JournalMonitorUpdate update = context.Update;
         bool cargoActivity =
-            tick.AllowSharedCargo
+            tick.AllowRavenCargo
             && (
-                tick.CargoChanged
+                tick.RavenCargoChanged
                 || update.Cargo is not null
                 || update.JournalEvents.Any(journalEvent =>
                     journalEvent.EventName is "Cargo" or "CargoTransfer" or "MarketBuy" or "MarketSell"
                 )
             );
-        bool isCurrentCargoInventoryAvailable = !state.AwaitFreshCargoSnapshot || update.Cargo is not null;
+        bool isCurrentCargoInventoryAvailable = !state.AwaitFreshProviderCargoSnapshot;
         await dependencies.Colonization.SynchronizeLiveProjectsAsync(
             update.JournalEvents,
             allowPublishing: tick.AllowLiveEffects,
-            cargoInventory: tick.AllowSharedCargo ? state.CargoInventory : null,
+            cargoInventory: tick.AllowRavenCargo ? state.ProviderCargoInventory : null,
             preferShipCargoDiffForSquadron: isCurrentCargoInventoryAvailable,
             cargoActivity: cargoActivity,
             cancellationToken: tick.WorkCancellationToken
@@ -630,14 +634,17 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Publishes only fresh attributable cargo snapshots while suppressing historical bootstrap deliveries.</summary>
     private async Task ApplyColonizationCargoAsync(JournalProjectionContext context, JournalProjectionTick tick)
     {
-        if (tick.CargoChanged && state.LatestCargo is not null)
+        if (tick.RavenCargoChanged && state.ProviderCargoInventory.CreateSnapshot() is { } cargo)
         {
             // Cargo.json is the current snapshot even during bootstrap; historical journal writes stay suppressed.
             await dependencies.Colonization.UpdateCargoAsync(
-                state.LatestCargo,
-                publishCurrentShipCargo: !tick.IsCancellationDrain && context.Update.Cargo is not null
+                cargo,
+                publishCurrentShipCargo: !tick.IsCancellationDrain
+                    && context.Update.Cargo is not null
+                    && (!dependencies.CommanderInstances.HasMultipleGameWindows || !context.IsBootstrapRead)
             );
         }
     }
@@ -959,6 +966,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Keeps shared cargo restrictions for local consumers outside the verified provider projection.</summary>
     private bool ApplyCargoInventoryUpdate(JournalMonitorUpdate update, bool allowSharedCargo)
     {
         bool cargoChanged = false;
@@ -984,13 +992,6 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
         foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
-            // Squadron linked FCs freeze the true before-state before CargoTransfer mutates
-            // live inventory so the later GetDiff cannot collapse to a zero delta.
-            if (string.Equals(journalEvent.EventName, "CargoTransfer", StringComparison.Ordinal))
-            {
-                dependencies.Colonization.PrepareSquadronCargoTransferSnapshot(state.CargoInventory);
-            }
-
             cargoChanged |= state.CargoInventory.Apply(journalEvent, state.LatestStatus?.InSrv == true);
         }
 
@@ -1005,6 +1006,71 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
 
         return cargoChanged;
+    }
+
+    /// <summary>Registers the actual bound journal folder and clears provider cargo whenever its commander source changes.</summary>
+    private bool UpdateJournalSource(JournalMonitorUpdate update)
+    {
+        if (
+            state.ProviderCargoFrontierId != state.Session.FrontierId
+            || state.ProviderCargoJournalPath != update.JournalPath
+        )
+        {
+            state.ProviderCargoInventory.Reset(null);
+            state.AwaitFreshProviderCargoSnapshot = true;
+            state.ProviderCargoFrontierId = state.Session.FrontierId;
+            state.ProviderCargoJournalPath = update.JournalPath;
+        }
+        bool bound = dependencies.JournalSources.Bind(
+            state.Session.IsShutdown || update.IsAwaitingCommanderIdentity ? null : update.JournalPath,
+            state.Session.FrontierId
+        );
+        bool allowed =
+            dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount)
+            && (!dependencies.CommanderInstances.HasMultipleGameWindows || bound);
+        dependencies.Colonization.SetSharedCargoSuppressed(!allowed);
+        return allowed;
+    }
+
+    /// <summary>Tracks provider cargo from verified snapshots and journal deltas without enabling unrelated shared-data consumers.</summary>
+    private bool ApplyProviderCargoInventory(JournalMonitorUpdate update, bool allowed)
+    {
+        if (!allowed)
+        {
+            state.AwaitFreshProviderCargoSnapshot = true;
+            return state.ProviderCargoInventory.Reset(null);
+        }
+        bool changed = false;
+        foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
+        {
+            bool fullCargo =
+                journalEvent.EventName == "Cargo"
+                && journalEvent.Payload.TryGetProperty(
+                    nameof(CargoSnapshot.Inventory),
+                    out System.Text.Json.JsonElement inventory
+                )
+                && inventory.ValueKind == System.Text.Json.JsonValueKind.Array
+                && IsCurrentCommanderCompanionSnapshot(journalEvent.Timestamp ?? DateTimeOffset.MinValue);
+            if (state.AwaitFreshProviderCargoSnapshot && !fullCargo)
+            {
+                continue;
+            }
+            if (journalEvent.EventName == "CargoTransfer")
+            {
+                dependencies.Colonization.PrepareSquadronCargoTransferSnapshot(state.ProviderCargoInventory);
+            }
+            changed |= state.ProviderCargoInventory.Apply(journalEvent, state.LatestStatus?.InSrv == true);
+            if (fullCargo)
+            {
+                state.AwaitFreshProviderCargoSnapshot = false;
+            }
+        }
+        if (update.Cargo is { } cargo && IsCurrentCommanderCompanionSnapshot(cargo.Timestamp))
+        {
+            changed |= state.ProviderCargoInventory.Reset(cargo);
+            state.AwaitFreshProviderCargoSnapshot = false;
+        }
+        return changed;
     }
 
     private void ApplyExplorationAndExobiologyJournalEvents(
@@ -1149,23 +1215,27 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     private async Task ApplyExternalPublicationAsync(JournalMonitorUpdate update, bool allowSharedCargo)
     {
         state.LastIdleHousekeepingAt = DateTimeOffset.UtcNow;
-        bool canShareCargo = allowSharedCargo;
+        dependencies.CommanderInstances.RefreshGameWindowCount();
+        bool verifiedSource =
+            !update.IsAwaitingCommanderIdentity
+            && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount);
+        bool canPublish = !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead && verifiedSource;
+        bool canShareData = verifiedSource;
+        EliteStatus? providerStatus = GetProviderStatus();
+        CargoSnapshot? providerCargo = GetProviderCargo(allowSharedCargo);
         try
         {
-            dependencies.CommanderInstances.RefreshGameWindowCount();
-            bool hasMultipleGameWindows = dependencies.CommanderInstances.HasMultipleGameWindows;
-            canShareCargo &= !hasMultipleGameWindows;
-            dependencies.eddnPublisher.SetSuspended(hasMultipleGameWindows);
+            dependencies.eddnPublisher.SetSuspended(!verifiedSource);
             EddnPublicationResult eddnResult = await dependencies.eddnPublisher.ApplyAsync(
                 new EddnApplyRequest
                 {
                     JournalEvents = update.JournalEvents,
-                    Status = state.LatestStatus,
+                    Status = providerStatus,
                     Enabled = dependencies.NetworkPrivacy.EddnUploadEnabled,
-                    AllowPublishing = !update.IsBootstrapRead && !hasMultipleGameWindows,
-                    JournalDirectory = dependencies.folderResolution.SelectedPath,
+                    AllowPublishing = canPublish,
+                    JournalDirectory = update.JournalPath is null ? null : Path.GetDirectoryName(update.JournalPath),
                     JournalPath = update.JournalPath,
-                    AllowSharedData = !hasMultipleGameWindows,
+                    AllowSharedData = canShareData,
                     CommanderName = state.Session.CommanderName,
                     FrontierId = state.Session.FrontierId,
                     GameVersion = state.Session.GameVersion,
@@ -1188,15 +1258,14 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
         try
         {
-            bool ambiguous = dependencies.CommanderInstances.HasMultipleGameWindows;
-            dependencies.edAstroPublisher.SetSuspended(ambiguous);
+            dependencies.edAstroPublisher.SetSuspended(!verifiedSource);
             dependencies.edAstroPublisher.Apply(
                 new EdAstroApplyRequest(
                     update.JournalEvents,
                     state.Session.CommanderName,
                     update.JournalPath,
                     state.Session.IsOdyssey == true,
-                    AllowPublishing: !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead && !ambiguous,
+                    AllowPublishing: canPublish,
                     IsLiveGame: state.Session.IsLegacy == false
                 )
             );
@@ -1216,8 +1285,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     JournalEvents = update.JournalEvents,
                     CommanderName = state.ProfileCommanderName ?? state.Session.CommanderName,
                     Enabled = dependencies.VoxStellar.JournalUploadEnabled,
-                    AllowPublishing =
-                        !update.IsBootstrapRead && !dependencies.CommanderInstances.HasMultipleGameWindows,
+                    FrontierId = state.ProfileFrontierId ?? state.Session.FrontierId,
+                    AllowPublishing = canPublish,
                 },
                 CancellationToken.None
             );
@@ -1239,11 +1308,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             InaraPublicationResult inaraResult = await dependencies.inaraPublisher.ApplyAsync(
                 new InaraPublicationUpdate(
                     update.JournalEvents,
-                    state.LatestStatus,
-                    state.LatestCargo,
+                    providerStatus,
+                    canShareData ? providerCargo : null,
                     update.JournalPath,
-                    AllowPublishing: !update.IsBootstrapRead,
-                    AllowSharedData: canShareCargo,
+                    AllowPublishing: !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead,
+                    AllowSharedData: canShareData,
                     state.Session.SystemName,
                     state.Session.StationName,
                     state.Session.BodyName,
@@ -1281,9 +1350,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 new EdsmPublicationUpdate(
                     update.JournalEvents,
                     update.JournalPath,
-                    AllowPublishing: !dependencies.IsDiagnosticReplay()
-                        && !update.IsBootstrapRead
-                        && !dependencies.CommanderInstances.HasMultipleGameWindows,
+                    AllowPublishing: canPublish,
                     new EdsmPublicationOptions(
                         dependencies.Edsm.StoredApiKey,
                         dependencies.Edsm.UploadCommanderName,
@@ -1311,12 +1378,27 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Provides status only when its timestamp belongs to the currently bound commander.</summary>
+    private EliteStatus? GetProviderStatus() =>
+        state.LatestStatus is { } status && IsCurrentCommanderCompanionSnapshot(status.Timestamp) ? status : null;
+
+    /// <summary>Uses shared cargo for one client or fresh independently attributed inventory for concurrent clients.</summary>
+    private CargoSnapshot? GetProviderCargo(bool allowSharedCargo)
+    {
+        if (allowSharedCargo)
+        {
+            return state.LatestCargo;
+        }
+        return state.AwaitFreshProviderCargoSnapshot ? null : state.ProviderCargoInventory.CreateSnapshot();
+    }
+
+    /// <summary>Updates quests from the bound journal and allows companion cargo only for verified sources.</summary>
     private async Task ApplyQuestUpdateAsync(JournalMonitorUpdate update, bool allowCargoFile)
     {
         if (
             string.IsNullOrWhiteSpace(state.Session.FrontierId)
             || string.IsNullOrWhiteSpace(state.Session.CommanderName)
-            || dependencies.folderResolution.SelectedPath is null
+            || update.JournalPath is null
         )
         {
             shell.QuestStatus("Waiting for a commander journal session.");
@@ -1335,7 +1417,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     state.ProfileRavenApiKey,
                     state.LatestStatus
                 ),
-                dependencies.folderResolution.SelectedPath,
+                Path.GetDirectoryName(update.JournalPath)!,
                 update.JournalEvents,
                 update.IsBootstrapRead,
                 allowCargoFile: allowCargoFile,

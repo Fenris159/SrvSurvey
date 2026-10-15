@@ -23,6 +23,10 @@ internal sealed class JournalProjectionTick(JournalProjectionContext context)
 
     public bool CargoChanged { get; set; }
 
+    /// <summary>Raven may use independently verified source folders while other shared-data consumers stay suppressed.</summary>
+    public bool AllowRavenCargo { get; set; }
+    public bool RavenCargoChanged { get; set; }
+
     public bool CodexDiscoveryChanged { get; set; }
 
     /// <summary>Bootstrap replay over an already persisted profile must not reapply its journal mutations.</summary>

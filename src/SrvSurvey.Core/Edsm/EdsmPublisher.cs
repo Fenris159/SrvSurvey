@@ -304,18 +304,16 @@ public sealed class EdsmPublisher : IEdsmPublisher
             try
             {
                 var entry = JObject.Parse(journalEvent.RawJson);
-                bool identityMatches = JournalIdentityMatchesSession(entry);
-                journalContext.Apply(entry);
-                if (!publicationAuthorized || !update.AllowPublishing || credentials is null)
-                {
-                    continue;
-                }
-
-                if (!identityMatches)
+                if (!JournalIdentityMatchesSession(entry))
                 {
                     warnings.Add(
                         $"EDSM ignored {journalEvent.EventName} because its commander identity did not match the active journal session."
                     );
+                    break;
+                }
+                journalContext.Apply(entry);
+                if (!publicationAuthorized || !update.AllowPublishing || credentials is null)
+                {
                     continue;
                 }
 

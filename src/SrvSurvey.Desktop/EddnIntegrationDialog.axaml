@@ -57,7 +57,7 @@
                        Text="Messages are placed in a durable local retry queue under SrvSurvey's application-data folder before delivery. They are removed after successful delivery, permanent rejection, or when you disable sharing." />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe." />
+                       Text="Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe." />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="This release uses EDDN's Live upload gateway with production schema references fixed internally." />

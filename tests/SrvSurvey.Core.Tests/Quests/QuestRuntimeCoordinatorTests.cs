@@ -12,6 +12,84 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         $"SrvSurvey-quest-coordinator-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Repeated blocked cargo events retain a warning but log a single diagnostic until attribution recovers.</summary>
+    [Fact]
+    public async Task AmbiguousCargoWarningsLogOnceUntilRecovery()
+    {
+        var messages = new List<string>();
+        await using var coordinator = new QuestRuntimeCoordinator(
+            new LegacyQuestStateStore(temporaryDirectory),
+            new FakeRavenQuestClient(),
+            messages.Add
+        );
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
+        JournalEventEnvelope cargo = Parse("""{"event":"Cargo","Vessel":"Ship"}""");
+        for (int index = 0; index < 6; index++)
+        {
+            QuestRuntimeUpdateResult result = await coordinator.ApplyUpdateAsync(
+                Configuration(),
+                temporaryDirectory,
+                [cargo, cargo],
+                isBootstrap: false,
+                allowCargoFile: false
+            );
+            Assert.Single(result.Warnings);
+        }
+        Assert.Single(messages);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: false,
+            allowCargoFile: true
+        );
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [cargo],
+            isBootstrap: false,
+            allowCargoFile: false
+        );
+        Assert.Equal(2, messages.Count);
+    }
+
+    /// <summary>Fresh Raven request IDs do not produce repeated logs for the same failed quest-load operation.</summary>
+    [Fact]
+    public async Task QuestLoadWarningsLogOnceUntilSuccessfulRefresh()
+    {
+        var messages = new List<string>();
+        var client = new FakeRavenQuestClient
+        {
+            LoadFailure = new HttpRequestException(
+                "RequestId: first",
+                null,
+                System.Net.HttpStatusCode.InternalServerError
+            ),
+        };
+        await using var coordinator = new QuestRuntimeCoordinator(
+            new LegacyQuestStateStore(temporaryDirectory),
+            client,
+            messages.Add
+        );
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
+        client.LoadFailure = new HttpRequestException(
+            "RequestId: second",
+            null,
+            System.Net.HttpStatusCode.InternalServerError
+        );
+        Assert.Single((await coordinator.RefreshAsync()).Warnings);
+        Assert.Single(messages);
+        client.LoadFailure = null;
+        await coordinator.RefreshAsync();
+        client.LoadFailure = new HttpRequestException(
+            "RequestId: third",
+            null,
+            System.Net.HttpStatusCode.InternalServerError
+        );
+        await coordinator.RefreshAsync();
+        Assert.Equal(2, messages.Count);
+    }
+
     [Fact]
     public async Task IdenticalEmptyUpdateRetainsSnapshotAndDoesNotNotify()
     {
@@ -665,6 +743,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
     private sealed class FakeRavenQuestClient : IRavenQuestClient
     {
+        public Exception? LoadFailure { get; set; }
         public IReadOnlyList<RavenCommanderQuest> ActiveQuests { get; set; } = [];
 
         public IReadOnlyList<RavenQuestDefinition> PublishedQuests { get; init; } = [];
@@ -730,6 +809,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             return Task.CompletedTask;
         }
 
+        /// <summary>Records quest-loading attempts and reproduces recoverable Raven failures.</summary>
         public Task<IReadOnlyList<RavenCommanderQuest>> LoadCommanderQuestsAsync(
             RavenQuestState state,
             string apiKey,
@@ -737,6 +817,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         )
         {
             LoadCount++;
+            if (LoadFailure is not null)
+            {
+                return Task.FromException<IReadOnlyList<RavenCommanderQuest>>(LoadFailure);
+            }
             return Task.FromResult(ActiveQuests);
         }
 

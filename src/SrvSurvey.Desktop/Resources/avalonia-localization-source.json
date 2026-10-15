@@ -17850,6 +17850,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
+    "Text": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+  },
+  {
     "Text": "Each equipped module can appear only once per trigger. Use its slot to distinguish duplicate modules.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18178,7 +18186,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
-    "Text": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
+    "Text": "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36065,14 +36073,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
-    "Text": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
     "IsFormat": false,
     "SourceKinds": [
@@ -36087,14 +36087,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Only one SrvSurvey process can own the queue. Queueing and delivery pause while multiple Elite windows make shared Status and companion files ambiguous; pending messages remain local until attribution is safe.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
   },
   {
     "Text": "Only relic towers store an individual site-survey heading.",
@@ -53438,7 +53430,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.cs"
   },
   {
-    "Text": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance\u0027s commander.",
+    "Text": "Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance\u0027s commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -61237,14 +61229,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
   },
   {
-    "Text": "Transient failures retry with backoff. Collection and delivery pause while multiple Elite windows make attribution ambiguous. Turning sharing off cancels pending requests and clears the queue. Unsent reports expire after one day and are discarded when SrvSurvey closes; they are not stored in backups.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
-  },
-  {
     "Text": "Translated {0} legacy UI preferences.",
     "IsFormat": true,
     "SourceKinds": [
@@ -67686,6 +67670,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "eddn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "elite",

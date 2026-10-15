@@ -4,6 +4,7 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class EdsmSettingsMarkupTests
 {
+    /// <summary>Discloses account-scoped credentials, excluded history and verified concurrent journal sources.</summary>
     [Fact]
     public void EdsmCardFollowsInaraAndUsesCommanderScopedCredentialOptIn()
     {
@@ -45,7 +46,8 @@ public sealed class EdsmSettingsMarkupTests
             value =>
                 value.Contains("Startup history", StringComparison.Ordinal)
                 && value.Contains("diagnostic replay", StringComparison.Ordinal)
-                && value.Contains("multiple Elite windows", StringComparison.Ordinal)
+                && value.Contains("Multiple Elite clients", StringComparison.Ordinal)
+                && value.Contains("distinct physical journal folder", StringComparison.Ordinal)
         );
     }
 

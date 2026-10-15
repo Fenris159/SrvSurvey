@@ -1072,7 +1072,7 @@ public static class GuideCatalog
                             "Return to the same dialog to disable sharing; pending local messages are removed when consent is withdrawn.",
                         ],
                         [
-                            "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
+                            "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded. Multiple Elite clients can upload when every commander is bound to a distinct physical journal folder, such as separate Steam and Epic prefixes. Shared folders and folder aliases do not qualify.",
                             "EDDN needs no personal account or API key. This release sends production-schema messages through the Live gateway.",
                         ]
                     ),
@@ -1098,7 +1098,7 @@ public static class GuideCatalog
                         ],
                         [
                             "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
-                            "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Captured reports and their original game context survive restarts in a private local retry queue. API keys are not saved in retry files and events never cross Commander accounts.",
+                            "Startup history, Legacy, alpha/beta, diagnostic replay and multicrew are excluded. Multiple Elite clients can upload when each commander is bound to a distinct physical journal folder. Captured reports and their original game context survive restarts in a private local retry queue. API keys are not saved in retry files and events never cross Commander accounts.",
                         ]
                     ),
                     Section(

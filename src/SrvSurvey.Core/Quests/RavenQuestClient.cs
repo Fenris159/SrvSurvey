@@ -360,6 +360,7 @@ public sealed class RavenQuestClient : IRavenQuestClient
         }
     }
 
+    /// <summary>Preserves HTTP failures while identifying Raven's malformed Azure filter without altering commander identity.</summary>
     private static async Task EnsureSuccessAsync(
         HttpResponseMessage response,
         string operation,
@@ -374,6 +375,16 @@ public sealed class RavenQuestClient : IRavenQuestClient
         string detail = await BoundedHttpContent
             .ReadStringPrefixAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
             .ConfigureAwait(false);
+        if (
+            detail.Contains("PartitionKey", StringComparison.Ordinal)
+            && detail.Contains("Syntax error", StringComparison.Ordinal)
+            && detail.Contains("InvalidInput", StringComparison.Ordinal)
+        )
+        {
+            detail =
+                "Raven's server constructed an invalid Azure commander-name filter. "
+                + "Its query escaping must be corrected on Raven's server; the commander name and API key should remain unchanged.";
+        }
         throw new RavenColonialServiceException(response.StatusCode, operation, detail);
     }
 

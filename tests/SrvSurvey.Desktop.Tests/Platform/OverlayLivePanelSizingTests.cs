@@ -134,7 +134,9 @@ public sealed class OverlayLivePanelSizingTests
         Point top = Assert.IsType<Point>(latest.TranslatePoint(default, scroll));
         Assert.InRange(top.Y, 0, scroll.Viewport.Height);
         Assert.True(top.Y + latest.Bounds.Height <= scroll.Viewport.Height + 1);
-        ProgressBar timer = Assert.Single(presentation.GetVisualDescendants().OfType<ProgressBar>());
+        NotificationLifetimeBar timer = Assert.Single(
+            presentation.GetVisualDescendants().OfType<NotificationLifetimeBar>()
+        );
         Point timerOrigin = Assert.IsType<Point>(timer.TranslatePoint(default, presentation));
         Assert.True(timerOrigin.Y >= 0 && timerOrigin.Y + timer.Bounds.Height <= presentation.Bounds.Height);
     }

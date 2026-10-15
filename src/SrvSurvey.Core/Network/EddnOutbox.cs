@@ -63,6 +63,7 @@ internal sealed class EddnOutbox : IDisposable
     private bool ownershipWarningReported;
     private volatile bool disposed;
 
+    /// <summary>Opens the legacy queue with its default limits and path-scoped consent.</summary>
     internal EddnOutbox(
         string filepath,
         EddnTransport transport,
@@ -72,16 +73,39 @@ internal sealed class EddnOutbox : IDisposable
         int maximumPendingMessages = defaultMaximumPendingMessages,
         long maximumStoreBytes = defaultMaximumStoreBytes
     )
+        : this(
+            new EddnOutboxStorage(filepath),
+            transport,
+            log,
+            utcNow,
+            automaticProcessing,
+            maximumPendingMessages,
+            maximumStoreBytes
+        ) { }
+
+    /// <summary>Opens one owned queue while optionally coordinating consent with other account queues.</summary>
+    internal EddnOutbox(
+        EddnOutboxStorage storage,
+        EddnTransport transport,
+        Action<string>? log = null,
+        Func<DateTimeOffset>? utcNow = null,
+        bool automaticProcessing = true,
+        int maximumPendingMessages = defaultMaximumPendingMessages,
+        long maximumStoreBytes = defaultMaximumStoreBytes
+    )
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filepath);
+        string payloadPath = storage.FilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(payloadPath);
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumPendingMessages);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumStoreBytes);
 
-        this.filepath = filepath;
-        storeFolder = filepath + ".d";
-        ownershipPath = getOwnershipPath(filepath);
-        sharedDisablePath = ownershipPath + ".sharing-disabled";
+        filepath = payloadPath;
+        storeFolder = payloadPath + ".d";
+        ownershipPath = getOwnershipPath(payloadPath);
+        sharedDisablePath =
+            (storage.SharedConsentPath is { } consent ? getOwnershipPath(consent) : ownershipPath)
+            + ".sharing-disabled";
         sharedDisableLeasePath = sharedDisablePath + ".lease";
         this.transport = transport;
         this.log = log ?? (_ => { });
@@ -1453,3 +1477,6 @@ internal sealed class EddnOutbox : IDisposable
             : text[..EddnTransport.MaximumResponseDetailBytes];
     }
 }
+
+/// <summary>Keeps a queue's private payload path separate from consent shared by sibling commander queues.</summary>
+internal sealed record EddnOutboxStorage(string FilePath, string? SharedConsentPath = null);

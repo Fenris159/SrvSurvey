@@ -9,6 +9,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -16,6 +17,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 internal sealed class JournalProjectionDependencies
 {
     internal required JournalProjectionState State { get; init; }
+    internal required JournalSourceRegistry JournalSources { get; init; }
     internal required JournalProjectionShell Shell { get; init; }
     internal required Func<bool> IsDiagnosticReplay { get; init; }
     internal required CommanderProfileViewModel FrontierProfile { get; init; }

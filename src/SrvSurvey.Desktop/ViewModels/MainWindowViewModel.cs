@@ -66,6 +66,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
+    private readonly JournalSourceRegistry journalSources;
     private readonly JournalProjectionState projectionState = new();
     private readonly JournalProjection journalProjections;
 
@@ -238,7 +239,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
 
-    /// <summary>Constructs the main workspace with the default platform and persistence services.</summary>
+    /// <summary>Constructs owned workspaces and services with failure-safe construction rollback.</summary>
     internal MainWindowViewModel(
         string? configuredJournalDirectory,
         MainWindowViewModelConstructionContext construction
@@ -308,6 +309,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             IsDiagnosticReplay = foundation.IsDiagnosticReplay;
             DiagnosticReplayStatus = foundation.DiagnosticReplayStatus ?? string.Empty;
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+            journalSources = new JournalSourceRegistry(AppDataPaths.CacheDirectory);
+            rollback.Add(journalSources);
             var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.SharedUiSettingsPath);
             IReadOnlyList<string> savedJournalDirectories = sharedJournalSettingsStore.Load().Directories;
             folderResolution = ResolveJournalFolder(
@@ -514,16 +517,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(() => Edsm.CredentialsChanged -= OnEdsmCredentialsChanged);
             this.eddnPublisher =
                 resolvedEddnPublisher
-                ?? new EddnPublisher(
+                ?? new EddnCommanderPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    Path.Combine(AppDataPaths.JournalUploadDirectory, "eddn"),
+                    Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     client: externalNetworkClient,
-                    outboxPath: Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     log: message => resolvedApplicationLogService?.Append(message)
                 );
             rollback.AddIfCreated(resolvedEddnPublisher, this.eddnPublisher as IDisposable);
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
             this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+            if (this.eddnPublisher is EddnCommanderPublisher commanderPublisher)
+            {
+                commanderPublisher.RestorePendingAccount(targetFrontierId ?? AppDataPaths.SettingsFrontierId);
+            }
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
                 ?? new EdAstroPublisher(
@@ -4508,7 +4516,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    /// <summary>Drains journal producers, saves workspace continuity, and backs up the profile before releasing services.</summary>
+    /// <summary>Drains journal work, saves workspace continuity, backs up the profile and releases owned services.</summary>
     public async ValueTask DisposeAsync()
     {
         Task drain;
@@ -4587,6 +4595,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
         TryDispose(FleetCarrierWorkspace.Dispose);
+        // Keep the owned disposal call visible to resource-lifetime analysis.
+        TryDispose(() => journalSources.Dispose());
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
@@ -4669,11 +4679,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
         bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
         SetSharedCargoSuppressed(hasMultipleGameWindows);
-        eddnPublisher.SetSuspended(hasMultipleGameWindows);
-        edAstroPublisher.SetSuspended(hasMultipleGameWindows);
+        bool ambiguous = !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount);
+        eddnPublisher.SetSuspended(ambiguous);
+        edAstroPublisher.SetSuspended(ambiguous);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 
+    /// <summary>Retains shared-data suppression while allowing Raven's independently verified commander sources.</summary>
     private void SetSharedCargoSuppressed(bool value)
     {
         if (value)
@@ -4688,7 +4700,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         FrontierProfile.UpdateLocalInventory(latestCargo, latestShipLocker, isSuppressed: value);
 
         DockToDock.SetSharedCargoSuppressed(value);
-        Colonization.SetSharedCargoSuppressed(value);
+        Colonization.SetSharedCargoSuppressed(
+            value && !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount)
+        );
     }
 
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)
