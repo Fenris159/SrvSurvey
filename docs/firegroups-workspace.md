@@ -16,6 +16,14 @@ The checked-in catalog is a filtered snapshot of [EDCD FDevIDs outfitting.csv](h
 
 ## Visibility and compatibility
 
+The [EDSY module snapshot](ship-module-data.md) now supplements the curated
+catalogue with hardpoint and active-utility names and resolves MercGear names
+from source-confirmed engineering blueprints when localized names are absent.
+The current EDSY snapshot has no additional ordinary hardpoint/active-utility
+symbols beyond those already covered. Hangars and passive internals remain
+excluded. The complete ship loadout is retained separately for SLEF export;
+firegroups filtering never removes modules from that export.
+
 Firegroups retains PlotMiningFiregroups, its shortcut identity and saved overlay placement. It now has its own settings category. Previous Global vehicle exceptions are copied once into that category, then saved independently. Migration is recorded even when Global uses its implicit all-allowed default, so later Global edits cannot change Firegroups on restart. The overlay uses the saved profile and the reported active group rather than unsaved editor content. It does not send inputs to Elite. A vessel without an identified Loadout/profile has no active Firegroups overlay. Existing mining notifications keep their own visibility rules.
 
 The Firegroups overlay settings provide independent Left, Main and Right cockpit-view checkboxes. Main is enabled by default; Left and Right are disabled, including for existing settings without these preferences. Changes take effect immediately and persist in the profile's UI settings. Visibility follows Status.json `GuiFocus`: ExternalPanel is the left-hand panel, NoFocus is the main cockpit, and InternalPanel is the right-hand panel. Other interfaces, including Comms, maps, station services and FSS, hide Firegroups. This signal tracks panel focus, not unrestricted head-look or camera direction. The existing enabled toggle, shortcut, ship/profile requirements, vehicle exceptions and global suppression still apply.

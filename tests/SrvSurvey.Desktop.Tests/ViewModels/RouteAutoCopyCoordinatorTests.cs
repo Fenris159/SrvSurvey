@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 {
     private readonly List<BoxelSearchSession> sessions = [];
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-autocopy-tests-{Guid.NewGuid():N}"
@@ -242,6 +243,35 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.False(carrier.IsDirty);
     }
 
+    /// <summary>Recovered unsaved itineraries participate in exclusive next-hop clipboard ownership.</summary>
+    [Fact]
+    public async Task ReconcilePreservesAutoCopyForUnsavedRoutesAndPersistsTheOtherSelection()
+    {
+        RouteWorkspaceViewModel standard = await CreateUnsavedWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateUnsavedWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        await standard.ImportNamesAsync(["Sol", "Achenar"]);
+        await carrier.ImportNamesAsync(["Sol", "Colonia"]);
+        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, CreateInactiveBoxel().Session);
+
+        await coordinator.ReconcileAsync();
+        await carrier.FlushWorkspaceAsync();
+        await carrier.RefreshAsync();
+        Assert.True(standard.AutoCopy);
+        Assert.False(carrier.AutoCopy);
+        Assert.Equal(2, carrier.RouteCount);
+        await coordinator.ClaimAsync(carrier);
+        Assert.True(standard.AutoCopy);
+
+        carrier.AutoCopy = true;
+        await coordinator.ClaimAsync(carrier);
+        await standard.FlushWorkspaceAsync();
+        await standard.RefreshAsync();
+        Assert.False(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+        Assert.False(standard.HasSavedRoute);
+        Assert.False(carrier.HasSavedRoute);
+    }
+
     private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(FollowRouteKind kind, bool isActive = true)
     {
         var store = new FollowRouteStore(temporaryDirectory, kind);
@@ -265,6 +295,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
             new EmptySpanshClient(),
             kind
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         return workspace;
     }
@@ -278,6 +309,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
             new EmptySpanshClient(),
             kind
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         return workspace;
     }
@@ -356,6 +388,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
+        }
+
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
         }
 
         if (Directory.Exists(temporaryDirectory))

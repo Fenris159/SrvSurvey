@@ -485,7 +485,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             StreamOverlay = new StreamOverlayViewModel(new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
             VrOverlay = new VrOverlayViewModel(
                 new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
-                new VrOverlayCalibrationStore(AppDataPaths.DataDirectory)
+                new VrOverlayCalibrationStore(AppDataPaths.OverlaySettingsDirectory)
             );
             NetworkPrivacy = new NetworkPrivacyViewModel(new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
             Inara = new InaraSettingsViewModel(commanderProfileStore);
@@ -665,9 +665,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 systemNotesSettingsStore
             );
             var spanshRouteClient = new SpanshRouteClient(externalNetworkClient);
+            var spanshPlannerClient = new SpanshPlannerClient(externalNetworkClient);
             var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
             var routeService = new FollowRouteService(new FollowRouteStore(AppDataPaths.DataDirectory));
-            Route = new RouteWorkspaceViewModel(routeService, routeNameImporter, spanshRouteClient);
+            Route = new RouteWorkspaceViewModel(
+                routeService,
+                routeNameImporter,
+                spanshRouteClient,
+                plannerClient: spanshPlannerClient,
+                currentShip: CurrentShipExport
+            );
+            rollback.Add(Route.SpanshSearch!.Dispose);
             RouteManager = new RouteManagerViewModel(routeService, Route);
             var fleetCarrierRouteService = new FollowRouteService(
                 new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier)
@@ -676,8 +684,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 fleetCarrierRouteService,
                 routeNameImporter,
                 spanshRouteClient,
-                FollowRouteKind.FleetCarrier
+                FollowRouteKind.FleetCarrier,
+                plannerClient: spanshPlannerClient,
+                currentShip: CurrentShipExport
             );
+            rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
             FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
             routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(Route, FleetCarrierRoute, boxelSearchSession);
             rollback.Add(routeAutoCopyCoordinator.Dispose);
@@ -869,7 +880,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             ImportLegacyProfileCommand = importLegacyProfileCommand;
             JournalFolderPath = ResolvePrimaryJournalPath(folderResolution) ?? "No journal location is configured.";
             CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
-            TargetFrontierId = NormalizeOptionalId(targetFrontierId);
+            // Journal ownership must stay aligned with the commander-specific settings loaded at startup.
+            TargetFrontierId =
+                NormalizeOptionalId(targetFrontierId)
+                ?? CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
                 profileJournalDirectories
@@ -1261,6 +1275,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public JournalHistoryViewModel JournalHistory { get; }
 
     public JournalSettingsViewModel JournalSettings { get; }
+
+    public CurrentShipExportViewModel CurrentShipExport { get; } = new();
 
     public JournalPostProcessorViewModel JournalPostProcessor { get; }
 
@@ -4568,6 +4584,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         await TryDisposeAsync(ActiveUsers.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
+        TryDispose(Route.SpanshSearch!.Dispose);
+        TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
+        await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
+        await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
         TryDispose(boxelNameSuggestions.Dispose);

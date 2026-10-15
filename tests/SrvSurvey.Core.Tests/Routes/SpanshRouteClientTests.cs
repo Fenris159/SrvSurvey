@@ -361,6 +361,93 @@ public sealed class SpanshRouteClientTests
         Assert.Equal(3892, carrier.RestockAmountTonnes);
     }
 
+    /// <summary>
+    /// Checks that reported carrier route preserves fuel and restock values.
+    /// </summary>
+    [Theory]
+    [InlineData(0, 1000, false, null)]
+    [InlineData(17, 150, false, null)]
+    [InlineData(18, 1000, true, 953d)]
+    [InlineData(27, 1000, true, 937d)]
+    [InlineData(45, 0, false, null)]
+    public async Task ReportedCarrierRoutePreservesFuelAndRestockValues(
+        int index,
+        double fuel,
+        bool restock,
+        double? amount
+    )
+    {
+        string payload = await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Fixtures", "Spansh", "fleet-carrier-41b4.json")
+        );
+        SpanshRouteClient client = CreateClient(payload);
+
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier)
+        );
+
+        Assert.Equal(46, hops.Count);
+        FollowRouteCarrierHop carrier = Assert.IsType<FollowRouteCarrierHop>(hops[index].Carrier);
+        Assert.Equal(fuel, carrier.FuelRemainingTonnes);
+        Assert.Equal(restock, carrier.MustRestock);
+        Assert.Equal(amount, carrier.RestockAmountTonnes);
+        Assert.Equal(restock, hops[index].Notes?.Contains("restock", StringComparison.OrdinalIgnoreCase) == true);
+    }
+
+    /// <summary>
+    /// Checks that carrier import reproduces individual missing columns.
+    /// </summary>
+    [Theory]
+    [InlineData("\"fuel_in_tank\":150", "fuel")]
+    [InlineData("\"must_restock\":1", "restock")]
+    [InlineData("\"must_restock\":0,\"restock_amount\":0", "amount")]
+    public async Task CarrierImportReproducesIndividualMissingColumns(string fields, string column)
+    {
+        SpanshRouteClient client = CreateClient(
+            "{\"status\":\"ok\",\"result\":{\"jumps\":[{\"name\":\"Sol\"," + fields + "}]}}"
+        );
+        FollowRouteHop hop = Assert.Single(
+            await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier))
+        );
+        FollowRouteCarrierHop carrier = Assert.IsType<FollowRouteCarrierHop>(hop.Carrier);
+        switch (column)
+        {
+            case "fuel":
+                Assert.Equal(150, carrier.FuelRemainingTonnes);
+                break;
+            case "restock":
+                Assert.True(carrier.MustRestock);
+                break;
+            default:
+                Assert.Null(carrier.RestockAmountTonnes);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Checks that restock flags accept booleans and only zero or one numbers.
+    /// </summary>
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    [InlineData("1", true)]
+    [InlineData("0", false)]
+    [InlineData("2", false)]
+    [InlineData("\"1\"", false)]
+    [InlineData("null", false)]
+    public async Task RestockFlagsAcceptBooleansAndOnlyZeroOrOneNumbers(string flag, bool expected)
+    {
+        SpanshRouteClient client = CreateClient(
+            "{\"status\":\"ok\",\"result\":{\"jumps\":[{\"name\":\"Sol\",\"must_restock\":" + flag + "}]}}"
+        );
+        FollowRouteHop hop = Assert.Single(
+            await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier))
+        );
+
+        Assert.Equal(expected, hop.Carrier!.MustRestock);
+        Assert.Null(hop.Carrier.RestockAmountTonnes);
+    }
+
     [Fact]
     public async Task ColonisationRouteReadsJumpObjects()
     {

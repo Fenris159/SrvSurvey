@@ -22,6 +22,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
         "src/SrvSurvey.Core/Network/VoxStellarPublisherOptions.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
+        "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/ArdentApi.cs",
         "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
@@ -118,12 +119,14 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "spansh-search-and-routes",
             [
+                "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs",
                 "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
                 "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
                 "src/SrvSurvey.Core/Search/SpanshBoxelClient.cs",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Routes/SpanshRouteClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Routes/SpanshPlannerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/NearestSystemsClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/SpanshBoxelClientTests.cs",
             ]

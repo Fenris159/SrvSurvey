@@ -1,10 +1,32 @@
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class LocalizationSettingsStoreTests : IDisposable
 {
+    /// <summary>New profiles inherit the previous language without later shared-file edits replacing their own selection.</summary>
+    [Fact]
+    public void NewCommanderInheritsSharedLanguageUntilItsOwnSettingsExist()
+    {
+        var shared = new AppDataPaths(
+            Path.Combine(temporaryDirectory, "config"),
+            Path.Combine(temporaryDirectory, "data"),
+            temporaryDirectory,
+            []
+        );
+        var sharedStore = new LocalizationSettingsStore(shared.SharedUiSettingsPath, shared.DataDirectory);
+        sharedStore.Save("de");
+        AppDataPaths commander = shared with { SettingsFrontierId = "F123" };
+        Assert.Equal("de", LocalizationSettingsStore.ResolveCurrent(commander));
+        CommanderSettingsProfile.Prepare(commander);
+        new LocalizationSettingsStore(commander.UiSettingsPath, commander.OverlaySettingsDirectory).Save("fr");
+        sharedStore.Save("en");
+        Assert.Equal("fr", LocalizationSettingsStore.ResolveCurrent(commander));
+        Assert.Equal("en", LocalizationSettingsStore.ResolveCurrent(shared));
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-localization-settings-tests-{Guid.NewGuid():N}"

@@ -1,6 +1,7 @@
 using Avalonia;
 using SrvSurvey.Core.Diagnostics.Replay;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Runtime;
@@ -90,6 +91,7 @@ internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, Diagnost
 {
     public bool IsDiagnosticReplay => DiagnosticReplay is not null;
 
+    /// <summary>Resolves replay isolation or commander-specific paths before language initialization and desktop composition.</summary>
     public static async Task<DesktopStartupContext> ResolveAsync(
         IReadOnlyList<string> arguments,
         Func<AppDataPaths> normalPathsFactory,
@@ -109,7 +111,21 @@ internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, Diagnost
 
         if (replayManifest is null)
         {
-            return new DesktopStartupContext(normalPathsFactory(), null);
+            AppDataPaths paths = normalPathsFactory();
+            CommanderPreferenceResolution preference = await new CommanderPreferenceResolver(
+                new CommanderPreferenceSettingsStore(paths.SharedUiSettingsPath),
+                new CommanderProfileCatalog(paths.DataDirectory)
+            ).ResolveAsync(StartupOptions.GetFrontierId(arguments), cancellationToken);
+            string? frontierId =
+                StartupOptions.GetFrontierId(arguments)
+                ?? StartupOptions.GetInstanceFrontierId(arguments)
+                ?? CommanderSettingsProfile.NormalizeFrontierId(preference.TargetFrontierId)
+                ?? CommanderSettingsProfile.NormalizeFrontierId(paths.SettingsFrontierId)
+                ?? CommanderSettingsProfile.FindLatestJournalFrontierId(
+                    paths.SharedUiSettingsPath,
+                    StartupOptions.GetJournalDirectory(arguments)
+                );
+            return new DesktopStartupContext(paths with { SettingsFrontierId = frontierId }, null);
         }
 
         DiagnosticReplayContext diagnosticReplay = await DiagnosticReplayContext.LoadAsync(

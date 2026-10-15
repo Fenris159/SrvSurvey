@@ -104,6 +104,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "\u002B Add",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSystemListViewModel.cs"
+  },
+  {
     "Text": "\u002B pending",
     "IsFormat": false,
     "SourceKinds": [
@@ -1046,14 +1054,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
-  },
-  {
-    "Text": "44 JUMPS LEFT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "499.76 LY JUMP \u2022 21,502.09 LY REMAINING",
@@ -3050,6 +3050,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Add a destination system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
     "Text": "Add anything useful about this system...",
     "IsFormat": false,
     "SourceKinds": [
@@ -3160,6 +3168,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Add or save destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
+    "Text": "Add or save the system entry before searching.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSearchViewModel.cs"
   },
   {
     "Text": "Add planning notes, reminders, or a description for this route.",
@@ -3801,6 +3825,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Already Supercharged",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Also displays the overlay in supercruise when the navigation destination matches the next followed-route system.",
@@ -5708,6 +5740,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Avoid Thargoids",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Avoid duplicate sharing",
     "IsFormat": false,
     "SourceKinds": [
@@ -7416,6 +7456,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Board your ship and read a complete Loadout after outfitting to enable export.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CurrentShipExportViewModel.cs"
+  },
+  {
     "Text": "Bodies",
     "IsFormat": false,
     "SourceKinds": [
@@ -8971,6 +9019,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DistanceView.axaml"
   },
   {
+    "Text": "Calculate starting fuel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Calibrate panels in the headset",
     "IsFormat": false,
     "SourceKinds": [
@@ -9075,6 +9131,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
   },
   {
+    "Text": "Cancel edit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
     "Text": "Cancel overlay position and appearance changes",
     "IsFormat": false,
     "SourceKinds": [
@@ -9096,7 +9160,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
   },
   {
     "Text": "Cancelling the full-area audit after the current request\u2026",
@@ -9415,6 +9479,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Cargo (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Cargo Not For Sale",
     "IsFormat": false,
     "SourceKinds": [
@@ -9653,6 +9725,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Carrier type",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "CarrierID",
@@ -10401,6 +10481,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "Choose a planner and search to load its route into the itinerary.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSearchViewModel.cs"
+  },
+  {
     "Text": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10489,6 +10577,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "Choose a system and select \u002B Add. Edit, remove, or reorder destinations below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Choose a system-name text file",
     "IsFormat": false,
     "SourceKinds": [
@@ -10503,6 +10599,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Choose a valid {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
   },
   {
     "Text": "Choose an SrvSurvey profile or application-data folder",
@@ -11617,6 +11721,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
+    "Text": "Colonisation Plotter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "ColoniseCategory",
@@ -14002,6 +14114,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Copy ship for EDSY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
+  },
+  {
     "Text": "Copy system",
     "IsFormat": false,
     "SourceKinds": [
@@ -14740,6 +14860,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
   },
   {
+    "Text": "Current equipped ship build is ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSearchViewModel.cs"
+  },
+  {
     "Text": "Current journal: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -14762,6 +14890,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Current ship",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "Current ship ({0} tonnes): {1} trips",
@@ -16177,12 +16313,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
+    "Text": "Destination system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Destination: {0} body:{1} id64:{2}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "Destinations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Destroyed",
@@ -17792,6 +17944,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
+    "Text": "ETR: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "EXOBIOLOGY",
     "IsFormat": false,
     "SourceKinds": [
@@ -18023,7 +18183,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
   },
   {
     "Text": "Edit Current Map",
@@ -18184,6 +18344,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Efficiency (%)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Election",
@@ -18796,6 +18964,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
+    "Text": "Engineering",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Engineering materials collected",
     "IsFormat": false,
     "SourceKinds": [
@@ -19338,6 +19514,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Exclude Secondary Stars",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Exclude carriers",
@@ -20044,6 +20228,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Expressway to Exomastery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Extend Body Information Preview by:",
     "IsFormat": false,
     "SourceKinds": [
@@ -20398,6 +20590,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+  },
+  {
+    "Text": "FSDOptimalMass",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "FSDTarget",
@@ -21000,6 +21200,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Final destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Finances",
     "IsFormat": false,
     "SourceKinds": [
@@ -21532,6 +21740,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
+    "Text": "Fleet Carrier Router",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Fleet Carrier cargo sync",
     "IsFormat": false,
     "SourceKinds": [
@@ -22052,6 +22268,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "FrameShiftDrive",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Fran\u00E7ais",
     "IsFormat": false,
     "SourceKinds": [
@@ -22436,6 +22660,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/WaylandCaptureSettingsStore.cs"
   },
   {
+    "Text": "Fuel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Fuel Jumps",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Fuel calculations require starting tank, market, and jump fuel values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Fuel left",
     "IsFormat": false,
     "SourceKinds": [
@@ -22450,6 +22698,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "FuelCapacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "Full-area completion audit",
@@ -22971,6 +23227,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GameTextInputService.cs"
+  },
+  {
+    "Text": "Galaxy Plotter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Galaxy-wide",
@@ -24424,6 +24688,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Guided",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Guides",
@@ -26975,6 +27247,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "InputBox",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml.cs"
+  },
+  {
     "Text": "Inside",
     "IsFormat": false,
     "SourceKinds": [
@@ -27078,6 +27358,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Insufficient tritium for the jump to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Insulating membrane",
@@ -27197,7 +27485,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "Item (dim)",
@@ -28364,6 +28652,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerChordTracker.cs"
   },
   {
+    "Text": "Label",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Label \u00B7 angle \u00B7 distance",
     "IsFormat": false,
     "SourceKinds": [
@@ -29165,6 +29461,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "List route destinations where the carrier can refill. One per line.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Listening for community observations\u2026",
@@ -30130,6 +30434,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Loop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Lost surface scans were not marked: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -30614,6 +30926,7 @@
     "Text": "Main",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
@@ -31390,6 +31703,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "MaxFuelPerJump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "MaxJumpRange",
     "IsFormat": false,
     "SourceKinds": [
@@ -31412,6 +31733,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Maximum distance to arrival (LS)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Maximum systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Med kits",
@@ -31939,6 +32276,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Minimum biological value (CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Minimum displayed body value (credits)",
     "IsFormat": false,
     "SourceKinds": [
@@ -31969,6 +32314,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Minimum scan value (CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Minimum score / 10",
@@ -32453,6 +32806,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Modifiers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Module blueprint",
     "IsFormat": false,
     "SourceKinds": [
@@ -32466,7 +32827,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "Mollusc",
@@ -32555,6 +32916,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Move destination down",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
+    "Text": "Move destination up",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
   },
   {
     "Text": "Move existing live overlays",
@@ -33482,6 +33859,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Neutron Plotter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Neutron boost stop",
@@ -35382,6 +35767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Normal Supercharge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Not For Sale",
     "IsFormat": false,
     "SourceKinds": [
@@ -37027,6 +37420,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Optimistic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Optional Internal",
     "IsFormat": false,
     "SourceKinds": [
@@ -37370,6 +37771,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
+  },
+  {
+    "Text": "Overcharge Supercharge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Overlaps",
@@ -38759,6 +39168,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Paste this ship\u0027s latest recorded loadout into EDSY\u0027s Import dialog.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CurrentShipExportViewModel.cs"
+  },
+  {
     "Text": "Pasted coordinates saved as the active target.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38925,6 +39342,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Pessimistic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Phimbee AA-A d0",
@@ -41864,6 +42289,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml"
   },
   {
+    "Text": "ROUTE PLANNER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
+  },
+  {
     "Text": "ROUTE TARGET",
     "IsFormat": false,
     "SourceKinds": [
@@ -41918,6 +42351,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
+  },
+  {
+    "Text": "Radius (LY)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Radius (ly)",
@@ -42030,6 +42471,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Range (LY)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Ranks",
@@ -44068,9 +44517,42 @@
     "Text": "Refuel",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
+    "Text": "Refuel Every Scoopable",
+    "IsFormat": false,
+    "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Refuel at destinations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Refuel destinations must also be listed as route destinations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
+    "Text": "Refuel the carrier at this destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
   },
   {
     "Text": "Regional firsts in {0}",
@@ -44247,6 +44729,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Remove destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
   },
   {
     "Text": "Remove development quest",
@@ -44825,6 +45315,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Reserve",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
+    "Text": "Reserve fuel (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Reserve level",
     "IsFormat": false,
     "SourceKinds": [
@@ -45177,6 +45683,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Restock only when low",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Restore",
     "IsFormat": false,
     "SourceKinds": [
@@ -45313,6 +45827,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Restored the working route. Save As... adds it to your route library.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Restored {0} imported colonization project(s) from {1}.{2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -45351,6 +45873,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Results replace the on-screen itinerary. Use Save As to keep the route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
   },
   {
     "Text": "Results, best sell price first",
@@ -46075,6 +46605,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Road to Riches",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Rocky",
     "IsFormat": false,
     "SourceKinds": [
@@ -46380,6 +46918,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Routing Algorithm",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Row size",
@@ -47445,6 +47991,7 @@
     "Text": "Save",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
@@ -48796,6 +49343,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Searching Spansh {0}\u2026",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Searching for system suggestions\u2026",
@@ -50299,6 +50854,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningOverlayPresentation.axaml"
   },
   {
+    "Text": "Ship Build (EDSY SLEF)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Ship Build must contain ship build JSON or SLEF.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
     "Text": "Ship Kit",
     "IsFormat": false,
     "SourceKinds": [
@@ -51717,6 +52288,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Slot",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Small",
     "IsFormat": false,
     "SourceKinds": [
@@ -51837,6 +52416,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
+    "Text": "Source system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "SourceDirectory",
     "IsFormat": false,
     "SourceKinds": [
@@ -51886,6 +52473,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
+    "Text": "Spansh Search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Spansh Search \u00B7 Fleet carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSearchViewModel.cs"
+  },
+  {
     "Text": "Spansh URL from clipboard",
     "IsFormat": false,
     "SourceKinds": [
@@ -51900,6 +52504,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Spansh could not resolve system \u0027{0}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
   },
   {
     "Text": "Spansh data updated just now",
@@ -51950,7 +52562,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Spansh planner response",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
+  },
+  {
     "Text": "Spansh returned a route with no systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Spansh returned an invalid planner response.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
+  },
+  {
+    "Text": "Spansh search cancelled.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -51972,6 +52608,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+  },
+  {
+    "Text": "Spansh: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
   },
   {
     "Text": "Species",
@@ -52089,6 +52733,7 @@
     "Text": "Squadron Carrier",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
@@ -52806,6 +53451,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml.cs"
   },
   {
+    "Text": "SrvSurvey-Avalonia/1.0",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
+  },
+  {
     "Text": "SrvSurvey-BiologyCodex-Design",
     "IsFormat": false,
     "SourceKinds": [
@@ -52892,6 +53545,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey-Spansh-Design",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml.cs"
   },
   {
     "Text": "SrvSurvey-SystemStatus-Overlay-Design",
@@ -54048,6 +54709,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Supercharge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "SupercruiseExit",
     "IsFormat": false,
     "SourceKinds": [
@@ -54898,6 +55567,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "System name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
   },
   {
     "Text": "System name or id64",
@@ -56538,6 +57215,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "The SLEF must include Modules, UnladenMass and FuelCapacity from a complete ship Loadout.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "The Screenshot event filename is invalid.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56556,6 +57241,22 @@
   {
     "Text": "The Spansh route could not be imported: {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The Spansh search could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The Spansh search timed out. Please try again.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -59690,6 +60391,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The ship build has no supported Frame Shift Drive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
+    "Text": "The ship build has no valid {0} value.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "The ship cargo publishing preference could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -60144,6 +60861,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The working route could not be retained: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "The written overlay theme did not verify.",
@@ -61157,6 +61882,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Tourist Planner",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Tower heading",
     "IsFormat": false,
     "SourceKinds": [
@@ -61467,6 +62200,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Tritium in fuel tank (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Tritium in market",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
+    "Text": "Tritium in market (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Tritium reserve",
@@ -62305,6 +63062,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "UnladenMass",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
     "Text": "Unlimited",
     "IsFormat": false,
     "SourceKinds": [
@@ -62327,6 +63092,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Unnamed ship",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CurrentShipExportViewModel.cs"
   },
   {
     "Text": "Unoccupied",
@@ -62922,6 +63695,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use FSD Injections Always",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Use FSD Injections When Required",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Use FSS, body, system, route, and screenshot tools without losing the familiar original-overlay cues.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63058,6 +63847,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Supercharge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "Use Theme \u003E Overlay Settings \u003E Edit Overlay Positions to arrange previews, including the rig calibration frame.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63139,6 +63936,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Use current equipped ship",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
+  },
+  {
     "Text": "Use current location",
     "IsFormat": false,
     "SourceKinds": [
@@ -63217,6 +64022,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Use mapping value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Use one of the five original Guardian plotter sizes.",
@@ -63505,6 +64318,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JumpInfoSettingsStore.cs"
+  },
+  {
+    "Text": "Used capacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
+    "Text": "Used capacity (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
@@ -63913,7 +64742,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "Valve Index, HTC Vive, Pimax, Bigscreen Beyond, Pico, and other SteamVR headsets",
@@ -64018,6 +64847,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "Via systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "View all logs",
@@ -64540,6 +65377,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Waiting for a complete ship loadout.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CurrentShipExportViewModel.cs"
   },
   {
     "Text": "Waiting for a current system.",
@@ -66200,6 +67045,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "algorithm",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "all",
     "IsFormat": false,
     "SourceKinds": [
@@ -67096,6 +67949,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
   },
   {
+    "Text": "capacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
     "Text": "caption",
     "IsFormat": false,
     "SourceKinds": [
@@ -67133,7 +67994,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "casket",
@@ -67277,7 +68138,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "colonisation/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "colonise.deficit",
@@ -67693,7 +68562,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
   },
   {
     "Text": "dd MMM yyyy HH:mm",
@@ -67782,6 +68651,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "destinations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "detail",
@@ -67944,6 +68829,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "efficiency",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "elite",
     "IsFormat": false,
     "SourceKinds": [
@@ -68101,7 +68994,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
   },
   {
     "Text": "error {0}, request {1}.{2}, resource {3}, display {4}.",
@@ -68152,6 +69045,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
   },
   {
+    "Text": "exact-plotter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "exception-message",
     "IsFormat": false,
     "SourceKinds": [
@@ -68173,7 +69074,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "exobiology/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "exploration",
@@ -68437,7 +69346,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "fleetcarrier/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "followed",
@@ -68496,6 +69413,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "from",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "frontier,steam,epic",
     "IsFormat": false,
     "SourceKinds": [
@@ -68541,7 +69466,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "fuel scoop refuel star route",
@@ -68646,6 +69571,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "generic/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "geological",
@@ -68870,6 +69803,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
+  },
+  {
+    "Text": "guided",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "guides",
@@ -69232,6 +70173,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "job",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
+  },
+  {
     "Text": "journal",
     "IsFormat": false,
     "SourceKinds": [
@@ -69480,6 +70429,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "loop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "low",
     "IsFormat": false,
     "SourceKinds": [
@@ -69598,6 +70555,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
+  },
+  {
+    "Text": "mass",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
   },
   {
     "Text": "medium",
@@ -70192,6 +71157,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml.cs"
   },
   {
+    "Text": "optimistic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "or",
     "IsFormat": false,
     "SourceKinds": [
@@ -70416,6 +71389,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
+    "Text": "pessimistic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "pilots-federation",
     "IsFormat": false,
     "SourceKinds": [
@@ -70446,6 +71427,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "plotter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "plotters",
@@ -70656,6 +71645,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "radius",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "range",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "rating",
     "IsFormat": false,
     "SourceKinds": [
@@ -70800,6 +71805,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
+    "Text": "riches",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "riches/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "right",
     "IsFormat": false,
     "SourceKinds": [
@@ -70845,7 +71866,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "route-bio",
@@ -71285,7 +72306,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "space",
@@ -71885,7 +72906,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "tonnes",
@@ -71925,7 +72946,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "tourist/route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
     "Text": "track1",
@@ -72384,6 +73413,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "via",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
     "Text": "viper",
     "IsFormat": false,
     "SourceKinds": [
@@ -72453,7 +73490,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "vr-calibration-backups",
@@ -73393,6 +74430,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalHistoryViewModel.cs"
   },
   {
+    "Text": "{0} exceeds the carrier\u0027s {1} tonne capacity.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
     "Text": "{0} failed candidate(s) remain available for a confirmed retry.",
     "IsFormat": true,
     "SourceKinds": [
@@ -73471,6 +74516,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "{0} is outside the allowed range.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
+  },
+  {
+    "Text": "{0} is required.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
   },
   {
     "Text": "{0} is unavailable on this platform.",
@@ -73807,6 +74868,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} must be a number.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
   },
   {
     "Text": "{0} non-body signals",
@@ -74761,12 +75830,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
   },
   {
+    "Text": "{0}d",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0}d {1}h remaining",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0}h",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "{0}h {1}m remaining",
@@ -74783,6 +75868,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0}min",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "{0}r{1}",

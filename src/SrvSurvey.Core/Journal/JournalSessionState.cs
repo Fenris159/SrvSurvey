@@ -1,5 +1,6 @@
 using System.Text.Json;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Ships;
 
 namespace SrvSurvey.Core.Journal;
 
@@ -9,6 +10,8 @@ public sealed class JournalSessionState
     private readonly Dictionary<long, string> srvTypesById = [];
     private long? pendingPlayerControlledFighterId;
     private bool isNomadStatusConfirmationPending;
+
+    public ShipLoadoutState ShipLoadout { get; } = new();
 
     public string? GameVersion { get; private set; }
 
@@ -74,12 +77,16 @@ public sealed class JournalSessionState
 
     public int UnhandledEventCount => ValidEventCount - RecognizedEventCount;
 
+    /// <summary>
+    /// Projects one journal event into commander, vehicle and complete-loadout session state.
+    /// </summary>
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         ValidEventCount++;
         LastEventTimestamp = journalEvent.Timestamp ?? LastEventTimestamp;
         JsonElement root = journalEvent.Payload;
+        ShipLoadout.Apply(journalEvent);
 
         switch (journalEvent.EventName)
         {

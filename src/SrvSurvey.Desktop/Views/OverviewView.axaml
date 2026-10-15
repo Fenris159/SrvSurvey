@@ -102,6 +102,20 @@
         </Grid>
       </Border>
 
+      <Border Classes="card">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Current ship" />
+            <TextBlock TextWrapping="Wrap" Text="{Binding CurrentShipExport.ShipDescription}" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CurrentShipExport.Status}" />
+          </StackPanel>
+          <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Center"
+                  IsEnabled="{Binding CurrentShipExport.CanExport}"
+                  behaviors:ClipboardCopyBehavior.Text="{Binding CurrentShipExport.SlefJson}"
+                  Content="Copy ship for EDSY" />
+        </Grid>
+      </Border>
+
       <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
         <Border Classes="card">
           <StackPanel Spacing="16">

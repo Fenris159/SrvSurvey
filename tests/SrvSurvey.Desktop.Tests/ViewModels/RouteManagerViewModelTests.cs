@@ -5,12 +5,37 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class RouteManagerViewModelTests : IDisposable
+public sealed class RouteManagerViewModelTests : IAsyncLifetime
 {
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-manager-tests-{Guid.NewGuid():N}"
     );
+
+    /// <summary>Awaiting a coalesced refresh must wait until the route manager can accept another command.</summary>
+    [Fact]
+    public async Task ACoalescedRefreshWaitsForTheRunningRefreshToFinish()
+    {
+        (FollowRouteStore _, RouteWorkspaceViewModel _, RouteManagerViewModel manager) = await CreateViewModelsAsync();
+        Task? coalesced = null;
+        bool completedDuringRefresh = false;
+        manager.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(RouteManagerViewModel.IsBusy) && manager.IsBusy && coalesced is null)
+            {
+                coalesced = manager.RefreshAsync();
+                completedDuringRefresh = coalesced.IsCompleted;
+            }
+        };
+
+        await manager.RefreshAsync();
+
+        Assert.NotNull(coalesced);
+        Assert.False(completedDuringRefresh);
+        await coalesced;
+        Assert.False(manager.IsBusy);
+    }
 
     [Fact]
     public async Task SameCommanderAndCatalogRefreshPreserveCollectionAndRows()
@@ -74,6 +99,9 @@ public sealed class RouteManagerViewModelTests : IDisposable
 
         Assert.False(manager.IsDialogVisible);
         Assert.Equal("Watch the neutron jump near waypoint five.", beta.Notes);
+        await workspace.RefreshAsync();
+        Assert.Equal(beta.Notes, workspace.CreateSnapshot()!.Notes);
+        await manager.RefreshAsync();
 
         beta.IsSelected = true;
         manager.RequestDeleteCommand.Execute(null);
@@ -203,14 +231,22 @@ public sealed class RouteManagerViewModelTests : IDisposable
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient()
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         var manager = new RouteManagerViewModel(service, workspace);
         await manager.UpdateContextAsync("F123");
         return (store, workspace, manager);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
