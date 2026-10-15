@@ -25,6 +25,8 @@ struct TestTexture
     ID3D11Texture2D *texture = nullptr;
 };
 
+#include "InputTestRuntime.h"
+
 XrResult XRAPI_CALL Success()
 {
     return XR_SUCCESS;
@@ -140,8 +142,15 @@ XrResult XRAPI_CALL Release(XrSwapchain handle, const XrSwapchainImageReleaseInf
     D3D11_MAPPED_SUBRESOURCE mapped{};
     Require(SUCCEEDED(context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped)), "Read uploaded pixels");
     const auto *pixel = static_cast<const uint8_t *>(mapped.pData);
-    Require(pixel[0] == 255 && pixel[1] == 128 && pixel[2] == 64 && pixel[3] == 127,
-            "Preserve straight sRGB, scale only alpha");
+    if (desc.Width == 1)
+        Require(pixel[0] == 255 && pixel[1] == 128 && pixel[2] == 64 && pixel[3] == 127,
+                "Preserve straight sRGB, scale only alpha");
+    else
+    {
+        const auto *center = pixel + 16 * mapped.RowPitch + 16 * 4;
+        Require(desc.Width == 32 && center[0] == 32 && center[1] == 200 && center[3] == 255 && pixel[3] == 0,
+                "Upload visible cyan cursor with transparent corners");
+    }
     context->Unmap(staging, 0);
     staging->Release();
     context->Release();
@@ -171,17 +180,34 @@ XrResult XRAPI_CALL GetProc(XrInstance, const char *name, PFN_xrVoidFunction *ou
         *output = reinterpret_cast<PFN_xrVoidFunction>(function);                                                      \
         return XR_SUCCESS;                                                                                             \
     }
+    PROC("xrStringToPath", InputPath)
+    PROC("xrCreateActionSet", InputCreateSet)
+    PROC("xrDestroyActionSet", InputDestroySet)
+    PROC("xrCreateAction", InputCreateAction)
+    PROC("xrSuggestInteractionProfileBindings", InputSuggest)
+    PROC("xrAttachSessionActionSets", InputAttach)
+    PROC("xrSyncActions", InputSync)
+    PROC("xrCreateActionSpace", InputSpace)
+    PROC("xrGetActionStatePose", InputPose)
+    PROC("xrGetActionStateBoolean", InputBoolean)
+    PROC("xrGetActionStateVector2f", InputVector)
     PROC("xrDestroyInstance", Destroy)
     PROC("xrGetInstanceProperties", Properties)
     PROC("xrCreateSession", CreateSession)
-    PROC("xrDestroySession", DestroySession) PROC("xrCreateReferenceSpace", CreateSpace)
-        PROC("xrDestroySpace", DestroySpace) PROC("xrLocateSpace", Locate) PROC("xrEnumerateSwapchainFormats", Formats)
-            PROC("xrCreateSwapchain", CreateTexture) PROC("xrDestroySwapchain", DestroyTexture)
-                PROC("xrEnumerateSwapchainImages", Images) PROC("xrAcquireSwapchainImage", Acquire)
-                    PROC("xrWaitSwapchainImage", Wait) PROC("xrReleaseSwapchainImage", Release)
-                        PROC("xrEndFrame", EndFrame)
+    PROC("xrDestroySession", DestroySession)
+    PROC("xrCreateReferenceSpace", CreateSpace)
+    PROC("xrDestroySpace", DestroySpace)
+    PROC("xrLocateSpace", Locate)
+    PROC("xrEnumerateSwapchainFormats", Formats)
+    PROC("xrCreateSwapchain", CreateTexture)
+    PROC("xrDestroySwapchain", DestroyTexture)
+    PROC("xrEnumerateSwapchainImages", Images)
+    PROC("xrAcquireSwapchainImage", Acquire)
+    PROC("xrWaitSwapchainImage", Wait)
+    PROC("xrReleaseSwapchainImage", Release)
+    PROC("xrEndFrame", EndFrame)
 #undef PROC
-                            *output = reinterpret_cast<PFN_xrVoidFunction>(Success);
+    *output = reinterpret_cast<PFN_xrVoidFunction>(Success);
     return XR_SUCCESS;
 }
 void WritePacket(const std::wstring &path, uint32_t sequence, uint32_t count = 1, int64_t timestamp = Now())
@@ -339,6 +365,60 @@ int main()
         Require(destroyedTextures == 1 && submittedLayers == 1, "Remove stale overlay resources");
         Require(!session->uploadsPending, "Wait for GPU completion when retiring a panel");
         WritePacket(path, 10);
+        {
+            InputFixture input(path);
+            TestBindings(*session, input);
+            session->maximumLayers = 3;
+            input.Enable(true);
+            XrActiveActionSet appSet{reinterpret_cast<XrActionSet>(uintptr_t(77)), XR_NULL_PATH};
+            XrActionsSyncInfo sync{XR_TYPE_ACTIONS_SYNC_INFO};
+            sync.countActiveActionSets = 1;
+            sync.activeActionSets = &appSet;
+            LayerSyncActions(session->handle, &sync);
+            Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 3,
+                    "Compose cursor above panel while preserving game projection");
+            uint32_t start = input.header->eventCount;
+            controllerButtons = 1;
+            LayerSyncActions(session->handle, &sync);
+            LayerEndFrame(session->handle, &frame);
+            Require(input.Has(start, PointerKind::LeftDown), "Return controller click through native mailbox");
+            start = input.header->eventCount;
+            input.Enable(false);
+            LayerSyncActions(session->handle, &sync);
+            LayerEndFrame(session->handle, &frame);
+            Require(input.Has(start, PointerKind::Reset) && submittedLayers == 2,
+                    "Disabling mode cancels held click and removes cursor");
+            controllerButtons = 0;
+            session->input->Clear();
+            --instance->inputSessions;
+            // A rejected augmentation must preserve the application's original suggestion.
+            EnsureInput(*instance, true);
+            XrActionSuggestedBinding gameBinding{reinterpret_cast<XrAction>(uintptr_t(44)), 45};
+            XrInteractionProfileSuggestedBinding bindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+            bindings.interactionProfile = instance->input->touchProfile;
+            bindings.countSuggestedBindings = 1;
+            bindings.suggestedBindings = &gameBinding;
+            failMergedSuggestion = true;
+            Require(LayerSuggestBindings(instanceHandle, &bindings) == XR_SUCCESS && suggested.size() == 1 &&
+                        !instance->input->ready,
+                    "Binding augmentation failure falls back to original game bindings");
+            failMergedSuggestion = false;
+            instance->input.reset();
+            EnsureInput(*instance);
+            XrActionSet gameSet = reinterpret_cast<XrActionSet>(uintptr_t(77));
+            XrSessionActionSetsAttachInfo attach{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+            attach.countActionSets = 1;
+            attach.actionSets = &gameSet;
+            uint32_t beforeAttach = attachCalls;
+            failMergedAttach = true;
+            Require(LayerAttachSets(session->handle, &attach) == XR_SUCCESS && attachCalls == beforeAttach + 2 &&
+                        attachedSets == std::vector<XrActionSet>({gameSet}) && instance->inputSessions == 0,
+                    "Rejected owned action sets retry only the original game attachment without claiming ownership");
+            failMergedAttach = false;
+        }
+        WritePacket(path, 12, 0);
+        LayerEndFrame(session->handle, &frame);
+        WritePacket(path, 14);
         formatSupported = false;
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && lastInfo == &frame,
                 "Unsupported overlay format forwards the original game frame");
@@ -353,8 +433,8 @@ int main()
         testDevice = nullptr;
         Require(LayerDestroyInstance(instanceHandle) == XR_SUCCESS && destroyedInstances == 2,
                 "Release instance dispatch");
-        std::cout << "Loader, D3D11 pixel upload, timeout, frame forwarding, placement, recenter, expiry and cleanup "
-                     "tests passed\n";
+        std::cout << "Loader, D3D11 pixels, frame forwarding, placement, cleanup, action generation, binding/sync "
+                     "merges, input cancellation and cursor tests passed\n";
         return 0;
     }
     catch (const std::exception &error)

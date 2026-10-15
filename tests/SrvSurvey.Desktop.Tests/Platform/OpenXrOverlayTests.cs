@@ -188,7 +188,7 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.True(runtime.IsInitialized);
         VrRuntimeResult interaction = runtime.SetInteractionEnabled(true);
         Assert.False(interaction.Succeeded);
-        Assert.Contains("Toggle VR overlay interaction shortcut requires SteamVR", interaction.Message);
+        Assert.Contains("Update the OpenXR layer and restart Elite", interaction.Message);
         Assert.Empty(runtime.PollPointerEvents());
         OpenXrOverlayFrame frame = Overlay();
         Assert.True(runtime.PublishOverlay("A", frame.Frame, frame.Calibration, frame.Alpha).Succeeded);
@@ -218,6 +218,50 @@ public sealed class OpenXrOverlayTests : IDisposable
         runtime.PublishOverlay("A", new VrOverlayFrame(0, 0, []), Overlay().Calibration, 1);
         Assert.False(runtime.CompleteFrame().Succeeded);
         Assert.Equal(0u, UInt(ReadPacket(), 0));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RuntimeMapsNativePointerToLogicalPanelAndDropsRemovedTargets(bool logicalSize)
+    {
+        using OpenXrOverlayRuntime runtime = Runtime();
+        runtime.Probe();
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        using var native = new OpenXrInputWriter(MailboxPath + ".input");
+        native.Ready(Now);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        var frame = new VrOverlayFrame(4, 2, new byte[32], logicalSize ? 2 : 0, logicalSize ? 1 : 0);
+        runtime.PublishOverlay("A", frame, Overlay().Calibration, 1);
+        byte[] packet = OpenXrFramePacket.Encode(
+            new Dictionary<string, OpenXrOverlayFrame> { ["A"] = new(frame, Overlay().Calibration, 1) },
+            0
+        );
+        ulong id = BinaryPrimitives.ReadUInt64LittleEndian(packet.AsSpan(128));
+        native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.Move, 0.25f, 0.75f, 0, 0));
+        native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.Wheel, 0.25f, 0.75f, -1, 2));
+        IReadOnlyList<VrOverlayPointerEvent> events = runtime.PollPointerEvents();
+        Assert.Equal(2, events.Count);
+        Assert.Equal(
+            new VrOverlayPointerEvent(
+                "A",
+                VrOverlayPointerEventKind.Move,
+                logicalSize ? 0.5 : 1,
+                logicalSize ? 0.75 : 1.5
+            ),
+            events[0]
+        );
+        Assert.Equal(-1, events[1].WheelX);
+        Assert.Equal(2, events[1].WheelY);
+        native.Add(new OpenXrPointerEvent(0, VrOverlayPointerEventKind.Reset, 0, 0, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        runtime.RemoveOverlay("A");
+        native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.LeftButtonDown, 0, 0, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.Equal(0u, native.View.ReadUInt32(12));
+        Assert.Empty(runtime.PollPointerEvents());
     }
 
     [Fact]

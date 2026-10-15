@@ -47,10 +47,7 @@ public static class OpenXrFramePacket
         )
         {
             Span<byte> descriptor = packet.AsSpan(descriptorOffset, DescriptorBytes);
-            BinaryPrimitives.WriteUInt64LittleEndian(
-                descriptor,
-                BinaryPrimitives.ReadUInt64LittleEndian(SHA256.HashData(Encoding.UTF8.GetBytes(name)))
-            );
+            BinaryPrimitives.WriteUInt64LittleEndian(descriptor, GetOverlayId(name));
             WriteUInt32(descriptor, 8, (uint)overlay.Frame.Width);
             WriteUInt32(descriptor, 12, (uint)overlay.Frame.Height);
             WriteUInt32(descriptor, 16, (uint)pixelOffset);
@@ -75,6 +72,9 @@ public static class OpenXrFramePacket
 
         return packet;
     }
+
+    internal static ulong GetOverlayId(string name) =>
+        BinaryPrimitives.ReadUInt64LittleEndian(SHA256.HashData(Encoding.UTF8.GetBytes(name)));
 
     private static void Validate(OpenXrOverlayFrame overlay)
     {

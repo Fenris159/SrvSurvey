@@ -1436,8 +1436,8 @@ public static class GuideCatalog
             [
                 "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
                 "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
-                "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-                "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+                "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+                "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
             ]
         );
     }
@@ -1479,14 +1479,14 @@ public static class GuideCatalog
     {
         return Section(
             "Interact with panels in the headset",
-            "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+            "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
             [
                 "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
                 "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
                 "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
             ],
             [
-                "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
+                "On VDXR, release the controller buttons before enabling interaction, then point the cursor at a panel. Trigger clicks, grip right-clicks, thumbstick press middle-clicks, and thumbstick tilt scrolls. Toggle off to return those controls to Elite. Panel placement still uses Adjust VR overlays.",
                 "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
                 "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
             ]

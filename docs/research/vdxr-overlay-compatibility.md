@@ -19,9 +19,10 @@ compatibility.
   visual used by desktop presentation into a texture. VDXR receives a flat
   rectangle with preserved image aspect ratio. There is no separate VDXR theme
   or curved-panel conversion in this implementation.
-- **The VR interaction shortcut does not enable interaction on the VDXR route.**
-  The shortcut reaches the backend, which currently returns an unsupported
-  result. Rendering support alone does not provide controller pointer events.
+- **VDXR interaction requires its own input path.** The requested extension uses
+  the existing interaction shortcut, native OpenXR controller actions, panel hit
+  testing, and IPC events delivered through the shared Avalonia input router.
+  The implementation contracts and headset acceptance checks are recorded below.
 - **The remaining end-to-end check is physical.** The source review supports the
   chosen integration, but cannot guarantee the user's installed runtime,
   translation layer, drivers, and headset behave identically to the reviewed
@@ -186,37 +187,141 @@ premultiplying the sRGB byte values in SrvSurvey
 ([alpha processing](https://github.com/mbucchia/VirtualDesktop-OpenXR/blob/6da20fe478e331c05672243fd82a9a1500cd39f5/virtualdesktop-openxr/AlphaBlendingCS.hlsl#L45-L70)).
 Check translucent text edges and dark backgrounds on the actual headset.
 
-## VR interaction shortcut and controller input
+## VR interaction shortcut: implementation design contracts
 
 The existing `ToggleVrOverlayInteraction` binding dispatches through
 [DesktopRuntime](../../src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs)
-to `VrOverlayCoordinator.ToggleInteraction()`. That calls the selected
-runtime's `SetInteractionEnabled()`.
-[OpenXrOverlayRuntime](../../src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs)
-currently rejects that request and its `PollPointerEvents()` returns an empty
-list. Therefore the configured keyboard, HOTAS, or gamepad shortcut can still be
-detected, but it cannot turn VDXR panels into clickable controller surfaces.
-The separate desktop-overlay interaction shortcut remains a desktop operation.
-Neither shortcut automatically creates a VDXR pointer.
-
-This is a missing SrvSurvey input implementation, not a lack of controllers in
-VDXR. An OpenXR composition quad has no built-in hit-test, cursor, click, scroll,
-or Avalonia event delivery. A complete implementation would need controller aim
-poses and button actions, ray-to-panel hit testing, pixel/logical coordinate
-mapping, a pointer display, and return events through IPC to
+to `VrOverlayCoordinator.ToggleInteraction()` and the selected runtime's
+`SetInteractionEnabled()`. The VDXR interaction work extends that path with native
+controller actions, hit testing and cursor feedback, and a bounded IPC event
+stream read by `PollPointerEvents()` and dispatched through
 [VrOverlayInputRouter](../../src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayInputRouter.cs).
+This section records the required behavior; the physical-headset acceptance
+items below remain necessary after implementation. A composition quad itself
+supplies no cursor or click events. The separate desktop interaction shortcut
+continues to control desktop windows.
 
-OpenXR input is owned by the application's session. Action sets attach only once;
-action bindings cannot be added after attachment; resuggesting bindings replaces
-the previous bindings for that interaction profile. An API layer implementing
-interaction must merge its actions into the game's attachment and synchronization
-flow before those operations occur, respect focus, and manage action priority
-without unintentionally consuming Elite input. Simply calling attach again when
-the user presses the shortcut is invalid
-([OpenXR action rules](https://github.com/KhronosGroup/OpenXR-Docs/blob/5a82d45bc9e0adbaa24b6c4a3e5b6d50e08c887d/specification/sources/chapters/input.adoc)).
-OpenComposite already attaches and synchronizes its own action sets, so that
-coexistence is a concrete requirement
-([OpenComposite input](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/OpenOVR/Reimpl/BaseInput.cpp)).
+### Coexist with OpenComposite's actions
+
+- **Attach once per session.** Append SrvSurvey's prepared action set to the
+  application's first `xrAttachSessionActionSets` call and preserve every game
+  set. Do not attach a second set when the user presses the shortcut. An attached
+  set becomes immutable; the reviewed normative text provides no exception that
+  permits changing its actions after destroying a session. Create a fresh owned
+  input generation when new binding suggestions follow session replacement;
+  preserve the generation for graphics-only restarts that reuse existing sets.
+  Never re-suggest previously attached owned actions
+  ([attachment contract](https://registry.khronos.org/OpenXR/specs/1.0/man/html/xrAttachSessionActionSets.html),
+  [action creation restriction](https://registry.khronos.org/OpenXR/specs/1.0/man/html/xrCreateAction.html)).
+- **Merge profile suggestions.** Re-suggesting a profile replaces its earlier
+  bindings. Intercept each legal Touch suggestion and append the layer's valid
+  bindings to that request, preserving the application's entries. If the game
+  never suggests Touch, prepare the owned Touch bindings before attachment.
+  Never turn an otherwise valid game request into an error by adding immutable
+  or destroyed owned actions. A late or incompatible setup should make overlay
+  input unavailable while preserving the game request
+  ([suggestion contract](https://registry.khronos.org/OpenXR/specs/1.0/man/html/xrSuggestInteractionProfileBindings.html)).
+- **Join the existing synchronization.** Append the enabled owned action set to
+  intercepted `xrSyncActions` calls, preserving the application's active sets,
+  subaction paths and extension chain. An overlay-only synchronization would
+  deactivate the game sets omitted from that call. Do not add frame wait/begin/end
+  calls for input. Consume input only after an actual `XR_SUCCESS` and a focused
+  session: `XR_SESSION_NOT_FOCUSED` is a positive result, yet all inputs must be
+  inactive. Repeated reads between syncs describe the same input snapshot
+  ([synchronization contract](https://registry.khronos.org/OpenXR/specs/1.0/man/html/xrSyncActions.html)).
+
+OpenComposite's normal `BindInputsForSession()` creates fresh action spaces,
+collects the game sets plus its legacy set, then attaches them. Legacy
+`InternalUpdate()` synchronizes after each submitted frame through
+`BaseSystem::_OnPostFrame()`; modern `UpdateActionState()` synchronizes game sets
+plus legacy inputs. Therefore reading actions during the next end-frame uses the
+application's most recent synchronization; the first frame may have none
+([OpenComposite input](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/OpenOVR/Reimpl/BaseInput.cpp),
+[post-frame update](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/OpenOVR/Reimpl/BaseSystem.cpp#L529-L550)).
+
+There is also an early discovery path: `QueryForInteractionProfile()` creates an
+internal information set, suggests profiles, and attaches that set alone. When
+real inputs load, `MaybeRestartForInputs()` invokes session replacement;
+`PrepareForSessionShutdown()` destroys the information set, then the session is
+destroyed and recreated. The input loader temporarily suppresses automatic
+attachment, creates and suggests the real actions, and finally attaches them.
+The fake-runtime regression covers the information-only → replacement session →
+real inputs flow and a graphics restart that reuses the original sets
+([discovery and shutdown flow](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/DrvOpenXR/XrBackend.cpp),
+[session replacement](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/DrvOpenXR/DrvOpenXR.cpp#L316-L380)).
+
+The reviewed OpenComposite game sets use their default priority zero, as does its
+legacy set. Higher-priority active actions suppress colliding lower-priority
+sources; equal priorities allow both consumers. Collision is by input identifier,
+so a thumbstick vector collides with the game's individual thumbstick axes.
+Reserve pointer buttons/scroll only while interaction is enabled and restore the
+original active sets when disabled. Tracking poses can use a separate equal
+priority set if the implementation must preserve the game's aim poses during
+interaction
+([action-set priority](https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrActionSetCreateInfo.html)).
+
+### Quest controller bindings
+
+Use `/interaction_profiles/oculus/touch_controller` with both
+`/user/hand/left` and `/user/hand/right` subaction paths:
+
+| Purpose | Relative binding path | OpenXR action type |
+| --- | --- | --- |
+| Pointer ray | `/input/aim/pose` | `POSE_INPUT` |
+| Primary click | `/input/trigger/value` | `BOOLEAN_INPUT` |
+| Secondary click | `/input/squeeze/value` | `BOOLEAN_INPUT` |
+| Middle click | `/input/thumbstick/click` | `BOOLEAN_INPUT` |
+| Scroll | `/input/thumbstick` | `VECTOR2F_INPUT` |
+
+These paths exist in the core Touch profile and in VDXR's Touch mapping. A scalar
+source bound to a boolean action is thresholded by the runtime; VDXR's reviewed
+implementation uses greater than 0.5, while the core specification leaves the
+threshold and hysteresis to the runtime. A vector binding uses the thumbstick
+parent path, whose x/y components supply the vector
+([Touch profile](https://github.com/KhronosGroup/OpenXR-Docs/blob/5a82d45bc9e0adbaa24b6c4a3e5b6d50e08c887d/specification/sources/chapters/semantic_paths.adoc#L1137-L1176),
+[input conversions](https://github.com/KhronosGroup/OpenXR-Docs/blob/5a82d45bc9e0adbaa24b6c4a3e5b6d50e08c887d/specification/sources/chapters/input.adoc#L509-L545),
+[VDXR path mappings](https://github.com/mbucchia/VirtualDesktop-OpenXR/blob/6da20fe478e331c05672243fd82a9a1500cd39f5/virtualdesktop-openxr/mappings.cpp),
+[VDXR boolean conversion](https://github.com/mbucchia/VirtualDesktop-OpenXR/blob/6da20fe478e331c05672243fd82a9a1500cd39f5/virtualdesktop-openxr/action.cpp#L620-L650)).
+
+### Pointer state and failure handling
+
+These are implementation requirements inferred from the shared single-pointer
+Avalonia router and the composition path:
+
+- Locate each active aim pose in the same `LOCAL` space and display time as the
+  quad. Require valid position and orientation, then intersect the controller's
+  forward ray with the transformed flat panel. Preserve aspect ratio and map
+  hits to the panel's logical dimensions; image pixels have a top-left origin.
+- Resolve overlapping panels consistently with the actual composition order,
+  which paints later layers over earlier ones. Keep one stable pointer owner
+  during a press/drag so the other hand cannot steal its capture.
+- Enable without generating clicks from already held buttons. Require a neutral
+  release before arming presses after enable, focus restoration or input recovery.
+  Emit releases/cancellation and clear capture on disable, focus/pose loss, hidden
+  panels, stale IPC, session replacement or application shutdown.
+- Keep press, release, motion and scroll events ordered and bounded. Overflow or
+  a disconnected consumer must reset interaction rather than leave a captured
+  mouse button. Draw cursor feedback from native input at frame cadence, without
+  waiting for the slower panel recapture timer.
+- Forward the application's original input calls/results if owned input setup
+  fails. Rendering and the original game frame loop must remain usable.
+
+The implemented bridge uses a separate 4 KiB input mapping with a publisher
+nonce, control/native heartbeats, a seqlock, and a 64-record event ring. Torn,
+stale, malformed, or overflowed event streams cancel capture and discard events.
+Portable native tests cover rotated ray geometry, composition order, button
+edges, scroll limits, off-panel capture, tracking/panel loss, and neutral rearming.
+The software-D3D11 runtime tests cover Touch binding merges, original extension
+chains and game subaction paths, discovery-to-real input generations, inactive
+mode, `XR_SESSION_NOT_FOCUSED`, partial action-space failure, cursor pixel upload,
+and native click/reset delivery. Managed tests cover the ring protocol, logical
+coordinates, both shortcut directions, and cancellation of an Avalonia button
+without firing a click. The router explicitly captures the hit control on press,
+matching the capture step normally supplied by Avalonia's mouse device; releasing
+capture then raises the control's capture-loss handling and clears pressed state
+([Avalonia 12.1.3 mouse dispatch](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Base/Input/MouseDevice.cs#L128-L158),
+[capture-loss notifications](https://github.com/AvaloniaUI/Avalonia/blob/12.1.3/src/Avalonia.Base/Input/Pointer.cs#L118-L124)).
+These checks do not replace the headset acceptance list.
 
 ## Native rendering audit
 
@@ -287,9 +392,11 @@ Record this acceptance evidence before describing the combination as verified:
    Elite restart, and SrvSurvey restart while the game remains running.
 5. Check representative multi-panel load and coexistence with the user's other
    API layers. Compare frame time and dropped frames with overlays off and on.
-6. Verify the VR interaction shortcut reports the present limitation without
-   enabling a misleading interactive state; controller clicking is outside the
-   current route's acceptance criteria.
+6. Verify the existing VR interaction shortcut enables and disables a visible
+   controller pointer; test primary/secondary click, scroll, drag and release on
+   real panel controls. Check held buttons on enable, hand changes, focus loss,
+   tracking loss, hidden panels and session replacement. Confirm the game's own
+   controller input resumes when interaction is disabled.
 7. Unregister or set `SRVSURVEY_OPENXR_DISABLE`, restart Elite, and confirm the
    user's prior game behavior returns. Moving an install folder requires
    registering its new manifest path.

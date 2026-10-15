@@ -9249,8 +9249,8 @@
       "translation": "Aktivieren Sie „Flugwarnungen anzeigen“ und wählen Sie in den Explorations-Overlay-Einstellungen einen Schwerkraftschwellenwert aus. Die Warnung erscheint nur, wenn SrvSurvey einen landbaren Körper in der Nähe in einem unterstützten Schiffs-, Kampfflugzeug- oder SRV-Flugkontext identifizieren kann."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "Aktivieren Sie SrvSurvey VR-Overlays und warten Sie auf eine verbundene VDXR Sitzung. Verwenden Sie die vorhandenen Kalibrierungssteuerungen, um Panels zu platzieren. Controller-Interaktion ist auf dieser Route nicht verfügbar."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "Aktivieren Sie SrvSurvey VR-Overlays und warten Sie auf eine verbundene VDXR Sitzung. Platzieren Sie die Panels mit den Kalibrierungskontrollen. Verwenden Sie „VR-Overlay-Interaktion umschalten“, um mit einem Quest-Controller zu zeigen und zu klicken."
     },
     {
       "source": "Enable Surface mining",
@@ -9297,8 +9297,8 @@
       "translation": "Aktivieren Sie unten die globale Tastatureingabe und verwenden Sie dann diese Verknüpfung, um vorhandene Live-Overlays anklickbar und ziehbar zu machen. Verwenden Sie es erneut, um Positionen zu speichern und den Click-through-Modus wiederherzustellen. Der vollständige Editor wird nie geöffnet."
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "Aktivieren Sie unten die globale Tastatureingabe und verwenden Sie dann diese Verknüpfung, um SteamVR Overlays zwischen Click-through und Controller-Zeiger-Interaktion umzuschalten. Verwenden Sie es erneut, um den Click-through-Modus wiederherzustellen."
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Aktivieren Sie unten die globale Tastatureingabe und verwenden Sie dann diese Verknüpfung, um SteamVR oder VDXR Overlays zwischen Click-through und Controller-Zeiger-Interaktion umzuschalten. Zeigen Sie auf VDXR auf ein Panel: Klicken Sie auslösen, klicken Sie mit der rechten Maustaste und scrollen Sie mit dem Daumen. Verwenden Sie die Verknüpfung erneut, um den Klickmodus wiederherzustellen."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -18345,8 +18345,8 @@
       "translation": "Öffnen Sie diese untergeordnete Box"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite ist keine kompatible Problemumgehung für eigenständige Overlays OpenVR. Möglicherweise ist es bereits Teil Ihres Elite-zu-VDXR-Setups. Die Ebene SrvSurvey OpenXR fügt innerhalb dieser Spielsitzung passive Panels hinzu."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite ist keine kompatible Problemumgehung für eigenständige Overlays OpenVR. Möglicherweise ist es bereits Teil Ihres Elite-zu-VDXR-Setups. Die Ebene SrvSurvey OpenXR fügt Panels und Quest-Controller-Eingaben innerhalb dieser Spielsitzung hinzu."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -26777,8 +26777,8 @@
       "translation": "SteamVR ist verfügbar, es wurde jedoch kein bereites Headset erkannt."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR Routen erfordern ein fertiges SteamVR Headset. Die Route VDXR wartet auf eine Live-Elite-Sitzung VDXR und unterstützt keine Controller-Zeiger-Interaktion."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "SteamVR Routen erfordern ein fertiges SteamVR Headset. Die Route VDXR wartet auf eine Live-Elite-Sitzung VDXR. Installieren Sie die passende Ebene SrvSurvey OpenXR für die Quest-Controller-Zeiger-Interaktion."
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -28235,14 +28235,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "Die Overlay-Ebene VDXR erfordert Windows x64 und Direct3D 11."
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "Die Route VDXR zeigt passive Panels an und unterstützt diese Controller-Zeiger-Verknüpfung nicht. Die Verknüpfungen zur Panelkalibrierung und zum Zurücksetzen der VR-Ausrichtung bleiben weiterhin verfügbar."
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "Die Route VDXR zeigt passive Panels an. Für die Verknüpfung „VR-Overlay-Interaktion umschalten“ ist SteamVR erforderlich. VDXR Controller-Eingang ist nicht implementiert."
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -31729,6 +31721,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "VDXR Controller-Interaktion ist aktiviert. Zeigen Sie auf ein Panel und klicken Sie mit dem Auslöser."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: Registrieren Sie die Ebene OpenXR aus dem Windows x64-Paket und starten Sie Elite dann neu. Direct3D 11 ist erforderlich."
     },
@@ -31825,8 +31821,8 @@
       "translation": "VR-Overlays sind deaktiviert"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "VR-Overlays bleiben passiv, bis Sie die Controller-Zeiger-Interaktion explizit aktivieren SteamVR."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "VR-Overlays bleiben durchklickbar, bis Sie die Controller-Zeiger-Interaktion auf der ausgewählten Route SteamVR oder VDXR explizit aktivieren."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -32665,8 +32661,8 @@
       "translation": "Windows"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Windows Direct3D 11-Route ohne SteamVR. Zeigt passive Panels an; erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Die Headset-Validierung steht noch aus."
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Windows Direct3D 11-Route ohne SteamVR. Unterstützt Panels und Quest-Controller-Zeiger-Interaktion; erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Die Headset-Validierung steht noch aus."
     },
     {
       "source": "Windows Mixed Reality",
@@ -46691,8 +46687,8 @@
       "translation": "Habilite Mostrar advertencias de vuelo y elija un umbral de gravedad en la configuración de superposición de exploración. La advertencia aparece solo cuando SrvSurvey puede identificar un cuerpo cercano que se puede aterrizar en un contexto de vuelo de barco, caza o SRV apoyado."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual y espere una sesión conectada VDXR. Utilice los controles de calibración existentes para colocar paneles; La interacción del controlador no está disponible en esta ruta."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual y espere una sesión conectada VDXR. Coloque los paneles con los controles de calibración. Utilice la interacción de superposición Toggle VR para apuntar y hacer clic con un controlador Quest."
     },
     {
       "source": "Enable Surface mining",
@@ -46739,8 +46735,8 @@
       "translation": "Habilite la entrada de teclado global a continuación, luego use este atajo para hacer que se pueda hacer clic y arrastrar las superposiciones en vivo existentes. Úselo nuevamente para guardar posiciones y restaurar el modo de clic; nunca abre el editor completo."
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "Habilite la entrada de teclado global a continuación, luego use este atajo para cambiar SteamVR superposiciones entre clic y interacción controlador-puntero. Úselo nuevamente para restaurar el modo de clic."
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Habilite la entrada de teclado global a continuación, luego use este atajo para cambiar SteamVR o VDXR superposiciones entre clic y interacción controlador-puntero. En VDXR, apunte a un panel: clics del disparador, clics con el botón derecho y desplazamientos con el joystick. Utilice el acceso directo nuevamente para restaurar el modo de clic."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -55787,8 +55783,8 @@
       "translation": "Abrir este cuadro infantil"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite no es una solución alternativa compatible para superposiciones independientes OpenVR. Es posible que ya sea parte de su configuración Elite-to-VDXR; la capa SrvSurvey OpenXR agrega paneles pasivos dentro de esa sesión de juego."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite no es una solución alternativa compatible para superposiciones independientes OpenVR. Es posible que ya sea parte de su configuración Elite-to-VDXR; la capa SrvSurvey OpenXR agrega paneles y entrada del controlador Quest dentro de esa sesión de juego."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -64219,8 +64215,8 @@
       "translation": "SteamVR está disponible, pero no se detectó ningún auricular listo."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR las rutas requieren un auricular listo SteamVR. La ruta VDXR espera una sesión Elite en vivo VDXR y no admite la interacción controlador-puntero."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "SteamVR las rutas requieren un auricular listo SteamVR. La ruta VDXR espera una sesión Elite en vivo VDXR. Instale la capa correspondiente SrvSurvey OpenXR para la interacción entre el controlador y el puntero de Quest."
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -65677,14 +65673,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "La capa de superposición VDXR requiere Windows x64 y Direct3D 11."
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "La ruta VDXR muestra paneles pasivos y no admite este acceso directo al puntero del controlador. Los atajos de calibración del panel y Restablecer orientación VR siguen estando disponibles."
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "La ruta VDXR muestra paneles pasivos. El acceso directo de interacción de superposición de VR requiere SteamVR; VDXR la entrada del controlador no está implementada."
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -69171,6 +69159,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "VDXR la interacción del controlador está habilitada. Apunte a un panel y use el disparador para hacer clic."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: registre la capa OpenXR del paquete de Windows x64, luego reinicie Elite. Se requiere Direct3D 11."
     },
@@ -69267,8 +69259,8 @@
       "translation": "Las superposiciones de realidad virtual están desactivadas"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "Las superposiciones de realidad virtual permanecen pasivas hasta que habilites explícitamente SteamVR la interacción controlador-puntero."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "Las superposiciones de realidad virtual permanecen activas hasta que habilites explícitamente la interacción entre el controlador y el puntero en la ruta seleccionada SteamVR o VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -70107,8 +70099,8 @@
       "translation": "ventanas"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Ruta Windows Direct3D 11 sin SteamVR. Muestra paneles pasivos; requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La validación de los auriculares está pendiente."
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Ruta Windows Direct3D 11 sin SteamVR. Admite paneles e interacción controlador-puntero Quest; requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La validación de los auriculares está pendiente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -84133,8 +84125,8 @@
       "translation": "Activez Afficher les avertissements de vol et choisissez un seuil de gravité dans les paramètres de superposition d'exploration. L'avertissement apparaît uniquement lorsque SrvSurvey peut identifier un corps atterrissable à proximité dans un contexte de vol de navire, de chasseur ou SRV pris en charge."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "Activez les superpositions VR SrvSurvey et attendez une session connectée VDXR. Utiliser les contrôles d'étalonnage existants pour placer les panneaux ; l’interaction du contrôleur n’est pas disponible sur cet itinéraire."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "Activez les superpositions VR SrvSurvey et attendez une session connectée VDXR. Placez les panneaux avec les contrôles d’étalonnage. Utilisez l’interaction de superposition Toggle VR pour pointer et cliquer avec un contrôleur Quest."
     },
     {
       "source": "Enable Surface mining",
@@ -84181,8 +84173,8 @@
       "translation": "Activez la saisie globale au clavier ci-dessous, puis utilisez ce raccourci pour rendre les superpositions en direct existantes cliquables et déplaçables. Utilisez-le à nouveau pour enregistrer les positions et restaurer le mode clic ; il n'ouvre jamais l'éditeur complet."
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "Activez la saisie globale au clavier ci-dessous, puis utilisez ce raccourci pour basculer les superpositions SteamVR entre le clic et l'interaction contrôleur-pointeur. Utilisez-le à nouveau pour restaurer le mode clic."
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Activez la saisie globale au clavier ci-dessous, puis utilisez ce raccourci pour basculer les superpositions SteamVR ou VDXR entre le clic et l'interaction contrôleur-pointeur. Sur VDXR, pointez sur un panneau : clics de déclenchement, clics droits de la poignée et défilement de la manette. Utilisez à nouveau le raccourci pour restaurer le mode clic."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -93229,8 +93221,8 @@
       "translation": "Ouvrez cette boîte enfant"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite n'est pas une solution de contournement compatible pour les superpositions autonomes OpenVR. Il fait peut-être déjà partie de votre configuration Elite-to-VDXR ; la couche SrvSurvey OpenXR ajoute des panneaux passifs au sein de cette session de jeu."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite n'est pas une solution de contournement compatible pour les superpositions autonomes OpenVR. Il fait peut-être déjà partie de votre configuration Elite-to-VDXR ; la couche SrvSurvey OpenXR ajoute des panneaux et une entrée du contrôleur Quest au sein de cette session de jeu."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -101661,8 +101653,8 @@
       "translation": "SteamVR est disponible, mais aucun casque prêt n'a été détecté."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "Les itinéraires SteamVR nécessitent un casque SteamVR. L'itinéraire VDXR attend une session Elite en direct VDXR et ne prend pas en charge l'interaction contrôleur-pointeur."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "Les itinéraires SteamVR nécessitent un casque SteamVR. L'itinéraire VDXR attend une session Elite VDXR en direct. Installez la couche correspondante SrvSurvey OpenXR pour l'interaction contrôleur-pointeur Quest."
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -103119,14 +103111,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "La couche de superposition VDXR nécessite Windows x64 et Direct3D 11."
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "L'itinéraire VDXR affiche des panneaux passifs et ne prend pas en charge ce raccourci contrôleur-pointeur. Ses raccourcis d’étalonnage du panneau et de réinitialisation de l’orientation VR restent disponibles."
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "L'itinéraire VDXR affiche des panneaux passifs. Le raccourci d'interaction Toggle VR overlay nécessite SteamVR ; L’entrée du contrôleur VDXR n’est pas implémentée."
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -106613,6 +106597,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "L'interaction du contrôleur VDXR est activée. Pointez sur un panneau et utilisez la gâchette pour cliquer."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR : enregistrez la couche OpenXR du package Windows x64, puis redémarrez Elite. Direct3D 11 est requis."
     },
@@ -106709,8 +106697,8 @@
       "translation": "Les superpositions VR sont désactivées"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "Les superpositions VR restent passives jusqu'à ce que vous activiez explicitement SteamVR l'interaction contrôleur-pointeur."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "Les superpositions VR restent cliquables jusqu'à ce que vous activiez explicitement l'interaction contrôleur-pointeur sur l'itinéraire sélectionné SteamVR ou VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -107549,8 +107537,8 @@
       "translation": "Fenêtres"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Route Windows Direct3D 11 sans SteamVR. Affiche les panneaux passifs ; nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. La validation du casque est en attente."
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Route Windows Direct3D 11 sans SteamVR. Prend en charge les panneaux et l'interaction contrôleur-pointeur Quest ; nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. La validation du casque est en attente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -121575,8 +121563,8 @@
       "translation": "Ative Mostrar avisos de voo e escolha um limite de gravidade nas configurações de sobreposição de exploração. O aviso aparece apenas quando SrvSurvey consegue identificar um corpo próximo que pode ser pousado em um contexto de navio, caça ou voo SRV apoiado."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "Ative as sobreposições de VR SrvSurvey e aguarde uma sessão conectada VDXR. Use os controles de calibração existentes para colocar painéis; a interação do controlador não está disponível nesta rota."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "Ative as sobreposições de VR SrvSurvey e aguarde uma sessão conectada VDXR. Coloque painéis com os controles de calibração. Use a interação Toggle VR overlay para apontar e clicar com um controlador Quest."
     },
     {
       "source": "Enable Surface mining",
@@ -121623,8 +121611,8 @@
       "translation": "Ative a entrada global do teclado abaixo e use este atalho para tornar as sobreposições ao vivo existentes clicáveis e arrastáveis. Use-o novamente para salvar posições e restaurar o modo click-through; nunca abre o editor completo."
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "Ative a entrada global do teclado abaixo e use este atalho para alternar as sobreposições SteamVR entre clique e interação do ponteiro do controlador. Use-o novamente para restaurar o modo click-through."
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Ative a entrada global do teclado abaixo e use este atalho para alternar as sobreposições SteamVR ou VDXR entre clique e interação do ponteiro do controlador. Ativado VDXR, aponte para um painel: cliques no gatilho, cliques com o botão direito do mouse e rolagens do polegar. Use o atalho novamente para restaurar o modo click-through."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -130671,8 +130659,8 @@
       "translation": "Abra este boxel infantil"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite não é uma solução alternativa compatível para sobreposições independentes OpenVR. Pode já fazer parte da sua configuração Elite-to-VDXR; a camada SrvSurvey OpenXR adiciona painéis passivos nessa sessão de jogo."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite não é uma solução alternativa compatível para sobreposições independentes OpenVR. Pode já fazer parte da sua configuração Elite-to-VDXR; a camada SrvSurvey OpenXR adiciona painéis e entrada do controlador Quest nessa sessão de jogo."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -139103,8 +139091,8 @@
       "translation": "O SteamVR está disponível, mas nenhum headset pronto foi detectado."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR exigem um fone de ouvido pronto SteamVR. A rota VDXR aguarda uma sessão Elite VDXR ativa e não oferece suporte à interação controlador-ponteiro."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "SteamVR exigem um fone de ouvido pronto SteamVR. A rota VDXR aguarda uma sessão Elite VDXR ao vivo. Instale a camada correspondente SrvSurvey OpenXR para interação controlador-ponteiro Quest."
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -140561,14 +140549,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "A camada de sobreposição VDXR requer Windows x64 e Direct3D 11."
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "A rota VDXR exibe painéis passivos e não suporta este atalho de ponteiro de controlador. Os atalhos de calibração do painel e redefinição de orientação VR permanecem disponíveis."
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "A rota VDXR exibe painéis passivos. O atalho de interação Alternar sobreposição de VR requer SteamVR; A entrada do controlador VDXR não está implementada."
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -144055,6 +144035,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "VDXR a interação do controlador está habilitada. Aponte para um painel e use o gatilho para clicar."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: registre a camada OpenXR do pacote Windows x64 e reinicie o Elite. Direct3D 11 é necessário."
     },
@@ -144151,8 +144135,8 @@
       "translation": "As sobreposições de VR estão desativadas"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "As sobreposições de VR permanecem passivas até que você habilite explicitamente SteamVR a interação controlador-ponteiro."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "As sobreposições de VR permanecem clicadas até que você habilite explicitamente a interação controlador-ponteiro na rota selecionada SteamVR ou VDXR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -144991,8 +144975,8 @@
       "translation": "Windows"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Rota do Windows Direct3D 11 sem SteamVR. Exibe painéis passivos; requer a camada SrvSurvey OpenXR e uma configuração Elite que já é executada em VDXR. A validação do fone de ouvido está pendente."
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Rota do Windows Direct3D 11 sem SteamVR. Suporta painéis e interação controlador-ponteiro Quest; requer a camada SrvSurvey OpenXR e uma configuração Elite que já é executada em VDXR. A validação do fone de ouvido está pendente."
     },
     {
       "source": "Windows Mixed Reality",
@@ -159017,8 +159001,8 @@
       "translation": "Включите «Показывать предупреждения о полетах» и выберите порог гравитации в настройках наложения «Исследование». Предупреждение появляется только тогда, когда SrvSurvey может идентифицировать близлежащий приземляемый объект в контексте полета поддерживаемого корабля, истребителя или SRV."
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "Включите SrvSurvey наложения VR и дождитесь подключения VDXR сеанса. Используйте существующие элементы управления калибровкой для размещения панелей; Взаимодействие с контроллером на этом маршруте недоступно."
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "Включите SrvSurvey наложения VR и дождитесь подключения VDXR сеанса. Разместите панели с элементами управления калибровкой. Используйте взаимодействие наложения Toggle VR, чтобы указать и щелкнуть контроллером Quest."
     },
     {
       "source": "Enable Surface mining",
@@ -159065,8 +159049,8 @@
       "translation": "Включите глобальный ввод с клавиатуры ниже, а затем используйте этот ярлык, чтобы сделать существующие живые наложения кликабельными и перетаскиваемыми. Используйте его еще раз, чтобы сохранить позиции и восстановить режим кликабельности; он никогда не открывает полный редактор."
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "Включите глобальный ввод с клавиатуры ниже, а затем используйте этот ярлык для переключения SteamVR наложений между взаимодействием по клику и указателем контроллера. Используйте его еще раз, чтобы восстановить режим перехода по клику."
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Включите глобальный ввод с клавиатуры ниже, а затем используйте этот ярлык для переключения SteamVR или VDXR наложений между кликом и взаимодействием указателя контроллера. На VDXR наведите указатель мыши на панель: щелчки триггера, щелчок правой кнопкой мыши и прокрутка с помощью джойстика. Используйте ярлык еще раз, чтобы восстановить режим перехода по клику."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -168113,8 +168097,8 @@
       "translation": "Открыть этот дочерний ящик"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite не является совместимым решением для автономных наложений OpenVR. Возможно, он уже является частью вашей установки Elite-to-VDXR; слой SrvSurvey OpenXR добавляет пассивные панели в этот игровой сеанс."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite не является совместимым решением для автономных наложений OpenVR. Возможно, он уже является частью вашей установки Elite-to-VDXR; слой SrvSurvey OpenXR добавляет панели и входные данные контроллера Quest в рамках этого игрового сеанса."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -176545,8 +176529,8 @@
       "translation": "SteamVR доступен, но готовая гарнитура не обнаружена."
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "Для маршрутов SteamVR требуется готовая гарнитура SteamVR. Маршрут VDXR ожидает активного сеанса Elite VDXR и не поддерживает взаимодействие контроллера и указателя."
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "Для маршрутов SteamVR требуется готовая гарнитура SteamVR. Маршрут VDXR ожидает живого сеанса Elite VDXR. Установите соответствующий слой SrvSurvey OpenXR для взаимодействия контроллера и указателя Quest."
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -178003,14 +177987,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "Для слоя наложения VDXR требуется Windows x64 и Direct3D 11."
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "Маршрут VDXR отображает пассивные панели и не поддерживает этот ярлык указателя контроллера. Ярлыки калибровки панели и сброса ориентации VR остаются доступными."
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "Маршрут VDXR отображает пассивные панели. Для использования ярлыка взаимодействия с наложением Toggle VR требуется SteamVR; VDXR вход контроллера не реализован."
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -181497,6 +181473,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "VDXR взаимодействие с контроллером включено. Наведите курсор на панель и нажмите триггер."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: зарегистрируйте слой OpenXR из пакета Windows x64, затем перезапустите Elite. Требуется Direct3D 11."
     },
@@ -181593,8 +181573,8 @@
       "translation": "Оверлеи VR отключены"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "Наложения виртуальной реальности остаются пассивными до тех пор, пока вы явно не включите SteamVR взаимодействие контроллера и указателя."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "Наложения виртуальной реальности остаются интерактивными до тех пор, пока вы явно не включите взаимодействие контроллера и указателя на выбранном SteamVR или VDXR маршруте."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -182433,8 +182413,8 @@
       "translation": "Окна"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Маршрут Windows Direct3D 11 без SteamVR. Отображает пассивные панели; требуется уровень SrvSurvey OpenXR и установка Elite, которая уже работает через VDXR. Ожидается проверка гарнитуры."
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Маршрут Windows Direct3D 11 без SteamVR. Поддерживает панели и взаимодействие контроллера и указателя Quest; требуется уровень SrvSurvey OpenXR и установка Elite, которая уже работает через VDXR. Ожидается проверка гарнитуры."
     },
     {
       "source": "Windows Mixed Reality",
@@ -196459,8 +196439,8 @@
       "translation": "启用显示飞行警告并在探索叠加设置中选择重力阈值。仅当 SrvSurvey 可以在受支持的船舶、战斗机或 SRV 飞行环境中识别附近的可着陆物体时，才会出现该警告。"
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "启用 SrvSurvey VR 覆盖并等待连接的 VDXR 会话。使用现有的校准控件来放置面板；控制器交互在此路线上不可用。"
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "启用 SrvSurvey VR 覆盖并等待连接的 VDXR 会话。将面板与校准控件放置在一起。使用切换 VR 叠加交互来通过 Quest 控制器进行指向和单击。"
     },
     {
       "source": "Enable Surface mining",
@@ -196507,8 +196487,8 @@
       "translation": "启用下面的全局键盘输入，然后使用此快捷方式使现有的实时覆盖可单击和可拖动。再次使用它可以保存位置并恢复点击模式；它永远不会打开完整的编辑器。"
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "启用下面的全局键盘输入，然后使用此快捷方式在点击和控制器指针交互之间切换 SteamVR 覆盖。再次使用它可以恢复点击模式。"
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "启用下面的全局键盘输入，然后使用此快捷方式在点击和控制器指针交互之间切换 SteamVR 或 VDXR 覆盖。在 VDXR 上，指向面板：触发单击、握柄右键单击和摇杆滚动。再次使用该快捷方式可恢复点击模式。"
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -205555,8 +205535,8 @@
       "translation": "打开这个子盒子"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "OpenComposite 不是独立 OpenVR 覆盖的兼容解决方法。它可能已经是您的 Elite-to-VDXR 设置的一部分； SrvSurvey OpenXR 层在该游戏会话中添加被动面板。"
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "OpenComposite 不是独立 OpenVR 覆盖的兼容解决方法。它可能已经是您的 Elite-to-VDXR 设置的一部分； SrvSurvey OpenXR 层在该游戏会话中添加面板和任务控制器输入。"
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -213987,8 +213967,8 @@
       "translation": "SteamVR 可用，但未检测到就绪的耳机。"
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "SteamVR 路线需要准备好的 SteamVR 耳机。 VDXR 路由等待实时 Elite VDXR 会话，并且不支持控制器指针交互。"
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "SteamVR 路线需要准备好的 SteamVR 耳机。 VDXR 路线等待实时精英 VDXR 会话。安装匹配的 SrvSurvey OpenXR 层以进行 Quest 控制器指针交互。"
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -215445,14 +215425,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "VDXR 覆盖层需要 Windows x64 和 Direct3D 11。"
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "VDXR 路线显示被动面板，并且不支持此控制器指针快捷方式。其面板校准和重置 VR 方向快捷方式仍然可用。"
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "VDXR路线展示无源面板。切换VR叠加交互快捷方式需要SteamVR； VDXR 控制器输入未实现。"
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -218939,6 +218911,10 @@
       "translation": "VDXR / OpenXR"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "VDXR 控制器交互已启用。指向面板并使用触发器单击。"
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR：从 Windows x64 包注册 OpenXR 层，然后重新启动 Elite。需要 Direct3D 11。"
     },
@@ -219035,8 +219011,8 @@
       "translation": "VR 叠加已关闭"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "VR 叠加层将保持被动状态，直到您明确启用 SteamVR 控制器指针交互。"
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "VR 叠加层将保持点击状态，直到您在选定的 SteamVR 或 VDXR 路线上明确启用控制器指针交互。"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -219875,8 +219851,8 @@
       "translation": "视窗"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Windows Direct3D 11 路线没有 SteamVR。显示无源面板；需要 SrvSurvey OpenXR 层和已运行 VDXR 的 Elite 设置。耳机验证正在等待中。"
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "Windows Direct3D 11 路线没有 SteamVR。支持面板和 Quest 控制器指针交互；需要 SrvSurvey OpenXR 层和已运行 VDXR 的 Elite 设置。耳机验证正在等待中。"
     },
     {
       "source": "Windows Mixed Reality",
@@ -233901,8 +233877,8 @@
       "translation": "* ENABLE SHOW FLIGHT WARNINGS AND CHOOSE A GRAVITY THRESHOLD IN EXPLORATION OVERLAY SETTINGS. THE WARNING APPEARS ONLY WHEN SRVSURVEY CAN IDENTIFY A NEARBY LANDABLE BODY IN A SUPPORTED SHIP, FIGHTER, OR SRV FLIGHT CONTEXT. >>>!"
     },
     {
-      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
-      "translation": "* ENABLE SRVSURVEY VR OVERLAYS AND WAIT FOR A CONNECTED VDXR SESSION. USE THE EXISTING CALIBRATION CONTROLS TO PLACE PANELS; CONTROLLER INTERACTION IS NOT AVAILABLE ON THIS ROUTE. >>>!"
+      "source": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+      "translation": "* ENABLE SRVSURVEY VR OVERLAYS AND WAIT FOR A CONNECTED VDXR SESSION. PLACE PANELS WITH THE CALIBRATION CONTROLS. USE TOGGLE VR OVERLAY INTERACTION TO POINT AND CLICK WITH A QUEST CONTROLLER. >>>!"
     },
     {
       "source": "Enable Surface mining",
@@ -233949,8 +233925,8 @@
       "translation": "* ENABLE GLOBAL KEYBOARD INPUT BELOW, THEN USE THIS SHORTCUT TO MAKE EXISTING LIVE OVERLAYS CLICKABLE AND DRAGGABLE. USE IT AGAIN TO SAVE POSITIONS AND RESTORE CLICK-THROUGH MODE; IT NEVER OPENS THE FULL EDITOR. >>>!"
     },
     {
-      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
-      "translation": "* ENABLE GLOBAL KEYBOARD INPUT BELOW, THEN USE THIS SHORTCUT TO SWITCH STEAMVR OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. USE IT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "* ENABLE GLOBAL KEYBOARD INPUT BELOW, THEN USE THIS SHORTCUT TO SWITCH STEAMVR OR VDXR OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. ON VDXR, POINT AT A PANEL: TRIGGER CLICKS, GRIP RIGHT-CLICKS, AND THUMBSTICK SCROLLS. USE THE SHORTCUT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -242997,8 +242973,8 @@
       "translation": "* OPEN THIS CHILD BOXEL >>>!"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
-      "translation": "* OPENCOMPOSITE IS NOT A COMPATIBLE WORKAROUND FOR STANDALONE OPENVR OVERLAYS. IT MAY ALREADY BE PART OF YOUR ELITE-TO-VDXR SETUP; THE SRVSURVEY OPENXR LAYER ADDS PASSIVE PANELS WITHIN THAT GAME SESSION. >>>!"
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+      "translation": "* OPENCOMPOSITE IS NOT A COMPATIBLE WORKAROUND FOR STANDALONE OPENVR OVERLAYS. IT MAY ALREADY BE PART OF YOUR ELITE-TO-VDXR SETUP; THE SRVSURVEY OPENXR LAYER ADDS PANELS AND QUEST CONTROLLER INPUT WITHIN THAT GAME SESSION. >>>!"
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -251429,8 +251405,8 @@
       "translation": "* STEAMVR IS AVAILABLE, BUT NO READY HEADSET WAS DETECTED. >>>!"
     },
     {
-      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
-      "translation": "* STEAMVR ROUTES REQUIRE A READY STEAMVR HEADSET. THE VDXR ROUTE WAITS FOR A LIVE ELITE VDXR SESSION AND DOES NOT SUPPORT CONTROLLER-POINTER INTERACTION. >>>!"
+      "source": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
+      "translation": "* STEAMVR ROUTES REQUIRE A READY STEAMVR HEADSET. THE VDXR ROUTE WAITS FOR A LIVE ELITE VDXR SESSION. INSTALL THE MATCHING SRVSURVEY OPENXR LAYER FOR QUEST CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
       "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
@@ -252887,14 +252863,6 @@
     {
       "source": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
       "translation": "* THE VDXR OVERLAY LAYER REQUIRES WINDOWS X64 AND DIRECT3D 11. >>>!"
-    },
-    {
-      "source": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-      "translation": "* THE VDXR ROUTE DISPLAYS PASSIVE PANELS AND DOES NOT SUPPORT THIS CONTROLLER-POINTER SHORTCUT. ITS PANEL CALIBRATION AND RESET VR ORIENTATION SHORTCUTS REMAIN AVAILABLE. >>>!"
-    },
-    {
-      "source": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
-      "translation": "* THE VDXR ROUTE DISPLAYS PASSIVE PANELS. THE TOGGLE VR OVERLAY INTERACTION SHORTCUT REQUIRES STEAMVR; VDXR CONTROLLER INPUT IS NOT IMPLEMENTED. >>>!"
     },
     {
       "source": "The VR calibration backup did not match its source.",
@@ -256381,6 +256349,10 @@
       "translation": "* VDXR / OPENXR >>>!"
     },
     {
+      "source": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "* VDXR CONTROLLER INTERACTION IS ENABLED. POINT AT A PANEL AND USE THE TRIGGER TO CLICK. >>>!"
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "* VDXR: REGISTER THE OPENXR LAYER FROM THE WINDOWS X64 PACKAGE, THEN RESTART ELITE. DIRECT3D 11 IS REQUIRED. >>>!"
     },
@@ -256477,8 +256449,8 @@
       "translation": "* VR OVERLAYS ARE OFF >>>!"
     },
     {
-      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-      "translation": "* VR OVERLAYS STAY PASSIVE UNTIL YOU EXPLICITLY ENABLE STEAMVR CONTROLLER-POINTER INTERACTION. >>>!"
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+      "translation": "* VR OVERLAYS STAY CLICK-THROUGH UNTIL YOU EXPLICITLY ENABLE CONTROLLER-POINTER INTERACTION ON THE SELECTED STEAMVR OR VDXR ROUTE. >>>!"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -257317,8 +257289,8 @@
       "translation": "* WINDOWS >>>!"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "* WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. DISPLAYS PASSIVE PANELS; REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. HEADSET VALIDATION IS PENDING. >>>!"
+      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+      "translation": "* WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. SUPPORTS PANELS AND QUEST CONTROLLER-POINTER INTERACTION; REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. HEADSET VALIDATION IS PENDING. >>>!"
     },
     {
       "source": "Windows Mixed Reality",

@@ -1,8 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Tests.Infrastructure;
 
@@ -48,6 +52,49 @@ public sealed class VrOverlayInputRouterTests
                 new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonUp, 20, 20)
             );
 
+            Assert.Equal(1, clicks);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ResetCancelsCapturedButtonWithoutActivatingItAndAllowsAnotherClick()
+    {
+        var button = new Button
+        {
+            Content = "Activate",
+            Width = 240,
+            Height = 120,
+            Template = new FuncControlTemplate<Button>((_, _) => new Border { Background = Brushes.Blue }),
+        };
+        var window = new Window
+        {
+            Width = 240,
+            Height = 120,
+            Content = button,
+        };
+        int clicks = 0;
+        button.Click += (_, _) => clicks++;
+        try
+        {
+            window.Show();
+            using WriteableBitmap? rendered = window.CaptureRenderedFrame();
+            var registration = new RegisteredOverlayWindow(window, "PlotJumpInfo", button, IsVisible: true);
+            using var router = new VrOverlayInputRouter();
+            var down = new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonDown, 20, 20);
+            VrOverlayPointerEvent up = down with { Kind = VrOverlayPointerEventKind.LeftButtonUp };
+            router.Dispatch(registration, down);
+            Assert.True(button.IsPressed);
+            router.Reset();
+            Assert.False(button.IsPressed);
+            Assert.Equal(0, clicks);
+            router.Dispatch(registration, down);
+            Assert.True(button.IsPressed);
+            router.Dispatch(registration, up);
+            Assert.False(button.IsPressed);
             Assert.Equal(1, clicks);
         }
         finally

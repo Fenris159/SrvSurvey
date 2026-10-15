@@ -1,6 +1,6 @@
 # VDXR overlays on Windows
 
-SrvSurvey can publish passive overlay panels into an Elite Dangerous OpenXR
+SrvSurvey can publish overlay panels and return Quest controller input into an Elite Dangerous OpenXR
 session using Virtual Desktop's VDXR runtime, without SteamVR in the rendering
 path. This integration requires Windows x64 and Direct3D 11. Physical
 Quest 3 validation is still required before treating it as supported.
@@ -44,8 +44,16 @@ those results establish which installed combination has been verified.
    a visible gameplay panel, then adjust its saved VR position, rotation, scale,
    and opacity. **Reset headset orientation** captures a new placement origin.
 
-Controller-pointer interaction is available on the SteamVR route. This first
-VDXR implementation displays passive panels. Only `EliteDangerous64.exe` with
+Enable global keyboard input and use **Toggle VR overlay interaction** to
+activate the Quest controller cursor. Release any held buttons first, then point
+at a panel. Trigger is left-click, grip is right-click, thumbstick press is
+middle-click, and thumbstick tilt scrolls vertically or horizontally. Either
+controller can operate the single pointer. Use the shortcut again to restore
+click-through mode and return these controller inputs to Elite. Interaction is
+limited to controls already exposed by each panel; placement still uses the
+calibration controls.
+
+Only `EliteDangerous64.exe` with
 the actual runtime name `VirtualDesktopXR` receives panels. Other processes and
 runtimes are forwarded without overlay rendering.
 
@@ -84,17 +92,22 @@ per-panel calibration. In **Settings > Global overlays > VR overlays**, choose
 - **Scale** to change its physical size while preserving its image aspect ratio.
 
 Changes preview in the connected VR session. Save preserves the calibration for
-that panel and mode. These controls are available on the VDXR route even though
-controller-pointer interaction is not implemented. Editing a panel's 3D
-placement and clicking controls inside that panel are separate operations.
+that panel and mode. Editing a panel's 3D placement and clicking controls inside
+that panel are separate operations.
 
-**Toggle VR overlay interaction** currently requires the SteamVR backend's
-controller-pointer events. The shortcut is registered on VDXR, but its backend
-rejects the request with a status message and provides no controller clicks or
-scrolling. OpenXR quad composition does not supply pointer events automatically;
-VDXR interaction would require separate input actions, ray hit testing, and an
-input return channel to SrvSurvey. The desktop live-overlay interaction shortcut
-still controls desktop windows only.
+**Toggle VR overlay interaction** uses the selected SteamVR or VDXR backend. On
+VDXR the native layer adds its own OpenXR actions alongside OpenComposite's game
+actions, intersects controller aim rays with the submitted panels, draws a
+cursor, and returns clicks and scrolling to the existing Avalonia controls.
+Aim tracking has normal priority; buttons and scrolling use a higher-priority
+set only while interaction is enabled. Release before enabling or returning
+from tracking loss so a held trigger cannot activate a panel accidentally.
+Losing focus, tracking, a panel, or the publisher cancels captured input.
+
+The input-ready handshake requires the matching native layer. If the shortcut
+reports waiting for controller input, update the complete SrvSurvey package,
+register its layer again, and restart Elite. The desktop live-overlay
+interaction shortcut still controls desktop windows only.
 
 **Adjust VR overlays** and **Reset VR orientation** keep their existing shortcut
 bindings and work through the selected backend. Enable global keyboard input,
@@ -150,8 +163,25 @@ dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj -c Release -r win-
 The SDK headers are fetched from Khronos OpenXR SDK 1.1.63 with an archive SHA-256
 pin. Windows release builds package the DLL, manifest, registration script, and
 SDK license. Publishing a Windows package requires the native layer build.
-Native tests use a fake OpenXR runtime and a software D3D11 device. The packet
-validation tests also run on Linux.
+Native tests use a fake OpenXR runtime and a software D3D11 device. Packet
+validation and pointer geometry/state tests also run on Linux.
+
+Controller input uses a separate 4 KiB `frames.bin.input` mailbox. The desktop
+publishes the enabled flag and a generation token; the layer acknowledges that
+token and writes a bounded ring of 64 pointer events under a sequence counter.
+The reader cancels capture on stale health, torn events, invalid values, or ring
+overflow, then discards those events. It never replays uncertain clicks. Input
+is sampled from the game's existing action synchronization; OpenComposite
+synchronizes after frame submission, so the next frame reads that state. The
+cursor updates at game-frame rate even though panel images refresh every 250 ms.
+A cursor reserves one composition-layer slot while interaction is enabled.
+
+The layer appends actions to the game's attach/sync calls and appends Touch
+bindings to the game's suggestions. It preserves the original arrays and
+extension chains. OpenComposite's discovery-session restart receives a fresh
+action generation; graphics-only session restarts reuse existing actions.
+Input initialization failures leave the rendering path available and preserve
+the original game calls.
 
 ## Headset acceptance checks
 
@@ -161,9 +191,15 @@ validation tests also run on Linux.
   independent placement, vehicle overrides, and explicit recentering.
 - Compare the same live panel's theme, content, border, and transparency on the
   desktop and in the headset. Check wide/tall panels and angled placement.
-- Verify Adjust VR overlays and Reset VR orientation with global keyboard input
-  enabled. Toggle VR overlay interaction must explain its SteamVR requirement
-  and leave the VDXR panels passive.
+- Verify Adjust VR overlays, Reset VR orientation, and Toggle VR overlay
+  interaction with global keyboard input enabled. Test both controllers,
+  trigger/grip/stick clicks, both scroll axes, and dragging outside a panel.
+- Hold the trigger while enabling interaction, hide a captured panel, lose
+  controller tracking, open the Virtual Desktop dashboard, and disconnect the
+  publisher. Verify cancellation, release-before-rearming, and no stuck click.
+- Verify controller controls return to Elite when interaction is off, and that
+  HOTAS/keyboard inputs continue during interaction. Test OpenComposite's early
+  profile-discovery session and later session recreation.
 - Open/close the Virtual Desktop dashboard; verify panels keep their placement.
 - Hide a panel, disable VR overlays, close SrvSurvey, and restart Elite; verify
   stale panels disappear and reconnection works.

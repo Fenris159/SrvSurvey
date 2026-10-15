@@ -8,6 +8,7 @@ public sealed class OpenXrFrameBridge : IDisposable
     private readonly MemoryMappedFile mapping;
     private readonly MemoryMappedViewAccessor view;
     private readonly FileStream writerLease;
+    private readonly OpenXrInputBridge input;
     private readonly Func<long> clock;
     private uint sequence;
 
@@ -44,11 +45,13 @@ public sealed class OpenXrFrameBridge : IDisposable
             );
             view = mapping.CreateViewAccessor();
             writerLease = lease;
+            input = new OpenXrInputBridge(path + OpenXrInputBridge.FileSuffix, this.clock);
             sequence = view.ReadUInt32(8) & ~1u;
             Stop();
         }
         catch
         {
+            input?.Dispose();
             view?.Dispose();
             mapping?.Dispose();
             lease.Dispose();
@@ -75,6 +78,14 @@ public sealed class OpenXrFrameBridge : IDisposable
 
     public int LastError => view.ReadInt32(52);
 
+    public bool IsInputReady => input.IsReady;
+
+    public int InputError => input.LastError;
+
+    public void SetInteractionEnabled(bool enabled) => input.SetEnabled(enabled);
+
+    public IReadOnlyList<OpenXrPointerEvent> ReadPointerEvents() => input.ReadEvents();
+
     public void Publish(byte[] packet)
     {
         ArgumentNullException.ThrowIfNull(packet);
@@ -83,6 +94,7 @@ public sealed class OpenXrFrameBridge : IDisposable
             throw new InvalidDataException("The OpenXR mailbox packet size is invalid.");
         }
 
+        input.Refresh();
         view.Write(8, ++sequence);
         Thread.MemoryBarrier();
         view.WriteArray(0, packet, 0, 8);
@@ -101,6 +113,7 @@ public sealed class OpenXrFrameBridge : IDisposable
 
     public void Stop()
     {
+        input.Stop();
         view.Write(8, ++sequence);
         Thread.MemoryBarrier();
         view.Write(0, 0u);
@@ -114,6 +127,7 @@ public sealed class OpenXrFrameBridge : IDisposable
     public void Dispose()
     {
         Stop();
+        input.Dispose();
         view.Dispose();
         mapping.Dispose();
         writerLease.Dispose();

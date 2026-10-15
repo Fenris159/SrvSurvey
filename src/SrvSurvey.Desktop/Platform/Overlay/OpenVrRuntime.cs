@@ -447,6 +447,7 @@ public enum VrOverlayPointerEventKind
     MiddleButtonDown,
     MiddleButtonUp,
     Wheel,
+    Reset,
 }
 
 public sealed record VrOverlayPointerEvent(

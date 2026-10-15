@@ -63,6 +63,7 @@ public sealed class VrOverlayInputRouter : IDisposable
             case VrOverlayPointerEventKind.LeftButtonDown:
             case VrOverlayPointerEventKind.RightButtonDown:
             case VrOverlayPointerEventKind.MiddleButtonDown:
+                pointer.Capture(target);
                 target.RaiseEvent(
                     new PointerPressedEventArgs(
                         target,
@@ -91,7 +92,10 @@ public sealed class VrOverlayInputRouter : IDisposable
                         releasedButton!.Value
                     )
                 );
-                pointer.Capture(null);
+                if (current == RawInputModifiers.None)
+                {
+                    pointer.Capture(null);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException(

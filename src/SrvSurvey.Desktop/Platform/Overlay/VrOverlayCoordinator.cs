@@ -136,6 +136,11 @@ public sealed class VrOverlayCoordinator : IDisposable
             .ToDictionary(registration => registration.PlotterName, StringComparer.Ordinal);
         foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
         {
+            if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
+            {
+                inputRouter?.Reset();
+                continue;
+            }
             if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
             {
                 inputRouter?.Dispatch(registration, pointerEvent);

@@ -188,6 +188,44 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Contains("Enable and connect", viewModel.StatusMessage);
     }
 
+    [AvaloniaFact]
+    public void NativeResetEventCancelsCapturedUiBeforeLookingUpAnyPanel()
+    {
+        var button = new Button { Content = "Activate" };
+        var window = new Window
+        {
+            Width = 240,
+            Height = 120,
+            Content = button,
+        };
+        var registry = new OverlayWindowRegistry();
+        registry.Register(window, "PlotJumpInfo");
+        try
+        {
+            window.Show();
+            registry.SetPresentationVisual(window, button);
+            VrOverlayViewModel viewModel = CreateViewModel();
+            viewModel.Enabled = true;
+            var runtime = new StubOpenVrRuntime();
+            using var coordinator = new VrOverlayCoordinator(viewModel, registry, runtime, _ => true);
+            Assert.True(coordinator.ToggleInteraction());
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonDown, 20, 20)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.True(button.IsPressed);
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.False(button.IsPressed);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

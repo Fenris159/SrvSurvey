@@ -18547,7 +18547,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this route.",
+    "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18644,7 +18644,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+    "Text": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -36803,7 +36803,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
+    "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -53704,7 +53704,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
-    "Text": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
+    "Text": "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -56627,22 +56627,6 @@
   },
   {
     "Text": "The VDXR overlay layer requires Windows x64 and Direct3D 11.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
-  },
-  {
-    "Text": "The VDXR route displays passive panels and does not support this controller-pointer shortcut. Its panel calibration and Reset VR orientation shortcuts remain available.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -63627,6 +63611,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
+    "Text": "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63820,7 +63812,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
-    "Text": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+    "Text": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -65504,7 +65496,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
-    "Text": "Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+    "Text": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

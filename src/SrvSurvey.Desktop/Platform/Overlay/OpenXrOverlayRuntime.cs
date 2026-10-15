@@ -9,6 +9,8 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
     private OpenXrFrameBridge? bridge;
     private uint originRevision;
+    private bool interactionEnabled;
+    private readonly Dictionary<ulong, string> identities = [];
 
     public OpenXrOverlayRuntime(Func<OpenXrFrameBridge>? createBridge = null, Func<bool>? platformSupported = null)
     {
@@ -83,6 +85,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure("The VDXR OpenXR layer is not connected.");
         }
 
+        identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
         frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha);
         return VrRuntimeResult.Success("Queued the OpenXR overlay frame.");
     }
@@ -102,7 +105,11 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         }
     }
 
-    public void RemoveOverlay(string plotterName) => frames.Remove(plotterName);
+    public void RemoveOverlay(string plotterName)
+    {
+        frames.Remove(plotterName);
+        identities.Remove(OpenXrFramePacket.GetOverlayId(plotterName));
+    }
 
     public VrRuntimeResult ResetOrientation()
     {
@@ -115,16 +122,62 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         return CompleteFrame();
     }
 
-    public VrRuntimeResult SetInteractionEnabled(bool enabled) =>
-        VrRuntimeResult.Failure(
-            "The VDXR route displays passive panels. The Toggle VR overlay interaction shortcut requires SteamVR; VDXR controller input is not implemented."
+    public VrRuntimeResult SetInteractionEnabled(bool enabled)
+    {
+        if (enabled && (!IsInitialized || bridge?.IsInputReady != true))
+        {
+            return VrRuntimeResult.Failure(
+                $"Waiting for VDXR controller input (OpenXR error {bridge?.InputError ?? 0}). Update the OpenXR layer and restart Elite before using this shortcut."
+            );
+        }
+        interactionEnabled = enabled;
+        bridge?.SetInteractionEnabled(enabled);
+        return VrRuntimeResult.Success(
+            enabled
+                ? "VDXR controller interaction is enabled. Point at a panel and use the trigger to click."
+                : "VR overlays are click-through again."
         );
+    }
 
-    public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents() => [];
+    public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents()
+    {
+        if (!interactionEnabled || bridge is null)
+        {
+            return [];
+        }
+        var result = new List<VrOverlayPointerEvent>();
+        foreach (OpenXrPointerEvent pointer in bridge.ReadPointerEvents())
+        {
+            if (
+                pointer.Kind == VrOverlayPointerEventKind.Reset
+                || !identities.TryGetValue(pointer.Id, out string? name)
+            )
+            {
+                result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
+                continue;
+            }
+            VrOverlayFrame frame = frames[name].Frame;
+            double width = frame.PointerWidth > 0 ? frame.PointerWidth : frame.Width;
+            double height = frame.PointerHeight > 0 ? frame.PointerHeight : frame.Height;
+            result.Add(
+                new VrOverlayPointerEvent(
+                    name,
+                    pointer.Kind,
+                    pointer.X * width,
+                    pointer.Y * height,
+                    pointer.WheelX,
+                    pointer.WheelY
+                )
+            );
+        }
+        return result;
+    }
 
     public void Shutdown()
     {
         IsInitialized = false;
+        interactionEnabled = false;
+        identities.Clear();
         frames.Clear();
         bridge?.Dispose();
         bridge = null;
