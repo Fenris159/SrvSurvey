@@ -83,6 +83,17 @@ the publisher; it does not install the native layer
 ([loader model and Windows discovery](https://registry.khronos.org/OpenXR/specs/1.1/loader.html#api-layers),
 [installer](../../src/SrvSurvey.OpenXrLayer/Install-OpenXrLayer.ps1)).
 
+The reviewed OpenComposite build statically compiles its bundled OpenXR loader
+by default (`USE_SYSTEM_OPENXR=OFF`). Its pinned SDK revision
+[`91a8a8d9d70f4b469bca0726122c3b5a6096010e`](https://github.com/KhronosGroup/OpenXR-SDK/tree/91a8a8d9d70f4b469bca0726122c3b5a6096010e)
+does discover HKCU implicit layers during an ordinary launch, but intentionally
+skips HKCU when the process integrity level is above medium. **Launch Elite
+normally, without Run as administrator**, including its launcher. Running the
+per-user registration script as administrator does not change that loader rule
+([OpenComposite build option](https://gitlab.com/znixian/OpenOVR/-/blob/cff07db75c4823afe93ed7027b03d5f7bc86f164/CMakeLists.txt),
+[bundled loader registry discovery](https://github.com/KhronosGroup/OpenXR-SDK/blob/91a8a8d9d70f4b469bca0726122c3b5a6096010e/src/loader/manifest_file.cpp#L409-L415),
+[integrity detection](https://github.com/KhronosGroup/OpenXR-SDK/blob/91a8a8d9d70f4b469bca0726122c3b5a6096010e/src/common/platform_utils.hpp#L201-L226)).
+
 ## What the panel looks like in VR
 
 [OverlayWindowRegistry](../../src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs)

@@ -20,6 +20,9 @@ Quest 3 validation is still required before treating it as supported.
    Registration uses your Windows account's OpenXR implicit-layer registry key;
    administrator access is unnecessary. Register again after moving the package
    or changing versions. The script retires older SrvSurvey registrations.
+   Launch Elite normally, without **Run as administrator**: OpenComposite's
+   bundled OpenXR loader ignores per-user layer registrations in an elevated
+   game process. The same applies if an elevated launcher starts Elite.
 3. Restart Elite so its OpenXR loader discovers the layer. In SrvSurvey's VR
    settings, choose **Meta Quest — VDXR** and enable VR overlays.
 4. Wait for the connection status to identify an active VDXR session. Trigger
