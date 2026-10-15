@@ -117,6 +117,50 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
+    public void EveryRouteLayoutEndsWithTheExistingRedTrashButtonStyle()
+    {
+        XDocument document = LoadRouteWindow();
+        XElement footerButton = document
+            .Descendants()
+            .Single(element => element.Attribute("Command")?.Value == "{Binding DeleteCommand}");
+        XElement footerIcon = footerButton.Elements().Single();
+        XElement[] rowButtons = document
+            .Descendants()
+            .Where(element => element.Attribute("Click")?.Value == "RemoveHop_Click")
+            .ToArray();
+
+        Assert.Single(rowButtons);
+        foreach (XElement button in rowButtons)
+        {
+            XElement row = button.Parent!;
+            string[] columns = row.Attribute("ColumnDefinitions")!.Value.Split(',');
+            Assert.Equal(
+                (columns.Length - 1).ToString(global::System.Globalization.CultureInfo.InvariantCulture),
+                button.Attribute("Grid.Column")?.Value
+            );
+            Assert.Equal("44", columns[^1]);
+            Assert.Equal(footerButton.Attribute("Classes")?.Value, button.Attribute("Classes")?.Value);
+            Assert.Equal(footerButton.Attribute("Width")?.Value, button.Attribute("Width")?.Value);
+            Assert.Equal("Delete waypoint", button.Attribute("ToolTip.Tip")?.Value);
+            Assert.Equal("Delete waypoint", button.Attribute("AutomationProperties.Name")?.Value);
+            Assert.Equal(footerIcon.ToString(), button.Elements().Single().ToString());
+        }
+
+        Assert.Equal(
+            "48,*,112,2*,44",
+            FindNamedElement(document, "RouteHopHeader").Elements().Single().Attribute("ColumnDefinitions")?.Value
+        );
+        Assert.Equal(
+            "48,270,110,125,90,135,145,135,105,100,140,44",
+            FindNamedElement(document, "FleetCarrierRouteHopHeader")
+                .Elements()
+                .Single()
+                .Attribute("ColumnDefinitions")
+                ?.Value
+        );
+    }
+
+    [Fact]
     public void FleetCarrierRowsFollowSpanshLogisticsColumnOrder()
     {
         XDocument document = LoadRouteWindow();
@@ -280,13 +324,16 @@ public sealed class RouteWindowMarkupTests
             );
         XElement bodySection =
             bodyItems.Parent ?? throw new InvalidDataException("The route body list has no section.");
+        XElement bodyLayout =
+            bodySection.Parent ?? throw new InvalidDataException("The route body section has no layout.");
         XElement bodyPanel = bodyItems
             .Descendants()
             .Single(element => element.Name.LocalName == "WrapPanel" && element.Attribute("ItemWidth")?.Value == "520");
 
         Assert.DoesNotContain(header.Descendants(), element => element.Attribute("Text")?.Value == "BODIES");
-        Assert.Equal("1", bodySection.Attribute("Grid.Row")?.Value);
-        Assert.Equal("4", bodySection.Attribute("Grid.ColumnSpan")?.Value);
+        Assert.Equal("1", bodyLayout.Attribute("Grid.Row")?.Value);
+        Assert.Null(bodyLayout.Attribute("Grid.ColumnSpan"));
+        Assert.Equal("{Binding IsStandardHop}", bodyLayout.Attribute("IsVisible")?.Value);
         Assert.Equal("60,12,0,0", bodySection.Attribute("Margin")?.Value);
         Assert.Equal("{Binding HasBioTargets}", bodySection.Attribute("IsVisible")?.Value);
         Assert.Contains(bodySection.Descendants(), element => element.Attribute("Text")?.Value == "BODIES");
@@ -316,7 +363,7 @@ public sealed class RouteWindowMarkupTests
             )
         );
         Assert.Contains(
-            "Imports replace the on-screen draft. Nothing is written until Saved.",
+            "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
             document.Descendants().Select(element => element.Attribute("Text")?.Value)
         );
 

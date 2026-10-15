@@ -5629,6 +5629,10 @@
       "translation": "Durch Klicken auf eine entsprechende Obeliskenmarkierung auf der Karte wird diese Metadatenzeile ausgewählt."
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Namen des Zwischenablagesystems werden an den Entwurf angehängt, einer pro Zeile. Spansh und Dateiimporte ersetzen es. Verwenden Sie Speichern unter..., um Routenänderungen beizubehalten."
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "Klonen Sie jedes Live-Spiel-Overlay in die transparente SrvSurveyWindowOne-Erfassungsoberfläche, die von Streaming-Software verwendet wird."
     },
@@ -7907,6 +7911,10 @@
     {
       "source": "Delete this route?",
       "translation": "Diese Route löschen?"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "Wegpunkt löschen"
     },
     {
       "source": "Delete {0}",
@@ -13273,6 +13281,10 @@
       "translation": "Importieren Sie freigegebene Lesezeichen-JSON- oder EliteMining-Lesezeichenlisten. Importe behalten vorhandene Standorte bei, anstatt sie stillschweigend zu ersetzen."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Wegpunkte importieren"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Importierte Daten unvollständig: Überprüfen Sie das Importmanifest und die Protokolle. Ändern oder löschen Sie die unberührte Legacy-Quelle während der Untersuchung nicht."
     },
@@ -13379,10 +13391,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Importe werden Hash-verifiziert und behalten den Fortschritt nur dann bei, wenn die Questidentität übereinstimmt."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Importe ersetzen den Entwurf auf dem Bildschirm. Bis zum Speichern wird nichts geschrieben."
     },
     {
       "source": "Import…",
@@ -22409,6 +22417,10 @@
       "translation": "{0} aus den Favoriten entfernt."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} aus dem Routenentwurf entfernt."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Veraltete Installationspläne {0} entfernt."
     },
@@ -22479,10 +22491,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "Wiederholen Sie den Befehl an einem anderen Ort, um mehrere Ablagerungen desselben Materials zu verfolgen. Entfernung und Richtung werden automatisch aktualisiert, wenn Sie sich bewegen oder drehen."
-    },
-    {
-      "source": "Replace from import",
-      "translation": "Aus Import ersetzen"
     },
     {
       "source": "Replay export failed: {0}",
@@ -43635,6 +43643,10 @@
       "translation": "Al hacer clic en un marcador de obelisco coincidente en el mapa, se selecciona esta fila de metadatos."
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Los nombres del sistema del portapapeles se añaden al borrador, uno por línea. Spansh y las importaciones de archivos lo reemplazan. Utilice Guardar como... para conservar los cambios de ruta."
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "Clone cada superposición de juego en vivo en la superficie de captura transparente SrvSurveyWindowOne utilizada por el software de transmisión."
     },
@@ -45913,6 +45925,10 @@
     {
       "source": "Delete this route?",
       "translation": "¿Eliminar esta ruta?"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "Eliminar punto de referencia"
     },
     {
       "source": "Delete {0}",
@@ -51279,6 +51295,10 @@
       "translation": "Importe listas de marcadores JSON o EliteMining de marcadores compartidos. Las importaciones conservan las ubicaciones existentes en lugar de reemplazarlas silenciosamente."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importar puntos de referencia"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Datos importados incompletos: inspeccione el manifiesto y los registros de importación; no modifique ni elimine la fuente heredada intacta mientras investiga."
     },
@@ -51385,10 +51405,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Las importaciones se verifican mediante hash y preservan el progreso solo cuando la identidad de la misión coincide."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Las importaciones reemplazan el borrador en pantalla. No se escribe nada hasta que se guarde."
     },
     {
       "source": "Import…",
@@ -60415,6 +60431,10 @@
       "translation": "Se eliminó {0} de favoritos."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "Se eliminó {0} del borrador de ruta."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Se eliminaron los planes de instalación obsoletos de {0}."
     },
@@ -60485,10 +60505,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "Repita el comando en otra ubicación para rastrear múltiples depósitos del mismo material. La distancia y la dirección se actualizan automáticamente a medida que te mueves o giras."
-    },
-    {
-      "source": "Replace from import",
-      "translation": "Reemplazar desde importación"
     },
     {
       "source": "Replay export failed: {0}",
@@ -81641,6 +81657,10 @@
       "translation": "Cliquer sur un marqueur d'obélisque correspondant sur la carte sélectionne cette ligne de métadonnées."
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Les noms du système du Presse-papiers sont ajoutés au brouillon, un par ligne. Spansh et les importations de fichiers le remplacent. Utilisez Enregistrer sous... pour conserver les modifications d'itinéraire."
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "Clonez chaque superposition de jeu en direct dans la surface de capture transparente SrvSurveyWindowOne utilisée par les logiciels de streaming."
     },
@@ -83919,6 +83939,10 @@
     {
       "source": "Delete this route?",
       "translation": "Supprimer cet itinéraire ?"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "Supprimer un waypoint"
     },
     {
       "source": "Delete {0}",
@@ -89285,6 +89309,10 @@
       "translation": "Importez des listes de signets partagés JSON ou EliteMining. Les importations conservent les emplacements existants plutôt que de les remplacer silencieusement."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importer des waypoints"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Données importées incomplètes : inspectez le manifeste d'importation et les journaux ; ne modifiez ni ne supprimez pas la source héritée intacte pendant l’enquête."
     },
@@ -89391,10 +89419,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Les importations sont vérifiées par hachage et préservent la progression uniquement lorsque l'identité de la quête correspond."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Les importations remplacent le brouillon à l’écran. Rien n'est écrit jusqu'à ce qu'il soit enregistré."
     },
     {
       "source": "Import…",
@@ -98421,6 +98445,10 @@
       "translation": "{0} supprimé des favoris."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} a été supprimé du brouillon d'itinéraire."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Suppression des plans d'installation obsolètes {0}."
     },
@@ -98491,10 +98519,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "Répétez la commande à un autre endroit pour suivre plusieurs dépôts du même matériau. La distance et la direction se mettent automatiquement à jour lorsque vous vous déplacez ou tournez."
-    },
-    {
-      "source": "Replace from import",
-      "translation": "Remplacer depuis l'importation"
     },
     {
       "source": "Replay export failed: {0}",
@@ -119647,6 +119671,10 @@
       "translation": "Clicar em um marcador de obelisco correspondente no mapa seleciona esta linha de metadados."
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Os nomes dos sistemas da área de transferência são anexados ao rascunho, um por linha. Spansh e as importações de arquivos o substituem. Use Salvar como... para manter as alterações de rota."
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "Clone cada sobreposição de jogo ao vivo na superfície de captura transparente SrvSurveyWindowOne usada pelo software de streaming."
     },
@@ -121925,6 +121953,10 @@
     {
       "source": "Delete this route?",
       "translation": "Excluir esta rota?"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "Excluir ponto de referência"
     },
     {
       "source": "Delete {0}",
@@ -127291,6 +127323,10 @@
       "translation": "Importe listas de favoritos JSON ou EliteMining de favoritos compartilhados. As importações mantêm os locais existentes em vez de substituí-los silenciosamente."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importar pontos de referência"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Dados importados incompletos: inspecione o manifesto e os logs de importação; não modifique ou exclua a fonte legada intocada durante a investigação."
     },
@@ -127397,10 +127433,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "As importações são verificadas por hash e preservam o progresso somente quando a identidade da missão corresponde."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "As importações substituem o rascunho na tela. Nada é escrito até ser salvo."
     },
     {
       "source": "Import…",
@@ -136427,6 +136459,10 @@
       "translation": "{0} removido dos favoritos."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} removido do rascunho da rota."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Planos de instalação obsoletos {0} removidos."
     },
@@ -136497,10 +136533,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "Repita o comando em outro local para rastrear vários depósitos do mesmo material. A distância e a direção são atualizadas automaticamente conforme você se move ou vira."
-    },
-    {
-      "source": "Replace from import",
-      "translation": "Substituir da importação"
     },
     {
       "source": "Replay export failed: {0}",
@@ -157653,6 +157685,10 @@
       "translation": "Щелкнув соответствующий маркер обелиска на карте, вы выберете эту строку метаданных."
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Имена систем буфера обмена добавляются к черновику, по одному в строке. Spansh и импорт файлов заменяет его. Используйте «Сохранить как...», чтобы сохранить изменения маршрута."
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "Клонируйте каждое наложение живой игры в прозрачную поверхность захвата SrvSurveyWindowOne, используемую программным обеспечением для потоковой передачи."
     },
@@ -159931,6 +159967,10 @@
     {
       "source": "Delete this route?",
       "translation": "Удалить этот маршрут?"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "Удалить путевую точку"
     },
     {
       "source": "Delete {0}",
@@ -165297,6 +165337,10 @@
       "translation": "Импортируйте списки закладок общих закладок JSON или EliteMining. Импорт сохраняет существующие места, а не молча заменяет их."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Импортировать путевые точки"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Импортированные данные неполные: проверьте манифест импорта и журналы; не изменяйте и не удаляйте нетронутый устаревший источник во время исследования."
     },
@@ -165403,10 +165447,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Импорт проверяется по хешу и сохраняет прогресс только в том случае, если идентификатор квеста совпадает."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Импорт заменяет черновой вариант на экране. Ничего не записывается до тех пор, пока не будет сохранено."
     },
     {
       "source": "Import…",
@@ -174433,6 +174473,10 @@
       "translation": "{0} удалено из избранного."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "Удален {0} из проекта маршрута."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Удалены устаревшие планы установки {0}."
     },
@@ -174503,10 +174547,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "Повторите команду в другом месте, чтобы отследить несколько месторождений одного и того же материала. Расстояние и направление обновляются автоматически при движении или повороте."
-    },
-    {
-      "source": "Replace from import",
-      "translation": "Заменить из импорта"
     },
     {
       "source": "Replay export failed: {0}",
@@ -195659,6 +195699,10 @@
       "translation": "单击地图上匹配的方尖碑标记即可选择此元数据行。"
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "剪贴板系统名称附加到草稿中，每行一个。 Spansh 和文件导入取代了它。使用“另存为...”来保留路线更改。"
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "将每个实时游戏叠加层克隆到流媒体软件使用的透明 SrvSurveyWindowOne 捕获表面中。"
     },
@@ -197937,6 +197981,10 @@
     {
       "source": "Delete this route?",
       "translation": "删除这条路线吗？"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "删除航点"
     },
     {
       "source": "Delete {0}",
@@ -203303,6 +203351,10 @@
       "translation": "导入共享书签 JSON 或 EliteMining 书签列表。导入会保留现有位置，而不是默默地替换它们。"
     },
     {
+      "source": "Import waypoints",
+      "translation": "导入航点"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "导入数据不完整：检查导入清单和日志；在调查时不要修改或删除未触及的旧源。"
     },
@@ -203409,10 +203461,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "仅当任务身份匹配时，导入才会经过哈希验证并保留进度。"
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "导入取代了屏幕上的草稿。保存之前不会写入任何内容。"
     },
     {
       "source": "Import…",
@@ -212439,6 +212487,10 @@
       "translation": "从收藏夹中删除了 {0}。"
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "从路线草案中删除了 {0}。"
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "删除了 {0} 过时的安装计划。"
     },
@@ -212509,10 +212561,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "在另一个位置重复该命令以跟踪同一材料的多个沉积。当您移动或转弯时，距离和方向会自动更新。"
-    },
-    {
-      "source": "Replace from import",
-      "translation": "从导入替换"
     },
     {
       "source": "Replay export failed: {0}",
@@ -233665,6 +233713,10 @@
       "translation": "* CLICKING A MATCHING OBELISK MARKER ON THE MAP SELECTS THIS METADATA ROW. >>>!"
     },
     {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "* CLIPBOARD SYSTEM NAMES APPEND TO THE DRAFT, ONE PER LINE. SPANSH AND FILE IMPORTS REPLACE IT. USE SAVE AS... TO KEEP ROUTE CHANGES. >>>!"
+    },
+    {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
       "translation": "* CLONE EVERY LIVE GAME OVERLAY INTO THE TRANSPARENT SRVSURVEYWINDOWONE CAPTURE SURFACE USED BY STREAMING SOFTWARE. >>>!"
     },
@@ -235943,6 +235995,10 @@
     {
       "source": "Delete this route?",
       "translation": "* DELETE THIS ROUTE? >>>!"
+    },
+    {
+      "source": "Delete waypoint",
+      "translation": "* DELETE WAYPOINT >>>!"
     },
     {
       "source": "Delete {0}",
@@ -241309,6 +241365,10 @@
       "translation": "* IMPORT SHARED BOOKMARK JSON OR ELITEMINING BOOKMARK LISTS. IMPORTS RETAIN EXISTING LOCATIONS RATHER THAN SILENTLY REPLACING THEM. >>>!"
     },
     {
+      "source": "Import waypoints",
+      "translation": "* IMPORT WAYPOINTS >>>!"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "* IMPORTED DATA INCOMPLETE: INSPECT THE IMPORT MANIFEST AND LOGS; DO NOT MODIFY OR DELETE THE UNTOUCHED LEGACY SOURCE WHILE INVESTIGATING. >>>!"
     },
@@ -241415,10 +241475,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "* IMPORTS ARE HASH-VERIFIED AND PRESERVE PROGRESS ONLY WHEN THE QUEST IDENTITY MATCHES. >>>!"
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "* IMPORTS REPLACE THE ON-SCREEN DRAFT. NOTHING IS WRITTEN UNTIL SAVED. >>>!"
     },
     {
       "source": "Import…",
@@ -250445,6 +250501,10 @@
       "translation": "* REMOVED {0} FROM FAVORITES. >>>!"
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "* REMOVED {0} FROM THE ROUTE DRAFT. >>>!"
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "* REMOVED {0} STALE INSTALLATION PLANS. >>>!"
     },
@@ -250515,10 +250575,6 @@
     {
       "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
       "translation": "* REPEAT THE COMMAND AT ANOTHER LOCATION TO TRACK MULTIPLE DEPOSITS OF THE SAME MATERIAL. DISTANCE AND DIRECTION UPDATE AUTOMATICALLY AS YOU MOVE OR TURN. >>>!"
-    },
-    {
-      "source": "Replace from import",
-      "translation": "* REPLACE FROM IMPORT >>>!"
     },
     {
       "source": "Replay export failed: {0}",

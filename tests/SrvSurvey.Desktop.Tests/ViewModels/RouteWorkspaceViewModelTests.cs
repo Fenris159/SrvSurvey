@@ -330,8 +330,367 @@ public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ClipboardNameImportsAppendInOrderAndPreserveRepeatedAndUnknownSystems()
+    {
+        var resolver = new StubResolver(
+            new Dictionary<string, StarSystemReference>
+            {
+                ["Sol"] = new("Sol", 1, new GalacticCoordinate(0, 0, 0)),
+                ["Colonia"] = new("Colonia", 2, new GalacticCoordinate(3, 4, 0)),
+            }
+        );
+        RouteWorkspaceViewModel viewModel = CreateViewModel(resolver: resolver);
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+
+        await viewModel.ImportNamesTextAsync("Sol\r\nColonia", appendToRoute: true);
+        await viewModel.ImportNamesTextAsync(" Unknown \n\nSol ", appendToRoute: true);
+
+        Assert.Equal(["Sol", "Colonia", "Unknown", "Sol"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(1, viewModel.ReachedCount);
+        Assert.True(viewModel.Hops[0].IsReached);
+        Assert.False(viewModel.Hops[3].IsReached);
+        Assert.Null(viewModel.Hops[2].Hop.SystemAddress);
+        Assert.Equal("Colonia", viewModel.NextHopName);
+        Assert.True(viewModel.IsActive);
+        Assert.True(viewModel.IsDirty);
+        Assert.Contains("1 resolved", viewModel.StatusMessage);
+        Assert.Contains("1 kept by name", viewModel.StatusMessage);
+    }
+
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    public async Task ClipboardNameImportPreservesSavedRouteProgressAndSettings(bool isActive, int reachedIndex)
+    {
+        await SaveRouteAsync(isActive, reachedIndex);
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument original = (await store.LoadAsync("F123")).Route! with
+        {
+            AutoCopy = false,
+            Notes = "Keep this itinerary",
+            SourceSpanshKind = SpanshRouteKind.Neutron,
+        };
+        await store.SaveAsync(original);
+        var resolver = new StubResolver(
+            new Dictionary<string, StarSystemReference>
+            {
+                ["Second"] = new("Second", 2, new GalacticCoordinate(3, 4, 0)),
+            }
+        );
+        RouteWorkspaceViewModel viewModel = CreateViewModel(resolver: resolver);
+        await viewModel.UpdateContextAsync("F123", "Second", 2, new GalacticCoordinate(3, 4, 0));
+
+        await viewModel.ImportNamesTextAsync("Second\nFourth", appendToRoute: true);
+
+        Assert.Equal(["Sol", "Second", "Third", "Second", "Fourth"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(original.Hops, viewModel.Hops.Take(3).Select(hop => hop.Hop));
+        Assert.Equal(reachedIndex + 1, viewModel.ReachedCount);
+        Assert.False(viewModel.Hops[3].IsReached);
+        Assert.Equal(isActive, viewModel.IsActive);
+        Assert.False(viewModel.AutoCopy);
+        Assert.False(viewModel.IsComplete);
+        Assert.True(viewModel.HasSavedRoute);
+        Assert.True(viewModel.HasDefinitionChanges);
+        Assert.False(viewModel.CanSaveChanges);
+        Assert.Equal(3, (await store.LoadAsync("F123")).Route!.Hops.Count);
+
+        viewModel.SaveAsName = "Extended route";
+        await viewModel.ConfirmSaveAsAsync();
+
+        FollowRouteDocument saved = (await store.LoadAsync("F123")).Route!;
+        Assert.Equal(5, saved.Hops.Count);
+        Assert.Equal(reachedIndex, saved.LastReachedIndex);
+        Assert.Equal(isActive, saved.IsActive);
+        Assert.False(saved.AutoCopy);
+        Assert.Equal(original.Notes, saved.Notes);
+        Assert.Equal(original.SourceSpanshKind, saved.SourceSpanshKind);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" \r\n\n ")]
+    public async Task EmptyClipboardNameImportLeavesTheRouteUnchanged(string? text)
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 1);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Second", 2, null);
+
+        await viewModel.ImportNamesTextAsync(text, appendToRoute: true);
+
+        Assert.Equal(["Sol", "Second", "Third"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(2, viewModel.ReachedCount);
+        Assert.True(viewModel.IsActive);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public async Task SystemNameFileImportStillReplacesTheRoute()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 1);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Second", 2, null);
+
+        await viewModel.ImportNamesTextAsync("Colonia\nBeagle Point");
+
+        Assert.Equal(["Colonia", "Beagle Point"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(0, viewModel.ReachedCount);
+        Assert.Equal("Colonia", viewModel.NextHopName);
+    }
+
+    [Fact]
+    public async Task RemovingAWaypointRecalculatesDistancesAndRenumbersTheRemainingRows()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+
+        viewModel.RemoveHop(viewModel.Hops[1]);
+
+        Assert.Equal(["Sol", "Third"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal([0, 1], viewModel.Hops.Select(hop => hop.Index));
+        Assert.Equal([1, 2], viewModel.Hops.Select(hop => hop.Number));
+        Assert.Equal("13.00 ly", viewModel.Hops[1].Distance);
+        Assert.Equal("Third", viewModel.NextHopName);
+        Assert.True(viewModel.Hops[1].IsNext);
+        Assert.Equal(1, viewModel.Hops[0].JumpsRemaining);
+        Assert.Equal(0, viewModel.Hops[1].JumpsRemaining);
+        Assert.Contains("Second", viewModel.StatusMessage);
+    }
+
+    [Theory]
+    [InlineData(0, 1, 1, "Third", true)]
+    [InlineData(1, 1, 1, "Third", true)]
+    [InlineData(2, 1, 2, null, false)]
+    [InlineData(0, -1, 0, "Second", true)]
+    [InlineData(1, 0, 1, "Third", true)]
+    [InlineData(2, 2, 2, null, false)]
+    [InlineData(0, 2, 2, null, false)]
+    public async Task RemovingAWaypointPreservesProgressOnTheRemainingRoute(
+        int removedIndex,
+        int initialReachedIndex,
+        int expectedReachedCount,
+        string? expectedNextHop,
+        bool expectedActive
+    )
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: initialReachedIndex);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        viewModel.AutoCopy = false;
+        FollowRouteDocument original = viewModel.CreateSnapshot()!;
+
+        viewModel.RemoveHop(viewModel.Hops[removedIndex]);
+
+        Assert.Equal(original.Hops.Where((_, index) => index != removedIndex), viewModel.Hops.Select(hop => hop.Hop));
+        Assert.Equal(expectedReachedCount, viewModel.ReachedCount);
+        Assert.Equal(expectedNextHop, viewModel.NextHop?.Name);
+        Assert.Equal(expectedActive, viewModel.IsActive);
+        Assert.False(viewModel.AutoCopy);
+        Assert.True(viewModel.HasDefinitionChanges);
+        Assert.False(viewModel.CanSaveChanges);
+        FollowRouteDocument saved = (await new FollowRouteStore(temporaryDirectory).LoadAsync("F123")).Route!;
+        Assert.Equal(3, saved.Hops.Count);
+        Assert.Equal(initialReachedIndex, saved.LastReachedIndex);
+    }
+
+    [Fact]
+    public async Task RemovingWaypointsPreservesPausedStateAndUndoRestoresTheSavedRoute()
+    {
+        await SaveRouteAsync(isActive: false, lastReachedIndex: 0);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+
+        viewModel.RemoveHop(viewModel.Hops[1]);
+
+        Assert.False(viewModel.IsActive);
+        Assert.True(viewModel.CanActivate);
+        Assert.True(viewModel.IsDirty);
+
+        await viewModel.DiscardAsync();
+
+        Assert.Equal(["Sol", "Second", "Third"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(1, viewModel.ReachedCount);
+        Assert.False(viewModel.IsActive);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public async Task RemovingTheLastWaypointLeavesAnEmptyUndoableDraft()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+
+        while (viewModel.HasRoute)
+        {
+            viewModel.RemoveHop(viewModel.Hops[0]);
+        }
+
+        Assert.Empty(viewModel.Hops);
+        Assert.False(viewModel.CanEditWaypoints);
+        Assert.False(viewModel.IsActive);
+        Assert.False(viewModel.IsComplete);
+        Assert.Equal(0, viewModel.ReachedCount);
+        Assert.Null(viewModel.NextHop);
+        Assert.True(viewModel.HasSavedRoute);
+        Assert.True(viewModel.IsDirty);
+        Assert.True(viewModel.DiscardCommand.CanExecute(null));
+
+        await viewModel.DiscardAsync();
+
+        Assert.Equal(3, viewModel.RouteCount);
+        Assert.True(viewModel.CanEditWaypoints);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public async Task RemovingOneDuplicateWaypointDoesNotRemoveOthersOrAcceptStaleRows()
+    {
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        await viewModel.ImportNamesTextAsync("Sol\nSol\nAchenar", appendToRoute: true);
+        RouteHopItemViewModel removed = viewModel.Hops[1];
+
+        viewModel.RemoveHop(removed);
+        viewModel.RemoveHop(removed);
+
+        Assert.Equal(["Sol", "Achenar"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Throws<ArgumentNullException>(() => viewModel.RemoveHop(null!));
+
+        viewModel.SaveAsName = "Corrected route";
+        await viewModel.ConfirmSaveAsAsync();
+
+        FollowRouteDocument saved = (await new FollowRouteStore(temporaryDirectory).LoadAsync("F123")).Route!;
+        Assert.Equal(["Sol", "Achenar"], saved.Hops.Select(hop => hop.Name));
+    }
+
+    [Fact]
+    public async Task WaypointRemovalIsDisabledDuringImportsAndDialogs()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var resolver = new DeferredResolver();
+        RouteWorkspaceViewModel viewModel = CreateViewModel(resolver: resolver);
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
+        Task import = viewModel.ImportNamesTextAsync("Fourth", appendToRoute: true);
+
+        Assert.False(viewModel.CanEditWaypoints);
+        viewModel.RemoveHop(viewModel.Hops[1]);
+        Assert.Equal(3, viewModel.RouteCount);
+
+        resolver.Result.SetResult([]);
+        await import;
+
+        Assert.Equal(4, viewModel.RouteCount);
+        Assert.True(viewModel.CanEditWaypoints);
+        Assert.Contains(nameof(RouteWorkspaceViewModel.CanEditWaypoints), notifications);
+
+        viewModel.NotesCommand.Execute(null);
+        Assert.True(viewModel.IsNotesVisible);
+        Assert.False(viewModel.CanEditWaypoints);
+        viewModel.RemoveHop(viewModel.Hops[1]);
+        Assert.Equal(4, viewModel.RouteCount);
+
+        viewModel.DismissDialogs();
+        Assert.True(viewModel.CanEditWaypoints);
+    }
+
+    [Fact]
+    public async Task BodyChecklistChangesAfterWaypointRemovalStayInTheEditedDraft()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument original = (await store.LoadAsync("F123")).Route!;
+        FollowRouteHop bioHop = original.Hops[1] with
+        {
+            Bio = [new FollowRouteBioTarget("Second A 1", 10, ["Bacteria"])],
+        };
+        await store.SaveAsync(original with { Hops = [original.Hops[0], bioHop, original.Hops[2]] });
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        viewModel.RemoveHop(viewModel.Hops[0]);
+        RouteBioTargetItemViewModel target = Assert.Single(viewModel.Hops[0].BioTargets);
+
+        Assert.Equal(0, target.HopIndex);
+        await viewModel.SetBioTargetCompletedAsync(target, true);
+
+        Assert.True(Assert.Single(viewModel.Hops[0].BioTargets).IsCompleted);
+        Assert.True(viewModel.CanEditWaypoints);
+        Assert.Contains("route draft", viewModel.StatusMessage);
+        FollowRouteDocument saved = (await store.LoadAsync("F123")).Route!;
+        Assert.Equal(3, saved.Hops.Count);
+        Assert.False(Assert.Single(saved.Hops[1].BioTargets).IsCompleted);
+
+        viewModel.SaveAsName = "Edited checklist route";
+        await viewModel.ConfirmSaveAsAsync();
+
+        FollowRouteDocument edited = (await store.LoadAsync("F123")).Route!;
+        Assert.Equal(2, edited.Hops.Count);
+        Assert.Equal("Second", edited.Hops[0].Name);
+        Assert.True(Assert.Single(edited.Hops[0].BioTargets).IsCompleted);
+    }
+
+    [Fact]
+    public async Task WaypointRemovalIsDisabledWhileBodyChecklistProgressIsSaving()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument original = (await store.LoadAsync("F123")).Route!;
+        await store.SaveAsync(
+            original with
+            {
+                Hops =
+                [
+                    original.Hops[0] with
+                    {
+                        Bio = [new FollowRouteBioTarget("Sol A 1", 10, ["Bacteria"])],
+                    },
+                    original.Hops[1],
+                    original.Hops[2],
+                ],
+            }
+        );
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        bool attemptedRemoval = false;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (
+                !attemptedRemoval
+                && eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.CanEditWaypoints)
+                && !viewModel.CanEditWaypoints
+            )
+            {
+                attemptedRemoval = true;
+                viewModel.RemoveHop(viewModel.Hops[0]);
+                Assert.Equal(3, viewModel.RouteCount);
+            }
+        };
+
+        await viewModel.SetBioTargetCompletedAsync(Assert.Single(viewModel.Hops[0].BioTargets), true);
+
+        Assert.True(attemptedRemoval);
+        Assert.True(viewModel.CanEditWaypoints);
+        Assert.Equal(3, viewModel.RouteCount);
+        FollowRouteDocument saved = (await store.LoadAsync("F123")).Route!;
+        Assert.True(Assert.Single(saved.Hops[0].BioTargets).IsCompleted);
+        Assert.False(viewModel.IsDirty);
+
+        await viewModel.SetBioTargetCompletedAsync(Assert.Single(viewModel.Hops[0].BioTargets), false);
+
+        FollowRouteDocument reopened = (await store.LoadAsync("F123")).Route!;
+        Assert.False(Assert.Single(reopened.Hops[0].BioTargets).IsCompleted);
+        Assert.False(viewModel.IsDirty);
+    }
+
+    [Fact]
     public async Task SpanshImportRejectsInvalidClipboardAndLoadsRouteFlags()
     {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 1);
         FollowRouteHop[] imported = new[]
         {
             new FollowRouteHop("Jackson's Lighthouse", 7, new GalacticCoordinate(1, 2, 3), null, true, true),
@@ -1100,6 +1459,20 @@ public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
+        }
+    }
+
+    private sealed class DeferredResolver : IStarSystemResolver
+    {
+        public TaskCompletionSource<IReadOnlyList<StarSystemReference>> Result { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Result.Task;
         }
     }
 
