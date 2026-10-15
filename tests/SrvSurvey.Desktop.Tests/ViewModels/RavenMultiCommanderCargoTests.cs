@@ -227,7 +227,7 @@ public sealed class RavenMultiCommanderCargoTests
                     };
                 }
             }
-            if (path == "/api/project/shared" || path == "/api/system/1/42")
+            if (path is "/api/project/shared" or "/api/system/1/42")
             {
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(project) };
             }

@@ -46,6 +46,7 @@ public sealed class InaraPublisher : IInaraPublisher
     public static readonly TimeSpan InventoryIdleInterval = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(45);
     private const string TimestampKey = "timestamp";
+    private const string EventKey = "event";
     private const int MaximumEventsPerRequest = 128;
     private const int MaximumPayloadBytes = 1024 * 1024;
     private const int MaximumResponseBytes = 1024 * 1024;
@@ -721,6 +722,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return Version.TryParse(numeric.TrimEnd('.'), out Version? version) && version.Major >= 4;
     }
 
+    /// <summary>Rejects declared journal identities that do not match the active commander session.</summary>
     private bool JournalIdentityMatchesSession(JObject entry)
     {
         if (session is null)
@@ -728,7 +730,7 @@ public sealed class InaraPublisher : IInaraPublisher
             return false;
         }
 
-        string? eventName = entry.Value<string>("event");
+        string? eventName = entry.Value<string>(EventKey);
         string? commander = eventName switch
         {
             "Commander" => entry.Value<string>("Name"),
@@ -985,7 +987,7 @@ public sealed class InaraPublisher : IInaraPublisher
         )
         {
             IReadOnlyList<InaraEvent> finalEvents = mapper.Process(
-                new JObject { [TimestampKey] = timeProvider.GetUtcNow().ToString("O"), ["event"] = "Shutdown" },
+                new JObject { [TimestampKey] = timeProvider.GetUtcNow().ToString("O"), [EventKey] = "Shutdown" },
                 CreateContext(update: null),
                 collectEvents: true
             );
@@ -1625,7 +1627,7 @@ public sealed class InaraPublisher : IInaraPublisher
             string content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             var sidecar = JObject.Parse(content);
             if (
-                sidecar.Value<string>("event") != "ShipLocker"
+                sidecar.Value<string>(EventKey) != "ShipLocker"
                 || !DateTimeOffset.TryParse(
                     sidecar.Value<string>(TimestampKey),
                     CultureInfo.InvariantCulture,
@@ -1639,7 +1641,7 @@ public sealed class InaraPublisher : IInaraPublisher
                 warnings.Add("Inara ignored a stale or mismatched ShipLocker.json snapshot.");
                 return entry;
             }
-            sidecar["event"] = journalEvent.EventName;
+            sidecar[EventKey] = journalEvent.EventName;
             sidecar[TimestampKey] = entry[TimestampKey]?.DeepClone();
             return sidecar;
         }

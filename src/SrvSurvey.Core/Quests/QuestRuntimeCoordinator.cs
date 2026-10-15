@@ -138,15 +138,14 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             {
                 foreach (JournalEventEnvelope journalEvent in journalEvents)
                 {
-                    QuestJournalPayloadResult resolved = await QuestJournalPayloadResolver
-                        .ResolveAsync(journalDirectory, journalEvent, allowCargoFile, cancellationToken)
+                    await ProcessJournalEventAsync(
+                            journalDirectory,
+                            journalEvent,
+                            allowCargoFile,
+                            warnings,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
-                    AddWarning(
-                        warnings,
-                        resolved.Warning,
-                        !allowCargoFile && journalEvent.EventName == "Cargo" ? "cargo-attribution" : null
-                    );
-                    await ProcessEventAsync(resolved.Payload, warnings, cancellationToken).ConfigureAwait(false);
                     processedEvents++;
                 }
             }
@@ -167,6 +166,26 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             Changed?.Invoke(this, EventArgs.Empty);
         }
         return new QuestRuntimeUpdateResult(Snapshot, warnings, processedEvents);
+    }
+
+    /// <summary>Resolves one attributable journal payload and reports a recurring cargo warning without changing event order.</summary>
+    private async Task ProcessJournalEventAsync(
+        string journalDirectory,
+        JournalEventEnvelope journalEvent,
+        bool allowCargoFile,
+        ICollection<string> warnings,
+        CancellationToken cancellationToken
+    )
+    {
+        QuestJournalPayloadResult resolved = await QuestJournalPayloadResolver
+            .ResolveAsync(journalDirectory, journalEvent, allowCargoFile, cancellationToken)
+            .ConfigureAwait(false);
+        AddWarning(
+            warnings,
+            resolved.Warning,
+            !allowCargoFile && journalEvent.EventName == "Cargo" ? "cargo-attribution" : null
+        );
+        await ProcessEventAsync(resolved.Payload, warnings, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<QuestRuntimeUpdateResult> RefreshAsync(CancellationToken cancellationToken = default)

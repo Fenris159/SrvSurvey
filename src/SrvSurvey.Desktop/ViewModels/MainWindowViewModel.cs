@@ -4595,7 +4595,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
         TryDispose(FleetCarrierWorkspace.Dispose);
-        TryDispose(journalSources.Dispose);
+        // Keep the owned disposal call visible to resource-lifetime analysis.
+        TryDispose(() => journalSources.Dispose());
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;

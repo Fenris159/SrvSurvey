@@ -1221,15 +1221,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount);
         bool canPublish = !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead && verifiedSource;
         bool canShareData = verifiedSource;
-        EliteStatus? providerStatus =
-            state.LatestStatus is { } status && IsCurrentCommanderCompanionSnapshot(status.Timestamp) ? status : null;
-        CargoSnapshot? providerCargo = state.LatestCargo;
-        if (!allowSharedCargo)
-        {
-            providerCargo = state.AwaitFreshProviderCargoSnapshot
-                ? null
-                : state.ProviderCargoInventory.CreateSnapshot();
-        }
+        EliteStatus? providerStatus = GetProviderStatus();
+        CargoSnapshot? providerCargo = GetProviderCargo(allowSharedCargo);
         try
         {
             dependencies.eddnPublisher.SetSuspended(!verifiedSource);
@@ -1383,6 +1376,20 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 "EDSM processing was isolated from journal tracking: " + exception.Message
             );
         }
+    }
+
+    /// <summary>Provides status only when its timestamp belongs to the currently bound commander.</summary>
+    private EliteStatus? GetProviderStatus() =>
+        state.LatestStatus is { } status && IsCurrentCommanderCompanionSnapshot(status.Timestamp) ? status : null;
+
+    /// <summary>Uses shared cargo for one client or fresh independently attributed inventory for concurrent clients.</summary>
+    private CargoSnapshot? GetProviderCargo(bool allowSharedCargo)
+    {
+        if (allowSharedCargo)
+        {
+            return state.LatestCargo;
+        }
+        return state.AwaitFreshProviderCargoSnapshot ? null : state.ProviderCargoInventory.CreateSnapshot();
     }
 
     /// <summary>Updates quests from the bound journal and allows companion cargo only for verified sources.</summary>
