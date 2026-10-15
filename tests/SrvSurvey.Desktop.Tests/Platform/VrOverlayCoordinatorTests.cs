@@ -37,7 +37,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         Assert.False(reset);
         Assert.Equal(0, runtime.ResetCount);
-        Assert.Contains("Enable OpenVR", viewModel.StatusMessage);
+        Assert.Contains("Enable VR", viewModel.StatusMessage);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Equal(4, runtime.ProbeCount);
 
         viewModel.Enabled = false;
-        Assert.Equal(2, runtime.ShutdownCount);
+        Assert.Equal(3, runtime.ShutdownCount);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         );
     }
 
-    private sealed class StubOpenVrRuntime : IOpenVrRuntime
+    private sealed class StubOpenVrRuntime : IVrOverlayRuntime
     {
         public bool IsInitialized { get; private set; }
 

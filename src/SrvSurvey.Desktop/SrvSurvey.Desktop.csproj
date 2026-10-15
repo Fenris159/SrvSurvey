@@ -107,6 +107,22 @@
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.dll') and ('$(RuntimeIdentifier)' == 'win-x64' or ('$(RuntimeIdentifier)' == '' and '$(OS)' == 'Windows_NT'))">
+    <Content Include="../../artifacts/openxr-layer/*"
+             Link="OpenXR/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="VerifyWindowsOpenXrLayerPackage"
+          BeforeTargets="ComputeFilesToPublish"
+          Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.dll')"
+           Text="Build and install src/SrvSurvey.OpenXrLayer into artifacts/openxr-layer before publishing Windows packages. See docs/vr-vdxr.md." />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.json') or !Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/Install-OpenXrLayer.ps1')"
+           Text="The Windows OpenXR package is incomplete. Install its manifest and registration script with cmake --install." />
+  </Target>
+
   <!-- Native packages mark their PDBs as runtime assets, so DebugSymbols=false does not exclude them.
        Keep symbols in development outputs, but omit them from player release packages. -->
   <Target Name="ExcludeReleasePackageSymbols"

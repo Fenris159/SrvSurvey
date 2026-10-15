@@ -1352,6 +1352,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The experimental VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A VR override must contain only a calibration block.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9856,7 +9864,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
-    "Text": "Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays.",
+    "Text": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -10248,7 +10256,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Choose Virtual Desktop when its Windows Streamer is configured to launch SteamVR, not its VDXR path.",
+    "Text": "Choose Virtual Desktop for its SteamVR mode. Choose Meta Quest \u2014 VDXR (experimental) for an existing Elite VDXR setup; register the OpenXR layer from the Windows package and restart Elite.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -13329,12 +13337,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Connect or wake the headset",
+    "Text": "Connect the VDXR OpenXR layer before resetting the overlay origin.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Connect the VR runtime used by Elite Dangerous, verify SrvSurvey overlays, and calibrate each panel safely on Windows or Linux.",
@@ -13425,7 +13433,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Connecting SrvSurvey to the OpenVR overlay compositor.",
+    "Text": "Connecting SrvSurvey to the selected overlay transport.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18475,14 +18483,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enable OpenVR overlays before resetting headset orientation.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
-  },
-  {
     "Text": "Enable Raven Colonial before loading a system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18547,6 +18547,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Enable Surface mining",
     "IsFormat": false,
     "SourceKinds": [
@@ -18561,6 +18569,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable VR overlays before resetting headset orientation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "Enable VR overlays in SrvSurvey. The status changes from Waiting to Connecting and then Connected automatically.",
@@ -19268,14 +19284,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Every route in this panel feeds the same OpenVR overlay backend. An OpenXR-only Elite session does not provide the external-overlay surface SrvSurvey needs.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Exact criteria evaluated for {0} biological {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -19530,6 +19538,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Experimental rig bar detection",
@@ -27947,6 +27971,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "KeepBioPlottersVisibleAfterDss",
     "IsFormat": false,
     "SourceKinds": [
@@ -31536,6 +31568,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "Meta Quest \u2014 VDXR (experimental)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Meta Quest \u2014 Virtual Desktop",
     "IsFormat": false,
     "SourceKinds": [
@@ -31544,23 +31584,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Meta headsets can receive SrvSurvey overlays when a supported bridge presents the headset to SteamVR; the SrvSurvey backend stays OpenVR in every case.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Meta users must launch Elite through SteamVR. A session running directly in the Meta runtime cannot receive SrvSurvey\u0027s OpenVR overlays.",
+    "Text": "Meta headsets can use a SteamVR bridge or the experimental VDXR route. Select the route that matches the runtime actually used by Elite.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36795,7 +36819,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "OpenComposite is not a compatible workaround. It translates OpenVR scene applications toward OpenXR, while overlay-application support remains unfinished.",
+    "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds passive panels within that game session.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36809,22 +36833,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "OpenVR connection failed",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
-  },
-  {
-    "Text": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "OpenVR could not be initialized: {0}",
@@ -36881,6 +36889,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "OpenXR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFrameBridge.cs"
   },
   {
     "Text": "Opened the Guardian survey Discord channel.",
@@ -37587,6 +37603,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Overlay frame completed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "Overlay growth anchor \u0027{0}\u0027 must be left or right.",
@@ -40934,6 +40958,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Published the OpenXR overlay frames.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Published {0} contributed cargo units to {1}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -41046,7 +41078,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+    "Text": "Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -41143,6 +41175,14 @@
   },
   {
     "Text": "Quest 2, 3, 3S, Pro, Rift, and Rift S on Windows",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Quest 3 and other Virtual Desktop headsets on Windows x64",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -41341,6 +41381,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Queued the OpenXR overlay frame.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Queued {0} EDSM journal event(s); {1} waiting for the next batch.",
@@ -46380,6 +46428,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Run Install-OpenXrLayer.ps1 from the OpenXR folder in the Windows package to register the layer for your Windows account.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Run Lua",
@@ -52158,6 +52214,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey OpenXR layer direct to VDXR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "SrvSurvey Ram Tah overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -53150,14 +53214,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Start SteamVR and wait until the headset icon reports ready.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53648,14 +53704,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
-    "Text": "SteamVR and headset detected",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
-  },
-  {
     "Text": "SteamVR headset",
     "IsFormat": false,
     "SourceKinds": [
@@ -53672,28 +53720,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
-    "Text": "SteamVR overlays",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "SteamVR/OpenVR is active with {0} live overlays.{1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
-  },
-  {
-    "Text": "SteamVR/OpenVR is not available",
+    "Text": "SteamVR routes require a ready SteamVR headset. The experimental VDXR route waits for a live Elite VDXR session and does not support controller-pointer interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "SteamVR routes use the OpenVR overlay backend. The experimental VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "SteamVR/OpenVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "SteamVR/OpenVR is not installed or registered.",
@@ -56346,6 +56394,86 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The separate VDXR route does not require SteamVR; direct Meta runtime overlays remain unsupported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The OpenXR frame mailbox is unavailable: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The OpenXR layer could not submit the overlay (OpenXR error {0}). Restart Elite to retry.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The OpenXR layer reached Elite, but its active runtime is not VDXR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The OpenXR layer reached Elite, but this session does not use Direct3D 11.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The OpenXR layer supports at most 16 overlay panels.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFramePacket.cs"
+  },
+  {
+    "Text": "The OpenXR mailbox packet size is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFrameBridge.cs"
+  },
+  {
+    "Text": "The OpenXR overlay frame has invalid pixels, dimensions, or opacity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFramePacket.cs"
+  },
+  {
+    "Text": "The OpenXR overlay frames could not be published: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The OpenXR overlay frames exceed the 64 MiB transport limit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFramePacket.cs"
+  },
+  {
     "Text": "The Ram Tah workspace tracks mission logs, active obelisks, required combinations, and decoded entries.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56504,6 +56632,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
+    "Text": "The VDXR OpenXR layer is active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The VDXR OpenXR layer is not connected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The VR calibration backup did not match its source.",
@@ -57488,6 +57632,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The experimental VDXR overlay layer requires Windows x64 and Direct3D 11.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The experimental VDXR route displays passive panels. Controller-pointer interaction is available through SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
@@ -59328,6 +59488,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "The selected VR transport is not available",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "The selected backup was restored before loading your workspaces.",
@@ -63459,6 +63627,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "VDXR / OpenXR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "VEHICLE / GAME MODE",
     "IsFormat": false,
     "SourceKinds": [
@@ -63556,6 +63732,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
+    "Text": "VR connection failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "VR connection failed: restart the selected VR session and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63594,6 +63786,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "VR overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "VR overlays are click-through again.",
@@ -63642,6 +63842,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
+  },
+  {
+    "Text": "VR session detected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "Validated embedded reference catalogs are active.",
@@ -64222,6 +64430,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/MiningDetectionCoordinator.cs"
   },
   {
+    "Text": "Waiting for Elite\u0027s VDXR session.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Waiting for Frontier...",
     "IsFormat": false,
     "SourceKinds": [
@@ -64470,7 +64686,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
-    "Text": "Waiting for the selected OpenVR runtime.",
+    "Text": "Waiting for the selected VR session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Waiting for the selected VR session.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64500,6 +64724,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
+  },
+  {
+    "Text": "Waiting: for SteamVR routes, confirm SteamVR is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "War",
@@ -65149,14 +65381,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
-  },
-  {
-    "Text": "Whichever bridge you choose, SteamVR must show the headset as ready before SrvSurvey can create overlays.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "While a polygon is active, toggling ship shields captures the current point just like the original builder.",
@@ -68216,6 +68440,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "frames.bin",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFrameBridge.cs"
+  },
+  {
     "Text": "frameshiftdrive",
     "IsFormat": false,
     "SourceKinds": [
@@ -69369,6 +69601,14 @@
   },
   {
     "Text": "meta-steam-link",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "meta-vdxr",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -72353,6 +72593,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "writer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFrameBridge.cs"
+  },
+  {
     "Text": "www.edsm.net",
     "IsFormat": false,
     "SourceKinds": [
@@ -73143,6 +73391,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "{0} is active with {1} live overlays.{2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "{0} is already registered as \u0027{1}\u0027, not \u0027{2}\u0027.",

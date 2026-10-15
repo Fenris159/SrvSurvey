@@ -56,9 +56,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         try
         {
             catalog = calibrationStore.Load();
-            statusMessage = preferences.Enabled
-                ? "Waiting for the selected OpenVR runtime."
-                : "VR overlays are disabled.";
+            statusMessage = preferences.Enabled ? "Waiting for the selected VR session." : "VR overlays are disabled.";
         }
         catch (Exception exception)
             when (exception
@@ -153,7 +151,10 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public bool IsCustomRuntime => SelectedPlatformProfile.IsCustom;
 
-    public string PlatformSupportMessage => platformSupportMessage;
+    public string PlatformSupportMessage =>
+        SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId
+            ? "Experimental VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
+            : platformSupportMessage;
 
     private static string CreatePlatformSupportMessage()
     {

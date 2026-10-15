@@ -6,6 +6,7 @@ public static class VrPlatformProfileCatalog
     public const string MetaViaSteamVrProfileId = "meta-via-steamvr";
     public const string MetaSteamLinkProfileId = "meta-steam-link";
     public const string MetaVirtualDesktopProfileId = "meta-virtual-desktop";
+    public const string MetaVdxrProfileId = "meta-vdxr";
     public const string MetaAlvrProfileId = "meta-alvr";
     public const string WindowsMixedRealityProfileId = "wmr-via-steamvr";
     public const string CustomOpenVrProfileId = "custom-openvr";
@@ -58,6 +59,18 @@ public static class VrPlatformProfileCatalog
                 "Install Virtual Desktop on the Quest and Virtual Desktop Streamer on the Windows PC.",
                 "Connect in Virtual Desktop, launch SteamVR from its VR menu, and confirm the headset is ready.",
                 "Launch Elite in that SteamVR session, then enable SrvSurvey overlays below.",
+            ]
+        ),
+        new(
+            MetaVdxrProfileId,
+            "Meta Quest — VDXR (experimental)",
+            "Quest 3 and other Virtual Desktop headsets on Windows x64",
+            "SrvSurvey OpenXR layer direct to VDXR",
+            "Experimental Windows Direct3D 11 route without SteamVR. Displays passive panels; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+            [
+                "Run Install-OpenXrLayer.ps1 from the OpenXR folder in the Windows package to register the layer for your Windows account.",
+                "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",
+                "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Use the existing calibration controls to place panels; controller interaction is not available on this experimental route.",
             ]
         ),
         new(

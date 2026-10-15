@@ -546,10 +546,10 @@
       <StackPanel Spacing="18">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="SteamVR overlays" />
+            <TextBlock Classes="card-title" Text="VR overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+                       Text="Put live SrvSurvey panels into your headset through SteamVR or the experimental VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
           </StackPanel>
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"
@@ -720,7 +720,7 @@
                          Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays." />
+                         Text="Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays." />
               <Button Grid.Column="1"
                       Classes="secondary"
                       Command="{Binding VrOverlay.CancelCommand}"

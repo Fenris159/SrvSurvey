@@ -85,6 +85,23 @@ public sealed class VrOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public void VdxrProfilePersistsAndExplainsTheRequiredOpenXrLayer()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.Contains("OpenXR layer", viewModel.PlatformSupportMessage);
+        Assert.Contains("Direct3D 11", viewModel.PlatformSupportMessage);
+        Assert.Contains(
+            viewModel.SelectedPlatformProfile.PairingSteps,
+            step => step.Contains("Runtime: VDXR", StringComparison.Ordinal)
+        );
+        Assert.Equal(
+            VrPlatformProfileCatalog.MetaVdxrProfileId,
+            new VrOverlaySettingsStore(SettingsPath).Load().RuntimeProfileId
+        );
+    }
+
+    [Fact]
     public void DisablingOverlaysReportsOffWithoutRequestingAnotherConnection()
     {
         VrOverlayViewModel viewModel = CreateViewModel();

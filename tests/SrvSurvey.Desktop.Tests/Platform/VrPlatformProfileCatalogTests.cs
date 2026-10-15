@@ -7,7 +7,7 @@ public sealed class VrPlatformProfileCatalogTests
     [Fact]
     public void EveryConnectionRouteExplainsCompatibilityAndActivation()
     {
-        Assert.Equal(7, VrPlatformProfileCatalog.All.Count);
+        Assert.Equal(8, VrPlatformProfileCatalog.All.Count);
         Assert.Equal(
             VrPlatformProfileCatalog.All.Count,
             VrPlatformProfileCatalog.All.Select(profile => profile.Id).Distinct(StringComparer.Ordinal).Count()
