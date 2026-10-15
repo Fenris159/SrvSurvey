@@ -75,6 +75,14 @@ public sealed partial class RouteWindow : Window
         }
     }
 
+    private void RemoveHop_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is Button { DataContext: RouteHopItemViewModel hop })
+        {
+            viewModel.RemoveHop(hop);
+        }
+    }
+
     private async void BioTargetCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (sender is CheckBox { DataContext: RouteBioTargetItemViewModel target })
@@ -90,7 +98,7 @@ public sealed partial class RouteWindow : Window
 
     private async void ImportNames_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        await viewModel.ImportNamesTextAsync(await ReadClipboardAsync());
+        await viewModel.ImportNamesTextAsync(await ReadClipboardAsync(), appendToRoute: true);
     }
 
     private async void ImportFile_Click(object? sender, RoutedEventArgs eventArgs)

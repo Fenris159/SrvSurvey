@@ -11281,6 +11281,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15848,6 +15856,14 @@
   },
   {
     "Text": "Delete this route?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Delete waypoint",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -26623,6 +26639,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Import waypoints",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26837,14 +26861,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Imports replace the on-screen draft. Nothing is written until Saved.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Import\u2026",
@@ -44947,6 +44963,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
+    "Text": "Removed {0} from the route draft.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Removed {0} stale installation plans.",
     "IsFormat": true,
     "SourceKinds": [
@@ -45089,14 +45113,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Replace from import",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Replay export failed: {0}",

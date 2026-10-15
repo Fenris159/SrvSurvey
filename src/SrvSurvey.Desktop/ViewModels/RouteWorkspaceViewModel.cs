@@ -387,6 +387,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public bool CanSaveChanges =>
         HasSavedRoute && HasProgressChanges && !HasDefinitionChanges && !IsBusy && !IsDialogVisible;
 
+    public bool CanEditWaypoints => HasRoute && !IsBusy && !IsDialogVisible && bioProgressLock.CurrentCount > 0;
+
     public int RouteCount => draftHops.Length;
 
     public int ReachedCount => Math.Clamp(lastReachedIndex + 1, 0, draftHops.Length);
@@ -1036,7 +1038,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         return LoadAsync();
     }
 
-    public async Task ImportNamesAsync(IEnumerable<string> names)
+    public async Task ImportNamesAsync(IEnumerable<string> names, bool appendToRoute = false)
     {
         if (!HasProfile || IsBusy)
         {
@@ -1058,7 +1060,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 StatusMessage = "No system names were found to import.";
                 return;
             }
-            ApplyImportedHops(result.Hops);
+            if (appendToRoute && HasRoute)
+            {
+                ApplyDraft([.. draftHops, .. result.Hops], lastReachedIndex, IsActive, AutoCopy);
+            }
+            else
+            {
+                ApplyImportedHops(result.Hops);
+            }
             StatusMessage =
                 $"Imported {result.Hops.Count:N0} systems; "
                 + $"{result.ResolvedCount:N0} resolved and "
@@ -1075,7 +1084,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    public Task ImportNamesTextAsync(string? text)
+    public Task ImportNamesTextAsync(string? text, bool appendToRoute = false)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -1083,7 +1092,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        return ImportNamesAsync(RouteNameImporter.ParseNames(text));
+        return ImportNamesAsync(RouteNameImporter.ParseNames(text), appendToRoute);
     }
 
     public void ReportImportError(string message)
@@ -1201,6 +1210,21 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    public void RemoveHop(RouteHopItemViewModel hop)
+    {
+        ArgumentNullException.ThrowIfNull(hop);
+        if (!CanEditWaypoints || !hops.Contains(hop))
+        {
+            return;
+        }
+
+        int index = hop.Index;
+        int nextLastReachedIndex = index <= lastReachedIndex ? lastReachedIndex - 1 : lastReachedIndex;
+        ApplyDraft([.. draftHops[..index], .. draftHops[(index + 1)..]], nextLastReachedIndex, IsActive, AutoCopy);
+        StatusMessage = $"Removed {hop.Name} from the route draft.";
+        _ = RetainWorkspaceAsync();
+    }
+
     public void SetProgressThrough(int index, bool reached)
     {
         if (index < 0 || index >= draftHops.Length)
@@ -1224,6 +1248,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         await bioProgressLock.WaitAsync();
         try
         {
+            OnPropertyChanged(nameof(CanEditWaypoints));
             if (
                 target.HopIndex < 0
                 || target.HopIndex >= draftHops.Length
@@ -1240,7 +1265,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
-            FollowRouteBioTarget original = current;
+            FollowRouteHop originalHop = draftHops[target.HopIndex];
             bool saveLibraryProgress = HasSavedRoute && !HasDefinitionChanges;
             ReplaceDraftBioTarget(target.HopIndex, target.TargetIndex, current with { IsCompleted = isCompleted });
             RefreshPresentation();
@@ -1261,18 +1286,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     target.TargetIndex,
                     isCompleted
                 );
-                ReplaceDraftBioTarget(
-                    target.HopIndex,
-                    target.TargetIndex,
-                    loadedRoute.Hops[target.HopIndex].BioTargets[target.TargetIndex]
-                );
+                draftHops[target.HopIndex] = loadedRoute.Hops[target.HopIndex];
                 RefreshPresentation();
                 StatusMessage = isCompleted ? $"Marked {target.BodyName} complete." : $"Reopened {target.BodyName}.";
                 await RetainWorkspaceAsync();
             }
             catch (Exception exception) when (IsExpectedException(exception))
             {
-                ReplaceDraftBioTarget(target.HopIndex, target.TargetIndex, original);
+                draftHops[target.HopIndex] = originalHop;
                 RefreshPresentation();
                 StatusMessage = "Body destination progress could not be saved: " + exception.Message;
             }
@@ -1280,6 +1301,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         finally
         {
             bioProgressLock.Release();
+            OnPropertyChanged(nameof(CanEditWaypoints));
         }
     }
 
@@ -2393,6 +2415,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private void RaiseCommands()
     {
+        OnPropertyChanged(nameof(CanEditWaypoints));
         openWindowCommand.RaiseCanExecuteChanged();
         refreshCommand.RaiseCanExecuteChanged();
         saveCommand.RaiseCanExecuteChanged();
