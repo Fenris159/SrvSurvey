@@ -11,8 +11,10 @@ remain the property of Frontier Developments plc. EDSY's source header
 states that its use of these data is authorized under Frontier's
 [media usage rules](https://forums.frontier.co.uk/threads/elite-dangerous-media-usage-rules.510879/).
 
-EDSY's design, markup and scripts are copyright (c) 2015–2025 taleden and
-licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+At this pinned revision, `edsy.js` attributes copyright (c) 2015–2024 taleden,
+and `eddb.js` attributes copyright (c) 2015–2025 taleden. Both source headers
+license EDSY's design, markup and scripts under
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
 SrvSurvey extracts factual identities, preset metadata and fitting data;
 the EDSY scripts are fetched only by the developer import tool and are not
 included in the application. SrvSurvey's C# lookup, tracking and export

@@ -7,15 +7,27 @@ public static class SpanshPlannerCatalog
     private const string DestinationSystem = "Destination system";
     private const string CalculateStartingFuel = "calculate_starting_fuel";
 
+    /// <summary>
+    /// Defines a single-system field and whether a value is required.
+    /// </summary>
     private static SpanshPlannerField System(string key, string label, bool required = true) =>
         new(key, label, SpanshPlannerFieldType.System, Required: required);
 
+    /// <summary>
+    /// Defines a numeric field with its website default and accepted bounds.
+    /// </summary>
     private static SpanshPlannerField Number(string key, string label, string value, double min, double? max = null) =>
         new(key, label, SpanshPlannerFieldType.Number, value, true, min, max);
 
+    /// <summary>
+    /// Defines a checkbox using the website's numeric boolean encoding.
+    /// </summary>
     private static SpanshPlannerField Flag(string key, string label, bool value) =>
         new(key, label, SpanshPlannerFieldType.Boolean, value ? "1" : "0");
 
+    /// <summary>
+    /// Defines an ordered list of system names submitted as repeated parameters.
+    /// </summary>
     private static SpanshPlannerField Systems(string key, string label, bool required = false) =>
         new(
             key,

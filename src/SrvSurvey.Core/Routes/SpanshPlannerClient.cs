@@ -6,6 +6,9 @@ namespace SrvSurvey.Core.Routes;
 
 public interface ISpanshPlannerClient
 {
+    /// <summary>
+    /// Submits validated planner inputs and returns the job reference used by the route importer.
+    /// </summary>
     Task<SpanshRouteReference> SubmitAsync(SpanshPlannerRequest request, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +25,9 @@ public sealed class SpanshPlannerClient(
     private readonly Uri origin = origin ?? SpanshApi.Origin;
     private readonly IStarSystemResolver resolver = resolver ?? new SpanshStarSystemResolver(client, origin);
 
+    /// <summary>
+    /// Creates the shared planner HTTP client with a bounded request timeout.
+    /// </summary>
     private static HttpClient CreateSharedClient()
     {
         var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
@@ -29,6 +35,9 @@ public sealed class SpanshPlannerClient(
         return client;
     }
 
+    /// <summary>
+    /// Submits validated planner inputs and returns the job reference used by the route importer.
+    /// </summary>
     public async Task<SpanshRouteReference> SubmitAsync(
         SpanshPlannerRequest request,
         CancellationToken cancellationToken = default
@@ -68,6 +77,9 @@ public sealed class SpanshPlannerClient(
         return new SpanshRouteReference(id, request.Planner.Kind);
     }
 
+    /// <summary>
+    /// Resolves exact system names to ID64 values for planners that require identifiers.
+    /// </summary>
     private async Task<IReadOnlyList<KeyValuePair<string, string>>> PrepareParametersAsync(
         SpanshPlannerRequest request,
         CancellationToken cancellationToken

@@ -420,6 +420,9 @@ internal static class OverlayEditorPreviewFactories
         return new JumpInfoOverlayViewModel(jump, Caps());
     }
 
+    /// <summary>
+    /// Creates representative carrier logistics, jump timing and ETR for the overlay editor.
+    /// </summary>
     public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute(
         FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown
     )

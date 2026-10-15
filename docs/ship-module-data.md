@@ -73,12 +73,14 @@ engineering modifiers are synthesized from incomplete upstream blueprints.
 
 ## Validation
 
-The Sonar-enabled Release solution build passes with zero warnings/errors.
-`pwsh ./tools/Test-ChangedCodeQuality.ps1 -BaseRef HEAD` passes CSharpier,
-seven-language localization freshness, changed-line Sonar/style checks,
-2,301 Core tests, 3,768 Desktop tests (three platform-specific skips),
-the 41-case journal upload scenario matrix and localization tests.
-Changed production line/branch coverage is 95.8% (595/621 points).
+The pre-commit hook runs
+`pwsh ./tools/Test-ChangedCodeQuality.ps1 -BaseRef origin/SrvSurvey-Avalonia`
+to verify CSharpier, seven-language localization freshness, changed-line
+Sonar/style rules, the Core and Desktop test suites, mandatory journal-upload
+scenarios, and localization tests. Changed production code must meet the
+80% line/branch coverage gate. The standard Release solution build also treats
+warnings as errors. Run-specific counts and results belong in the PR evidence
+and CI reports so these instructions remain current as the suites grow.
 
 Two JSON exports produced by the C# `ShipLoadout.ExportSlef` implementation
 were imported and re-exported with the pinned upstream EDSY headless API,

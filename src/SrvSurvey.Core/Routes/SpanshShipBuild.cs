@@ -7,6 +7,9 @@ namespace SrvSurvey.Core.Routes;
 /// <summary>Reads Spansh's jump inputs from SLEF, keeping actual journal engineering values.</summary>
 public static class SpanshShipBuild
 {
+    /// <summary>
+    /// Derives Spansh jump inputs from SLEF and reports incomplete ship data clearly.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> GetJumpParameters(string slef)
     {
         try
@@ -24,6 +27,9 @@ public static class SpanshShipBuild
         }
     }
 
+    /// <summary>
+    /// Combines actual ship mass and engineering with EDSY drive facts and booster bonuses.
+    /// </summary>
     private static Dictionary<string, string> ReadJumpParameters(string slef)
     {
         using var document = JsonDocument.Parse(slef);
@@ -61,6 +67,9 @@ public static class SpanshShipBuild
         return values.ToDictionary(pair => pair.Key, pair => pair.Value.ToString("R", CultureInfo.InvariantCulture));
     }
 
+    /// <summary>
+    /// Reads an actual engineering modifier or uses the supported drive's base value.
+    /// </summary>
     private static double Modifier(JsonElement module, string label, double fallback)
     {
         if (
@@ -78,6 +87,9 @@ public static class SpanshShipBuild
         return modifier.ValueKind == JsonValueKind.Undefined ? fallback : ReadNumber(modifier, "Value");
     }
 
+    /// <summary>
+    /// Requires a finite nonnegative numeric value for a ship-build input.
+    /// </summary>
     private static double ReadNumber(JsonElement element, string key)
     {
         if (

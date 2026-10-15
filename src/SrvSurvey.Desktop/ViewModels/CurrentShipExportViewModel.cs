@@ -30,6 +30,9 @@ public sealed class CurrentShipExportViewModel : WorkspaceObservable
             ? "Paste this ship's latest recorded loadout into EDSY's Import dialog."
             : "Board your ship and read a complete Loadout after outfitting to enable export.";
 
+    /// <summary>
+    /// Refreshes export readiness from the identified commander's current ship and status.
+    /// </summary>
     public void Update(JournalSessionState session, EliteStatus? status, bool awaitingCommander)
     {
         ShipLoadout? next = session.ShipLoadout.Current;

@@ -8,6 +8,9 @@ public sealed class ShipModuleCatalogTests
 {
     private static readonly ShipModuleCatalog Catalog = ShipModuleCatalog.Default;
 
+    /// <summary>
+    /// Checks that catalog includes mercenary modules and ship specific armour without invented blueprint symbols.
+    /// </summary>
     [Fact]
     public void CatalogIncludesMercenaryModulesAndShipSpecificArmourWithoutInventedBlueprintSymbols()
     {
@@ -27,6 +30,9 @@ public sealed class ShipModuleCatalogTests
         Assert.Null(Catalog.FindModule("Int_LargeBuggyBay_Size2_Class3_Free"));
     }
 
+    /// <summary>
+    /// Checks that hangar and general fitting rules match the source.
+    /// </summary>
     [Theory]
     [InlineData("SideWinder", "Slot01_Size2", "Int_BuggyBay_Size2_Class2", ModuleFit.Allowed)]
     [InlineData("SideWinder", "Slot01_Size2", "Int_LargeBuggyBay_Size2_Class3", ModuleFit.RestrictedShip)]
@@ -64,6 +70,9 @@ public sealed class ShipModuleCatalogTests
         ModuleFit expected
     ) => Assert.Equal(expected, Catalog.CheckFit(ship, slot, module));
 
+    /// <summary>
+    /// Checks that all EDSY hardpoints and active utilities are available while passive internals remain excluded.
+    /// </summary>
     [Fact]
     public void AllEdsyHardpointsAndActiveUtilitiesAreAvailableWhilePassiveInternalsRemainExcluded()
     {
@@ -105,6 +114,9 @@ public sealed class ShipModuleCatalogTests
         }
     }
 
+    /// <summary>
+    /// Checks that firegroups identify mercenary weapons from engineering without localized names.
+    /// </summary>
     [Theory]
     [InlineData("Hpt_Railgun_Fixed_Medium", "Weapon_EnduringFeedback", "Enduring Feedback Rail Gun")]
     [InlineData("Hpt_CausticMissile_Fixed_Medium", "Weapon_HighYieldEnzyme", "High-Yield Enzyme Missile Rack")]
@@ -138,6 +150,9 @@ public sealed class ShipModuleCatalogTests
         Assert.StartsWith(name, Catalog.GetFiregroupName(document.RootElement.GetProperty("Modules")[0]));
     }
 
+    /// <summary>
+    /// Checks that firegroup catalog uses known localized latest merc gear and does not guess unknown names.
+    /// </summary>
     [Fact]
     public void FiregroupCatalogUsesKnownLocalizedLatestMercGearAndDoesNotGuessUnknownNames()
     {

@@ -15,6 +15,9 @@ public sealed class SpanshPlannerTests
         {"Slot":"Slot01_Size1","Item":"Int_GuardianFSDBooster_Size1"}]}}]
         """;
 
+    /// <summary>
+    /// Checks that catalog includes only requested planners and keeps carrier separate.
+    /// </summary>
     [Fact]
     public void CatalogIncludesOnlyRequestedPlannersAndKeepsCarrierSeparate()
     {
@@ -36,6 +39,9 @@ public sealed class SpanshPlannerTests
         Assert.DoesNotContain(SpanshPlannerCatalog.ShipPlanners[4].Fields, field => field.Key == "use_mapping_value");
     }
 
+    /// <summary>
+    /// Checks that each planner submits verified endpoint and repeated unbracketed keys.
+    /// </summary>
     [Theory]
     [InlineData(0, "route")]
     [InlineData(1, "riches/route")]
@@ -88,6 +94,9 @@ public sealed class SpanshPlannerTests
         }
     }
 
+    /// <summary>
+    /// Checks that carrier uses selected capacity and manual fuel only when requested.
+    /// </summary>
     [Theory]
     [InlineData("Fleet Carrier", "25000", "25000")]
     [InlineData("Squadron Carrier", "60000", "15000")]
@@ -107,6 +116,9 @@ public sealed class SpanshPlannerTests
         Assert.DoesNotContain(request.Parameters, pair => pair.Key == "refuel_destinations");
     }
 
+    /// <summary>
+    /// Checks that carrier rejects over capacity and refuel stops outside its route.
+    /// </summary>
     [Theory]
     [InlineData("capacity_used", "30000")]
     [InlineData("tritium_stored", "30000")]
@@ -123,6 +135,9 @@ public sealed class SpanshPlannerTests
         Assert.Throws<ArgumentException>(() => planner.CreateRequest(values));
     }
 
+    /// <summary>
+    /// Checks that required and bounded inputs are validated before submission.
+    /// </summary>
     [Theory]
     [InlineData("range", "")]
     [InlineData("range", "NaN")]
@@ -138,6 +153,9 @@ public sealed class SpanshPlannerTests
         Assert.Throws<ArgumentException>(() => planner.CreateRequest(values));
     }
 
+    /// <summary>
+    /// Checks that ship build requires JSON container.
+    /// </summary>
     [Theory]
     [InlineData("null")]
     [InlineData("true")]
@@ -149,6 +167,9 @@ public sealed class SpanshPlannerTests
         Assert.Throws<ArgumentException>(() => planner.CreateRequest(values));
     }
 
+    /// <summary>
+    /// Checks that unengineered and sco drives use EDSY facts.
+    /// </summary>
     [Theory]
     [InlineData("int_hyperdrive_size2_class5", "2", "0.012", "90", "0.9", "4")]
     [InlineData("Int_Hyperdrive_Overcharge_Size2_Class5", "2", "0.013", "100", "1", "4")]
@@ -178,6 +199,9 @@ public sealed class SpanshPlannerTests
         Assert.Equal("2", parameters["injection_multiplier"]);
     }
 
+    /// <summary>
+    /// Checks that incomplete builds never invent jump inputs.
+    /// </summary>
     [Theory]
     [InlineData("{}")]
     [InlineData("[]")]
@@ -187,6 +211,9 @@ public sealed class SpanshPlannerTests
     public void IncompleteBuildsNeverInventJumpInputs(string json) =>
         Assert.ThrowsAny<ArgumentException>(() => SpanshShipBuild.GetJumpParameters(json));
 
+    /// <summary>
+    /// Checks that engineering fallback and invalid journal numbers are handled.
+    /// </summary>
     [Fact]
     public void EngineeringFallbackAndInvalidJournalNumbersAreHandled()
     {
@@ -202,6 +229,9 @@ public sealed class SpanshPlannerTests
         );
     }
 
+    /// <summary>
+    /// Checks that invalid provider responses are reported.
+    /// </summary>
     [Theory]
     [InlineData("{\"status\":\"error\",\"error\":\"No route found\"}", typeof(InvalidDataException))]
     [InlineData("{\"job\":\"bad\"}", typeof(InvalidDataException))]
@@ -217,9 +247,12 @@ public sealed class SpanshPlannerTests
                 SpanshPlannerCatalog.ShipPlanners[0].CreateRequest(ValidValues(SpanshPlannerCatalog.ShipPlanners[0]))
             )
         );
-        Assert.IsAssignableFrom(exceptionType, failure);
+        Assert.IsType(exceptionType, failure, exactMatch: false);
     }
 
+    /// <summary>
+    /// Checks that exact planner rejects unresolved system instead of choosing a similar name.
+    /// </summary>
     [Fact]
     public async Task ExactPlannerRejectsUnresolvedSystemInsteadOfChoosingASimilarName()
     {
@@ -233,6 +266,9 @@ public sealed class SpanshPlannerTests
         Assert.Null(handler.Method);
     }
 
+    /// <summary>
+    /// Checks that planner responses are bounded and cancellation is propagated.
+    /// </summary>
     [Fact]
     public async Task PlannerResponsesAreBoundedAndCancellationIsPropagated()
     {
@@ -246,9 +282,15 @@ public sealed class SpanshPlannerTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.SubmitAsync(request, cancelled.Token));
     }
 
+    /// <summary>
+    /// Provides every supported ship and carrier planner as request-test cases.
+    /// </summary>
     private static SpanshPlannerDefinition[] AllPlanners() =>
         SpanshPlannerCatalog.ShipPlanners.Concat(SpanshPlannerCatalog.CarrierPlanners).ToArray();
 
+    /// <summary>
+    /// Builds valid form inputs for the selected planner's required fields.
+    /// </summary>
     private static Dictionary<string, string> ValidValues(SpanshPlannerDefinition planner)
     {
         var values = planner.Fields.ToDictionary(field => field.Key, field => field.Default);
@@ -275,6 +317,9 @@ public sealed class SpanshPlannerTests
         return values;
     }
 
+    /// <summary>
+    /// Decodes captured form data while retaining repeated parameter values.
+    /// </summary>
     private static string[] ReadForm(string body, string key) =>
         body.Split('&')
             .Select(pair => pair.Split('=', 2))
@@ -286,6 +331,9 @@ public sealed class SpanshPlannerTests
     {
         public List<string> Queries { get; } = [];
 
+        /// <summary>
+        /// Returns deterministic system matches without contacting an external provider.
+        /// </summary>
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
             CancellationToken cancellationToken = default
@@ -306,6 +354,9 @@ public sealed class SpanshPlannerTests
         public string Body { get; private set; } = "";
         public string? ContentType { get; private set; }
 
+        /// <summary>
+        /// Serves configured HTTP fixtures and captures requests without network access.
+        /// </summary>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken

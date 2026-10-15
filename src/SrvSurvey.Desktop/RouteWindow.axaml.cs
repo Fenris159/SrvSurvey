@@ -28,6 +28,9 @@ public sealed partial class RouteWindow : Window
         Close();
     }
 
+    /// <summary>
+    /// Opens or focuses the workspace's owned Spansh search window.
+    /// </summary>
     private void SpanshSearch_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (searchWindow is not null)
@@ -42,6 +45,9 @@ public sealed partial class RouteWindow : Window
         }
     }
 
+    /// <summary>
+    /// Releases the closed search-window reference so it can be opened again.
+    /// </summary>
     private void OnSearchClosed(object? sender, EventArgs e)
     {
         if (sender is SpanshSearchWindow window)
@@ -51,6 +57,9 @@ public sealed partial class RouteWindow : Window
         }
     }
 
+    /// <summary>
+    /// Closes the owned search window and releases route-window event handlers.
+    /// </summary>
     protected override void OnClosed(EventArgs e)
     {
         searchWindow?.Close();

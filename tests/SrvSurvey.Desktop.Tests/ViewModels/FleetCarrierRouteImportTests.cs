@@ -10,6 +10,9 @@ public sealed class FleetCarrierRouteImportTests
 {
     private const string RouteUrl = "https://spansh.co.uk/fleet-carrier/results/41B4D994-C830-11F1-B393-A7063E1886B9";
 
+    /// <summary>
+    /// Checks that saved carrier rows leave unavailable restock amounts blank.
+    /// </summary>
     [Theory]
     [InlineData(false, 0d)]
     [InlineData(true, 0d)]
@@ -34,6 +37,9 @@ public sealed class FleetCarrierRouteImportTests
         Assert.Equal($"{0:N0}", row.CarrierFuelRemaining);
     }
 
+    /// <summary>
+    /// Checks that reported carrier logistics reach the workspace from clipboard and search.
+    /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -105,6 +111,9 @@ public sealed class FleetCarrierRouteImportTests
 
     private sealed class ResultHandler(string payload) : HttpMessageHandler
     {
+        /// <summary>
+        /// Serves configured HTTP fixtures and captures requests without network access.
+        /// </summary>
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -113,6 +122,9 @@ public sealed class FleetCarrierRouteImportTests
 
     private sealed class Planner : ISpanshPlannerClient
     {
+        /// <summary>
+        /// Returns a synthetic planner job while exposing the test's submission controls.
+        /// </summary>
         public Task<SpanshRouteReference> SubmitAsync(
             SpanshPlannerRequest request,
             CancellationToken cancellationToken = default
@@ -124,6 +136,9 @@ public sealed class FleetCarrierRouteImportTests
 
     private sealed class Resolver : IStarSystemResolver
     {
+        /// <summary>
+        /// Returns deterministic system matches without contacting an external provider.
+        /// </summary>
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
             CancellationToken cancellationToken = default

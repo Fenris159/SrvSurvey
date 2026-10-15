@@ -100,12 +100,13 @@ Two short live jobs verified Galaxy SLEF and carrier submission/polling on
 2026-10-14, using synthetic data for Sol → Alpha Centauri. Game interaction
 was not exercised.
 
-Final validation passed `pwsh ./tools/Test-ChangedCodeQuality.ps1 -BaseRef HEAD`:
-2,359 Core tests and 3,810 Desktop tests passed (three platform-specific tests
-skipped), the 41-case journal-upload matrix passed, and new-code line/branch
-coverage was 97.2% (1,786/1,837 points). The Sonar-enabled Release build completed
-with zero warnings/errors. Formatting, localization freshness, and the local
-Sonar profile also passed.
+The pre-commit hook runs
+`pwsh ./tools/Test-ChangedCodeQuality.ps1 -BaseRef origin/SrvSurvey-Avalonia`.
+It checks formatting, localization freshness, scoped Sonar/style rules, the
+Core and Desktop test suites, mandatory journal-upload scenarios, and the
+80% changed-code line/branch coverage gate. The standard Release build treats
+warnings as errors. Current run-specific counts and results are recorded in
+PR evidence and CI reports.
 
 For the current website contracts and primary sources, see
 [Spansh planner search contract](research/spansh-planner-search-contract.md).

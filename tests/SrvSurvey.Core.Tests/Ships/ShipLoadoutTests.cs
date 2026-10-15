@@ -20,6 +20,9 @@ public sealed class ShipLoadoutTests
         "CustomShipField":{"data":"retained"}}
         """;
 
+    /// <summary>
+    /// Checks that SLEF preserves the entire loadout including internals unknown modules and original engineering.
+    /// </summary>
     [Fact]
     public void SlefPreservesTheEntireLoadoutIncludingInternalsUnknownModulesAndOriginalEngineering()
     {
@@ -41,6 +44,9 @@ public sealed class ShipLoadoutTests
         Assert.Equal(5, loadout.ModuleCount);
     }
 
+    /// <summary>
+    /// Checks that invalid or incomplete loadout is not exportable.
+    /// </summary>
     [Theory]
     [InlineData("{}")]
     [InlineData("[]")]
@@ -56,6 +62,9 @@ public sealed class ShipLoadoutTests
         Assert.Null(ShipLoadout.Parse(document.RootElement));
     }
 
+    /// <summary>
+    /// Checks that malformed optional ship id does not throw.
+    /// </summary>
     [Theory]
     [InlineData("null")]
     [InlineData("\"not-a-number\"")]
@@ -68,6 +77,9 @@ public sealed class ShipLoadoutTests
         Assert.Null(ShipLoadout.Parse(document.RootElement)!.ShipId);
     }
 
+    /// <summary>
+    /// Checks that ship and outfitting changes invalidate export until a full loadout arrives.
+    /// </summary>
     [Theory]
     [InlineData("ShipyardSwap")]
     [InlineData("ShipyardBuy")]
@@ -93,6 +105,9 @@ public sealed class ShipLoadoutTests
         Assert.Equal(12, state.Current!.ShipId);
     }
 
+    /// <summary>
+    /// Checks that commander changes ship switches and multicrew cannot export another ship.
+    /// </summary>
     [Fact]
     public void CommanderChangesShipSwitchesAndMulticrewCannotExportAnotherShip()
     {
@@ -116,6 +131,9 @@ public sealed class ShipLoadoutTests
         Assert.NotNull(state.Current);
     }
 
+    /// <summary>
+    /// Checks that same commander and unrelated events keep loadout and matching renames update the export.
+    /// </summary>
     [Fact]
     public void SameCommanderAndUnrelatedEventsKeepLoadoutAndMatchingRenamesUpdateTheExport()
     {
@@ -141,6 +159,9 @@ public sealed class ShipLoadoutTests
         );
     }
 
+    /// <summary>
+    /// Checks that actual engineering updates recorded modifiers and keeps existing experimental effect.
+    /// </summary>
     [Theory]
     [InlineData("EngineerCraft")]
     [InlineData("EngineerLegacyConvert")]
@@ -172,6 +193,9 @@ public sealed class ShipLoadoutTests
         Assert.Equal(5, state.Current.ModuleCount);
     }
 
+    /// <summary>
+    /// Checks that engineering preview does not change loadout and missing original engineering can be added.
+    /// </summary>
     [Fact]
     public void EngineeringPreviewDoesNotChangeLoadoutAndMissingOriginalEngineeringCanBeAdded()
     {
@@ -198,6 +222,9 @@ public sealed class ShipLoadoutTests
         Assert.Null(state.Current);
     }
 
+    /// <summary>
+    /// Checks that commander name changes without an id cannot retain the previous ship.
+    /// </summary>
     [Fact]
     public void CommanderNameChangesWithoutAnIdCannotRetainThePreviousShip()
     {
@@ -208,6 +235,9 @@ public sealed class ShipLoadoutTests
         Assert.Null(state.Current);
     }
 
+    /// <summary>
+    /// Checks that engineering updates unladen mass using actual module mass changes.
+    /// </summary>
     [Theory]
     [InlineData(null, 3.25, 40.75)]
     [InlineData(3.25, null, 39.25)]
@@ -239,6 +269,9 @@ public sealed class ShipLoadoutTests
         Assert.Equal(expected, state.Current!.Payload.GetProperty("UnladenMass").GetDouble(), 6);
     }
 
+    /// <summary>
+    /// Checks that unverifiable engineering mass changes wait for a complete loadout.
+    /// </summary>
     [Theory]
     [InlineData("unknown_module", "[]", 40)]
     [InlineData("Int_Hyperdrive_Size2_Class5", "[{\"Label\":\"Mass\",\"Value\":100}]", 0)]
@@ -258,6 +291,38 @@ public sealed class ShipLoadoutTests
         Assert.Null(state.Current);
     }
 
+    /// <summary>
+    /// Checks that malformed retained engineering cannot interrupt subsequent journal processing.
+    /// </summary>
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("{\"Modifiers\":null}")]
+    [InlineData("{\"Modifiers\":{}}")]
+    [InlineData("{\"Modifiers\":true}")]
+    [InlineData("{\"Modifiers\":[{\"Label\":\"Mass\",\"Value\":null}]}")]
+    [InlineData("true")]
+    public void MalformedPreviousEngineeringDoesNotBreakJournalProjection(string engineering)
+    {
+        var state = new ShipLoadoutState();
+        state.Apply(
+            Parse(
+                $$$"""{"event":"Loadout","Ship":"sidewinder","ShipID":1,"UnladenMass":40,"Modules":[{"Slot":"FrameShiftDrive","Item":"Int_Hyperdrive_Size2_Class5","Engineering":{{{engineering}}}}]}"""
+            )
+        );
+
+        state.Apply(
+            Parse(
+                """{"event":"EngineerCraft","Slot":"FrameShiftDrive","Module":"Int_Hyperdrive_Size2_Class5","Modifiers":[{"Label":"Mass","Value":1}]}"""
+            )
+        );
+
+        Assert.Equal(38.5, state.Current!.Payload.GetProperty("UnladenMass").GetDouble(), 6);
+    }
+
+    /// <summary>
+    /// Checks that journal session retains export data without changing existing ship identity handling.
+    /// </summary>
     [Fact]
     public void JournalSessionRetainsExportDataWithoutChangingExistingShipIdentityHandling()
     {
@@ -270,6 +335,9 @@ public sealed class ShipLoadoutTests
         Assert.Null(session.ShipLoadout.Current);
     }
 
+    /// <summary>
+    /// Seeds a tracked loadout for journal mutation and export tests.
+    /// </summary>
     private static ShipLoadoutState CreateState()
     {
         var state = new ShipLoadoutState();
@@ -278,6 +346,9 @@ public sealed class ShipLoadoutTests
         return state;
     }
 
+    /// <summary>
+    /// Parses a journal fixture and includes parser diagnostics in any test failure.
+    /// </summary>
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);

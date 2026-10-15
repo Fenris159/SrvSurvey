@@ -13,6 +13,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
     );
     private readonly List<SpanshSearchViewModel> searches = [];
 
+    /// <summary>
+    /// Checks that search loads automatically as the same active unsaved itinerary as clipboard import.
+    /// </summary>
     [Fact]
     public async Task SearchLoadsAutomaticallyAsTheSameActiveUnsavedItineraryAsClipboardImport()
     {
@@ -36,6 +39,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Empty(await new FollowRouteStore(directory).ListAsync("F1"));
     }
 
+    /// <summary>
+    /// Checks that planner switches preserve inputs and autofill the live current ship.
+    /// </summary>
     [Fact]
     public async Task PlannerSwitchesPreserveInputsAndAutofillTheLiveCurrentShip()
     {
@@ -70,6 +76,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Same(neutron, search.SelectedPlanner);
     }
 
+    /// <summary>
+    /// Checks that carrier workspace offers only carrier planner and conditional fuel controls.
+    /// </summary>
     [Fact]
     public async Task CarrierWorkspaceOffersOnlyCarrierPlannerAndConditionalFuelControls()
     {
@@ -95,6 +104,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Equal("15000", client.Request!.Parameters.Single(pair => pair.Key == "mass").Value);
     }
 
+    /// <summary>
+    /// Checks that invalid input never submits and manual build JSON errors are visible.
+    /// </summary>
     [Fact]
     public async Task InvalidInputNeverSubmitsAndManualBuildJsonErrorsAreVisible()
     {
@@ -115,11 +127,16 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.False(await search.SearchAsync());
     }
 
+    /// <summary>
+    /// Checks draft preservation for provider errors, timeouts, cancellation and disposal.
+    /// </summary>
     [Theory]
     [InlineData("error")]
+    [InlineData("timeout")]
     [InlineData("empty")]
     [InlineData("cancel")]
     [InlineData("commander")]
+    [InlineData("dispose")]
     public async Task FailureCancellationAndCommanderChangesCannotReplaceAnExistingItinerary(string scenario)
     {
         var client = new Planner();
@@ -130,8 +147,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Field(search, "to").Value = "Achenar";
         Field(search, "range").Value = "50";
         client.Error = scenario == "error";
+        client.Timeout = scenario == "timeout";
         results.Empty = scenario == "empty";
-        if (scenario is "cancel" or "commander")
+        if (scenario is "cancel" or "commander" or "dispose")
         {
             client.Gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -145,6 +163,10 @@ public sealed class SpanshSearchViewModelTests : IDisposable
             if (scenario == "commander")
             {
                 await route.UpdateContextAsync("F2", "Other", 300, null);
+            }
+            else if (scenario == "dispose")
+            {
+                search.Dispose();
             }
             else
             {
@@ -164,8 +186,16 @@ public sealed class SpanshSearchViewModelTests : IDisposable
             Assert.Equal(["Sol", "Achenar"], route.Hops.Select(hop => hop.Name));
         }
         Assert.True(search.Status.Length > 0);
+        if (scenario == "timeout")
+        {
+            Assert.Contains("timed out", search.Status);
+            Assert.DoesNotContain("cancelled", search.Status);
+        }
     }
 
+    /// <summary>
+    /// Checks that cross workspace planner requests are rejected.
+    /// </summary>
     [Fact]
     public async Task CrossWorkspacePlannerRequestsAreRejected()
     {
@@ -181,6 +211,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Null(client.Request);
     }
 
+    /// <summary>
+    /// Checks that field controls use correct types and numeric formatting.
+    /// </summary>
     [Fact]
     public void FieldControlsUseCorrectTypesAndNumericFormatting()
     {
@@ -226,6 +259,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.True(choice.IsChoice);
     }
 
+    /// <summary>
+    /// Checks that destination editor writes carrier refuel waypoints and never drops pending input.
+    /// </summary>
     [Fact]
     public async Task DestinationEditorWritesCarrierRefuelWaypointsAndNeverDropsPendingInput()
     {
@@ -260,6 +296,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Empty(Field(search, "refuel_destinations").Value);
     }
 
+    /// <summary>
+    /// Releases test-owned search models and removes their temporary route files.
+    /// </summary>
     public void Dispose()
     {
         foreach (SpanshSearchViewModel search in searches)
@@ -272,6 +311,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Creates a commander-scoped workspace backed by controlled planner and result doubles.
+    /// </summary>
     private async Task<RouteWorkspaceViewModel> CreateRoute(
         Planner client,
         FollowRouteKind kind = FollowRouteKind.Standard,
@@ -292,9 +334,15 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         return route;
     }
 
+    /// <summary>
+    /// Selects the form field with the requested original API key.
+    /// </summary>
     private static SpanshPlannerFieldViewModel Field(SpanshSearchViewModel search, string key) =>
         search.Fields.Single(field => field.Definition.Key == key);
 
+    /// <summary>
+    /// Builds a complete journal ship session for automatic SLEF input tests.
+    /// </summary>
     private static JournalSessionState Session()
     {
         var session = new JournalSessionState();
@@ -307,6 +355,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         return session;
     }
 
+    /// <summary>
+    /// Parses a journal fixture and includes parser diagnostics in any test failure.
+    /// </summary>
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);
@@ -318,7 +369,11 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         public SpanshPlannerRequest? Request { get; private set; }
         public TaskCompletionSource? Gate { get; set; }
         public bool Error { get; set; }
+        public bool Timeout { get; set; }
 
+        /// <summary>
+        /// Returns a synthetic planner job while exposing the test's submission controls.
+        /// </summary>
         public async Task<SpanshRouteReference> SubmitAsync(
             SpanshPlannerRequest request,
             CancellationToken cancellationToken = default
@@ -334,6 +389,10 @@ public sealed class SpanshSearchViewModelTests : IDisposable
             {
                 throw new HttpRequestException("Planner unavailable");
             }
+            if (Timeout)
+            {
+                throw new TaskCanceledException("Spansh request timed out.", new TimeoutException());
+            }
             return new(Guid.Parse("74FA2952-2048-11F1-8302-B948FF6DF5C1"), request.Planner.Kind);
         }
     }
@@ -342,6 +401,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
     {
         public bool Empty { get; set; }
 
+        /// <summary>
+        /// Returns deterministic itinerary fixtures for search and handoff tests.
+        /// </summary>
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
             CancellationToken cancellationToken = default
@@ -359,6 +421,9 @@ public sealed class SpanshSearchViewModelTests : IDisposable
 
     private sealed class Resolver : IStarSystemResolver
     {
+        /// <summary>
+        /// Returns deterministic system matches without contacting an external provider.
+        /// </summary>
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
             CancellationToken cancellationToken = default

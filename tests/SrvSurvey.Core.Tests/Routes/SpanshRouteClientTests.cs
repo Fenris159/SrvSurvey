@@ -361,6 +361,9 @@ public sealed class SpanshRouteClientTests
         Assert.Equal(3892, carrier.RestockAmountTonnes);
     }
 
+    /// <summary>
+    /// Checks that reported carrier route preserves fuel and restock values.
+    /// </summary>
     [Theory]
     [InlineData(0, 1000, false, null)]
     [InlineData(17, 150, false, null)]
@@ -391,6 +394,9 @@ public sealed class SpanshRouteClientTests
         Assert.Equal(restock, hops[index].Notes?.Contains("restock", StringComparison.OrdinalIgnoreCase) == true);
     }
 
+    /// <summary>
+    /// Checks that carrier import reproduces individual missing columns.
+    /// </summary>
     [Theory]
     [InlineData("\"fuel_in_tank\":150", "fuel")]
     [InlineData("\"must_restock\":1", "restock")]
@@ -418,6 +424,9 @@ public sealed class SpanshRouteClientTests
         }
     }
 
+    /// <summary>
+    /// Checks that restock flags accept booleans and only zero or one numbers.
+    /// </summary>
     [Theory]
     [InlineData("true", true)]
     [InlineData("false", false)]

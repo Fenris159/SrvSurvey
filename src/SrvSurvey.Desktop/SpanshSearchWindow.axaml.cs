@@ -10,6 +10,9 @@ public sealed partial class SpanshSearchWindow : Window
 {
     private readonly SpanshSearchViewModel viewModel;
 
+    /// <summary>
+    /// Initializes a standalone planner window with its workspace search model.
+    /// </summary>
     public SpanshSearchWindow()
         : this(
             new RouteWorkspaceViewModel(
@@ -22,6 +25,9 @@ public sealed partial class SpanshSearchWindow : Window
             ).SpanshSearch!
         ) { }
 
+    /// <summary>
+    /// Initializes a standalone planner window with its workspace search model.
+    /// </summary>
     public SpanshSearchWindow(SpanshSearchViewModel viewModel)
     {
         this.viewModel = viewModel;
@@ -29,6 +35,9 @@ public sealed partial class SpanshSearchWindow : Window
         DataContext = viewModel;
     }
 
+    /// <summary>
+    /// Submits the current form and closes the window after a successful itinerary import.
+    /// </summary>
     private async void Search_Click(object? sender, RoutedEventArgs e)
     {
         if (await viewModel.SearchAsync())
@@ -37,10 +46,19 @@ public sealed partial class SpanshSearchWindow : Window
         }
     }
 
+    /// <summary>
+    /// Cancels the current planner request and result polling.
+    /// </summary>
     private void Cancel_Click(object? sender, RoutedEventArgs e) => viewModel.Cancel();
 
+    /// <summary>
+    /// Closes the search dialog through its normal cancellation lifecycle.
+    /// </summary>
     private void Close_Click(object? sender, RoutedEventArgs e) => Close();
 
+    /// <summary>
+    /// Cancels outstanding work when the search dialog closes.
+    /// </summary>
     protected override void OnClosed(EventArgs e)
     {
         viewModel.Cancel();

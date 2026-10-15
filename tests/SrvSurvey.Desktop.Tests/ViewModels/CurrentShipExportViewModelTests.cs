@@ -6,6 +6,9 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class CurrentShipExportViewModelTests
 {
+    /// <summary>
+    /// Checks that journal projection populates overview export on startup and disables it after refitting.
+    /// </summary>
     [Fact]
     public async Task JournalProjectionPopulatesOverviewExportOnStartupAndDisablesItAfterRefitting()
     {
@@ -41,6 +44,9 @@ public sealed class CurrentShipExportViewModelTests
         }
     }
 
+    /// <summary>
+    /// Checks that copy offers the piloted journal ship and retains the same export between unchanged ticks.
+    /// </summary>
     [Fact]
     public void CopyOffersThePilotedJournalShipAndRetainsTheSameExportBetweenUnchangedTicks()
     {
@@ -63,6 +69,9 @@ public sealed class CurrentShipExportViewModelTests
         Assert.Contains("Waiting", viewModel.ShipDescription);
     }
 
+    /// <summary>
+    /// Checks that export is disabled outside the identified commanders current ship.
+    /// </summary>
     [Theory]
     [InlineData("Shutdown", false, StatusFlags.InMainShip)]
     [InlineData("Fileheader", false, StatusFlags.InMainShip)]
@@ -85,6 +94,9 @@ public sealed class CurrentShipExportViewModelTests
         Assert.Contains("Loadout", viewModel.Status);
     }
 
+    /// <summary>
+    /// Checks that unknown ships are reported and empty names and missing status are supported.
+    /// </summary>
     [Fact]
     public void UnknownShipsAreReportedAndEmptyNamesAndMissingStatusAreSupported()
     {
@@ -108,6 +120,9 @@ public sealed class CurrentShipExportViewModelTests
         Assert.Equal("Unnamed ship · Type-11 Prospector", viewModel.ShipDescription);
     }
 
+    /// <summary>
+    /// Builds an identified commander and complete ship loadout for export tests.
+    /// </summary>
     private static JournalSessionState CreateSession()
     {
         var session = new JournalSessionState();
@@ -120,6 +135,9 @@ public sealed class CurrentShipExportViewModelTests
         return session;
     }
 
+    /// <summary>
+    /// Parses a journal fixture and includes parser diagnostics in any test failure.
+    /// </summary>
     private static JournalEventEnvelope Parse(string json)
     {
         Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);

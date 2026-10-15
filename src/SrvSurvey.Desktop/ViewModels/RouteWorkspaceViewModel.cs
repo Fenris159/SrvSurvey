@@ -92,6 +92,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private FleetCarrierJumpCountdownState carrierJumpCountdownState = FleetCarrierJumpCountdownState.Inactive;
     private int profileRevision;
 
+    /// <summary>
+    /// Connects the route service, importers and optional native planner to one workspace.
+    /// </summary>
     public RouteWorkspaceViewModel(
         FollowRouteService routeService,
         RouteNameImporter nameImporter,
@@ -355,6 +358,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string CarrierEstimatedTimeRemaining => FormatCarrierEstimatedTimeRemaining(RemainingJumps);
 
+    /// <summary>
+    /// Formats twenty minutes per remaining jump, omitting zero units and empty estimates.
+    /// </summary>
     internal static string FormatCarrierEstimatedTimeRemaining(int remainingJumps)
     {
         if (remainingJumps <= 0)
@@ -662,6 +668,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         StatusMessage = "The loaded route was removed. A new route workspace is ready.";
     }
 
+    /// <summary>
+    /// Loads the commander's route context and cancels searches across profile changes.
+    /// </summary>
     public async Task<bool> UpdateContextAsync(
         string? nextFrontierId,
         string? nextSystemName,
@@ -1031,6 +1040,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Submits and imports a planner result without replacing drafts on failures or cancellation.
+    /// </summary>
     public async Task<bool> SearchSpanshAsync(
         ISpanshPlannerClient plannerClient,
         SpanshPlannerRequest request,
@@ -1062,9 +1074,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             StatusMessage = $"Imported {importedHops.Count:N0} systems from Spansh. Review it, then use Save As...";
             return true;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             StatusMessage = "Spansh search cancelled.";
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "The Spansh search timed out. Please try again.";
             return false;
         }
         catch (Exception exception) when (IsExpectedException(exception) || exception is JsonException)
@@ -1807,6 +1824,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         RefreshPresentation();
     }
 
+    /// <summary>
+    /// Refreshes route rows, estimates, guidance and commands from the current route state.
+    /// </summary>
     private void RefreshPresentation()
     {
         destinationMatchesNextHop = IsGalaxyMapOpen && IsNextHop(lastDestination);
@@ -2099,6 +2119,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         return true;
     }
 
+    /// <summary>
+    /// Updates a dialog field and refreshes dependent visibility and command state.
+    /// </summary>
     private void SetDialogField(ref bool field, bool value, string propertyName)
     {
         if (!SetField(ref field, value, propertyName))

@@ -19,6 +19,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         $"SrvSurvey-fc-overlay-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>
+    /// Checks carrier logistics and its ETR as one compact overlay readout.
+    /// </summary>
     [Fact]
     public async Task FormatsNextCarrierHopAsCompactLogisticsReadout()
     {
@@ -65,6 +68,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal($"{3892:N0} t", viewModel.RestockAmount);
     }
 
+    /// <summary>
+    /// Checks that an empty route offers no invented fuel, restock or time estimate.
+    /// </summary>
     [Fact]
     public async Task FormatsEmptyRouteWithoutInventingCarrierLogistics()
     {
@@ -91,6 +97,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.False(viewModel.HasCountdownPhaseTime);
     }
 
+    /// <summary>
+    /// Checks that not started route labels its first system as start.
+    /// </summary>
     [Fact]
     public async Task NotStartedRouteLabelsItsFirstSystemAsStart()
     {
@@ -117,6 +126,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal("ETR: 20min", route.CarrierEstimatedTimeRemaining);
     }
 
+    /// <summary>
+    /// Checks that final carrier arrival shows finished for three seconds.
+    /// </summary>
     [Fact]
     public async Task FinalCarrierArrivalShowsFinishedForThreeSeconds()
     {
@@ -172,6 +184,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShow);
     }
 
+    /// <summary>
+    /// Checks that route and countdown changes raise their complete property groups.
+    /// </summary>
     [Fact]
     public async Task RouteAndCountdownChangesRaiseTheirCompletePropertyGroups()
     {
@@ -257,6 +272,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Empty(notifications);
     }
 
+    /// <summary>
+    /// Checks minute, hour and day boundaries and omission of zero-valued ETR units.
+    /// </summary>
     [Theory]
     [InlineData(0, "")]
     [InlineData(1, "ETR: 20min")]
@@ -289,6 +307,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Equal(expected, route.CarrierEstimatedTimeRemaining);
     }
 
+    /// <summary>
+    /// Checks live ETR updates, typography and final visibility in both overlay hosts.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]
@@ -347,7 +368,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             using WriteableBitmap? completedWorkspace = workspace.CaptureRenderedFrame();
             using WriteableBitmap? completedOverlay = window.CaptureRenderedFrame();
             Assert.False(readout.IsVisible);
-            Assert.Empty(readout.Text);
+            Assert.Equal(string.Empty, readout.Text);
             Assert.Equal("0 JUMPS LEFT", summary.Text);
         }
         finally
@@ -357,6 +378,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Optionally captures ETR layouts for visual verification.
+    /// </summary>
     private static void SaveEstimateFrame(Window window, string name)
     {
         string? output = Environment.GetEnvironmentVariable("SRVSURVEY_CARRIER_ETR_RENDER_OUTPUT");

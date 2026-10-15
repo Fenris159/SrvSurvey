@@ -16,6 +16,9 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SpanshSearchPresentationTests
 {
+    /// <summary>
+    /// Checks that header opens dedicated search and successful search returns to its own itinerary.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -88,6 +91,9 @@ public sealed class SpanshSearchPresentationTests
         }
     }
 
+    /// <summary>
+    /// Checks that design window and close and cancel controls are usable.
+    /// </summary>
     [AvaloniaFact]
     public void DesignWindowAndCloseAndCancelControlsAreUsable()
     {
@@ -115,6 +121,9 @@ public sealed class SpanshSearchPresentationTests
         }
     }
 
+    /// <summary>
+    /// Optionally captures the planner layout for visual verification.
+    /// </summary>
     private static void SaveFrame(Window window, string name)
     {
         string? output = Environment.GetEnvironmentVariable("SRVSURVEY_SPANSH_RENDER_OUTPUT");
@@ -128,6 +137,9 @@ public sealed class SpanshSearchPresentationTests
         frame.Save(stream, PngBitmapEncoderOptions.Default);
     }
 
+    /// <summary>
+    /// Checks that destination plus uses the shared autocomplete and rows support editing and keyboard entry.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData(SpanshRouteKind.Tourist)]
     [InlineData(SpanshRouteKind.Neutron)]
@@ -190,6 +202,9 @@ public sealed class SpanshSearchPresentationTests
         }
     }
 
+    /// <summary>
+    /// Executes a real pointer click at the target control's rendered location.
+    /// </summary>
     private static void Click(Window window, Control control)
     {
         using WriteableBitmap? frame = window.CaptureRenderedFrame();
@@ -200,6 +215,9 @@ public sealed class SpanshSearchPresentationTests
         window.MouseUp(point, MouseButton.Left, RawInputModifiers.None);
     }
 
+    /// <summary>
+    /// Checks that all planner fields fit at minimum and normal window sizes with website toggle defaults.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData(560, 500, false)]
     [InlineData(720, 820, false)]
@@ -295,6 +313,9 @@ public sealed class SpanshSearchPresentationTests
 
     private sealed class Resolver : IStarSystemResolver
     {
+        /// <summary>
+        /// Returns deterministic system matches without contacting an external provider.
+        /// </summary>
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
             CancellationToken cancellationToken = default
@@ -305,6 +326,9 @@ public sealed class SpanshSearchPresentationTests
     {
         public SpanshRouteKind SubmittedKind { get; private set; }
 
+        /// <summary>
+        /// Returns a synthetic planner job while exposing the test's submission controls.
+        /// </summary>
         public Task<SpanshRouteReference> SubmitAsync(
             SpanshPlannerRequest request,
             CancellationToken cancellationToken = default
@@ -314,6 +338,9 @@ public sealed class SpanshSearchPresentationTests
             return Task.FromResult(new SpanshRouteReference(Guid.NewGuid(), SubmittedKind));
         }
 
+        /// <summary>
+        /// Returns deterministic itinerary fixtures for search and handoff tests.
+        /// </summary>
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
             CancellationToken cancellationToken = default

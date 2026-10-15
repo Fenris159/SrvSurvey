@@ -14,11 +14,14 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     private readonly Dictionary<SpanshPlannerDefinition, IReadOnlyList<SpanshPlannerFieldViewModel>> forms = [];
     private SpanshPlannerDefinition selectedPlanner;
     private IReadOnlyList<SpanshPlannerFieldViewModel> fields = [];
-    private CancellationTokenSource? cancellation;
+    private Action? cancelSearch;
     private bool useCurrentShip = true;
     private bool isBusy;
     private string status = "Choose a planner and search to load its route into the itinerary.";
 
+    /// <summary>
+    /// Connects planner forms to one route workspace and the current equipped ship.
+    /// </summary>
     public SpanshSearchViewModel(
         RouteWorkspaceViewModel route,
         ISpanshPlannerClient client,
@@ -84,6 +87,9 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         private set => Set(ref status, value);
     }
 
+    /// <summary>
+    /// Owns the request cancellation source until submission and result import have finished.
+    /// </summary>
     public async Task<bool> SearchAsync()
     {
         if (!CanSearch)
@@ -91,7 +97,7 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
             return false;
         }
         using var operation = new CancellationTokenSource();
-        cancellation = operation;
+        cancelSearch = operation.Cancel;
         try
         {
             if (fields.Any(field => field.IsVisible && field.SystemList?.HasPendingEntry == true))
@@ -111,13 +117,19 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         }
         finally
         {
-            cancellation = null;
+            cancelSearch = null;
             IsBusy = false;
         }
     }
 
-    public void Cancel() => cancellation?.Cancel();
+    /// <summary>
+    /// Invokes the active request's non-owning cancellation handle.
+    /// </summary>
+    public void Cancel() => cancelSearch?.Invoke();
 
+    /// <summary>
+    /// Cancels pending work and releases workspace and ship-change subscriptions.
+    /// </summary>
     public void Dispose()
     {
         Cancel();
@@ -125,9 +137,15 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         currentShip.PropertyChanged -= OnShipChanged;
     }
 
+    /// <summary>
+    /// Collects current field values by their original Spansh API keys.
+    /// </summary>
     private Dictionary<string, string> Values() =>
         fields.ToDictionary(field => field.Definition.Key, field => field.Value);
 
+    /// <summary>
+    /// Restores a planner's retained form or initializes its defaults and subscriptions.
+    /// </summary>
     private void SelectForm()
     {
         if (!forms.TryGetValue(SelectedPlanner, out IReadOnlyList<SpanshPlannerFieldViewModel>? form))
@@ -158,6 +176,9 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(CanSearch));
     }
 
+    /// <summary>
+    /// Follows the live equipped-ship SLEF while automatic ship selection is enabled.
+    /// </summary>
     private void UpdateShipBuild()
     {
         SpanshPlannerFieldViewModel? build = fields.FirstOrDefault(field =>
@@ -176,6 +197,9 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(ShipStatus));
     }
 
+    /// <summary>
+    /// Updates conditional fields and search availability after an input changes.
+    /// </summary>
     private void OnFieldChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(SpanshPlannerFieldViewModel.Value))
@@ -188,6 +212,9 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    /// <summary>
+    /// Reconciles conditional controls, carrier capacity and per-destination refuel toggles.
+    /// </summary>
     private void UpdateVisibility()
     {
         Dictionary<string, string> values = Values();
@@ -214,6 +241,9 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     private SpanshSystemListViewModel? CarrierDestinationList =>
         fields.FirstOrDefault(entry => entry.Definition.Key == "destinations")?.SystemList;
 
+    /// <summary>
+    /// Keeps API destination and refuelling parameters synchronized with the shared picker.
+    /// </summary>
     private void OnCarrierDestinationsChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(SpanshSystemListViewModel.RefuelValue) && sender is SpanshSystemListViewModel list)
@@ -225,8 +255,14 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    /// <summary>
+    /// Refreshes automatic ship-build inputs when export readiness changes.
+    /// </summary>
     private void OnShipChanged(object? sender, PropertyChangedEventArgs e) => UpdateShipBuild();
 
+    /// <summary>
+    /// Refreshes availability and cancels work when the commander context changes.
+    /// </summary>
     private void OnRouteChanged(object? sender, PropertyChangedEventArgs e)
     {
         Changed(nameof(CanSearch));
@@ -252,6 +288,9 @@ public sealed class SpanshPlannerFieldViewModel : WorkspaceObservable
     private bool isReadOnly;
     private decimal? carrierCapacity;
 
+    /// <summary>
+    /// Creates the appropriate editable state for one planner field definition.
+    /// </summary>
     public SpanshPlannerFieldViewModel(SpanshPlannerField definition)
     {
         Definition = definition;
@@ -269,6 +308,9 @@ public sealed class SpanshPlannerFieldViewModel : WorkspaceObservable
     public SpanshSystemListViewModel? SystemList { get; }
     public IReadOnlyList<SpanshRadioChoiceViewModel> RadioChoices { get; }
 
+    /// <summary>
+    /// Copies committed destination-list changes into the field's submission value.
+    /// </summary>
     private void OnSystemListChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(SpanshSystemListViewModel.Value))
@@ -304,6 +346,9 @@ public sealed class SpanshPlannerFieldViewModel : WorkspaceObservable
     public decimal Minimum => (decimal)(Definition.Minimum ?? 0);
     public decimal Maximum => carrierCapacity ?? (Definition.Maximum is { } max ? (decimal)max : decimal.MaxValue);
 
+    /// <summary>
+    /// Updates numeric bounds for the selected carrier type.
+    /// </summary>
     internal void SetCarrierCapacity(decimal value)
     {
         if (Set(ref carrierCapacity, value))
@@ -374,5 +419,8 @@ public sealed class SpanshRadioChoiceViewModel(SpanshPlannerFieldViewModel owner
         }
     }
 
+    /// <summary>
+    /// Notifies radio-choice bindings after the parent field's selection changes.
+    /// </summary>
     internal void Refresh() => Changed(nameof(IsChecked));
 }

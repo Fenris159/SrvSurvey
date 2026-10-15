@@ -6,6 +6,9 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayEditorPreviewCatalogTests
 {
+    /// <summary>
+    /// Checks that carrier preview shows jump based estimated time remaining.
+    /// </summary>
     [Fact]
     public void CarrierPreviewShowsJumpBasedEstimatedTimeRemaining()
     {

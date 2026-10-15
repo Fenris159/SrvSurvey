@@ -13,6 +13,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
     private bool synchronizing;
     private SpanshDestinationViewModel? editing;
 
+    /// <summary>
+    /// Creates commands for adding and editing destinations through a single reusable entry.
+    /// </summary>
     public SpanshSystemListViewModel()
     {
         commitCommand = new WorkspaceCommand(Commit, () => Draft.Trim().Length > 0);
@@ -54,6 +57,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         }
     }
 
+    /// <summary>
+    /// Restores committed destinations while retaining matching refuel selections.
+    /// </summary>
     internal void Load(string text)
     {
         string[] names = text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -78,6 +84,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         Publish();
     }
 
+    /// <summary>
+    /// Synchronizes per-row refuel toggles from the encoded refuelling-destination list.
+    /// </summary>
     internal void SetRefuel(string text)
     {
         string[] names = text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -89,6 +98,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         synchronizing = false;
     }
 
+    /// <summary>
+    /// Adds the current draft or saves it into the row being edited.
+    /// </summary>
     private void Commit()
     {
         string name = Draft.Trim();
@@ -108,6 +120,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         Publish();
     }
 
+    /// <summary>
+    /// Loads a selected row into the same autocomplete entry for revision.
+    /// </summary>
     internal void Edit(SpanshDestinationViewModel row)
     {
         editing = row;
@@ -115,6 +130,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         RefreshEditing();
     }
 
+    /// <summary>
+    /// Clears pending text and leaves the committed destination list intact.
+    /// </summary>
     private void CancelEdit()
     {
         editing = null;
@@ -122,6 +140,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         RefreshEditing();
     }
 
+    /// <summary>
+    /// Updates entry labels, row controls and edit-command availability.
+    /// </summary>
     private void RefreshEditing()
     {
         Changed(nameof(IsEditing));
@@ -129,6 +150,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         cancelEditCommand.Refresh();
     }
 
+    /// <summary>
+    /// Removes a destination and refreshes ordering and refuelling parameters.
+    /// </summary>
     internal void Remove(SpanshDestinationViewModel row)
     {
         if (ReferenceEquals(editing, row))
@@ -139,6 +163,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         Publish();
     }
 
+    /// <summary>
+    /// Moves a destination within the ordered list when the target index exists.
+    /// </summary>
     internal void Move(SpanshDestinationViewModel row, int offset)
     {
         int index = Rows.IndexOf(row);
@@ -150,6 +177,9 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
         }
     }
 
+    /// <summary>
+    /// Refreshes destination numbering and notifies field and refuelling bindings.
+    /// </summary>
     internal void Publish()
     {
         if (synchronizing)
@@ -174,6 +204,9 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
     private string name;
     private bool refuel;
 
+    /// <summary>
+    /// Connects row commands and refuelling state to the owning destination list.
+    /// </summary>
     internal SpanshDestinationViewModel(SpanshSystemListViewModel owner, string name)
     {
         this.owner = owner;
@@ -207,8 +240,14 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
         }
     }
 
+    /// <summary>
+    /// Updates the committed row name and its bound display values.
+    /// </summary>
     internal void Rename(string value) => Set(ref name, value, nameof(Name));
 
+    /// <summary>
+    /// Updates row ordering, refuelling visibility and command availability.
+    /// </summary>
     internal void Refresh()
     {
         Changed(nameof(Number));

@@ -38,8 +38,14 @@ public sealed record SpanshPlannerDefinition(
     IReadOnlyList<SpanshPlannerField> Fields
 )
 {
+    /// <summary>
+    /// Returns the planner name displayed in the chooser.
+    /// </summary>
     public override string ToString() => Name;
 
+    /// <summary>
+    /// Validates form values and builds the planner's encoded submission parameters.
+    /// </summary>
     public SpanshPlannerRequest CreateRequest(IReadOnlyDictionary<string, string> values)
     {
         var parameters = new List<KeyValuePair<string, string>>();
@@ -68,6 +74,9 @@ public sealed record SpanshPlannerDefinition(
         return new SpanshPlannerRequest(this, parameters);
     }
 
+    /// <summary>
+    /// Adds a visible field according to its type, retaining repeated system entries.
+    /// </summary>
     private static void AddField(List<KeyValuePair<string, string>> parameters, SpanshPlannerField field, string value)
     {
         string[] values =
@@ -77,9 +86,15 @@ public sealed record SpanshPlannerDefinition(
         parameters.AddRange(values.Select(item => new KeyValuePair<string, string>(field.Key, item)));
     }
 
+    /// <summary>
+    /// Evaluates the optional checkbox condition controlling a field's visibility.
+    /// </summary>
     public static bool IsVisible(SpanshPlannerField field, IReadOnlyDictionary<string, string> values) =>
         field.VisibleWhen is null || values.GetValueOrDefault(field.VisibleWhen) == field.VisibleValue;
 
+    /// <summary>
+    /// Applies carrier capacities, fuel mode and refuelling-destination constraints.
+    /// </summary>
     private static void AddCarrierParameters(
         IReadOnlyDictionary<string, string> values,
         List<KeyValuePair<string, string>> parameters
@@ -119,6 +134,9 @@ public sealed record SpanshPlannerDefinition(
         }
     }
 
+    /// <summary>
+    /// Rejects missing required values and invalid numeric, choice or ship-build inputs.
+    /// </summary>
     private static void Validate(SpanshPlannerField field, string value)
     {
         if (field.Type == SpanshPlannerFieldType.Number)
@@ -142,6 +160,9 @@ public sealed record SpanshPlannerDefinition(
         }
     }
 
+    /// <summary>
+    /// Checks a numeric input's invariant format and configured bounds.
+    /// </summary>
     private static void ValidateNumber(SpanshPlannerField field, string value)
     {
         if (

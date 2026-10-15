@@ -77,6 +77,9 @@ public sealed class JournalSessionState
 
     public int UnhandledEventCount => ValidEventCount - RecognizedEventCount;
 
+    /// <summary>
+    /// Projects one journal event into commander, vehicle and complete-loadout session state.
+    /// </summary>
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);

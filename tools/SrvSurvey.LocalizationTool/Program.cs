@@ -204,6 +204,9 @@ namespace SrvSurvey.LocalizationTool
             }
         }
 
+        /// <summary>
+        /// Extracts desktop and planner user-facing strings in a stable source-file order.
+        /// </summary>
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
             string root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");

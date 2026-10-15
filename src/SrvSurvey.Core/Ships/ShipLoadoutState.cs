@@ -24,6 +24,9 @@ public sealed class ShipLoadoutState
     public ShipLoadout? Current { get; private set; }
     public bool IsInCrew { get; private set; }
 
+    /// <summary>
+    /// Reconciles journal changes and invalidates stale or incomplete ship export snapshots.
+    /// </summary>
     public bool Apply(JournalEventEnvelope entry)
     {
         JsonElement root = entry.Payload;
@@ -83,6 +86,9 @@ public sealed class ShipLoadoutState
         return true;
     }
 
+    /// <summary>
+    /// Tracks commander identity and invalidates a loadout that belongs to another ship or pilot.
+    /// </summary>
     private void ApplyCommander(JsonElement root, string eventName)
     {
         string nextCommander = ShipModuleCatalog.Text(root, "FID");
@@ -109,6 +115,9 @@ public sealed class ShipLoadoutState
         }
     }
 
+    /// <summary>
+    /// Applies recorded engineering modifiers and reconciles the ship's unladen mass.
+    /// </summary>
     private void ApplyEngineering(JsonElement root)
     {
         if (
@@ -140,7 +149,7 @@ public sealed class ShipLoadoutState
             return;
         }
         JsonElement before = JsonSerializer.SerializeToElement(module);
-        JsonObject engineering = module["Engineering"]?.DeepClone().AsObject() ?? [];
+        JsonObject engineering = module["Engineering"] is JsonObject existing ? existing.DeepClone().AsObject() : [];
         foreach (string field in EngineeringFields)
         {
             if (root.TryGetProperty(field, out JsonElement value))
@@ -157,6 +166,9 @@ public sealed class ShipLoadoutState
         Current = ShipLoadout.Parse(JsonSerializer.SerializeToElement(updated));
     }
 
+    /// <summary>
+    /// Adjusts unladen mass by the actual module-mass change when it can be established.
+    /// </summary>
     private static bool UpdateUnladenMass(JsonObject ship, JsonElement before, JsonElement after)
     {
         double? previous = EngineeredMass(before);
@@ -185,11 +197,16 @@ public sealed class ShipLoadoutState
         return true;
     }
 
+    /// <summary>
+    /// Reads a recorded mass modifier only from correctly shaped engineering data.
+    /// </summary>
     private static double? EngineeredMass(JsonElement module)
     {
         if (
             !module.TryGetProperty("Engineering", out JsonElement engineering)
+            || engineering.ValueKind != JsonValueKind.Object
             || !engineering.TryGetProperty("Modifiers", out JsonElement modifiers)
+            || modifiers.ValueKind != JsonValueKind.Array
         )
         {
             return null;
@@ -202,11 +219,15 @@ public sealed class ShipLoadoutState
         return
             mass.ValueKind != JsonValueKind.Undefined
             && mass.TryGetProperty("Value", out JsonElement value)
+            && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out double number)
             ? number
             : null;
     }
 
+    /// <summary>
+    /// Matches both ship type and identifier against the retained complete loadout.
+    /// </summary>
     private bool MatchesShip(JsonElement payload)
     {
         string type = ShipModuleCatalog.Text(payload, "Ship");

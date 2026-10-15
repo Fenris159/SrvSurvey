@@ -7,6 +7,9 @@ public sealed class ShipLoadout
 {
     private static readonly JsonSerializerOptions ExportOptions = new() { WriteIndented = true };
 
+    /// <summary>
+    /// Clones the complete loadout so later journal buffers cannot alter the snapshot.
+    /// </summary>
     private ShipLoadout(JsonElement payload) => Payload = payload.Clone();
 
     public JsonElement Payload { get; }
@@ -20,6 +23,9 @@ public sealed class ShipLoadout
             : null;
     public int ModuleCount => Payload.GetProperty("Modules").GetArrayLength();
 
+    /// <summary>
+    /// Requires ship and module identities while preserving the original journal fields.
+    /// </summary>
     public static ShipLoadout? Parse(JsonElement payload)
     {
         if (

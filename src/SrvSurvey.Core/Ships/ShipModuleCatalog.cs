@@ -13,6 +13,9 @@ public sealed class ShipModuleCatalog
 
     public static ShipModuleCatalog Default { get; } = new();
 
+    /// <summary>
+    /// Loads the offline reference snapshot into ship, module and MercGear lookup records.
+    /// </summary>
     private ShipModuleCatalog()
     {
         using Stream stream = typeof(ShipModuleCatalog).Assembly.GetManifestResourceStream(
@@ -28,8 +31,14 @@ public sealed class ShipModuleCatalog
     public IReadOnlyCollection<ModuleDefinition> Modules => modules.Values;
     public IReadOnlyList<MercenaryModuleDefinition> MercenaryModules => document.MercenaryModules;
 
+    /// <summary>
+    /// Looks up a ship by its case-insensitive Frontier symbol.
+    /// </summary>
     public ShipDefinition? FindShip(string symbol) => ships.GetValueOrDefault(symbol.Trim());
 
+    /// <summary>
+    /// Looks up a module by its case-insensitive Frontier symbol.
+    /// </summary>
     public ModuleDefinition? FindModule(string symbol) => modules.GetValueOrDefault(symbol.Trim());
 
     /// <summary>Checks factual size, module type, ship and special-slot restrictions without altering loadouts.</summary>
@@ -56,6 +65,9 @@ public sealed class ShipModuleCatalog
         return fit == ModuleFit.Allowed ? CheckShipAndSlotRestrictions(ship, slot, module) : fit;
     }
 
+    /// <summary>
+    /// Checks the module's slot family, maximum size and exact-size requirements.
+    /// </summary>
     private static ModuleFit CheckSlotTypeAndSize(ShipSlotDefinition slot, ModuleDefinition module)
     {
         if (!slot.Types.Contains(module.Type))
@@ -73,6 +85,9 @@ public sealed class ShipModuleCatalog
         return ModuleFit.Allowed;
     }
 
+    /// <summary>
+    /// Checks ship restrictions and specialized slot compatibility.
+    /// </summary>
     private static ModuleFit CheckShipAndSlotRestrictions(
         ShipDefinition ship,
         ShipSlotDefinition slot,
@@ -90,6 +105,9 @@ public sealed class ShipModuleCatalog
         return CheckSpecialSlot(slot.Name, module);
     }
 
+    /// <summary>
+    /// Applies the supported module families for a specialized slot.
+    /// </summary>
     private static ModuleFit CheckSpecialSlot(string slotName, ModuleDefinition module)
     {
         if (module.Type == "icr" && module.AllowedShips.Count > 0 && !StartsWith(slotName, "Cargo"))
@@ -131,12 +149,18 @@ public sealed class ShipModuleCatalog
         return $"{name} ({definition.Size.ToString(CultureInfo.InvariantCulture)}{definition.Rating}{mount})";
     }
 
+    /// <summary>
+    /// Identifies eligible MercGear actions from recorded blueprint or localized names.
+    /// </summary>
     public string? GetMercenaryFiregroupName(JsonElement module)
     {
         ModuleDefinition? definition = FindModule(Text(module, "Item"));
         return definition?.Firegroup == true ? FindMercenaryModule(module, definition)?.Name : null;
     }
 
+    /// <summary>
+    /// Matches a MercGear preset without inventing unknown blueprint identities.
+    /// </summary>
     private MercenaryModuleDefinition? FindMercenaryModule(JsonElement module, ModuleDefinition definition)
     {
         string localized = Text(module, "Item_Localised");
@@ -154,6 +178,9 @@ public sealed class ShipModuleCatalog
         );
     }
 
+    /// <summary>
+    /// Reads string properties from JSON objects and returns empty for other value shapes.
+    /// </summary>
     internal static string Text(JsonElement element, string property) =>
         element.ValueKind == JsonValueKind.Object
         && element.TryGetProperty(property, out JsonElement value)
@@ -161,6 +188,9 @@ public sealed class ShipModuleCatalog
             ? value.GetString() ?? ""
             : "";
 
+    /// <summary>
+    /// Compares module or slot family prefixes without case sensitivity.
+    /// </summary>
     private static bool StartsWith(string value, string prefix) =>
         value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
 

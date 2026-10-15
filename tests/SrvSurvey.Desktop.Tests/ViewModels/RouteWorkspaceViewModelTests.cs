@@ -13,6 +13,9 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         $"SrvSurvey-route-view-model-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>
+    /// Checks that missing route loads as an empty commander workspace.
+    /// </summary>
     [Fact]
     public async Task MissingRouteLoadsAsAnEmptyCommanderWorkspace()
     {

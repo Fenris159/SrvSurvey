@@ -5,6 +5,9 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class SpanshSystemListViewModelTests
 {
+    /// <summary>
+    /// Checks that reusable entry adds edits reorders and removes destinations without losing refuelling.
+    /// </summary>
     [Fact]
     public void ReusableEntryAddsEditsReordersAndRemovesDestinationsWithoutLosingRefuelling()
     {
@@ -69,6 +72,9 @@ public sealed class SpanshSystemListViewModelTests
         Assert.Empty(list.Rows);
     }
 
+    /// <summary>
+    /// Checks that radio choices match the website and write the original request values.
+    /// </summary>
     [Fact]
     public void RadioChoicesMatchTheWebsiteAndWriteTheOriginalRequestValues()
     {
@@ -97,9 +103,15 @@ public sealed class SpanshSystemListViewModelTests
         Assert.Null(build.SystemList);
     }
 
+    /// <summary>
+    /// Creates a planner field model from its type and default value.
+    /// </summary>
     private static SpanshPlannerFieldViewModel CreateField() =>
         new(new("destination", "Destinations", SpanshPlannerFieldType.Systems));
 
+    /// <summary>
+    /// Commits another destination through the reusable entry command.
+    /// </summary>
     private static void Add(SpanshSystemListViewModel list, string name)
     {
         list.Draft = name;

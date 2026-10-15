@@ -522,6 +522,9 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>
+    /// Reconciles journal vehicle status and updates the current-ship export projection.
+    /// </summary>
     private void ApplyJournalSessionState(JournalMonitorUpdate update)
     {
         foreach (JournalEventEnvelope journalEvent in update.JournalEvents)

@@ -175,6 +175,9 @@ public sealed class TravelViewMarkupTests
         );
     }
 
+    /// <summary>
+    /// Checks that fleet carrier tab uses independent manager workspace and file actions.
+    /// </summary>
     [Fact]
     public void FleetCarrierTabUsesIndependentManagerWorkspaceAndFileActions()
     {

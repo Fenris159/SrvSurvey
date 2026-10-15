@@ -387,6 +387,9 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         );
     }
 
+    /// <summary>
+    /// Preserves carrier fuel and restock guidance, normalizing absent recommendations.
+    /// </summary>
     private static FollowRouteCarrierHop ParseCarrierHop(JsonObject root)
     {
         bool mustRestock = GetBoolean(root, "must_restock") == true;
@@ -697,6 +700,9 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         return new InvalidDataException($"The Spansh route response is invalid: {detail}.", innerException);
     }
 
+    /// <summary>
+    /// Accepts boolean and numeric zero-or-one flags while rejecting other JSON shapes.
+    /// </summary>
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
         if (root[propertyName] is not JsonValue value)
