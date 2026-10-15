@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class VrPlatformProfileCatalog
@@ -6,6 +8,7 @@ public static class VrPlatformProfileCatalog
     public const string MetaViaSteamVrProfileId = "meta-via-steamvr";
     public const string MetaSteamLinkProfileId = "meta-steam-link";
     public const string MetaVirtualDesktopProfileId = "meta-virtual-desktop";
+    public const string MetaVdxrProfileId = "meta-vdxr";
     public const string MetaAlvrProfileId = "meta-alvr";
     public const string WindowsMixedRealityProfileId = "wmr-via-steamvr";
     public const string CustomOpenVrProfileId = "custom-openvr";
@@ -53,11 +56,23 @@ public static class VrPlatformProfileCatalog
             "Meta Quest — Virtual Desktop",
             "Quest 1, 2, 3, 3S, and Pro using Virtual Desktop's SteamVR mode",
             "Virtual Desktop Streamer bridged into SteamVR",
-            "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
+            "This selection uses Virtual Desktop's SteamVR path on Windows. For direct VDXR overlays, choose Meta Quest — VDXR instead.",
             [
                 "Install Virtual Desktop on the Quest and Virtual Desktop Streamer on the Windows PC.",
                 "Connect in Virtual Desktop, launch SteamVR from its VR menu, and confirm the headset is ready.",
                 "Launch Elite in that SteamVR session, then enable SrvSurvey overlays below.",
+            ]
+        ),
+        new(
+            MetaVdxrProfileId,
+            "Meta Quest — VDXR",
+            "Quest 3 and other Virtual Desktop headsets on Windows x64",
+            "SrvSurvey OpenXR layer direct to VDXR",
+            "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+            [
+                "Run Install-OpenXrLayer.ps1 from the OpenXR folder in the Windows package to register the layer for your Windows account.",
+                "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",
+                "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
             ]
         ),
         new(
@@ -99,6 +114,61 @@ public static class VrPlatformProfileCatalog
         ),
     ];
 
+    public static IReadOnlyList<VrPlatformProfile> ForCurrentPlatform()
+    {
+        OSPlatform platform = OSPlatform.OSX;
+        if (OperatingSystem.IsWindows())
+        {
+            platform = OSPlatform.Windows;
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            platform = OSPlatform.Linux;
+        }
+        return ForPlatform(platform, RuntimeInformation.ProcessArchitecture, Environment.OSVersion.Version.Build);
+    }
+
+    public static IReadOnlyList<VrPlatformProfile> ForPlatform(
+        OSPlatform platform,
+        Architecture architecture,
+        int windowsBuild = 0
+    )
+    {
+        return All.Select(profile =>
+            {
+                string reason = GetUnavailableReason(profile.Id, platform, architecture, windowsBuild);
+                return profile with { IsAvailable = reason.Length == 0, UnavailableReason = reason };
+            })
+            .ToArray();
+    }
+
+    private static string GetUnavailableReason(
+        string profileId,
+        OSPlatform platform,
+        Architecture architecture,
+        int windowsBuild
+    )
+    {
+        if (platform != OSPlatform.Windows && platform != OSPlatform.Linux)
+        {
+            return "VR overlays require Windows or Linux.";
+        }
+        bool supportsLinux = profileId is SteamVrProfileId or MetaAlvrProfileId or CustomOpenVrProfileId;
+        if (platform == OSPlatform.Linux && !supportsLinux)
+        {
+            return "Windows only.";
+        }
+        if (profileId == MetaVdxrProfileId && architecture != Architecture.X64)
+        {
+            return "Requires Windows x64.";
+        }
+        if (profileId == WindowsMixedRealityProfileId && windowsBuild >= 26100)
+        {
+            return "Unavailable on Windows 11 24H2 or newer.";
+        }
+        return string.Empty;
+    }
+
     public static VrPlatformProfile Get(string? profileId)
     {
         return All.FirstOrDefault(profile => string.Equals(profile.Id, profileId, StringComparison.Ordinal)) ?? All[0];
@@ -113,7 +183,11 @@ public sealed record VrPlatformProfile(
     string CompatibilityNote,
     IReadOnlyList<string> PairingSteps,
     bool IsCustom = false
-);
+)
+{
+    public bool IsAvailable { get; init; } = true;
+    public string UnavailableReason { get; init; } = string.Empty;
+}
 
 public enum VrOverlayConnectionState
 {

@@ -195,7 +195,7 @@ public sealed class GuidesViewModelTests
     [InlineData("@@", "Settlement mapping — measurements and calibration")]
     [InlineData("Clear rigs automatically", "Rig tracking with key chords")]
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
-    [InlineData("Meta users must launch Elite through SteamVR", "Pair the headset and activate overlays")]
+    [InlineData("register the SrvSurvey OpenXR layer", "Pair the headset and activate overlays")]
     [InlineData("VDXR", "Choose a Meta compatibility bridge")]
     [InlineData("no custom library location", "Windows and Linux setup")]
     public void SearchFindsWorkflowAndGlossaryContent(string query, string expectedTitle)
@@ -291,7 +291,8 @@ public sealed class GuidesViewModelTests
         Assert.Contains("SteamVR headset", instructions, StringComparison.Ordinal);
         Assert.Contains("Meta Quest or Rift", instructions, StringComparison.Ordinal);
         Assert.Contains("Windows Mixed Reality", instructions, StringComparison.Ordinal);
-        Assert.Contains("OpenXR-only", instructions, StringComparison.Ordinal);
+        Assert.Contains("SrvSurvey OpenXR layer", instructions, StringComparison.Ordinal);
+        Assert.Contains("Meta Quest — VDXR", instructions, StringComparison.Ordinal);
         Assert.Contains("Meta compatibility bridge", instructions, StringComparison.Ordinal);
         Assert.Contains("OpenComposite is not a compatible workaround", instructions, StringComparison.Ordinal);
         Assert.Contains("no custom library location is required", instructions, StringComparison.Ordinal);

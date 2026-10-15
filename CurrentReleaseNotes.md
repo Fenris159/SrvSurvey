@@ -1,12 +1,29 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.7
+# SrvSurvey-XP 2.1.3.0-rc.64.8
 
-RC.64.7 brings Spansh route planning into SrvSurvey. Search from the ship or
-Fleet Carrier Route Workspace, load the result straight into the itinerary,
-and keep following it across closes and restarts. Updated EDSY module data
-also lets the Galaxy Plotter use the ship you are currently piloting.
+RC.64.8 adds direct VDXR overlays and Quest controller interaction on Windows
+x64. It also includes the Spansh route planning, persistent itineraries and
+updated EDSY ship data introduced in RC.64.7.
 
 ## What's changed
 
+- **Use Quest overlays directly with VDXR.** On Windows x64, select
+  **Meta Quest — VDXR** in **Settings > Global overlays > VR overlays**.
+  Register the bundled OpenXR layer and restart Elite using your existing
+  VDXR setup. SteamVR is no longer required for this route.
+- **Point and click with Quest controllers.** The existing **Toggle VR overlay
+  interaction** shortcut enables a visible controller cursor. Trigger clicks,
+  grip right-clicks, thumbstick press middle-clicks and thumbstick tilt scrolls.
+  Either controller can operate the pointer. Turning interaction off returns
+  those controls to Elite.
+- **Keep VR panels positioned as intended.** Existing calibration controls
+  move, rotate and scale the same styled overlay panels. Recenter captures
+  headset position and heading without tilting the whole arrangement when you
+  look down or tilt your head. Unchanged panel images reuse their textures instead of
+  being uploaded again on every publish.
+- **See which VR routes your system supports.** All routes remain visible;
+  unavailable choices are grayed out with an explanation. Linux offers
+  SteamVR, ALVR and custom OpenVR. VDXR requires Windows x64, and Windows Mixed
+  Reality is unavailable on Windows 11 24H2 or newer.
 - **Plan routes without leaving the workspace.** The new **Spansh Search**
   window offers Neutron Plotter, Road to Riches, Tourist Planner, Galaxy
   Plotter, Expressway to Exomastery and Colonisation Plotter. Fleet Carrier
@@ -39,15 +56,15 @@ also lets the Galaxy Plotter use the ship you are currently piloting.
 
 ## Update channel and packages
 
-RC.64.7 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.8 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.7`
-- Tag: `xp2-v2.1.3.0-rc.64.7`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.7-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.7-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.7-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.7-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.8`
+- Tag: `xp2-v2.1.3.0-rc.64.8`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.8-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.8-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.8-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.8-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
@@ -59,3 +76,7 @@ a fresh Loadout or a manually supplied build. FC fuel reinterpretation uses
 Spansh's reported jump costs and does not recalculate mass-dependent fuel costs
 or assume future mining. Carrier ETR is a jump-based estimate rather than a
 live countdown.
+
+Direct VDXR requires Windows x64, Direct3D 11 and an Elite installation already
+running through VDXR, such as an existing OpenComposite setup. Physical Quest
+headset validation remains pending. Linux VR continues to use SteamVR/OpenVR.

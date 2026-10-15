@@ -10,7 +10,7 @@ public sealed class VrOverlayCoordinator : IDisposable
 {
     private readonly VrOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
-    private readonly IOpenVrRuntime runtime;
+    private readonly IVrOverlayRuntime runtime;
     private readonly Func<string, bool> processDetector;
     private readonly Func<string?> modeProvider;
     private readonly OverlayDispatcherTimer timer;
@@ -22,7 +22,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     public VrOverlayCoordinator(
         VrOverlayViewModel viewModel,
         OverlayWindowRegistry? registry = null,
-        IOpenVrRuntime? runtime = null,
+        IVrOverlayRuntime? runtime = null,
         Func<string, bool>? processDetector = null,
         Func<string?>? modeProvider = null,
         VrOverlayInputRouter? inputRouter = null
@@ -30,7 +30,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
-        this.runtime = runtime ?? new OpenVrRuntime();
+        this.runtime = runtime ?? new VrOverlayRuntimeRouter(() => viewModel.SelectedPlatformProfile.Id);
         this.processDetector = processDetector ?? IsProcessRunning;
         this.modeProvider = modeProvider ?? (() => null);
         this.inputRouter = inputRouter;
@@ -83,7 +83,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         if (disposed || !viewModel.Enabled)
         {
-            viewModel.SetRuntimeStatus("Enable OpenVR overlays before resetting headset orientation.");
+            viewModel.SetRuntimeStatus("Enable VR overlays before resetting headset orientation.");
             return false;
         }
 
@@ -136,6 +136,11 @@ public sealed class VrOverlayCoordinator : IDisposable
             .ToDictionary(registration => registration.PlotterName, StringComparer.Ordinal);
         foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
         {
+            if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
+            {
+                inputRouter?.Reset();
+                continue;
+            }
             if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
             {
                 inputRouter?.Dispatch(registration, pointerEvent);
@@ -160,6 +165,12 @@ public sealed class VrOverlayCoordinator : IDisposable
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
+        if (eventArgs.PropertyName == nameof(VrOverlayViewModel.SelectedPlatformProfile))
+        {
+            published.Clear();
+            ShutdownRuntime();
+        }
+
         if (
             (eventArgs.PropertyName == nameof(VrOverlayViewModel.Enabled) && !viewModel.Enabled)
             || eventArgs.PropertyName
@@ -192,6 +203,11 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         (HashSet<string>? active, string? lastError) = PublishRegistrations(registrations);
         RemoveStaleOverlays(active);
+        VrRuntimeResult completion = runtime.CompleteFrame();
+        if (!completion.Succeeded)
+        {
+            lastError = completion.Message;
+        }
         published.Clear();
         published.UnionWith(active);
         if (lastError is null)
@@ -202,7 +218,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.Ready,
                 $"Connected through {viewModel.SelectedPlatformProfile.DisplayName}",
-                $"SteamVR/OpenVR is active with {active.Count:N0} live overlays.{interactionStatus}"
+                $"{runtime.DisplayName} is active with {active.Count:N0} live overlays.{interactionStatus}"
             );
         }
         else
@@ -273,7 +289,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             ShutdownRuntime();
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.WaitingForRuntime,
-                "SteamVR/OpenVR is not available",
+                "The selected VR transport is not available",
                 probe.Message
             );
             return false;
@@ -282,10 +298,14 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!probe.HeadsetPresent)
         {
             published.Clear();
-            ShutdownRuntime();
+            if (runtime.IsInitialized)
+            {
+                ShutdownRuntime();
+            }
+
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.WaitingForRuntime,
-                "Connect or wake the headset",
+                "Waiting for the selected VR session",
                 probe.Message
             );
             return false;
@@ -295,15 +315,15 @@ public sealed class VrOverlayCoordinator : IDisposable
         {
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.Connecting,
-                "SteamVR and headset detected",
-                "Connecting SrvSurvey to the OpenVR overlay compositor."
+                "VR session detected",
+                "Connecting SrvSurvey to the selected overlay transport."
             );
             VrRuntimeResult initialization = runtime.Initialize();
             if (!initialization.Succeeded)
             {
                 viewModel.SetConnectionStatus(
                     VrOverlayConnectionState.Error,
-                    "OpenVR connection failed",
+                    "VR connection failed",
                     initialization.Message
                 );
                 return false;
@@ -347,7 +367,7 @@ public sealed class VrOverlayCoordinator : IDisposable
                 registration.PlotterName,
                 frame,
                 calibration,
-                (float)registration.Window.Opacity
+                registration.PresentationVisual is null ? 1f : (float)registration.Window.Opacity
             );
             if (result.Succeeded)
             {

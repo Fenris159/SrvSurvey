@@ -167,6 +167,26 @@ jobs:
       - name: Build
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 
+      - name: Build and test Windows OpenXR layer
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: |
+          cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -A x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build artifacts/openxr-build --config Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir artifacts/openxr-build -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --install artifacts/openxr-build --config Release --prefix artifacts/openxr-layer
+
+      - name: Test OpenXR frame protocol on Linux
+        if: matrix.rid == 'linux-x64'
+        shell: bash
+        run: |
+          cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build artifacts/openxr-build
+          ctest --test-dir artifacts/openxr-build --output-on-failure
+
       - name: Test
         timeout-minutes: 10
         run: >-

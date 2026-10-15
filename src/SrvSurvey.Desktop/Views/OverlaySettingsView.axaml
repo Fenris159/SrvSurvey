@@ -179,7 +179,7 @@
                 <TextBlock Classes="muted"
                            FontSize="11"
                            TextWrapping="Wrap"
-                           Text="Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode." />
+                           Text="Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
                 <controls:ShortcutCaptureBox Chord="{Binding VrOverlayInteractionBinding.Chord, Mode=TwoWay}"
@@ -546,28 +546,39 @@
       <StackPanel Spacing="18">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="SteamVR overlays" />
+            <TextBlock Classes="card-title" Text="VR overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+                       Text="Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
           </StackPanel>
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"
                     IsChecked="{Binding VrOverlay.Enabled, Mode=TwoWay}"
+                    IsEnabled="{Binding VrOverlay.CanEnableOverlays}"
                     Content="Enable VR overlays" />
         </Grid>
 
         <Grid ColumnDefinitions="300,*" ColumnSpacing="20">
           <StackPanel Spacing="6">
             <TextBlock Classes="eyebrow" Text="1 · CHOOSE YOUR HEADSET ROUTE" />
-            <ComboBox ItemsSource="{Binding VrOverlay.PlatformProfiles}"
-                      SelectedItem="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+            <controls:VrPlatformPicker x:Name="VrRoutePicker"
+                                      Profiles="{Binding VrOverlay.PlatformProfiles}"
+                                      SelectedProfile="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+              <ComboBox.Styles>
+                <Style Selector="ComboBoxItem:disabled">
+                  <Setter Property="Opacity" Value="0.45" />
+                </Style>
+              </ComboBox.Styles>
               <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="overlay:VrPlatformProfile">
-                  <TextBlock Text="{Binding DisplayName}" />
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding DisplayName}" />
+                    <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding !IsAvailable}"
+                               FontSize="11" TextWrapping="Wrap" />
+                  </StackPanel>
                 </DataTemplate>
               </ComboBox.ItemTemplate>
-            </ComboBox>
+            </controls:VrPlatformPicker>
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Bottom">
             <TextBlock FontWeight="SemiBold"
@@ -720,7 +731,7 @@
                          Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays." />
+                         Text="Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays." />
               <Button Grid.Column="1"
                       Classes="secondary"
                       Command="{Binding VrOverlay.CancelCommand}"

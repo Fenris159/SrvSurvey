@@ -7,9 +7,13 @@ using Valve.VR;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public interface IOpenVrRuntime : IDisposable
+public interface IVrOverlayRuntime : IDisposable
 {
     bool IsInitialized { get; }
+
+    string DisplayName => "SteamVR/OpenVR";
+
+    VrRuntimeResult CompleteFrame() => VrRuntimeResult.Success("Overlay frame completed.");
 
     VrRuntimeProbe Probe();
 
@@ -33,7 +37,7 @@ public interface IOpenVrRuntime : IDisposable
     void Shutdown();
 }
 
-public sealed class OpenVrRuntime : IOpenVrRuntime
+public sealed class OpenVrRuntime : IVrOverlayRuntime
 {
     private readonly Dictionary<string, ulong> handles = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (double X, double Y)> pointerPositions = new(StringComparer.Ordinal);
@@ -443,6 +447,7 @@ public enum VrOverlayPointerEventKind
     MiddleButtonDown,
     MiddleButtonUp,
     Wheel,
+    Reset,
 }
 
 public sealed record VrOverlayPointerEvent(
