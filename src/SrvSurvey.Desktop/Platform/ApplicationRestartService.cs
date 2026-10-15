@@ -25,9 +25,11 @@ public sealed class ApplicationRestartService
     private readonly Func<ProcessStartInfo, bool> processStarter;
     private readonly bool isolateFromSystemdUnit;
 
+    /// <summary>Creates a restart service using the current process's original startup arguments.</summary>
     public ApplicationRestartService()
         : this(Program.StartupArguments) { }
 
+    /// <summary>Creates a restart service with replacement arguments that retain the instance's commander assignment.</summary>
     internal ApplicationRestartService(IReadOnlyList<string> arguments)
         : this(ResolveLauncherPath(), ResolveEntryAssemblyPath(), arguments) { }
 

@@ -1307,6 +1307,7 @@ internal sealed partial class DesktopRuntime
         mainWindow?.RestoreAndActivate();
     }
 
+    /// <summary>Starts a replacement after shutdown, retaining the commander unless startup preferences must be reselected.</summary>
     private async Task RestartApplicationAsync(string reason, bool preserveCommander = true)
     {
         await RestartAsync(() =>
@@ -1353,6 +1354,7 @@ internal sealed partial class DesktopRuntime
         return RestartApplicationAsync("Journal folder changed");
     }
 
+    /// <summary>Restarts without the retained assignment so the newly saved commander preference can take effect.</summary>
     private Task RestartAfterCommanderPreferenceChangeAsync()
     {
         return RestartApplicationAsync("Commander preference changed", preserveCommander: false);

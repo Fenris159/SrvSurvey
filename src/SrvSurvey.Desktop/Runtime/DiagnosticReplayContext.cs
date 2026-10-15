@@ -91,6 +91,7 @@ internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, Diagnost
 {
     public bool IsDiagnosticReplay => DiagnosticReplay is not null;
 
+    /// <summary>Resolves replay isolation or commander-specific paths before language initialization and desktop composition.</summary>
     public static async Task<DesktopStartupContext> ResolveAsync(
         IReadOnlyList<string> arguments,
         Func<AppDataPaths> normalPathsFactory,

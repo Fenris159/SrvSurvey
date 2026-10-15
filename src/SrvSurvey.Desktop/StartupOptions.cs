@@ -47,6 +47,7 @@ internal static class StartupOptions
         return retained.ToArray();
     }
 
+    /// <summary>Identifies launches authorized to coexist with another instance, including diagnostic replay.</summary>
     public static bool AllowsConcurrentInstance(IReadOnlyList<string> args)
     {
         ArgumentNullException.ThrowIfNull(args);
@@ -54,6 +55,7 @@ internal static class StartupOptions
             || args.Any(argument => argument.Equals(MultiCommanderInstanceOption, StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>Reads an optional journal directory supplied with a separate or inline command-line value.</summary>
     public static string? GetJournalDirectory(IReadOnlyList<string> args)
     {
         for (int index = 0; index < args.Count; index++)
@@ -74,16 +76,19 @@ internal static class StartupOptions
         return null;
     }
 
+    /// <summary>Reads the explicit commander override, accepting the current and legacy option names.</summary>
     public static string? GetFrontierId(IReadOnlyList<string> args)
     {
         return ReadFrontierId(args, FrontierIdOption, LegacyFrontierIdOption);
     }
 
+    /// <summary>Reads a replacement process's retained commander without treating it as a user preference override.</summary>
     internal static string? GetInstanceFrontierId(IReadOnlyList<string> args)
     {
         return ReadFrontierId(args, InstanceFrontierIdOption, null);
     }
 
+    /// <summary>Reads and normalizes a commander ID from either separate-value or inline option syntax.</summary>
     private static string? ReadFrontierId(IReadOnlyList<string> args, string option, string? legacyOption)
     {
         for (int index = 0; index < args.Count; index++)

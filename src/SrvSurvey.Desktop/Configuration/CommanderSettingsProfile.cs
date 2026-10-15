@@ -103,6 +103,7 @@ internal static class CommanderSettingsProfile
         WriteInitializationMarker(marker);
     }
 
+    /// <summary>Records completed migration while accepting a marker already written by another instance.</summary>
     private static void WriteInitializationMarker(string marker)
     {
         if (File.Exists(marker))

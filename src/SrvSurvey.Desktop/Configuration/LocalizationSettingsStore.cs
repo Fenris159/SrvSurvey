@@ -62,6 +62,7 @@ public sealed class LocalizationSettingsStore
         });
     }
 
+    /// <summary>Loads the assigned commander's language, inheriting shared settings before its first migration.</summary>
     public static string ResolveCurrent(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
