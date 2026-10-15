@@ -23,6 +23,7 @@ using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Tests.ProfileSync;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -30,6 +31,198 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MainWindowViewModelTests
 {
+    /// <summary>VR calibration edits must use the same commander layout folder as desktop overlay edits.</summary>
+    [Fact]
+    public async Task CommanderVrCalibrationDoesNotChangeAnotherCommandersSavedLayout()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        AppDataPaths shared = temp.Paths;
+        Directory.CreateDirectory(shared.DataDirectory);
+        string sharedPlotters = Path.Combine(shared.DataDirectory, "plotters.json");
+        const string original = """{"PlotJumpInfo":"left:10, top:20 { s: 10, p: <1, 2, 3>, r: <4, 5, 6>}"}""";
+        await File.WriteAllTextAsync(sharedPlotters, original);
+        AppDataPaths firstPaths = shared with { SettingsFrontierId = "F123" };
+        AppDataPaths secondPaths = shared with { SettingsFrontierId = "F456" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        CommanderSettingsProfile.Prepare(secondPaths);
+        await using MainWindowViewModel first = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(firstPaths)
+        );
+        Assert.True(first.VrOverlay.BeginAdjustment());
+        first.VrOverlay.SelectedOverlayName = "PlotJumpInfo";
+        first.VrOverlay.Scale = 25;
+        first.VrOverlay.SaveCommand.Execute(null);
+        Assert.StartsWith("Saved", first.VrOverlay.StatusMessage, StringComparison.Ordinal);
+        await using MainWindowViewModel second = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(secondPaths)
+        );
+
+        Assert.Equal(10, second.VrOverlay.GetCalibration("PlotJumpInfo")!.Scale);
+        Assert.Equal(
+            25,
+            new VrOverlayCalibrationStore(firstPaths.OverlaySettingsDirectory)
+                .Load()
+                .Resolve("PlotJumpInfo", null)!
+                .Scale
+        );
+        Assert.Equal(original, await File.ReadAllTextAsync(sharedPlotters));
+    }
+
+    /// <summary>Starting another commander must not attach its journal to an instance using the first commander's overlay settings.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CommanderInstancesKeepTheirOwnOverlaySettings(bool explicitFirstCommander)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-commander-overlays-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            string firstJournal = Path.Combine(journals, "Journal.2026-10-14T100000.01.log");
+            await File.WriteAllTextAsync(
+                firstJournal,
+                """
+                {"event":"Fileheader","Odyssey":true}
+                {"event":"Commander","Name":"Scaled Cmdr","FID":"F123"}
+                {"event":"LoadGame","Commander":"Scaled Cmdr","FID":"F123"}
+
+                """
+            );
+            File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 10, 14, 10, 0, 0, DateTimeKind.Utc));
+            var sharedPaths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            AppDataPaths firstPaths = sharedPaths with
+            {
+                SettingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
+                    sharedPaths.SharedUiSettingsPath,
+                    journals
+                ),
+            };
+            CommanderSettingsProfile.Prepare(firstPaths);
+            await using MainWindowViewModel first = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder.WithAppDataPaths(firstPaths).WithTargetFrontierId(explicitFirstCommander ? "F123" : null)
+            );
+            await first.RefreshAsync();
+            first.OverlayScale.ScalePercent = 65;
+            OverlayExceptionCategoryViewModel firstExceptions = first.OverlayExceptions.ForCategory(
+                OverlaySettingsCategory.Exploration
+            );
+            firstExceptions.Entries.Single(entry => entry.Definition.Id == "python").IsAllowed = false;
+            var firstStore = new LegacyOverlayLayoutStore(first.OverlayLayout.SaveDirectory);
+            firstStore.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Left, 120, LegacyVerticalAnchor.Top, 80, null)
+                    {
+                        ScaleIndex = OverlayScaleCatalog.GetIndex(55),
+                    },
+                }
+            );
+
+            string secondJournal = Path.Combine(journals, "Journal.2026-10-14T110000.01.log");
+            await File.WriteAllTextAsync(
+                secondJournal,
+                """
+                {"event":"Fileheader","Odyssey":true}
+                {"event":"Commander","Name":"Normal Cmdr","FID":"F456"}
+                {"event":"LoadGame","Commander":"Normal Cmdr","FID":"F456"}
+
+                """
+            );
+            File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 10, 14, 11, 0, 0, DateTimeKind.Utc));
+            AppDataPaths secondPaths = sharedPaths with { SettingsFrontierId = "F456" };
+            CommanderSettingsProfile.Prepare(secondPaths);
+            await using MainWindowViewModel second = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(secondPaths).WithTargetFrontierId("F456")
+            );
+            await second.RefreshAsync();
+            OverlayExceptionCategoryViewModel secondExceptions = second.OverlayExceptions.ForCategory(
+                OverlaySettingsCategory.Exploration
+            );
+            Assert.True(secondExceptions.Allows("python"));
+            secondExceptions.Entries.Single(entry => entry.Definition.Id == "anaconda").IsAllowed = false;
+            second.OverlayScale.ScalePercent = 10;
+            second.OverlayScale.ScalePercent = 0;
+            second.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo").HorizontalOffset = 450;
+            second.OverlayLayout.SaveCommand.Execute(null);
+            await first.RefreshAsync();
+
+            Assert.Equal("F123", first.FrontierId);
+            Assert.Equal("F456", second.FrontierId);
+            Assert.Equal(65, first.OverlayScale.ScalePercent);
+            Assert.Equal(0, second.OverlayScale.ScalePercent);
+            Assert.False(firstExceptions.Allows("python"));
+            Assert.True(firstExceptions.Allows("anaconda"));
+            Assert.True(secondExceptions.Allows("python"));
+            Assert.False(secondExceptions.Allows("anaconda"));
+            Assert.Equal(
+                OverlayScaleCatalog.GetIndex(65),
+                new OverlayScaleSettingsStore(firstPaths.UiSettingsPath).Load().Index
+            );
+            Assert.Equal(
+                OverlayScaleCatalog.BaselineIndex,
+                new OverlayScaleSettingsStore(secondPaths.UiSettingsPath).Load().Index
+            );
+            Assert.Equal(120, firstStore.Load().Placements["PlotJumpInfo"].HorizontalOffset);
+            Assert.Equal(OverlayScaleCatalog.GetIndex(55), firstStore.Load().Placements["PlotJumpInfo"].ScaleIndex);
+            var secondStore = new LegacyOverlayLayoutStore(second.OverlayLayout.SaveDirectory);
+            Assert.Equal(450, secondStore.Load().Placements["PlotJumpInfo"].HorizontalOffset);
+            Assert.Null(secondStore.Load().Placements["PlotJumpInfo"].ScaleIndex);
+
+            await using MainWindowViewModel reopenedFirst = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(firstPaths)
+            );
+            await reopenedFirst.RefreshAsync();
+            await using MainWindowViewModel reopenedSecond = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(secondPaths)
+            );
+            await reopenedSecond.RefreshAsync();
+            Assert.Equal("F123", reopenedFirst.FrontierId);
+            Assert.Equal("F456", reopenedSecond.FrontierId);
+            Assert.Equal(65, reopenedFirst.OverlayScale.ScalePercent);
+            Assert.Equal(0, reopenedSecond.OverlayScale.ScalePercent);
+            Assert.False(
+                reopenedFirst.OverlayExceptions.ForCategory(OverlaySettingsCategory.Exploration).Allows("python")
+            );
+            Assert.True(
+                reopenedFirst.OverlayExceptions.ForCategory(OverlaySettingsCategory.Exploration).Allows("anaconda")
+            );
+            Assert.True(
+                reopenedSecond.OverlayExceptions.ForCategory(OverlaySettingsCategory.Exploration).Allows("python")
+            );
+            Assert.False(
+                reopenedSecond.OverlayExceptions.ForCategory(OverlaySettingsCategory.Exploration).Allows("anaconda")
+            );
+            Assert.Equal(
+                120,
+                reopenedFirst.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo").HorizontalOffset
+            );
+            Assert.Equal(
+                450,
+                reopenedSecond.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo").HorizontalOffset
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     /// <summary>Startup publishes only the current Cargo.json snapshot, honoring opt-in, ownership, and cancellation.</summary>
     [Theory]
     [InlineData(true, 1, true, false)]

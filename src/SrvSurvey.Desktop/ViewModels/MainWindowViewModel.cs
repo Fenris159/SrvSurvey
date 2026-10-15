@@ -485,7 +485,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             StreamOverlay = new StreamOverlayViewModel(new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
             VrOverlay = new VrOverlayViewModel(
                 new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
-                new VrOverlayCalibrationStore(AppDataPaths.DataDirectory)
+                new VrOverlayCalibrationStore(AppDataPaths.OverlaySettingsDirectory)
             );
             NetworkPrivacy = new NetworkPrivacyViewModel(new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
             Inara = new InaraSettingsViewModel(commanderProfileStore);
@@ -869,7 +869,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             ImportLegacyProfileCommand = importLegacyProfileCommand;
             JournalFolderPath = ResolvePrimaryJournalPath(folderResolution) ?? "No journal location is configured.";
             CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
-            TargetFrontierId = NormalizeOptionalId(targetFrontierId);
+            // Journal ownership must stay aligned with the commander-specific settings loaded at startup.
+            TargetFrontierId =
+                NormalizeOptionalId(targetFrontierId)
+                ?? CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
                 profileJournalDirectories

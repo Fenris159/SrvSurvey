@@ -78,7 +78,7 @@ public static class JournalSnapshotReader
     {
         int malformedLineCount = 0;
 
-        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {

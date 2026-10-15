@@ -60,7 +60,8 @@ internal static class CommanderSettingsProfile
         }
 
         string marker = Path.Combine(paths.OverlaySettingsDirectory, ".profile-initialized");
-        if (File.Exists(marker))
+        string vrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vr-profile-initialized");
+        if (File.Exists(marker) && File.Exists(vrMarker))
         {
             return;
         }
@@ -70,20 +71,44 @@ internal static class CommanderSettingsProfile
                 new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
             )
         );
+        if (File.Exists(marker) && File.Exists(vrMarker))
+        {
+            return;
+        }
+        if (!File.Exists(marker))
+        {
+            CopyIfMissing(paths.SharedUiSettingsPath, paths.UiSettingsPath);
+            foreach (string fileName in OverlayFiles)
+            {
+                CopyIfMissing(
+                    Path.Combine(paths.DataDirectory, fileName),
+                    Path.Combine(paths.OverlaySettingsDirectory, fileName)
+                );
+            }
+        }
+
+        Directory.CreateDirectory(paths.OverlaySettingsDirectory);
+        if (!File.Exists(vrMarker))
+        {
+            string legacyVrDirectory = Path.Combine(paths.DataDirectory, "vr");
+            if (Directory.Exists(legacyVrDirectory))
+            {
+                foreach (string source in Directory.EnumerateFiles(legacyVrDirectory, "*.json"))
+                {
+                    CopyIfMissing(source, Path.Combine(paths.OverlaySettingsDirectory, "vr", Path.GetFileName(source)));
+                }
+            }
+            WriteInitializationMarker(vrMarker);
+        }
+        WriteInitializationMarker(marker);
+    }
+
+    private static void WriteInitializationMarker(string marker)
+    {
         if (File.Exists(marker))
         {
             return;
         }
-        CopyIfMissing(paths.SharedUiSettingsPath, paths.UiSettingsPath);
-        foreach (string fileName in OverlayFiles)
-        {
-            CopyIfMissing(
-                Path.Combine(paths.DataDirectory, fileName),
-                Path.Combine(paths.OverlaySettingsDirectory, fileName)
-            );
-        }
-
-        Directory.CreateDirectory(paths.OverlaySettingsDirectory);
         try
         {
             using var initialized = new FileStream(marker, FileMode.CreateNew, FileAccess.Write);

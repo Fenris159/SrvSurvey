@@ -7,6 +7,45 @@ internal static class StartupOptions
     private const string FrontierIdOption = "--frontier-id";
     private const string LegacyFrontierIdOption = "-fid";
     internal const string MultiCommanderInstanceOption = "--multi-commander-instance";
+    private const string InstanceFrontierIdOption = "--instance-frontier-id";
+
+    /// <summary>Builds replacement-process arguments for the current commander assignment.</summary>
+    internal static string[] ForRestart(
+        IReadOnlyList<string> arguments,
+        string? frontierId,
+        bool preserveCommander = true
+    )
+    {
+        var retained = new List<string>();
+        int index = 0;
+        while (index < arguments.Count)
+        {
+            string argument = arguments[index++];
+            if (argument.Equals(InstanceFrontierIdOption, StringComparison.OrdinalIgnoreCase))
+            {
+                index++;
+            }
+            else if (!argument.StartsWith(InstanceFrontierIdOption + "=", StringComparison.OrdinalIgnoreCase))
+            {
+                retained.Add(argument);
+            }
+        }
+
+        if (
+            preserveCommander
+            && NormalizeFrontierId(frontierId) is { } commander
+            && !HasDiagnosticReplayOption(arguments)
+        )
+        {
+            retained.Add(InstanceFrontierIdOption);
+            retained.Add(commander);
+            if (!AllowsConcurrentInstance(retained))
+            {
+                retained.Add(MultiCommanderInstanceOption);
+            }
+        }
+        return retained.ToArray();
+    }
 
     public static bool AllowsConcurrentInstance(IReadOnlyList<string> args)
     {
@@ -37,18 +76,28 @@ internal static class StartupOptions
 
     public static string? GetFrontierId(IReadOnlyList<string> args)
     {
+        return ReadFrontierId(args, FrontierIdOption, LegacyFrontierIdOption);
+    }
+
+    internal static string? GetInstanceFrontierId(IReadOnlyList<string> args)
+    {
+        return ReadFrontierId(args, InstanceFrontierIdOption, null);
+    }
+
+    private static string? ReadFrontierId(IReadOnlyList<string> args, string option, string? legacyOption)
+    {
         for (int index = 0; index < args.Count; index++)
         {
             string argument = args[index];
             if (
-                argument.Equals(FrontierIdOption, StringComparison.OrdinalIgnoreCase)
-                || argument.Equals(LegacyFrontierIdOption, StringComparison.OrdinalIgnoreCase)
+                argument.Equals(option, StringComparison.OrdinalIgnoreCase)
+                || argument.Equals(legacyOption, StringComparison.OrdinalIgnoreCase)
             )
             {
                 return NormalizeFrontierId(index + 1 < args.Count ? args[index + 1] : null);
             }
 
-            string prefix = $"{FrontierIdOption}=";
+            string prefix = $"{option}=";
             if (argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return NormalizeFrontierId(argument[prefix.Length..]);

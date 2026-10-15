@@ -1,10 +1,48 @@
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Tests.ProfileSync;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class CommanderSettingsProfileTests
 {
+    /// <summary>Legacy vehicle VR calibrations initialize private commander copies once, without carrying later edits to another commander.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VehicleVrCalibrationsMigrateOnceIntoEachCommanderProfile(bool existingProfile)
+    {
+        using var temp = new ProfileSyncTestRoot();
+        temp.Write("data", "vr/testbuggy.json", """{"PlotJumpInfo":"{ s: 18, p: <1, 2, 3>, r: <4, 5, 6>}"}""");
+        AppDataPaths first = temp.Paths with { SettingsFrontierId = "F123" };
+        AppDataPaths second = temp.Paths with { SettingsFrontierId = "F456" };
+        if (existingProfile)
+        {
+            Directory.CreateDirectory(first.OverlaySettingsDirectory);
+            File.WriteAllText(Path.Combine(first.OverlaySettingsDirectory, ".profile-initialized"), "");
+        }
+        CommanderSettingsProfile.Prepare(first);
+        CommanderSettingsProfile.Prepare(second);
+        temp.Write("data", "vr/testbuggy.json", """{"PlotJumpInfo":"{ s: 25, p: <1, 2, 3>, r: <4, 5, 6>}"}""");
+        CommanderSettingsProfile.Prepare(first);
+
+        Assert.Equal(
+            18,
+            new VrOverlayCalibrationStore(first.OverlaySettingsDirectory)
+                .Load()
+                .Resolve("PlotJumpInfo", "testbuggy")
+                ?.Scale
+        );
+        Assert.Equal(
+            18,
+            new VrOverlayCalibrationStore(second.OverlaySettingsDirectory)
+                .Load()
+                .Resolve("PlotJumpInfo", "testbuggy")
+                ?.Scale
+        );
+    }
+
     [Fact]
     public void RejectsInvalidCommanderIdBeforeCreatingSettingsPaths()
     {

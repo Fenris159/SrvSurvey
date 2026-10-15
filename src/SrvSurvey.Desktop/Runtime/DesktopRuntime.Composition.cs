@@ -81,6 +81,7 @@ internal sealed partial class DesktopRuntime
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
+    private string[] originalStartupArguments = [];
 
     /// <summary>Composes desktop services, settings, and capture dependencies at startup.</summary>
     private void InitializeDesktopApplication(
@@ -90,6 +91,7 @@ internal sealed partial class DesktopRuntime
     )
     {
         DiagnosticReplayContext? diagnosticReplay = startup.DiagnosticReplay;
+        originalStartupArguments = startup.Arguments.ToArray();
         diagnosticReplayContext = diagnosticReplay;
         HttpClient? externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(diagnosticReplay);
         diagnosticNetworkClientOwnership = externalNetworkClient;
@@ -115,11 +117,16 @@ internal sealed partial class DesktopRuntime
             applicationLog.Append(commanderPreferenceResolution.StatusMessage);
         }
 
-        string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
+        string? targetFrontierId = diagnosticReplay is null
+            ? StartupOptions.GetFrontierId(startup.Arguments)
+                ?? StartupOptions.GetInstanceFrontierId(startup.Arguments)
+                ?? appDataPaths.SettingsFrontierId
+                ?? commanderPreferenceResolution.TargetFrontierId
+            : null;
         appDataPaths = PrepareCommanderSettings(
             appDataPaths,
             targetFrontierId,
-            startup.AppDataPathsOverride is null && diagnosticReplay is null,
+            diagnosticReplay is null,
             configuredJournalDirectory,
             applicationLog
         );
@@ -262,7 +269,13 @@ internal sealed partial class DesktopRuntime
                 RestartApplicationAsync("Published reference data refreshed")
             );
             viewModel.Localization.SetRestartHandler(() => RestartApplicationAsync("Language preference changed"));
-            ConfigureReleaseInstaller(viewModel, desktop, appDataPaths, applicationLog, startup.Arguments);
+            ConfigureReleaseInstaller(
+                viewModel,
+                desktop,
+                appDataPaths,
+                applicationLog,
+                StartupOptions.ForRestart(startup.Arguments, appDataPaths.SettingsFrontierId)
+            );
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.ProfileSync.RestartRequested += RestartAfterJournalChangeAsync;
@@ -449,7 +462,9 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog
     )
     {
-        string? settingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
+        string? settingsFrontierId =
+            CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId)
+            ?? CommanderSettingsProfile.NormalizeFrontierId(paths.SettingsFrontierId);
         if (settingsFrontierId is null && discoverJournalCommander)
         {
             settingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
@@ -1292,11 +1307,17 @@ internal sealed partial class DesktopRuntime
         mainWindow?.RestoreAndActivate();
     }
 
-    private async Task RestartApplicationAsync(string reason)
+    private async Task RestartApplicationAsync(string reason, bool preserveCommander = true)
     {
         await RestartAsync(() =>
         {
-            new ApplicationRestartService().StartRestartHelper();
+            new ApplicationRestartService(
+                StartupOptions.ForRestart(
+                    originalStartupArguments,
+                    mainViewModel?.AppDataPaths.SettingsFrontierId,
+                    preserveCommander
+                )
+            ).StartRestartHelper();
             applicationLogService?.Append(
                 reason + "; restart helper started and will launch the replacement after this process exits."
             );
@@ -1334,7 +1355,7 @@ internal sealed partial class DesktopRuntime
 
     private Task RestartAfterCommanderPreferenceChangeAsync()
     {
-        return RestartApplicationAsync("Commander preference changed");
+        return RestartApplicationAsync("Commander preference changed", preserveCommander: false);
     }
 
     private async Task WriteClipboardAsync(string text)

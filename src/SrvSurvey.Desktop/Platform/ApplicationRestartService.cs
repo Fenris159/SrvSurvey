@@ -26,7 +26,10 @@ public sealed class ApplicationRestartService
     private readonly bool isolateFromSystemdUnit;
 
     public ApplicationRestartService()
-        : this(ResolveLauncherPath(), ResolveEntryAssemblyPath(), Program.StartupArguments) { }
+        : this(Program.StartupArguments) { }
+
+    internal ApplicationRestartService(IReadOnlyList<string> arguments)
+        : this(ResolveLauncherPath(), ResolveEntryAssemblyPath(), arguments) { }
 
     internal ApplicationRestartService(string processPath, string entryAssemblyPath, IReadOnlyList<string> arguments)
         : this(
