@@ -89,7 +89,7 @@ public sealed class OpenXrFrameBridge : IDisposable
     public void Publish(byte[] packet)
     {
         ArgumentNullException.ThrowIfNull(packet);
-        if (packet.Length < OpenXrFramePacket.HeaderBytes || packet.Length > OpenXrFramePacket.Capacity)
+        if (packet.Length is < OpenXrFramePacket.HeaderBytes or > OpenXrFramePacket.Capacity)
         {
             throw new InvalidDataException("The OpenXR mailbox packet size is invalid.");
         }

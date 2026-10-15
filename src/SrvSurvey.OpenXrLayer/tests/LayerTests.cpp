@@ -1,5 +1,6 @@
-// Includes the implementation to exercise loader/session dispatch against a fake runtime.
-// D3D11 pixel uploads use the Windows software (WARP) device, not a headset.
+// Includes the implementation to exercise loader/session dispatch against a
+// fake runtime. D3D11 pixel uploads use the Windows software (WARP) device, not
+// a headset.
 #include "../Layer.cpp"
 #include <iostream>
 #include <stdexcept>
@@ -16,8 +17,11 @@ Session *uploadOwner = nullptr;
 bool omitProc = false, advancedChain = false, timeoutNext = false, formatSupported = true;
 uint32_t destroyedInstances = 0, destroyedTextures = 0, locateCount = 0, endCount = 0;
 uint32_t submittedLayers = 0;
+uint32_t acquiredImages = 0, releasedImages = 0;
 XrCompositionLayerFlags submittedFlags = 0;
 XrPosef submittedPose{};
+XrPosef headPose{{0, 0, 0, 1}, {1, 2, 3}};
+std::map<XrSwapchain, std::array<uint8_t, 4>> uploadedPixels;
 const XrFrameEndInfo *lastInfo = nullptr;
 XrApiLayerNextInfo tail{};
 struct TestTexture
@@ -69,7 +73,7 @@ XrResult XRAPI_CALL Locate(XrSpace, XrSpace, XrTime, XrSpaceLocation *output)
 {
     ++locateCount;
     output->locationFlags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT;
-    output->pose = {{0, 0, 0, 1}, {1, 2, 3}};
+    output->pose = headPose;
     return XR_SUCCESS;
 }
 XrResult XRAPI_CALL Formats(XrSession, uint32_t capacity, uint32_t *count, int64_t *output)
@@ -114,6 +118,7 @@ XrResult XRAPI_CALL Images(XrSwapchain handle, uint32_t capacity, uint32_t *coun
 }
 XrResult XRAPI_CALL Acquire(XrSwapchain, const XrSwapchainImageAcquireInfo *, uint32_t *index)
 {
+    ++acquiredImages;
     *index = 0;
     return XR_SUCCESS;
 }
@@ -128,6 +133,7 @@ XrResult XRAPI_CALL Wait(XrSwapchain, const XrSwapchainImageWaitInfo *)
 }
 XrResult XRAPI_CALL Release(XrSwapchain handle, const XrSwapchainImageReleaseInfo *)
 {
+    ++releasedImages;
     auto *texture = reinterpret_cast<TestTexture *>(handle);
     D3D11_TEXTURE2D_DESC desc{};
     texture->texture->GetDesc(&desc);
@@ -142,15 +148,14 @@ XrResult XRAPI_CALL Release(XrSwapchain handle, const XrSwapchainImageReleaseInf
     D3D11_MAPPED_SUBRESOURCE mapped{};
     Require(SUCCEEDED(context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped)), "Read uploaded pixels");
     const auto *pixel = static_cast<const uint8_t *>(mapped.pData);
-    if (desc.Width == 1)
-        Require(pixel[0] == 255 && pixel[1] == 128 && pixel[2] == 64 && pixel[3] == 127,
-                "Preserve straight sRGB, scale only alpha");
-    else
+    if (desc.Width == 32)
     {
         const auto *center = pixel + 16 * mapped.RowPitch + 16 * 4;
         Require(desc.Width == 32 && center[0] == 32 && center[1] == 200 && center[3] == 255 && pixel[3] == 0,
                 "Upload visible cyan cursor with transparent corners");
     }
+    else
+        std::copy_n(pixel, 4, uploadedPixels[handle].begin());
     context->Unmap(staging, 0);
     staging->Release();
     context->Release();
@@ -210,32 +215,47 @@ XrResult XRAPI_CALL GetProc(XrInstance, const char *name, PFN_xrVoidFunction *ou
     *output = reinterpret_cast<PFN_xrVoidFunction>(Success);
     return XR_SUCCESS;
 }
-void WritePacket(const std::wstring &path, uint32_t sequence, uint32_t count = 1, int64_t timestamp = Now())
+struct TestPanel
 {
-    std::vector<uint8_t> bytes(sizeof(Header) + count * (sizeof(Descriptor) + 4));
+    uint64_t id = 1;
+    uint32_t width = 1;
+    float alpha = 0.5f;
+    uint8_t red = 255;
+};
+void WritePacket(const std::wstring &path, uint32_t sequence, std::initializer_list<TestPanel> panels = {TestPanel{}},
+                 int64_t timestamp = Now(), uint32_t originRevision = 0)
+{
+    std::vector<uint8_t> bytes(sizeof(Header) + panels.size() * sizeof(Descriptor));
     Header header{};
     header.magic = Magic;
     header.version = Version;
     header.sequence = sequence;
-    header.length = static_cast<uint32_t>(bytes.size());
     header.timestamp = timestamp;
-    header.count = count;
-    std::memcpy(bytes.data(), &header, sizeof(header));
-    if (count)
+    header.count = static_cast<uint32_t>(panels.size());
+    header.originRevision = originRevision;
+    uint32_t index = 0;
+    for (const auto &panel : panels)
     {
         Descriptor d{};
-        d.id = 1;
-        d.width = d.height = 1;
-        d.offset = sizeof(Header) + sizeof(Descriptor);
-        d.length = 4;
+        d.id = panel.id;
+        d.width = panel.width;
+        d.height = 1;
+        d.offset = static_cast<uint32_t>(bytes.size());
+        d.length = panel.width * 4;
         d.widthMeters = d.heightMeters = 1;
         d.position[2] = -2;
         d.orientation[3] = 1;
-        d.alpha = 0.5f;
-        std::memcpy(bytes.data() + sizeof(Header), &d, sizeof(d));
-        uint8_t pixels[] = {255, 128, 64, 255};
-        std::memcpy(bytes.data() + d.offset, pixels, sizeof(pixels));
+        d.alpha = panel.alpha;
+        bytes.resize(bytes.size() + d.length);
+        std::memcpy(bytes.data() + sizeof(Header) + index++ * sizeof(Descriptor), &d, sizeof(d));
+        for (uint32_t offset = 0; offset < d.length; offset += 4)
+        {
+            uint8_t pixels[] = {panel.red, 128, 64, 255};
+            std::memcpy(bytes.data() + d.offset + offset, pixels, sizeof(pixels));
+        }
     }
+    header.length = static_cast<uint32_t>(bytes.size());
+    std::memcpy(bytes.data(), &header, sizeof(header));
     HANDLE file = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                               OPEN_ALWAYS, 0, nullptr);
     Require(file != INVALID_HANDLE_VALUE, "Open test mailbox");
@@ -252,6 +272,86 @@ void WritePacket(const std::wstring &path, uint32_t sequence, uint32_t count = 1
     DWORD written = 0;
     Require(WriteFile(file, bytes.data(), static_cast<DWORD>(bytes.size()), &written, nullptr), "Publish fixture");
     CloseHandle(file);
+}
+
+void TestTextureReuse(Session &session, const XrFrameEndInfo &frame, const std::wstring &path)
+{
+    uint32_t uploads = acquiredImages;
+    XrSwapchain first = session.textures.at(1).handle;
+    const uint8_t *buffer = session.textures.at(1).pixels.data();
+    Require(uploadedPixels.at(first) == std::array<uint8_t, 4>{255, 128, 64, 127},
+            "Preserve straight sRGB, scale only alpha");
+    WritePacket(path, 16);
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == uploads && releasedImages == uploads,
+            "Keep-alive republish reuses identical panel pixels without "
+            "acquiring a swapchain image");
+    session.maximumLayers = 3;
+    WritePacket(path, 18, {{}, {.id = 2, .red = 100}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && submittedLayers == 3, "Adding a second panel uploads only its own texture");
+    WritePacket(path, 20, {{}, {.id = 2, .red = 99}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && uploadedPixels.at(session.textures.at(2).handle)[0] == 99,
+            "Changing one panel uploads only its texture and delivers new pixels");
+    WritePacket(path, 22, {{.alpha = 0.25f}, {.id = 2, .red = 99}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && uploadedPixels.at(first)[3] == 63,
+            "Opacity changes still update uploaded alpha");
+    Require(session.textures.at(1).pixels.data() == buffer, "Reuse the panel's staging allocation across uploads");
+    WritePacket(path, 24, {{.width = 2, .alpha = 0.25f}, {.id = 2, .red = 99}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && session.textures.at(1).width == 2,
+            "Dimension changes replace the swapchain and upload the resized panel");
+    WritePacket(path, 26);
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && session.textures.size() == 1, "Restore the primary panel after resizing");
+    timeoutNext = true;
+    WritePacket(path, 28, {{.red = 35}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && releasedImages == uploads - 1 && session.textures.at(1).acquired,
+            "Changed pixels keep a timed-out acquired image pending");
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == uploads && releasedImages == uploads &&
+                uploadedPixels.at(session.textures.at(1).handle)[0] == 35,
+            "Retry a changed upload on the same image after a timeout");
+    timeoutNext = true;
+    WritePacket(path, 30);
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && releasedImages == uploads - 1, "Acquire the next changed upload");
+    WritePacket(path, 32, {{.red = 35}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == uploads && releasedImages == uploads && !session.textures.at(1).acquired,
+            "Even reverted pixels must finish and release an already acquired image");
+    WritePacket(path, 34, {{.alpha = 1}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads && uploadedPixels.at(session.textures.at(1).handle)[3] == 255,
+            "Full-opacity content uploads without altering alpha");
+    WritePacket(path, 36, {{.alpha = 1}});
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == uploads, "Full-opacity identical republishes also reuse the texture");
+    WritePacket(path, 38);
+    LayerEndFrame(session.handle, &frame);
+    Require(acquiredImages == ++uploads, "Restore opacity after cache regression tests");
+    session.maximumLayers = 2;
+}
+
+XrQuaternionf HeadOrientation(float yaw, float pitch, float roll)
+{
+    return Multiply(
+        Multiply({0, std::sin(yaw / 2), 0, std::cos(yaw / 2)}, {std::sin(pitch / 2), 0, 0, std::cos(pitch / 2)}),
+        {0, 0, std::sin(roll / 2), std::cos(roll / 2)});
+}
+void RequireHeading(float yaw)
+{
+    Require(std::abs(submittedPose.position.x - (1 - 2 * std::sin(yaw))) < 0.0001f &&
+                std::abs(submittedPose.position.y - 2) < 0.0001f &&
+                std::abs(submittedPose.position.z - (3 - 2 * std::cos(yaw))) < 0.0001f &&
+                std::abs(submittedPose.orientation.x) < 0.0001f && std::abs(submittedPose.orientation.z) < 0.0001f &&
+                std::abs(submittedPose.orientation.y - std::sin(yaw / 2)) < 0.0001f &&
+                std::abs(submittedPose.orientation.w - std::cos(yaw / 2)) < 0.0001f,
+            "Keep captured heading and position while discarding head pitch and "
+            "roll");
 }
 } // namespace
 
@@ -321,6 +421,7 @@ int main()
         session->running = true;
         session->shouldRender = true;
         session->maximumLayers = 2;
+        headPose.orientation = HeadOrientation(0, 0.4f, -0.3f);
         sessions.emplace(session->handle, session);
         XrCompositionLayerProjection game{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
         const XrCompositionLayerBaseHeader *gameLayers[] = {
@@ -342,6 +443,8 @@ int main()
         Require(frame.layerCount == 1 && frame.layers == gameLayers, "Never mutate game's frame info");
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && locateCount == 1,
                 "Reuse unchanged textures and anchor");
+        RequireHeading(0);
+        TestTextureReuse(*session, frame, path);
         WritePacket(path, 3); // Odd sequence simulates a writer in flight.
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && lastInfo == &frame,
                 "Pass through torn snapshot");
@@ -351,18 +454,31 @@ int main()
                 "Respect shouldRender=false");
         session->shouldRender = true;
         session->pendingSpaceChange = 10;
+        headPose.orientation = HeadOrientation(0.7f, 0.5f, -0.2f);
         frame.displayTime = 9;
         LayerEndFrame(session->handle, &frame);
         Require(locateCount == 1, "Do not recenter on transient suppression or before space change time");
+        RequireHeading(0);
         frame.displayTime = 10;
         LayerEndFrame(session->handle, &frame);
         Require(locateCount == 2, "Recenter when reference-space change takes effect");
-        WritePacket(path, 6, 1, Now() - 3000);
+        RequireHeading(0.7f);
+        headPose.orientation = HeadOrientation(-0.8f, -0.6f, 0.4f);
+        WritePacket(path, 40, {TestPanel{}}, Now(), 1);
+        LayerEndFrame(session->handle, &frame);
+        Require(locateCount == 3, "Capture a new heading after the desktop resets the origin");
+        RequireHeading(-0.8f);
+        headPose.orientation = {0, 0, 0, 1};
+        WritePacket(path, 42);
+        LayerEndFrame(session->handle, &frame);
+        RequireHeading(0);
+        WritePacket(path, 6, {TestPanel{}}, Now() - 3000);
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && lastInfo == &frame,
                 "Expire abandoned overlay packets");
-        WritePacket(path, 8, 0);
+        uint32_t beforeRemoval = destroyedTextures;
+        WritePacket(path, 8, {});
         LayerEndFrame(session->handle, &frame);
-        Require(destroyedTextures == 1 && submittedLayers == 1, "Remove stale overlay resources");
+        Require(destroyedTextures == beforeRemoval + 1 && submittedLayers == 1, "Remove stale overlay resources");
         Require(!session->uploadsPending, "Wait for GPU completion when retiring a panel");
         WritePacket(path, 10);
         {
@@ -416,7 +532,7 @@ int main()
                     "Rejected owned action sets retry only the original game attachment without claiming ownership");
             failMergedAttach = false;
         }
-        WritePacket(path, 12, 0);
+        WritePacket(path, 12, {});
         LayerEndFrame(session->handle, &frame);
         WritePacket(path, 14);
         formatSupported = false;

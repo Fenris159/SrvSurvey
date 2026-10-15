@@ -102,6 +102,10 @@ Changes preview in the connected VR session. Save preserves the calibration for
 that panel and mode. Editing a panel's 3D placement and clicking controls inside
 that panel are separate operations.
 
+Recenter captures the headset's position and heading. Looking down or tilting
+your head during reset does not tilt the whole panel arrangement; each panel's
+saved pitch and roll still apply.
+
 **Toggle VR overlay interaction** uses the selected SteamVR or VDXR backend. On
 VDXR the native layer adds its own OpenXR actions alongside OpenComposite's game
 actions, intersects controller aim rays with the submitted panels, draws a

@@ -195,7 +195,8 @@ struct Texture
 {
     XrSwapchain handle{};
     std::vector<XrSwapchainImageD3D11KHR> images;
-    uint32_t width = 0, height = 0, version = 0, acquiredIndex = 0;
+    std::vector<uint8_t> pixels;
+    uint32_t width = 0, height = 0, sourceSequence = 0, acquiredIndex = 0;
     bool acquired = false, ready = false;
 };
 struct Session
@@ -324,6 +325,13 @@ XrQuaternionf Multiply(XrQuaternionf a, XrQuaternionf b)
     return {a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
             a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w, a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z};
 }
+XrPosef HeadingAnchor(XrPosef head)
+{
+    const auto &q = head.orientation;
+    float yaw = std::atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.x * q.x + q.y * q.y));
+    head.orientation = {0, std::sin(yaw / 2), 0, std::cos(yaw / 2)};
+    return head;
+}
 XrPosef Place(const XrPosef &anchor, const Descriptor &descriptor)
 {
     XrQuaternionf position{descriptor.position[0], descriptor.position[1], descriptor.position[2], 0};
@@ -354,7 +362,22 @@ void Prepare(Session &session)
         throw;
     }
 }
-void UploadPixels(Session &session, Texture &texture, const Descriptor &descriptor, uint32_t version,
+bool MatchesPixels(const Texture &texture, const Descriptor &descriptor, const uint8_t *source)
+{
+    if (texture.pixels.size() != descriptor.length)
+        return false;
+    if (descriptor.alpha == 1)
+        return std::memcmp(texture.pixels.data(), source, descriptor.length) == 0;
+    for (size_t i = 0; i < texture.pixels.size(); i += 4)
+    {
+        auto alpha = static_cast<uint8_t>(static_cast<float>(source[i + 3]) * descriptor.alpha);
+        if (texture.pixels[i] != source[i] || texture.pixels[i + 1] != source[i + 1] ||
+            texture.pixels[i + 2] != source[i + 2] || texture.pixels[i + 3] != alpha)
+            return false;
+    }
+    return true;
+}
+void UploadPixels(Session &session, Texture &texture, const Descriptor &descriptor, uint32_t sourceSequence,
                   const uint8_t *source)
 {
     if (texture.handle && (texture.width != descriptor.width || texture.height != descriptor.height))
@@ -385,8 +408,18 @@ void UploadPixels(Session &session, Texture &texture, const Descriptor &descript
         Check(session.instance->images(texture.handle, count, &count,
                                        reinterpret_cast<XrSwapchainImageBaseHeader *>(texture.images.data())));
     }
-    if (texture.ready && texture.version == version && !texture.acquired)
-        return;
+    if (texture.ready && !texture.acquired)
+    {
+        // Sequence avoids rescanning an unchanged snapshot; the retained pixels
+        // determine texture identity.
+        if (texture.sourceSequence == sourceSequence)
+            return;
+        if (MatchesPixels(texture, descriptor, source))
+        {
+            texture.sourceSequence = sourceSequence;
+            return;
+        }
+    }
     if (!texture.acquired)
     {
         XrSwapchainImageAcquireInfo acquire{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
@@ -401,28 +434,26 @@ void UploadPixels(Session &session, Texture &texture, const Descriptor &descript
     Check(waited);
     if (texture.acquiredIndex >= texture.images.size())
         throw XR_ERROR_RUNTIME_FAILURE;
-    std::vector<uint8_t> pixels(descriptor.length);
-    for (size_t i = 0; i < pixels.size(); i += 4)
+    texture.pixels.resize(descriptor.length);
+    std::copy_n(source, descriptor.length, texture.pixels.data());
+    for (size_t i = 3; i < texture.pixels.size(); i += 4)
     {
-        auto alpha = static_cast<uint8_t>(static_cast<float>(source[i + 3]) * descriptor.alpha);
-        pixels[i + 3] = alpha;
         // PNG capture is straight-alpha sRGB. Let the compositor premultiply in linear space.
-        for (size_t channel = 0; channel < 3; ++channel)
-            pixels[i + channel] = source[i + channel];
+        texture.pixels[i] = static_cast<uint8_t>(static_cast<float>(source[i]) * descriptor.alpha);
     }
-    session.context->UpdateSubresource(texture.images[texture.acquiredIndex].texture, 0, nullptr, pixels.data(),
+    session.context->UpdateSubresource(texture.images[texture.acquiredIndex].texture, 0, nullptr, texture.pixels.data(),
                                        descriptor.width * 4, 0);
     session.uploadsPending = true;
     XrSwapchainImageReleaseInfo release{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     Check(session.instance->release(texture.handle, &release));
     texture.acquired = false;
     texture.ready = true;
-    texture.version = version;
+    texture.sourceSequence = sourceSequence;
 }
 
-void Upload(Session &session, const Descriptor &descriptor, uint32_t version)
+void Upload(Session &session, const Descriptor &descriptor, uint32_t sourceSequence)
 {
-    UploadPixels(session, session.textures[descriptor.id], descriptor, version,
+    UploadPixels(session, session.textures[descriptor.id], descriptor, sourceSequence,
                  session.packet.data() + descriptor.offset);
 }
 std::optional<XrCompositionLayerQuad> CursorQuad(Session &session, const PointerHit &hit)
@@ -510,7 +541,7 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
                 s.input->Cancel();
                 return s.instance->endFrame(handle, info);
             }
-            s.anchor = location.pose;
+            s.anchor = HeadingAnchor(location.pose);
             s.originRevision = header.originRevision;
             s.anchored = true;
         }
