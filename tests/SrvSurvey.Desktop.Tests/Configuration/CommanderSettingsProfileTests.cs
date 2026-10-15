@@ -43,6 +43,7 @@ public sealed class CommanderSettingsProfileTests
         );
     }
 
+    /// <summary>Rejects unsafe commander identifiers before profile initialization creates any directories.</summary>
     [Fact]
     public void RejectsInvalidCommanderIdBeforeCreatingSettingsPaths()
     {

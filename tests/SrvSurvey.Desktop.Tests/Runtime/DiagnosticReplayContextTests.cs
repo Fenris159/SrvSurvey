@@ -57,6 +57,7 @@ public sealed class DiagnosticReplayContextTests
         Assert.Equal("fr", LocalizationSettingsStore.ResolveCurrent(context.AppDataPaths));
     }
 
+    /// <summary>Replay keeps mutable files inside its session and simulates a foreground game window without external effects.</summary>
     [Fact]
     public async Task ContextRedirectsAllMutableRootsAndSimulatesTheGameHost()
     {

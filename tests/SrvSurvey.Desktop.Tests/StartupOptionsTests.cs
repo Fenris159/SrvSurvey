@@ -54,6 +54,7 @@ public sealed class StartupOptionsTests
         Assert.Equal(original, StartupOptions.ForRestart(original, frontierId));
     }
 
+    /// <summary>Only authorized multi-commander and replay launch options permit concurrent application instances.</summary>
     [Theory]
     [InlineData("--multi-commander-instance")]
     [InlineData("--MULTI-COMMANDER-INSTANCE")]
