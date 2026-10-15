@@ -57,8 +57,7 @@ public static class SpanshPlannerCatalog
                     "Supercharge",
                     SpanshPlannerFieldType.Choice,
                     "4",
-                    Choices: [new("Normal Supercharge", "4"), new("Overcharge Supercharge", "6")],
-                    Help: "4: Normal Supercharge · 6: Overcharge Supercharge"
+                    Choices: [new("Normal Supercharge", "4"), new("Overcharge Supercharge", "6")]
                 ),
             ]
         ),

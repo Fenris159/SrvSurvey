@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 {
     private readonly List<BoxelSearchSession> sessions = [];
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-autocopy-tests-{Guid.NewGuid():N}"
@@ -294,6 +295,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
             new EmptySpanshClient(),
             kind
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         return workspace;
     }
@@ -307,6 +309,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
             new EmptySpanshClient(),
             kind
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         return workspace;
     }
@@ -385,6 +388,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
+        }
+
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
         }
 
         if (Directory.Exists(temporaryDirectory))

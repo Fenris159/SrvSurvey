@@ -12,8 +12,9 @@ using SrvSurvey.Desktop.ViewModels;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
+public sealed class FleetCarrierRouteOverlayViewModelTests : IAsyncLifetime
 {
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-fc-overlay-tests-{Guid.NewGuid():N}"
@@ -49,6 +50,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F123", "Sol", null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -152,6 +154,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => time.GetUtcNow()
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F321", "Second", 2, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -214,6 +217,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => now
         );
+        workspaces.Add(route);
         await route.UpdateContextAsync("F789", "Sol", 1, null);
         var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -412,6 +416,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             FollowRouteKind.FleetCarrier,
             () => now
         );
+        workspaces.Add(route);
         JournalEventEnvelope request = Parse(
             """
             {"timestamp":"2026-10-11T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-10-11T12:15:00Z"}
@@ -491,8 +496,15 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         }
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
@@ -504,14 +516,16 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         return new FollowRouteHop(name, systemAddress, null, null, false, false, Carrier: carrier);
     }
 
-    private static RouteWorkspaceViewModel CreateRoute(FollowRouteStore store)
+    private RouteWorkspaceViewModel CreateRoute(FollowRouteStore store)
     {
-        return new RouteWorkspaceViewModel(
+        var route = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier
         );
+        workspaces.Add(route);
+        return route;
     }
 
     private static JournalEventEnvelope Parse(string json)

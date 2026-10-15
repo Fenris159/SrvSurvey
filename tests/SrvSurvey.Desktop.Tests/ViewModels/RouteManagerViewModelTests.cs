@@ -5,8 +5,9 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class RouteManagerViewModelTests : IDisposable
+public sealed class RouteManagerViewModelTests : IAsyncLifetime
 {
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-manager-tests-{Guid.NewGuid():N}"
@@ -76,6 +77,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.Equal("Watch the neutron jump near waypoint five.", beta.Notes);
         await workspace.RefreshAsync();
         Assert.Equal(beta.Notes, workspace.CreateSnapshot()!.Notes);
+        await manager.RefreshAsync();
 
         beta.IsSelected = true;
         manager.RequestDeleteCommand.Execute(null);
@@ -205,14 +207,22 @@ public sealed class RouteManagerViewModelTests : IDisposable
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient()
         );
+        workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         var manager = new RouteManagerViewModel(service, workspace);
         await manager.UpdateContextAsync("F123");
         return (store, workspace, manager);
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);

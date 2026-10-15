@@ -1866,17 +1866,31 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         int revision
     )
     {
-        await previous.ConfigureAwait(false);
+        try
+        {
+            await previous.ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            ReportWorkspaceSaveFailure(exception, revision);
+        }
+
         try
         {
             await routeService.SaveWorkspaceAsync(snapshot, hasSavedRoute).ConfigureAwait(false);
         }
-        catch (Exception exception) when (IsExpectedException(exception))
+        catch (Exception exception)
         {
-            if (revision == profileRevision)
-            {
-                StatusMessage = "The working route could not be retained: " + exception.Message;
-            }
+            // This background boundary reports failures without faulting subsequent edits or shutdown.
+            ReportWorkspaceSaveFailure(exception, revision);
+        }
+    }
+
+    private void ReportWorkspaceSaveFailure(Exception exception, int revision)
+    {
+        if (revision == profileRevision)
+        {
+            StatusMessage = "The working route could not be retained: " + exception.Message;
         }
     }
 

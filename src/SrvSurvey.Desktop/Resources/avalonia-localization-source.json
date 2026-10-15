@@ -1072,14 +1072,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "4: Normal Supercharge \u00B7 6: Overcharge Supercharge",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
-  },
-  {
     "Text": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
     "IsFormat": false,
     "SourceKinds": [

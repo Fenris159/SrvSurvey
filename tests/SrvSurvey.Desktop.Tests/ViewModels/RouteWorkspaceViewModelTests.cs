@@ -6,8 +6,9 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class RouteWorkspaceViewModelTests : IDisposable
+public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
 {
+    private readonly List<RouteWorkspaceViewModel> workspaces = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-route-view-model-tests-{Guid.NewGuid():N}"
@@ -163,6 +164,35 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await model.ImportNamesAsync(["Muang", "Shinrarta Dezhra"]);
         Assert.Equal(["Muang", "Shinrarta Dezhra"], model.Hops.Select(hop => hop.Name));
         Assert.Contains("could not be retained", model.StatusMessage);
+    }
+
+    /// <summary>A faulted background save must not block the next edit, flush, or commander reload.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LaterEditsRecoverAfterAnUnexpectedWorkspaceSaveFailure(bool jsonFailure)
+    {
+        RouteWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        await model.ImportNamesAsync(["Sol", "Second", "Third"]);
+        Exception failure = jsonFailure
+            ? new System.Text.Json.JsonException("Test serialization failure")
+            : new NotSupportedException("Test serialization failure");
+        System.Reflection.FieldInfo? pendingSave = typeof(RouteWorkspaceViewModel).GetField(
+            "workspaceSave",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        );
+        Assert.NotNull(pendingSave);
+        pendingSave.SetValue(model, Task.FromException(failure));
+
+        model.SetProgressThrough(0, true);
+        await model.FlushWorkspaceAsync();
+
+        Assert.Contains("Test serialization failure", model.StatusMessage);
+        await model.RefreshAsync();
+        Assert.Equal(1, model.ReachedCount);
+        Assert.Equal("Second", model.NextHopName);
+        Assert.True(model.HasRoute);
     }
 
     /// <summary>Verifies poi annotations preserve imported route and progress.</summary>
@@ -971,7 +1001,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     )
     {
         var store = new FollowRouteStore(temporaryDirectory, routeKind);
-        return new RouteWorkspaceViewModel(
+        var model = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(resolver ?? new StubResolver(new Dictionary<string, StarSystemReference>())),
             spanshClient ?? new StubSpanshClient([]),
@@ -979,6 +1009,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             utcNow,
             plannerClient: plannerClient
         );
+        workspaces.Add(model);
+        return model;
     }
 
     private async Task SaveRouteAsync(bool isActive, int lastReachedIndex)
@@ -1014,8 +1046,15 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         return journalEvent!;
     }
 
-    public void Dispose()
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
+        foreach (RouteWorkspaceViewModel workspace in workspaces)
+        {
+            await workspace.FlushWorkspaceAsync();
+        }
+
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
