@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SrvSurvey.Core\SrvSurvey.Core.csproj" />
+    <None Include="..\Fixtures\Spansh\*.json" Link="Fixtures\Spansh\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -535,6 +535,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         {
             state.Session.ReconcileVehicleStatus(status);
         }
+
+        dependencies.CurrentShipExport.Update(state.Session, state.LatestStatus, update.IsAwaitingCommanderIdentity);
     }
 
     private void ApplyStatusToStatusConsumers(EliteStatus? status)

@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class RouteWindow : Window
 {
     private readonly RouteWorkspaceViewModel viewModel;
+    private SpanshSearchWindow? searchWindow;
 
     public RouteWindow()
         : this(CreateDesignViewModel()) { }
@@ -27,8 +28,32 @@ public sealed partial class RouteWindow : Window
         Close();
     }
 
+    private void SpanshSearch_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (searchWindow is not null)
+        {
+            searchWindow.Activate();
+        }
+        else if (viewModel.CanSearchSpansh && viewModel.SpanshSearch is not null)
+        {
+            searchWindow = new SpanshSearchWindow(viewModel.SpanshSearch);
+            searchWindow.Closed += OnSearchClosed;
+            searchWindow.Show(this);
+        }
+    }
+
+    private void OnSearchClosed(object? sender, EventArgs e)
+    {
+        if (sender is SpanshSearchWindow window)
+        {
+            window.Closed -= OnSearchClosed;
+            searchWindow = null;
+        }
+    }
+
     protected override void OnClosed(EventArgs e)
     {
+        searchWindow?.Close();
         viewModel.DismissDialogs();
         base.OnClosed(e);
     }

@@ -389,16 +389,18 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static FollowRouteCarrierHop ParseCarrierHop(JsonObject root)
     {
+        bool mustRestock = GetBoolean(root, "must_restock") == true;
+        double? restockAmount = GetDouble(root, "restock_amount");
         return new FollowRouteCarrierHop(
             GetDouble(root, "distance"),
             GetDouble(root, "distance_to_destination"),
-            GetDouble(root, "fuel_remaining"),
+            GetDouble(root, "fuel_in_tank") ?? GetDouble(root, "fuel_remaining"),
             GetDouble(root, "tritium_in_market"),
             GetDouble(root, "fuel_used"),
             GetBoolean(root, "has_icy_ring") == true,
             GetBoolean(root, "is_system_pristine") == true,
-            GetBoolean(root, "must_restock") == true,
-            GetDouble(root, "restock_amount")
+            mustRestock,
+            mustRestock && restockAmount is > 0 ? restockAmount : null
         );
     }
 
@@ -697,7 +699,17 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
+        if (root[propertyName] is not JsonValue value)
+        {
+            return null;
+        }
+
+        if (value.TryGetValue<bool>(out bool result))
+        {
+            return result;
+        }
+
+        return value.TryGetValue<int>(out int number) && number is 0 or 1 ? number == 1 : null;
     }
 
     private static bool? GetBooleanAny(JsonObject root, params string[] propertyNames)

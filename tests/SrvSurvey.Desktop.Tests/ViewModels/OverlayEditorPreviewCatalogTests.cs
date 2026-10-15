@@ -7,6 +7,15 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class OverlayEditorPreviewCatalogTests
 {
     [Fact]
+    public void CarrierPreviewShowsJumpBasedEstimatedTimeRemaining()
+    {
+        using FleetCarrierRouteOverlayViewModel preview = Assert.IsType<FleetCarrierRouteOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotFleetCarrierRoute", 0)
+        );
+        Assert.Equal("44 JUMPS LEFT • ETR: 14h 40min", preview.JumpsLeft);
+    }
+
+    [Fact]
     public async Task SphericalPreviewRejectsSessionMutationsWithoutFaulting()
     {
         using SphericalSearchOverlayViewModel preview = Assert.IsType<SphericalSearchOverlayViewModel>(

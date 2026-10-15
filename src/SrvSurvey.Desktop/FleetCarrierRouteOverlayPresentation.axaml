@@ -31,7 +31,8 @@
                  Text="{Binding JumpSummary}"
                  TextWrapping="Wrap" />
       <TextBlock Classes="muted overlay-detail type-detail"
-                 Text="{Binding JumpsLeft}" />
+                 Text="{Binding JumpsLeft}"
+                 TextWrapping="Wrap" />
 
       <Border Classes="overlay-divider"
               Background="{DynamicResource RavenBorderBrush}" />

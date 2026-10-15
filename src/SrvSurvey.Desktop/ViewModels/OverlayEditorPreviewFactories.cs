@@ -438,7 +438,7 @@ internal static class OverlayEditorPreviewFactories
             HopProgress: "HOP 2 / 46",
             SystemName: "Col 359 Sector EE-X b16-1",
             JumpSummary: "499.76 LY JUMP  •  21,502.09 LY REMAINING",
-            JumpsLeft: "44 JUMPS LEFT",
+            RemainingJumps: 44,
             FuelLeft: "1,000 t",
             TritiumInMarket: "2,799 t",
             JumpFuel: "93 t",

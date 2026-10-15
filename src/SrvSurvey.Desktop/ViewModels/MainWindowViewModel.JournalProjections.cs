@@ -43,6 +43,7 @@ public sealed partial class MainWindowViewModel
                     MineMap = MineMap,
                     MiningWorkspace = MiningWorkspace,
                     Firegroups = Firegroups,
+                    CurrentShipExport = CurrentShipExport,
                     Combat = Combat,
                     BiologyCodex = BiologyCodex,
                     CodexBingo = CodexBingo,

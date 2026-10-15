@@ -209,6 +209,10 @@ public sealed class TravelViewMarkupTests
         XElement currentRoute = tab.Descendants()
             .First(element => element.Attribute("Text")?.Value == "{Binding FleetCarrierRoute.RouteName}");
         XElement nextSystem = FindNamedElement(document, "FleetCarrierNextSystemReadout");
+        XElement estimate = FindNamedElement(document, "FleetCarrierEstimatedTimeRemainingReadout");
+        Assert.Same(currentRoute.Parent, estimate.Parent);
+        Assert.Equal(3, GetSiblingIndex(estimate));
+        Assert.Equal("{Binding FleetCarrierRoute.CarrierEstimatedTimeRemaining}", estimate.Attribute("Text")?.Value);
         XElement countdown = FindNamedElement(document, "FleetCarrierJumpCountdownReadout");
         Assert.Same(currentRoute.Parent?.Parent, nextSystem.Parent);
         Assert.Same(nextSystem.Parent, countdown.Parent);

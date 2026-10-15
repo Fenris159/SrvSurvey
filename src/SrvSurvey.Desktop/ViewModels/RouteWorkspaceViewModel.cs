@@ -90,13 +90,16 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private Func<Task<bool>>? windowOpener;
     private Func<string, Task>? clipboardWriter;
     private FleetCarrierJumpCountdownState carrierJumpCountdownState = FleetCarrierJumpCountdownState.Inactive;
+    private int profileRevision;
 
     public RouteWorkspaceViewModel(
         FollowRouteService routeService,
         RouteNameImporter nameImporter,
         ISpanshRouteClient spanshClient,
         FollowRouteKind routeKind = FollowRouteKind.Standard,
-        Func<DateTimeOffset>? utcNow = null
+        Func<DateTimeOffset>? utcNow = null,
+        ISpanshPlannerClient? plannerClient = null,
+        CurrentShipExportViewModel? currentShip = null
     )
     {
         this.routeService = routeService ?? throw new ArgumentNullException(nameof(routeService));
@@ -135,6 +138,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             () => HasSavedRoute && !IsBusy && IsDeleteConfirmationVisible
         );
         cancelDialogCommand = new AsyncCommand(CancelDialogAsync, () => IsDialogVisible);
+        if (plannerClient is not null)
+        {
+            SpanshSearch = new SpanshSearchViewModel(
+                this,
+                plannerClient,
+                currentShip ?? new CurrentShipExportViewModel()
+            );
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -144,6 +155,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     internal event EventHandler? AutoCopySelected;
 
     public FollowRouteKind RouteKind => routeKind;
+
+    public SpanshSearchViewModel? SpanshSearch { get; }
+
+    public bool CanSearchSpansh => SpanshSearch is not null && HasProfile && !IsBusy && !IsDialogVisible;
 
     public bool IsFleetCarrierWorkspace => routeKind == FollowRouteKind.FleetCarrier;
 
@@ -263,6 +278,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             {
                 RaiseCommands();
                 OnPropertyChanged(nameof(ImportButtonText));
+                OnPropertyChanged(nameof(CanSearchSpansh));
             }
         }
     }
@@ -332,6 +348,35 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public int RouteCount => draftHops.Length;
 
     public int ReachedCount => Math.Clamp(lastReachedIndex + 1, 0, draftHops.Length);
+
+    public int RemainingJumps => Math.Max(0, RouteCount - ReachedCount - 1);
+
+    public bool HasCarrierEstimatedTimeRemaining => IsFleetCarrierWorkspace && RemainingJumps > 0;
+
+    public string CarrierEstimatedTimeRemaining => FormatCarrierEstimatedTimeRemaining(RemainingJumps);
+
+    internal static string FormatCarrierEstimatedTimeRemaining(int remainingJumps)
+    {
+        if (remainingJumps <= 0)
+        {
+            return string.Empty;
+        }
+        var remaining = TimeSpan.FromMinutes(remainingJumps * 20d);
+        List<string> parts = [];
+        if (remaining.Days > 0)
+        {
+            parts.Add($"{remaining.Days}d");
+        }
+        if (remaining.Hours > 0)
+        {
+            parts.Add($"{remaining.Hours}h");
+        }
+        if (remaining.Minutes > 0)
+        {
+            parts.Add($"{remaining.Minutes}min");
+        }
+        return "ETR: " + string.Join(' ', parts);
+    }
 
     public FollowRouteHop? NextHop
     {
@@ -629,12 +674,18 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             !string.Equals(currentSystemName, nextSystemName, StringComparison.Ordinal)
             || currentSystemAddress != nextSystemAddress
             || currentPosition != nextPosition;
+        if (!string.Equals(frontierId, normalizedFrontierId, StringComparison.OrdinalIgnoreCase))
+        {
+            profileRevision++;
+            SpanshSearch?.Cancel();
+        }
         frontierId = normalizedFrontierId;
         currentSystemName = nextSystemName;
         currentSystemAddress = nextSystemAddress;
         currentPosition = nextPosition;
         OnPropertyChanged(nameof(HasProfile));
         OnPropertyChanged(nameof(CurrentSystem));
+        OnPropertyChanged(nameof(CanSearchSpansh));
 
         if (string.Equals(initializedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
         {
@@ -973,6 +1024,53 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         catch (Exception exception) when (IsExpectedException(exception))
         {
             StatusMessage = "The Spansh route could not be imported: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task<bool> SearchSpanshAsync(
+        ISpanshPlannerClient plannerClient,
+        SpanshPlannerRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!CanSearchSpansh || (request.Planner.Kind == SpanshRouteKind.FleetCarrier) != IsFleetCarrierWorkspace)
+        {
+            return false;
+        }
+        int revision = profileRevision;
+        try
+        {
+            IsBusy = true;
+            StatusMessage = $"Searching Spansh {request.Planner.Name}…";
+            SpanshRouteReference reference = await plannerClient.SubmitAsync(request, cancellationToken);
+            IReadOnlyList<FollowRouteHop> importedHops = await spanshClient.GetRouteAsync(reference, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (revision != profileRevision)
+            {
+                return false;
+            }
+            if (importedHops.Count == 0)
+            {
+                StatusMessage = "Spansh returned a route with no systems.";
+                return false;
+            }
+            ApplyImportedHops(importedHops, reference.Kind);
+            StatusMessage = $"Imported {importedHops.Count:N0} systems from Spansh. Review it, then use Save As...";
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Spansh search cancelled.";
+            return false;
+        }
+        catch (Exception exception) when (IsExpectedException(exception) || exception is JsonException)
+        {
+            StatusMessage = "The Spansh search could not be loaded: " + exception.Message;
+            return false;
         }
         finally
         {
@@ -1728,6 +1826,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanSaveChanges));
         OnPropertyChanged(nameof(RouteCount));
         OnPropertyChanged(nameof(ReachedCount));
+        OnPropertyChanged(nameof(RemainingJumps));
+        OnPropertyChanged(nameof(HasCarrierEstimatedTimeRemaining));
+        OnPropertyChanged(nameof(CarrierEstimatedTimeRemaining));
         OnPropertyChanged(nameof(NextHop));
         OnPropertyChanged(nameof(NextHopName));
         OnPropertyChanged(nameof(HasNextHopSystemAddress));
@@ -2006,6 +2107,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         OnPropertyChanged(nameof(IsDialogVisible));
+        OnPropertyChanged(nameof(CanSearchSpansh));
         RaiseCommands();
     }
 
@@ -2195,9 +2297,12 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         }
     }
 
-    public string CarrierRestock => Hop.Carrier?.MustRestock == true ? "YES" : "—";
+    public string CarrierRestock => Hop.Carrier?.MustRestock == true ? "YES" : string.Empty;
 
-    public string CarrierRestockAmount => FormatCarrierNumber(Hop.Carrier?.RestockAmountTonnes, 0);
+    public string CarrierRestockAmount =>
+        Hop.Carrier is { MustRestock: true, RestockAmountTonnes: > 0 } carrier
+            ? FormatCarrierNumber(carrier.RestockAmountTonnes, 0)
+            : string.Empty;
 
     public string Notes => notes;
 

@@ -23,6 +23,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.True(initialized);
         Assert.True(viewModel.HasProfile);
         Assert.False(viewModel.HasRoute);
+        Assert.False(viewModel.HasCarrierEstimatedTimeRemaining);
         Assert.Equal("No route loaded", viewModel.NextHopName);
         Assert.Equal("Not saved", viewModel.RouteFileName);
         Assert.False(viewModel.HasSavedRoute);

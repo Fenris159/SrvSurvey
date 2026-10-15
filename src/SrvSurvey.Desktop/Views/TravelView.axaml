@@ -466,6 +466,11 @@
                   <TextBlock Classes="muted"
                              Text="{Binding FleetCarrierRoute.RouteFileName}"
                              TextTrimming="CharacterEllipsis" />
+                  <TextBlock x:Name="FleetCarrierEstimatedTimeRemainingReadout"
+                             Classes="muted"
+                             IsVisible="{Binding FleetCarrierRoute.HasCarrierEstimatedTimeRemaining}"
+                             Text="{Binding FleetCarrierRoute.CarrierEstimatedTimeRemaining}"
+                             TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel x:Name="FleetCarrierNextSystemReadout"
                             Grid.Column="1"
