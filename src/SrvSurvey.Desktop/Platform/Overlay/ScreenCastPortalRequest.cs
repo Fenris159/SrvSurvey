@@ -11,18 +11,23 @@ internal static class ScreenCastPortalRequest
         ObjectPath expectedPath,
         Func<Task<ObjectPath>> invoke,
         TimeSpan methodTimeout,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        Action<Exception>? reportLateFailure = null
     )
     {
         var completion = new TaskCompletionSource<PortalResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
-            using IDisposable subscription = await request
-                .WatchResponseAsync(
-                    response => completion.TrySetResult(new PortalResponse(response.Response, response.Results)),
-                    exception => completion.TrySetException(exception)
+            using IDisposable subscription = await PortalResourceWait
+                .WaitAsync(
+                    request.WatchResponseAsync(
+                        response => completion.TrySetResult(new PortalResponse(response.Response, response.Results)),
+                        exception => completion.TrySetException(exception)
+                    ),
+                    methodTimeout,
+                    cancellationToken,
+                    reportLateFailure
                 )
-                .WaitAsync(methodTimeout, cancellationToken)
                 .ConfigureAwait(false);
             ObjectPath returnedPath = await invoke().WaitAsync(methodTimeout, cancellationToken).ConfigureAwait(false);
             if (returnedPath != expectedPath)
@@ -52,7 +57,7 @@ internal static class ScreenCastPortalRequest
         {
             await request.CloseAsync().WaitAsync(methodTimeout).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is DBusException or TimeoutException)
+        catch (Exception exception) when (exception is DBusException or TimeoutException or IOException)
         {
             // A closed or unresponsive portal must not prevent capture cancellation.
         }

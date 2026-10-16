@@ -79,7 +79,9 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool CanConfigureTrackers => IsApplicable && IsEnabled;
+    public bool CanChangeCaptureSettings => IsApplicable && !isBusy;
+
+    public bool CanConfigureTrackers => CanChangeCaptureSettings && IsEnabled;
 
     public bool IsFssTuningEnabled
     {
@@ -145,8 +147,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        isBusy = true;
-        chooseCaptureSourceAgainCommand.Refresh();
+        SetBusy(true);
         using IDisposable manualSelection = WaylandCaptureSourceSelection.BeginManualSelection();
         try
         {
@@ -165,9 +166,17 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         }
         finally
         {
-            isBusy = false;
-            chooseCaptureSourceAgainCommand.Refresh();
+            SetBusy(false);
         }
+    }
+
+    /// <summary>Prevents UI settings changes from claiming cleanup while the picker worker is starting.</summary>
+    private void SetBusy(bool value)
+    {
+        isBusy = value;
+        chooseCaptureSourceAgainCommand.Refresh();
+        OnPropertyChanged(nameof(CanChangeCaptureSettings));
+        OnPropertyChanged(nameof(CanConfigureTrackers));
     }
 
     /// <summary>Starts source selection through the Linux desktop portal.</summary>

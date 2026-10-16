@@ -79,10 +79,14 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Task selection = viewModel.ChooseCaptureSourceAgainAsync();
 
         Assert.True(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
+        Assert.False(viewModel.CanChangeCaptureSettings);
+        Assert.False(viewModel.CanConfigureTrackers);
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
         picker.SetResult();
         await selection;
         Assert.False(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
+        Assert.True(viewModel.CanChangeCaptureSettings);
+        Assert.True(viewModel.CanConfigureTrackers);
         Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 

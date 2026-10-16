@@ -111,6 +111,33 @@ public sealed class ScreenCastPortalRequestTests
         Assert.Equal(1, request.CloseCalls);
     }
 
+    /// <summary>Verifies a response subscription completing after cancellation or timeout is still owned.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LateSubscriptionIsDisposed(bool cancel)
+    {
+        var subscription = new TaskCompletionSource<IDisposable>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var request = new StubRequest { Subscription = subscription.Task };
+        using var cancellation = new CancellationTokenSource();
+        Task<PortalResponse> pending = InvokeAsync(request, () => Task.FromResult(RequestPath), cancellation.Token);
+        if (cancel)
+        {
+            await cancellation.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<TimeoutException>(() => pending);
+        }
+
+        subscription.SetResult(request);
+
+        await request.SubscriptionReleased.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        Assert.True(request.SubscriptionDisposed);
+        Assert.Equal(1, request.CloseCalls);
+    }
+
     /// <summary>Verifies taking longer than a method deadline to choose a source is allowed.</summary>
     [Fact]
     public async Task PickerResponseHasNoMethodDeadline()
@@ -174,6 +201,34 @@ public sealed class ScreenCastPortalRequestTests
         Assert.True(request.SubscriptionDisposed);
     }
 
+    /// <summary>Verifies cleanup transport failures do not replace the original startup failure.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CleanupIoFailurePreservesTheOriginalFailure(bool cancel)
+    {
+        var request = new StubRequest
+        {
+            CloseResult = Task.FromException(new IOException("Portal transport disconnected.")),
+        };
+        using var cancellation = new CancellationTokenSource();
+        Task<PortalResponse> pending = InvokeAsync(
+            request,
+            () => new TaskCompletionSource<ObjectPath>().Task,
+            cancellation.Token
+        );
+        if (cancel)
+        {
+            await cancellation.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<TimeoutException>(() => pending);
+        }
+        Assert.Equal(1, request.CloseCalls);
+    }
+
     private static Task<PortalResponse> InvokeAsync(
         StubRequest request,
         Func<Task<ObjectPath>> invoke,
@@ -190,6 +245,8 @@ public sealed class ScreenCastPortalRequestTests
         public Task CloseResult { get; init; } = Task.CompletedTask;
         public int CloseCalls { get; private set; }
         public bool SubscriptionDisposed { get; private set; }
+        public TaskCompletionSource SubscriptionReleased { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public Task<IDisposable> WatchResponseAsync(
             Action<(uint Response, IDictionary<string, object> Results)> handler,
@@ -211,6 +268,10 @@ public sealed class ScreenCastPortalRequestTests
 
         public void Fail(Exception error) => onError!(error);
 
-        public void Dispose() => SubscriptionDisposed = true;
+        public void Dispose()
+        {
+            SubscriptionDisposed = true;
+            SubscriptionReleased.TrySetResult();
+        }
     }
 }

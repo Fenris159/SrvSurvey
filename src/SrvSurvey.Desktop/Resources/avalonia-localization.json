@@ -32801,6 +32801,10 @@
       "translation": "Wayland-Erfassung ({0}): Initialisierung fehlgeschlagen. {1}"
     },
     {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Wayland-Erfassung ({0}): Die späte Bereinigung der Portalressourcen ist fehlgeschlagen. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
       "translation": "Wayland-Erfassung ({0}): Öffnen des PipeWire-Fernportals."
     },
@@ -70801,6 +70805,10 @@
     {
       "source": "Wayland capture ({0}): initialization failed. {1}",
       "translation": "Captura de Wayland ({0}): falló la inicialización. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Captura de Wayland ({0}): falló la limpieza tardía de recursos del portal. {1}"
     },
     {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
@@ -108805,6 +108813,10 @@
       "translation": "Capture Wayland ({0}) : échec de l'initialisation. {1}"
     },
     {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Capture Wayland ({0}) : échec du nettoyage tardif des ressources du portail. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
       "translation": "Capture Wayland ({0}) : ouverture du portail PipeWire à distance."
     },
@@ -146805,6 +146817,10 @@
     {
       "source": "Wayland capture ({0}): initialization failed. {1}",
       "translation": "Captura de Wayland ({0}): falha na inicialização. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Captura de Wayland ({0}): falha na limpeza tardia de recursos do portal. {1}"
     },
     {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
@@ -184809,6 +184825,10 @@
       "translation": "Захват Wayland ({0}): инициализация не удалась. {1}"
     },
     {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Захват Wayland ({0}): не удалось очистить ресурсы позднего портала. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
       "translation": "Захват Wayland ({0}): открытие удаленного портала PipeWire."
     },
@@ -222811,6 +222831,10 @@
       "translation": "Wayland 捕获（{0}）：初始化失败。 {1}"
     },
     {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "Wayland 捕获 ({0})：后期门户资源清理失败。 {1}"
+    },
+    {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
       "translation": "Wayland 捕获 ({0})：远程打开门户 PipeWire。"
     },
@@ -260811,6 +260835,10 @@
     {
       "source": "Wayland capture ({0}): initialization failed. {1}",
       "translation": "* WAYLAND CAPTURE ({0}): INITIALIZATION FAILED. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): LATE PORTAL RESOURCE CLEANUP FAILED. {1} >>>!"
     },
     {
       "source": "Wayland capture ({0}): opening the portal PipeWire remote.",

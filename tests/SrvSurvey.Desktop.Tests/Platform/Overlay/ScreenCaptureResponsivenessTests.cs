@@ -78,6 +78,57 @@ public sealed class ScreenCaptureResponsivenessTests
         Assert.False(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
     }
 
+    /// <summary>Models a UI checkbox changing while source reselection is closing the old session.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SettingsChangesDoNotWaitForReselectionCleanup(bool trackerSetting)
+    {
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey-wayland-toggle-").FullName;
+        var closing = new ClosingCapture();
+        var viewModel = new WaylandCaptureSettingsViewModel(directory, true, openSourcePicker: () => Task.CompletedTask)
+        {
+            IsEnabled = true,
+            IsFssTuningEnabled = true,
+        };
+        using var capture = new GatedGameScreenCapture(() => closing, feature: WaylandCaptureFeatures.FssTuning);
+        _ = capture.Capture(new PixelRect(0, 0, 1, 1));
+        Task selection = viewModel.ChooseCaptureSourceAgainAsync();
+        Task? settingChange = null;
+        bool responsive;
+        try
+        {
+            await closing.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            settingChange = Task.Run(() =>
+            {
+                if (trackerSetting)
+                {
+                    viewModel.IsFssTuningEnabled = false;
+                }
+                else
+                {
+                    viewModel.IsEnabled = false;
+                }
+            });
+            responsive = await Task.WhenAny(settingChange, Task.Delay(TimeSpan.FromSeconds(1))) == settingChange;
+        }
+        finally
+        {
+            closing.Release.TrySetResult();
+            if (settingChange is not null)
+            {
+                await settingChange;
+            }
+            await selection;
+            capture.Dispose();
+            GameScreenCapture.WaylandPortalEnabled = false;
+            GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.None;
+            Directory.Delete(directory, recursive: true);
+        }
+
+        Assert.True(responsive, "A UI setting change waited for the source selection's background cleanup.");
+    }
+
     private static IGameScreenCapture Wrap(IGameScreenCapture capture, bool fallback, bool backoff)
     {
         if (fallback)

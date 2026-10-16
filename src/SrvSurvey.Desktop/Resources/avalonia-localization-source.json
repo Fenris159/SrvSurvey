@@ -65779,6 +65779,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
+    "Text": "Wayland capture ({0}): late portal resource cleanup failed. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "Wayland capture ({0}): opening the portal PipeWire remote.",
     "IsFormat": true,
     "SourceKinds": [

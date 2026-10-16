@@ -357,9 +357,13 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
 
         log?.Invoke($"Wayland capture ({capturePurpose}): opening the portal PipeWire remote.");
-        using CloseSafeHandle remote = await screenCast
-            .OpenPipeWireRemoteAsync(sessionPath, new Dictionary<string, object>())
-            .WaitAsync(PortalMethodTimeout, shutdown.Token)
+        using CloseSafeHandle remote = await PortalResourceWait
+            .WaitAsync(
+                screenCast.OpenPipeWireRemoteAsync(sessionPath, new Dictionary<string, object>()),
+                PortalMethodTimeout,
+                shutdown.Token,
+                LogLatePortalResourceFailure
+            )
             .ConfigureAwait(false);
         log?.Invoke(
             $"Wayland capture ({capturePurpose}): portal PipeWire descriptor is "
@@ -533,7 +537,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
-    private static async Task<PortalResponse> InvokeRequestAsync(
+    private async Task<PortalResponse> InvokeRequestAsync(
         Connection portalConnection,
         string senderName,
         Func<string, Task<ObjectPath>> invoke,
@@ -544,9 +548,23 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         var expectedPath = new ObjectPath($"/org/freedesktop/portal/desktop/request/{senderName}/{token}");
         IRequest request = portalConnection.CreateProxy<IRequest>(PortalService, expectedPath);
         return await ScreenCastPortalRequest
-            .InvokeAsync(request, expectedPath, () => invoke(token), PortalMethodTimeout, cancellationToken)
+            .InvokeAsync(
+                request,
+                expectedPath,
+                () => invoke(token),
+                PortalMethodTimeout,
+                cancellationToken,
+                LogLatePortalResourceFailure
+            )
             .ConfigureAwait(false);
     }
+
+    /// <summary>Reports failures from resource startup or disposal that finishes after a canceled wait.</summary>
+    private void LogLatePortalResourceFailure(Exception exception) =>
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): late portal resource cleanup failed. "
+                + CaptureFailureDiagnostics.Describe(exception)
+        );
 
     /// <summary>Reads a reusable portal token, tolerating inaccessible saved state.</summary>
     private string? TryReadRestoreToken()

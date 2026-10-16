@@ -503,8 +503,10 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
 
         try
         {
-            ReleasePendingCapture();
-            log?.Invoke($"Wayland capture ({capturePurpose}): closed because {reason}.");
+            if (ReleasePendingCapture(waitForCleanup: false))
+            {
+                log?.Invoke($"Wayland capture ({capturePurpose}): closed because {reason}.");
+            }
         }
         catch (Exception exception)
         {
@@ -516,20 +518,25 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
     }
 
     /// <summary>Closes pending capture resources without holding the wrapper lock while disposal runs.</summary>
-    private void ReleasePendingCapture()
+    private bool ReleasePendingCapture(bool waitForCleanup = true)
     {
         IGameScreenCapture? capture;
         lock (gate)
         {
             while (cleanupInProgress)
             {
+                if (!waitForCleanup)
+                {
+                    return false;
+                }
+
                 Monitor.Wait(gate);
             }
 
             capture = pendingCleanup;
             if (capture is null)
             {
-                return;
+                return true;
             }
 
             cleanupInProgress = true;
@@ -545,6 +552,8 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
                     pendingCleanup = null;
                 }
             }
+
+            return true;
         }
         finally
         {
