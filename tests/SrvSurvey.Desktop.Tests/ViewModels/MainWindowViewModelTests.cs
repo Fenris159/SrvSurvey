@@ -1443,12 +1443,7 @@ public sealed class MainWindowViewModelTests
             viewModel.Inara.RequestClearApiKeyCommand.Execute(null);
             viewModel.Inara.ConfirmClearApiKeyCommand.Execute(null);
 
-            DateTimeOffset timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
-            while (publisher.CancellationCount == 0 && DateTimeOffset.UtcNow < timeout)
-            {
-                await Task.Delay(10);
-            }
-
+            await publisher.CancellationRecorded.WaitAsync(TimeSpan.FromSeconds(2));
             Assert.Equal(1, publisher.CancellationCount);
             Assert.Equal(true, publisher.LastDiscardRetainedReports);
         }
@@ -1517,11 +1512,8 @@ public sealed class MainWindowViewModelTests
                     main.Edsm.SaveCredentialsCommand.Execute(null);
                 }
             }
-            DateTimeOffset deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(3);
-            while (inara.CancellationCount + edsm.CancellationCount == 0 && DateTimeOffset.UtcNow < deadline)
-            {
-                await Task.Delay(10);
-            }
+            Task cancellation = provider == "Inara" ? inara.CancellationRecorded : edsm.CancellationRecorded;
+            await cancellation.WaitAsync(TimeSpan.FromSeconds(3));
             Assert.Equal(1, inara.CancellationCount + edsm.CancellationCount);
             Assert.Equal(
                 remove,
@@ -5049,7 +5041,13 @@ public sealed class MainWindowViewModelTests
 
     private sealed class RecordingInaraPublisher : IInaraPublisher
     {
+        private readonly TaskCompletionSource cancellationRecorded = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+
         public List<InaraPublicationUpdate> Calls { get; } = [];
+
+        public Task CancellationRecorded => cancellationRecorded.Task;
 
         public int CancellationCount { get; private set; }
 
@@ -5083,6 +5081,7 @@ public sealed class MainWindowViewModelTests
         {
             CancellationCount++;
             LastDiscardRetainedReports = discardRetainedReports;
+            cancellationRecorded.TrySetResult();
         }
 
         public void Dispose() { }
@@ -5090,7 +5089,13 @@ public sealed class MainWindowViewModelTests
 
     private sealed class RecordingEdsmPublisher : IEdsmPublisher
     {
+        private readonly TaskCompletionSource cancellationRecorded = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+
         public List<EdsmPublicationUpdate> Calls { get; } = [];
+
+        public Task CancellationRecorded => cancellationRecorded.Task;
 
         public int CancellationCount { get; private set; }
 
@@ -5124,6 +5129,7 @@ public sealed class MainWindowViewModelTests
         {
             CancellationCount++;
             LastDiscardRetainedReports = discardRetainedReports;
+            cancellationRecorded.TrySetResult();
         }
 
         public void Dispose() { }

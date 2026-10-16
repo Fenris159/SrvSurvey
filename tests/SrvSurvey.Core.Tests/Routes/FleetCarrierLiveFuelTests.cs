@@ -32,6 +32,25 @@ public sealed class FleetCarrierLiveFuelTests
     }
 
     [Theory]
+    [InlineData("{\"Name\":{\"callsign\":\"OWN-001\"}}", "OWN-001")]
+    [InlineData("{\"name\":{\"Callsign\":\"OWN-001\"}}", "OWN-001")]
+    [InlineData("{\"name\":{\"callsign\":12345}}", "12345")]
+    [InlineData("{\"name\":{\"callsign\":\" OWN-001 \"}}", "OWN-001")]
+    [InlineData("{\"name\":{\"callsign\":{\"name\":\"OWN-001\"}}}", "OWN-001")]
+    public void CapiFuelSnapshotsPreserveCallsignFormsAcceptedByTheCarrierParser(string payload, string expected)
+    {
+        FrontierCarrierSnapshot personal = FrontierCapiSnapshotParser.ParseCarrier(payload, Origin);
+        Assert.Equal(expected, personal.Callsign);
+        Assert.Equal(expected, personal.FuelData!.Callsign);
+        FrontierCarrierSnapshot squadron = FrontierCapiSnapshotParser
+            .ParseSquadronEndpoint("{\"squadronCarrier\":" + payload + "}", Origin)
+            .Carrier!;
+        Assert.Equal(expected, squadron.Callsign);
+        Assert.Equal(expected, squadron.FuelData!.Callsign);
+        Assert.Equal(FollowRouteCarrierKind.Squadron, squadron.FuelData.Kind);
+    }
+
+    [Theory]
     [InlineData("", "", false)]
     [InlineData(",\"fuel\":0", ",\"cargo\":[]", true)]
     [InlineData(",\"fuel\":1000", ",\"cargo\":[{\"commodity\":\"tritium\"}]", false)]

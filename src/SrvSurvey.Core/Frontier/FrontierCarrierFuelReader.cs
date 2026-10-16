@@ -6,10 +6,13 @@ namespace SrvSurvey.Core.Frontier;
 /// <summary>Preserves missing fuel data and invariant commodity identifiers for automatic route inputs.</summary>
 internal static class FrontierCarrierFuelReader
 {
-    public static FleetCarrierFuelSnapshot Read(JsonElement root, bool squadron, DateTimeOffset fetchedAt)
+    public static FleetCarrierFuelSnapshot Read(
+        JsonElement root,
+        string callsign,
+        bool squadron,
+        DateTimeOffset fetchedAt
+    )
     {
-        JsonElement name = root.GetProperty("name");
-        string callsign = name.GetProperty("callsign").GetString()!;
         long? id = Identifier(root, "id") ?? Identifier(root, "carrierId") ?? Identifier(root, "marketId");
         if (
             id is null
