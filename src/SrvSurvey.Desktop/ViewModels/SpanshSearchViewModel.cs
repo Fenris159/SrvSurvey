@@ -8,6 +8,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
 {
     private const string RefuelDestinations = "refuel_destinations";
+    private const string CarrierType = "carrier_type";
     private readonly RouteWorkspaceViewModel route;
     private readonly ISpanshPlannerClient client;
     private readonly CurrentShipExportViewModel currentShip;
@@ -16,6 +17,8 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     private IReadOnlyList<SpanshPlannerFieldViewModel> fields = [];
     private Action? cancelSearch;
     private bool useCurrentShip = true;
+    private bool applyingCarrierContext;
+    private bool hasAutomaticCarrierInputs;
     private bool isBusy;
     private string status = "Choose a planner and search to load its route into the itinerary.";
 
@@ -85,6 +88,59 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     {
         get => status;
         private set => Set(ref status, value);
+    }
+
+    /// <summary>Loads one selected carrier's latest observations when opening search or changing carrier.</summary>
+    public void ApplyCarrierContext(FleetCarrierFuelSnapshot? snapshot)
+    {
+        if (!route.IsFleetCarrierWorkspace || applyingCarrierContext)
+        {
+            return;
+        }
+        applyingCarrierContext = true;
+        try
+        {
+            SetCarrierField(
+                CarrierType,
+                route.SelectedCarrierKind == FollowRouteCarrierKind.Squadron ? "Squadron Carrier" : "Fleet Carrier"
+            );
+            if (snapshot is not null)
+            {
+                SetCarrierField("source", snapshot.SystemName);
+                SetCarrierField(
+                    "capacity_used",
+                    snapshot.UsedCapacityTonnes?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
+                );
+                SetCarrierField(
+                    "fuel_loaded",
+                    snapshot.TankTonnes?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
+                );
+                SetCarrierField(
+                    "tritium_stored",
+                    snapshot.StoredTritiumTonnes?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
+                );
+                SetCarrierField("calculate_starting_fuel", "0");
+            }
+            else if (hasAutomaticCarrierInputs)
+            {
+                foreach (string key in new[] { "source", "capacity_used", "fuel_loaded", "tritium_stored" })
+                {
+                    SetCarrierField(key, string.Empty);
+                }
+            }
+            hasAutomaticCarrierInputs = snapshot is not null;
+            UpdateVisibility();
+        }
+        finally
+        {
+            applyingCarrierContext = false;
+        }
+    }
+
+    private void SetCarrierField(string key, string value)
+    {
+        SpanshPlannerFieldViewModel? field = fields.FirstOrDefault(field => field.Definition.Key == key);
+        field?.Value = value;
     }
 
     /// <summary>
@@ -204,6 +260,16 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     {
         if (e.PropertyName == nameof(SpanshPlannerFieldViewModel.Value))
         {
+            if (
+                !applyingCarrierContext && sender is SpanshPlannerFieldViewModel { Definition.Key: CarrierType } carrier
+            )
+            {
+                FollowRouteCarrierKind kind =
+                    carrier.Value == "Squadron Carrier"
+                        ? FollowRouteCarrierKind.Squadron
+                        : FollowRouteCarrierKind.Personal;
+                route.SelectedCarrier = route.CarrierOptions.Single(option => option.Kind == kind);
+            }
             if (sender is SpanshPlannerFieldViewModel { Definition.Key: RefuelDestinations } refuel)
             {
                 CarrierDestinationList?.SetRefuel(refuel.Value);
@@ -220,12 +286,11 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         Dictionary<string, string> values = Values();
         foreach (SpanshPlannerFieldViewModel field in fields)
         {
-            field.IsVisible = SpanshPlannerDefinition.IsVisible(field.Definition, values);
+            field.IsVisible =
+                field.Definition.Key != CarrierType && SpanshPlannerDefinition.IsVisible(field.Definition, values);
             if (field.Definition.Key is "capacity_used" or "tritium_stored")
             {
-                field.SetCarrierCapacity(
-                    values.GetValueOrDefault("carrier_type") == "Squadron Carrier" ? 60000 : 25000
-                );
+                field.SetCarrierCapacity(values.GetValueOrDefault(CarrierType) == "Squadron Carrier" ? 60000 : 25000);
             }
         }
         SpanshPlannerFieldViewModel? refuel = fields.FirstOrDefault(field =>

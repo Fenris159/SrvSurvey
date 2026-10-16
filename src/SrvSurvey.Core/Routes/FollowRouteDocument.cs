@@ -14,7 +14,10 @@ public sealed record FollowRouteDocument(
     bool IsFavorite = false,
     FollowRouteKind Kind = FollowRouteKind.Standard,
     SpanshRouteKind? SourceSpanshKind = null,
-    bool RestockOnlyWhenLow = false
+    bool RestockOnlyWhenLow = false,
+    FollowRouteRepeatMode RepeatMode = FollowRouteRepeatMode.None,
+    bool IsReversed = false,
+    FollowRouteCarrierKind CarrierKind = FollowRouteCarrierKind.Personal
 )
 {
     public bool IsStarted => LastReachedIndex >= 0;
@@ -26,11 +29,26 @@ public sealed record FollowRouteDocument(
         get
         {
             int nextIndex = LastReachedIndex + 1;
-            return IsActive && nextIndex >= 0 && nextIndex < Hops.Count ? Hops[nextIndex] : null;
+            return IsActive && nextIndex >= 0 && nextIndex < Hops.Count ? GetNavigationHop(nextIndex) : null;
         }
     }
 
     public bool UseNextHop => AutoCopy && NextHop is not null;
+
+    /// <summary>Returns the current pass order; Hops always retains the source itinerary.</summary>
+    public IReadOnlyList<FollowRouteHop> GetNavigationHops() => IsReversed ? Hops.Reverse().ToArray() : Hops;
+
+    /// <summary>Maps a displayed progress or checklist index to its source itinerary row.</summary>
+    public int GetSourceIndex(int navigationIndex) => IsReversed ? Hops.Count - navigationIndex - 1 : navigationIndex;
+
+    public FollowRouteHop GetNavigationHop(int navigationIndex) => Hops[GetSourceIndex(navigationIndex)];
+}
+
+public enum FollowRouteRepeatMode
+{
+    None,
+    FromStart,
+    Reverse,
 }
 
 public sealed record FollowRouteHop(
@@ -115,7 +133,12 @@ public sealed record FollowRouteRenameResult(
     FollowRouteCatalogEntry CatalogEntry
 );
 
-public sealed record FollowRouteArrivalResult(FollowRouteDocument Route, bool Changed, int? ReachedIndex)
+public sealed record FollowRouteArrivalResult(
+    FollowRouteDocument Route,
+    bool Changed,
+    int? ReachedIndex,
+    bool Restarted = false
+)
 {
     public bool Completed => Changed && Route.IsComplete;
 }

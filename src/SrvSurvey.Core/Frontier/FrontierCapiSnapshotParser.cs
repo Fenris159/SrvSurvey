@@ -742,7 +742,12 @@ public static partial class FrontierCapiSnapshotParser
                 ? ParseMarket(carrierMarket, fetchedAt, dataPathPrefix + ".market")
                 : null,
             ParseShipyard(root, fetchedAt, dataPathPrefix + ".shipyard"),
-            dataPoints
+            dataPoints,
+            FrontierCarrierFuelReader.Read(
+                root,
+                dataPathPrefix.StartsWith("squadron.", StringComparison.Ordinal),
+                fetchedAt
+            )
         );
         return new FrontierCarrierEndpointSnapshot(carrier, reputation, dataPoints);
     }

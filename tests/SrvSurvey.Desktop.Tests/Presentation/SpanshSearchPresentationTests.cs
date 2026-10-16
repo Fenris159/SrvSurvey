@@ -349,7 +349,11 @@ public sealed class SpanshSearchPresentationTests
                 search.SelectedPlanner = planner;
                 using WriteableBitmap? frame = window.CaptureRenderedFrame();
                 Assert.NotNull(frame);
-                foreach (SpanshPlannerFieldViewModel field in search.Fields.Where(field => field.IsRadioChoice))
+                foreach (
+                    SpanshPlannerFieldViewModel field in search.Fields.Where(field =>
+                        field.IsRadioChoice && field.IsVisible
+                    )
+                )
                 {
                     RadioButton second = window
                         .GetVisualDescendants()

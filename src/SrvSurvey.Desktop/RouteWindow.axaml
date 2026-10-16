@@ -20,7 +20,7 @@
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,0,1"
             Padding="24,18">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+      <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="12">
         <StackPanel Spacing="3">
           <TextBlock Classes="eyebrow" Text="{Binding WorkspaceEyebrow}" />
           <TextBlock Classes="page-title" FontSize="24" Text="{Binding WorkspaceHeading}" />
@@ -37,9 +37,19 @@
                   Content="Notes" />
           <Button Classes="secondary"
                   Command="{Binding RefreshCommand}"
-                  Content="Reload" />
+                  Content="Refresh" />
           <Button Classes="secondary" Click="Close_Click" Content="Close" />
         </StackPanel>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding IsFleetCarrierWorkspace}" ColumnDefinitions="Auto,240,*" ColumnSpacing="12">
+          <TextBlock VerticalAlignment="Center" Text="Carrier" />
+          <ComboBox x:Name="RouteCarrierSelector"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding CarrierOptions}"
+                    SelectedItem="{Binding SelectedCarrier, Mode=TwoWay}"
+                    IsEnabled="{Binding !IsBusy}" />
+          <TextBlock x:Name="CarrierFuelSummaryReadout" Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="{Binding CarrierFuelSummary}" TextWrapping="Wrap" />
+        </Grid>
       </Grid>
     </Border>
 
@@ -97,6 +107,21 @@
                            FontSize="11"
                            Text="{Binding AutoCopySummary}"
                            TextWrapping="Wrap" />
+                <CheckBox x:Name="RepeatFromStartCheckBox"
+                          IsChecked="{Binding RepeatFromStart, Mode=TwoWay}"
+                          IsEnabled="{Binding CanRepeatFromStart}"
+                          Content="Repeat from start"
+                          ToolTip.Tip="{Binding RepeatFromStartHint}" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           IsVisible="{Binding IsFleetCarrierWorkspace}"
+                           Text="{Binding RepeatFromStartHint}"
+                           TextWrapping="Wrap" />
+                <CheckBox x:Name="RepeatAndReverseCheckBox"
+                          IsChecked="{Binding RepeatAndReverse, Mode=TwoWay}"
+                          IsEnabled="{Binding !IsBusy}"
+                          Content="Repeat and reverse"
+                          ToolTip.Tip="Reverse the waypoint order after each pass and keep repeating." />
                 <CheckBox x:Name="CarrierRestockOnlyWhenLowCheckBox"
                           IsVisible="{Binding IsFleetCarrierWorkspace}"
                           IsEnabled="{Binding HasRoute}"
@@ -694,6 +719,18 @@
             <Button Classes="primary"
                     Command="{Binding SaveNotesCommand}"
                     Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+    <Grid Grid.RowSpan="3" Panel.ZIndex="30" Background="#99000000" IsVisible="{Binding IsFuelWarningVisible}">
+      <Border Classes="card raised" Width="520" Padding="26" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title" FontSize="22" Foreground="{DynamicResource RavenDangerBrush}" Text="Carrier short on tritium" />
+          <TextBlock x:Name="CarrierFuelWarningText" Text="{Binding FuelWarningMessage}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Classes="secondary" Command="{Binding CancelDialogCommand}" Content="Dismiss" />
+            <Button Classes="secondary" Command="{Binding RefreshCommand}" Content="Refresh fuel" />
           </StackPanel>
         </StackPanel>
       </Border>

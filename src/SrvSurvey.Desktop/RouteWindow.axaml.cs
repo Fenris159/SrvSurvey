@@ -21,6 +21,7 @@ public sealed partial class RouteWindow : Window
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.PrepareCarrierWorkspace();
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)
@@ -33,6 +34,7 @@ public sealed partial class RouteWindow : Window
     /// </summary>
     private void SpanshSearch_Click(object? sender, RoutedEventArgs eventArgs)
     {
+        viewModel.PrepareCarrierSearch();
         if (searchWindow is not null)
         {
             searchWindow.Activate();

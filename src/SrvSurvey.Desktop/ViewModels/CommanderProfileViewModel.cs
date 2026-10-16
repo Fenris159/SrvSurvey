@@ -1902,7 +1902,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         StatusMessage = "Frontier authorization was cancelled.";
     }
 
-    private async Task RefreshAsync()
+    public async Task RefreshAsync()
     {
         long contextVersion = Interlocked.Read(ref commanderContextVersion);
         try

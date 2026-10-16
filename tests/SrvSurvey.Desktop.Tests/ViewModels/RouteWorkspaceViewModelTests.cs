@@ -1393,6 +1393,374 @@ public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
         Assert.DoesNotContain(nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName), notifications);
     }
 
+    [Theory]
+    [InlineData(FollowRouteKind.Standard)]
+    [InlineData(FollowRouteKind.FleetCarrier)]
+    public async Task RepeatChoicesAreMutuallyExclusiveAndRetainedPerWorkspace(FollowRouteKind kind)
+    {
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: kind);
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        await model.ImportNamesAsync(["A", "B", "C", "A"]);
+        var notifications = new List<string?>();
+        model.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+        Assert.False(model.RepeatFromStart);
+        Assert.False(model.RepeatAndReverse);
+        model.RepeatFromStart = true;
+        model.RepeatFromStart = true;
+        model.RepeatAndReverse = false;
+        Assert.True(model.RepeatFromStart);
+        Assert.False(model.RepeatAndReverse);
+        Assert.Equal(FollowRouteRepeatMode.FromStart, model.CreateSnapshot()!.RepeatMode);
+
+        model.RepeatAndReverse = true;
+        model.RepeatAndReverse = true;
+        model.RepeatFromStart = false;
+        Assert.False(model.RepeatFromStart);
+        Assert.True(model.RepeatAndReverse);
+        Assert.Contains(nameof(RouteWorkspaceViewModel.RepeatFromStart), notifications);
+        Assert.Contains(nameof(RouteWorkspaceViewModel.RepeatAndReverse), notifications);
+        await model.FlushWorkspaceAsync();
+
+        RouteWorkspaceViewModel reopened = CreateViewModel(routeKind: kind);
+        await reopened.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        Assert.True(reopened.RepeatAndReverse);
+        Assert.False(reopened.RepeatFromStart);
+        await reopened.UpdateContextAsync("F456", "Elsewhere", 99, null);
+        Assert.False(reopened.RepeatAndReverse);
+        Assert.False(reopened.RepeatFromStart);
+        await reopened.UpdateContextAsync(null, null, null, null);
+        Assert.False(reopened.RepeatAndReverse);
+        await reopened.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        Assert.True(reopened.RepeatAndReverse);
+        reopened.RepeatAndReverse = false;
+        Assert.Equal(FollowRouteRepeatMode.None, reopened.CreateSnapshot()!.RepeatMode);
+        reopened.RepeatFromStart = true;
+        reopened.RepeatFromStart = false;
+        Assert.Equal(FollowRouteRepeatMode.None, reopened.CreateSnapshot()!.RepeatMode);
+    }
+
+    [Theory]
+    [InlineData(FollowRouteKind.Standard, FollowRouteRepeatMode.FromStart, false)]
+    [InlineData(FollowRouteKind.Standard, FollowRouteRepeatMode.Reverse, false)]
+    [InlineData(FollowRouteKind.FleetCarrier, FollowRouteRepeatMode.FromStart, false)]
+    [InlineData(FollowRouteKind.FleetCarrier, FollowRouteRepeatMode.Reverse, false)]
+    [InlineData(FollowRouteKind.Standard, FollowRouteRepeatMode.FromStart, true)]
+    [InlineData(FollowRouteKind.Standard, FollowRouteRepeatMode.Reverse, true)]
+    [InlineData(FollowRouteKind.FleetCarrier, FollowRouteRepeatMode.FromStart, true)]
+    [InlineData(FollowRouteKind.FleetCarrier, FollowRouteRepeatMode.Reverse, true)]
+    public async Task JournalArrivalsRepeatSavedAndUnsavedRoutesAndRestoreDirection(
+        FollowRouteKind kind,
+        FollowRouteRepeatMode mode,
+        bool saved
+    )
+    {
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: kind);
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        bool carrierLoop = kind == FollowRouteKind.FleetCarrier && mode == FollowRouteRepeatMode.FromStart;
+        string[] itinerary = carrierLoop ? ["A", "B", "C", "A"] : ["A", "B", "C"];
+        await model.ImportNamesAsync(itinerary);
+        model.RepeatFromStart = mode == FollowRouteRepeatMode.FromStart;
+        model.RepeatAndReverse = mode == FollowRouteRepeatMode.Reverse;
+        if (saved)
+        {
+            model.SaveAsName = "Repeating route";
+            await model.ConfirmSaveAsAsync();
+            Assert.False(model.IsDirty);
+        }
+        string arrival = kind == FollowRouteKind.FleetCarrier ? "CarrierJump" : "FSDJump";
+        string otherArrival = kind == FollowRouteKind.FleetCarrier ? "FSDJump" : "CarrierJump";
+        await model.ApplyJournalEventsAsync([Parse($$"""{"event":"{{otherArrival}}","StarSystem":"A"}""")]);
+        Assert.Equal(0, model.ReachedCount);
+        await ArriveAsync(model, arrival, "A");
+        for (int pass = 0; pass < 3; pass++)
+        {
+            await ArriveAsync(model, arrival, "B");
+            string endpoint = mode == FollowRouteRepeatMode.Reverse && pass % 2 == 1 ? "A" : "C";
+            await ArriveAsync(model, arrival, endpoint);
+            if (carrierLoop)
+            {
+                await ArriveAsync(model, arrival, "A");
+            }
+            Assert.True(model.IsActive);
+            Assert.False(model.IsComplete);
+            Assert.Equal(itinerary, model.CreateSnapshot()!.Hops.Select(hop => hop.Name));
+            Assert.Equal(!saved, model.HasDefinitionChanges);
+            if (mode == FollowRouteRepeatMode.Reverse)
+            {
+                string[] expected = pass % 2 == 0 ? ["C", "B", "A"] : ["A", "B", "C"];
+                Assert.Equal(expected, model.Hops.Select(hop => hop.Name));
+                Assert.True(model.Hops[0].IsReached);
+                Assert.False(model.Hops[1].IsReached);
+                Assert.Equal("B", model.NextHopName);
+                Assert.Contains("Route reversed", model.StatusMessage);
+            }
+            else
+            {
+                Assert.Equal(carrierLoop ? "B" : "A", model.NextHopName);
+                Assert.Contains("Route restarted", model.StatusMessage);
+                if (!carrierLoop)
+                {
+                    await ArriveAsync(model, arrival, "A");
+                }
+            }
+            if (saved)
+            {
+                Assert.False(model.IsDirty);
+            }
+        }
+        await model.FlushWorkspaceAsync();
+        RouteWorkspaceViewModel reopened = CreateViewModel(routeKind: kind);
+        await reopened.UpdateContextAsync("F123", "C", 3, null);
+        Assert.Equal(mode, reopened.CreateSnapshot()!.RepeatMode);
+        Assert.Equal(mode == FollowRouteRepeatMode.Reverse, reopened.CreateSnapshot()!.IsReversed);
+        Assert.Equal(model.Hops.Select(hop => hop.Name), reopened.Hops.Select(hop => hop.Name));
+        Assert.Equal("B", reopened.NextHopName);
+        Assert.Equal(saved, reopened.HasSavedRoute);
+        Assert.Equal(model.ReachedCount, reopened.ReachedCount);
+    }
+
+    [Theory]
+    [InlineData(FollowRouteKind.Standard)]
+    [InlineData(FollowRouteKind.FleetCarrier)]
+    public async Task UnsavedRepeatChoiceAppliesImmediatelyAndSaveChangesKeepsTheTurnaround(FollowRouteKind kind)
+    {
+        var store = new FollowRouteStore(temporaryDirectory, kind);
+        FollowRouteDocument saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [Hop("A", 1, new(0, 0, 0)), Hop("B", 2, new(3, 4, 0)), Hop("C", 3, new(3, 4, 12))],
+                IsActive = true,
+                LastReachedIndex = 0,
+            },
+            "Repeat choice"
+        );
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: kind);
+        await model.UpdateContextAsync("F123", "A", 1, new(0, 0, 0));
+        model.RepeatAndReverse = true;
+        string arrival = kind == FollowRouteKind.FleetCarrier ? "CarrierJump" : "FSDJump";
+        await ArriveAsync(model, arrival, "B");
+        await ArriveAsync(model, arrival, "C");
+
+        Assert.Equal(["C", "B", "A"], model.Hops.Select(hop => hop.Name));
+        Assert.Equal("12.00 ly", model.Hops[1].Distance);
+        Assert.Equal("5.00 ly", model.Hops[2].Distance);
+        Assert.True(model.IsDirty);
+        Assert.False(model.HasDefinitionChanges);
+        FollowRouteDocument unchanged = (await store.ReloadAsync(saved)).Route!;
+        Assert.Equal(FollowRouteRepeatMode.None, unchanged.RepeatMode);
+        Assert.False(unchanged.IsReversed);
+        Assert.Equal(0, unchanged.LastReachedIndex);
+        await model.SaveAsync();
+        Assert.False(model.IsDirty);
+        FollowRouteDocument updated = (await store.ReloadAsync(saved)).Route!;
+        Assert.Equal(FollowRouteRepeatMode.Reverse, updated.RepeatMode);
+        Assert.True(updated.IsReversed);
+        Assert.Equal("B", updated.NextHop!.Name);
+
+        model.RepeatAndReverse = false;
+        await ArriveAsync(model, arrival, "B");
+        await ArriveAsync(model, arrival, "A");
+        Assert.False(model.IsActive);
+        Assert.True(model.IsComplete);
+        Assert.Equal("Route complete", model.NextHopName);
+        model.RepeatFromStart = true;
+        if (kind == FollowRouteKind.Standard)
+        {
+            Assert.True(model.IsActive);
+            Assert.Equal(["A", "B", "C"], model.Hops.Select(hop => hop.Name));
+            Assert.Equal("B", model.NextHopName);
+            model.SetProgressThrough(2, true);
+            Assert.Equal("A", model.NextHopName);
+        }
+        else
+        {
+            Assert.False(model.CanRepeatFromStart);
+            Assert.False(model.RepeatFromStart);
+            Assert.False(model.IsActive);
+        }
+        model.RepeatAndReverse = true;
+        Assert.True(model.RepeatAndReverse);
+        Assert.False(model.RepeatFromStart);
+        model.SetProgressThrough(2, true);
+        Assert.Equal(["C", "B", "A"], model.Hops.Select(hop => hop.Name));
+        Assert.Equal("B", model.NextHopName);
+        await model.DeactivateCurrentRouteAsync();
+        FollowRouteDocument deactivated = (await store.ReloadAsync(saved)).Route!;
+        Assert.False(deactivated.IsActive);
+        Assert.True(deactivated.IsReversed);
+        Assert.Equal(FollowRouteRepeatMode.Reverse, deactivated.RepeatMode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReverseRowsKeepBodyEditsAndWaypointRemovalOnTheCorrectSystem(bool saveRepeatChoice)
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        FollowRouteDocument saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new("A", 1, null, "A notes", false, false, [new("A 1", 10, ["Bacteria"])]),
+                    new("B", 2, null, "B notes", false, false),
+                    new("C", 3, null, "C notes", false, false),
+                ],
+                IsActive = true,
+                RepeatMode = saveRepeatChoice ? FollowRouteRepeatMode.Reverse : FollowRouteRepeatMode.None,
+                LastReachedIndex = 0,
+            },
+            "Reverse edits"
+        );
+        RouteWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "A", 1, null);
+        model.RepeatAndReverse = true;
+        await ArriveAsync(model, "FSDJump", "C");
+        RouteBioTargetItemViewModel target = Assert.Single(model.Hops[2].BioTargets);
+        await model.SetBioTargetCompletedAsync(target, true);
+        Assert.True((await store.ReloadAsync(saved)).Route!.Hops[0].BioTargets[0].IsCompleted);
+        Assert.False(model.HasDefinitionChanges);
+        model.RemoveHop(model.Hops[1]);
+        Assert.Equal(["C", "A"], model.Hops.Select(hop => hop.Name));
+        Assert.Equal(["A", "C"], model.CreateSnapshot()!.Hops.Select(hop => hop.Name));
+        Assert.True(model.RepeatAndReverse);
+        Assert.Equal("A", model.NextHopName);
+        Assert.Equal("A notes", model.CreateSnapshot()!.Hops[0].Notes);
+        Assert.True(model.CreateSnapshot()!.Hops[0].BioTargets[0].IsCompleted);
+        Assert.True(model.HasDefinitionChanges);
+        await model.ImportNamesTextAsync("D", appendToRoute: true);
+        Assert.Equal(["C", "A", "D"], model.Hops.Select(hop => hop.Name));
+        Assert.True(model.CreateSnapshot()!.IsReversed);
+        Assert.True(model.RepeatAndReverse);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReverseCarrierLegsUseTheirOwnDistancesWithoutForwardFuelForecasts(bool restockOnlyWhenLow)
+    {
+        FollowRouteHop[] hops =
+        [
+            new("A", 1, new(0, 0, 0), null, false, false, Carrier: new(0, 17, 1000, 1000, 0, true, true, false, null)),
+            new(
+                "B",
+                2,
+                new(3, 4, 0),
+                "Carrier tritium restock required",
+                false,
+                false,
+                Carrier: new(5, 12, 900, 1000, 100, false, false, true, 100)
+            ),
+            new(
+                "C",
+                3,
+                new(3, 4, 12),
+                "Keep notes",
+                false,
+                false,
+                Carrier: new(12, 0, 800, 1000, 100, true, false, false, null)
+            ),
+        ];
+        RouteWorkspaceViewModel model = CreateViewModel(
+            spanshClient: new StubSpanshClient(hops),
+            routeKind: FollowRouteKind.FleetCarrier
+        );
+        await model.UpdateContextAsync("F123", "A", 1, new(0, 0, 0));
+        await model.ImportSpanshUrlAsync(
+            "https://spansh.co.uk/fleet-carrier/results/74FA2952-2048-11F1-8302-B948FF6DF5C1"
+        );
+        model.RepeatAndReverse = true;
+        model.RestockOnlyWhenLow = restockOnlyWhenLow;
+        model.SetProgressThrough(2, true);
+
+        Assert.Equal("12.00", model.Hops[1].CarrierDistance);
+        Assert.Equal("5.00", model.Hops[2].CarrierDistance);
+        Assert.All(
+            model.Hops,
+            row =>
+            {
+                Assert.Equal("—", row.CarrierFuelRemaining);
+                Assert.Equal("—", row.CarrierFuelUsed);
+                Assert.Empty(row.CarrierRestock);
+            }
+        );
+        Assert.Equal("Keep notes", model.Hops[0].Notes);
+        Assert.DoesNotContain("Carrier tritium restock required", model.Hops[1].Notes);
+        Assert.Contains("unavailable", model.CarrierFuelPlanMessage);
+        Assert.Equal(hops, model.CreateSnapshot()!.Hops);
+        model.SetProgressThrough(2, true);
+        Assert.False(model.CreateSnapshot()!.IsReversed);
+        Assert.NotEqual("—", model.Hops[1].CarrierFuelRemaining);
+    }
+
+    [Fact]
+    public async Task RepeatingRouteKeepsAdvancingWhileOtherPreferencesAreUnsaved()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new("A", 1, null, null, false, false),
+                    new("B", 2, null, null, false, false),
+                    new("C", 3, null, null, false, false),
+                ],
+                IsActive = true,
+                RepeatMode = FollowRouteRepeatMode.Reverse,
+                LastReachedIndex = 0,
+                AutoCopy = true,
+            },
+            "Keep preferences"
+        );
+        RouteWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "A", 1, null);
+        model.AutoCopy = false;
+        model.NotesDraft = "Keep unsaved notes";
+        await ArriveAsync(model, "FSDJump", "B");
+        await ArriveAsync(model, "FSDJump", "C");
+        Assert.Equal(["C", "B", "A"], model.Hops.Select(hop => hop.Name));
+        Assert.Equal("B", model.NextHopName);
+        Assert.False(model.AutoCopy);
+        Assert.Equal("Keep unsaved notes", model.NotesDraft);
+        await ArriveAsync(model, "FSDJump", "B");
+        Assert.Equal("A", model.NextHopName);
+        model.IsActive = false;
+        await ArriveAsync(model, "FSDJump", "A");
+        Assert.Equal(["C", "B", "A"], model.Hops.Select(hop => hop.Name));
+        Assert.False(model.IsActive);
+    }
+
+    [Fact]
+    public async Task CarrierRepeatFromStartIsAvailableOnlyForClosedItinerariesAndClearsAfterEditingTheEndpoint()
+    {
+        RouteWorkspaceViewModel model = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier);
+        await model.UpdateContextAsync("F123", "Elsewhere", 99, null);
+        Assert.False(model.CanRepeatFromStart);
+        await model.ImportNamesAsync(["A", "B", "C"]);
+        model.RepeatFromStart = true;
+        Assert.False(model.RepeatFromStart);
+        Assert.False(model.CanRepeatFromStart);
+        Assert.Contains("first and last", model.RepeatFromStartHint);
+        await model.ImportNamesTextAsync("a", appendToRoute: true);
+        Assert.True(model.CanRepeatFromStart);
+        model.RepeatFromStart = true;
+        Assert.True(model.RepeatFromStart);
+        model.RemoveHop(model.Hops[^1]);
+        Assert.False(model.RepeatFromStart);
+        Assert.False(model.CanRepeatFromStart);
+        model.SetProgressThrough(2, true);
+        Assert.False(model.IsActive);
+        Assert.True(model.IsComplete);
+        model.RepeatAndReverse = true;
+        Assert.True(model.IsActive);
+        Assert.True(model.RepeatAndReverse);
+    }
+
+    private static Task ArriveAsync(RouteWorkspaceViewModel model, string arrival, string name) =>
+        model.ApplyJournalEventsAsync([Parse($$"""{"event":"{{arrival}}","StarSystem":"{{name}}"}""")]);
+
     private RouteWorkspaceViewModel CreateViewModel(
         IStarSystemResolver? resolver = null,
         ISpanshRouteClient? spanshClient = null,
