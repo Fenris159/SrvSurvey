@@ -12,6 +12,7 @@ using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
@@ -684,9 +685,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 fleetCarrierRouteService,
                 routeNameImporter,
                 spanshRouteClient,
-                FollowRouteKind.FleetCarrier,
-                plannerClient: spanshPlannerClient,
-                currentShip: CurrentShipExport
+                new RouteWorkspaceOptions(
+                    FollowRouteKind.FleetCarrier,
+                    PlannerClient: spanshPlannerClient,
+                    CurrentShip: CurrentShipExport,
+                    CarrierSnapshotSource: GetRouteCarrierSnapshot,
+                    RefreshCarrierSnapshot: RefreshRouteCarrierSnapshotAsync
+                )
             );
             rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
             FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
@@ -1196,6 +1201,27 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public RouteWorkspaceViewModel FleetCarrierRoute { get; }
 
     public RouteManagerViewModel FleetCarrierRouteManager { get; }
+
+    private FrontierAccountSnapshot? GetRouteCarrierSnapshot() =>
+        FrontierProfile.IsViewingJournalCommander ? FrontierProfile.Snapshot : null;
+
+    private async Task RefreshRouteCarrierSnapshotAsync()
+    {
+        if (!FrontierProfile.IsViewingJournalCommander || !FrontierProfile.IsLinked || FrontierProfile.IsBusy)
+        {
+            throw new InvalidOperationException("Frontier carrier data is not available for the journal commander.");
+        }
+        FrontierAccountSnapshot? previous = FrontierProfile.Snapshot;
+        await FrontierProfile.RefreshAsync();
+        if (
+            !FrontierProfile.IsViewingJournalCommander
+            || FrontierProfile.Snapshot is null
+            || ReferenceEquals(previous, FrontierProfile.Snapshot)
+        )
+        {
+            throw new IOException(FrontierProfile.StatusMessage);
+        }
+    }
 
     public JumpInfoViewModel JumpInfo { get; }
 

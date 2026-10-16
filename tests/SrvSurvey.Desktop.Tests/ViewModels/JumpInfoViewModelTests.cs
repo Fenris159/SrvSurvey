@@ -1081,6 +1081,49 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShow);
     }
 
+    [Theory]
+    [InlineData(FollowRouteRepeatMode.FromStart)]
+    [InlineData(FollowRouteRepeatMode.Reverse)]
+    public async Task RepeatingFollowedRouteDoesNotShowFinishedAtTheTurnaround(FollowRouteRepeatMode mode)
+    {
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        var route = new FollowRouteDocument(
+            "F123",
+            "route.json",
+            true,
+            true,
+            0,
+            [Hop("Sol", 1, 0), Hop("Beta", 3, 45)],
+            RepeatMode: mode
+        );
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                route
+            )
+        );
+        await model.PendingSummaryLoad;
+        model.BeginOverlayPresentation();
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [Event("FSDJump", "\"StarSystem\":\"Beta\",\"SystemAddress\":3")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                route
+            )
+        );
+
+        Assert.NotEqual("FINISHED", model.JumpProgress);
+    }
+
     [Fact]
     public void PresentationCallbacksAreNoOpsAfterDisposal()
     {

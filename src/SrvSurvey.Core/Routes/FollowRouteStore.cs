@@ -340,6 +340,7 @@ public sealed class FollowRouteStore
             JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             root["active"] = route.IsActive;
             root["autoCopy"] = route.AutoCopy;
+            WriteRepeatBehavior(root, route);
             WriteTrue(
                 root,
                 "restockOnlyWhenLow",
@@ -980,9 +981,27 @@ public sealed class FollowRouteStore
         WriteTrue(root, "favorite", route.IsFavorite);
         root["active"] = route.IsActive;
         root["autoCopy"] = route.AutoCopy;
+        WriteRepeatBehavior(root, route);
         WriteTrue(root, "restockOnlyWhenLow", route.Kind == FollowRouteKind.FleetCarrier && route.RestockOnlyWhenLow);
         root["last"] = route.LastReachedIndex;
         root["hops"] = MergeHops(root["hops"] as JsonArray, route.Hops);
+    }
+
+    private static void WriteRepeatBehavior(JsonObject root, FollowRouteDocument route)
+    {
+        WriteOptional(
+            root,
+            "repeatMode",
+            route.RepeatMode == FollowRouteRepeatMode.None ? null : route.RepeatMode.ToString()
+        );
+        WriteTrue(root, "reversed", route.IsReversed);
+        WriteOptional(
+            root,
+            "carrierKind",
+            route.Kind == FollowRouteKind.FleetCarrier && route.CarrierKind == FollowRouteCarrierKind.Squadron
+                ? "Squadron"
+                : null
+        );
     }
 
     private static async Task<JsonObject> ReadRequiredObjectAsync(string path, CancellationToken cancellationToken)
@@ -1178,8 +1197,38 @@ public sealed class FollowRouteStore
             GetBoolean(root, "favorite") ?? false,
             parsedKind,
             ParseSpanshRouteKind(path, GetString(root, "spanshRouteKind")),
-            parsedKind == FollowRouteKind.FleetCarrier && GetBoolean(root, "restockOnlyWhenLow") == true
+            parsedKind == FollowRouteKind.FleetCarrier && GetBoolean(root, "restockOnlyWhenLow") == true,
+            ParseRepeatMode(path, GetString(root, "repeatMode")),
+            GetBoolean(root, "reversed") ?? false,
+            parsedKind == FollowRouteKind.FleetCarrier
+                ? ParseCarrierKind(path, GetString(root, "carrierKind"))
+                : FollowRouteCarrierKind.Personal
         );
+    }
+
+    private static FollowRouteCarrierKind ParseCarrierKind(string path, string? value) =>
+        value?.ToUpperInvariant() switch
+        {
+            null or "PERSONAL" => FollowRouteCarrierKind.Personal,
+            "SQUADRON" => FollowRouteCarrierKind.Squadron,
+            _ => throw InvalidRoute(path, $"carrierKind '{value}' is not supported"),
+        };
+
+    private static FollowRouteRepeatMode ParseRepeatMode(string path, string? value)
+    {
+        if (value is null)
+        {
+            return FollowRouteRepeatMode.None;
+        }
+        if (
+            Enum.TryParse(value, ignoreCase: true, out FollowRouteRepeatMode mode)
+            && Enum.IsDefined(mode)
+            && string.Equals(Enum.GetName(mode), value, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return mode;
+        }
+        throw InvalidRoute(path, $"repeatMode '{value}' is not supported");
     }
 
     private static SpanshRouteKind? ParseSpanshRouteKind(string path, string? value)

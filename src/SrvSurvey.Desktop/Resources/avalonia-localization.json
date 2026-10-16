@@ -41,6 +41,10 @@
       "translation": "(Eintrag)"
     },
     {
+      "source": "(fuel estimated)",
+      "translation": "(Kraftstoff geschätzt)"
+    },
+    {
       "source": "(unavailable)",
       "translation": "(nicht verfügbar)"
     },
@@ -1689,6 +1693,10 @@
       "translation": "Eingebettetes Banner zu zukünftigen Screenshots hinzufügen"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "Zusätzlich benötigtes Tritium: {0} t."
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "Fügt einen aufgelisteten Rohstoff aus der Hotspot-Liste in einer Peilung und Entfernung von Ihrer Live-Position irgendwo innerhalb der gespeicherten Kartengrenze hinzu, gefolgt von der Mineralmenge und -dichte dieser Lagerstätte. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Eine Markierung derselben Ware im Umkreis von 100 m wird als wahrscheinliches Duplikat abgelehnt. Beispiel: .mine 342 jadeite 1.87 h/m"
     },
@@ -2847,6 +2855,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Verfolgen Sie Rigs automatisch über das Rhino HUD"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "Verfügbar, wenn der erste und der letzte Wegpunkt dasselbe System haben."
     },
     {
       "source": "AvailableSourceTypes",
@@ -4533,6 +4545,10 @@
       "translation": "Ruft die nächste Aktion, das ausgewählte Ziel, das aktive Ziel, die Routennotiz oder die fokussierte Zeile auf."
     },
     {
+      "source": "Callsign",
+      "translation": "Rufzeichen"
+    },
+    {
       "source": "Cancel",
       "translation": "Abbrechen"
     },
@@ -4845,12 +4861,28 @@
       "translation": "Frachttyp"
     },
     {
+      "source": "Carrier",
+      "translation": "Träger"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carrier-Fracht nicht verfügbar. Fehlmengen und Fahrten können nicht bestätigt werden."
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "Trägerkraftstoff konnte nicht aktualisiert werden: {0}"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "Der Treibstoff des Trägers wurde vom aktuellen Wegpunkt aus neu berechnet."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Spediteurbetrieb und Fracht"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "Trägermangel an Tritium"
     },
     {
       "source": "Carrier type",
@@ -4875,6 +4907,14 @@
     {
       "source": "CarrierLocation",
       "translation": "CarrierStandort"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "CarrierStats"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "CarrierType"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -5627,6 +5667,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "Durch Klicken auf eine entsprechende Obeliskenmarkierung auf der Karte wird diese Metadatenzeile ausgewählt."
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Namen des Zwischenablagesystems werden an den Entwurf angehängt, einer pro Zeile. Spansh und Dateiimporte ersetzen es. Verwenden Sie Speichern unter..., um Routenänderungen beizubehalten."
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -7909,6 +7953,10 @@
       "translation": "Diese Route löschen?"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "Wegpunkt löschen"
+    },
+    {
       "source": "Delete {0}",
       "translation": "Löschen Sie {0}"
     },
@@ -8435,6 +8483,10 @@
     {
       "source": "Disembark",
       "translation": "Aussteigen"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "Zurückweisen"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -11209,6 +11261,10 @@
       "translation": "Der Rückruf Frontier hat die laufende Anwendung wiederhergestellt."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier Trägerdaten sind für den Journal Commander nicht verfügbar."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier Community-Zieldaten konnten nicht gelesen werden: {0}"
     },
@@ -11311,6 +11367,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "Für die Kraftstoffberechnung werden Anfangswerte für Tank und Markt sowie der Verbrauch pro Sprung benötigt."
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "Treibstoffschätzungen erfordern bekannte Treibstoff-, Frachtkapazitäts- und Wegpunktkoordinaten."
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "Während Sie der Route rückwärts folgen, sind keine Kraftstoffvorhersagen verfügbar."
     },
     {
       "source": "Fuel left",
@@ -13273,6 +13337,10 @@
       "translation": "Importieren Sie freigegebene Lesezeichen-JSON- oder EliteMining-Lesezeichenlisten. Importe behalten vorhandene Standorte bei, anstatt sie stillschweigend zu ersetzen."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Wegpunkte importieren"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Importierte Daten unvollständig: Überprüfen Sie das Importmanifest und die Protokolle. Ändern oder löschen Sie die unberührte Legacy-Quelle während der Untersuchung nicht."
     },
@@ -13379,10 +13447,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Importe werden Hash-verifiziert und behalten den Fortschritt nur dann bei, wenn die Questidentität übereinstimmt."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Importe ersetzen den Entwurf auf dem Bildschirm. Bis zum Speichern wird nichts geschrieben."
     },
     {
       "source": "Import…",
@@ -19601,6 +19665,10 @@
       "translation": "Persönlicher Inara API-Schlüssel"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "Persönlicher Flottenträger"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Persönlicher Fortschritt wird nicht von Frontier oder lokalen Zeitschriften bereitgestellt"
     },
@@ -22109,6 +22177,10 @@
       "translation": "Aktualisierung fehlgeschlagen. Zeigt den letzten erfolgreichen Schnappschuss."
     },
     {
+      "source": "Refresh fuel",
+      "translation": "Kraftstoff auffrischen"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "Aktualisieren Sie die Hotspot-Suche nach Sprüngen und Scans"
     },
@@ -22155,6 +22227,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "Aktualisieren Sie die Sitzung und überprüfen Sie dann die letzten Journalereignisse und den analysierten Status auf das erwartete Ereignis."
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "Aktualisieren, um Kraftstoffdaten für den ausgewählten Spediteur zu laden."
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -22263,10 +22339,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "Die Richtung des Reliktturms {0} wurde auf {1}° festgelegt."
-    },
-    {
-      "source": "Reload",
-      "translation": "Neu laden"
     },
     {
       "source": "Reload saved state",
@@ -22409,6 +22481,10 @@
       "translation": "{0} aus den Favoriten entfernt."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} aus dem Routenentwurf entfernt."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Veraltete Installationspläne {0} entfernt."
     },
@@ -22477,12 +22553,16 @@
       "translation": "Der Raven-Site-Name für {0} wurde repariert."
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "Wiederholen Sie den Befehl an einem anderen Ort, um mehrere Ablagerungen desselben Materials zu verfolgen. Entfernung und Richtung werden automatisch aktualisiert, wenn Sie sich bewegen oder drehen."
+      "source": "Repeat and reverse",
+      "translation": "Wiederholen und umkehren"
     },
     {
-      "source": "Replace from import",
-      "translation": "Aus Import ersetzen"
+      "source": "Repeat from start",
+      "translation": "Von Anfang an wiederholen"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "Wiederholen Sie den Befehl an einem anderen Ort, um mehrere Ablagerungen desselben Materials zu verfolgen. Entfernung und Richtung werden automatisch aktualisiert, wenn Sie sich bewegen oder drehen."
     },
     {
       "source": "Replay export failed: {0}",
@@ -22757,6 +22837,10 @@
       "translation": "Starten Sie neu SrvSurvey, wenn **App-Neustart erforderlich angezeigt wird. Die Auswahl gilt sowohl für Live-Overlays als auch für den Positionseditor."
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "Starten Sie am ersten Wegpunkt neu, wenn die Route endet."
+    },
+    {
       "source": "Restart to apply",
       "translation": "Starten Sie neu, um sich zu bewerben"
     },
@@ -22943,6 +23027,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "Reverb G2 und andere Windows Mixed Reality-Headsets auf unterstützten Windows-Installationen"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "Kehren Sie die Reihenfolge der Wegpunkte nach jedem Durchgang um und wiederholen Sie den Vorgang."
     },
     {
       "source": "Review Boxel statistics",
@@ -23383,6 +23471,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "Der Routenfortschritt wurde im angehaltenen Zustand gespeichert."
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "Route neu gestartet. Nächstes System: {0}."
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "Route umgekehrt. Nächstes System: {0}."
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -26297,6 +26393,14 @@
       "translation": "Geschwader-Logo"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "Geschwaderträger"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "Geschwaderträger"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "SquadronLogo"
     },
@@ -28687,6 +28791,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "Der zusätzliche Prozess SrvSurvey wurde nicht gestartet."
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "Der zusätzliche Treibstoff übersteigt den verfügbaren Laderaum, weshalb die Nachschubversorgung unterwegs unterbrochen wird."
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -33337,6 +33445,10 @@
       "translation": "Deine Kraft"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "Ihr Träger benötigt für die verbleibende Strecke ca. {0} t Tritium und hat knapp {1} t. Minen oder kaufen Sie mindestens {2} t und wählen Sie dann „Aktualisieren“, um eine Neuberechnung von diesem Wegpunkt aus durchzuführen."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ihre Daten bleiben unverändert. Überprüfen Sie die Details und erstellen Sie einen GitHub-Bericht oder teilen Sie sie auf Discord."
     },
@@ -36769,6 +36881,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -37649,6 +37765,10 @@
       "translation": "{0} · AKTIVER OBELISK"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · Depot: {1} t · Halten: {2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · Verbleibende {1}%"
     },
@@ -38045,6 +38165,10 @@
     {
       "source": "(entry)",
       "translation": "(entrada)"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "(combustible estimado)"
     },
     {
       "source": "(unavailable)",
@@ -39695,6 +39819,10 @@
       "translation": "Agregar un banner incrustado a futuras capturas de pantalla"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "Tritio adicional necesario: {0} t."
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "Agrega un producto de la lista de puntos de acceso a un rumbo y distancia desde su posición en vivo en cualquier lugar dentro del borde del mapa guardado, seguido de la cantidad y densidad del mineral de ese depósito. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. Un marcador del mismo producto dentro de un radio de 100 m se rechaza como probable duplicado. Ejemplo: .mine 342 jadeite 1.87 h/m"
     },
@@ -40853,6 +40981,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Seguimiento automático de equipos desde Rhino HUD"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "Disponible cuando el primer y último waypoint son del mismo sistema."
     },
     {
       "source": "AvailableSourceTypes",
@@ -42539,6 +42671,10 @@
       "translation": "Indica la siguiente acción, el destino seleccionado, el objetivo activo, la nota de ruta o la fila enfocada."
     },
     {
+      "source": "Callsign",
+      "translation": "indicativo de llamada"
+    },
+    {
       "source": "Cancel",
       "translation": "Cancelar"
     },
@@ -42851,12 +42987,28 @@
       "translation": "Tipo de carga"
     },
     {
+      "source": "Carrier",
+      "translation": "Transportador"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carga del transportista no disponible. No se pueden confirmar desabastecimientos ni viajes."
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "No se pudo renovar el combustible del transportista: {0}"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "Combustible del portaaviones recalculado a partir del punto de ruta actual."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Operaciones de transporte y carga"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "El transportista carece de tritio"
     },
     {
       "source": "Carrier type",
@@ -42881,6 +43033,14 @@
     {
       "source": "CarrierLocation",
       "translation": "Ubicación del transportista"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "Estadísticas del transportista"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "Tipo de operador"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -43633,6 +43793,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "Al hacer clic en un marcador de obelisco coincidente en el mapa, se selecciona esta fila de metadatos."
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Los nombres del sistema del portapapeles se añaden al borrador, uno por línea. Spansh y las importaciones de archivos lo reemplazan. Utilice Guardar como... para conservar los cambios de ruta."
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -45915,6 +46079,10 @@
       "translation": "¿Eliminar esta ruta?"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "Eliminar punto de referencia"
+    },
+    {
       "source": "Delete {0}",
       "translation": "Eliminar {0}"
     },
@@ -46441,6 +46609,10 @@
     {
       "source": "Disembark",
       "translation": "Desembarcar"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "Despedir"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -49215,6 +49387,10 @@
       "translation": "La devolución de llamada Frontier restauró la aplicación en ejecución."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier los datos del transportista no están disponibles para el comandante del diario."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier no se pudieron leer los datos del objetivo de la comunidad: {0}"
     },
@@ -49317,6 +49493,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "Para calcular el combustible se necesitan los valores iniciales del depósito y del mercado, y el consumo por salto."
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "Las estimaciones de combustible requieren combustible, capacidad de carga y coordenadas de puntos de referencia conocidos."
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "Los pronósticos de combustible no están disponibles al seguir la ruta en reversa."
     },
     {
       "source": "Fuel left",
@@ -51279,6 +51463,10 @@
       "translation": "Importe listas de marcadores JSON o EliteMining de marcadores compartidos. Las importaciones conservan las ubicaciones existentes en lugar de reemplazarlas silenciosamente."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importar puntos de referencia"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Datos importados incompletos: inspeccione el manifiesto y los registros de importación; no modifique ni elimine la fuente heredada intacta mientras investiga."
     },
@@ -51385,10 +51573,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Las importaciones se verifican mediante hash y preservan el progreso solo cuando la identidad de la misión coincide."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Las importaciones reemplazan el borrador en pantalla. No se escribe nada hasta que se guarde."
     },
     {
       "source": "Import…",
@@ -57607,6 +57791,10 @@
       "translation": "Clave API personal Inara"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "Transportista de flota personal"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Progreso personal no proporcionado por Frontier o revistas locales"
     },
@@ -60115,6 +60303,10 @@
       "translation": "Error al actualizar. Mostrando la última instantánea exitosa."
     },
     {
+      "source": "Refresh fuel",
+      "translation": "Actualizar combustible"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "Actualizar la búsqueda de puntos de acceso después de saltos y escaneos"
     },
@@ -60161,6 +60353,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "Actualice la sesión, luego inspeccione los eventos recientes del diario y el estado analizado para detectar el evento esperado."
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "Actualice para cargar datos de combustible para el transportista seleccionado."
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -60269,10 +60465,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "Torre reliquia {0} rumbo establecido en {1}°."
-    },
-    {
-      "source": "Reload",
-      "translation": "recargar"
     },
     {
       "source": "Reload saved state",
@@ -60415,6 +60607,10 @@
       "translation": "Se eliminó {0} de favoritos."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "Se eliminó {0} del borrador de ruta."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Se eliminaron los planes de instalación obsoletos de {0}."
     },
@@ -60483,12 +60679,16 @@
       "translation": "Se reparó el nombre del sitio Raven para {0}."
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "Repita el comando en otra ubicación para rastrear múltiples depósitos del mismo material. La distancia y la dirección se actualizan automáticamente a medida que te mueves o giras."
+      "source": "Repeat and reverse",
+      "translation": "Repetir y revertir"
     },
     {
-      "source": "Replace from import",
-      "translation": "Reemplazar desde importación"
+      "source": "Repeat from start",
+      "translation": "repetir desde el principio"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "Repita el comando en otra ubicación para rastrear múltiples depósitos del mismo material. La distancia y la dirección se actualizan automáticamente a medida que te mueves o giras."
     },
     {
       "source": "Replay export failed: {0}",
@@ -60763,6 +60963,10 @@
       "translation": "Reinicie SrvSurvey cuando aparezca **Se requiere reinicio de la aplicación. La elección se aplica tanto a las superposiciones en vivo como al editor de posiciones."
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "Reinicie en el primer waypoint cada vez que finalice la ruta."
+    },
+    {
       "source": "Restart to apply",
       "translation": "Reiniciar para aplicar"
     },
@@ -60949,6 +61153,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "Reverb G2 y otros auriculares Windows Mixed Reality en instalaciones de Windows compatibles"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "Invierta el orden de los puntos de ruta después de cada pasada y siga repitiendo."
     },
     {
       "source": "Review Boxel statistics",
@@ -61389,6 +61597,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "Progreso de la ruta guardado en estado de pausa."
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "Ruta reiniciada. Siguiente sistema: {0}."
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "Ruta invertida. Siguiente sistema: {0}."
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -64303,6 +64519,14 @@
       "translation": "Logotipo del escuadrón"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "Portaaviones de escuadrón"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "Portaaviones de escuadrón"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "EscuadrónLogotipo"
     },
@@ -66693,6 +66917,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "El proceso adicional SrvSurvey no se inició."
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "El combustible adicional excede el espacio de carga disponible, por lo que se deben planificar paradas de reabastecimiento en el camino."
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -71343,6 +71571,10 @@
       "translation": "Tu poder"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "Su transportista necesita aproximadamente {0} t de tritio para la ruta restante y le faltan {1} t. Extrae o compra al menos {2} t, luego selecciona Actualizar para volver a calcular desde este punto de ruta."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Tus datos no han cambiado. Revise los detalles y prepare un informe de GitHub, o compártalos en Discord."
     },
@@ -74775,6 +75007,10 @@
       "translation": "controlador-esquema-x/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -75655,6 +75891,10 @@
       "translation": "{0} · OBELISCO ACTIVO"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · Depósito: {1} t · Espera: {2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · Restante {1}%"
     },
@@ -76051,6 +76291,10 @@
     {
       "source": "(entry)",
       "translation": "(entrée)"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "(carburant estimé)"
     },
     {
       "source": "(unavailable)",
@@ -77701,6 +77945,10 @@
       "translation": "Ajout d'une bannière intégrée aux futures captures d'écran"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "Tritium supplémentaire nécessaire : {0} t."
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "Ajoute un produit répertorié dans la liste des points chauds à un relèvement et à une distance de votre position en direct n'importe où à l'intérieur de la bordure de la carte enregistrée, suivi de la quantité et de la densité minérale de ce gisement. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un marqueur de même produit dans un rayon de 100 m est décliné comme un doublon probable. Exemple : .mine 342 jadeite 1.87 h/m"
     },
@@ -78859,6 +79107,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Suivez automatiquement les plates-formes depuis le Rhino HUD"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "Disponible lorsque le premier et le dernier waypoints correspondent au même système."
     },
     {
       "source": "AvailableSourceTypes",
@@ -80545,6 +80797,10 @@
       "translation": "Appelle l'action suivante, la destination sélectionnée, la cible active, la note d'itinéraire ou la ligne ciblée."
     },
     {
+      "source": "Callsign",
+      "translation": "Indicatif"
+    },
+    {
       "source": "Cancel",
       "translation": "Annuler"
     },
@@ -80857,12 +81113,28 @@
       "translation": "Type de fret"
     },
     {
+      "source": "Carrier",
+      "translation": "Transporteur"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Cargaison du transporteur indisponible. Les pénuries et les voyages ne peuvent être confirmés."
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "Le carburant du transporteur n'a pas pu être renouvelé : {0}"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "Carburant du transporteur recalculé à partir du waypoint actuel."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Opérations de transporteur et fret"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "Transporteur à court de tritium"
     },
     {
       "source": "Carrier type",
@@ -80887,6 +81159,14 @@
     {
       "source": "CarrierLocation",
       "translation": "Emplacement du transporteur"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "Statistiques des transporteurs"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "Type de transporteur"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -81639,6 +81919,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "Cliquer sur un marqueur d'obélisque correspondant sur la carte sélectionne cette ligne de métadonnées."
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Les noms du système du Presse-papiers sont ajoutés au brouillon, un par ligne. Spansh et les importations de fichiers le remplacent. Utilisez Enregistrer sous... pour conserver les modifications d'itinéraire."
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -83921,6 +84205,10 @@
       "translation": "Supprimer cet itinéraire ?"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "Supprimer un waypoint"
+    },
+    {
       "source": "Delete {0}",
       "translation": "Supprimer {0}"
     },
@@ -84447,6 +84735,10 @@
     {
       "source": "Disembark",
       "translation": "Débarquer"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "Rejeter"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -87221,6 +87513,10 @@
       "translation": "Le rappel Frontier a restauré l'application en cours d'exécution."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier les données du transporteur ne sont pas disponibles pour le commandant du journal."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier les données de l'objectif de la communauté n'ont pas pu être lues : {0}"
     },
@@ -87323,6 +87619,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "Le calcul nécessite les quantités initiales du réservoir et du marché, ainsi que le carburant consommé par saut."
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "Les estimations de carburant nécessitent des coordonnées connues du carburant, de la capacité de chargement et des points de cheminement."
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "Les prévisions de carburant ne sont pas disponibles lorsque vous suivez l'itinéraire en marche arrière."
     },
     {
       "source": "Fuel left",
@@ -89285,6 +89589,10 @@
       "translation": "Importez des listes de signets partagés JSON ou EliteMining. Les importations conservent les emplacements existants plutôt que de les remplacer silencieusement."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importer des waypoints"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Données importées incomplètes : inspectez le manifeste d'importation et les journaux ; ne modifiez ni ne supprimez pas la source héritée intacte pendant l’enquête."
     },
@@ -89391,10 +89699,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Les importations sont vérifiées par hachage et préservent la progression uniquement lorsque l'identité de la quête correspond."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Les importations remplacent le brouillon à l’écran. Rien n'est écrit jusqu'à ce qu'il soit enregistré."
     },
     {
       "source": "Import…",
@@ -95613,6 +95917,10 @@
       "translation": "Clé API personnelle Inara"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "Transporteur de flotte personnelle"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Progrès personnel non fourni par Frontier ou par les journaux locaux"
     },
@@ -98121,6 +98429,10 @@
       "translation": "L'actualisation a échoué. Affichage du dernier instantané réussi."
     },
     {
+      "source": "Refresh fuel",
+      "translation": "Renouveler le carburant"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "Actualiser la recherche de points d'accès après les sauts et les analyses"
     },
@@ -98167,6 +98479,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "Actualisez la session, puis inspectez les événements récents du journal et l'état analysé pour l'événement attendu."
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "Actualisez pour charger les données de carburant pour le transporteur sélectionné."
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -98275,10 +98591,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "Tour relique {0} cap réglé sur {1}°."
-    },
-    {
-      "source": "Reload",
-      "translation": "Recharger"
     },
     {
       "source": "Reload saved state",
@@ -98421,6 +98733,10 @@
       "translation": "{0} supprimé des favoris."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} a été supprimé du brouillon d'itinéraire."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Suppression des plans d'installation obsolètes {0}."
     },
@@ -98489,12 +98805,16 @@
       "translation": "Réparation du nom du site Raven pour {0}."
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "Répétez la commande à un autre endroit pour suivre plusieurs dépôts du même matériau. La distance et la direction se mettent automatiquement à jour lorsque vous vous déplacez ou tournez."
+      "source": "Repeat and reverse",
+      "translation": "Répéter et inverser"
     },
     {
-      "source": "Replace from import",
-      "translation": "Remplacer depuis l'importation"
+      "source": "Repeat from start",
+      "translation": "Répéter depuis le début"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "Répétez la commande à un autre endroit pour suivre plusieurs dépôts du même matériau. La distance et la direction se mettent automatiquement à jour lorsque vous vous déplacez ou tournez."
     },
     {
       "source": "Replay export failed: {0}",
@@ -98769,6 +99089,10 @@
       "translation": "Redémarrez SrvSurvey lorsque **App Redémarrage requis apparaît. Le choix s'applique à la fois aux superpositions en direct et à l'éditeur de position."
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "Redémarrez au premier waypoint chaque fois que l'itinéraire se termine."
+    },
+    {
       "source": "Restart to apply",
       "translation": "Redémarrer pour postuler"
     },
@@ -98955,6 +99279,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "Reverb G2 et autres casques Windows Mixed Reality sur les installations Windows prises en charge"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "Inversez l’ordre des waypoints après chaque passage et continuez à répéter."
     },
     {
       "source": "Review Boxel statistics",
@@ -99395,6 +99723,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "Progression de l'itinéraire enregistrée dans un état de pause."
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "Itinéraire repris. Système suivant : {0}."
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "Itinéraire inversé. Système suivant : {0}."
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -102309,6 +102645,14 @@
       "translation": "Logo de l'escadron"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "Transporteur d'escadron"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "EscadronTransporteur"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "Logo de l'escadron"
     },
@@ -104699,6 +105043,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "Le processus supplémentaire SrvSurvey n'a pas démarré."
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "Le carburant supplémentaire dépasse l’espace de chargement disponible, prévoyez donc des arrêts de réapprovisionnement en cours de route."
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -109349,6 +109697,10 @@
       "translation": "Votre pouvoir"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "Votre transporteur a besoin d'environ {0} t de tritium pour le trajet restant et il lui manque {1} t. Extrayez ou achetez au moins {2} t, puis sélectionnez Actualiser pour recalculer à partir de ce waypoint."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Vos données sont inchangées. Examinez les détails et préparez un rapport GitHub, ou partagez-les sur Discord."
     },
@@ -112781,6 +113133,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -113661,6 +114017,10 @@
       "translation": "{0} · OBÉLISQUE ACTIF"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · Dépôt : {1} t · Réserve : {2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · {1}% restant"
     },
@@ -114057,6 +114417,10 @@
     {
       "source": "(entry)",
       "translation": "(entrada)"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "(combustível estimado)"
     },
     {
       "source": "(unavailable)",
@@ -115707,6 +116071,10 @@
       "translation": "Adicionando banner incorporado a capturas de tela futuras"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "Trítio adicional necessário: {0} t."
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "Adiciona uma mercadoria listada de Hotspot List a uma orientação e distância de sua posição ao vivo em qualquer lugar dentro da borda do mapa salvo, seguida pela quantidade e densidade mineral desse depósito. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. Um marcador da mesma mercadoria dentro de 100 m é recusado como uma provável duplicata. Exemplo: .mine 342 jadeite 1.87 h/m"
     },
@@ -116865,6 +117233,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Rastreie automaticamente as plataformas do Rhino HUD"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "Disponível quando o primeiro e o último waypoints são do mesmo sistema."
     },
     {
       "source": "AvailableSourceTypes",
@@ -118551,6 +118923,10 @@
       "translation": "Chama a próxima ação, destino selecionado, alvo ativo, nota de rota ou linha em foco."
     },
     {
+      "source": "Callsign",
+      "translation": "Indicativo"
+    },
+    {
       "source": "Cancel",
       "translation": "Cancelar"
     },
@@ -118863,12 +119239,28 @@
       "translation": "CargoType"
     },
     {
+      "source": "Carrier",
+      "translation": "Operadora"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carga da transportadora indisponível. Escassez e viagens não podem ser confirmadas."
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "Não foi possível atualizar o combustível do transportador: {0}"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "Combustível do transportador recalculado a partir do waypoint atual."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Operações e carga do transportador"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "Transportador com falta de trítio"
     },
     {
       "source": "Carrier type",
@@ -118893,6 +119285,14 @@
     {
       "source": "CarrierLocation",
       "translation": "Localização da transportadora"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "Estatísticas da operadora"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "Tipo de operadora"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -119645,6 +120045,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "Clicar em um marcador de obelisco correspondente no mapa seleciona esta linha de metadados."
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Os nomes dos sistemas da área de transferência são anexados ao rascunho, um por linha. Spansh e as importações de arquivos o substituem. Use Salvar como... para manter as alterações de rota."
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -121927,6 +122331,10 @@
       "translation": "Excluir esta rota?"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "Excluir ponto de referência"
+    },
+    {
       "source": "Delete {0}",
       "translation": "Excluir {0}"
     },
@@ -122453,6 +122861,10 @@
     {
       "source": "Disembark",
       "translation": "Desembarcar"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "Liberar"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -125227,6 +125639,10 @@
       "translation": "O retorno de chamada Frontier restaurou o aplicativo em execução."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier os dados da portadora não estão disponíveis para o comandante do diário."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier não foi possível ler os dados da meta da comunidade: {0}"
     },
@@ -125329,6 +125745,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "Os cálculos de combustível requerem os valores iniciais do tanque, do mercado e do combustível por salto."
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "As estimativas de combustível exigem combustível conhecido, capacidade de carga e coordenadas de pontos de referência."
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "As previsões de combustível não estão disponíveis ao seguir a rota em sentido inverso."
     },
     {
       "source": "Fuel left",
@@ -127291,6 +127715,10 @@
       "translation": "Importe listas de favoritos JSON ou EliteMining de favoritos compartilhados. As importações mantêm os locais existentes em vez de substituí-los silenciosamente."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Importar pontos de referência"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Dados importados incompletos: inspecione o manifesto e os logs de importação; não modifique ou exclua a fonte legada intocada durante a investigação."
     },
@@ -127397,10 +127825,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "As importações são verificadas por hash e preservam o progresso somente quando a identidade da missão corresponde."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "As importações substituem o rascunho na tela. Nada é escrito até ser salvo."
     },
     {
       "source": "Import…",
@@ -133619,6 +134043,10 @@
       "translation": "Chave de API pessoal Inara"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "Transportador de frota pessoal"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Progresso pessoal não fornecido por Frontier ou periódicos locais"
     },
@@ -136127,6 +136555,10 @@
       "translation": "Falha na atualização. Mostrando o último instantâneo bem-sucedido."
     },
     {
+      "source": "Refresh fuel",
+      "translation": "Atualizar combustível"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "Atualizar pesquisa de ponto de acesso após saltos e varreduras"
     },
@@ -136173,6 +136605,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "Atualize a sessão e inspecione os eventos recentes do diário e o estado analisado do evento esperado."
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "Atualize para carregar os dados de combustível da transportadora selecionada."
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -136281,10 +136717,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "Torre de relíquia {0} rumo definido para {1}°."
-    },
-    {
-      "source": "Reload",
-      "translation": "Recarregar"
     },
     {
       "source": "Reload saved state",
@@ -136427,6 +136859,10 @@
       "translation": "{0} removido dos favoritos."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "{0} removido do rascunho da rota."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Planos de instalação obsoletos {0} removidos."
     },
@@ -136495,12 +136931,16 @@
       "translation": "Reparado o nome do site Raven para {0}."
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "Repita o comando em outro local para rastrear vários depósitos do mesmo material. A distância e a direção são atualizadas automaticamente conforme você se move ou vira."
+      "source": "Repeat and reverse",
+      "translation": "Repita e inverta"
     },
     {
-      "source": "Replace from import",
-      "translation": "Substituir da importação"
+      "source": "Repeat from start",
+      "translation": "Repetir desde o início"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "Repita o comando em outro local para rastrear vários depósitos do mesmo material. A distância e a direção são atualizadas automaticamente conforme você se move ou vira."
     },
     {
       "source": "Replay export failed: {0}",
@@ -136775,6 +137215,10 @@
       "translation": "Reinicie SrvSurvey quando **Reinicialização do aplicativo necessária for exibido. A escolha se aplica tanto às sobreposições ao vivo quanto ao editor de posição."
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "Reinicie no primeiro waypoint sempre que a rota terminar."
+    },
+    {
       "source": "Restart to apply",
       "translation": "Reinicie para aplicar"
     },
@@ -136961,6 +137405,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "Reverb G2 e outros headsets Windows Mixed Reality em instalações Windows compatíveis"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "Inverta a ordem dos waypoints após cada passagem e continue repetindo."
     },
     {
       "source": "Review Boxel statistics",
@@ -137401,6 +137849,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "Progresso da rota salvo em estado de pausa."
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "Rota reiniciada. Próximo sistema: {0}."
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "Rota invertida. Próximo sistema: {0}."
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -140315,6 +140771,14 @@
       "translation": "Logotipo do Esquadrão"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "Porta-aviões"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "Esquadrão Transportador"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "Logotipo do Esquadrão"
     },
@@ -142705,6 +143169,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "O processo adicional SrvSurvey não foi iniciado."
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "O combustível adicional excede o espaço de carga disponível, portanto planeje paradas de reabastecimento ao longo do caminho."
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -147355,6 +147823,10 @@
       "translation": "Seu poder"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "Sua transportadora precisa de aproximadamente {0} t de trítio para a rota restante e está com falta de {1} t. Minere ou compre pelo menos {2} t e selecione Atualizar para recalcular a partir deste ponto de referência."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Seus dados permanecem inalterados. Revise os detalhes e prepare um relatório GitHub ou compartilhe-os em Discord."
     },
@@ -150787,6 +151259,10 @@
       "translation": "manipulador de esquema x/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -151667,6 +152143,10 @@
       "translation": "{0} · OBELISCO ATIVO"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · Depósito: {1} t · Espera: {2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · {1}% restante"
     },
@@ -152063,6 +152543,10 @@
     {
       "source": "(entry)",
       "translation": "(запись)"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "(оценка топлива)"
     },
     {
       "source": "(unavailable)",
@@ -153713,6 +154197,10 @@
       "translation": "Добавление встроенного баннера в будущие скриншоты"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "Необходим дополнительный тритий: {0} t."
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "Добавляет указанный в списке горячих точек товар по азимуту и ​​расстоянию от вашего текущего положения в любом месте внутри сохраненной границы карты, а затем количество полезных ископаемых и плотность этого месторождения. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Маркер того же товара в радиусе 100 м отклоняется как вероятный дубликат. Пример: .mine 342 jadeite 1.87 h/m"
     },
@@ -154871,6 +155359,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Автоматически отслеживайте буровые установки из Rhino HUD"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "Доступно, если первая и последняя путевые точки относятся к одной и той же системе."
     },
     {
       "source": "AvailableSourceTypes",
@@ -156557,6 +157049,10 @@
       "translation": "Вызывает следующее действие, выбранный пункт назначения, активную цель, заметку о маршруте или выделенную строку."
     },
     {
+      "source": "Callsign",
+      "translation": "Позывной"
+    },
+    {
       "source": "Cancel",
       "translation": "Отмена"
     },
@@ -156869,12 +157365,28 @@
       "translation": "Тип груза"
     },
     {
+      "source": "Carrier",
+      "translation": "Перевозчик"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Груз перевозчика недоступен. Недостачи и поездки не могут быть подтверждены."
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "Не удалось обновить топливо-носитель: {0}."
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "Топливо носителя пересчитано с текущей точки маршрута."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Перевозочные операции и грузы"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "У носителя не хватает трития"
     },
     {
       "source": "Carrier type",
@@ -156899,6 +157411,14 @@
     {
       "source": "CarrierLocation",
       "translation": "ПеревозчикМестоположение"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "Статистика перевозчика"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "Тип оператора связи"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -157651,6 +158171,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "Щелкнув соответствующий маркер обелиска на карте, вы выберете эту строку метаданных."
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "Имена систем буфера обмена добавляются к черновику, по одному в строке. Spansh и импорт файлов заменяет его. Используйте «Сохранить как...», чтобы сохранить изменения маршрута."
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -159933,6 +160457,10 @@
       "translation": "Удалить этот маршрут?"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "Удалить путевую точку"
+    },
+    {
       "source": "Delete {0}",
       "translation": "Удалить {0}"
     },
@@ -160459,6 +160987,10 @@
     {
       "source": "Disembark",
       "translation": "Высадиться"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "Увольнять"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -163233,6 +163765,10 @@
       "translation": "Обратный вызов Frontier восстановил работающее приложение."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier данные носителя недоступны для командира журнала."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier данные о целях сообщества не удалось прочитать: {0}"
     },
@@ -163335,6 +163871,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "Для расчёта топлива нужны начальные запасы в баке и на рынке, а также расход на прыжок."
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "Для оценки топлива требуются известные запасы топлива, грузоподъемность и координаты путевой точки."
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "Прогнозы топлива недоступны при движении по маршруту задним ходом."
     },
     {
       "source": "Fuel left",
@@ -165297,6 +165841,10 @@
       "translation": "Импортируйте списки закладок общих закладок JSON или EliteMining. Импорт сохраняет существующие места, а не молча заменяет их."
     },
     {
+      "source": "Import waypoints",
+      "translation": "Импортировать путевые точки"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "Импортированные данные неполные: проверьте манифест импорта и журналы; не изменяйте и не удаляйте нетронутый устаревший источник во время исследования."
     },
@@ -165403,10 +165951,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "Импорт проверяется по хешу и сохраняет прогресс только в том случае, если идентификатор квеста совпадает."
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "Импорт заменяет черновой вариант на экране. Ничего не записывается до тех пор, пока не будет сохранено."
     },
     {
       "source": "Import…",
@@ -171625,6 +172169,10 @@
       "translation": "Персональный ключ API Inara API"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "Личный автоперевозчик"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Личный прогресс не предоставляется Frontier или местными журналами."
     },
@@ -174133,6 +174681,10 @@
       "translation": "Обновить не удалось. Показываю последний успешный снимок."
     },
     {
+      "source": "Refresh fuel",
+      "translation": "Обновить топливо"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "Обновить поиск точек доступа после прыжков и сканирований."
     },
@@ -174179,6 +174731,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "Обновите сеанс, затем проверьте последние события журнала и проанализированное состояние ожидаемого события."
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "Обновите, чтобы загрузить данные о топливе для выбранного перевозчика."
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -174287,10 +174843,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "Направление башни реликвий {0} установлено на {1}°."
-    },
-    {
-      "source": "Reload",
-      "translation": "Перезагрузить"
     },
     {
       "source": "Reload saved state",
@@ -174433,6 +174985,10 @@
       "translation": "{0} удалено из избранного."
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "Удален {0} из проекта маршрута."
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "Удалены устаревшие планы установки {0}."
     },
@@ -174501,12 +175057,16 @@
       "translation": "Исправлено имя сайта Raven для {0}."
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "Повторите команду в другом месте, чтобы отследить несколько месторождений одного и того же материала. Расстояние и направление обновляются автоматически при движении или повороте."
+      "source": "Repeat and reverse",
+      "translation": "Повторить и повернуть вспять"
     },
     {
-      "source": "Replace from import",
-      "translation": "Заменить из импорта"
+      "source": "Repeat from start",
+      "translation": "Повторить с начала"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "Повторите команду в другом месте, чтобы отследить несколько месторождений одного и того же материала. Расстояние и направление обновляются автоматически при движении или повороте."
     },
     {
       "source": "Replay export failed: {0}",
@@ -174781,6 +175341,10 @@
       "translation": "Перезапустите SrvSurvey, когда появится сообщение **Требуется перезагрузка приложения. Выбор применим как к живым наложениям, так и к редактору позиций."
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "Перезапускайте маршрут с первой путевой точки всякий раз, когда маршрут заканчивается."
+    },
+    {
       "source": "Restart to apply",
       "translation": "Перезапустите, чтобы подать заявку"
     },
@@ -174967,6 +175531,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "Reverb G2 и другие гарнитуры Windows Mixed Reality в поддерживаемых установках Windows"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "Меняйте порядок путевых точек после каждого прохода и продолжайте повторять."
     },
     {
       "source": "Review Boxel statistics",
@@ -175407,6 +175975,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "Прогресс маршрута сохранен в состоянии паузы."
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "Маршрут перезапущен. Следующая система: {0}."
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "Маршрут перевернут. Следующая система: {0}."
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -178321,6 +178897,14 @@
       "translation": "Логотип эскадрильи"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "Эскадрилья авианосца"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "ЭскадрильяАвианосец"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "ЭскадрильяЛоготип"
     },
@@ -180711,6 +181295,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "Дополнительный процесс SrvSurvey не запустился."
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "Дополнительное топливо превышает доступное грузовое пространство, поэтому плановое пополнение запасов по пути прекращается."
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -185361,6 +185949,10 @@
       "translation": "Ваша сила"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "Вашему авиаперевозчику требуется примерно {0} т трития на оставшийся маршрут, и ему не хватает {1} т. Добудьте или купите как минимум {2} t, затем выберите «Обновить», чтобы выполнить перерасчет с этой точки."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ваши данные не изменяются. Просмотрите подробности и подготовьте отчет на GitHub или поделитесь им на Discord."
     },
@@ -188793,6 +189385,10 @@
       "translation": "x-схема-обработчик/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -189673,6 +190269,10 @@
       "translation": "{0} · АКТИВНЫЙ ОБЕЛИСК"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · Депо: {1} t · Трюм: {2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · Осталось {1}%"
     },
@@ -190069,6 +190669,10 @@
     {
       "source": "(entry)",
       "translation": "（条目）"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "（预计燃油）"
     },
     {
       "source": "(unavailable)",
@@ -191719,6 +192323,10 @@
       "translation": "将嵌入的横幅添加到未来的屏幕截图中"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "需要额外的氚：{0} t。"
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "添加列出的热点列表商品，该商品位于已保存地图边界内任意位置距您当前位置的方位和距离处，然后是该矿床的矿物量和密度。使用 l、m 或 h 表示低、中或高；完整的单词也有效。 100 m 内的相同商品标记将被视为可能的重复标记而被拒绝。示例：.mine 342 jadeite 1.87 h/m"
     },
@@ -192877,6 +193485,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "从 Rhino HUD 自动跟踪装备"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "当第一个和最后一个航路点是同一系统时可用。"
     },
     {
       "source": "AvailableSourceTypes",
@@ -194563,6 +195175,10 @@
       "translation": "调出下一个操作、选定的目的地、活动目标、路线注释或焦点行。"
     },
     {
+      "source": "Callsign",
+      "translation": "呼号"
+    },
+    {
       "source": "Cancel",
       "translation": "取消"
     },
@@ -194875,12 +195491,28 @@
       "translation": "货物类型"
     },
     {
+      "source": "Carrier",
+      "translation": "载体"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "无法承运货物。短缺和行程无法确认。"
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "无法刷新载体燃油：{0}"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "从当前航路点重新计算航母燃油。"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "承运人运营和货物"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "载体缺乏氚"
     },
     {
       "source": "Carrier type",
@@ -194905,6 +195537,14 @@
     {
       "source": "CarrierLocation",
       "translation": "运营商位置"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "运营商统计"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "运营商类型"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -195657,6 +196297,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "单击地图上匹配的方尖碑标记即可选择此元数据行。"
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "剪贴板系统名称附加到草稿中，每行一个。 Spansh 和文件导入取代了它。使用“另存为...”来保留路线更改。"
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -197939,6 +198583,10 @@
       "translation": "删除这条路线吗？"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "删除航点"
+    },
+    {
       "source": "Delete {0}",
       "translation": "删除 {0}"
     },
@@ -198465,6 +199113,10 @@
     {
       "source": "Disembark",
       "translation": "下船"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "解雇"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -201239,6 +201891,10 @@
       "translation": "Frontier 回调恢复了正在运行的应用程序。"
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier 日志指挥官无法使用载体数据。"
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier 无法读取社区目标数据：{0}"
     },
@@ -201341,6 +201997,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "燃料计算需要油箱和市场的初始存量，以及每次跃迁的燃料消耗量。"
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "燃油估算需要已知的燃油、货运能力和航路点坐标。"
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "反向行驶时无法获得燃油预测。"
     },
     {
       "source": "Fuel left",
@@ -203303,6 +203967,10 @@
       "translation": "导入共享书签 JSON 或 EliteMining 书签列表。导入会保留现有位置，而不是默默地替换它们。"
     },
     {
+      "source": "Import waypoints",
+      "translation": "导入航点"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "导入数据不完整：检查导入清单和日志；在调查时不要修改或删除未触及的旧源。"
     },
@@ -203409,10 +204077,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "仅当任务身份匹配时，导入才会经过哈希验证并保留进度。"
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "导入取代了屏幕上的草稿。保存之前不会写入任何内容。"
     },
     {
       "source": "Import…",
@@ -209631,6 +210295,10 @@
       "translation": "个人 Inara API 密钥"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "私人车队承运人"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "Frontier 或本地期刊未提供个人进展"
     },
@@ -212139,6 +212807,10 @@
       "translation": "刷新失败。显示最后一次成功的快照。"
     },
     {
+      "source": "Refresh fuel",
+      "translation": "刷新燃油"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "跳转扫描后刷新热点搜索"
     },
@@ -212185,6 +212857,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "刷新会话，然后检查最近的日志事件和预期事件的解析状态。"
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "刷新以加载所选承运商的燃油数据。"
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -212293,10 +212969,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "遗迹塔 {0} 航向设置为 {1}°。"
-    },
-    {
-      "source": "Reload",
-      "translation": "重新加载"
     },
     {
       "source": "Reload saved state",
@@ -212439,6 +213111,10 @@
       "translation": "从收藏夹中删除了 {0}。"
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "从路线草案中删除了 {0}。"
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "删除了 {0} 过时的安装计划。"
     },
@@ -212507,12 +213183,16 @@
       "translation": "修复了 {0} 的 Raven 站点名称。"
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "在另一个位置重复该命令以跟踪同一材料的多个沉积。当您移动或转弯时，距离和方向会自动更新。"
+      "source": "Repeat and reverse",
+      "translation": "重复并反转"
     },
     {
-      "source": "Replace from import",
-      "translation": "从导入替换"
+      "source": "Repeat from start",
+      "translation": "从头开始重复"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "在另一个位置重复该命令以跟踪同一材料的多个沉积。当您移动或转弯时，距离和方向会自动更新。"
     },
     {
       "source": "Replay export failed: {0}",
@@ -212787,6 +213467,10 @@
       "translation": "当出现 **App Restart required 时重新启动 SrvSurvey。该选择适用于实时叠加和位置编辑器。"
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "路线结束后，从第一个航点重新开始。"
+    },
+    {
       "source": "Restart to apply",
       "translation": "重启即可应用"
     },
@@ -212973,6 +213657,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "在支持的 Windows 安装上使用 Reverb G2 和其他 Windows Mixed Reality 耳机"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "每次通过后颠倒航路点顺序并继续重复。"
     },
     {
       "source": "Review Boxel statistics",
@@ -213413,6 +214101,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "路线进度以暂停状态保存。"
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "路线重新启动。下一个系统：{0}。"
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "路线颠倒了。下一个系统：{0}。"
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -216327,6 +217023,14 @@
       "translation": "中队标志"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "中队航母"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "中队航母"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "中队标志"
     },
@@ -218717,6 +219421,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "附加 SrvSurvey 进程未启动。"
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "额外的燃料超出了可用的货舱空间，因此计划沿途补给。"
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -223367,6 +224075,10 @@
       "translation": "你的力量"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "您的运营商需要大约 {0} t 的氚来完成剩余路线，并且还缺少 {1} t。开采或购买至少 {2} t，然后选择“刷新”以从此航路点重新计算。"
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "您的数据没有变化。查看详细信息并准备 GitHub 报告，或在 Discord 上分享。"
     },
@@ -226799,6 +227511,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -227679,6 +228395,10 @@
       "translation": "{0} · 活动方尖碑"
     },
     {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "{0} · 仓库：{1} t · 保留：{2} t · {3}{4}"
+    },
+    {
       "source": "{0} · Remaining {1}%",
       "translation": "{0} · 剩余 {1}%"
     },
@@ -228075,6 +228795,10 @@
     {
       "source": "(entry)",
       "translation": "* (ENTRY) >>>!"
+    },
+    {
+      "source": "(fuel estimated)",
+      "translation": "* (FUEL ESTIMATED) >>>!"
     },
     {
       "source": "(unavailable)",
@@ -229725,6 +230449,10 @@
       "translation": "* ADDING EMBEDDED BANNER TO FUTURE SCREENSHOTS >>>!"
     },
     {
+      "source": "Additional tritium needed: {0} t.",
+      "translation": "* ADDITIONAL TRITIUM NEEDED: {0} T. >>>!"
+    },
+    {
       "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
       "translation": "* ADDS A LISTED HOTSPOT LIST COMMODITY AT A BEARING AND DISTANCE FROM YOUR LIVE POSITION ANYWHERE INSIDE THE SAVED MAP BORDER, FOLLOWED BY THAT DEPOSIT'S MINERAL AMOUNT AND DENSITY. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. A SAME-COMMODITY MARKER WITHIN 100 M IS DECLINED AS A LIKELY DUPLICATE. EXAMPLE: .MINE 342 JADEITE 1.87 H/M >>>!"
     },
@@ -230883,6 +231611,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "* AUTOMATICALLY TRACK RIGS FROM THE RHINO HUD >>>!"
+    },
+    {
+      "source": "Available when the first and last waypoints are the same system.",
+      "translation": "* AVAILABLE WHEN THE FIRST AND LAST WAYPOINTS ARE THE SAME SYSTEM. >>>!"
     },
     {
       "source": "AvailableSourceTypes",
@@ -232569,6 +233301,10 @@
       "translation": "* CALLS OUT THE NEXT ACTION, SELECTED DESTINATION, ACTIVE TARGET, ROUTE NOTE, OR FOCUSED ROW. >>>!"
     },
     {
+      "source": "Callsign",
+      "translation": "* CALLSIGN >>>!"
+    },
+    {
       "source": "Cancel",
       "translation": "* CANCEL >>>!"
     },
@@ -232881,12 +233617,28 @@
       "translation": "* CARGOTYPE >>>!"
     },
     {
+      "source": "Carrier",
+      "translation": "* CARRIER >>>!"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "* CARRIER CARGO UNAVAILABLE. SHORTAGES AND TRIPS CANNOT BE CONFIRMED. >>>!"
     },
     {
+      "source": "Carrier fuel could not be refreshed: {0}",
+      "translation": "* CARRIER FUEL COULD NOT BE REFRESHED: {0} >>>!"
+    },
+    {
+      "source": "Carrier fuel recalculated from the current waypoint.",
+      "translation": "* CARRIER FUEL RECALCULATED FROM THE CURRENT WAYPOINT. >>>!"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "* CARRIER OPERATIONS AND CARGO >>>!"
+    },
+    {
+      "source": "Carrier short on tritium",
+      "translation": "* CARRIER SHORT ON TRITIUM >>>!"
     },
     {
       "source": "Carrier type",
@@ -232911,6 +233663,14 @@
     {
       "source": "CarrierLocation",
       "translation": "* CARRIERLOCATION >>>!"
+    },
+    {
+      "source": "CarrierStats",
+      "translation": "* CARRIERSTATS >>>!"
+    },
+    {
+      "source": "CarrierType",
+      "translation": "* CARRIERTYPE >>>!"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -233663,6 +234423,10 @@
     {
       "source": "Clicking a matching obelisk marker on the map selects this metadata row.",
       "translation": "* CLICKING A MATCHING OBELISK MARKER ON THE MAP SELECTS THIS METADATA ROW. >>>!"
+    },
+    {
+      "source": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+      "translation": "* CLIPBOARD SYSTEM NAMES APPEND TO THE DRAFT, ONE PER LINE. SPANSH AND FILE IMPORTS REPLACE IT. USE SAVE AS... TO KEEP ROUTE CHANGES. >>>!"
     },
     {
       "source": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -235945,6 +236709,10 @@
       "translation": "* DELETE THIS ROUTE? >>>!"
     },
     {
+      "source": "Delete waypoint",
+      "translation": "* DELETE WAYPOINT >>>!"
+    },
+    {
       "source": "Delete {0}",
       "translation": "* DELETE {0} >>>!"
     },
@@ -236471,6 +237239,10 @@
     {
       "source": "Disembark",
       "translation": "* DISEMBARK >>>!"
+    },
+    {
+      "source": "Dismiss",
+      "translation": "* DISMISS >>>!"
     },
     {
       "source": "Dismiss selected deliveries",
@@ -239245,6 +240017,10 @@
       "translation": "* FRONTIER CALLBACK RESTORED THE RUNNING APPLICATION. >>>!"
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "* FRONTIER CARRIER DATA IS NOT AVAILABLE FOR THE JOURNAL COMMANDER. >>>!"
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "* FRONTIER COMMUNITY-GOAL DATA COULD NOT BE READ: {0} >>>!"
     },
@@ -239347,6 +240123,14 @@
     {
       "source": "Fuel calculations require starting tank, market, and jump fuel values.",
       "translation": "* FUEL CALCULATIONS REQUIRE STARTING TANK, MARKET, AND JUMP FUEL VALUES. >>>!"
+    },
+    {
+      "source": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+      "translation": "* FUEL ESTIMATES REQUIRE KNOWN FUEL, CARGO CAPACITY, AND WAYPOINT COORDINATES. >>>!"
+    },
+    {
+      "source": "Fuel forecasts are unavailable while following the route in reverse.",
+      "translation": "* FUEL FORECASTS ARE UNAVAILABLE WHILE FOLLOWING THE ROUTE IN REVERSE. >>>!"
     },
     {
       "source": "Fuel left",
@@ -241309,6 +242093,10 @@
       "translation": "* IMPORT SHARED BOOKMARK JSON OR ELITEMINING BOOKMARK LISTS. IMPORTS RETAIN EXISTING LOCATIONS RATHER THAN SILENTLY REPLACING THEM. >>>!"
     },
     {
+      "source": "Import waypoints",
+      "translation": "* IMPORT WAYPOINTS >>>!"
+    },
+    {
       "source": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
       "translation": "* IMPORTED DATA INCOMPLETE: INSPECT THE IMPORT MANIFEST AND LOGS; DO NOT MODIFY OR DELETE THE UNTOUCHED LEGACY SOURCE WHILE INVESTIGATING. >>>!"
     },
@@ -241415,10 +242203,6 @@
     {
       "source": "Imports are hash-verified and preserve progress only when the quest identity matches.",
       "translation": "* IMPORTS ARE HASH-VERIFIED AND PRESERVE PROGRESS ONLY WHEN THE QUEST IDENTITY MATCHES. >>>!"
-    },
-    {
-      "source": "Imports replace the on-screen draft. Nothing is written until Saved.",
-      "translation": "* IMPORTS REPLACE THE ON-SCREEN DRAFT. NOTHING IS WRITTEN UNTIL SAVED. >>>!"
     },
     {
       "source": "Import…",
@@ -247637,6 +248421,10 @@
       "translation": "* PERSONAL INARA API KEY >>>!"
     },
     {
+      "source": "Personal fleet carrier",
+      "translation": "* PERSONAL FLEET CARRIER >>>!"
+    },
+    {
       "source": "Personal progress not supplied by Frontier or local journals",
       "translation": "* PERSONAL PROGRESS NOT SUPPLIED BY FRONTIER OR LOCAL JOURNALS >>>!"
     },
@@ -250145,6 +250933,10 @@
       "translation": "* REFRESH FAILED. SHOWING THE LAST SUCCESSFUL SNAPSHOT. >>>!"
     },
     {
+      "source": "Refresh fuel",
+      "translation": "* REFRESH FUEL >>>!"
+    },
+    {
       "source": "Refresh hotspot search after jumps and scans",
       "translation": "* REFRESH HOTSPOT SEARCH AFTER JUMPS AND SCANS >>>!"
     },
@@ -250191,6 +250983,10 @@
     {
       "source": "Refresh the session, then inspect recent journal events and parsed state for the expected event.",
       "translation": "* REFRESH THE SESSION, THEN INSPECT RECENT JOURNAL EVENTS AND PARSED STATE FOR THE EXPECTED EVENT. >>>!"
+    },
+    {
+      "source": "Refresh to load fuel data for the selected carrier.",
+      "translation": "* REFRESH TO LOAD FUEL DATA FOR THE SELECTED CARRIER. >>>!"
     },
     {
       "source": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -250299,10 +251095,6 @@
     {
       "source": "Relic tower {0} heading set to {1}°.",
       "translation": "* RELIC TOWER {0} HEADING SET TO {1}°. >>>!"
-    },
-    {
-      "source": "Reload",
-      "translation": "* RELOAD >>>!"
     },
     {
       "source": "Reload saved state",
@@ -250445,6 +251237,10 @@
       "translation": "* REMOVED {0} FROM FAVORITES. >>>!"
     },
     {
+      "source": "Removed {0} from the route draft.",
+      "translation": "* REMOVED {0} FROM THE ROUTE DRAFT. >>>!"
+    },
+    {
       "source": "Removed {0} stale installation plans.",
       "translation": "* REMOVED {0} STALE INSTALLATION PLANS. >>>!"
     },
@@ -250513,12 +251309,16 @@
       "translation": "* REPAIRED THE RAVEN SITE NAME FOR {0}. >>>!"
     },
     {
-      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
-      "translation": "* REPEAT THE COMMAND AT ANOTHER LOCATION TO TRACK MULTIPLE DEPOSITS OF THE SAME MATERIAL. DISTANCE AND DIRECTION UPDATE AUTOMATICALLY AS YOU MOVE OR TURN. >>>!"
+      "source": "Repeat and reverse",
+      "translation": "* REPEAT AND REVERSE >>>!"
     },
     {
-      "source": "Replace from import",
-      "translation": "* REPLACE FROM IMPORT >>>!"
+      "source": "Repeat from start",
+      "translation": "* REPEAT FROM START >>>!"
+    },
+    {
+      "source": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
+      "translation": "* REPEAT THE COMMAND AT ANOTHER LOCATION TO TRACK MULTIPLE DEPOSITS OF THE SAME MATERIAL. DISTANCE AND DIRECTION UPDATE AUTOMATICALLY AS YOU MOVE OR TURN. >>>!"
     },
     {
       "source": "Replay export failed: {0}",
@@ -250793,6 +251593,10 @@
       "translation": "* RESTART SRVSURVEY WHEN **APP RESTART REQUIRED APPEARS. THE CHOICE APPLIES TO BOTH LIVE OVERLAYS AND THE POSITION EDITOR. >>>!"
     },
     {
+      "source": "Restart at the first waypoint whenever the route finishes.",
+      "translation": "* RESTART AT THE FIRST WAYPOINT WHENEVER THE ROUTE FINISHES. >>>!"
+    },
+    {
       "source": "Restart to apply",
       "translation": "* RESTART TO APPLY >>>!"
     },
@@ -250979,6 +251783,10 @@
     {
       "source": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
       "translation": "* REVERB G2 AND OTHER WINDOWS MIXED REALITY HEADSETS ON SUPPORTED WINDOWS INSTALLATIONS >>>!"
+    },
+    {
+      "source": "Reverse the waypoint order after each pass and keep repeating.",
+      "translation": "* REVERSE THE WAYPOINT ORDER AFTER EACH PASS AND KEEP REPEATING. >>>!"
     },
     {
       "source": "Review Boxel statistics",
@@ -251419,6 +252227,14 @@
     {
       "source": "Route progress saved in a paused state.",
       "translation": "* ROUTE PROGRESS SAVED IN A PAUSED STATE. >>>!"
+    },
+    {
+      "source": "Route restarted. Next system: {0}.",
+      "translation": "* ROUTE RESTARTED. NEXT SYSTEM: {0}. >>>!"
+    },
+    {
+      "source": "Route reversed. Next system: {0}.",
+      "translation": "* ROUTE REVERSED. NEXT SYSTEM: {0}. >>>!"
     },
     {
       "source": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -254333,6 +255149,14 @@
       "translation": "* SQUADRON LOGO >>>!"
     },
     {
+      "source": "Squadron carrier",
+      "translation": "* SQUADRON CARRIER >>>!"
+    },
+    {
+      "source": "SquadronCarrier",
+      "translation": "* SQUADRONCARRIER >>>!"
+    },
+    {
       "source": "SquadronLogo",
       "translation": "* SQUADRONLOGO >>>!"
     },
@@ -256723,6 +257547,10 @@
     {
       "source": "The additional SrvSurvey process did not start.",
       "translation": "* THE ADDITIONAL SRVSURVEY PROCESS DID NOT START. >>>!"
+    },
+    {
+      "source": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+      "translation": "* THE ADDITIONAL FUEL EXCEEDS AVAILABLE CARGO SPACE, SO PLAN RESUPPLY STOPS ALONG THE WAY. >>>!"
     },
     {
       "source": "The always-on-top preference was not saved: {0}",
@@ -261373,6 +262201,10 @@
       "translation": "* YOUR POWER >>>!"
     },
     {
+      "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+      "translation": "* YOUR CARRIER NEEDS APPROXIMATELY {0} T OF TRITIUM FOR THE REMAINING ROUTE AND IS SHORT BY {1} T. MINE OR BUY AT LEAST {2} T, THEN SELECT REFRESH TO RECALCULATE FROM THIS WAYPOINT. >>>!"
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "* YOUR DATA IS UNCHANGED. REVIEW THE DETAILS AND PREPARE A GITHUB REPORT, OR SHARE THEM ON DISCORD. >>>!"
     },
@@ -264805,6 +265637,10 @@
       "translation": "* X-SCHEME-HANDLER/{0} >>>!"
     },
     {
+      "source": "x11:{0}",
+      "translation": "* X11:{0} >>>!"
+    },
+    {
       "source": "xdg-mime",
       "translation": "* XDG-MIME >>>!"
     },
@@ -265683,6 +266519,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "* {0} · ACTIVE OBELISK >>>!"
+    },
+    {
+      "source": "{0} · Depot: {1} t · Hold: {2} t · {3}{4}",
+      "translation": "* {0} · DEPOT: {1} T · HOLD: {2} T · {3}{4} >>>!"
     },
     {
       "source": "{0} · Remaining {1}%",

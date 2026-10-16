@@ -119,7 +119,8 @@ public sealed record FrontierCarrierSnapshot(
     IReadOnlyList<FrontierReputationSnapshot>? Reputation = null,
     FrontierMarketSnapshot? Market = null,
     FrontierShipyardSnapshot? Shipyard = null,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null,
+    SrvSurvey.Core.Routes.FleetCarrierFuelSnapshot? FuelData = null
 );
 
 public sealed record FrontierCarrierEndpointSnapshot(

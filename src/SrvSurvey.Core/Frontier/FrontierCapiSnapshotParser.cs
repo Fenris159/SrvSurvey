@@ -618,7 +618,8 @@ public static partial class FrontierCapiSnapshotParser
         FrontierReputationSnapshot[] reputation = ParseReputation(GetProperty(root, JsonReputation));
         List<FrontierDataPointSnapshot> dataPoints = Flatten(root, dataPathPrefix);
         JsonElement? name = GetObject(root, "name");
-        if (string.IsNullOrWhiteSpace(GetString(name, "callsign")))
+        string callsign = GetString(name, "callsign");
+        if (string.IsNullOrWhiteSpace(callsign))
         {
             return new FrontierCarrierEndpointSnapshot(null, reputation, dataPoints);
         }
@@ -696,7 +697,7 @@ public static partial class FrontierCapiSnapshotParser
             : [];
 
         var carrier = new FrontierCarrierSnapshot(
-            GetString(name, "callsign"),
+            callsign,
             FirstNonEmpty(
                 DecodeHex(GetString(name, "filteredVanityName")),
                 DecodeHex(GetString(name, "vanityName")),
@@ -742,7 +743,13 @@ public static partial class FrontierCapiSnapshotParser
                 ? ParseMarket(carrierMarket, fetchedAt, dataPathPrefix + ".market")
                 : null,
             ParseShipyard(root, fetchedAt, dataPathPrefix + ".shipyard"),
-            dataPoints
+            dataPoints,
+            FrontierCarrierFuelReader.Read(
+                root,
+                callsign,
+                dataPathPrefix.StartsWith("squadron.", StringComparison.Ordinal),
+                fetchedAt
+            )
         );
         return new FrontierCarrierEndpointSnapshot(carrier, reputation, dataPoints);
     }

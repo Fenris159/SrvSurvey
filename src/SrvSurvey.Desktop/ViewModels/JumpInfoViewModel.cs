@@ -881,6 +881,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         if (
             followedRoute is not { IsActive: true, NextHop: { } nextHop, Hops.Count: > 0 }
+            || (followedRoute.Hops.Count > 1 && followedRoute.RepeatMode != FollowRouteRepeatMode.None)
             || followedRoute.LastReachedIndex + 2 != followedRoute.Hops.Count
         )
         {

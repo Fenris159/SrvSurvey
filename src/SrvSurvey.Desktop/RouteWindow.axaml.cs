@@ -21,6 +21,7 @@ public sealed partial class RouteWindow : Window
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.PrepareCarrierWorkspace();
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)
@@ -33,6 +34,7 @@ public sealed partial class RouteWindow : Window
     /// </summary>
     private void SpanshSearch_Click(object? sender, RoutedEventArgs eventArgs)
     {
+        viewModel.PrepareCarrierSearch();
         if (searchWindow is not null)
         {
             searchWindow.Activate();
@@ -75,6 +77,14 @@ public sealed partial class RouteWindow : Window
         }
     }
 
+    private void RemoveHop_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is Button { DataContext: RouteHopItemViewModel hop })
+        {
+            viewModel.RemoveHop(hop);
+        }
+    }
+
     private async void BioTargetCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (sender is CheckBox { DataContext: RouteBioTargetItemViewModel target })
@@ -90,7 +100,7 @@ public sealed partial class RouteWindow : Window
 
     private async void ImportNames_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        await viewModel.ImportNamesTextAsync(await ReadClipboardAsync());
+        await viewModel.ImportNamesTextAsync(await ReadClipboardAsync(), appendToRoute: true);
     }
 
     private async void ImportFile_Click(object? sender, RoutedEventArgs eventArgs)

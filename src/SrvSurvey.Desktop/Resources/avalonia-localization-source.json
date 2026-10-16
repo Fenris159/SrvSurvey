@@ -80,6 +80,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "(fuel estimated)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
     "Text": "(unavailable)",
     "IsFormat": false,
     "SourceKinds": [
@@ -3378,6 +3386,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Additional tritium needed: {0} t.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit\u0027s mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
     "IsFormat": false,
     "SourceKinds": [
@@ -5698,6 +5714,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Available when the first and last waypoints are the same system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "AvailableSourceTypes",
@@ -9083,6 +9107,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Callsign",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
     "Text": "Cancel",
     "IsFormat": false,
     "SourceKinds": [
@@ -9711,6 +9743,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9719,12 +9759,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "Carrier fuel could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Carrier fuel recalculated from the current waypoint.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Carrier operations and cargo",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Carrier short on tritium",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Carrier type",
@@ -9773,6 +9837,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "CarrierStats",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
+    "Text": "CarrierType",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "Cash, fleet and carrier bank",
@@ -11279,6 +11359,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Clipboard system names append to the draft, one per line. Spansh and file imports replace it. Use Save As... to keep route changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software.",
@@ -15855,6 +15943,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Delete waypoint",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Delete {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -16912,6 +17008,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
+    "Text": "Dismiss",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Dismiss selected deliveries",
@@ -22476,6 +22580,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
+    "Text": "Frontier carrier data is not available for the journal commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Frontier community-goal data could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -22677,6 +22789,22 @@
   },
   {
     "Text": "Fuel calculations require starting tank, market, and jump fuel values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Fuel estimates require known fuel, cargo capacity, and waypoint coordinates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Fuel forecasts are unavailable while following the route in reverse.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -26623,6 +26751,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Import waypoints",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26837,14 +26973,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Imports replace the on-screen draft. Nothing is written until Saved.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Import\u2026",
@@ -39320,6 +39448,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Personal fleet carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
     "Text": "Personal progress not supplied by Frontier or local journals",
     "IsFormat": false,
     "SourceKinds": [
@@ -44346,6 +44482,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "Refresh fuel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Refresh hotspot search after jumps and scans",
     "IsFormat": false,
     "SourceKinds": [
@@ -44440,6 +44584,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Refresh to load fuel data for the selected carrier.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
@@ -44657,14 +44809,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "Reload",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Reload saved state",
@@ -44947,6 +45091,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
+    "Text": "Removed {0} from the route draft.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Removed {0} stale installation plans.",
     "IsFormat": true,
     "SourceKinds": [
@@ -45083,20 +45235,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Repeat and reverse",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Repeat from start",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Repeat the command at another location to track multiple deposits of the same material. Distance and direction update automatically as you move or turn.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Replace from import",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Replay export failed: {0}",
@@ -45643,6 +45803,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Restart at the first waypoint whenever the route finishes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Restart to apply",
     "IsFormat": false,
     "SourceKinds": [
@@ -46017,6 +46185,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Reverse the waypoint order after each pass and keep repeating.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Review Boxel statistics",
@@ -46898,6 +47074,22 @@
   {
     "Text": "Route progress saved in a paused state.",
     "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Route restarted. Next system: {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Route reversed. Next system: {0}.",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -52747,6 +52939,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Squadron carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
+    "Text": "SquadronCarrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
     "Text": "SquadronLogo",
     "IsFormat": false,
     "SourceKinds": [
@@ -57541,6 +57749,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationCommanderInstanceLauncher.cs"
+  },
+  {
+    "Text": "The additional fuel exceeds available cargo space, so plan resupply stops along the way.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "The always-on-top preference was not saved: {0}",
@@ -66853,6 +67069,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
+    "Text": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
     "IsFormat": false,
     "SourceKinds": [
@@ -73718,6 +73942,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "x11:{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/PortalWindowParent.cs"
+  },
+  {
     "Text": "xdg-mime",
     "IsFormat": false,
     "SourceKinds": [
@@ -75476,6 +75708,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 Depot: {1} t \u00B7 Hold: {2} t \u00B7 {3}{4}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "{0} \u00B7 Remaining {1}%",

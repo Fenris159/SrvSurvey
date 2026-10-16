@@ -376,6 +376,11 @@ public sealed class OverlayWindowRegistry
         {
             if (registrations.TryGetValue(window, out Registration? registration))
             {
+                // Hide clears Owner, including recursively hidden children. Snapshot every visible owner before hiding any.
+                if (window.IsVisible)
+                {
+                    registration.PresentationOwner = window.Owner as Window;
+                }
                 entries.Add((window, registration));
             }
         }
@@ -416,6 +421,14 @@ public sealed class OverlayWindowRegistry
 
     private static void ApplyVisibility(Window window, Registration registration, bool visible)
     {
+        if (registration.PresentationOwner is { PlatformImpl: null })
+        {
+            // Hidden children are detached by Avalonia, so an owner closing must still release its saved children.
+            window.Close();
+            registration.Presented = false;
+            return;
+        }
+
         if (registration.PresentationVisual is not null)
         {
             registration.PresentationVisible = visible;
@@ -433,7 +446,14 @@ public sealed class OverlayWindowRegistry
         {
             if (visible)
             {
-                window.Show();
+                if (registration.PresentationOwner is { } owner)
+                {
+                    window.Show(owner);
+                }
+                else
+                {
+                    window.Show();
+                }
             }
             else
             {
@@ -515,6 +535,8 @@ public sealed class OverlayWindowRegistry
         public EventHandler ClosedHandler { get; } = closedHandler;
 
         public Visual? PresentationVisual { get; set; }
+
+        public Window? PresentationOwner { get; set; }
 
         public bool PresentationVisible { get; set; }
 
