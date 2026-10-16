@@ -61,6 +61,8 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
 
     public IReadOnlyDictionary<string, string> TriggerDescriptions => Volatile.Read(ref triggerDescriptions);
 
+    internal Func<CancellationToken, Task<string>> GetParentWindowAsync { get; init; } = PortalWindowParent.GetAsync;
+
     public event Action<string>? Activated;
     public event Action<IReadOnlySet<string>>? BindingsChanged;
 
@@ -171,12 +173,13 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
                     )
                 )
                 .ToArray();
+            string parentWindow = await GetParentWindowAsync(token).ConfigureAwait(false);
             IDictionary<string, object> bound = await RequestAsync(
                     handle =>
                         portal.BindShortcutsAsync(
                             sessionPath!.Value,
                             shortcuts,
-                            string.Empty,
+                            parentWindow,
                             new Dictionary<string, object> { ["handle_token"] = handle }
                         ),
                     token
@@ -287,8 +290,9 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
         }
         try
         {
+            string parentWindow = await GetParentWindowAsync(token).ConfigureAwait(false);
             await portal
-                .ConfigureShortcutsAsync(path, string.Empty, new Dictionary<string, object>())
+                .ConfigureShortcutsAsync(path, parentWindow, new Dictionary<string, object>())
                 .WaitAsync(token)
                 .ConfigureAwait(false);
             return true;

@@ -221,7 +221,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             miningCalibration = new MiningCalibrationWindow(detection, hostBounds, hostScaling);
             detection.PropertyChanged += OnMiningDetectionChanged;
-            miningCalibration.Show();
+            miningCalibration.Show(editor);
             _ = platform.PrepareInteractiveWindow(miningCalibration);
         }
         foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.ForCategory(category))

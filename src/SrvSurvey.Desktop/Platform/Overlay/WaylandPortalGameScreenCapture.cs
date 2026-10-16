@@ -329,10 +329,11 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
                 token => screenCast.SelectSourcesAsync(sessionPath, AddRequestToken(selectOptions, token)),
                 shutdown.Token
             );
+            string parentWindow = await PortalWindowParent.GetAsync(shutdown.Token).ConfigureAwait(false);
             startResponse = await InvokeRequestAsync(
                 portalConnection,
                 senderName,
-                token => screenCast.StartAsync(sessionPath, string.Empty, RequestOptions(token)),
+                token => screenCast.StartAsync(sessionPath, parentWindow, RequestOptions(token)),
                 shutdown.Token
             );
             SaveRestoreToken(startResponse.Results);

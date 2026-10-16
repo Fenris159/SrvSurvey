@@ -36877,6 +36877,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -74993,6 +74997,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "controlador-esquema-x/{0}"
+    },
+    {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
     },
     {
       "source": "xdg-mime",
@@ -113113,6 +113121,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -151229,6 +151241,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "manipulador de esquema x/{0}"
+    },
+    {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
     },
     {
       "source": "xdg-mime",
@@ -189349,6 +189365,10 @@
       "translation": "x-схема-обработчик/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -227467,6 +227487,10 @@
       "translation": "x-scheme-handler/{0}"
     },
     {
+      "source": "x11:{0}",
+      "translation": "x11:{0}"
+    },
+    {
       "source": "xdg-mime",
       "translation": "xdg-mime"
     },
@@ -265583,6 +265607,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "* X-SCHEME-HANDLER/{0} >>>!"
+    },
+    {
+      "source": "x11:{0}",
+      "translation": "* X11:{0} >>>!"
     },
     {
       "source": "xdg-mime",

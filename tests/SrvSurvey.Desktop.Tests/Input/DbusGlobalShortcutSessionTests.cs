@@ -7,6 +7,48 @@ namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class DbusGlobalShortcutSessionTests
 {
+    /// <summary>Both portal dialogs resolve the current owner when they open instead of caching a previous window.</summary>
+    [Fact]
+    public async Task ShortcutDialogsUseTheCurrentParentWindow()
+    {
+        var server = new FakePortal { Version = 2 };
+        string parent = "x11:1234";
+        int reads = 0;
+        await using DbusGlobalShortcutSession session = server.CreateClient(getParentWindow: token =>
+        {
+            token.ThrowIfCancellationRequested();
+            reads++;
+            return Task.FromResult(parent);
+        });
+
+        await session.BindAsync(Bindings(), false, CancellationToken.None);
+        Assert.Equal(parent, server.BoundParent);
+        parent = "x11:5678";
+        Assert.True(await session.TryConfigureAsync(CancellationToken.None));
+        Assert.Equal(parent, server.ConfiguredParent);
+        Assert.Equal(2, reads);
+    }
+
+    /// <summary>Canceled parent resolution must not submit a new shortcut approval request.</summary>
+    [Fact]
+    public async Task CanceledParentLookupDoesNotOpenAShortcutDialog()
+    {
+        var server = new FakePortal();
+        using var cancellation = new CancellationTokenSource();
+        await using DbusGlobalShortcutSession session = server.CreateClient(getParentWindow: async token =>
+        {
+            Assert.Equal(cancellation.Token, token);
+            await cancellation.CancelAsync();
+            token.ThrowIfCancellationRequested();
+            return string.Empty;
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            session.BindAsync(Bindings(), false, cancellation.Token)
+        );
+        Assert.Equal(0, server.BindCalls);
+    }
+
     /// <summary>Uses application settings only on GNOME, never attempting a host launch during capability discovery.</summary>
     [Theory]
     [InlineData("ubuntu:GNOME", true)]
@@ -505,12 +547,17 @@ public sealed class DbusGlobalShortcutSessionTests
         public string? Failure { get; init; }
         public string ExpectedTrigger { get; init; } = "ALT+o";
         public int BindCalls { get; private set; }
+        public string? BoundParent { get; private set; }
+        public string? ConfiguredParent { get; private set; }
         public int SessionCloses { get; private set; }
         public int RequestCloses => requests.Values.Sum(request => request.CloseCalls);
         public bool ConnectionDisposed { get; private set; }
 
         /// <summary>Builds the production session with protocol-compatible test proxies.</summary>
-        public DbusGlobalShortcutSession CreateClient(PortalShortcutRegistrationStore? registrations = null) =>
+        public DbusGlobalShortcutSession CreateClient(
+            PortalShortcutRegistrationStore? registrations = null,
+            Func<CancellationToken, Task<string>>? getParentWindow = null
+        ) =>
             new(
                 this,
                 ":1.2",
@@ -526,7 +573,10 @@ public sealed class DbusGlobalShortcutSessionTests
                 },
                 () => ConnectionDisposed = true,
                 registrations
-            );
+            )
+            {
+                GetParentWindowAsync = getParentWindow ?? PortalWindowParent.GetAsync,
+            };
 
         /// <summary>Supplies the interface version.</summary>
         public Task<T> GetAsync<T>(string property) =>
@@ -552,6 +602,7 @@ public sealed class DbusGlobalShortcutSessionTests
         )
         {
             BindCalls++;
+            BoundParent = parentWindow;
             Assert.Equal(ExpectedTrigger, Assert.Single(shortcuts).Properties["preferred_trigger"]);
             return Respond(options, Results(true));
         }
@@ -565,7 +616,7 @@ public sealed class DbusGlobalShortcutSessionTests
         {
             ConfigureCalls++;
             Assert.Equal(SessionPath, session);
-            Assert.Empty(parentWindow);
+            ConfiguredParent = parentWindow;
             Assert.Empty(options);
             return ConfigurationFailure is null
                 ? Task.CompletedTask
