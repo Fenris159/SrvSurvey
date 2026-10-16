@@ -367,9 +367,27 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         WaylandCaptureSourceSelection.ReselectionRequested += OnReselectionRequested;
     }
 
-    public bool IsAvailable => IsAllowed && GetOrCreateEnabledCapture().IsAvailable;
+    /// <summary>Reads capability without starting a session or waiting for previous-session cleanup.</summary>
+    public bool IsAvailable =>
+        IsAllowed && !Volatile.Read(ref disposed) && Volatile.Read(ref inner)?.IsAvailable != false;
 
-    public string? UnavailableReason => IsAllowed ? GetOrCreateEnabledCapture().UnavailableReason : GetBlockedReason();
+    /// <summary>Describes capability without retrying portal cleanup on the UI thread.</summary>
+    public string? UnavailableReason =>
+        IsAllowed ? GetLifecycleUnavailableReason() ?? Volatile.Read(ref inner)?.UnavailableReason : GetBlockedReason();
+
+    /// <summary>Reports lifecycle state while leaving potentially blocking cleanup to capture callers.</summary>
+    private string? GetLifecycleUnavailableReason()
+    {
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return "The Wayland screen capture session is closed.";
+            }
+
+            return pendingCleanup is null ? null : "The previous Wayland capture session is still closing.";
+        }
+    }
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => GetOrCreateEnabledCapture().Capture(bounds);
 
@@ -569,35 +587,25 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
         this.waylandPortalUnavailableReason = waylandPortalUnavailableReason;
     }
 
-    public bool IsAvailable
-    {
-        get
-        {
-            lock (gate)
-            {
-                return primary?.IsAvailable == true || (PortalIsAllowed && fallback?.IsAvailable == true);
-            }
-        }
-    }
+    /// <summary>Reads capability without waiting for a capture that may need UI approval.</summary>
+    public bool IsAvailable =>
+        Volatile.Read(ref primary)?.IsAvailable == true
+        || (PortalIsAllowed && Volatile.Read(ref fallback)?.IsAvailable == true);
 
+    /// <summary>Reads capability details without taking the pending frame's lock.</summary>
     public string? UnavailableReason
     {
         get
         {
-            lock (gate)
+            IGameScreenCapture? currentPrimary = Volatile.Read(ref primary);
+            if (currentPrimary?.IsAvailable == true)
             {
-                if (primary?.IsAvailable == true)
-                {
-                    return primary.UnavailableReason;
-                }
-
-                if (PortalIsAllowed)
-                {
-                    return fallback?.UnavailableReason ?? primary?.UnavailableReason;
-                }
-
-                return GetWaylandPortalUnavailableReason();
+                return currentPrimary.UnavailableReason;
             }
+
+            return PortalIsAllowed
+                ? Volatile.Read(ref fallback)?.UnavailableReason ?? currentPrimary?.UnavailableReason
+                : GetWaylandPortalUnavailableReason();
         }
     }
 
@@ -694,27 +702,11 @@ internal sealed class BackoffGameScreenCapture : IGameScreenCapture
         this.capturePurpose = capturePurpose;
     }
 
-    public bool IsAvailable
-    {
-        get
-        {
-            lock (gate)
-            {
-                return inner?.IsAvailable == true;
-            }
-        }
-    }
+    /// <summary>Reads capability without waiting for a capture that may need UI approval.</summary>
+    public bool IsAvailable => Volatile.Read(ref inner)?.IsAvailable == true;
 
-    public string? UnavailableReason
-    {
-        get
-        {
-            lock (gate)
-            {
-                return inner?.UnavailableReason;
-            }
-        }
-    }
+    /// <summary>Reads capability details without taking the pending frame's lock.</summary>
+    public string? UnavailableReason => Volatile.Read(ref inner)?.UnavailableReason;
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => CaptureCore(capture => capture.Capture(bounds));
 

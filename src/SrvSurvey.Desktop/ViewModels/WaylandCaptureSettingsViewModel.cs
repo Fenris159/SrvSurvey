@@ -150,7 +150,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         using IDisposable manualSelection = WaylandCaptureSourceSelection.BeginManualSelection();
         try
         {
-            WaylandCaptureSourceSelection.RequestReselection(dataDirectory);
+            await Task.Run(() => WaylandCaptureSourceSelection.RequestReselection(dataDirectory));
             StatusMessage = "Opening the desktop's screen-share picker…";
             await openSourcePicker();
             StatusMessage = WaylandCaptureSourceSelection.ReadRestoreToken(dataDirectory) is null
@@ -171,15 +171,16 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
     }
 
     /// <summary>Starts source selection through the Linux desktop portal.</summary>
-    private Task OpenSourcePickerAsync()
-    {
-        if (!OperatingSystem.IsLinux())
+    private Task OpenSourcePickerAsync() =>
+        Task.Run(() =>
         {
-            throw new PlatformNotSupportedException();
-        }
+            if (!OperatingSystem.IsLinux())
+            {
+                throw new PlatformNotSupportedException();
+            }
 
-        return WaylandPortalGameScreenCapture.SelectSourceAsync(dataDirectory, log);
-    }
+            return WaylandPortalGameScreenCapture.SelectSourceAsync(dataDirectory, log);
+        });
 
     private string DescribeStatus()
     {

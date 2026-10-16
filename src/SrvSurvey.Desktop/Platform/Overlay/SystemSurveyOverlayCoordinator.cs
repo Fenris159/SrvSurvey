@@ -328,12 +328,6 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             return;
         }
 
-        if (!gameScreenCapture.IsAvailable)
-        {
-            ApplyFssCaptureCapabilityStatus();
-            return;
-        }
-
         if (!await fssCaptureLock.WaitAsync(0, CancellationToken.None).ConfigureAwait(true))
         {
             return;
@@ -341,6 +335,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
         try
         {
+            if (!gameScreenCapture.IsAvailable)
+            {
+                ApplyFssCaptureCapabilityStatus();
+                return;
+            }
+
             await CaptureAndApplyFssTuningAsync(request!).ConfigureAwait(true);
         }
         catch (OperationCanceledException) when (disposalCancellation.IsCancellationRequested)

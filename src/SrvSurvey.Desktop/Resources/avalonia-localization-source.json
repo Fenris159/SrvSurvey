@@ -57404,7 +57404,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ScreenCastPortalRequest.cs"
   },
   {
     "Text": "The Wayland desktop does not offer window or monitor sharing.",
@@ -57444,7 +57444,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
     "Text": "The Windows overlay input region could not be applied.",
@@ -58156,7 +58156,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ScreenCastPortalRequest.cs"
   },
   {
     "Text": "The desktop runtime already has a main window.",
@@ -65977,7 +65977,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ScreenCastPortalRequest.cs"
   },
   {
     "Text": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",

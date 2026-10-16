@@ -156,11 +156,20 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
 
     /// <summary>Verifies the Settings command starts the source-reselection workflow.</summary>
     [Fact]
-    public void ChooseAgainCommandRunsTheReselectionWorkflow()
+    public async Task ChooseAgainCommandRunsTheReselectionWorkflow()
     {
         WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        viewModel.ChooseCaptureSourceAgainCommand.CanExecuteChanged += (_, _) =>
+        {
+            if (viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null))
+            {
+                completed.TrySetResult();
+            }
+        };
 
         viewModel.ChooseCaptureSourceAgainCommand.Execute(null);
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.True(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
     }
