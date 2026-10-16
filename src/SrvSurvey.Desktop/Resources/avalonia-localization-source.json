@@ -73718,6 +73718,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "x11:{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/PortalWindowParent.cs"
+  },
+  {
     "Text": "xdg-mime",
     "IsFormat": false,
     "SourceKinds": [

@@ -376,6 +376,11 @@ public sealed class OverlayWindowRegistry
         {
             if (registrations.TryGetValue(window, out Registration? registration))
             {
+                // Hide clears Owner, including recursively hidden children. Snapshot every visible owner before hiding any.
+                if (window.IsVisible)
+                {
+                    registration.PresentationOwner = window.Owner as Window;
+                }
                 entries.Add((window, registration));
             }
         }
@@ -433,7 +438,14 @@ public sealed class OverlayWindowRegistry
         {
             if (visible)
             {
-                window.Show();
+                if (registration.PresentationOwner is { } owner)
+                {
+                    window.Show(owner);
+                }
+                else
+                {
+                    window.Show();
+                }
             }
             else
             {
@@ -515,6 +527,8 @@ public sealed class OverlayWindowRegistry
         public EventHandler ClosedHandler { get; } = closedHandler;
 
         public Visual? PresentationVisual { get; set; }
+
+        public Window? PresentationOwner { get; set; }
 
         public bool PresentationVisible { get; set; }
 

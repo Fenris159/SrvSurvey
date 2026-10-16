@@ -1394,6 +1394,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
         Assert.True(vm.Begin());
         MiningCalibrationWindow calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
+        Assert.Same(host.EditorToolbar, calibration.Owner);
+        Assert.Same(calibration, calibration.ToolsWindow.Owner);
         PixelRect expected = detection.Settings.GetBounds(viewport);
         Assert.Equal(expected.Position, calibration.Position);
         Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));

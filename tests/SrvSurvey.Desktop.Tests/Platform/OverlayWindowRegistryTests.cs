@@ -7,6 +7,51 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayWindowRegistryTests
 {
+    /// <summary>Auxiliary map controls retain their owner after suppression regardless of registration order.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OverlaySuppressionPreservesChildOwnership(bool childRegisteredFirst)
+    {
+        var registry = new OverlayWindowRegistry();
+        var parent = new Window();
+        var child = new Window();
+        try
+        {
+            if (childRegisteredFirst)
+            {
+                registry.Register(child, "PlotMineMap", participatesInPlacement: false);
+                registry.Register(parent, "PlotMineMap");
+            }
+            else
+            {
+                registry.Register(parent, "PlotMineMap");
+                registry.Register(child, "PlotMineMap", participatesInPlacement: false);
+            }
+            parent.Show();
+            child.Show(parent);
+
+            for (int cycle = 0; cycle < 3; cycle++)
+            {
+                registry.SetGlobalSuppression(manualSuppressed: true, suitSuppressed: false, sessionSuppressed: false);
+                Assert.False(parent.IsVisible);
+                Assert.False(child.IsVisible);
+                registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: false, sessionSuppressed: false);
+                Assert.True(parent.IsVisible);
+                Assert.True(child.IsVisible);
+                Assert.Same(parent, child.Owner);
+            }
+            parent.Close();
+            Assert.False(child.IsVisible);
+            Assert.Empty(registry.Snapshot());
+        }
+        finally
+        {
+            child.Close();
+            parent.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void RegisteredPresentationsFollowGalaxyMapVisibilityWithoutLosingIntent()
     {

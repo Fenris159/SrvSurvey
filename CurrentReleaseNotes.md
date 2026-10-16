@@ -1,43 +1,35 @@
-# SrvSurvey-XP 2.1.3.0-rc.64.9
+# SrvSurvey-XP 2.1.3.0-rc.64.10
 
-RC.64.9 fixes a freeze when Wayland screen capture needs permission again or
-you choose another capture source in Settings. It retains the VR overlays,
-Spansh route planning and other improvements from RC.64.8.
+RC.64.10 improves window relationships for Linux permission dialogs and
+auxiliary tools. It retains the Wayland capture freeze fixes from RC.64.9.
 
 ## What's changed
 
-- **Keep the application responsive during Wayland screen sharing.** Capture
-  availability checks no longer wait for a background capture that needs you
-  to answer a permission prompt. This prevents the confirmation dialog and
-  main window from freezing while capture waits for approval.
-- **Choose another capture source without blocking the interface.** Settings
-  closes the old capture session in the background before opening the desktop
-  source picker. Capture stays paused until the new source has been selected.
-- **Recover from an unresponsive desktop portal.** Portal startup calls can be
-  canceled and have bounded waits, including request cleanup. The desktop
-  source picker still gives you time to make your selection.
-
-A desktop can ask for screen-sharing approval again when its saved permission
-or previous source is no longer usable. This release fixes the application's
-handling of that flow; it does not change your desktop's permission policy.
+- **Associate the Wayland source picker with SrvSurvey.** Screen sharing now
+  identifies the application window that opened the picker, allowing the
+  desktop to keep it above that window.
+- **Associate shortcut permission and configuration dialogs with their window.**
+  The desktop receives the current SrvSurvey window when these dialogs open.
+- **Keep auxiliary tools attached to their owners.** Mining calibration belongs
+  to the overlay editor, and map zoom controls retain their relationship to
+  the map when overlays are hidden and shown again.
 
 ## Update channel and packages
 
-RC.64.9 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC.64.10 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.64.9`
-- Tag: `xp2-v2.1.3.0-rc.64.9`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.9-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.9-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.9-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.9-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.64.10`
+- Tag: `xp2-v2.1.3.0-rc.64.10`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.64.10-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.64.10-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.64.10-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.64.10-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
-This remains a development preview. The freeze was reproduced with isolated
-portal probes against both RC.64.7 and RC.64.8; it was an existing capture
-lifecycle bug. The affected user's CachyOS session was unavailable for testing,
-so the reason their desktop requested permission again remains unconfirmed.
+This remains a development preview. Isolated tests check desktop permission
+requests and child-window ownership. The reported CachyOS/Plasma stacking
+behavior still needs confirmation on that desktop.
