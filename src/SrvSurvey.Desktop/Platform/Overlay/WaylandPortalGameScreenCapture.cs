@@ -19,6 +19,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 {
     private const string PortalService = "org.freedesktop.portal.Desktop";
     private const string PortalPath = "/org/freedesktop/portal/desktop";
+    private static readonly TimeSpan PortalMethodTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan FrameTimeout = TimeSpan.FromSeconds(5);
     private static readonly SemaphoreSlim RestoreTokenGate = new(1, 1);
     private static int nextToken;
@@ -247,11 +248,23 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     {
         var portalConnection = new Connection(Address.Session);
         connection = portalConnection;
-        ConnectionInfo connectionInfo = await portalConnection.ConnectAsync();
+        ConnectionInfo connectionInfo = await portalConnection
+            .ConnectAsync()
+            .WaitAsync(PortalMethodTimeout, shutdown.Token)
+            .ConfigureAwait(false);
         string senderName = NormalizeSenderName(connectionInfo.LocalName);
         IScreenCast screenCast = portalConnection.CreateProxy<IScreenCast>(PortalService, PortalPath);
-        uint portalVersion = await screenCast.GetVersionAsync();
-        uint sourceTypes = (await screenCast.GetAvailableSourceTypesAsync()) & 3U;
+        uint portalVersion = await screenCast
+            .GetVersionAsync()
+            .WaitAsync(PortalMethodTimeout, shutdown.Token)
+            .ConfigureAwait(false);
+        uint sourceTypes =
+            (
+                await screenCast
+                    .GetAvailableSourceTypesAsync()
+                    .WaitAsync(PortalMethodTimeout, shutdown.Token)
+                    .ConfigureAwait(false)
+            ) & 3U;
         if (sourceTypes == 0)
         {
             throw new NotSupportedException("The Wayland desktop does not offer window or monitor sharing.");
@@ -277,7 +290,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             if (
                 GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken)
                 && confirmScreenShare is not null
-                && !await confirmScreenShare(shutdown.Token).ConfigureAwait(false)
+                && !await confirmScreenShare(shutdown.Token).WaitAsync(shutdown.Token).ConfigureAwait(false)
             )
             {
                 throw new NotSupportedException(
@@ -344,10 +357,14 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
 
         log?.Invoke($"Wayland capture ({capturePurpose}): opening the portal PipeWire remote.");
-        using CloseSafeHandle remote = await screenCast.OpenPipeWireRemoteAsync(
-            sessionPath,
-            new Dictionary<string, object>()
-        );
+        using CloseSafeHandle remote = await PortalResourceWait
+            .WaitAsync(
+                screenCast.OpenPipeWireRemoteAsync(sessionPath, new Dictionary<string, object>()),
+                PortalMethodTimeout,
+                shutdown.Token,
+                LogLatePortalResourceFailure
+            )
+            .ConfigureAwait(false);
         log?.Invoke(
             $"Wayland capture ({capturePurpose}): portal PipeWire descriptor is "
                 + $"{DescribePortalDescriptor(remote)}."
@@ -355,7 +372,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         var context = new PipeWireContext("SrvSurvey.ScreenCapture");
         pipeWireContext = context;
         log?.Invoke($"Wayland capture ({capturePurpose}): starting PipeWire with the portal descriptor.");
-        await context.StartAsync(remote, shutdown.Token);
+        await context.StartAsync(remote, shutdown.Token).ConfigureAwait(false);
         log?.Invoke(
             $"Wayland capture ({capturePurpose}): PipeWire connected; attaching video stream on node "
                 + $"{streamInfo.NodeId}."
@@ -503,7 +520,10 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
         try
         {
-            await portalSession.CloseAsync().ConfigureAwait(false);
+            await portalSession
+                .CloseAsync()
+                .WaitAsync(PortalMethodTimeout, CancellationToken.None)
+                .ConfigureAwait(false);
             portalSession = null;
         }
         catch (DBusException)
@@ -517,7 +537,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
-    private static async Task<PortalResponse> InvokeRequestAsync(
+    private async Task<PortalResponse> InvokeRequestAsync(
         Connection portalConnection,
         string senderName,
         Func<string, Task<ObjectPath>> invoke,
@@ -526,43 +546,25 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     {
         string token = NextToken("request");
         var expectedPath = new ObjectPath($"/org/freedesktop/portal/desktop/request/{senderName}/{token}");
-        var completion = new TaskCompletionSource<PortalResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         IRequest request = portalConnection.CreateProxy<IRequest>(PortalService, expectedPath);
-        using IDisposable subscription = await request.WatchResponseAsync(
-            response => completion.TrySetResult(new PortalResponse(response.Response, response.Results)),
-            exception => completion.TrySetException(exception)
-        );
-        ObjectPath returnedPath = await invoke(token);
-        if (returnedPath != expectedPath)
-        {
-            throw new InvalidOperationException("The desktop portal returned an unexpected request handle.");
-        }
-
-        PortalResponse result;
-        try
-        {
-            result = await completion.Task.WaitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            try
-            {
-                await request.CloseAsync();
-            }
-            catch (DBusException)
-            {
-                // The portal may have closed the request while shutdown was in progress.
-            }
-
-            throw;
-        }
-        return result.ResponseCode switch
-        {
-            0 => result,
-            1 => throw new NotSupportedException("Wayland screen sharing was canceled."),
-            _ => throw new NotSupportedException("The Wayland desktop denied screen sharing."),
-        };
+        return await ScreenCastPortalRequest
+            .InvokeAsync(
+                request,
+                expectedPath,
+                () => invoke(token),
+                PortalMethodTimeout,
+                cancellationToken,
+                LogLatePortalResourceFailure
+            )
+            .ConfigureAwait(false);
     }
+
+    /// <summary>Reports failures from resource startup or disposal that finishes after a canceled wait.</summary>
+    private void LogLatePortalResourceFailure(Exception exception) =>
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): late portal resource cleanup failed. "
+                + CaptureFailureDiagnostics.Describe(exception)
+        );
 
     /// <summary>Reads a reusable portal token, tolerating inaccessible saved state.</summary>
     private string? TryReadRestoreToken()
@@ -676,8 +678,6 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         PixelRect SourceBounds,
         TaskCompletionSource<CapturedPixelBuffer> Completion
     );
-
-    private sealed record PortalResponse(uint ResponseCode, IDictionary<string, object> Results);
 }
 
 internal readonly record struct PortalStreamInfo(

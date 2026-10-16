@@ -79,10 +79,14 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Task selection = viewModel.ChooseCaptureSourceAgainAsync();
 
         Assert.True(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
+        Assert.False(viewModel.CanChangeCaptureSettings);
+        Assert.False(viewModel.CanConfigureTrackers);
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
         picker.SetResult();
         await selection;
         Assert.False(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
+        Assert.True(viewModel.CanChangeCaptureSettings);
+        Assert.True(viewModel.CanConfigureTrackers);
         Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 
@@ -156,11 +160,20 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
 
     /// <summary>Verifies the Settings command starts the source-reselection workflow.</summary>
     [Fact]
-    public void ChooseAgainCommandRunsTheReselectionWorkflow()
+    public async Task ChooseAgainCommandRunsTheReselectionWorkflow()
     {
         WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        viewModel.ChooseCaptureSourceAgainCommand.CanExecuteChanged += (_, _) =>
+        {
+            if (viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null))
+            {
+                completed.TrySetResult();
+            }
+        };
 
         viewModel.ChooseCaptureSourceAgainCommand.Execute(null);
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.True(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
     }
