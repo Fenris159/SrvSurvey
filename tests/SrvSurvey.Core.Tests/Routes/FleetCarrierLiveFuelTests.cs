@@ -51,6 +51,61 @@ public sealed class FleetCarrierLiveFuelTests
     }
 
     [Theory]
+    [InlineData("335", false)]
+    [InlineData("\"335\"", false)]
+    [InlineData("\" 335 \"", false)]
+    [InlineData("335", true)]
+    [InlineData("\"335\"", true)]
+    public void CapiNumericStringDepotMatchesTheCarrierWorkspaceReserve(string fuel, bool squadron)
+    {
+        string payload =
+            "{\"name\":{\"callsign\":\"OWN-001\"},\"fuel\":"
+            + fuel
+            + ",\"capacity\":{\"cargoNotForSale\":5251,\"crew\":1050,\"freeSpace\":18699},\"cargo\":[]}";
+        FrontierCarrierSnapshot carrier = squadron
+            ? FrontierCapiSnapshotParser.ParseSquadronEndpoint("{\"squadronCarrier\":" + payload + "}", Origin).Carrier!
+            : FrontierCapiSnapshotParser.ParseCarrier(payload, Origin);
+
+        Assert.Equal(335, carrier.Tritium);
+        Assert.Equal(335, carrier.FuelData!.TankTonnes);
+        Assert.True(carrier.FuelData.IsComplete);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("true")]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("\"unknown\"")]
+    [InlineData("\"NaN\"")]
+    [InlineData("\"Infinity\"")]
+    [InlineData("1e9999")]
+    public void CapiInvalidDepotValuesRemainUnknown(string fuel)
+    {
+        FrontierCarrierSnapshot carrier = FrontierCapiSnapshotParser.ParseCarrier(
+            "{\"name\":{\"callsign\":\"OWN-001\"},\"fuel\":" + fuel + "}",
+            Origin
+        );
+
+        Assert.Null(carrier.FuelData!.TankTonnes);
+        Assert.False(carrier.FuelData.IsComplete);
+    }
+
+    [Fact]
+    public void CapiNumericStringTritiumCargoIsAvailableToTheRouteFuelPlan()
+    {
+        FrontierCarrierSnapshot carrier = FrontierCapiSnapshotParser.ParseCarrier(
+            """
+            {"name":{"callsign":"OWN-001"},"fuel":"335","capacity":{"cargoNotForSale":500},"cargo":[{"commodity":"tritium","qty":"500"}]}
+            """,
+            Origin
+        );
+
+        Assert.Equal(500, carrier.FuelData!.StoredTritiumTonnes);
+        Assert.True(carrier.FuelData.IsComplete);
+    }
+
+    [Theory]
     [InlineData("", "", false)]
     [InlineData(",\"fuel\":0", ",\"cargo\":[]", true)]
     [InlineData(",\"fuel\":1000", ",\"cargo\":[{\"commodity\":\"tritium\"}]", false)]

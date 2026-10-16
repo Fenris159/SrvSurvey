@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Routes;
 
@@ -108,11 +109,25 @@ internal static class FrontierCarrierFuelReader
             ? number
             : null;
 
-    private static double? Number(JsonElement root, string key) =>
-        root.TryGetProperty(key, out JsonElement value)
-        && value.ValueKind == JsonValueKind.Number
-        && value.TryGetDouble(out double number)
-        && double.IsFinite(number)
-            ? number
-            : null;
+    private static double? Number(JsonElement root, string key)
+    {
+        if (!root.TryGetProperty(key, out JsonElement value))
+        {
+            return null;
+        }
+        double? number = value.ValueKind switch
+        {
+            JsonValueKind.Number => value.TryGetDouble(out double numeric) ? numeric : null,
+            JsonValueKind.String => double.TryParse(
+                value.GetString(),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out double parsed
+            )
+                ? parsed
+                : null,
+            _ => null,
+        };
+        return number is { } finite && double.IsFinite(finite) ? finite : null;
+    }
 }

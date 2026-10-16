@@ -19,6 +19,29 @@ public sealed class FleetCarrierRouteFuelTests : IAsyncLifetime
     private readonly List<RouteWorkspaceViewModel> models = [];
 
     [Fact]
+    public async Task NumericStringCapiReservePopulatesTheDepotSummaryAndSearchFuel()
+    {
+        FrontierAccountSnapshot account = Account() with
+        {
+            Carrier = FrontierCapiSnapshotParser.ParseCarrier(
+                """
+                {"id":1,"name":{"callsign":"OWN-001"},"currentStarSystem":"A","fuel":"335","capacity":{"cargoNotForSale":5251,"crew":1050,"freeSpace":18699},"cargo":[]}
+                """,
+                Origin
+            ),
+        };
+        Assert.Equal(335, account.Carrier.Tritium);
+        RouteWorkspaceViewModel model = await Create(() => account);
+        model.PrepareCarrierSearch();
+
+        Assert.Contains("Depot: 335 t", model.CarrierFuelSummary);
+        Assert.Equal("335", Field(model, "fuel_loaded").Value);
+        Assert.Equal("0", Field(model, "tritium_stored").Value);
+        Assert.Equal("6301", Field(model, "capacity_used").Value);
+        Assert.False(Field(model, "calculate_starting_fuel").IsChecked);
+    }
+
+    [Fact]
     public async Task CarrierSelectorPrefillsSearchFromItsOwnLatestObservationsAndPersistsTheChoice()
     {
         FrontierAccountSnapshot account = Account();
