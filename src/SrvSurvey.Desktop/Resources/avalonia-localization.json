@@ -11261,6 +11261,10 @@
       "translation": "Der Rückruf Frontier hat die laufende Anwendung wiederhergestellt."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier Trägerdaten sind für den Journal Commander nicht verfügbar."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier Community-Zieldaten konnten nicht gelesen werden: {0}"
     },
@@ -49381,6 +49385,10 @@
     {
       "source": "Frontier callback restored the running application.",
       "translation": "La devolución de llamada Frontier restauró la aplicación en ejecución."
+    },
+    {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier los datos del transportista no están disponibles para el comandante del diario."
     },
     {
       "source": "Frontier community-goal data could not be read: {0}",
@@ -87505,6 +87513,10 @@
       "translation": "Le rappel Frontier a restauré l'application en cours d'exécution."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier les données du transporteur ne sont pas disponibles pour le commandant du journal."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier les données de l'objectif de la communauté n'ont pas pu être lues : {0}"
     },
@@ -125625,6 +125637,10 @@
     {
       "source": "Frontier callback restored the running application.",
       "translation": "O retorno de chamada Frontier restaurou o aplicativo em execução."
+    },
+    {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier os dados da portadora não estão disponíveis para o comandante do diário."
     },
     {
       "source": "Frontier community-goal data could not be read: {0}",
@@ -163749,6 +163765,10 @@
       "translation": "Обратный вызов Frontier восстановил работающее приложение."
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier данные носителя недоступны для командира журнала."
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier данные о целях сообщества не удалось прочитать: {0}"
     },
@@ -201871,6 +201891,10 @@
       "translation": "Frontier 回调恢复了正在运行的应用程序。"
     },
     {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "Frontier 日志指挥官无法使用载体数据。"
+    },
+    {
       "source": "Frontier community-goal data could not be read: {0}",
       "translation": "Frontier 无法读取社区目标数据：{0}"
     },
@@ -239991,6 +240015,10 @@
     {
       "source": "Frontier callback restored the running application.",
       "translation": "* FRONTIER CALLBACK RESTORED THE RUNNING APPLICATION. >>>!"
+    },
+    {
+      "source": "Frontier carrier data is not available for the journal commander.",
+      "translation": "* FRONTIER CARRIER DATA IS NOT AVAILABLE FOR THE JOURNAL COMMANDER. >>>!"
     },
     {
       "source": "Frontier community-goal data could not be read: {0}",

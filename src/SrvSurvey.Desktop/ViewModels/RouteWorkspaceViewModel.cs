@@ -932,7 +932,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         string arrivalEvent = IsFleetCarrierWorkspace ? "CarrierJump" : "FSDJump";
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            if (!TryGetArrivalTarget(journalEvent, arrivalEvent, out string? name, out long? address))
+            if (!TryGetArrivalTarget(journalEvent, arrivalEvent, NextHop, out string? name, out long? address))
             {
                 continue;
             }
@@ -1005,12 +1005,20 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         string arrivalEvent = IsFleetCarrierWorkspace ? "CarrierJump" : "FSDJump";
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            if (!TryGetArrivalTarget(journalEvent, arrivalEvent, out string? name, out long? address))
+            if (
+                !TryGetArrivalTarget(
+                    journalEvent,
+                    arrivalEvent,
+                    loadedRoute!.NextHop,
+                    out string? name,
+                    out long? address
+                )
+            )
             {
                 continue;
             }
 
-            FollowRouteArrivalResult result = await routeService.ApplyArrivalAsync(loadedRoute!, name, address);
+            FollowRouteArrivalResult result = await routeService.ApplyArrivalAsync(loadedRoute, name, address);
             if (!result.Changed)
             {
                 continue;
@@ -1033,6 +1041,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool TryGetArrivalTarget(
         JournalEventEnvelope journalEvent,
         string arrivalEvent,
+        FollowRouteHop? nextHop,
         out string name,
         out long? address
     )
@@ -1041,7 +1050,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         address = null;
         if (
             !string.Equals(journalEvent.EventName, arrivalEvent, StringComparison.Ordinal)
-            || !MatchesSelectedCarrier(journalEvent)
+            || !MatchesCarrierArrival(journalEvent, nextHop)
         )
         {
             return false;

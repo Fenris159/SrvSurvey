@@ -127,6 +127,10 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
                 {
                     SetCarrierField(key, string.Empty);
                 }
+                if (fields.FirstOrDefault(field => field.Definition.Key == "calculate_starting_fuel") is { } calculate)
+                {
+                    calculate.Value = calculate.Definition.Default;
+                }
             }
             hasAutomaticCarrierInputs = snapshot is not null;
             UpdateVisibility();

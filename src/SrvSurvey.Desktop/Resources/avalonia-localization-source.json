@@ -22580,6 +22580,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
+    "Text": "Frontier carrier data is not available for the journal commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Frontier community-goal data could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [

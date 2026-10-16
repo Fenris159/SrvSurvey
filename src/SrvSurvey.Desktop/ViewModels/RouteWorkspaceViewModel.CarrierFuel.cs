@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class RouteWorkspaceViewModel
 {
+    private const string CarrierIdPropertyName = "CarrierID";
     private readonly FleetCarrierFuelJournal carrierFuelJournal = new();
     private readonly Dictionary<FollowRouteCarrierKind, long> observedCarrierIds = [];
     private readonly Func<FrontierAccountSnapshot?>? carrierSnapshotSource;
@@ -212,7 +213,7 @@ public sealed partial class RouteWorkspaceViewModel
                 .Select(entry => entry.Payload)
         )
         {
-            if (GetInt64(data, "CarrierID") is { } observedId)
+            if (GetInt64(data, CarrierIdPropertyName) is { } observedId)
             {
                 FollowRouteCarrierKind kind =
                     GetString(data, "CarrierType") == "SquadronCarrier"
@@ -225,7 +226,7 @@ public sealed partial class RouteWorkspaceViewModel
                 && string.Equals(GetString(data, "Callsign"), known.Callsign, StringComparison.OrdinalIgnoreCase)
             )
             {
-                latestCarrierFuel = known with { CarrierId = GetInt64(data, "CarrierID") ?? known.CarrierId };
+                latestCarrierFuel = known with { CarrierId = GetInt64(data, CarrierIdPropertyName) ?? known.CarrierId };
             }
         }
     }
@@ -236,7 +237,7 @@ public sealed partial class RouteWorkspaceViewModel
         {
             return true;
         }
-        long? id = GetInt64(entry.Payload, "CarrierID") ?? GetInt64(entry.Payload, "MarketID");
+        long? id = GetInt64(entry.Payload, CarrierIdPropertyName) ?? GetInt64(entry.Payload, "MarketID");
         long? selectedId = latestCarrierFuel?.CarrierId;
         if (selectedId is null && observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed))
         {
@@ -250,6 +251,34 @@ public sealed partial class RouteWorkspaceViewModel
         return type is null
             ? selectedCarrierKind == FollowRouteCarrierKind.Personal
             : (type == "SquadronCarrier") == (selectedCarrierKind == FollowRouteCarrierKind.Squadron);
+    }
+
+    private bool MatchesCarrierArrival(JournalEventEnvelope entry, FollowRouteHop? nextHop)
+    {
+        if (
+            !IsFleetCarrierWorkspace
+            || GetInt64(entry.Payload, CarrierIdPropertyName) is not null
+            || GetInt64(entry.Payload, "MarketID") is not null
+        )
+        {
+            return MatchesSelectedCarrier(entry);
+        }
+        return MatchesUnidentifiedCarrierArrival(entry, nextHop);
+    }
+
+    private bool MatchesUnidentifiedCarrierArrival(JournalEventEnvelope entry, FollowRouteHop? nextHop)
+    {
+        if (nextHop is null)
+        {
+            return false;
+        }
+        string? type = GetString(entry.Payload, "CarrierType");
+        if (type is not null && (type == "SquadronCarrier") != (selectedCarrierKind == FollowRouteCarrierKind.Squadron))
+        {
+            return false;
+        }
+        return (GetInt64(entry.Payload, "SystemAddress") is { } address && nextHop.SystemAddress == address)
+            || string.Equals(nextHop.Name, GetString(entry.Payload, "StarSystem"), StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatFuel(double? value) => value?.ToString("N0", CultureInfo.CurrentCulture) ?? "—";

@@ -227,6 +227,85 @@ public sealed class FleetCarrierRouteFuelTests : IAsyncLifetime
         Assert.False(model.IsFuelWarningVisible);
     }
 
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public async Task IdentifierFreeCarrierArrivalAdvancesOnlyToTheNextDestination(
+        bool squadron,
+        bool withoutSnapshot,
+        bool byAddress
+    )
+    {
+        FrontierAccountSnapshot? account = withoutSnapshot ? null : Account();
+        RouteWorkspaceViewModel model = await Create(() => account);
+        if (squadron)
+        {
+            model.SelectedCarrier = model.CarrierOptions[1];
+        }
+        await Import(model);
+        int reached = model.ReachedCount;
+        await model.ApplyJournalEventsAsync([Event(1, "CarrierJump", "\"StarSystem\":\"C\"")]);
+        Assert.Equal(reached, model.ReachedCount);
+        if (model.NextHopName == "A")
+        {
+            await model.ApplyJournalEventsAsync([Event(2, "CarrierJump", "\"StarSystem\":\"A\"")]);
+        }
+        Assert.Equal(1, model.ReachedCount);
+        string otherType = squadron ? "FleetCarrier" : "SquadronCarrier";
+        await model.ApplyJournalEventsAsync([
+            Event(3, "CarrierJump", "\"StarSystem\":\"B\",\"CarrierType\":\"" + otherType + "\""),
+        ]);
+        Assert.Equal(1, model.ReachedCount);
+        string target = byAddress ? "\"SystemAddress\":2" : "\"StarSystem\":\"b\"";
+        await model.ApplyJournalEventsAsync([Event(4, "CarrierJump", target)]);
+        Assert.Equal(2, model.ReachedCount);
+        Assert.Equal("C", model.NextHopName);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IdentifierFreeArrivalsInOneBatchFollowTheUpdatedNextHop(bool saved)
+    {
+        RouteWorkspaceViewModel model = await Create(() => Account());
+        await Import(model);
+        if (saved)
+        {
+            model.SaveAsName = "Batch arrivals";
+            await model.ConfirmSaveAsAsync();
+            Assert.True(model.HasSavedRoute);
+        }
+        await model.ApplyJournalEventsAsync([
+            Event(1, "CarrierJump", "\"StarSystem\":\"B\""),
+            Event(2, "CarrierJump", "\"StarSystem\":\"C\""),
+        ]);
+        Assert.Equal(3, model.ReachedCount);
+        Assert.False(model.IsActive);
+    }
+
+    [Fact]
+    public async Task ClearingAutomaticCarrierInputsRestoresStartingFuelCalculation()
+    {
+        FrontierAccountSnapshot? account = Account();
+        RouteWorkspaceViewModel model = await Create(() => account);
+        model.PrepareCarrierSearch();
+        Assert.False(Field(model, "calculate_starting_fuel").IsChecked);
+        Assert.Equal("700", Field(model, "fuel_loaded").Value);
+        account = account with { SquadronCarrier = null };
+        model.SelectedCarrier = model.CarrierOptions[1];
+        Assert.True(Field(model, "calculate_starting_fuel").IsChecked);
+        Assert.False(Field(model, "fuel_loaded").IsVisible);
+        Assert.Empty(Field(model, "fuel_loaded").Value);
+        Field(model, "calculate_starting_fuel").IsChecked = false;
+        Field(model, "fuel_loaded").Value = "100";
+        model.PrepareCarrierSearch();
+        Assert.False(Field(model, "calculate_starting_fuel").IsChecked);
+        Assert.Equal("100", Field(model, "fuel_loaded").Value);
+    }
+
     [Fact]
     public async Task RefreshFailuresAreReportedAndCommanderSwitchDiscardsAnOldPendingRefresh()
     {

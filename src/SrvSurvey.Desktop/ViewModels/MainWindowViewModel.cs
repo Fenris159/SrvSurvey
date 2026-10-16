@@ -1205,10 +1205,23 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private FrontierAccountSnapshot? GetRouteCarrierSnapshot() =>
         FrontierProfile.IsViewingJournalCommander ? FrontierProfile.Snapshot : null;
 
-    private Task RefreshRouteCarrierSnapshotAsync() =>
-        FrontierProfile.IsViewingJournalCommander && FrontierProfile.IsLinked && !FrontierProfile.IsBusy
-            ? FrontierProfile.RefreshAsync()
-            : Task.CompletedTask;
+    private async Task RefreshRouteCarrierSnapshotAsync()
+    {
+        if (!FrontierProfile.IsViewingJournalCommander || !FrontierProfile.IsLinked || FrontierProfile.IsBusy)
+        {
+            throw new InvalidOperationException("Frontier carrier data is not available for the journal commander.");
+        }
+        FrontierAccountSnapshot? previous = FrontierProfile.Snapshot;
+        await FrontierProfile.RefreshAsync();
+        if (
+            !FrontierProfile.IsViewingJournalCommander
+            || FrontierProfile.Snapshot is null
+            || ReferenceEquals(previous, FrontierProfile.Snapshot)
+        )
+        {
+            throw new IOException(FrontierProfile.StatusMessage);
+        }
+    }
 
     public JumpInfoViewModel JumpInfo { get; }
 

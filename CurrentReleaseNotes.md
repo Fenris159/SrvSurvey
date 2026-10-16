@@ -38,6 +38,10 @@ The Wayland capture freeze fixes from RC64.9 are retained.
   recalculates fuel from the current waypoint. Reached waypoints, route order
   and unsaved edits are preserved.
 
+- **Fix carrier route updates.** Carrier arrivals can advance the itinerary when
+  only the next destination is identified. Failed Frontier refreshes show an
+  error, and switching to a carrier without available data restores automatic
+  starting-fuel calculation in Spansh Search.
 - **Associate the Wayland source picker with SrvSurvey.** Screen sharing now
   identifies the application window that opened the picker, allowing the
   desktop to keep it above that window.
