@@ -17,7 +17,7 @@ portal permission/configuration dialogs, and native file/folder pickers.
 | Shortcut approval and version-two shortcut configuration | Had the same empty-parent gap. Both now use the shared portal parent resolver. Silent shortcut restoration still cannot open a permission dialog. |
 | Overlay position editor and draggable previews | Independent game-facing windows, governed by overlay window policy rather than the main configuration window. Parenting them to the main window would couple their stacking/minimization to configuration UI. |
 | Mining calibration and its tools | Calibration is now owned by the editor; its tools were already owned by the calibration window. |
-| Map zoom control | Already owned by the map when first shown. The registry now preserves that relationship across suppression/restoration. |
+| Map zoom control | Already owned by the map when first shown. The registry now preserves that relationship across suppression/restoration and closes a detached child if its saved owner has closed. |
 | Runtime, combined, alignment and Guardian overlay surfaces | Independent game-facing presentations with explicit native management and visibility lifecycles. |
 
 ## Portal contract and threading
@@ -46,5 +46,5 @@ simulate Plasma's final stacking/activation policy.
 
 Headless tests cover dispatcher access, active-window selection, missing/hidden
 owners, cancellation, shortcut parent forwarding, calibration ownership and
-repeated overlay restoration in either registration order. Validation on the
+repeated overlay restoration in either registration order, including closure of an owner while its child is suppressed. Validation on the
 reporter's CachyOS/Plasma session is still needed to confirm compositor behavior.

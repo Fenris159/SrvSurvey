@@ -9,9 +9,11 @@ public sealed class OverlayWindowRegistryTests
 {
     /// <summary>Auxiliary map controls retain their owner after suppression regardless of registration order.</summary>
     [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void OverlaySuppressionPreservesChildOwnership(bool childRegisteredFirst)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void OverlaySuppressionPreservesChildOwnership(bool childRegisteredFirst, bool ownerClosesWhileSuppressed)
     {
         var registry = new OverlayWindowRegistry();
         var parent = new Window();
@@ -36,6 +38,21 @@ public sealed class OverlayWindowRegistryTests
                 registry.SetGlobalSuppression(manualSuppressed: true, suitSuppressed: false, sessionSuppressed: false);
                 Assert.False(parent.IsVisible);
                 Assert.False(child.IsVisible);
+                if (ownerClosesWhileSuppressed && cycle == 2)
+                {
+                    bool childClosed = false;
+                    child.Closed += (_, _) => childClosed = true;
+                    parent.Close();
+                    registry.SetGlobalSuppression(
+                        manualSuppressed: false,
+                        suitSuppressed: false,
+                        sessionSuppressed: false
+                    );
+                    Assert.True(childClosed);
+                    Assert.False(child.IsVisible);
+                    Assert.Empty(registry.Snapshot());
+                    return;
+                }
                 registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: false, sessionSuppressed: false);
                 Assert.True(parent.IsVisible);
                 Assert.True(child.IsVisible);

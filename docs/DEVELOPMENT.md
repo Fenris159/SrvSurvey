@@ -79,10 +79,10 @@ XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
 
-## RC64.9 release sequence
+## RC64.10 release sequence
 
-RC51 remains the permanent legacy bridge and RC64.8 is the preceding published preview. Do not
-dispatch RC64.9 until its pull request has merged into
+RC51 remains the permanent legacy bridge and RC64.9 is the preceding published preview. Do not
+dispatch RC64.10 until its pull request has merged into
 `SrvSurvey-Avalonia` and the external publishing step has been explicitly
 approved. Then update the local branch and verify the checked-in release
 contract before starting the workflow:

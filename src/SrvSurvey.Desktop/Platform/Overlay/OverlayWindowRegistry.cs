@@ -421,6 +421,14 @@ public sealed class OverlayWindowRegistry
 
     private static void ApplyVisibility(Window window, Registration registration, bool visible)
     {
+        if (registration.PresentationOwner is { PlatformImpl: null })
+        {
+            // Hidden children are detached by Avalonia, so an owner closing must still release its saved children.
+            window.Close();
+            registration.Presented = false;
+            return;
+        }
+
         if (registration.PresentationVisual is not null)
         {
             registration.PresentationVisible = visible;
