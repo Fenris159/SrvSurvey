@@ -165,10 +165,27 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>
     /// Seeds RavenColonial with a full CAPI cargo manifest once per linked carrier per
     /// session (EDMC parity). Later Frontier refreshes are ignored; journal deltas keep
-    /// linked + workspace totals current between CAPI updates.
+    /// linked + workspace totals current between CAPI updates. The independent local comparison
+    /// accepts newer CAPI snapshots without requiring Raven publishing to be enabled.
     /// </summary>
     public async Task SeedLinkedCarrierCargoFromCapiAsync(FrontierAccountSnapshot? snapshot)
     {
+        if (
+            snapshot is not null
+            && string.Equals(snapshot.CommanderName, commanderName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            LocalCarrierCargo.Observe(
+                snapshot.Carrier,
+                snapshot.CarrierFetchedAt ?? snapshot.FetchedAt,
+                IsDockedAtObservedCarrier(snapshot, snapshot.Carrier)
+            );
+            LocalCarrierCargo.Observe(
+                snapshot.SquadronCarrier,
+                snapshot.SquadronCarrierFetchedAt ?? snapshot.FetchedAt,
+                IsDockedAtObservedCarrier(snapshot, snapshot.SquadronCarrier)
+            );
+        }
         if (snapshot is null || !FleetCarrierCargoSyncEnabled || apiKey is null || fleetCarriers.Count == 0)
         {
             return;
@@ -192,6 +209,20 @@ public sealed partial class ColonizationDeliveryRecovery
             snapshot.IsDocked,
             generation
         );
+    }
+
+    private bool IsDockedAtObservedCarrier(FrontierAccountSnapshot snapshot, FrontierCarrierSnapshot? carrier)
+    {
+        if (carrier is null)
+        {
+            return false;
+        }
+        ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
+        long? dockMarketId = dock?.MarketId ?? (snapshot.IsDocked ? snapshot.LastStationDetails?.Id : null);
+        string? stationName = dock?.StationName ?? (snapshot.IsDocked ? snapshot.LastStation : null);
+        return carrier.Market?.Id is > 0 && dockMarketId is > 0
+            ? carrier.Market.Id == dockMarketId
+            : stationName?.Equals(carrier.Callsign, StringComparison.OrdinalIgnoreCase) == true;
     }
 
     /// <summary>

@@ -256,6 +256,48 @@ alignment practical before placing and tracking the rig.
   journal-driven updates.
 - Manages Raven Colonial construction projects, required commodities, delivered
   cargo, payment estimates, project status and Fleet Carrier supply planning.
+- Refreshes shopping needs from Raven Colonial before each market search. Optional
+  Auto Refresh polls project data every 60 seconds for the current session, stops
+  after one hour, and updates open shopping needs without replacing saved market
+  results. Commander-linked planned sites and active builds both appear in the
+  project list; unlinked system-plan placeholders remain in the system editor.
+  LOADED estimates the percentage of each project's remaining needs covered by
+  carrier stock. Use Carrier defaults to ALL, persists per commander, and chooses
+  the starting carrier for FC Diff and the manifest editor.
+- Edits manifests for all commander-linked Fleet Carriers, including teammates’
+  carriers, in a compact Raven-style popup. Select a carrier, refresh its Frontier
+  data, update its system and grouped cargo amounts, or add/remove commodities.
+  Frontier refresh enforces five minutes between attempts, including reopening
+  the editor. Hide Non-Colony Commodities starts enabled; hidden cargo is retained
+  on Save, and other goods use their market categories when shown.
+  The system field uses the shared system autocomplete; Save updates the carrier's
+  Raven Colonial location before saving its manifest.
+  A read-only Journal column compares Raven amounts with local CAPI totals plus
+  later journal transactions; unavailable local totals display N/A.
+- Selects builds for a detached shopping workspace with combined commodity needs,
+  editable search location/radius, and concurrent Spansh/Ardent market results.
+  Commodity toggles and Select All/Select None filter markets; green/red stock
+  comparisons show sufficiency. Spansh reuses saved search pages and Ardent allows
+  at most three nearby commodity requests at once.
+  Pad size, market age, arrival distance, carriers, surface ports and full-supply
+  filters refine the results. FC Diff starts enabled and subtracts manifest stock
+  from all linked carriers or one selected carrier before allocating wish-list
+  purchases. Shopping selections, results and controls persist
+  between sessions; Reopen Search restores them after current projects load, and
+  Refresh updates market stock. Partial provider responses remain usable; a total
+  provider outage keeps previous results.
+  Click station names or individual goods to build a persistent Wish List tree.
+  A new search or Clear Search resets the wish list. Hide short supplies or sort
+  by the most available commodities; remove wish-list goods or whole stations
+  with the red × buttons. Purchases are capped by remaining need and station stock;
+  the search shrinks as the wish list fills, and removals restore those needs.
+  A nonempty wish list also appears as a passive, themed in-game tree panel.
+  It starts at the left-center of the screen, grows to half the monitor height,
+  then scrolls using the standard overlay interaction mode. Its width follows
+  the longest row. In interactive mode, use the red × buttons to remove goods
+  or stations, or click a system name to copy it for the Galaxy Map. Position, growth,
+  typography and scale are available alongside the other colonization panels
+  in the editor's Combat & colonization category.
 - Tracks massacre missions and relevant ship or on-foot combat events with
   dedicated compact overlays.
 

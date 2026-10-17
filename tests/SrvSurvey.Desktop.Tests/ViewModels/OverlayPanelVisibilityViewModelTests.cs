@@ -128,7 +128,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
                 "PlotRamTah",
             ],
             [OverlaySettingsCategory.Quests] = ["PlotFootCombat", "PlotHumanSite", "PlotMassacre", "PlotQuestMini"],
-            [OverlaySettingsCategory.Colonization] = ["PlotBuildCommodities"],
+            [OverlaySettingsCategory.Colonization] = ["PlotBuildCommodities", "PlotColonizationWishList"],
         };
         OverlayPanelVisibilityViewModel viewModel = Create(new OverlayWindowRegistry());
 

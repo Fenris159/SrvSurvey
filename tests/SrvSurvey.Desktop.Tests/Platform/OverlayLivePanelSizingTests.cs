@@ -227,6 +227,7 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotBioSystem"] = typeof(BiologySurveyOverlayWindow),
         ["PlotBodyInfo"] = typeof(BodyInformationOverlayWindow),
         ["PlotBuildCommodities"] = typeof(ColonizationCommodityOverlayWindow),
+        ["PlotColonizationWishList"] = typeof(ColonizationWishListOverlayWindow),
         ["PlotFlightWarning"] = typeof(FlightWarningOverlayWindow),
         ["PlotFloatie"] = typeof(NotificationOverlayWindow),
         ["PlotFootCombat"] = typeof(FootCombatOverlayWindow),

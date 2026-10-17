@@ -30,6 +30,7 @@ internal sealed partial class DesktopRuntime
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private PosixSignalRegistration? linuxTerminationRegistration;
     private ColonizationCommodityOverlayCoordinator? colonizationCommodityOverlayCoordinator;
+    private ColonizationWishListOverlayCoordinator? colonizationWishListOverlayCoordinator;
     private SphericalSearchOverlayCoordinator? sphericalSearchOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private RouteBioOverlayCoordinator? routeBioOverlayCoordinator;
@@ -430,6 +431,10 @@ internal sealed partial class DesktopRuntime
         SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator = new ColonizationCommodityOverlayCoordinator(
             viewModel.Colonization.CommodityOverlay,
+            overlayPresentation
+        );
+        colonizationWishListOverlayCoordinator = new ColonizationWishListOverlayCoordinator(
+            viewModel.Colonization.WishList,
             overlayPresentation
         );
         viewModel.OverlayBehavior.PropertyChanged += HandleOverlayBehaviorChanged;
@@ -953,6 +958,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref multiGameCommanderOverlayCoordinator);
         DisposeResource(ref errorReportWindowCoordinator);
         DisposeResource(ref colonizationCommodityOverlayCoordinator);
+        DisposeResource(ref colonizationWishListOverlayCoordinator);
         DisposeResource(ref systemNotesWindowCoordinator);
         DisposeResource(ref colonizationProjectPreviewWindowCoordinator);
         DisposeResource(ref journeyWindowCoordinator);
@@ -1451,6 +1457,7 @@ internal sealed partial class DesktopRuntime
         humanSiteOverlayCoordinator?.SetSuppressed(suppress);
         sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
         colonizationCommodityOverlayCoordinator?.SetSuppressed(suppress);
+        colonizationWishListOverlayCoordinator?.SetSuppressed(suppress);
         questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
         notificationOverlayCoordinator?.SetSuppressed(suppress);
         pulseOverlayCoordinator?.SetSuppressed(suppress);

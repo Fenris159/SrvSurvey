@@ -21,6 +21,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 internal static class OverlayEditorPreviewFactories
 {
     private const string UiSettingsFileName = "ui-settings.json";
+    private const string GalileoStation = "Galileo";
+    private const string AbrahamLincolnStation = "Abraham Lincoln";
 
     private static readonly OverlayPreviewSimulationState State = OverlayPreviewSimulationState.Default;
 
@@ -97,7 +99,64 @@ internal static class OverlayEditorPreviewFactories
         return vm;
     }
 
-    /// <summary>Models a shopping stop with five- and six-digit cargo values, shortages, covered groups, and unavailable stock.</summary>
+    /// <summary>Previews illustrative cargo at the real Sol ports Galileo and Abraham Lincoln.</summary>
+    // Public station names and types: https://inara.cz/elite/starsystem/367/
+    internal static ColonizationWishListViewModel CreateWishList()
+    {
+        const string steelCommodity = "steel";
+        ColonizationShoppingNeed[] needs =
+        {
+            new ColonizationShoppingNeed(steelCommodity, "Steel", 300),
+            new ColonizationShoppingNeed("water", "Water", 180),
+            new ColonizationShoppingNeed("polymers", "Polymers", 120),
+        };
+        ColonizationMarketQuote[] quotes =
+        {
+            WishListQuote(1, GalileoStation, "Sol", steelCommodity, 100),
+            WishListQuote(1, GalileoStation, "Sol", "water", 180),
+            WishListQuote(2, AbrahamLincolnStation, "Sol", steelCommodity, 200),
+            WishListQuote(2, AbrahamLincolnStation, "Sol", "polymers", 120),
+        };
+        var model = new ColonizationWishListViewModel();
+        model.Apply(
+            new ColonizationShoppingState
+            {
+                Quotes = quotes,
+                WishList = quotes
+                    .Select(quote => new ColonizationWishListItem(
+                        ColonizationShopping.MarketKey(quote),
+                        quote.Commodity,
+                        quote.Stock
+                    ))
+                    .ToArray(),
+            },
+            needs
+        );
+        return model;
+    }
+
+    private static ColonizationMarketQuote WishListQuote(
+        long marketId,
+        string station,
+        string system,
+        string commodity,
+        long stock
+    ) =>
+        new(
+            system,
+            station,
+            marketId,
+            station == GalileoStation ? "Ocellus" : "Orbis",
+            3,
+            0,
+            station == GalileoStation ? 503 : 504,
+            commodity,
+            stock,
+            100,
+            DateTimeOffset.UtcNow,
+            "Preview"
+        );
+
     public static ColonizationCommodityOverlayViewModel CreateColonization()
     {
         const int capacity = 512;

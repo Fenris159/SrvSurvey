@@ -10,6 +10,59 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"
     );
 
+    [Theory]
+    [InlineData(false, false, 95)]
+    [InlineData(true, false, 50)]
+    [InlineData(false, true, 95)]
+    [InlineData(true, true, 50)]
+    public async Task JournalComparisonAcceptsNewerCapiWhenDockedElsewhere(bool elsewhere, bool squadron, int expected)
+    {
+        ColonizationDeliveryRecovery recovery = Create(CarrierClient(75));
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 100);
+        if (squadron)
+        {
+            snapshot = snapshot with { SquadronCarrier = snapshot.Carrier, Carrier = null };
+        }
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+        recovery.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+        recovery.ApplyJournalEvents(
+            [CarrierDock(squadron), SteelBuy with { Timestamp = snapshot.FetchedAt.AddSeconds(1) }],
+            null
+        );
+        var carrier = new ColonizationFleetCarrier { MarketId = 42, Name = "ABC-123" };
+        Assert.Equal(95, recovery.LocalCarrierCargo.GetQuantity(carrier, "steel"));
+        if (elsewhere)
+        {
+            recovery.ApplyJournalEvents(
+                [
+                    Event("Undocked", ""),
+                    Event(
+                        "Docked",
+                        "\"MarketID\":99,\"SystemAddress\":20,\"StarSystem\":\"Test\",\"StationName\":\"Galileo\",\"StationType\":\"Coriolis\""
+                    ),
+                ],
+                null
+            );
+        }
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot newer = LinkedCarrierCapiSnapshot(true, 50) with
+        {
+            FetchedAt = snapshot.FetchedAt.AddSeconds(2),
+            CarrierFetchedAt = snapshot.FetchedAt.AddSeconds(2),
+            LastStation = elsewhere ? "Galileo" : "ABC-123",
+        };
+        if (squadron)
+        {
+            newer = newer with
+            {
+                SquadronCarrier = newer.Carrier,
+                SquadronCarrierFetchedAt = newer.CarrierFetchedAt,
+                Carrier = null,
+            };
+        }
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(newer);
+        Assert.Equal(expected, recovery.LocalCarrierCargo.GetQuantity(carrier, "steel"));
+    }
+
     /// <summary>Market snapshots replace linked carrier cargo only after opt-in, once per market snapshot unless forced.</summary>
     [Fact]
     public async Task MarketSyncReplacesLinkedCarrierCargoOnlyWhenEnabled()

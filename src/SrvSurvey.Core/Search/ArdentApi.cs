@@ -61,7 +61,7 @@ public sealed class ArdentApi : IDisposable
 {
     public const int MaximumResponseBytes = 8 * 1024 * 1024;
     public static readonly Uri Origin = new("https://api.ardent-insight.com/v2/");
-    private readonly SemaphoreSlim gate = new(1, 1);
+    private readonly SemaphoreSlim gate;
 
     private readonly HttpClient client;
     private readonly Uri origin;
@@ -72,9 +72,12 @@ public sealed class ArdentApi : IDisposable
         HttpClient client,
         Uri? origin = null,
         Action<string, Exception>? onFailure = null,
-        MiningProviderResponseCache? cache = null
+        MiningProviderResponseCache? cache = null,
+        int maximumConcurrentRequests = 1
     )
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(maximumConcurrentRequests, 1);
+        gate = new SemaphoreSlim(maximumConcurrentRequests, maximumConcurrentRequests);
         this.client = client;
         this.origin = origin ?? Origin;
         this.onFailure = onFailure;

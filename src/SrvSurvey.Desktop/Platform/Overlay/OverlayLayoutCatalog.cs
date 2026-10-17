@@ -63,6 +63,15 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)
         ),
         Define(
+            "PlotColonizationWishList",
+            "Colonization wish list",
+            "Colonization.WishList",
+            OverlayLayoutCategory.CombatAndColonization,
+            OverlaySettingsCategory.Colonization,
+            new(280, 260),
+            new(LegacyHorizontalAnchor.Left, 0, LegacyVerticalAnchor.Middle, 0, ShowInGalaxyMap: true)
+        ),
+        Define(
             "PlotFlightWarning",
             "Flight warning",
             "SystemSurvey.AutoShowFlightWarnings",

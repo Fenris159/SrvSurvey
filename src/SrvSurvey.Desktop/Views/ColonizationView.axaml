@@ -9,6 +9,24 @@
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
   <UserControl.Styles>
+    <Style Selector="TextBlock.auto-refresh-spinner">
+      <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="Infinite">
+          <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="ToggleButton.auto-refresh">
+      <Setter Property="Padding" Value="14,9" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.auto-refresh:checked">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+    </Style>
     <!-- Let entry fields and dropdowns size to their content instead of fixed column widths. -->
     <Style Selector="ComboBox">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -53,13 +71,26 @@
           <TextBlock Classes="page-title" Text="Colonization projects" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Track active builds, choose which projects feed the cargo list, and inspect live construction requirements." />
+                     Text="Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements." />
         </StackPanel>
-        <Button Grid.Column="1"
-                Classes="secondary"
-                VerticalAlignment="Center"
-                Command="{Binding Colonization.RefreshCommand}"
-                Content="{Binding Colonization.RefreshButtonText}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button x:Name="RefreshProjects"
+                  Classes="secondary"
+                  Command="{Binding Colonization.RefreshCommand}"
+                  Content="{Binding Colonization.RefreshButtonText}" />
+          <ToggleButton x:Name="AutoRefreshProjects"
+                        Classes="auto-refresh"
+                        IsChecked="{Binding Colonization.IsAutoRefreshEnabled, Mode=TwoWay}"
+                        IsEnabled="{Binding Colonization.CanAutoRefresh}"
+                        ToolTip.Tip="Fetches project data every 60 seconds to follow team progress. Session only: turns off when SrvSurvey closes or you change commander, and automatically stops after one hour.">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock x:Name="AutoRefreshSpinner" Classes="auto-refresh-spinner"
+                         Text="⟳" FontSize="16" RenderTransformOrigin="50%,50%"
+                         IsVisible="{Binding Colonization.IsAutoRefreshEnabled}" />
+              <TextBlock Text="Auto Refresh" VerticalAlignment="Center" />
+            </StackPanel>
+          </ToggleButton>
+        </StackPanel>
       </Grid>
 
       <Border Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}">
@@ -458,9 +489,18 @@
               <TextBlock Classes="card-title" Text="My build projects" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Selected projects appear in aggregate cargo requirements. Changes are sent only when you choose Save selection." />
+                         Text="Show controls aggregate cargo requirements and is saved with Save selection. Shop selects builds for a separate market search." />
             </StackPanel>
             <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+            <Button x:Name="EditCarrierManifestButton" Margin="0,0,8,0" Classes="secondary"
+                    Command="{Binding Colonization.EditCarrierManifestCommand}" Content="Edit Carrier Manifest"
+                    ToolTip.Tip="Edit cargo and location for any carrier linked to this commander. Requires a saved Raven API key." />
+            <Button x:Name="SearchMarketsButton" Margin="0,0,8,0"
+                    Classes="primary" Command="{Binding Colonization.SearchMarketsCommand}"
+                    IsEnabled="{Binding Colonization.CanSearchMarkets}"
+                    Content="{Binding Colonization.SearchMarketsButtonText}" />
+            <Button x:Name="OpenWishListButton" Margin="0,0,8,0" Classes="secondary"
+                    Command="{Binding Colonization.OpenWishListCommand}" Content="Wish List" />
             <Button x:Name="CombinedBuildReportButton" Margin="0,0,8,0"
                     Classes="secondary"
                     IsEnabled="{Binding Colonization.HasProjects}"
@@ -470,19 +510,29 @@
                     Classes="secondary"
                     Click="OpenRavenBuilds_Click"
                     Content="Open Raven builds" />
-            <Button
-                    Classes="primary"
-                    Command="{Binding Colonization.SaveProjectsCommand}"
-                    Content="{Binding Colonization.SaveButtonText}" />
+
             </WrapPanel>
           </Grid>
 
           <Border Background="{DynamicResource RavenSurfaceBrush}"
                   CornerRadius="8"
                   Padding="12">
-            <TextBlock FontWeight="SemiBold"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       Text="{Binding Colonization.ProjectSummary}" />
+            <WrapPanel>
+              <Button Classes="primary" Command="{Binding Colonization.SaveProjectsCommand}" Content="{Binding Colonization.SaveButtonText}" Margin="0,0,12,4" />
+              <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,4"
+                         Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Colonization.ProjectSummary}" />
+              <TextBlock Text="Use Carrier:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,4" />
+              <ComboBox x:Name="PlanningCarrierSelector"
+                        ItemsSource="{Binding Colonization.PlanningCarrierOptions}"
+                        SelectedItem="{Binding Colonization.SelectedPlanningCarrier, Mode=TwoWay}"
+                        MinWidth="100" MaxWidth="260" Margin="0,0,0,4" VerticalAlignment="Center">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ColonizationCarrierChoice">
+                    <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </WrapPanel>
           </Border>
 
           <StackPanel Spacing="0">
@@ -490,17 +540,19 @@
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1.6*" MinWidth="0" />
+                <ColumnDefinition Width="0.7*" />
                 <ColumnDefinition Width="0.8*" />
                 <ColumnDefinition Width="0.9*" />
                 <ColumnDefinition Width="1.4*" />
                 <ColumnDefinition Width="1.1*" />
               </Grid.ColumnDefinitions>
-              <TextBlock Classes="muted" Text="SHOW" />
+              <StackPanel Orientation="Horizontal" Spacing="12"><TextBlock Classes="muted" Text="SHOW" /><TextBlock Classes="muted" Text="SHOP" /></StackPanel>
               <TextBlock Grid.Column="1" Classes="muted" Text="PROJECT" />
-              <TextBlock Grid.Column="2" Classes="muted" Text="PROGRESS" />
-              <TextBlock Grid.Column="3" Classes="muted" Text="TYPE" />
-              <TextBlock Grid.Column="4" Classes="muted" Text="SYSTEM" />
-              <TextBlock Grid.Column="5" Classes="muted" Text="PRIMARY" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="LOADED" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="PROGRESS" />
+              <TextBlock Grid.Column="4" Classes="muted" Text="TYPE" />
+              <TextBlock Grid.Column="5" Classes="muted" Text="SYSTEM" />
+              <TextBlock Grid.Column="6" Classes="muted" Text="PRIMARY" />
             </Grid>
 
             <ItemsControl ItemsSource="{Binding Colonization.Projects}">
@@ -514,13 +566,16 @@
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="1.6*" MinWidth="0" />
+                        <ColumnDefinition Width="0.7*" />
                         <ColumnDefinition Width="0.8*" />
                         <ColumnDefinition Width="0.9*" />
                         <ColumnDefinition Width="1.4*" />
                         <ColumnDefinition Width="1.1*" />
                       </Grid.ColumnDefinitions>
-                      <CheckBox VerticalAlignment="Center"
-                                IsChecked="{Binding IsShown, Mode=TwoWay}" />
+                      <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <CheckBox IsChecked="{Binding IsShown, Mode=TwoWay}" AutomationProperties.Name="Show project in cargo requirements" />
+                        <CheckBox IsChecked="{Binding IsShoppingSelected, Mode=TwoWay}" AutomationProperties.Name="Select project for shopping" />
+                      </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="2">
                         <Button Classes="link" HorizontalAlignment="Left"
                                 Click="OpenProjectPreview_Click"
@@ -535,15 +590,18 @@
                                    Text="{Binding PrimaryLabel}"
                                    TextWrapping="Wrap" />
                       </StackPanel>
-                      <TextBlock Grid.Column="2"
+                      <TextBlock Grid.Column="2" VerticalAlignment="Center"
+                                 Text="{Binding CarrierCoverageText}"
+                                 ToolTip.Tip="Estimated share of remaining project needs covered by the selected carriers, capped per commodity." />
+                      <TextBlock Grid.Column="3"
                                  VerticalAlignment="Center"
                                  Text="{Binding ProgressText}"
                                  TextWrapping="Wrap" />
-                      <TextBlock Grid.Column="3"
+                      <TextBlock Grid.Column="4"
                                  VerticalAlignment="Center"
                                  Text="{Binding TypeDescription}"
                                  TextWrapping="Wrap" />
-                      <StackPanel Grid.Column="4"
+                      <StackPanel Grid.Column="5"
                                   VerticalAlignment="Center"
                                   Spacing="2">
                         <Button Classes="link" HorizontalAlignment="Left"
@@ -558,7 +616,7 @@
                                      TextWrapping="Wrap" />
                         </Button>
                       </StackPanel>
-                      <Button Grid.Column="5"
+                      <Button Grid.Column="6"
                               Classes="secondary"
                               MinWidth="0"
                               Padding="8,9"

@@ -72,6 +72,7 @@ public enum GlobalInputAction
     ToggleSurfaceMiningSurveyVisibility,
     ToggleVrOverlayInteraction,
     ToggleExplorationPoisVisibility,
+    ToggleColonizationWishListVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -358,6 +359,12 @@ public static class GlobalInputActionCatalog
             "toggleColonizationCommoditiesVisibility",
             "Colonization commodities",
             "PlotBuildCommodities"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleColonizationWishListVisibility,
+            "toggleColonizationWishListVisibility",
+            "Colonization wish list",
+            "PlotColonizationWishList"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleFlightWarningVisibility,

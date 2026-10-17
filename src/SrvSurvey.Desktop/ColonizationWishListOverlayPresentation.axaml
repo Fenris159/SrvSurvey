@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             x:Class="SrvSurvey.Desktop.ColonizationWishListOverlayPresentation"
+             x:DataType="vm:ColonizationWishListViewModel"
+             HorizontalAlignment="Left" ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="Button.wish-action">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.remove-wish">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Margin" Value="0,0,3,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Border Padding="6" Background="{DynamicResource RavenWindowBrush}"
+          BorderThickness="0" CornerRadius="5">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="4" HorizontalAlignment="Left">
+      <TextBlock Text="WISH LIST" Classes="overlay-header type-header" FontSize="12"
+                 MaxWidth="{Binding #WishListRows.Bounds.Width}" TextWrapping="Wrap" />
+      <ScrollViewer x:Name="WishListScroll" Grid.Row="1" HorizontalAlignment="Left"
+                    HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="WishListRows" ItemsSource="{Binding Stations}" HorizontalAlignment="Left">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ColonizationWishListNode">
+              <StackPanel Margin="0,0,0,5" Spacing="2" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                  <Button Classes="wish-action remove-wish" Command="{Binding RemoveCommand}"
+                          ToolTip.Tip="Remove station from wish list" AutomationProperties.Name="Remove station from wish list">
+                    <TextBlock Text="×" FontSize="12" Classes="type-icon" Foreground="{DynamicResource RavenDangerBrush}" />
+                  </Button>
+                  <TextBlock Text="{Binding Label}" FontSize="11" Classes="type-title" FontWeight="SemiBold"
+                             VerticalAlignment="Center" Margin="0,0,6,0"
+                             Foreground="{DynamicResource RavenColoniseCategoryBrush}" />
+                  <Button Classes="wish-action" behaviors:ClipboardCopyBehavior.Text="{Binding System}"
+                          AutomationProperties.Name="Copy system name">
+                    <TextBlock Text="{Binding System}" FontSize="10" Classes="type-detail" TextDecorations="Underline"
+                               Foreground="{DynamicResource RavenAccentBrush}" />
+                  </Button>
+                </StackPanel>
+                <Border Margin="4,0,0,0" Padding="9,0,0,0" BorderThickness="1,0,0,0"
+                        BorderBrush="{DynamicResource RavenRaisedSurfaceBrush}">
+                  <ItemsControl ItemsSource="{Binding Children}" HorizontalAlignment="Left">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ColonizationWishListNode">
+                        <StackPanel Orientation="Horizontal" Margin="0,1" HorizontalAlignment="Left">
+                          <Button Classes="wish-action remove-wish" Command="{Binding RemoveCommand}"
+                                  ToolTip.Tip="Remove commodity from wish list" AutomationProperties.Name="Remove commodity from wish list">
+                            <TextBlock Text="×" FontSize="12" Classes="type-icon" Foreground="{DynamicResource RavenDangerBrush}" />
+                          </Button>
+                          <TextBlock Text="{Binding Label}" FontSize="11" Classes="type-body"
+                                     Foreground="{DynamicResource RavenColoniseItemBrush}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+      <TextBlock Grid.Row="2" Text="{Binding Summary}" FontSize="9" Classes="muted type-caption"
+                 MaxWidth="{Binding #WishListRows.Bounds.Width}" TextWrapping="Wrap" />
+    </Grid>
+  </Border>
+</UserControl>

@@ -12,7 +12,7 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
+public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
     private const string FleetCarrierStationType = "FleetCarrier";
@@ -44,6 +44,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<double> currentStarPosition = [];
     private string? primaryProjectId;
     private bool isBusy;
+    private bool disposed;
     private bool hasUnsavedProjectVisibility;
     private bool shipCargoPublishingEnabled;
     private bool sharedCargoSuppressed;
@@ -57,6 +58,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private string? currentShipName;
     private string statusMessage;
     private bool refreshPending;
+    private Task<bool>? projectRefreshTask;
     private IReadOnlyList<ColonizationPendingContributionRowViewModel> unconfirmedContributions = [];
     private string? contributionRecoveryOwner;
 
@@ -76,6 +78,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     )
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        WishList = new ColonizationWishListViewModel(RemoveWishListItems);
         this.client = client ?? new RavenColonialClient();
         this.commanderProfileStore = commanderProfileStore;
         this.legacyProfileStore = legacyProfileStore;
@@ -119,6 +122,19 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 return Task.CompletedTask;
             },
             CanReconcileSelectedContributions
+        );
+        searchMarketsCommand = new WorkspaceCommand(OpenShopping, () => CanSearchMarkets);
+        carrierManifestCommand = new WorkspaceCommand(
+            () => carrierManifestOpener?.Invoke(),
+            () =>
+                IsEnabled
+                && CommanderName is not null
+                && HasStoredRavenApiKey
+                && this.client is IRavenColonialCarrierManifestClient
+        );
+        wishListCommand = new WorkspaceCommand(
+            () => wishListOpener?.Invoke(),
+            () => IsEnabled && CommanderName is not null
         );
         RefreshCommand = refreshCommand;
         SaveProjectsCommand = saveProjectsCommand;
@@ -426,6 +442,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 }
                 else
                 {
+                    StopAutoRefresh();
                     CancelDockingRefresh();
                     ClearProjects();
                     StatusMessage = "Raven Colonial access is off. No project data will be fetched or published.";
@@ -480,7 +497,36 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
+            foreach (ColonizationProjectRowViewModel row in projects)
+            {
+                row.PropertyChanged -= OnShoppingSelectionChanged;
+            }
+
             projects = value;
+            if (hasCurrentShoppingProjects)
+            {
+                ReconcileShoppingSelection(value.Select(row => row.Project.BuildId));
+            }
+            foreach (ColonizationProjectRowViewModel row in projects)
+            {
+                row.PropertyChanged += OnShoppingSelectionChanged;
+            }
+
+            if (hasCurrentShoppingProjects)
+            {
+                shoppingWorkspace?.UpdateProjects(
+                    projects
+                        .Where(row =>
+                            shoppingWorkspace.ProjectIds.Contains(row.Project.BuildId, StringComparer.OrdinalIgnoreCase)
+                        )
+                        .Select(row => row.Project),
+                    LinkedFleetCarriers
+                );
+            }
+            UpdatePlanningCarriers();
+            ReconcileWishList();
+            OnPropertyChanged(nameof(CanSearchMarkets));
+            searchMarketsCommand.Refresh();
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasProjects));
             OnPropertyChanged(nameof(HasNoProjects));
@@ -595,6 +641,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        StopAutoRefresh();
         CancelDockingRefresh();
         recovery.SetCommander(normalized);
         OnPropertyChanged(nameof(CommanderName));
@@ -602,6 +649,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         RaiseCommandStates();
         NotifyContributionRecovery();
         ClearProjects();
+        RestoreShoppingSelection();
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
         if (CommanderName is null)
@@ -844,7 +892,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public void Dispose()
     {
+        disposed = true;
+        StopAutoRefresh();
+        shoppingWorkspace?.Dispose();
+        shoppingWorkspace = null;
         CancelDockingRefresh();
+        OnPropertyChanged(nameof(CanAutoRefresh));
     }
 
     /// <summary>Validates and persists a Raven key only against the captured commander profile.</summary>
@@ -1129,7 +1182,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Loads the active commander workspace and services refreshes requested while an obsolete load was busy.</summary>
     private async Task RefreshAsync(CancellationToken cancellationToken)
     {
-        if (!IsEnabled || CommanderName is null)
+        if (disposed || !IsEnabled || CommanderName is null)
         {
             return;
         }
@@ -1138,8 +1191,23 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             refreshPending = true;
             return;
         }
+        await StartProjectRefresh(cancellationToken);
+    }
+
+    private Task<bool> StartProjectRefresh(CancellationToken cancellationToken)
+    {
+        Task<bool> refresh = RefreshProjectsCoreAsync(cancellationToken);
+        projectRefreshTask = refresh;
+        return refresh;
+    }
+
+    private async Task<bool> RefreshProjectsCoreAsync(CancellationToken cancellationToken)
+    {
         int version = recovery.ProfileVersion;
-        string commander = CommanderName;
+        if (CommanderName is not { } commander)
+        {
+            return false;
+        }
         IsBusy = true;
 
         StatusMessage = "Fetching active projects from Raven Colonial...";
@@ -1149,22 +1217,25 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 await RestoreLegacyProfileAsync(cancellationToken: cancellationToken);
             }
-            if (version != recovery.ProfileVersion)
+            if (disposed || !IsEnabled || version != recovery.ProfileVersion)
             {
-                return;
+                return false;
             }
             ColonizationCommanderProjects result = await client.GetCommanderProjectsAsync(commander, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (
-                version != recovery.ProfileVersion
+                disposed
+                || !IsEnabled
+                || version != recovery.ProfileVersion
                 || !string.Equals(CommanderName, commander, StringComparison.OrdinalIgnoreCase)
             )
             {
-                return;
+                return false;
             }
 
             hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
+            hasCurrentShoppingProjects = true;
             recovery.ReplaceWorkspace(result.Projects, result.FleetCarriers);
             Projects = recovery.Projects.Select(CreateRow).ToArray();
             HasUnsavedProjectVisibility = false;
@@ -1175,6 +1246,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 1 => "Loaded 1 active Raven Colonial project.",
                 _ => $"Loaded {Projects.Count:N0} active Raven Colonial projects.",
             };
+            return true;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -1183,15 +1255,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception exception)
             when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
         {
-            if (version == recovery.ProfileVersion)
+            if (!disposed && IsEnabled && version == recovery.ProfileVersion)
             {
                 StatusMessage = "Project refresh failed without changing your selection: " + exception.Message;
             }
+            return false;
         }
         finally
         {
             IsBusy = false;
-            await RefreshPendingAsync(cancellationToken: cancellationToken);
+            // A queued refresh belongs to its requesting context, not the cancelled previous request.
+            await RefreshPendingAsync(CancellationToken.None);
         }
     }
 
@@ -1208,7 +1282,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             recovery.FrontierId,
             cancellationToken
         );
-        if (version != recovery.ProfileVersion)
+        if (disposed || !IsEnabled || version != recovery.ProfileVersion)
         {
             return;
         }
@@ -1298,7 +1372,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             !hiddenProjectIds.Contains(project.BuildId),
             OnProjectShownChanged,
             TogglePrimaryProjectAsync
-        );
+        )
+        {
+            IsShoppingSelected = shoppingProjectIds.Contains(project.BuildId),
+        };
     }
 
     /// <summary>Changes the captured commander's primary project without applying results to a replacement profile.</summary>
@@ -1466,6 +1543,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void ClearProjects()
     {
+        shoppingWorkspace = null;
+        hasCurrentShoppingProjects = false;
         Projects = [];
         recovery.ClearWorkspace();
         hiddenProjectIds.Clear();
@@ -1477,6 +1556,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateCommodityPlan()
     {
+        UpdatePlanningCarriers();
+        ReconcileShoppingCarriers();
         OnPropertyChanged(nameof(LinkedFleetCarriers));
         OnPropertyChanged(nameof(DetectedSquadronCarrierMarketId));
         ColonizationConstructionSnapshot construction = recovery.CreateConstructionSnapshot();
@@ -1689,8 +1770,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Refreshes workspace and recovery action availability after preferences or commander context change.</summary>
     private void RaiseCommandStates()
     {
+        carrierManifestCommand.Refresh();
+        OnPropertyChanged(nameof(CanAutoRefresh));
         refreshCommand.RaiseCanExecuteChanged();
         saveProjectsCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSearchMarkets));
+        searchMarketsCommand.Refresh();
+        wishListCommand.Refresh();
         saveRavenApiKeyCommand.RaiseCanExecuteChanged();
         publishFleetCarrierCommand.RaiseCanExecuteChanged();
         syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
@@ -1766,6 +1852,7 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 {
     private readonly Action<ColonizationProjectRowViewModel, bool> changed;
     private bool isShown;
+    private bool isShoppingSelected;
 
     public ColonizationProjectRowViewModel(
         ColonizationProject project,
@@ -1804,6 +1891,18 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 
     public ICommand TogglePrimaryCommand { get; }
 
+    public string CarrierCoverageText { get; private set; } = "0%";
+
+    internal void UpdateCarrierCoverage(double percent)
+    {
+        string text = percent.ToString("0", CultureInfo.InvariantCulture) + "%";
+        if (CarrierCoverageText != text)
+        {
+            CarrierCoverageText = text;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CarrierCoverageText)));
+        }
+    }
+
     public string ProgressText =>
         Project.IsFleetCarrierLoading
             ? $"? of {Project.MaximumRequired:N0}"
@@ -1814,6 +1913,21 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
                     + Project.MaximumRequired.ToString("N0", CultureInfo.CurrentCulture),
                 null => "Progress unavailable",
             };
+
+    public bool IsShoppingSelected
+    {
+        get => isShoppingSelected;
+        set
+        {
+            if (value == isShoppingSelected)
+            {
+                return;
+            }
+
+            isShoppingSelected = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsShoppingSelected)));
+        }
+    }
 
     public bool IsShown
     {

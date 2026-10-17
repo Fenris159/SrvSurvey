@@ -14,6 +14,7 @@ public sealed partial class OverlayCoverageInventoryTests
         ["PlotBioSystem"] = "BiologySurveyOverlayWindow.axaml",
         ["PlotBodyInfo"] = "BodyInformationOverlayWindow.axaml",
         ["PlotBuildCommodities"] = "ColonizationCommodityOverlayWindow.axaml",
+        ["PlotColonizationWishList"] = "ColonizationWishListOverlayWindow.axaml",
         ["PlotFlightWarning"] = "FlightWarningOverlayWindow.axaml",
         ["PlotFloatie"] = "NotificationOverlayWindow.axaml",
         ["PlotFootCombat"] = "FootCombatOverlayWindow.axaml",
@@ -98,6 +99,14 @@ public sealed partial class OverlayCoverageInventoryTests
             "PlotBuildCommodities",
             ["src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"],
             ["tests/SrvSurvey.Desktop.Tests/ViewModels/ColonizationCommodityOverlayViewModelTests.cs"]
+        ),
+        Map(
+            "PlotColonizationWishList",
+            [
+                "src/SrvSurvey.Desktop/ColonizationWishListOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/ColonizationWishListOverlayPresentation.axaml",
+            ],
+            ["tests/SrvSurvey.Desktop.Tests/Presentation/ColonizationWishListOverlayTests.cs"]
         ),
         Map(
             "PlotFlightWarning",
@@ -350,7 +359,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(40, Mappings.Length);
+        Assert.Equal(41, Mappings.Length);
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 

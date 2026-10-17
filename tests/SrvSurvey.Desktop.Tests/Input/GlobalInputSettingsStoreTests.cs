@@ -13,7 +13,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(70, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(71, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog
@@ -33,7 +33,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         GlobalInputActionDefinition[] panelToggles = GlobalInputActionCatalog
             .All.Where(definition => definition.OverlayPlotterName is not null)
             .ToArray();
-        Assert.Equal(38, panelToggles.Length);
+        Assert.Equal(39, panelToggles.Length);
         Assert.All(
             panelToggles,
             definition =>
