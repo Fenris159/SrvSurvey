@@ -894,6 +894,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     {
         disposed = true;
         StopAutoRefresh();
+        shoppingWorkspace?.Dispose();
+        shoppingWorkspace = null;
         CancelDockingRefresh();
         OnPropertyChanged(nameof(CanAutoRefresh));
     }

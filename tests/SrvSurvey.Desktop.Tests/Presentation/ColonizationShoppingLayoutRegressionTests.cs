@@ -163,7 +163,10 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .First(item => Equals(item.Content, tags[0].Content));
-            Assert.Equal(Color.Parse("#0A0A0A"), Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            Assert.Equal(
+                Color.Parse("#0A0A0A"),
+                Assert.IsType<ISolidColorBrush>(presenter.Foreground, exactMatch: false).Color
+            );
             IGrouping<double, Rect>[] rows = tags.Select(tag => new Rect(
                     tag.TranslatePoint(default, window)!.Value,
                     tag.Bounds.Size

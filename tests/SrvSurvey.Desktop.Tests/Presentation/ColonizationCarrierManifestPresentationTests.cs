@@ -74,7 +74,7 @@ public sealed class ColonizationCarrierManifestPresentationTests
                 .GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .First(item => Equals(item.Content, filter.Content));
-            Assert.Equal(Colors.Black, Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            Assert.Equal(Colors.Black, Assert.IsType<ISolidColorBrush>(presenter.Foreground, exactMatch: false).Color);
             Click(window, filter);
             Assert.False(model.HideNonColonyCommodities);
             Assert.Contains(

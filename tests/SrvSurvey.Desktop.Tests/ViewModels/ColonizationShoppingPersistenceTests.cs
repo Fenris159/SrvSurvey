@@ -8,6 +8,21 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationViewModelTests
 {
+    [Fact]
+    public async Task DisposingTheWorkspaceAlsoStopsItsShoppingModel()
+    {
+        using ColonizationViewModel model = Create(ShoppingClient(100));
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        using ColonizationShoppingViewModel shopping = model.CreateShopping(
+            [model.Projects[0].Project],
+            new ColonizationShoppingViewModelTests.SearchStub([])
+        );
+        Assert.True(shopping.CanSearch);
+        model.Dispose();
+        Assert.False(shopping.CanSearch);
+    }
+
     [Theory]
     [InlineData(false, 40)]
     [InlineData(true, 100)]

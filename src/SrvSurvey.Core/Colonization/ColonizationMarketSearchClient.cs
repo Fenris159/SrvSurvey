@@ -241,7 +241,7 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
                 ReadSpansh(station, query, result.Quotes);
             }
             long total = Integer(document.RootElement, "count");
-            if (rows.GetArrayLength() < SpanshPageSize || (page + 1) * SpanshPageSize >= total)
+            if (rows.GetArrayLength() < SpanshPageSize || (total > 0 && (page + 1) * SpanshPageSize >= total))
             {
                 return;
             }

@@ -11,6 +11,54 @@ public sealed class ColonizationMarketSearchClientTests
 {
     private static readonly string[] CombinedCommodities = ["Steel", "Water"];
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("null", false)]
+    [InlineData("\"unknown\"", false)]
+    [InlineData("0", false)]
+    [InlineData("-1", false)]
+    [InlineData(null, true)]
+    public async Task UnknownSpanshCountsKeepPagingUntilAShortPage(string? count, bool initialCountKnown)
+    {
+        int pages = 0;
+        using var http = new HttpClient(
+            new Handler(
+                (request, _) =>
+                {
+                    if (request.RequestUri!.Host != "spansh.co.uk")
+                    {
+                        return Task.FromResult(Json(new JsonArray()));
+                    }
+                    int page = pages++;
+                    var envelope = new JsonObject
+                    {
+                        ["search_reference"] = "7b9067a9-6ff1-4fa9-bb35-5767867365a0",
+                        ["results"] = new JsonArray(
+                            Enumerable
+                                .Range(page * 100 + 1, page < 2 ? 100 : 1)
+                                .Select(id => (JsonNode)Spansh(id, "Steel", 100))
+                                .ToArray()
+                        ),
+                    };
+                    if (page == 0 && initialCountKnown)
+                    {
+                        envelope["count"] = 201;
+                    }
+                    else if (count is not null)
+                    {
+                        envelope["count"] = JsonNode.Parse(count);
+                    }
+                    return Task.FromResult(Json(envelope));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(Query());
+        Assert.Equal(3, pages);
+        Assert.Equal(201, result.Quotes.Count);
+        Assert.Empty(result.Warnings);
+    }
+
     [Fact]
     public async Task UsesSavedSpanshReferenceForSubsequentPages()
     {

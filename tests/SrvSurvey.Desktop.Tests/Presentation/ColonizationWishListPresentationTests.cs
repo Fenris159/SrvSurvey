@@ -119,7 +119,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             Button wishSystem = wish.GetVisualDescendants()
                 .OfType<Button>()
                 .First(button => Equals(ClipboardCopyBehavior.GetText(button), "Sol"));
-            IClipboard clipboard = Assert.IsAssignableFrom<IClipboard>(wish.Clipboard);
+            IClipboard clipboard = Assert.IsType<IClipboard>(wish.Clipboard, exactMatch: false);
             await clipboard.SetTextAsync("before");
             LeftClick(wish, wishSystem);
             Assert.Equal("Sol", await clipboard.TryGetTextAsync());
@@ -151,7 +151,7 @@ public sealed partial class ColonizationShoppingPresentationTests
                     ReferenceEquals(button.DataContext, model.WishList.Stations[0])
                     && ClipboardCopyBehavior.GetText(button) is string
                 );
-            IClipboard overlayClipboard = Assert.IsAssignableFrom<IClipboard>(live.Clipboard);
+            IClipboard overlayClipboard = Assert.IsType<IClipboard>(live.Clipboard, exactMatch: false);
             await overlayClipboard.SetTextAsync("before");
             LeftClick(live, overlaySystem);
             Assert.Equal("Sol", await overlayClipboard.TryGetTextAsync());

@@ -4,26 +4,25 @@ public sealed partial class ColonizationViewModel
 {
     private static readonly TimeSpan AutoRefreshInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan AutoRefreshLifetime = TimeSpan.FromHours(1);
-    private CancellationTokenSource? autoRefreshCancellation;
+
+    // The polling task owns its source; the workspace retains only a stop request.
+    private Action? cancelAutoRefresh;
 
     public bool CanAutoRefresh => !disposed && IsEnabled && CommanderName is not null;
 
     /// <summary>Session-only polling; commander changes, consent withdrawal, and shutdown stop it.</summary>
     public bool IsAutoRefreshEnabled
     {
-        get => autoRefreshCancellation is not null;
+        get => cancelAutoRefresh is not null;
         set
         {
             if (!value)
             {
                 StopAutoRefresh();
             }
-            else if (CanAutoRefresh && autoRefreshCancellation is null)
+            else if (CanAutoRefresh && cancelAutoRefresh is null)
             {
-                var session = new CancellationTokenSource();
-                autoRefreshCancellation = session;
-                OnPropertyChanged();
-                AutoRefreshTask = RunAutoRefreshAsync(session);
+                AutoRefreshTask = RunAutoRefreshAsync();
             }
         }
     }
@@ -32,18 +31,22 @@ public sealed partial class ColonizationViewModel
 
     private void StopAutoRefresh()
     {
-        CancellationTokenSource? session = autoRefreshCancellation;
-        if (session is null)
+        Action? cancel = cancelAutoRefresh;
+        if (cancel is null)
         {
             return;
         }
-        autoRefreshCancellation = null;
+        cancelAutoRefresh = null;
         OnPropertyChanged(nameof(IsAutoRefreshEnabled));
-        session.Cancel();
+        cancel();
     }
 
-    private async Task RunAutoRefreshAsync(CancellationTokenSource session)
+    private async Task RunAutoRefreshAsync()
     {
+        using var session = new CancellationTokenSource();
+        Action cancel = session.Cancel;
+        cancelAutoRefresh = cancel;
+        OnPropertyChanged(nameof(IsAutoRefreshEnabled));
         CancellationToken token = session.Token;
         try
         {
@@ -61,7 +64,7 @@ public sealed partial class ColonizationViewModel
                     continue;
                 }
                 Task refresh = RefreshAsync(token);
-                if (await Task.WhenAny(expiry, refresh) == expiry && ReferenceEquals(autoRefreshCancellation, session))
+                if (await Task.WhenAny(expiry, refresh) == expiry && ReferenceEquals(cancelAutoRefresh, cancel))
                 {
                     StopAutoRefresh();
                 }
@@ -74,11 +77,10 @@ public sealed partial class ColonizationViewModel
         }
         finally
         {
-            if (ReferenceEquals(autoRefreshCancellation, session))
+            if (ReferenceEquals(cancelAutoRefresh, cancel))
             {
                 StopAutoRefresh();
             }
-            session.Dispose();
         }
     }
 }

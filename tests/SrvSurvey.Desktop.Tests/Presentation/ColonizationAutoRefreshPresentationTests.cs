@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
@@ -49,6 +50,9 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.True(spinner.IsVisible);
             using WriteableBitmap? active = window.CaptureRenderedFrame();
             Assert.NotNull(active);
+            // Avalonia supplies a default TransformGroup for transform keyframes.
+            TransformGroup transforms = Assert.IsType<TransformGroup>(spinner.RenderTransform);
+            Assert.Single(transforms.Children.OfType<RotateTransform>());
             active.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-auto-refresh-preview.png"),
                 PngBitmapEncoderOptions.Default

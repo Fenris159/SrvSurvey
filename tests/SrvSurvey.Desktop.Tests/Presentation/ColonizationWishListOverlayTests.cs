@@ -327,7 +327,7 @@ public sealed class ColonizationWishListOverlayTests
                 .ToArray();
             Button system = Assert.Single(links);
             Assert.Equal(station.System, Assert.IsType<TextBlock>(system.Content).Text);
-            IClipboard clipboard = Assert.IsAssignableFrom<IClipboard>(window.Clipboard);
+            IClipboard clipboard = Assert.IsType<IClipboard>(window.Clipboard, exactMatch: false);
             await clipboard.SetTextAsync("before");
             LeftClick(window, system);
             Assert.Equal(station.System, await clipboard.TryGetTextAsync());
