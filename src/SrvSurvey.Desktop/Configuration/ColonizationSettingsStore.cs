@@ -4,7 +4,7 @@ using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Desktop.Configuration;
 
-public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoveryStore
+public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRecoveryStore
 {
     private const string ColonizationSectionKey = "Colonization";
     private const string VersionKey = "Version";
@@ -14,6 +14,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
     public ColonizationSettingsStore(string path)
     {
         documentStore = new UiSettingsDocumentStore(path);
+        shoppingDocumentStore = new UiSettingsDocumentStore(path + ".shopping.json");
     }
 
     public bool LoadEnabled()

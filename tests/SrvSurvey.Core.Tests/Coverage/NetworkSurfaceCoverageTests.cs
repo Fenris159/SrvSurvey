@@ -5,6 +5,7 @@ public sealed class NetworkSurfaceCoverageTests
     private static readonly string[] HttpClientOwners =
     [
         "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
+        "src/SrvSurvey.Core/Colonization/ColonizationMarketSearchClient.cs",
         "src/SrvSurvey.Core/Exobiology/CanonnCodexChallengeClient.cs",
         "src/SrvSurvey.Core/Exobiology/CanonnSystemPoiClient.cs",
         "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
@@ -54,6 +55,7 @@ public sealed class NetworkSurfaceCoverageTests
             !path.EndsWith("MainWindowViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningSearchClient.cs", StringComparison.Ordinal)
+            && !path.EndsWith("ColonizationMarketSearchClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("ArdentSystemNameSuggestionClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnCommanderPublisher.cs", StringComparison.Ordinal)
@@ -67,6 +69,18 @@ public sealed class NetworkSurfaceCoverageTests
 
     private static readonly NetworkSurface[] Surfaces =
     [
+        new(
+            "colonization-market-shopping",
+            [
+                "src/SrvSurvey.Core/Colonization/ColonizationMarketSearchClient.cs",
+                "src/SrvSurvey.Core/Search/ArdentApi.cs",
+                "src/SrvSurvey.Core/Search/SpanshApi.cs",
+            ],
+            [
+                "tests/SrvSurvey.Core.Tests/Colonization/ColonizationMarketSearchClientTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/Presentation/ColonizationShoppingPresentationTests.cs",
+            ]
+        ),
         new(
             "edastro-exploration-pois",
             ["src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs"],
@@ -197,11 +211,13 @@ public sealed class NetworkSurfaceCoverageTests
             "raven-colonial-quests-and-ggg",
             [
                 "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
+                "src/SrvSurvey.Core/Colonization/RavenColonialClient.CarrierManifest.cs",
                 "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
                 "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialCarrierManifestTests.cs",
                 "tests/SrvSurvey.Core.Tests/Quests/RavenQuestClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/GreenGasGiantClientTests.cs",
             ]

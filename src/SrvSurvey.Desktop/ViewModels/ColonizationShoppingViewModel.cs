@@ -1,0 +1,754 @@
+using System.ComponentModel;
+using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using SrvSurvey.Core.Colonization;
+using SrvSurvey.Desktop.Configuration;
+
+namespace SrvSurvey.Desktop.ViewModels;
+
+/// <summary>Owns a shopping snapshot and local market filters for one nonmodal workspace.</summary>
+public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable, IDisposable
+{
+    private const string DistanceSort = "Distance";
+    private const string StationSort = "Station";
+    private const string MatchesSort = "Most commodities available";
+    private const string SystemSort = "System";
+    private const string ArrivalSort = "Arrival";
+
+    private readonly IColonizationMarketSearch search;
+    private readonly Func<string?> currentSystem;
+    private readonly bool ownsSearch;
+    private readonly Action<ColonizationShoppingState>? saveState;
+    private readonly Func<CancellationToken, Task<IReadOnlyList<ColonizationProject>>>? refreshProjects;
+    private DateTimeOffset? completedAt;
+    private string completedSystem = string.Empty;
+    private int completedRadius;
+    private IReadOnlyList<string> searchedCommodities = [];
+    private readonly CancellationTokenSource lifetime = new();
+    private IReadOnlyList<ColonizationMarketQuote> quotes = [];
+    private string referenceSystem;
+    private string radiusText = "100";
+    private string maximumAgeText = "7";
+    private string maximumArrivalText = "0";
+    private string minimumPad = "Large";
+    private string sort = DistanceSort;
+    private bool excludeCarriers = true;
+    private bool excludeSurface;
+    private bool requireFullSupply;
+    private bool showShortSupply = true;
+    private bool disposed;
+    private bool updatingCommoditySelection;
+    private int searchVersion;
+    private bool showSearchCriteria = true;
+    private bool reverseSort;
+    private ColonizationShoppingPlan plan;
+    private readonly HashSet<string> expandedMarkets = new(StringComparer.Ordinal);
+
+    public bool ShowSearchCriteria
+    {
+        get => showSearchCriteria;
+        set => Set(ref showSearchCriteria, value);
+    }
+    public string ExpandAllText => Results.Any(row => row.IsExpanded) ? "Collapse all" : "Expand all";
+    public string StationSortLabel => SortLabel(StationSort, StationSort);
+    public string MatchesSortLabel => SortLabel(MatchesSort, "Commodities");
+    public string SystemSortLabel => SortLabel(SystemSort, SystemSort);
+    public string DistanceSortLabel => SortLabel(DistanceSort, DistanceSort);
+    public string ArrivalSortLabel => SortLabel(ArrivalSort, ArrivalSort);
+
+    private string SortLabel(string column, string label)
+    {
+        if (Sort != column)
+        {
+            return label;
+        }
+
+        bool descending = (column == MatchesSort) != reverseSort;
+        return label + (descending ? " ▾" : " ▴");
+    }
+
+    public void SortBy(string column)
+    {
+        if (Sort == column)
+        {
+            reverseSort = !reverseSort;
+            FilterResults();
+        }
+        else
+        {
+            Sort = column;
+        }
+    }
+
+    public void ToggleAllExpanded()
+    {
+        bool expand = !Results.Any(row => row.IsExpanded);
+        foreach (ShoppingMarketRowViewModel row in Results)
+        {
+            row.IsExpanded = expand;
+        }
+    }
+
+    public void ToggleCommodity(string commodity)
+    {
+        ShoppingNeedViewModel? need = Needs.FirstOrDefault(need => need.Need.Commodity == commodity);
+        need?.IsSelected = !need.IsSelected;
+    }
+
+    /// <summary>Updates every commodity filter together without rebuilding the market rows once per tag.</summary>
+    public void SetAllCommoditiesSelected(bool selected)
+    {
+        if (disposed)
+        {
+            return;
+        }
+        updatingCommoditySelection = true;
+        try
+        {
+            foreach (ShoppingNeedViewModel need in Needs)
+            {
+                need.IsSelected = selected;
+            }
+        }
+        finally
+        {
+            updatingCommoditySelection = false;
+        }
+        FilterResults();
+        SaveWorkspace();
+    }
+
+    private void OnWishListChanged(IReadOnlyList<ColonizationWishListItem> items, bool selected)
+    {
+        if (selected)
+        {
+            plan.Select(items);
+        }
+        else
+        {
+            plan.Remove(items);
+        }
+        FilterResults();
+        SaveWorkspace();
+    }
+
+    /// <summary>Returns removed wish-list quantities to the market search.</summary>
+    internal bool RemoveWishListItems(IReadOnlyList<ColonizationWishListItem> items)
+    {
+        if (disposed)
+        {
+            return false;
+        }
+        plan.Remove(items);
+        FilterResults();
+        SaveWorkspace();
+        return true;
+    }
+
+    /// <summary>Explicitly discards the saved results and the wish list that belongs to them.</summary>
+    public void ClearSearch()
+    {
+        searchVersion++;
+        quotes = [];
+        ResetPlan();
+        expandedMarkets.Clear();
+        completedAt = null;
+        searchedCommodities = [];
+        Warnings = string.Empty;
+        Status = "Search cleared. Choose criteria to search again.";
+        ShowSearchCriteria = true;
+        FilterResults();
+        SaveWorkspace();
+        NotifySearch();
+    }
+
+    private void OnExpansionChanged(string key, bool expanded)
+    {
+        if (expanded)
+        {
+            expandedMarkets.Add(key);
+        }
+        else
+        {
+            expandedMarkets.Remove(key);
+        }
+
+        Changed(nameof(ExpandAllText));
+    }
+
+    public ColonizationShoppingViewModel(
+        IEnumerable<ColonizationProject> projects,
+        Func<string?> currentSystem,
+        IColonizationMarketSearch? search = null,
+        bool ownsProvidedSearch = false,
+        ColonizationShoppingState? restoredState = null,
+        Action<ColonizationShoppingState>? saveState = null,
+        Func<CancellationToken, Task<IReadOnlyList<ColonizationProject>>>? refreshProjects = null
+    )
+    {
+        this.saveState = saveState;
+        this.refreshProjects = refreshProjects;
+        this.currentSystem = currentSystem ?? throw new ArgumentNullException(nameof(currentSystem));
+        this.search = search ?? new ColonizationMarketSearchClient();
+        ownsSearch = search is null || ownsProvidedSearch;
+        referenceSystem = currentSystem() ?? string.Empty;
+        ColonizationProject[] selected = projects.ToArray();
+        ProjectIds = selected.Select(project => project.BuildId).ToArray();
+        ProjectSummary = string.Join(", ", selected.Select(project => project.BuildName));
+        IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
+        Needs = aggregate.Select(need => new ShoppingNeedViewModel(need)).ToArray();
+        plan = new ColonizationShoppingPlan(aggregate, []);
+        VisibleNeeds = Needs;
+
+        if (restoredState is not null)
+        {
+            Restore(restoredState);
+        }
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.PropertyChanged += OnNeedChanged;
+        }
+    }
+
+    internal IReadOnlyList<string> ProjectIds { get; }
+    public IReadOnlyList<ShoppingNeedViewModel> Needs { get; private set; }
+    public IReadOnlyList<ShoppingNeedViewModel> VisibleNeeds { get; private set; }
+    public bool IsFullyPlanned => Needs.Count > 0 && VisibleNeeds.Count == 0;
+    public string ProjectSummary { get; private set; }
+    public bool HasSearchResults => completedAt.HasValue;
+    public string SearchButtonText => HasSearchResults ? "Refresh" : "Search Markets";
+    public string ResultsReferenceSystem => HasSearchResults ? completedSystem : ReferenceSystem;
+    public string NeedsText => string.Join(", ", VisibleNeeds.Select(need => need.Label));
+    public string TotalText =>
+        $"{Needs.Sum(need => need.Remaining):N0} tonnes still to plan across {VisibleNeeds.Count:N0} commodities";
+    public IReadOnlyList<ShoppingMarketRowViewModel> Results { get; private set; } = [];
+    public bool IsBusy { get; private set; }
+    public bool CanSearch => !disposed && !IsBusy && (Needs.Count > 0 || refreshProjects is not null);
+    public string Status { get; private set; } = "Choose a reference system and search Spansh and Ardent.";
+    public string Warnings { get; private set; } = string.Empty;
+    public string ResultSummary =>
+        $"{Results.Count:N0} markets · {Results.Select(row => row.System).Distinct(StringComparer.OrdinalIgnoreCase).Count():N0} systems";
+    public static IReadOnlyList<string> PadOptions { get; } = ["Any", "Small", "Medium", "Large"];
+
+    public static IReadOnlyList<string> SortOptions { get; } =
+    [DistanceSort, MatchesSort, StationSort, SystemSort, ArrivalSort];
+
+    public bool ShowShortSupply
+    {
+        get => showShortSupply;
+        set
+        {
+            if (Set(ref showShortSupply, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+
+    public string ReferenceSystem
+    {
+        get => referenceSystem;
+        set
+        {
+            if (Set(ref referenceSystem, value))
+            {
+                InvalidateSearch();
+            }
+        }
+    }
+    public string RadiusText
+    {
+        get => radiusText;
+        set
+        {
+            if (Set(ref radiusText, value))
+            {
+                InvalidateSearch();
+            }
+        }
+    }
+    public string MaximumAgeText
+    {
+        get => maximumAgeText;
+        set
+        {
+            if (Set(ref maximumAgeText, value))
+            {
+                InvalidateSearch();
+            }
+        }
+    }
+    public string MaximumArrivalText
+    {
+        get => maximumArrivalText;
+        set
+        {
+            if (Set(ref maximumArrivalText, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+    public string MinimumPad
+    {
+        get => minimumPad;
+        set
+        {
+            if (Set(ref minimumPad, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+    public string Sort
+    {
+        get => sort;
+        set
+        {
+            if (Set(ref sort, value))
+            {
+                reverseSort = false;
+                FilterResults();
+            }
+        }
+    }
+    public bool ExcludeCarriers
+    {
+        get => excludeCarriers;
+        set
+        {
+            if (Set(ref excludeCarriers, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+    public bool ExcludeSurface
+    {
+        get => excludeSurface;
+        set
+        {
+            if (Set(ref excludeSurface, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+    public bool RequireFullSupply
+    {
+        get => requireFullSupply;
+        set
+        {
+            if (Set(ref requireFullSupply, value))
+            {
+                FilterResults();
+            }
+        }
+    }
+
+    public void UseCurrentLocation() => ReferenceSystem = currentSystem() ?? string.Empty;
+
+    /// <summary>Fetches all required commodities so toggling the comma-separated list needs no more requests.</summary>
+    public async Task SearchAsync()
+    {
+        if (!CanSearch)
+        {
+            return;
+        }
+
+        if (
+            string.IsNullOrWhiteSpace(ReferenceSystem)
+            || !int.TryParse(RadiusText, out int radius)
+            || radius is < 1 or > 500
+            || !int.TryParse(MaximumAgeText, out int maximumAge)
+            || maximumAge is < 1 or > 30
+        )
+        {
+            Status = "Enter a system, a radius from 1 to 500 ly, and a market age from 1 to 30 days.";
+            Changed(nameof(Status));
+            return;
+        }
+        IsBusy = true;
+        ResetPlan();
+        FilterResults();
+        SaveWorkspace();
+        int version = searchVersion;
+        var query = new ColonizationMarketQuery(ReferenceSystem.Trim(), radius, [], maximumAge);
+        try
+        {
+            if (!await RefreshNeedsForSearchAsync(version))
+            {
+                return;
+            }
+            query = query with { Needs = Needs.Select(need => need.Need).ToArray() };
+            Status = "Searching Spansh and Ardent… This can take a long time.";
+            Changed(nameof(Status));
+            ColonizationMarketSearchResult result = await search.SearchAsync(query, lifetime.Token);
+            if (disposed || version != searchVersion)
+            {
+                return;
+            }
+
+            CompleteSearch(query, result);
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
+        {
+            // Closing the shopping window cancels the search and discards late results.
+        }
+        catch (Exception exception)
+            when (exception
+                    is HttpRequestException
+                        or IOException
+                        or JsonException
+                        or InvalidDataException
+                        or OperationCanceledException
+            )
+        {
+            ReportSearchFailure(version);
+        }
+        finally
+        {
+            IsBusy = false;
+            NotifySearch();
+            if (disposed)
+            {
+                DisposeOwnedSearch();
+            }
+        }
+    }
+
+    private void ReportSearchFailure(int version)
+    {
+        if (disposed || version != searchVersion)
+        {
+            return;
+        }
+        Status = HasSearchResults
+            ? "Refresh failed. Previous results are still shown; try again."
+            : "Market search failed. Try searching again.";
+    }
+
+    private async Task<bool> RefreshNeedsForSearchAsync(int version)
+    {
+        Status = refreshProjects is null
+            ? "Searching Spansh and Ardent… This can take a long time."
+            : "Refreshing project needs from Raven Colonial…";
+        NotifySearch();
+        if (refreshProjects is not null)
+        {
+            IReadOnlyList<ColonizationProject> updated = await refreshProjects(lifetime.Token);
+            if (disposed || version != searchVersion)
+            {
+                return false;
+            }
+            UpdateProjects(updated);
+        }
+        if (Needs.Count == 0)
+        {
+            ClearSearch();
+            Status = "The selected projects have no remaining commodity needs.";
+            return false;
+        }
+        return true;
+    }
+
+    private void CompleteSearch(ColonizationMarketQuery query, ColonizationMarketSearchResult result)
+    {
+        quotes = result.Quotes;
+        ResetPlan();
+        completedAt = DateTimeOffset.Now;
+        completedSystem = query.ReferenceSystem;
+        completedRadius = query.Radius;
+        searchedCommodities = query.Needs.Select(need => need.Commodity).ToArray();
+        Warnings = string.Join(" ", result.Warnings);
+        WarnAboutUnsearchedNeeds();
+        Status = CompletedStatus();
+        expandedMarkets.Clear();
+        FilterResults();
+        if (Results.Count > 0)
+        {
+            Results[0].IsExpanded = true;
+        }
+
+        ShowSearchCriteria = false;
+        SaveWorkspace();
+    }
+
+    private void InvalidateSearch()
+    {
+        searchVersion++;
+        Status = "Search criteria changed. Refresh to load markets for these criteria.";
+        FilterResults();
+        NotifySearch();
+    }
+
+    /// <summary>Captures successful data independently of pending requests so closing during refresh retains it.</summary>
+    internal ColonizationShoppingState CaptureState() =>
+        new()
+        {
+            ReferenceSystem = ReferenceSystem,
+            RadiusText = RadiusText,
+            MaximumAgeText = MaximumAgeText,
+            MaximumArrivalText = MaximumArrivalText,
+            MinimumPad = MinimumPad,
+            Sort = Sort,
+            ReverseSort = reverseSort,
+            ExcludeCarriers = ExcludeCarriers,
+            ExcludeSurface = ExcludeSurface,
+            RequireFullSupply = RequireFullSupply,
+            ShowShortSupply = ShowShortSupply,
+            UseCarrierDifference = UseCarrierDifference,
+            HasCarrierDifferencePreference = true,
+            SelectedCarrierMarketId = selectedCarrierMarketId,
+            ShowSearchCriteria = ShowSearchCriteria,
+            ExcludedCommodities = Needs.Where(need => !need.IsSelected).Select(need => need.Need.Commodity).ToArray(),
+            ExpandedMarkets = expandedMarkets.ToArray(),
+            SearchedCommodities = searchedCommodities,
+            Quotes = quotes,
+            WishList = plan.Snapshot(),
+            Warnings = Warnings,
+            CompletedAt = completedAt,
+            CompletedSystem = completedSystem,
+            CompletedRadius = completedRadius,
+        };
+
+    private void Restore(ColonizationShoppingState state)
+    {
+        referenceSystem = state.ReferenceSystem;
+        radiusText = state.RadiusText;
+        maximumAgeText = state.MaximumAgeText;
+        maximumArrivalText = state.MaximumArrivalText;
+        minimumPad = state.MinimumPad;
+        sort = state.Sort == "Most matches" ? MatchesSort : state.Sort;
+        reverseSort = state.ReverseSort;
+        excludeCarriers = state.ExcludeCarriers;
+        excludeSurface = state.ExcludeSurface;
+        requireFullSupply = state.RequireFullSupply;
+        showShortSupply = state.ShowShortSupply;
+        useCarrierDifference = state.EffectiveUseCarrierDifference;
+        selectedCarrierMarketId = state.SelectedCarrierMarketId;
+        showSearchCriteria = state.ShowSearchCriteria;
+        quotes = state.Quotes;
+        Warnings = LegacySpanshWarnings()
+            .Replace(state.Warnings, "Previous Spansh results were truncated. Refresh to load more markets. ")
+            .Trim();
+        completedAt = state.CompletedAt;
+        completedSystem = state.CompletedSystem;
+        completedRadius = state.CompletedRadius;
+        searchedCommodities = state.SearchedCommodities;
+        expandedMarkets.UnionWith(state.ExpandedMarkets);
+        plan = new ColonizationShoppingPlan(EffectiveNeeds(Needs.Select(need => need.Need)), quotes, state.WishList);
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.IsSelected = !state.ExcludedCommodities.Contains(need.Need.Commodity, StringComparer.Ordinal);
+        }
+        if (HasSearchResults)
+        {
+            Status = CompletedStatus();
+            WarnAboutUnsearchedNeeds();
+        }
+        FilterResults();
+    }
+
+    [GeneratedRegex(
+        @"(?:Spansh reached the 100-station limit for .*?; narrow the radius for more complete results\.\s*)+"
+    )]
+    private static partial Regex LegacySpanshWarnings();
+
+    private void WarnAboutUnsearchedNeeds()
+    {
+        if (
+            HasSearchResults
+            && Needs.Any(need => !searchedCommodities.Contains(need.Need.Commodity, StringComparer.Ordinal))
+            && !Warnings.Contains("newly required commodities", StringComparison.Ordinal)
+        )
+        {
+            Warnings += " Project needs changed. Refresh to search for newly required commodities.";
+        }
+    }
+
+    /// <summary>Reconciles live project needs with saved market stock and caps existing allocations.</summary>
+    internal void UpdateProjects(
+        IEnumerable<ColonizationProject> projects,
+        IReadOnlyList<ColonizationFleetCarrier>? carriers = null
+    )
+    {
+        if (disposed)
+        {
+            return;
+        }
+        if (carriers is not null)
+        {
+            SetCarriers(carriers);
+        }
+        string[] excluded = Needs.Where(need => !need.IsSelected).Select(need => need.Need.Commodity).ToArray();
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.PropertyChanged -= OnNeedChanged;
+        }
+        ColonizationProject[] selected = projects.ToArray();
+        IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
+        plan = new ColonizationShoppingPlan(EffectiveNeeds(aggregate), quotes, plan.Snapshot());
+        Needs = aggregate
+            .Select(need => new ShoppingNeedViewModel(need)
+            {
+                IsSelected = !excluded.Contains(need.Commodity, StringComparer.Ordinal),
+            })
+            .ToArray();
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.PropertyChanged += OnNeedChanged;
+        }
+        ProjectSummary = string.Join(", ", selected.Select(project => project.BuildName));
+        WarnAboutUnsearchedNeeds();
+        Changed(nameof(Needs));
+        Changed(nameof(ProjectSummary));
+        FilterResults();
+        NotifySearch();
+        SaveWorkspace();
+    }
+
+    private string CompletedStatus() =>
+        $"Saved results near {completedSystem} within {completedRadius:N0} ly · {completedAt?.LocalDateTime:g}. Refresh for current stock.";
+
+    internal void SaveWorkspace()
+    {
+        try
+        {
+            saveState?.Invoke(CaptureState());
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Warnings += " The search could not be saved to disk.";
+            Changed(nameof(Warnings));
+        }
+    }
+
+    private void OnNeedChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (!updatingCommoditySelection && args.PropertyName == nameof(ShoppingNeedViewModel.IsSelected))
+        {
+            FilterResults();
+        }
+    }
+
+    private void ResetPlan() =>
+        plan = new ColonizationShoppingPlan(EffectiveNeeds(Needs.Select(need => need.Need)), quotes);
+
+    private void UpdateRemainingNeeds()
+    {
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.SetRemaining(plan.Remaining(need.Need.Commodity));
+        }
+        VisibleNeeds = Needs.Where(need => need.Remaining > 0).ToArray();
+        Changed(nameof(VisibleNeeds));
+        Changed(nameof(NeedsText));
+        Changed(nameof(TotalText));
+        Changed(nameof(IsFullyPlanned));
+    }
+
+    /// <summary>Applies Raven-style any-commodity matching, then compares each market's stock to the aggregate need.</summary>
+    private void FilterResults()
+    {
+        UpdateRemainingNeeds();
+        ColonizationShoppingNeed[] active = VisibleNeeds
+            .Where(need => need.IsSelected)
+            .Select(need => need.Need with { Required = need.Remaining })
+            .ToArray();
+        int pad = MinimumPad switch
+        {
+            "Large" => 3,
+            "Medium" => 2,
+            "Small" => 1,
+            _ => 0,
+        };
+        bool validArrival =
+            double.TryParse(MaximumArrivalText, NumberStyles.Number, CultureInfo.CurrentCulture, out double arrival)
+            && double.IsFinite(arrival)
+            && arrival >= 0;
+        IEnumerable<ShoppingMarketRowViewModel> rows = plan.GetAvailableQuotes()
+            .Where(quote =>
+                quote.PadSize >= pad
+                && (!ExcludeCarriers || !quote.StationType.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
+                && (!ExcludeSurface || !IsSurface(quote.StationType))
+                && validArrival
+                && (arrival == 0 || quote.Arrival <= arrival)
+            )
+            .GroupBy(ColonizationShopping.MarketKey)
+            .Select(group => new ShoppingMarketRowViewModel(
+                group.ToArray(),
+                active,
+                expandedMarkets.Contains(group.Key),
+                OnExpansionChanged,
+                OnWishListChanged,
+                ShowShortSupply
+            ))
+            .Where(row => row.Matches > 0 && (!RequireFullSupply || row.CanFulfillAll));
+        IEnumerable<ShoppingMarketRowViewModel> ordered = Sort switch
+        {
+            MatchesSort => rows.OrderByDescending(row => row.Matches).ThenBy(row => row.Distance),
+            StationSort => rows.OrderBy(row => row.Station, StringComparer.OrdinalIgnoreCase),
+            SystemSort => rows.OrderBy(row => row.System, StringComparer.OrdinalIgnoreCase),
+            ArrivalSort => rows.OrderBy(row => row.Arrival),
+            _ => rows.OrderBy(row => row.Distance).ThenBy(row => row.Station, StringComparer.OrdinalIgnoreCase),
+        };
+        Results = (reverseSort ? ordered.Reverse() : ordered).ToArray();
+        Changed(nameof(ExpandAllText));
+        Changed(nameof(StationSortLabel));
+        Changed(nameof(MatchesSortLabel));
+        Changed(nameof(SystemSortLabel));
+        Changed(nameof(DistanceSortLabel));
+        Changed(nameof(ArrivalSortLabel));
+        Changed(nameof(Results));
+        Changed(nameof(ResultSummary));
+    }
+
+    private static bool IsSurface(string type) =>
+        type.Contains("Planetary", StringComparison.OrdinalIgnoreCase)
+        || type.Contains("Settlement", StringComparison.OrdinalIgnoreCase)
+        || type.Contains("Crater", StringComparison.OrdinalIgnoreCase)
+        || type.Contains("Surface", StringComparison.OrdinalIgnoreCase);
+
+    private void NotifySearch()
+    {
+        Changed(nameof(HasSearchResults));
+        Changed(nameof(SearchButtonText));
+        Changed(nameof(ResultsReferenceSystem));
+        Changed(nameof(IsBusy));
+        Changed(nameof(CanSearch));
+        Changed(nameof(Status));
+        Changed(nameof(Warnings));
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        SaveWorkspace();
+        disposed = true;
+        lifetime.Cancel();
+        lifetime.Dispose();
+        foreach (ShoppingNeedViewModel need in Needs)
+        {
+            need.PropertyChanged -= OnNeedChanged;
+        }
+
+        if (!IsBusy)
+        {
+            DisposeOwnedSearch();
+        }
+    }
+
+    private void DisposeOwnedSearch()
+    {
+        if (ownsSearch && search is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+}

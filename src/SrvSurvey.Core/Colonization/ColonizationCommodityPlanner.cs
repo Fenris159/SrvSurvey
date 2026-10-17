@@ -563,6 +563,18 @@ public sealed record ColonizationCommodityPlanRow
 
 public sealed record ColonizationFleetCarrier
 {
+    [JsonPropertyName("owner")]
+    public string? Owner { get; init; }
+
+    [JsonPropertyName("systemName")]
+    public string? SystemName { get; init; }
+
+    [JsonPropertyName("access")]
+    public string? Access { get; init; }
+
+    [JsonPropertyName("notorious")]
+    public bool Notorious { get; init; }
+
     [JsonPropertyName("marketId")]
     public long MarketId { get; init; }
 
@@ -571,6 +583,9 @@ public sealed record ColonizationFleetCarrier
 
     [JsonPropertyName("displayName")]
     public string DisplayName { get; init; } = string.Empty;
+
+    [JsonPropertyName("lastRefresh")]
+    public DateTimeOffset? LastRefresh { get; init; }
 
     [JsonPropertyName("cargo")]
     public Dictionary<string, int> Cargo { get; init; } = new(StringComparer.OrdinalIgnoreCase);

@@ -576,7 +576,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 client: new RavenColonialClient(httpClient: externalNetworkClient, serviceUri: ravenServiceUri),
                 commanderProfileStore: commanderProfileStore,
                 legacyProfileStore: new LegacyColonizationProfileStore(AppDataPaths.DataDirectory)
-            );
+            )
+            {
+                MarketSearchFactory = () => new ColonizationMarketSearchClient(externalNetworkClient),
+            };
             rollback.Add(Colonization.Dispose);
             OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);

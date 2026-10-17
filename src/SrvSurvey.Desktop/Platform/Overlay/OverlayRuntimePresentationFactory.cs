@@ -18,6 +18,7 @@ internal static class OverlayRuntimePresentationFactory
                 or "PlotBioSystem"
                 or "PlotBodyInfo"
                 or "PlotBuildCommodities"
+                or "PlotColonizationWishList"
                 or "PlotFlightWarning"
                 or "PlotFloatie"
                 or "PlotFootCombat"
@@ -113,6 +114,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotBioSystem" => new BiologySurveyOverlayPresentation(),
             "PlotBodyInfo" => new BodyInformationOverlayPresentation(),
             "PlotBuildCommodities" => new ColonizationCommodityOverlayPresentation(),
+            "PlotColonizationWishList" => new ColonizationWishListOverlayPresentation(),
             "PlotFlightWarning" => new FlightWarningOverlayPresentation(),
             "PlotFloatie" => new NotificationOverlayPresentation(),
             "PlotFootCombat" => new FootCombatOverlayPresentation(),

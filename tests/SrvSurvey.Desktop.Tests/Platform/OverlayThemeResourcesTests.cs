@@ -23,6 +23,7 @@ public sealed class OverlayThemeResourcesTests
         ["PlotBioSystem"] = "SystemSurvey.AutoShowBioSystem",
         ["PlotBodyInfo"] = "SystemSurvey.AutoShowBodyInfo",
         ["PlotBuildCommodities"] = "Colonization.AutoShowCommodityOverlay",
+        ["PlotColonizationWishList"] = "Colonization.WishList",
         ["PlotFlightWarning"] = "SystemSurvey.AutoShowFlightWarnings",
         ["PlotFloatie"] = "Notifications.Enabled",
         ["PlotFootCombat"] = "Combat.AutoShowFootCombat",
@@ -533,7 +534,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(38, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(39, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

@@ -92,6 +92,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Signals", "6 biological | 2 geological"),
                 Row("Materials", "Polonium 0.8% | Tellurium 1.2%")
             ),
+            "PlotColonizationWishList" => Content(
+                "Wish list",
+                "Planned purchases (tonnes)",
+                "2 STATIONS | 4 COMMODITIES",
+                Row("Abraham Lincoln · Sol", "Steel: 200 | Polymers: 120"),
+                Row("Galileo · Sol", "Steel: 100 | Water: 180")
+            ),
             "PlotBuildCommodities" => Content(
                 state.ColonyProjectName,
                 "Primary port - phase 2",

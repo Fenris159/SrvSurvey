@@ -6,6 +6,18 @@ namespace SrvSurvey.Core.Tests.Search;
 
 public sealed class SpanshApiTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(501)]
+    public async Task RejectsUnsupportedPageSizesBeforeSendingARequest(int size)
+    {
+        using var http = new HttpClient();
+        var api = new SpanshApi(http);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            api.SearchAsync(new SpanshSearchRequest(SpanshRoutes.Stations, "Sol", [], 0) { PageSize = size })
+        );
+    }
+
     [Fact]
     public async Task SearchRetriesOneBadGatewayResponse()
     {

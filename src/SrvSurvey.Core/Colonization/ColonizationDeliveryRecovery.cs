@@ -105,6 +105,9 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>The commander's linked carriers; the instance changes only when a carrier changes.</summary>
     public IReadOnlyList<ColonizationFleetCarrier> FleetCarriers => fleetCarriers;
 
+    /// <summary>Local CAPI and journal observations used for manifest comparison, independent of Raven publishing.</summary>
+    public ColonizationLocalCarrierCargo LocalCarrierCargo { get; } = new();
+
     /// <summary>The most recent Market.json snapshot.</summary>
     public MarketSnapshot? CurrentMarket => currentMarket;
 
@@ -135,6 +138,7 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Switches commander, discarding commander-scoped session state and the repair warning.</summary>
     public void SetCommander(string? normalizedCommanderName)
     {
+        LocalCarrierCargo.Clear();
         profileVersion++;
         InvalidateBuildSiteRepairContext();
         if (!string.Equals(detectedSquadronCommander, normalizedCommanderName, StringComparison.OrdinalIgnoreCase))
@@ -160,6 +164,10 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         string? nextFrontierId = string.IsNullOrWhiteSpace(profileFrontierId) ? null : profileFrontierId.Trim();
         string? nextApiKey = string.IsNullOrWhiteSpace(profileApiKey) ? null : profileApiKey.Trim();
+        if (frontierId != nextFrontierId || isOdyssey != profileIsOdyssey)
+        {
+            LocalCarrierCargo.Clear();
+        }
         if (frontierId != nextFrontierId || isOdyssey != profileIsOdyssey || apiKey != nextApiKey)
         {
             profileVersion++;
@@ -234,6 +242,13 @@ public sealed partial class ColonizationDeliveryRecovery
         fleetCarriers = loadedFleetCarriers ?? throw new ArgumentNullException(nameof(loadedFleetCarriers));
         localUntrackedProject = null;
         projects = Sort(loadedProjects);
+    }
+
+    /// <summary>Installs an explicitly saved manifest so the workspace and cargo overlay immediately use server quantities.</summary>
+    public void InstallFleetCarrierManifest(ColonizationFleetCarrier carrier)
+    {
+        ArgumentNullException.ThrowIfNull(carrier);
+        ReplaceLocalFleetCarrier(carrier);
     }
 
     /// <summary>Drops the commander workspace without notifying the observer.</summary>
@@ -383,6 +398,10 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         constructionState.Apply(journalEvent);
         journalDocks[journalEvent] = constructionState.CurrentDock;
+        if (string.Equals(owner, commanderName, StringComparison.OrdinalIgnoreCase))
+        {
+            LocalCarrierCargo.Observe(journalEvent, constructionState.CurrentDock, inMainShip);
+        }
         if (journalEvent.EventName == "ColonisationContribution" && constructionState.CurrentDepot is { } depot)
         {
             contributionDepots[journalEvent] = (depot, false);

@@ -1,0 +1,264 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+        x:Class="SrvSurvey.Desktop.ColonizationShoppingWindow"
+        x:DataType="vm:ColonizationShoppingViewModel"
+        Title="Colonization shopping" Width="700" Height="660" MinWidth="640" MinHeight="480"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="Button, ToggleButton">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Padding" Value="5,2" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Padding" Value="6,3" />
+      <Setter Property="MinHeight" Value="26" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Padding" Value="5,2" />
+      <Setter Property="MinHeight" Value="26" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="MinHeight" Value="24" />
+    </Style>
+    <Style Selector="ToggleButton.commodity">
+      <Setter Property="Padding" Value="4,2" />
+      <Setter Property="Margin" Value="0,0,6,5" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.commodity:checked, ToggleButton.commodity:checked:pointerover, ToggleButton.commodity:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.commodity:checked /template/ ContentPresenter, ToggleButton.commodity:checked:pointerover /template/ ContentPresenter, ToggleButton.commodity:checked:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.short-supply">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Padding" Value="4,1" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="ToggleButton.short-supply:checked">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.short-supply /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.short-supply:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+    <Style Selector="Button.table-link, Button.supply-button">
+      <Setter Property="Padding" Value="2,1" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style Selector="Button.supply-button">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.supply-button.wished">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Button.table-link">
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.table-heading">
+      <Setter Property="Padding" Value="2,3" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style Selector="TextBlock.supply">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+    <Style Selector="TextBlock.supply.enough">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSuccessBrush}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+  </Window.Styles>
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+    <Border Padding="12,10" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+      <StackPanel Spacing="3">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock FontSize="18" FontWeight="SemiBold" Text="Where to buy near:" />
+          <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding ResultsReferenceSystem}" Foreground="{DynamicResource RavenAccentBrush}" />
+        </StackPanel>
+        <TextBlock FontSize="11" Classes="muted" Text="{Binding ProjectSummary}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ProjectSummary}" />
+      </StackPanel>
+    </Border>
+    <StackPanel Grid.Row="1" Margin="12,8,12,4" Spacing="3">
+      <WrapPanel>
+        <TextBlock FontSize="12" FontWeight="SemiBold" Text="{Binding TotalText}" VerticalAlignment="Center" Margin="0,0,12,4" />
+        <Button Classes="link" Content="Copy needs" behaviors:ClipboardCopyBehavior.Text="{Binding NeedsText}" ToolTip.Tip="Copy comma separated needs" Margin="0,0,8,4" />
+        <Button x:Name="SelectAllShoppingNeeds" Content="Select All" Click="SelectAllNeeds_Click" Margin="0,0,8,4" />
+        <Button x:Name="SelectNoShoppingNeeds" Content="Select None" Click="SelectNoNeeds_Click" Margin="0,0,0,4" />
+      </WrapPanel>
+      <ItemsControl x:Name="ShoppingNeeds" ItemsSource="{Binding VisibleNeeds}">
+        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ShoppingNeedViewModel">
+            <ToggleButton Classes="commodity" Content="{Binding Label}" IsChecked="{Binding IsSelected, Mode=TwoWay}" ToolTip.Tip="Toggle this commodity in market results" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock IsVisible="{Binding IsFullyPlanned}" Text="All needs are covered." FontSize="12" Foreground="{DynamicResource RavenSuccessBrush}" />
+    </StackPanel>
+    <StackPanel x:Name="ShoppingCriteria" Grid.Row="2" Margin="12,2,12,4">
+      <WrapPanel x:Name="ShoppingSearchActions">
+        <Button x:Name="ChangeShoppingCriteria" Content="Change criteria" Click="Criteria_Click" IsVisible="{Binding !ShowSearchCriteria}" Margin="0,0,8,0" />
+        <Button x:Name="RefreshMarketSearch" Content="Refresh" IsEnabled="{Binding CanSearch}" Click="Search_Click" IsVisible="{Binding !ShowSearchCriteria}" Margin="0,0,16,0" />
+      <TextBlock FontSize="11" Text="Enough stock" Foreground="{DynamicResource RavenSuccessBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <ToggleButton x:Name="ShowShortSupply" Classes="short-supply" Content="Short supply" IsChecked="{Binding ShowShortSupply, Mode=TwoWay}" VerticalAlignment="Center"
+                    ToolTip.Tip="Show or hide commodities whose stock is below your need" AutomationProperties.Name="Show short supply" />
+        <ToggleSwitch x:Name="CarrierDifferenceToggle" OffContent="FC Diff" OnContent="FC Diff" IsChecked="{Binding UseCarrierDifference, Mode=TwoWay}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12" MinHeight="24" ToolTip.Tip="Subtract cargo on linked carriers from project needs" />
+        <ComboBox x:Name="ShoppingCarrier" ItemsSource="{Binding CarrierOptions}" SelectedItem="{Binding SelectedCarrier, Mode=TwoWay}" IsVisible="{Binding UseCarrierDifference}" MinWidth="80" MaxWidth="260" VerticalAlignment="Center">
+          <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:ColonizationCarrierChoice"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate>
+        </ComboBox>
+      </WrapPanel>
+      <StackPanel Spacing="6" Margin="0,4,0,2" IsVisible="{Binding ShowSearchCriteria}">
+        <WrapPanel IsEnabled="{Binding !IsBusy}">
+          <StackPanel Spacing="2" Width="260" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Search near system" />
+            <TextBox x:Name="ShoppingReferenceSystem" Text="{Binding ReferenceSystem, Mode=TwoWay}" PlaceholderText="Current system or another location" />
+          </StackPanel>
+          <StackPanel Spacing="2" Width="95" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Radius (1–500 ly)" />
+            <TextBox x:Name="ShoppingRadius" Text="{Binding RadiusText, Mode=TwoWay}" />
+          </StackPanel>
+          <Button Content="Use current location" Click="CurrentLocation_Click" VerticalAlignment="Bottom" Margin="0,0,8,4" />
+          <Button x:Name="RunMarketSearch" Classes="primary" Content="{Binding SearchButtonText}" IsEnabled="{Binding CanSearch}" Click="Search_Click" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Spacing="2" Width="105" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Minimum pad" />
+            <ComboBox ItemsSource="{Binding PadOptions}" SelectedItem="{Binding MinimumPad, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+          </StackPanel>
+          <StackPanel Spacing="2" Width="105" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Market age (days)" />
+            <TextBox Text="{Binding MaximumAgeText, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}" />
+          </StackPanel>
+          <StackPanel Spacing="2" Width="130" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Arrival ls (0 = any)" />
+            <TextBox Text="{Binding MaximumArrivalText, Mode=TwoWay}" />
+          </StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+          <CheckBox Content="Exclude Fleet Carriers" IsChecked="{Binding ExcludeCarriers, Mode=TwoWay}" Margin="0,0,12,0" />
+          <CheckBox Content="Exclude surface ports" IsChecked="{Binding ExcludeSurface, Mode=TwoWay}" Margin="0,0,12,0" />
+          <CheckBox Content="Can fulfill all selected needs" IsChecked="{Binding RequireFullSupply, Mode=TwoWay}" />
+        </WrapPanel>
+      </StackPanel>
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="2" Margin="0,4,0,0" />
+    </StackPanel>
+    <WrapPanel Grid.Row="3" Margin="12,2,12,4">
+      <Button x:Name="ClearMarketSearch" Content="Clear Search" IsVisible="{Binding HasSearchResults}" Click="ClearSearch_Click" Margin="0,0,12,0" />
+      <Button x:Name="ExpandAllMarkets" Content="{Binding ExpandAllText}" Click="ExpandAll_Click" Margin="0,0,12,0" />
+      <TextBlock FontSize="12" Classes="muted" Text="{Binding ResultSummary}" VerticalAlignment="Center" Margin="0,0,12,0" />
+      <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,12,0">
+        <TextBlock FontSize="12" Text="Sort by" VerticalAlignment="Center" />
+        <ComboBox x:Name="ShoppingSort" Width="195" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding Sort, Mode=TwoWay}" />
+      </StackPanel>
+
+    </WrapPanel>
+    <ScrollViewer Grid.Row="4" Margin="12,0,12,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+      <Grid Grid.IsSharedSizeScope="True" RowDefinitions="Auto,*" HorizontalAlignment="Left">
+        <Grid x:Name="ShoppingResultsHeader" ColumnSpacing="6" HorizontalAlignment="Left" Margin="0,0,22,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopStation" />
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopPad" />
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopMatches" />
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopSystem" />
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopDistance" />
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ShopArrival" />
+          </Grid.ColumnDefinitions>
+          <Button Classes="table-heading" Content="{Binding StationSortLabel}" Tag="Station" Click="Sort_Click" />
+          <TextBlock Grid.Column="1" FontSize="11" Text="Pad" VerticalAlignment="Center" />
+          <Button Grid.Column="2" Classes="table-heading" Content="{Binding MatchesSortLabel}" Tag="Most commodities available" Click="Sort_Click" />
+          <Button Grid.Column="3" Classes="table-heading" Content="{Binding SystemSortLabel}" Tag="System" Click="Sort_Click" />
+          <Button Grid.Column="4" Classes="table-heading" Content="{Binding DistanceSortLabel}" Tag="Distance" Click="Sort_Click" />
+          <Button Grid.Column="5" Classes="table-heading" Content="{Binding ArrivalSortLabel}" Tag="Arrival" Click="Sort_Click" />
+        </Grid>
+        <ListBox x:Name="ShoppingResults" Grid.Row="1" ItemsSource="{Binding Results}" IsEnabled="{Binding !IsBusy}"
+                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource RavenBorderBrush}"
+                 Background="Transparent" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ShoppingMarketRowViewModel">
+              <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,2" Background="Transparent" PointerReleased="MarketRow_PointerReleased">
+                <StackPanel Spacing="0">
+                  <Grid Classes="market-summary" ColumnSpacing="6" HorizontalAlignment="Left">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopStation" />
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopPad" />
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopMatches" />
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopSystem" />
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopDistance" />
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="ShopArrival" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                      <Button Classes="table-link" Command="{Binding ToggleExpandedCommand}" Content="{Binding ExpansionGlyph}" ToolTip.Tip="Expand or collapse commodities" />
+                      <Button Classes="table-link" Command="{Binding ToggleWishListCommand}" ToolTip.Tip="Toggle all offered commodities in the wish list">
+                        <TextBlock FontSize="12" Text="{Binding Station}" MaxWidth="250" TextTrimming="CharacterEllipsis" />
+                      </Button>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" FontSize="11" Text="{Binding Pad}" VerticalAlignment="Center" ToolTip.Tip="{Binding StationType}" />
+                    <TextBlock Grid.Column="2" FontSize="12" Text="{Binding Matches}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Button Grid.Column="3" Classes="table-link" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
+                      <TextBlock FontSize="12" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding System}" MaxWidth="230" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding System}" />
+                    </Button>
+                    <TextBlock Grid.Column="4" FontSize="12" Text="{Binding DistanceText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="5" FontSize="12" Text="{Binding ArrivalText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  </Grid>
+                  <ItemsControl Classes="market-supplies" MaxWidth="750" HorizontalAlignment="Left" ItemsSource="{Binding AvailableSupplies}" IsVisible="{Binding IsExpanded}" Margin="20,1,0,2">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
+                        <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}" Margin="0,0,6,0">
+                          <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </ScrollViewer>
+    <Border Grid.Row="5" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
+      <StackPanel Spacing="2">
+        <TextBlock FontSize="11" Classes="muted" Text="{Binding Status}" TextWrapping="Wrap" />
+        <ScrollViewer x:Name="ShoppingWarnings" MaxHeight="72" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock FontSize="11" Text="{Binding Warnings}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

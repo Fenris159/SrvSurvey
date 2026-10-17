@@ -423,6 +423,7 @@ public sealed class OverlayWindowRegistryTests
             [
                 "PlotBodyInfo",
                 "PlotBuildCommodities",
+                "PlotColonizationWishList",
                 "PlotFSSInfo",
                 "PlotFloatie",
                 "PlotGalMap",

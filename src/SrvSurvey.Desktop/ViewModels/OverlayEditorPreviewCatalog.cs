@@ -122,6 +122,7 @@ internal static class OverlayEditorPreviewCatalog
             ),
             "PlotRouteBio" => CreateRouteBioPreview(),
             "PlotBuildCommodities" => CreateColonizationPreview(),
+            "PlotColonizationWishList" => OverlayEditorPreviewFactories.CreateWishList(),
             "PlotFloatie" => CreateNotificationPreview(),
             "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
             "PlotGalMap" => CreateGalaxyMapPreview(),

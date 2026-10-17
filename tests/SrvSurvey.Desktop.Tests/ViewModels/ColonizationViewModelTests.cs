@@ -3238,7 +3238,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             LoadCount++;
             if (LoadWorkspace is not null)
             {
-                return LoadWorkspace(commanderName);
+                return LoadWorkspace(commanderName).WaitAsync(cancellationToken);
             }
             return Failure is null
                 ? Task.FromResult(Workspace)
