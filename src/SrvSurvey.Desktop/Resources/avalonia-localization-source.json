@@ -3602,7 +3602,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
   },
   {
-    "Text": "Albens Bell Mollusc or Tussock Capillum",
+    "Text": "Albens Bell Mollusc",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -4458,22 +4458,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
-  },
-  {
-    "Text": "Any type, or Mollusc / Tussock / Fumarole\u2026",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
-  },
-  {
-    "Text": "Any variant; colors apply only to entries with separate variants",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "App info not found",
@@ -6860,14 +6844,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
-    "Text": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian\u2026",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Beluga Liner",
@@ -19799,6 +19775,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "Entry or group",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Entry {0} of {1}",
@@ -48691,7 +48675,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
-    "Text": "SUBTYPE (OPTIONAL)",
+    "Text": "SUBTYPES (OPTIONAL)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -63772,6 +63756,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
     "Text": "Type at least 3 characters for system suggestions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65847,7 +65839,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "VARIANT (OPTIONAL)",
+    "Text": "VARIANTS (OPTIONAL)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -70220,12 +70212,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "e.g. Emerald, Teal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
     "Text": "e.g. Hazardous",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "e.g. Mollusc",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "e.g. Platinum \u00D72",

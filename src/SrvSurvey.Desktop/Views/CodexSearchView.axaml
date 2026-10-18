@@ -64,50 +64,54 @@
             <StackPanel Spacing="6">
               <TextBlock Classes="muted" Text="SEARCH TYPE" />
               <ComboBox ItemsSource="{Binding Modes}"
+                        HorizontalAlignment="Stretch"
                         SelectedItem="{Binding SelectedMode, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:NearestSystemsSearchModeOptionViewModel">
                     <StackPanel Spacing="2">
                       <TextBlock FontWeight="SemiBold" Text="{Binding Label}" />
-                      <TextBlock Classes="muted" Text="{Binding Description}" />
                     </StackPanel>
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="{Binding SelectedMode.Description}" />
             </StackPanel>
             <StackPanel Spacing="6" IsVisible="{Binding IsCodexMode}">
               <TextBlock Classes="muted" Text="CODEX ENTRY OR GROUP" />
               <AutoCompleteBox x:Name="CodexNameInput" Text="{Binding CodexName, Mode=TwoWay}"
                                ItemsSource="{Binding CodexOptions}"
                                MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
-                               PlaceholderText="Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…" />
+                               PlaceholderText="Entry or group" />
               <TextBlock Classes="muted" TextWrapping="Wrap"
                          Text="Choose an entry or group, or type a Codex name. Groups search their entries together." />
               <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CriteriaSummary}" />
             </StackPanel>
             <StackPanel Spacing="12" IsVisible="{Binding IsLandmarkMode}">
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names." />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <StackPanel Spacing="6">
                   <TextBlock Classes="muted" Text="LANDMARK TYPE (OPTIONAL)" />
                   <AutoCompleteBox x:Name="LandmarkTypeInput" Text="{Binding LandmarkType, Mode=TwoWay}"
                                    ItemsSource="{Binding LandmarkTypes}"
                                    MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
-                                   PlaceholderText="Any type, or Mollusc / Tussock / Fumarole…" />
+                                   PlaceholderText="e.g. Mollusc" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="6">
-                  <TextBlock Classes="muted" Text="SUBTYPE (OPTIONAL)" />
+                  <TextBlock Classes="muted" Text="SUBTYPES (OPTIONAL)" />
                   <AutoCompleteBox x:Name="LandmarkSubtypeInput" Text="{Binding LandmarkSubtypes, Mode=TwoWay}"
                                    ItemsSource="{Binding LandmarkSubtypeOptions}"
                                    MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
-                                   PlaceholderText="Albens Bell Mollusc or Tussock Capillum" />
+                                   PlaceholderText="Albens Bell Mollusc" />
                 </StackPanel>
               </Grid>
               <StackPanel Spacing="6">
-                <TextBlock Classes="muted" Text="VARIANT (OPTIONAL)" />
+                <TextBlock Classes="muted" Text="VARIANTS (OPTIONAL)" />
                 <AutoCompleteBox x:Name="LandmarkVariantInput" Text="{Binding LandmarkVariants, Mode=TwoWay}"
                                  ItemsSource="{Binding LandmarkVariantOptions}"
                                  MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
-                                 PlaceholderText="Any variant; colors apply only to entries with separate variants" />
+                                 PlaceholderText="e.g. Emerald, Teal" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color." />
               </StackPanel>

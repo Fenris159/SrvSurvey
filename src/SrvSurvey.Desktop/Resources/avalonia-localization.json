@@ -1801,8 +1801,8 @@
       "translation": "Alarm"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "Albens Bell Mollusc oder Tussock Capillum"
+      "source": "Albens Bell Mollusc",
+      "translation": "Albens Glockenmolluske"
     },
     {
       "source": "Alexandrite",
@@ -2227,14 +2227,6 @@
     {
       "source": "Any surface material",
       "translation": "Jedes Oberflächenmaterial"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "Jede Art, oder Molluske / Büschel / Fumarole…"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "Jede Variante; Farben gelten nur für Einträge mit separaten Varianten"
     },
     {
       "source": "App info not found",
@@ -3427,10 +3419,6 @@
     {
       "source": "Beginning of time",
       "translation": "Beginn der Zeit"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…"
     },
     {
       "source": "Beluga Liner",
@@ -9871,6 +9859,10 @@
     {
       "source": "Entry actions",
       "translation": "Eintrittsaktionen"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Eintrag oder Gruppe"
     },
     {
       "source": "Entry {0} of {1}",
@@ -24273,8 +24265,8 @@
       "translation": "LAGER"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "UNTERTYP (OPTIONAL)"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "UNTERTYPEN (OPTIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -31797,6 +31789,10 @@
       "translation": "Geben Sie A, B oder G für Ruinen oder .site <type> für jedes zugeordnete Guardian-Layout ein."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Der Typ akzeptiert einen Namen. Trennen Sie mehrere Subtypen oder Varianten durch Kommas oder Semikolons. Jede Liste entspricht einem ihrer Namen."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Geben Sie mindestens 3 Zeichen für Systemvorschläge ein."
     },
@@ -32833,8 +32829,8 @@
       "translation": "Utility-Mount {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "VARIANTE (OPTIONAL)"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTEN (OPTIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -35017,8 +35013,16 @@
       "translation": "dss-erforderlich"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "z.B. Smaragd, Blaugrün"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "z.B. Gefährlich"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "z.B. Weichtier"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -40551,8 +40555,8 @@
       "translation": "alarma"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "Molusco Albens Bell o Tussock Capillum"
+      "source": "Albens Bell Mollusc",
+      "translation": "Molusco Campana Albens"
     },
     {
       "source": "Alexandrite",
@@ -40977,14 +40981,6 @@
     {
       "source": "Any surface material",
       "translation": "Cualquier material de superficie"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "Cualquier tipo, o Molusco / Tussock / Fumarola…"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "Cualquier variante; Los colores se aplican solo a entradas con variantes separadas."
     },
     {
       "source": "App info not found",
@@ -42177,10 +42173,6 @@
     {
       "source": "Beginning of time",
       "translation": "principio de los tiempos"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "Molusco Campana, Molusco Campana Albens, Fumarola, Guardián…"
     },
     {
       "source": "Beluga Liner",
@@ -48621,6 +48613,10 @@
     {
       "source": "Entry actions",
       "translation": "Acciones de entrada"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrada o grupo"
     },
     {
       "source": "Entry {0} of {1}",
@@ -63023,8 +63019,8 @@
       "translation": "STOCK"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "SUBTIPO (OPCIONAL)"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SUBTIPOS (OPCIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -70547,6 +70543,10 @@
       "translation": "Escriba A, B o G para ruinas, o .site <tipo> para cualquier diseño de Guardian mapeado."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "El tipo acepta un nombre. Separe varios subtipos o variantes con comas o punto y coma. Cada lista coincide con cualquiera de sus nombres."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Escriba al menos 3 caracteres para sugerencias del sistema."
     },
@@ -71583,8 +71583,8 @@
       "translation": "Montaje de utilidad {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "VARIANTE (OPCIONAL)"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPCIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -73767,8 +73767,16 @@
       "translation": "dss requerido"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "p.ej. Esmeralda, verde azulado"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "p.ej. Peligroso"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "p.ej. Molusco"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -79301,8 +79309,8 @@
       "translation": "Alarme"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "Albens Bell Mollusque ou Tussock Capillum"
+      "source": "Albens Bell Mollusc",
+      "translation": "Mollusque à cloche d'Albens"
     },
     {
       "source": "Alexandrite",
@@ -79727,14 +79735,6 @@
     {
       "source": "Any surface material",
       "translation": "Tout matériau de surface"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "Tout type, ou Mollusque / Touffe / Fumarole…"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "Toute variante ; les couleurs s'appliquent uniquement aux entrées avec des variantes distinctes"
     },
     {
       "source": "App info not found",
@@ -80927,10 +80927,6 @@
     {
       "source": "Beginning of time",
       "translation": "Début des temps"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "Mollusque Bell, Mollusque Bell Albens, Fumarole, Gardien…"
     },
     {
       "source": "Beluga Liner",
@@ -87371,6 +87367,10 @@
     {
       "source": "Entry actions",
       "translation": "Actions d'entrée"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrée ou groupe"
     },
     {
       "source": "Entry {0} of {1}",
@@ -101773,8 +101773,8 @@
       "translation": "STOCK"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "SOUS-TYPE (FACULTATIF)"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SOUS-TYPES (FACULTATIF)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -109297,6 +109297,10 @@
       "translation": "Tapez A, B ou G pour les ruines, ou .site <type> pour toute disposition Guardian cartographiée."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Le type accepte un nom. Séparez plusieurs sous-types ou variantes par des virgules ou des points-virgules. Chaque liste correspond à l'un de ses noms."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Tapez au moins 3 caractères pour les suggestions système."
     },
@@ -110333,8 +110337,8 @@
       "translation": "Montage utilitaire {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "VARIANTE (OPTIONNELLE)"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPTIONNELLES)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -112517,8 +112521,16 @@
       "translation": "DSS requis"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "par ex. Émeraude, Sarcelle"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "par ex. Dangereux"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "par ex. Mollusque"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -118051,8 +118063,8 @@
       "translation": "Alarme"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "Molusco Albens Bell ou Tussock Capillum"
+      "source": "Albens Bell Mollusc",
+      "translation": "Molusco Albens Bell"
     },
     {
       "source": "Alexandrite",
@@ -118477,14 +118489,6 @@
     {
       "source": "Any surface material",
       "translation": "Qualquer material de superfície"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "Qualquer tipo, ou Molusco / Tussock / Fumarola…"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "Qualquer variante; as cores aplicam-se apenas a entradas com variantes separadas"
     },
     {
       "source": "App info not found",
@@ -119677,10 +119681,6 @@
     {
       "source": "Beginning of time",
       "translation": "Início dos tempos"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "Molusco Bell, Molusco Albens Bell, Fumarola, Guardião…"
     },
     {
       "source": "Beluga Liner",
@@ -126121,6 +126121,10 @@
     {
       "source": "Entry actions",
       "translation": "Ações de entrada"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrada ou grupo"
     },
     {
       "source": "Entry {0} of {1}",
@@ -140523,8 +140527,8 @@
       "translation": "ESTOQUE"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "SUBTIPO (OPCIONAL)"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SUBTIPOS (OPCIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -148047,6 +148051,10 @@
       "translation": "Digite A, B ou G para ruínas ou .site <type> para qualquer layout de Guardião mapeado."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "O tipo aceita um nome. Separe vários subtipos ou variantes com vírgulas ou ponto e vírgula. Cada lista corresponde a qualquer um de seus nomes."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Digite pelo menos 3 caracteres para sugestões do sistema."
     },
@@ -149083,8 +149091,8 @@
       "translation": "Montagem de utilitário {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "VARIANTE (OPCIONAL)"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPCIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -151267,8 +151275,16 @@
       "translation": "requerido por dss"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "por exemplo Esmeralda, Azul-petróleo"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "por exemplo Perigoso"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "por exemplo Molusco"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -156801,8 +156817,8 @@
       "translation": "Сигнализация"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "Моллюск Альбенса или кочка-капиллум"
+      "source": "Albens Bell Mollusc",
+      "translation": "Моллюск Альбенс Белл"
     },
     {
       "source": "Alexandrite",
@@ -157227,14 +157243,6 @@
     {
       "source": "Any surface material",
       "translation": "Любой материал поверхности"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "Любой тип, или Моллюск/Кочка/Фумарола…"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "Любой вариант; цвета применяются только к записям с отдельными вариантами"
     },
     {
       "source": "App info not found",
@@ -158427,10 +158435,6 @@
     {
       "source": "Beginning of time",
       "translation": "Начало времени"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "Моллюск-колокольчик, Моллюск-колокольчик Альбенса, Фумарола, Страж…"
     },
     {
       "source": "Beluga Liner",
@@ -164871,6 +164875,10 @@
     {
       "source": "Entry actions",
       "translation": "Входные действия"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Запись или группа"
     },
     {
       "source": "Entry {0} of {1}",
@@ -179273,8 +179281,8 @@
       "translation": "АКЦИЯ"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "ПОДТИП (НЕОБЯЗАТЕЛЬНО)"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "ПОДТИПЫ (НЕОБЯЗАТЕЛЬНО)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -186797,6 +186805,10 @@
       "translation": "Введите A, B или G для руин или .site <тип> для любого отображенного макета Стражей."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Тип принимает одно имя. Разделяйте несколько подтипов или вариантов запятыми или точками с запятой. Каждый список соответствует любому из своих имен."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Введите не менее 3 символов для предложения системы."
     },
@@ -187833,8 +187845,8 @@
       "translation": "Утилита монтирования {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "ВАРИАНТ (ОПЦИЯ)"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "ВАРИАНТЫ (ОПЦИОНАЛЬНО)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -190017,8 +190029,16 @@
       "translation": "требуется dss"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "например Изумрудный, Бирюзовый"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "например Опасный"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "например Моллюск"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -195551,8 +195571,8 @@
       "translation": "报警"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "阿尔本斯贝尔软体动物或草丛毛虫"
+      "source": "Albens Bell Mollusc",
+      "translation": "阿尔本斯贝尔软体动物"
     },
     {
       "source": "Alexandrite",
@@ -195977,14 +195997,6 @@
     {
       "source": "Any surface material",
       "translation": "任何表面材质"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "任何类型，或软体动物/草丛/喷气孔……"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "任何变体；颜色仅适用于具有单独变体的条目"
     },
     {
       "source": "App info not found",
@@ -197177,10 +197189,6 @@
     {
       "source": "Beginning of time",
       "translation": "时间的开始"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "贝尔软体动物、阿尔本斯贝尔软体动物、喷气孔、守护者……"
     },
     {
       "source": "Beluga Liner",
@@ -203621,6 +203629,10 @@
     {
       "source": "Entry actions",
       "translation": "入场动作"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "参赛作品或团体"
     },
     {
       "source": "Entry {0} of {1}",
@@ -218023,8 +218035,8 @@
       "translation": "库存"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "子类型（可选）"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "亚型（可选）"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -225547,6 +225559,10 @@
       "translation": "输入 A、B 或 G 表示废墟，或输入 .site <type> 表示任何映射的 Guardian 布局。"
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "类型接受一个名称。用逗号或分号分隔多个子类型或变体。每个列表都与其任意名称匹配。"
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "输入至少 3 个字符以获取系统建议。"
     },
@@ -226583,7 +226599,7 @@
       "translation": "实用安装 {0}"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
+      "source": "VARIANTS (OPTIONAL)",
       "translation": "变体（可选）"
     },
     {
@@ -228767,8 +228783,16 @@
       "translation": "DSS 要求"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "例如祖母绿、青色"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "例如危险的"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "例如软体动物"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -234301,8 +234325,8 @@
       "translation": "* ALARM >>>!"
     },
     {
-      "source": "Albens Bell Mollusc or Tussock Capillum",
-      "translation": "* ALBENS BELL MOLLUSC OR TUSSOCK CAPILLUM >>>!"
+      "source": "Albens Bell Mollusc",
+      "translation": "* ALBENS BELL MOLLUSC >>>!"
     },
     {
       "source": "Alexandrite",
@@ -234727,14 +234751,6 @@
     {
       "source": "Any surface material",
       "translation": "* ANY SURFACE MATERIAL >>>!"
-    },
-    {
-      "source": "Any type, or Mollusc / Tussock / Fumarole…",
-      "translation": "* ANY TYPE, OR MOLLUSC / TUSSOCK / FUMAROLE… >>>!"
-    },
-    {
-      "source": "Any variant; colors apply only to entries with separate variants",
-      "translation": "* ANY VARIANT; COLORS APPLY ONLY TO ENTRIES WITH SEPARATE VARIANTS >>>!"
     },
     {
       "source": "App info not found",
@@ -235927,10 +235943,6 @@
     {
       "source": "Beginning of time",
       "translation": "* BEGINNING OF TIME >>>!"
-    },
-    {
-      "source": "Bell Mollusc, Albens Bell Mollusc, Fumarole, Guardian…",
-      "translation": "* BELL MOLLUSC, ALBENS BELL MOLLUSC, FUMAROLE, GUARDIAN… >>>!"
     },
     {
       "source": "Beluga Liner",
@@ -242371,6 +242383,10 @@
     {
       "source": "Entry actions",
       "translation": "* ENTRY ACTIONS >>>!"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "* ENTRY OR GROUP >>>!"
     },
     {
       "source": "Entry {0} of {1}",
@@ -256773,8 +256789,8 @@
       "translation": "* STOCK >>>!"
     },
     {
-      "source": "SUBTYPE (OPTIONAL)",
-      "translation": "* SUBTYPE (OPTIONAL) >>>!"
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "* SUBTYPES (OPTIONAL) >>>!"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -264297,6 +264313,10 @@
       "translation": "* TYPE A, B, OR G FOR RUINS, OR .SITE <TYPE> FOR ANY MAPPED GUARDIAN LAYOUT. >>>!"
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "* TYPE ACCEPTS ONE NAME. SEPARATE MULTIPLE SUBTYPES OR VARIANTS WITH COMMAS OR SEMICOLONS. EACH LIST MATCHES ANY OF ITS NAMES. >>>!"
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "* TYPE AT LEAST 3 CHARACTERS FOR SYSTEM SUGGESTIONS. >>>!"
     },
@@ -265333,8 +265353,8 @@
       "translation": "* UTILITY MOUNT {0} >>>!"
     },
     {
-      "source": "VARIANT (OPTIONAL)",
-      "translation": "* VARIANT (OPTIONAL) >>>!"
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "* VARIANTS (OPTIONAL) >>>!"
     },
     {
       "source": "VDXR / OpenXR",
@@ -267517,8 +267537,16 @@
       "translation": "* DSS-REQUIRED >>>!"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "* E.G. EMERALD, TEAL >>>!"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "* E.G. HAZARDOUS >>>!"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "* E.G. MOLLUSC >>>!"
     },
     {
       "source": "e.g. Platinum ×2",
