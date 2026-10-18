@@ -10,19 +10,35 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class ProfileSyncServiceTests
 {
     [Fact]
-    public async Task AHandledRecoveryFailureRetainsItsReaderMarker()
+    public async Task UnsafeRecoveryFailureCannotBecomeAnOptionalCloudFallback()
     {
         using var root = new ProfileSyncTestRoot();
         await File.WriteAllTextAsync(Path.Combine(root.Store.StateDirectory, "active-restore.json"), "\"invalid\"");
         using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
-        await first.StartupAsync();
-        Assert.Contains("could not complete", first.Status);
-        using var second = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await Assert.ThrowsAsync<ProfileInitializationException>(() =>
+            App.StartProfileSyncAsync(() => first, _ => { })
+        );
+        Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+    }
 
-        await second.StartupAsync();
+    [Fact]
+    public async Task StartupGuardCancellationStopsUnsafeInitializationWithoutHanging()
+    {
+        using var root = new ProfileSyncTestRoot();
+        using var service = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await using var blocker = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "startup.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
 
-        Assert.Contains("deferred", second.Status);
-        Assert.Equal(2, Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock").Count());
+        await Assert.ThrowsAsync<ProfileInitializationException>(() =>
+            service.StartupAsync(cancellation.Token).WaitAsync(TimeSpan.FromSeconds(5))
+        );
+
+        Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
     }
 
     [Fact]

@@ -4524,14 +4524,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
-    "Text": "Application instance startup check failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
-  },
-  {
     "Text": "Application logging is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4578,6 +4570,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
+  },
+  {
+    "Text": "Application startup failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
     "Text": "Application theme",
@@ -30919,6 +30919,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
+    "Text": "Local profile initialization failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "Local ring discoveries",
     "IsFormat": false,
     "SourceKinds": [
@@ -54196,6 +54204,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "SrvSurvey could not refresh its desktop callback registration. {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -54236,7 +54252,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
-    "Text": "SrvSurvey could not verify whether another instance is running: {0}",
+    "Text": "SrvSurvey could not start safely: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

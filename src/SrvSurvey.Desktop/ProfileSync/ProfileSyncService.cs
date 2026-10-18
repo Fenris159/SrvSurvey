@@ -4,6 +4,10 @@ using SrvSurvey.Core.ProfileSync;
 
 namespace SrvSurvey.Desktop.ProfileSync;
 
+/// <summary>Prevents workspace construction when local recovery or shared-reader registration cannot complete safely.</summary>
+internal sealed class ProfileInitializationException(string message, Exception innerException)
+    : IOException(message, innerException);
+
 /// <summary>Coordinates backup, causal merging, staged restores, and machine-local authorization.</summary>
 internal sealed class ProfileSyncService : IDisposable
 {
@@ -45,7 +49,8 @@ internal sealed class ProfileSyncService : IDisposable
         {
             await StartRegisteredProfileAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (IsExpectedFailure(exception))
+        catch (Exception exception)
+            when (exception is not ProfileInitializationException && IsExpectedFailure(exception))
         {
             SetStatus("Backup/sync could not complete. Local data was retained. " + exception.Message);
         }
@@ -53,7 +58,9 @@ internal sealed class ProfileSyncService : IDisposable
 
     private async Task StartRegisteredProfileAsync(CancellationToken cancellationToken)
     {
-        (bool another, bool restored, SyncMergeResult? restoreConflicts) = await InitializeReaderAsync()
+        (bool another, bool restored, SyncMergeResult? restoreConflicts) = await InitializeReaderAsync(
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (another)
         {
@@ -88,18 +95,40 @@ internal sealed class ProfileSyncService : IDisposable
     }
 
     /// <summary>Serializes recovery and live-reader registration without holding a lock across cloud requests.</summary>
-    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> InitializeReaderAsync()
+    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> InitializeReaderAsync(
+        CancellationToken cancellationToken
+    )
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(45));
+        try
+        {
+            return await RegisterReaderAsync(deadline.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is OperationCanceledException || IsExpectedFailure(exception))
+        {
+            throw new ProfileInitializationException(
+                "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+                exception
+            );
+        }
+    }
+
+    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> RegisterReaderAsync(
+        CancellationToken cancellationToken
+    )
     {
         await using FileStream initialization = await AcquireLeaseAsync(
                 Path.Combine(Store.StateDirectory, "startup.lock"),
-                CancellationToken.None
+                cancellationToken
             )
             .ConfigureAwait(false);
-        bool another = HasOtherLiveInstance();
+        bool another = false;
         bool restored = false;
         SyncMergeResult? conflicts = null;
         try
         {
+            another = HasOtherLiveInstance();
             if (!another)
             {
                 Store.RecoverInterruptedRestore();
@@ -535,7 +564,7 @@ internal sealed class ProfileSyncService : IDisposable
             {
                 return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             }
-            catch (IOException)
+            catch (IOException) when (File.Exists(path))
             {
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }

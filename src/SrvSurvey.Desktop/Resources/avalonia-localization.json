@@ -2261,10 +2261,6 @@
       "translation": "Anwendungsausgang"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Die Startprüfung der Anwendungsinstanz ist fehlgeschlagen: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "Die Anwendungsprotokollierung ist nicht verfügbar."
     },
@@ -2287,6 +2283,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Das Herunterfahren des Anwendungsdienstes ist fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Anwendungsstart fehlgeschlagen: {0}"
     },
     {
       "source": "Application theme",
@@ -15413,6 +15413,10 @@
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Die Initialisierung des lokalen Profils ist fehlgeschlagen: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
     },
@@ -27017,6 +27021,10 @@
       "translation": "SrvSurvey konnte seinen ausführbaren Pfad für die Frontier-Autorisierung nicht ermitteln."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey konnte das lokale Profil nicht sicher vorbereiten. Schließen Sie andere Instanzen und versuchen Sie es erneut. Einzelheiten zur Wiederherstellung finden Sie im Anwendungsprotokoll."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey konnte seine Desktop-Rückrufregistrierung nicht aktualisieren. {0}"
     },
@@ -27037,8 +27045,8 @@
       "translation": "SrvSurvey konnte nach dem Update-Rollback nicht neu gestartet werden."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey konnte nicht überprüfen, ob eine andere Instanz ausgeführt wird: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey konnte nicht sicher gestartet werden: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -41043,10 +41051,6 @@
       "translation": "Salida de la aplicación"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Error en la verificación de inicio de la instancia de la aplicación: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "El registro de aplicaciones no está disponible."
     },
@@ -41069,6 +41073,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Error al cerrar el servicio de aplicaciones: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Error al iniciar la aplicación: {0}"
     },
     {
       "source": "Application theme",
@@ -54195,6 +54203,10 @@
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Error al inicializar el perfil local: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descubrimientos de anillos locales"
     },
@@ -65799,6 +65811,10 @@
       "translation": "SrvSurvey no pudo determinar su ruta ejecutable para la autorización Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey no pudo preparar el perfil local de forma segura. Cierre otras instancias y vuelva a intentarlo. Consulte el registro de la aplicación para obtener detalles de recuperación."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey no pudo actualizar el registro de devolución de llamada de su escritorio. {0}"
     },
@@ -65819,8 +65835,8 @@
       "translation": "SrvSurvey no pudo reiniciarse después de la reversión de la actualización."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey no pudo verificar si se está ejecutando otra instancia: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey no se pudo iniciar de forma segura: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -79825,10 +79841,6 @@
       "translation": "Sortie de l'application"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Échec de la vérification du démarrage de l'instance d'application : {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "La journalisation des applications n'est pas disponible."
     },
@@ -79851,6 +79863,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Échec de l'arrêt du service d'application : {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Échec du démarrage de l'application : {0}"
     },
     {
       "source": "Application theme",
@@ -92977,6 +92993,10 @@
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Échec de l'initialisation du profil local : {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
     },
@@ -104581,6 +104601,10 @@
       "translation": "SrvSurvey n'a pas pu déterminer son chemin d'accès exécutable pour l'autorisation Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey n'a pas pu préparer le profil local en toute sécurité. Fermez les autres instances et réessayez. Consultez le journal des applications pour plus de détails sur la récupération."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey n'a pas pu actualiser son enregistrement de rappel sur le bureau. {0}"
     },
@@ -104601,8 +104625,8 @@
       "translation": "SrvSurvey n'a pas pu redémarrer après l'annulation de la mise à jour."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey n'a pas pu vérifier si une autre instance est en cours d'exécution : {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey n'a pas pu démarrer en toute sécurité : {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -118607,10 +118631,6 @@
       "translation": "Saída do aplicativo"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Falha na verificação de inicialização da instância do aplicativo: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "O log do aplicativo não está disponível."
     },
@@ -118633,6 +118653,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Falha no encerramento do serviço de aplicativo: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Falha na inicialização do aplicativo: {0}"
     },
     {
       "source": "Application theme",
@@ -131759,6 +131783,10 @@
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Falha na inicialização do perfil local: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descobertas de anéis locais"
     },
@@ -143363,6 +143391,10 @@
       "translation": "SrvSurvey não conseguiu determinar seu caminho executável para autorização de Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey não conseguiu preparar o perfil local com segurança. Feche outras instâncias e tente novamente. Consulte o log do aplicativo para obter detalhes de recuperação."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey não pôde atualizar o registro de retorno de chamada da área de trabalho. {0}"
     },
@@ -143383,8 +143415,8 @@
       "translation": "SrvSurvey não pôde reiniciar após a reversão da atualização."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey não foi possível verificar se outra instância está em execução: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey não pôde ser iniciado com segurança: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -157389,10 +157421,6 @@
       "translation": "Выход из приложения"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Не удалось проверить запуск экземпляра приложения: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "Журналирование приложений недоступно."
     },
@@ -157415,6 +157443,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Не удалось завершить работу службы приложений: {0}."
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Не удалось запустить приложение: {0}."
     },
     {
       "source": "Application theme",
@@ -170541,6 +170573,10 @@
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Не удалось инициализировать локальный профиль: {0}."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
     },
@@ -182145,6 +182181,10 @@
       "translation": "SrvSurvey не удалось определить путь к исполняемому файлу для авторизации Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey не удалось безопасно подготовить локальный профиль. Закройте другие экземпляры и повторите попытку. Подробности восстановления см. в журнале приложения."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey не удалось обновить регистрацию обратного вызова рабочего стола. {0}"
     },
@@ -182165,8 +182205,8 @@
       "translation": "SrvSurvey не удалось перезапустить после отката обновления."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey не удалось проверить, запущен ли другой экземпляр: {0}."
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey не удалось безопасно запустить: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -196171,10 +196211,6 @@
       "translation": "应用程序退出"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "应用程序实例启动检查失败：{0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "应用程序日志记录不可用。"
     },
@@ -196197,6 +196233,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "应用程序服务关闭失败：{0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "应用程序启动失败：{0}"
     },
     {
       "source": "Application theme",
@@ -209323,6 +209363,10 @@
       "translation": "无法保存本地焦点首选项：{0}"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "本地配置文件初始化失败：{0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
     },
@@ -220927,6 +220971,10 @@
       "translation": "SrvSurvey 无法确定 Frontier 授权的可执行路径。"
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey 无法安全地准备本地配置文件。关闭其他实例并重试。有关恢复详细信息，请参阅应用程序日志。"
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey 无法刷新其桌面回调注册。 {0}"
     },
@@ -220947,8 +220995,8 @@
       "translation": "SrvSurvey 更新回滚后无法重新启动。"
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey 无法验证另一个实例是否正在运行：{0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey无法安全启动：{0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -234953,10 +235001,6 @@
       "translation": "* APPLICATION EXIT >>>!"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "* APPLICATION INSTANCE STARTUP CHECK FAILED: {0} >>>!"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "* APPLICATION LOGGING IS UNAVAILABLE. >>>!"
     },
@@ -234979,6 +235023,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "* APPLICATION SERVICE SHUTDOWN FAILED: {0} >>>!"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "* APPLICATION STARTUP FAILED: {0} >>>!"
     },
     {
       "source": "Application theme",
@@ -248105,6 +248153,10 @@
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "* LOCAL PROFILE INITIALIZATION FAILED: {0} >>>!"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "* LOCAL RING DISCOVERIES >>>!"
     },
@@ -259709,6 +259761,10 @@
       "translation": "* SRVSURVEY COULD NOT DETERMINE ITS EXECUTABLE PATH FOR FRONTIER AUTHORIZATION. >>>!"
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "* SRVSURVEY COULD NOT PREPARE THE LOCAL PROFILE SAFELY. CLOSE OTHER INSTANCES AND RETRY. SEE THE APPLICATION LOG FOR RECOVERY DETAILS. >>>!"
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "* SRVSURVEY COULD NOT REFRESH ITS DESKTOP CALLBACK REGISTRATION. {0} >>>!"
     },
@@ -259729,8 +259785,8 @@
       "translation": "* SRVSURVEY COULD NOT RESTART AFTER UPDATE ROLLBACK. >>>!"
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "* SRVSURVEY COULD NOT VERIFY WHETHER ANOTHER INSTANCE IS RUNNING: {0} >>>!"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "* SRVSURVEY COULD NOT START SAFELY: {0} >>>!"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
