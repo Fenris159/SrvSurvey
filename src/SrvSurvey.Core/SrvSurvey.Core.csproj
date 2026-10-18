@@ -21,6 +21,8 @@
     <EmbeddedResource Include="Resources\ReferenceData\edtools-mining-spots.json" LogicalName="SrvSurvey.Core.Resources.edtools-mining-spots.json" />
     <EmbeddedResource Include="Resources\ReferenceData\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\spansh-codex-landmarks.json"
+                      LogicalName="SrvSurvey.Core.Resources.spansh-codex-landmarks.json" />
     <EmbeddedResource Include="Resources\ReferenceData\nebulae.json"
                       LogicalName="SrvSurvey.Core.Resources.nebulae.json" />
     <EmbeddedResource Include="Resources\ReferenceData\allRuins.json"

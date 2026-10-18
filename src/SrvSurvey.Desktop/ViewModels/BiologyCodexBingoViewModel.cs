@@ -126,7 +126,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         );
         findNearestCommand = new AsyncCommand(
             FindNearestAsync,
-            () => SelectedNode?.Definition.Entry is not null && nearestSearchHandler is not null && !IsBusy
+            () => SelectedNode is not null && nearestSearchHandler is not null && !IsBusy
         );
         findMissingVariantsCommand = new AsyncCommand(FindMissingVariantsAsync, CanFindMissingVariants);
         rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(rootDefinition, new HashSet<long>()));
@@ -399,6 +399,9 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     public ICommand FindNearestCommand => findNearestCommand;
 
     public ICommand FindMissingVariantsCommand => findMissingVariantsCommand;
+
+    public string MissingSearchLabel =>
+        SelectedNode?.Definition.Kind == CodexBingoNodeKind.Species ? "Find missing colors" : "Find missing entries";
 
     public void SetWindowOpener(Func<Task<bool>>? opener)
     {
@@ -907,20 +910,12 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public async Task FindNearestAsync()
     {
-        if (SelectedNode?.Definition.Entry is not { } entry || nearestSearchHandler is null)
+        if (SelectedNode is not { } node || nearestSearchHandler is null)
         {
             return;
         }
 
-        await nearestSearchHandler(
-            new CodexBingoNearestRequest(
-                CodexBingoNearestMode.Signal,
-                entry.DisplayName ?? SelectedNode.Definition.Name,
-                null,
-                null,
-                []
-            )
-        );
+        await nearestSearchHandler(new CodexBingoNearestRequest(CodexSearchCatalog.FromNode(node.Definition)));
     }
 
     public async Task FindMissingVariantsAsync()
@@ -930,9 +925,9 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        string[] missing = node
+        ExobiologyReference[] missing = node
             .Children.Where(child => child.Definition.Entry is not null && !child.IsComplete)
-            .Select(child => child.Definition.Name)
+            .Select(child => child.Definition.Entry!)
             .ToArray();
         if (missing.Length == 0)
         {
@@ -941,11 +936,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
         await nearestSearchHandler(
             new CodexBingoNearestRequest(
-                CodexBingoNearestMode.MissingVariants,
-                null,
-                node.Definition.Genus,
-                node.Definition.Species,
-                missing
+                CodexSearchCatalog.FromEntries(node.Definition.Species ?? node.Name, missing, matchVariants: true)
             )
         );
     }
@@ -1066,6 +1057,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     private void RaiseSelectionProperties()
     {
+        OnPropertyChanged(nameof(MissingSearchLabel));
         OnPropertyChanged(nameof(SelectedTitle));
         OnPropertyChanged(nameof(SelectedKind));
         OnPropertyChanged(nameof(SelectedProgress));
@@ -1312,16 +1304,4 @@ public sealed record CodexBingoRegionOptionViewModel(int RegionId, string Name, 
                 );
 }
 
-public enum CodexBingoNearestMode
-{
-    Signal,
-    MissingVariants,
-}
-
-public sealed record CodexBingoNearestRequest(
-    CodexBingoNearestMode Mode,
-    string? Signal,
-    string? Genus,
-    string? Species,
-    IReadOnlyList<string> Variants
-);
+public sealed record CodexBingoNearestRequest(CodexSearchQuery Query);

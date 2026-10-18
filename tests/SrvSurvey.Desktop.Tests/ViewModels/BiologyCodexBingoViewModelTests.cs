@@ -95,10 +95,9 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
 
         await viewModel.FindMissingVariantsAsync();
 
-        Assert.Equal(CodexBingoNearestMode.MissingVariants, nearest!.Mode);
-        Assert.Equal("Aleoida", nearest.Genus);
-        Assert.Equal("Aleoida Arcus", nearest.Species);
-        Assert.Equal(["Blue"], nearest.Variants);
+        Assert.Equal("Aleoida Arcus", nearest!.Query.Label);
+        Assert.True(nearest.Query.MatchVariants);
+        Assert.Equal("Aleoida Arcus - Blue", Assert.Single(nearest.Query.Entries).Name);
 
         CodexBingoTreeNodeViewModel discovered = Assert.IsType<CodexBingoTreeNodeViewModel>(
             viewModel.RootNodes[0].Find("entry:2310101")

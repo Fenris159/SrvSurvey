@@ -55,7 +55,7 @@ public sealed class SystemIdentityMarkupTests
     {
         XDocument search = Load("Views", "SearchView.axaml");
         AssertNoCopyBehavior(FindItemsHost(search, "{Binding Search.SearchResults}"));
-        AssertNoCopyBehavior(FindItemsHost(search, "{Binding NearestSystems.Results}"));
+        AssertNoCopyBehavior(FindItemsHost(Load("Views", "CodexSearchView.axaml"), "{Binding Results}"));
 
         XDocument guardian = Load("Views", "GuardianView.axaml");
         AssertNoCopyBehavior(FindItemsHost(guardian, "{Binding Guardian.Rows}"));
