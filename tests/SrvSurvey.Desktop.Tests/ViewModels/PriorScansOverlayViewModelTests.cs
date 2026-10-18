@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class PriorScansOverlayViewModelTests : IDisposable
+public sealed partial class PriorScansOverlayViewModelTests : IDisposable
 {
     private const string Species = "$Codex_Ent_Aleoids_01_Name;";
     private readonly string temporaryDirectory = Path.Combine(

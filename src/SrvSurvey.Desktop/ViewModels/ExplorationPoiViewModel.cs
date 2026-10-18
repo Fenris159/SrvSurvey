@@ -396,8 +396,11 @@ public sealed class ExplorationPoiViewModel : WorkspaceObservable, IDisposable
     /// <summary>Filters and sorts local attractions using the active search and resolved reference coordinates.</summary>
     private void RefreshRows()
     {
-        CurrentPois = Catalog.ForSystem(currentSystem, address).Select(p => ToRow(p, position)).ToArray();
-        OverlayPois = CurrentPois.Take(2).ToArray();
+        CurrentPois = OverlayListRetention.Keep(
+            CurrentPois,
+            Catalog.ForSystem(currentSystem, address).Select(p => ToRow(p, position)).ToArray()
+        );
+        OverlayPois = OverlayListRetention.Keep(OverlayPois, CurrentPois.Take(2).ToArray());
         Categories = Catalog
             .Items.SelectMany(p => new[] { p.Category, p.SecondaryCategory })
             .Where(s => s.Length > 0)

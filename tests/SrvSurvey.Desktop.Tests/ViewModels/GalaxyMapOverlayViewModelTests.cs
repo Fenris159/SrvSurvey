@@ -70,6 +70,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.True(model.HasPrimaryPois);
         Assert.Contains("First attraction", model.PrimaryPoiText);
         Assert.Contains("Second attraction", model.PrimaryPoiText);
+        Assert.Same(model.PrimaryPois, model.PrimaryPois);
+        Assert.Same(model.SecondaryPois, model.SecondaryPois);
         Assert.False(model.HasSecondaryPois);
         model.ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog.Empty);
         Assert.False(model.HasPrimaryPois);

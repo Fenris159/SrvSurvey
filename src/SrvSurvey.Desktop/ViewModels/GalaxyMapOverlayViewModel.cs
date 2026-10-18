@@ -21,6 +21,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapTarget? selectedTarget;
     private GalaxyMapTarget? primaryTarget;
     private GalaxyMapTarget? secondaryTarget;
+    private IReadOnlyList<ExplorationPoiItemViewModel> primaryPois = [];
+    private IReadOnlyList<ExplorationPoiItemViewModel> secondaryPois = [];
     private ExplorationPoiCatalog poiCatalog = ExplorationPoiCatalog.Empty;
     public string PrimaryPoiText =>
         string.Join(
@@ -39,12 +41,18 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     public bool HasSecondaryPois => SecondaryPoiText.Length > 0;
 
     public IReadOnlyList<ExplorationPoiItemViewModel> PrimaryPois =>
-        PoiRows(primaryTarget?.Name ?? PrimarySystem?.Name, primaryTarget?.SystemAddress, PrimarySystemDisplay.Name);
+        primaryPois = OverlayListRetention.Keep(
+            primaryPois,
+            PoiRows(primaryTarget?.Name ?? PrimarySystem?.Name, primaryTarget?.SystemAddress, PrimarySystemDisplay.Name)
+        );
     public IReadOnlyList<ExplorationPoiItemViewModel> SecondaryPois =>
-        PoiRows(
-            secondaryTarget?.Name ?? SecondarySystem?.Name,
-            secondaryTarget?.SystemAddress,
-            SecondarySystemDisplay.Name
+        secondaryPois = OverlayListRetention.Keep(
+            secondaryPois,
+            PoiRows(
+                secondaryTarget?.Name ?? SecondarySystem?.Name,
+                secondaryTarget?.SystemAddress,
+                SecondarySystemDisplay.Name
+            )
         );
 
     /// <summary>Builds catalogue context without repeating a matching system title as an attraction row.</summary>
@@ -203,7 +211,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         get => factions;
         private set
         {
-            if (SetField(ref factions, value))
+            if (SetField(ref factions, OverlayListRetention.Keep(factions, value)))
             {
                 RaiseFactionProperties();
             }

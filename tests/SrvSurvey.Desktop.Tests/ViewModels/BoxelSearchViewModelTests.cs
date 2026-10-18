@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -662,8 +663,8 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.ActivateAsync();
         Assert.True(viewModel.CanSaveProgress);
         Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
-        var changedProperties = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) => changedProperties.Add(eventArgs.PropertyName);
+        var changedProperties = new ConcurrentQueue<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changedProperties.Enqueue(eventArgs.PropertyName);
 
         viewModel.AutoCopy = true;
 

@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class MiningWorkspaceViewModelTests
+public sealed partial class MiningWorkspaceViewModelTests
 {
     [Fact]
     public void JournalContextDefaultsSearchLocationAndPledgedPower()
