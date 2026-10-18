@@ -133,11 +133,13 @@ public sealed partial class ColonizationViewModel
             || SystemEditor.IsBusy
             || SystemEditor.IsReplacingSites
             || SystemEditor.PlanningSnapshot is not { } snapshot
+            || SystemEditor.AuthoritativePlanningSnapshot is not { } authoritative
         )
         {
             return;
         }
         CancelCurrentPlannedSystemRead(clearPending: false);
+        authoritative = KeepNewestPlanningSnapshot(authoritative);
         if (SystemEditor.HasLocalChanges)
         {
             planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
@@ -147,7 +149,7 @@ public sealed partial class ColonizationViewModel
         {
             localPlanningDrafts.Remove(snapshot.Name);
             planningSystemEditVersions.Remove(snapshot.Name);
-            snapshot = KeepNewestPlanningSnapshot(snapshot);
+            snapshot = authoritative;
         }
         UpdatePlannedSystem(snapshot);
         SchedulePlannedSystemsSave();

@@ -129,6 +129,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     internal ColonizationSystemRecord? PlanningSnapshot =>
         system is null ? null : system with { Sites = SnapshotVisibleSites() };
 
+    internal ColonizationSystemRecord? AuthoritativePlanningSnapshot => system;
+
     internal bool IsReplacingSites { get; private set; }
 
     public string SystemTitle =>
@@ -355,10 +357,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         RaiseScanProperties();
         if (changed > 0)
         {
-            ReplaceVisibleSites(sites);
             MarkLocalChange(
                 $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally."
             );
+            ReplaceVisibleSites(sites);
         }
     }
 
@@ -373,8 +375,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         List<ColonizationSystemSite> sites = SnapshotVisibleSites();
         if (journalTracker.ApplyStatusDestination(sites, status, CaptureUnknownSurfaceSites))
         {
-            ReplaceVisibleSites(sites);
             MarkLocalChange("The selected Elite destination updated a Raven site locally.");
+            ReplaceVisibleSites(sites);
         }
     }
 
@@ -509,10 +511,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             catalogBuildTypes
         );
         Subscribe(row);
+        MarkLocalChange($"Added '{name}' locally.");
         Sites.Insert(0, row);
         SelectedSite = row;
         NewSiteName = string.Empty;
-        MarkLocalChange($"Added '{name}' locally.");
     }
 
     public void RemoveSelectedSite()
@@ -523,10 +525,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         ColonizationSystemSiteRowViewModel removed = SelectedSite;
+        MarkLocalChange($"Removed '{removed.Name}' locally.");
         Unsubscribe(removed);
         Sites.Remove(removed);
         SelectedSite = null;
-        MarkLocalChange($"Removed '{removed.Name}' locally.");
     }
 
     /// <summary>Reconciles local edits against current Raven sites and retains the edited snapshot for confirmation.</summary>
@@ -550,10 +552,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion)
+            if (version != contextVersion || !SiteListsEqual(edited, SnapshotSites()))
             {
                 return;
             }
+            ValidateLoadedSystem(latest);
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 StatusMessage = "Raven secured this system after it was loaded. No changes can be published.";
@@ -577,9 +580,9 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
             if (!plan.HasChanges)
             {
+                ApplyLoadedSystem(latest, applyJournalEnrichment: false);
                 ReviewSummary = "The local workspace already matches Raven Colonial.";
                 StatusMessage = "There are no Raven site changes to publish.";
-                ApplyLoadedSystem(latest);
                 return;
             }
 
@@ -634,10 +637,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion)
+            if (version != contextVersion || !SiteListsEqual(edited.ToList(), SnapshotSites()))
             {
                 return;
             }
+            ValidateLoadedSystem(latest);
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 ClearReview();
@@ -660,7 +664,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             }
             if (!plan.HasChanges)
             {
-                ApplyLoadedSystem(latest);
+                ApplyLoadedSystem(latest, applyJournalEnrichment: false);
                 StatusMessage = "The local workspace already matches Raven Colonial.";
                 return;
             }
@@ -669,11 +673,12 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 plan.Update,
                 context.RavenApiKey!
             );
-            ValidateLoadedSystem(updated);
-            if (publishingSession == sessionVersion)
+            if (publishingSession != sessionVersion)
             {
-                SystemPublished?.Invoke(publishingCommander, updated);
+                return;
             }
+            ValidateLoadedSystem(updated);
+            SystemPublished?.Invoke(publishingCommander, updated);
             if (version != contextVersion)
             {
                 return;
@@ -696,7 +701,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyLoadedSystem(ColonizationSystemRecord loaded)
+    private void ApplyLoadedSystem(ColonizationSystemRecord loaded, bool applyJournalEnrichment = true)
     {
         ValidateLoadedSystem(loaded);
         system = CloneSystem(loaded);
@@ -708,16 +713,19 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             ?? [];
         baseline = loaded.Sites.Select(CloneSite).ToList();
         CanEdit = CanCommanderEdit(loaded, context.CommanderName);
-        journalTracker = new ColonizationSystemSiteJournalTracker(
-            loaded.SystemAddress,
-            loaded.Name,
-            loaded.Bodies?.Select(body => body.Number)
-        );
         var editableSites = loaded.Sites.Select(CloneSite).ToList();
-        if (CanEdit)
+        if (applyJournalEnrichment)
         {
-            journalTracker.ApplyJournalEvents(editableSites, bufferedJournalEvents);
-            journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
+            journalTracker = new ColonizationSystemSiteJournalTracker(
+                loaded.SystemAddress,
+                loaded.Name,
+                loaded.Bodies?.Select(body => body.Number)
+            );
+            if (CanEdit)
+            {
+                journalTracker.ApplyJournalEvents(editableSites, bufferedJournalEvents);
+                journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
+            }
         }
 
         SplitSitesForViewer(loaded.Sites, editableSites);
@@ -1010,6 +1018,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         if (loaded.SystemAddress <= 0 || string.IsNullOrWhiteSpace(loaded.Name))
         {
             throw new InvalidDataException("Raven Colonial returned an incomplete system identity.");
+        }
+
+        if (loaded.Sites is null || loaded.Sites.Any(site => site is null))
+        {
+            throw new InvalidDataException("Raven Colonial returned unnamed or duplicate system sites.");
         }
 
         IGrouping<string, ColonizationSystemSite>? duplicateId = loaded
