@@ -75,7 +75,6 @@ public sealed class BiologyCodexBingoWindowCoordinator : IDisposable
     private async Task OpenNearestSearchAsync(CodexBingoNearestRequest request)
     {
         await nearestSearchHandler(request);
-        window?.Close();
         owner.Activate();
     }
 

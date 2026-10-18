@@ -6,8 +6,15 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class NearestSystemsViewModel : INotifyPropertyChanged
+public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposable
 {
+    private readonly CodexSearchCatalog catalog = new();
+    private CodexSearchQuery? selectedQuery;
+    private Action? cancelSearch;
+    private int searchVersion;
+    private string coverageNote = string.Empty;
+    private string resultOrigin = string.Empty;
+    private bool disposed;
     private const string Unavailable = "\u2014";
 
     private readonly INearestSystemsClient nearestSystemsClient;
@@ -19,16 +26,17 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     private readonly AsyncCommand openSpanshCommand;
     private readonly AsyncCommand openSpanshSearchCommand;
     private NearestSystemsSearchModeOptionViewModel selectedMode;
-    private string biologicalSignal = string.Empty;
-    private string genus = string.Empty;
-    private string species = string.Empty;
-    private string variantColors = string.Empty;
+    private string codexName = string.Empty;
+    private string landmarkType = string.Empty;
+    private string landmarkSubtypes = string.Empty;
+    private string landmarkVariants = string.Empty;
     private string referenceSystemName = Unavailable;
     private long? referenceSystemAddress;
     private GalacticCoordinate? referencePosition;
     private string commanderName = string.Empty;
     private bool isSearching;
-    private string statusMessage = "Enter a biological signal or missing variants to find nearby systems.";
+    private string statusMessage =
+        "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.";
     private IReadOnlyList<NearestSystemRowViewModel> results = [];
     private NearestSystemRowViewModel? selectedResult;
     private string? spanshSearchReference;
@@ -40,17 +48,18 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         this.nearestSystemsClient =
             nearestSystemsClient ?? throw new ArgumentNullException(nameof(nearestSystemsClient));
         this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
+        CodexOptions = catalog.Options.Select(option => option.Label).ToArray();
         Modes =
         [
             new(
-                NearestSystemsSearchMode.CanonnSignal,
-                "Biological signal",
-                "Find the nearest systems containing a Canonn codex signal."
+                NearestSystemsSearchMode.Codex,
+                "Codex entry or group",
+                "Search the selected entry or all entries in a group."
             ),
             new(
-                NearestSystemsSearchMode.MissingVariants,
-                "Missing variants",
-                "Find nearby bodies with selected biological color variants."
+                NearestSystemsSearchMode.Landmarks,
+                "Spansh landmarks",
+                "Search a landmark type or subtype; a separate variant is optional."
             ),
         ];
         selectedMode = Modes[0];
@@ -68,6 +77,25 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public IReadOnlyList<NearestSystemsSearchModeOptionViewModel> Modes { get; }
+    public IReadOnlyList<string> CodexOptions { get; }
+    public IReadOnlyList<string> LandmarkTypes => catalog.Types;
+    public IReadOnlyList<string> LandmarkSubtypeOptions => catalog.Subtypes;
+    public IReadOnlyList<string> LandmarkVariantOptions => catalog.Variants;
+    public string CriteriaSummary =>
+        selectedQuery is { MatchVariants: true, Entries.Count: > 0 } query
+            ? "Selected entries: "
+                + string.Join(", ", query.Entries.Select(entry => ShortEntryName(entry.Name, query.Label)))
+            : string.Empty;
+    public string CoverageNote
+    {
+        get => coverageNote;
+        private set => SetField(ref coverageNote, value);
+    }
+    public string ResultOrigin
+    {
+        get => resultOrigin;
+        private set => SetField(ref resultOrigin, value);
+    }
 
     public NearestSystemsSearchModeOptionViewModel SelectedMode
     {
@@ -80,64 +108,74 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
                 return;
             }
 
+            CancelPendingSearch();
+
             Results = [];
             SelectedResult = null;
             SpanshSearchReference = null;
+            CoverageNote = string.Empty;
+            ResultOrigin = string.Empty;
             StatusMessage = value.Description;
-            OnPropertyChanged(nameof(IsCanonnMode));
-            OnPropertyChanged(nameof(IsVariantMode));
+            OnPropertyChanged(nameof(IsCodexMode));
+            OnPropertyChanged(nameof(IsLandmarkMode));
             OnPropertyChanged(nameof(SearchButtonText));
             searchCommand.RaiseCanExecuteChanged();
         }
     }
 
-    public bool IsCanonnMode => SelectedMode.Mode == NearestSystemsSearchMode.CanonnSignal;
+    public bool IsCodexMode => SelectedMode.Mode == NearestSystemsSearchMode.Codex;
 
-    public bool IsVariantMode => SelectedMode.Mode == NearestSystemsSearchMode.MissingVariants;
+    public bool IsLandmarkMode => SelectedMode.Mode == NearestSystemsSearchMode.Landmarks;
 
-    public string BiologicalSignal
+    public string CodexName
     {
-        get => biologicalSignal;
+        get => codexName;
         set
         {
-            if (SetField(ref biologicalSignal, value ?? string.Empty))
+            if (SetField(ref codexName, value ?? string.Empty))
             {
+                CancelPendingSearch();
+                selectedQuery = null;
+                OnPropertyChanged(nameof(CriteriaSummary));
                 searchCommand.RaiseCanExecuteChanged();
             }
         }
     }
 
-    public string Genus
+    public string LandmarkType
     {
-        get => genus;
+        get => landmarkType;
         set
         {
-            if (SetField(ref genus, value ?? string.Empty))
+            if (SetField(ref landmarkType, value ?? string.Empty))
             {
+                CancelPendingSearch();
                 searchCommand.RaiseCanExecuteChanged();
             }
         }
     }
 
-    public string Species
+    public string LandmarkSubtypes
     {
-        get => species;
+        get => landmarkSubtypes;
         set
         {
-            if (SetField(ref species, value ?? string.Empty))
+            if (SetField(ref landmarkSubtypes, value ?? string.Empty))
             {
+                CancelPendingSearch();
                 searchCommand.RaiseCanExecuteChanged();
             }
         }
     }
 
-    public string VariantColors
+    public string LandmarkVariants
     {
-        get => variantColors;
+        get => landmarkVariants;
         set
         {
-            if (SetField(ref variantColors, value ?? string.Empty))
+            if (SetField(ref landmarkVariants, value ?? string.Empty))
             {
+                CancelPendingSearch();
                 searchCommand.RaiseCanExecuteChanged();
             }
         }
@@ -185,6 +223,8 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             }
 
             RaiseSelectedResultCommands();
+            OnPropertyChanged(nameof(HasSpanshSearchReference));
+            openSpanshSearchCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -197,10 +237,10 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     public string SearchButtonText =>
         IsSearching
             ? "Searching\u2026"
-            : (IsCanonnMode) switch
+            : (IsCodexMode) switch
             {
                 true => "Find nearest",
-                false => "Find variants",
+                false => "Find landmarks",
             };
 
     public bool IsSearching
@@ -254,6 +294,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             return;
         }
 
+        CancelPendingSearch("Search context changed. Run the search again.");
         ReferenceSystemName = nextSystemName;
         referencePosition = position;
         referenceSystemAddress = nextSystemAddress;
@@ -272,77 +313,130 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         uriLauncher = launcher;
     }
 
-    public async Task SearchCodexSignalAsync(string signal)
+    /// <summary>Stops work when the workspace owner closes; stale callbacks cannot repopulate its results.</summary>
+    public void Dispose()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(signal);
-        SelectedMode = Modes.Single(option => option.Mode == NearestSystemsSearchMode.CanonnSignal);
-        BiologicalSignal = signal.Trim();
+        disposed = true;
+        searchVersion++;
+        cancelSearch?.Invoke();
+        cancelSearch = null;
+        IsSearching = false;
+        SetPlatformServices(null, null);
+    }
+
+    /// <summary>Autofills the same editable Codex search used by the workspace, retaining exact descendants.</summary>
+    public async Task SearchCodexAsync(CodexSearchQuery query)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        SelectedMode = Modes.Single(option => option.Mode == NearestSystemsSearchMode.Codex);
+        CodexName = query.Label;
+        selectedQuery = query;
+        OnPropertyChanged(nameof(CriteriaSummary));
         await SearchAsync();
     }
 
-    public async Task SearchCodexVariantsAsync(string genus, string species, IReadOnlyList<string> variants)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(genus);
-        ArgumentException.ThrowIfNullOrWhiteSpace(species);
-        ArgumentNullException.ThrowIfNull(variants);
-        SelectedMode = Modes.Single(option => option.Mode == NearestSystemsSearchMode.MissingVariants);
-        Genus = genus.Trim();
-        Species = species.Trim();
-        VariantColors = string.Join(", ", variants.Where(variant => !string.IsNullOrWhiteSpace(variant)));
-        await SearchAsync();
-    }
-
+    /// <summary>Cancels superseded work and keeps results tied to their captured reference coordinates.</summary>
     public async Task SearchAsync()
     {
+        if (disposed)
+        {
+            return;
+        }
         if (referencePosition is not { } position)
         {
             StatusMessage = "Current-system coordinates are required before searching.";
             return;
         }
-
         if (!HasValidInputs())
         {
-            StatusMessage = IsCanonnMode
-                ? "Enter the biological signal to find."
-                : "Enter a genus, species, and at least one variant color.";
+            StatusMessage = IsCodexMode
+                ? "Choose a Codex entry or group."
+                : "Choose a landmark type or subtype. A variant is optional.";
             return;
         }
-
+        int version = ++searchVersion;
+        cancelSearch?.Invoke();
+        using var operation = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        cancelSearch = operation.Cancel;
         try
         {
             IsSearching = true;
             Results = [];
             SelectedResult = null;
             SpanshSearchReference = null;
-            StatusMessage = $"Searching near {ReferenceSystemName}\u2026";
-            NearestSystemsSearchResult searchResult = IsCanonnMode
-                ? await nearestSystemsClient.SearchCanonnAsync(position, BiologicalSignal.Trim(), commanderName)
-                : await nearestSystemsClient.SearchMissingVariantsAsync(
-                    position,
-                    Genus.Trim(),
-                    Species.Trim(),
-                    ParseVariantColors()
-                );
-            Results = searchResult.Rows.Select(row => new NearestSystemRowViewModel(row)).ToArray();
-            SelectedResult = Results.Count > 0 ? Results[0] : null;
-            SpanshSearchReference = searchResult.SpanshSearchReference;
-            StatusMessage =
-                Results.Count == 0
-                    ? "No nearby systems matched this search."
-                    : $"Found {Results.Count:N0} nearby system(s).";
+            CoverageNote = string.Empty;
+            ResultOrigin =
+                $"Nearest published matches from {ReferenceSystemName}; up to 20 unique systems, no distance cutoff.";
+            StatusMessage = "Searching published Codex locations…";
+            NearestSystemsSearchResult searchResult = await QueryLocationsAsync(position, operation.Token);
+            if (version != searchVersion)
+            {
+                return;
+            }
+            ApplySearchResult(searchResult);
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
-            StatusMessage = "The nearby-system search timed out.";
+            if (version == searchVersion)
+            {
+                StatusMessage = "The Codex location search timed out.";
+            }
         }
-        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidDataException)
+        catch (Exception exception)
+            when (exception
+                    is HttpRequestException
+                        or JsonException
+                        or InvalidDataException
+                        or IOException
+                        or ArgumentException
+            )
         {
-            StatusMessage = "The nearby-system search failed: " + exception.Message;
+            if (version == searchVersion)
+            {
+                StatusMessage = "The Codex location search failed: " + exception.Message;
+            }
         }
         finally
         {
-            IsSearching = false;
+            if (version == searchVersion)
+            {
+                cancelSearch = null;
+                IsSearching = false;
+            }
         }
+    }
+
+    private Task<NearestSystemsSearchResult> QueryLocationsAsync(
+        GalacticCoordinate position,
+        CancellationToken token
+    ) =>
+        IsCodexMode
+            ? nearestSystemsClient.SearchCodexAsync(
+                position,
+                selectedQuery ?? catalog.Resolve(CodexName),
+                commanderName,
+                token
+            )
+            : nearestSystemsClient.SearchLandmarksAsync(
+                position,
+                new CodexLandmarkFilter(
+                    LandmarkType.Trim(),
+                    ParseValues(LandmarkSubtypes),
+                    ParseValues(LandmarkVariants)
+                ),
+                token
+            );
+
+    private void ApplySearchResult(NearestSystemsSearchResult searchResult)
+    {
+        Results = searchResult.Rows.Select(row => new NearestSystemRowViewModel(row)).ToArray();
+        SelectedResult = Results.Count > 0 ? Results[0] : null;
+        SpanshSearchReference = searchResult.SpanshSearchReference;
+        CoverageNote = searchResult.CoverageNote ?? string.Empty;
+        StatusMessage =
+            Results.Count == 0
+                ? "No published locations matched these criteria. No distance cutoff was applied."
+                : $"Found {Results.Count:N0} matching system(s), nearest first.";
     }
 
     public Task CopySystemAsync()
@@ -409,7 +503,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     {
         if (string.IsNullOrWhiteSpace(SpanshSearchReference))
         {
-            StatusMessage = "Run a missing-variant search first.";
+            StatusMessage = "Run a Spansh landmark search first.";
             return Task.CompletedTask;
         }
 
@@ -419,7 +513,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     private string? SpanshSearchReference
     {
-        get => spanshSearchReference;
+        get => SelectedResult is { } selected ? selected.SpanshSearchReference : spanshSearchReference;
         set
         {
             if (!SetField(ref spanshSearchReference, value))
@@ -434,24 +528,41 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     private bool CanSearch()
     {
-        return !IsSearching && referencePosition is not null && HasValidInputs();
+        return !disposed && !IsSearching && referencePosition is not null && HasValidInputs();
     }
 
-    private bool HasValidInputs()
+    private void CancelPendingSearch(string message = "Search criteria changed. Run the search again.")
     {
-        return IsCanonnMode
-            ? !string.IsNullOrWhiteSpace(BiologicalSignal)
-            : !string.IsNullOrWhiteSpace(Genus)
-                && !string.IsNullOrWhiteSpace(Species)
-                && ParseVariantColors().Length > 0;
+        if (cancelSearch is null)
+        {
+            return;
+        }
+        searchVersion++;
+        cancelSearch();
+        cancelSearch = null;
+        IsSearching = false;
+        StatusMessage = message;
     }
 
-    private string[] ParseVariantColors()
-    {
-        return VariantColors
-            .Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    private bool HasValidInputs() =>
+        IsCodexMode
+            ? !string.IsNullOrWhiteSpace(CodexName)
+            : !string.IsNullOrWhiteSpace(LandmarkType) || ParseValues(LandmarkSubtypes).Length > 0;
+
+    private static string[] ParseValues(string text) =>
+        text.Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+    private static string ShortEntryName(string name, string label)
+    {
+        string prefix = label + " - ";
+        if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return name[prefix.Length..];
+        }
+        string suffix = " " + label;
+        return name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) ? name[..^suffix.Length] : name;
     }
 
     private bool CanUseSelectedResult()
@@ -556,8 +667,8 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
 public enum NearestSystemsSearchMode
 {
-    CanonnSignal,
-    MissingVariants,
+    Codex,
+    Landmarks,
 }
 
 public sealed record NearestSystemsSearchModeOptionViewModel(
@@ -576,7 +687,8 @@ public sealed class NearestSystemRowViewModel
         Notes = row.Notes;
         Coordinate = row.Coordinate;
         SystemAddress = row.SystemAddress;
-        Source = row.Source.ToString();
+        Source = row.Source == NearestSystemSource.Combined ? "Spansh + Canonn" : row.Source.ToString();
+        SpanshSearchReference = row.SpanshSearchReference;
     }
 
     public string SystemName { get; }
@@ -594,6 +706,8 @@ public sealed class NearestSystemRowViewModel
     public string SystemAddressText => SystemAddressFormatter.Format(SystemAddress);
 
     public string Source { get; }
+
+    public string? SpanshSearchReference { get; }
 }
 
 internal static class SystemAddressFormatter

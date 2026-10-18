@@ -1801,6 +1801,10 @@
       "translation": "Alarm"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "Albens Glockenmolluske"
+    },
+    {
       "source": "Alexandrite",
       "translation": "Alexandrit"
     },
@@ -3145,10 +3149,6 @@
       "translation": "BIO-PROBE 2/3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "Biologisches Signal"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "BIOLOGIE-CODEX"
     },
@@ -3651,10 +3651,6 @@
     {
       "source": "Biological sample location",
       "translation": "Ort der biologischen Probe"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "Biologisches Signal"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -4327,6 +4323,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "Codex-Bingo"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "Kodexeintrag oder -gruppe"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "CODEX-STANDORTE"
     },
     {
       "source": "COLLECT",
@@ -5281,6 +5285,14 @@
       "translation": "Wählen Sie Windows Mixed Reality nur bei einer Windows-Installation, bei der die Headset-Software und die Bridge SteamVR weiterhin verfügbar sind. Überprüfen Sie den aktuellen Support des Anbieters, bevor Sie die Windows-Version ändern."
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "Wählen Sie einen Codex-Eintrag oder eine Codex-Gruppe, um bis zu 20 nächstgelegene Systeme ohne Entfernungsbeschränkung zu finden."
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "Wählen Sie einen Codex-Eintrag oder eine Codex-Gruppe."
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "Wählen Sie eine Google Cloud OAuth-Anmeldeinformationsdatei für eine Desktop-App."
     },
@@ -5331,6 +5343,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "Wählen Sie eine Reise aus der Verlaufsliste oder beginnen Sie eine neue."
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "Wählen Sie einen Wahrzeichentyp oder -untertyp. Eine Variante ist optional."
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -5427,6 +5443,10 @@
     {
       "source": "Choose an end date",
       "translation": "Wählen Sie ein Enddatum"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "Wählen Sie einen Eintrag oder eine Gruppe oder geben Sie einen Codexnamen ein. Gruppen suchen gemeinsam ihre Einträge."
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -5879,6 +5899,10 @@
     {
       "source": "Codex entry",
       "translation": "Kodexeintrag"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "Kodexeintrag oder -gruppe"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -8009,8 +8033,8 @@
       "translation": "Defizit (schwach)"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "Definieren Sie eine Kugelgrenze oder finden Sie biologische Systeme in der Nähe."
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "Definieren Sie eine sphärische Grenze oder suchen Sie nach nächstgelegenen Codex-Standorten."
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -9433,10 +9457,6 @@
       "translation": "Smaragd"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "Smaragd, Blaugrün"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "Notstromzellen"
     },
@@ -9681,10 +9701,6 @@
       "translation": "Geben Sie ein Referenzsystem und eine Entfernung ein. Wählen Sie ein Mineral/Metall, eine Landeplatzgröße sowie einen Mindest- und Höchstbedarf."
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "Geben Sie ein biologisches Signal oder fehlende Varianten ein, um nahegelegene Systeme zu finden."
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "Geben Sie einen Konfigurationsnamen ein und wählen Sie Speichern. Der Baum zeigt eine Vorschau der gespeicherten Aufgaben an. Gespeicherte Konfigurationen gehören zum Kommandanten und zur Schiffsidentität."
     },
@@ -9699,10 +9715,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "Geben Sie einen generierten Systemnamen ein."
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "Geben Sie eine Gattung, eine Art und mindestens eine Farbvariante ein."
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -9805,10 +9817,6 @@
       "translation": "Betreten oder scannen Sie ein System mit biologischen Signalen."
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "Geben Sie das zu findende biologische Signal ein."
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "Geben Sie unten den Prozessnamen des Compositors ohne Dateierweiterung ein."
     },
@@ -9851,6 +9859,10 @@
     {
       "source": "Entry actions",
       "translation": "Eintrittsaktionen"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Eintrag oder Gruppe"
     },
     {
       "source": "Entry {0} of {1}",
@@ -10853,6 +10865,10 @@
       "translation": "Finden Sie Hotspots für diesen Artikel"
     },
     {
+      "source": "Find landmarks",
+      "translation": "Finden Sie Sehenswürdigkeiten"
+    },
+    {
       "source": "Find last visit",
       "translation": "Finden Sie den letzten Besuch"
     },
@@ -10861,20 +10877,20 @@
       "translation": "Finden Sie Materialhändler"
     },
     {
-      "source": "Find missing variants",
-      "translation": "Finden Sie fehlende Varianten"
+      "source": "Find missing colors",
+      "translation": "Finden Sie fehlende Farben"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "Finden Sie biologische Systeme in der Nähe"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "Finden Sie nahegelegene Körper mit ausgewählten biologischen Farbvarianten."
+      "source": "Find missing entries",
+      "translation": "Finden Sie fehlende Einträge"
     },
     {
       "source": "Find nearest",
       "translation": "Finden Sie die nächstgelegene"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "Finden Sie nächstgelegene Codex-Standorte"
     },
     {
       "source": "Find prices",
@@ -10899,14 +10915,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "Suchen Sie den neuesten FSD-Sprung in {0}."
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "Finden Sie die nächstgelegenen Systeme, die ein Canonn-Codexsignal enthalten."
-    },
-    {
-      "source": "Find variants",
-      "translation": "Varianten finden"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -11333,12 +11341,12 @@
       "translation": "{0} Übereinstimmungen gefunden. Wählen Sie das Mittelsystem."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "{0} passende Systeme gefunden."
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "{0} passende(s) System(e) gefunden, nächstgelegene zuerst."
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "{0} Systeme in der Nähe gefunden."
+      "source": "Found {0} matching systems.",
+      "translation": "{0} passende Systeme gefunden."
     },
     {
       "source": "Frame Shift Drive",
@@ -11635,10 +11643,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · {0} Einträge · aktualisierte {1}"
-    },
-    {
-      "source": "GENUS",
-      "translation": "Gattung"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -14445,6 +14449,10 @@
       "translation": "Landepads gesperrt"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "WAHRZEICHENTYP (OPTIONAL)"
+    },
+    {
       "source": "LASER",
       "translation": "LASER"
     },
@@ -14783,6 +14791,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "Die Wiederherstellung des Layouts ist fehlgeschlagen"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "Für jede Variante leer lassen. Beispielsweise gehört Albens zum Subtyp Mollusken und ist keine Farbe."
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -15655,10 +15667,6 @@
     {
       "source": "MISSING",
       "translation": "Fehlt"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "FEHLENDE VARIANTENFARBEN"
     },
     {
       "source": "MISSION 1",
@@ -16597,10 +16605,6 @@
       "translation": "Fehlt"
     },
     {
-      "source": "Missing variants",
-      "translation": "Fehlende Varianten"
-    },
-    {
       "source": "Mission",
       "translation": "Mission"
     },
@@ -16909,10 +16913,6 @@
       "translation": "IN DER NÄHE"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "BIOLOGIE IN DER NÄHE"
-    },
-    {
       "source": "NEED",
       "translation": "BRAUCHEN"
     },
@@ -17123,6 +17123,10 @@
     {
       "source": "Nearest first",
       "translation": "Am nächsten zuerst"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "Nächste veröffentlichte Übereinstimmungen von {0}; Bis zu 20 einzigartige Systeme, keine Entfernungsbeschränkung."
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -17849,10 +17853,6 @@
       "translation": "Kein Punkt in der Nähe"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "Für diese Suche stimmten keine Systeme in der Nähe überein."
-    },
-    {
       "source": "No new logs available",
       "translation": "Keine neuen Protokolle verfügbar"
     },
@@ -17899,6 +17899,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "Keine Projekte entsprechen diesen Filtern."
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "Keine veröffentlichten Standorte erfüllten diese Kriterien. Es wurde keine Entfernungsbegrenzung angewendet."
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -18791,10 +18795,6 @@
     {
       "source": "Open on Raven",
       "translation": "Öffnen Sie auf Raven"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "Öffnen Sie die ursprüngliche Spansh-Suche"
     },
     {
       "source": "Open predictions",
@@ -23913,8 +23913,8 @@
       "translation": "Lauf Lua"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "Führen Sie zunächst eine Suche nach fehlenden Varianten durch."
+      "source": "Run a Spansh landmark search first.",
+      "translation": "Führen Sie zunächst eine Spansh Orientierungspunktsuche durch."
     },
     {
       "source": "RuntimeProcessName",
@@ -24193,10 +24193,6 @@
       "translation": "BESONDERER HINWEIS"
     },
     {
-      "source": "SPECIES",
-      "translation": "Arten"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "ARTEN-BELOHNUNGSGRUPPEN"
     },
@@ -24267,6 +24263,10 @@
     {
       "source": "STOCK",
       "translation": "LAGER"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "UNTERTYPEN (OPTIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -25021,6 +25021,10 @@
       "translation": "Suchmärkte"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "Suchen Sie nach einem Wahrzeichentyp oder -untertyp. eine separate Variante ist optional."
+    },
+    {
       "source": "Search all guides",
       "translation": "Durchsuchen Sie alle Reiseführer"
     },
@@ -25053,8 +25057,16 @@
       "translation": "Suche gelöscht. Wählen Sie Kriterien für die erneute Suche aus."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Suchkontext geändert. Führen Sie die Suche erneut aus."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Suchkriterien geändert. Aktualisieren Sie, um Märkte für diese Kriterien zu laden."
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "Suchkriterien geändert. Führen Sie die Suche erneut aus."
     },
     {
       "source": "Search destinations",
@@ -25101,6 +25113,10 @@
       "translation": "Durchsuchen Sie den dauerhaften Spieljournaldatensatz und exportieren Sie ein begrenztes Diagnose-Wiedergabepaket."
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "Durchsuchen Sie den ausgewählten Eintrag oder alle Einträge in einer Gruppe."
+    },
+    {
       "source": "Search+",
       "translation": "Suchen+"
     },
@@ -25129,8 +25145,8 @@
       "translation": "Suche ab {0}"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "Suche in der Nähe von {0}…"
+      "source": "Searching published Codex locations…",
+      "translation": "Suche nach veröffentlichten Codex-Standorten…"
     },
     {
       "source": "Searching…",
@@ -25333,10 +25349,6 @@
       "translation": "Wählen Sie ein Ergebnis aus, um den vollständigen Leitfaden zu öffnen."
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "Wählen Sie eine Zeile aus, um sie zu kopieren oder auf Canonn und Spansh zu überprüfen."
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "Wählen Sie eine gespeicherte Konfiguration zum Entfernen aus."
     },
@@ -25437,6 +25449,10 @@
       "translation": "Ausgewähltes Boxel verwendet nur die aufgezeichneten Systeme und Körper im aktuell geöffneten Boxel."
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "Ausgewählte Einträge: {0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "Ausgewählter Ordner"
     },
@@ -25515,10 +25531,6 @@
     {
       "source": "SendText",
       "translation": "SendText"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "Trennen Sie mehrere Farben durch Kommas oder Semikolons."
     },
     {
       "source": "Separation",
@@ -26705,6 +26717,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + lokale Powerplay-Beobachtungen"
     },
@@ -26751,6 +26767,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh Fallback"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh Sehenswürdigkeiten"
     },
     {
       "source": "Spansh lookup",
@@ -27771,10 +27791,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "Stratum tectonicas"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "Stratum, Bakterium oder ein anderes Codex-Signal"
     },
     {
       "source": "Streaming",
@@ -28895,6 +28911,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "Die Codex-Bildpräferenz wurde für diese Sitzung geändert, konnte jedoch nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "Die Codex-Standortsuche ist fehlgeschlagen: {0}"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "Bei der Codex-Standortsuche ist eine Zeitüberschreitung aufgetreten."
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -30071,14 +30095,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "Das native Quellfenster {0} konnte nicht unterdrückt werden."
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "Die Suche nach einem System in der Nähe ist fehlgeschlagen: {0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "Zeitüberschreitung bei der Suche nach dem System in der Nähe."
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -31777,6 +31793,10 @@
       "translation": "Geben Sie A, B oder G für Ruinen oder .site <type> für jedes zugeordnete Guardian-Layout ein."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Der Typ akzeptiert einen Namen. Trennen Sie mehrere Subtypen oder Varianten durch Kommas oder Semikolons. Jede Liste entspricht einem ihrer Namen."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Geben Sie mindestens 3 Zeichen für Systemvorschläge ein."
     },
@@ -32811,6 +32831,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "Utility-Mount {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTEN (OPTIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -34993,8 +35017,16 @@
       "translation": "dss-erforderlich"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "z.B. Smaragd, Blaugrün"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "z.B. Gefährlich"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "z.B. Weichtier"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -40527,6 +40559,10 @@
       "translation": "alarma"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "Molusco Campana Albens"
+    },
+    {
       "source": "Alexandrite",
       "translation": "Alejandrita"
     },
@@ -41871,10 +41907,6 @@
       "translation": "MUESTRA BIO 2 / 3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "señal biológica"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "CODEX DE BIOLOGÍA"
     },
@@ -42377,10 +42409,6 @@
     {
       "source": "Biological sample location",
       "translation": "Ubicación de la muestra biológica."
-    },
-    {
-      "source": "Biological signal",
-      "translation": "señal biológica"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -43053,6 +43081,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "Bingo del códice"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "Entrada o grupo del códice"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "UBICACIONES DEL CÓDEX"
     },
     {
       "source": "COLLECT",
@@ -44007,6 +44043,14 @@
       "translation": "Elija Windows Mixed Reality solo en una instalación de Windows donde el software de sus auriculares y el puente SteamVR permanezcan disponibles. Consulte el soporte actual del proveedor antes de cambiar las versiones de Windows."
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "Elija una entrada o grupo del Codex para encontrar hasta 20 sistemas más cercanos, sin límite de distancia."
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "Elija una entrada o grupo del Codex."
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "Elija un archivo de credenciales de Google Cloud OAuth para una aplicación de escritorio."
     },
@@ -44057,6 +44101,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "Elija un viaje de la lista del historial o comience uno nuevo."
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "Elija un tipo o subtipo de punto de referencia. Una variante es opcional."
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -44153,6 +44201,10 @@
     {
       "source": "Choose an end date",
       "translation": "Elige una fecha de finalización"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "Elija una entrada o grupo, o escriba un nombre del Codex. Los grupos buscan sus entradas juntos."
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -44605,6 +44657,10 @@
     {
       "source": "Codex entry",
       "translation": "entrada del códice"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "Entrada o grupo del códice"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -46735,8 +46791,8 @@
       "translation": "Déficit (tenue)"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "Defina un límite esférico o encuentre sistemas biológicos cercanos."
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "Defina un límite esférico o encuentre las ubicaciones del Codex más cercanas."
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -48159,10 +48215,6 @@
       "translation": "Esmeralda"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "Esmeralda, verde azulado"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "Células de energía de emergencia"
     },
@@ -48407,10 +48459,6 @@
       "translation": "Introduzca un sistema de referencia y una distancia. Elige Mineral/metal, tamaño de pista de aterrizaje y exigencia mínima y máxima."
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "Ingrese una señal biológica o variantes faltantes para encontrar sistemas cercanos."
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "Ingrese un nombre de configuración y seleccione Guardar. El árbol muestra una vista previa de las tareas guardadas; Las configuraciones guardadas pertenecen al comandante y a la identidad del barco."
     },
@@ -48425,10 +48473,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "Introduzca un nombre de sistema generado."
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "Ingrese un género, especie y al menos una variante de color."
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -48531,10 +48575,6 @@
       "translation": "Ingresar o escanear un sistema con señales biológicas."
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "Ingrese la señal biológica para encontrar."
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "Ingrese el nombre del proceso del compositor a continuación sin una extensión de archivo."
     },
@@ -48577,6 +48617,10 @@
     {
       "source": "Entry actions",
       "translation": "Acciones de entrada"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrada o grupo"
     },
     {
       "source": "Entry {0} of {1}",
@@ -49579,6 +49623,10 @@
       "translation": "Encuentre puntos de acceso para este producto"
     },
     {
+      "source": "Find landmarks",
+      "translation": "encontrar puntos de referencia"
+    },
+    {
       "source": "Find last visit",
       "translation": "Encuentra la última visita"
     },
@@ -49587,20 +49635,20 @@
       "translation": "Encuentra comerciantes de materiales"
     },
     {
-      "source": "Find missing variants",
-      "translation": "Encuentra variantes faltantes"
+      "source": "Find missing colors",
+      "translation": "Encuentra los colores que faltan"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "Encuentra sistemas biológicos cercanos"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "Encuentre cuerpos cercanos con variantes de color biológico seleccionadas."
+      "source": "Find missing entries",
+      "translation": "Encuentra entradas faltantes"
     },
     {
       "source": "Find nearest",
       "translation": "Encuentra más cercano"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "Encuentre las ubicaciones del Codex más cercanas"
     },
     {
       "source": "Find prices",
@@ -49625,14 +49673,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "Encuentre el salto FSD más reciente a {0}."
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "Encuentra los sistemas más cercanos que contienen una señal de códice Canonn."
-    },
-    {
-      "source": "Find variants",
-      "translation": "Buscar variantes"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -50059,12 +50099,12 @@
       "translation": "Se encontraron {0} coincidencias. Elija el sistema central."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Se encontraron {0} sistemas coincidentes."
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "Se encontraron sistemas coincidentes {0}, el más cercano primero."
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "Se encontraron {0} sistemas cercanos."
+      "source": "Found {0} matching systems.",
+      "translation": "Se encontraron {0} sistemas coincidentes."
     },
     {
       "source": "Frame Shift Drive",
@@ -50361,10 +50401,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · Entradas {0} · {1} actualizado"
-    },
-    {
-      "source": "GENUS",
-      "translation": "Género"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -53171,6 +53207,10 @@
       "translation": "PISTAS DE ATERRIZAJE BLOQUEADAS"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "TIPO DE HITO (OPCIONAL)"
+    },
+    {
       "source": "LASER",
       "translation": "LÁSER"
     },
@@ -53509,6 +53549,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "Error al recuperar el diseño"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "Deje en blanco para cualquier variante. Por ejemplo, Albens es parte del subtipo Molusc, no un color."
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -54381,10 +54425,6 @@
     {
       "source": "MISSING",
       "translation": "desaparecido"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "FALTAN VARIANTES DE COLORES"
     },
     {
       "source": "MISSION 1",
@@ -55323,10 +55363,6 @@
       "translation": "desaparecido"
     },
     {
-      "source": "Missing variants",
-      "translation": "Variantes faltantes"
-    },
-    {
       "source": "Mission",
       "translation": "Misión"
     },
@@ -55635,10 +55671,6 @@
       "translation": "CERCA"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "BIOLOGÍA CERCANA"
-    },
-    {
       "source": "NEED",
       "translation": "NECESIDAD"
     },
@@ -55849,6 +55881,10 @@
     {
       "source": "Nearest first",
       "translation": "El más cercano primero"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "Coincidencias publicadas más cercanas de {0}; hasta 20 sistemas únicos, sin límite de distancia."
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -56575,10 +56611,6 @@
       "translation": "Ningún punto cercano"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "Ningún sistema cercano coincidió con esta búsqueda."
-    },
-    {
       "source": "No new logs available",
       "translation": "No hay nuevos registros disponibles"
     },
@@ -56625,6 +56657,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "Ningún proyecto coincide con estos filtros."
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "Ninguna ubicación publicada coincidió con estos criterios. No se aplicó ningún límite de distancia."
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -57517,10 +57553,6 @@
     {
       "source": "Open on Raven",
       "translation": "Abierto en Raven"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "Abrir búsqueda original Spansh"
     },
     {
       "source": "Open predictions",
@@ -62639,8 +62671,8 @@
       "translation": "Ejecutar lua"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "Primero ejecute una búsqueda de variante faltante."
+      "source": "Run a Spansh landmark search first.",
+      "translation": "Primero ejecute una búsqueda de puntos de referencia Spansh."
     },
     {
       "source": "RuntimeProcessName",
@@ -62919,10 +62951,6 @@
       "translation": "PISTA ESPECIAL"
     },
     {
-      "source": "SPECIES",
-      "translation": "Especies"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "GRUPOS DE RECOMPENSA DE ESPECIES"
     },
@@ -62993,6 +63021,10 @@
     {
       "source": "STOCK",
       "translation": "STOCK"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SUBTIPOS (OPCIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -63747,6 +63779,10 @@
       "translation": "Buscar mercados"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "Busque un tipo o subtipo de punto de referencia; una variante separada es opcional."
+    },
+    {
       "source": "Search all guides",
       "translation": "Buscar todas las guías"
     },
@@ -63779,8 +63815,16 @@
       "translation": "Búsqueda borrada. Elija criterios para buscar nuevamente."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "El contexto de búsqueda cambió. Ejecute la búsqueda nuevamente."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Los criterios de búsqueda cambiaron. Actualice para cargar mercados para estos criterios."
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "Los criterios de búsqueda cambiaron. Ejecute la búsqueda nuevamente."
     },
     {
       "source": "Search destinations",
@@ -63827,6 +63871,10 @@
       "translation": "Busque el registro duradero del diario del juego y exporte un paquete de repetición de diagnóstico limitado."
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "Busque la entrada seleccionada o todas las entradas de un grupo."
+    },
+    {
       "source": "Search+",
       "translation": "Buscar+"
     },
@@ -63855,8 +63903,8 @@
       "translation": "Buscando desde {0}"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "Buscando cerca de {0}…"
+      "source": "Searching published Codex locations…",
+      "translation": "Buscando ubicaciones del Codex publicadas..."
     },
     {
       "source": "Searching…",
@@ -64059,10 +64107,6 @@
       "translation": "Seleccione un resultado para abrir la guía completa."
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "Seleccione una fila para copiarla o inspeccionarla en Canonn y Spansh."
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "Seleccione una configuración guardada para eliminar."
     },
@@ -64163,6 +64207,10 @@
       "translation": "El cuadro seleccionado utiliza solo los sistemas y cuerpos registrados en el cuadro actualmente abierto."
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "Entradas seleccionadas: {0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "Carpeta seleccionada"
     },
@@ -64241,10 +64289,6 @@
     {
       "source": "SendText",
       "translation": "Enviar texto"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "Separe varios colores con comas o punto y coma."
     },
     {
       "source": "Separation",
@@ -65431,6 +65475,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + observaciones locales de Powerplay"
     },
@@ -65477,6 +65525,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh respaldo"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh puntos de referencia"
     },
     {
       "source": "Spansh lookup",
@@ -66497,10 +66549,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "Estrato Tectónico"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "Estrato, bacteria u otra señal del códice"
     },
     {
       "source": "Streaming",
@@ -67621,6 +67669,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "La preferencia de imagen del Codex cambió para esta sesión pero no se pudo guardar: {0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "La búsqueda de ubicación del Codex falló: {0}"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "Se agotó el tiempo de espera de la búsqueda de ubicación del Codex."
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -68797,14 +68853,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "No se pudo suprimir la ventana de origen nativa {0}."
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "La búsqueda del sistema cercano falló: {0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "La búsqueda del sistema cercano expiró."
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -70503,6 +70551,10 @@
       "translation": "Escriba A, B o G para ruinas, o .site <tipo> para cualquier diseño de Guardian mapeado."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "El tipo acepta un nombre. Separe varios subtipos o variantes con comas o punto y coma. Cada lista coincide con cualquiera de sus nombres."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Escriba al menos 3 caracteres para sugerencias del sistema."
     },
@@ -71537,6 +71589,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "Montaje de utilidad {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPCIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -73719,8 +73775,16 @@
       "translation": "dss requerido"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "p.ej. Esmeralda, verde azulado"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "p.ej. Peligroso"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "p.ej. Molusco"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -79253,6 +79317,10 @@
       "translation": "Alarme"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "Mollusque à cloche d'Albens"
+    },
+    {
       "source": "Alexandrite",
       "translation": "Alexandrite"
     },
@@ -80597,10 +80665,6 @@
       "translation": "ÉCHANTILLON BIOLOGIQUE 2 / 3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "Signal biologique"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "CODEX DE BIOLOGIE"
     },
@@ -81103,10 +81167,6 @@
     {
       "source": "Biological sample location",
       "translation": "Localisation des échantillons biologiques"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "Signal biologique"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -81779,6 +81839,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "Bingo du Codex"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "Entrée ou groupe du Codex"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "EMPLACEMENTS DU CODEX"
     },
     {
       "source": "COLLECT",
@@ -82733,6 +82801,14 @@
       "translation": "Choisissez Windows Mixed Reality uniquement sur une installation Windows où son logiciel de casque et son pont SteamVR restent disponibles. Vérifiez le support actuel du fournisseur avant de modifier les versions de Windows."
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "Choisissez une entrée ou un groupe du Codex pour trouver jusqu'à 20 systèmes les plus proches, sans limite de distance."
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "Choisissez une entrée ou un groupe du Codex."
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "Choisissez un fichier d'informations d'identification Google Cloud OAuth pour une application de bureau."
     },
@@ -82783,6 +82859,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "Choisissez un voyage dans la liste historique ou commencez-en un nouveau."
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "Choisissez un type ou un sous-type de point de repère. Une variante est facultative."
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -82879,6 +82959,10 @@
     {
       "source": "Choose an end date",
       "translation": "Choisissez une date de fin"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "Choisissez une entrée ou un groupe, ou saisissez un nom Codex. Les groupes recherchent leurs entrées ensemble."
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -83331,6 +83415,10 @@
     {
       "source": "Codex entry",
       "translation": "Entrée du Codex"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "Entrée ou groupe du Codex"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -85461,8 +85549,8 @@
       "translation": "Déficit (faible)"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "Définissez une limite sphérique ou trouvez des systèmes biologiques à proximité."
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "Définissez une limite sphérique ou recherchez les emplacements Codex les plus proches."
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -86885,10 +86973,6 @@
       "translation": "Émeraude"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "Émeraude, Sarcelle"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "Cellules de secours"
     },
@@ -87133,10 +87217,6 @@
       "translation": "Entrez un système de référence et une distance. Choisissez un minéral/métal, une taille de piste d'atterrissage et une demande minimale et maximale."
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "Entrez un signal biologique ou des variantes manquantes pour trouver les systèmes à proximité."
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "Entrez un nom de configuration et sélectionnez Enregistrer. L'arborescence affiche un aperçu des affectations enregistrées ; les configurations enregistrées appartiennent au commandant et à l'identité du navire."
     },
@@ -87151,10 +87231,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "Entrez un nom de système généré."
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "Entrez un genre, une espèce et au moins une variante de couleur."
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -87257,10 +87333,6 @@
       "translation": "Entrez ou scannez un système avec des signaux biologiques."
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "Entrez le signal biologique à trouver."
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "Entrez le nom du processus du compositeur ci-dessous sans extension de fichier."
     },
@@ -87303,6 +87375,10 @@
     {
       "source": "Entry actions",
       "translation": "Actions d'entrée"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrée ou groupe"
     },
     {
       "source": "Entry {0} of {1}",
@@ -88305,6 +88381,10 @@
       "translation": "Trouver des points chauds pour ce produit"
     },
     {
+      "source": "Find landmarks",
+      "translation": "Trouver des points de repère"
+    },
+    {
       "source": "Find last visit",
       "translation": "Rechercher la dernière visite"
     },
@@ -88313,20 +88393,20 @@
       "translation": "Trouver des commerçants de matériaux"
     },
     {
-      "source": "Find missing variants",
-      "translation": "Trouver les variantes manquantes"
+      "source": "Find missing colors",
+      "translation": "Trouver les couleurs manquantes"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "Trouver des systèmes biologiques à proximité"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "Trouvez des corps à proximité avec des variantes de couleurs biologiques sélectionnées."
+      "source": "Find missing entries",
+      "translation": "Rechercher les entrées manquantes"
     },
     {
       "source": "Find nearest",
       "translation": "Trouver le plus proche"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "Trouver les emplacements Codex les plus proches"
     },
     {
       "source": "Find prices",
@@ -88351,14 +88431,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "Recherchez le saut FSD le plus récent dans {0}."
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "Trouvez les systèmes les plus proches contenant un signal codex Canonn."
-    },
-    {
-      "source": "Find variants",
-      "translation": "Trouver des variantes"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -88785,12 +88857,12 @@
       "translation": "{0} correspondances trouvées. Choisissez le système central."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "{0} systèmes correspondants trouvés."
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "Système(s) correspondant(s) {0} trouvé(s), le plus proche en premier."
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "{0} système(s) à proximité détecté(s)."
+      "source": "Found {0} matching systems.",
+      "translation": "{0} systèmes correspondants trouvés."
     },
     {
       "source": "Frame Shift Drive",
@@ -89087,10 +89159,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · Entrées {0} · {1} mis à jour"
-    },
-    {
-      "source": "GENUS",
-      "translation": "Genre"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -91897,6 +91965,10 @@
       "translation": "PISTES D'ATTERRISSAGE VERROUILLÉES"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "TYPE DE REPÈRE (OPTIONNEL)"
+    },
+    {
       "source": "LASER",
       "translation": "LASER"
     },
@@ -92235,6 +92307,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "Échec de la récupération de la mise en page"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "Laissez vide pour toute variante. Par exemple, Albens fait partie du sous-type Mollusque, pas une couleur."
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -93107,10 +93183,6 @@
     {
       "source": "MISSING",
       "translation": "Manquant"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "VARIANTES DE COULEURS MANQUANTES"
     },
     {
       "source": "MISSION 1",
@@ -94049,10 +94121,6 @@
       "translation": "Manquant"
     },
     {
-      "source": "Missing variants",
-      "translation": "Variantes manquantes"
-    },
-    {
       "source": "Mission",
       "translation": "Mission"
     },
@@ -94361,10 +94429,6 @@
       "translation": "PROCHE"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "BIOLOGIE À PROXIMITÉ"
-    },
-    {
       "source": "NEED",
       "translation": "BESOIN"
     },
@@ -94575,6 +94639,10 @@
     {
       "source": "Nearest first",
       "translation": "Le plus proche en premier"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "Correspondances publiées les plus proches de {0} ; jusqu'à 20 systèmes uniques, sans coupure de distance."
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -95301,10 +95369,6 @@
       "translation": "Aucun point à proximité"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "Aucun système à proximité ne correspond à cette recherche."
-    },
-    {
       "source": "No new logs available",
       "translation": "Aucun nouveau journal disponible"
     },
@@ -95351,6 +95415,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "Aucun projet ne correspond à ces filtres."
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "Aucun emplacement publié ne correspond à ces critères. Aucune limite de distance n’a été appliquée."
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -96243,10 +96311,6 @@
     {
       "source": "Open on Raven",
       "translation": "Ouvert sur Raven"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "Ouvrir la recherche Spansh originale"
     },
     {
       "source": "Open predictions",
@@ -101365,8 +101429,8 @@
       "translation": "Exécuter Lua"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "Exécutez d’abord une recherche de variantes manquantes."
+      "source": "Run a Spansh landmark search first.",
+      "translation": "Exécutez d'abord une recherche de point de repère Spansh."
     },
     {
       "source": "RuntimeProcessName",
@@ -101645,10 +101709,6 @@
       "translation": "INDICE SPÉCIAL"
     },
     {
-      "source": "SPECIES",
-      "translation": "Espèce"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "GROUPES DE RÉCOMPENSE D'ESPÈCES"
     },
@@ -101719,6 +101779,10 @@
     {
       "source": "STOCK",
       "translation": "STOCK"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SOUS-TYPES (FACULTATIF)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -102473,6 +102537,10 @@
       "translation": "Rechercher des marchés"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "Rechercher un type ou un sous-type de point de repère ; une variante distincte est facultative."
+    },
+    {
       "source": "Search all guides",
       "translation": "Rechercher tous les guides"
     },
@@ -102505,8 +102573,16 @@
       "translation": "Recherche effacée. Choisissez les critères pour effectuer une nouvelle recherche."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Le contexte de recherche a changé. Relancez la recherche."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Les critères de recherche ont changé. Actualisez pour charger les marchés pour ces critères."
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "Les critères de recherche ont changé. Relancez la recherche."
     },
     {
       "source": "Search destinations",
@@ -102553,6 +102629,10 @@
       "translation": "Recherchez l'enregistrement durable du journal de jeu et exportez un package de relecture de diagnostic limité."
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "Recherchez l'entrée sélectionnée ou toutes les entrées d'un groupe."
+    },
+    {
       "source": "Search+",
       "translation": "Rechercher+"
     },
@@ -102581,8 +102661,8 @@
       "translation": "Recherche à partir de {0}"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "Recherche à proximité de {0}…"
+      "source": "Searching published Codex locations…",
+      "translation": "Recherche d'emplacements Codex publiés…"
     },
     {
       "source": "Searching…",
@@ -102785,10 +102865,6 @@
       "translation": "Sélectionnez un résultat pour ouvrir le guide complet."
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "Sélectionnez une ligne pour la copier ou inspectez-la sur Canonn et Spansh."
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "Sélectionnez une configuration enregistrée à supprimer."
     },
@@ -102889,6 +102965,10 @@
       "translation": "Le boxel sélectionné utilise uniquement les systèmes et corps enregistrés dans le boxel actuellement ouvert."
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "Entrées sélectionnées : {0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "Dossier sélectionné"
     },
@@ -102967,10 +103047,6 @@
     {
       "source": "SendText",
       "translation": "EnvoyerTexte"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "Séparez plusieurs couleurs par des virgules ou des points-virgules."
     },
     {
       "source": "Separation",
@@ -104157,6 +104233,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + observations Powerplay locales"
     },
@@ -104203,6 +104283,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh solution de secours"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh points de repère"
     },
     {
       "source": "Spansh lookup",
@@ -105223,10 +105307,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "Strate Tectonique"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "Strate, bactérie ou autre signal codex"
     },
     {
       "source": "Streaming",
@@ -106347,6 +106427,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "La préférence d'image Codex a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "La recherche d'emplacement du Codex a échoué : {0}"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "La recherche de localisation du Codex a expiré."
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -107523,14 +107611,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "La fenêtre source native {0} n'a pas pu être supprimée."
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "La recherche du système à proximité a échoué : {0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "La recherche du système à proximité a expiré."
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -109229,6 +109309,10 @@
       "translation": "Tapez A, B ou G pour les ruines, ou .site <type> pour toute disposition Guardian cartographiée."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Le type accepte un nom. Séparez plusieurs sous-types ou variantes par des virgules ou des points-virgules. Chaque liste correspond à l'un de ses noms."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Tapez au moins 3 caractères pour les suggestions système."
     },
@@ -110263,6 +110347,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "Montage utilitaire {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPTIONNELLES)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -112445,8 +112533,16 @@
       "translation": "DSS requis"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "par ex. Émeraude, Sarcelle"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "par ex. Dangereux"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "par ex. Mollusque"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -117979,6 +118075,10 @@
       "translation": "Alarme"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "Molusco Albens Bell"
+    },
+    {
       "source": "Alexandrite",
       "translation": "Alexandrite"
     },
@@ -119323,10 +119423,6 @@
       "translation": "AMOSTRA BIO 2/3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "Sinal biológico"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "CÓDIGO DE BIOLOGIA"
     },
@@ -119829,10 +119925,6 @@
     {
       "source": "Biological sample location",
       "translation": "Localização da amostra biológica"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "Sinal biológico"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -120505,6 +120597,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "Códice Bingo"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "Entrada ou grupo do Codex"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "LOCAIS DO CÓDIGO"
     },
     {
       "source": "COLLECT",
@@ -121459,6 +121559,14 @@
       "translation": "Escolha Windows Mixed Reality apenas em uma instalação do Windows onde o software do fone de ouvido e a ponte SteamVR permanecem disponíveis. Verifique o suporte atual do fornecedor antes de alterar as versões do Windows."
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "Escolha uma entrada ou grupo do Codex para encontrar até 20 sistemas mais próximos, sem corte de distância."
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "Escolha uma entrada ou grupo do Codex."
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "Escolha um arquivo de credenciais do Google Cloud OAuth para um aplicativo de desktop."
     },
@@ -121509,6 +121617,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "Escolha uma jornada na lista de histórico ou comece uma nova."
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "Escolha um tipo ou subtipo de ponto de referência. Uma variante é opcional."
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -121605,6 +121717,10 @@
     {
       "source": "Choose an end date",
       "translation": "Escolha uma data de término"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "Escolha uma entrada ou grupo ou digite um nome do Codex. Os grupos pesquisam suas entradas juntos."
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -122057,6 +122173,10 @@
     {
       "source": "Codex entry",
       "translation": "Entrada do códice"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "Entrada ou grupo do Codex"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -124187,8 +124307,8 @@
       "translation": "Déficit (dim)"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "Defina um limite esférico ou encontre sistemas biológicos próximos."
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "Defina um limite esférico ou encontre os locais mais próximos do Codex."
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -125611,10 +125731,6 @@
       "translation": "Esmeralda"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "Esmeralda, Azul-petróleo"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "Células de energia de emergência"
     },
@@ -125859,10 +125975,6 @@
       "translation": "Insira um sistema de referência e distância. Escolha um mineral/metal, tamanho da plataforma de pouso e demanda mínima e máxima."
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "Insira um sinal biológico ou variantes ausentes para encontrar sistemas próximos."
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "Insira um nome de configuração e selecione Salvar. A árvore visualiza as tarefas salvas; as configurações salvas pertencem ao Comandante e à identidade do navio."
     },
@@ -125877,10 +125989,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "Insira um nome de sistema gerado."
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "Insira um gênero, espécie e pelo menos uma cor variante."
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -125983,10 +126091,6 @@
       "translation": "Entre ou escaneie um sistema com sinais biológicos."
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "Digite o sinal biológico para encontrar."
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "Insira o nome do processo do compositor abaixo sem extensão de arquivo."
     },
@@ -126029,6 +126133,10 @@
     {
       "source": "Entry actions",
       "translation": "Ações de entrada"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Entrada ou grupo"
     },
     {
       "source": "Entry {0} of {1}",
@@ -127031,6 +127139,10 @@
       "translation": "Encontre pontos de acesso para esta mercadoria"
     },
     {
+      "source": "Find landmarks",
+      "translation": "Encontre pontos de referência"
+    },
+    {
       "source": "Find last visit",
       "translation": "Encontrar última visita"
     },
@@ -127039,20 +127151,20 @@
       "translation": "Encontre comerciantes de materiais"
     },
     {
-      "source": "Find missing variants",
-      "translation": "Encontre variantes ausentes"
+      "source": "Find missing colors",
+      "translation": "Encontre cores que faltam"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "Encontre sistemas biológicos próximos"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "Encontre corpos próximos com variantes de cores biológicas selecionadas."
+      "source": "Find missing entries",
+      "translation": "Encontre entradas ausentes"
     },
     {
       "source": "Find nearest",
       "translation": "Encontre o mais próximo"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "Encontre os locais Codex mais próximos"
     },
     {
       "source": "Find prices",
@@ -127077,14 +127189,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "Encontre o FSD mais recente em {0}."
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "Encontre os sistemas mais próximos contendo um sinal de codex Canonn."
-    },
-    {
-      "source": "Find variants",
-      "translation": "Encontre variantes"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -127511,12 +127615,12 @@
       "translation": "Encontradas {0} correspondências. Escolha o sistema central."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Encontrados {0} sistemas correspondentes."
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "Sistema(s) correspondente(s) {0} encontrado(s), mais próximo primeiro."
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "Encontrados {0} sistemas próximos."
+      "source": "Found {0} matching systems.",
+      "translation": "Encontrados {0} sistemas correspondentes."
     },
     {
       "source": "Frame Shift Drive",
@@ -127813,10 +127917,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · Entradas {0} · {1} atualizado"
-    },
-    {
-      "source": "GENUS",
-      "translation": "Gênero"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -130623,6 +130723,10 @@
       "translation": "PASTAS DE ATERRAGEM BLOQUEADAS"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "TIPO DE MARCO (OPCIONAL)"
+    },
+    {
       "source": "LASER",
       "translation": "LASER"
     },
@@ -130961,6 +131065,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "Falha na recuperação do layout"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "Deixe em branco para qualquer variante. Por exemplo, Albens faz parte do subtipo Molusco, não de uma cor."
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -131833,10 +131941,6 @@
     {
       "source": "MISSING",
       "translation": "Desaparecido"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "FALTANDO CORES VARIANTES"
     },
     {
       "source": "MISSION 1",
@@ -132775,10 +132879,6 @@
       "translation": "Desaparecido"
     },
     {
-      "source": "Missing variants",
-      "translation": "Variantes ausentes"
-    },
-    {
       "source": "Mission",
       "translation": "Missão"
     },
@@ -133087,10 +133187,6 @@
       "translation": "PERTO"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "BIOLOGIA PRÓXIMA"
-    },
-    {
       "source": "NEED",
       "translation": "NECESSIDADE"
     },
@@ -133301,6 +133397,10 @@
     {
       "source": "Nearest first",
       "translation": "Mais próximo primeiro"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "Partidas publicadas mais próximas de {0}; até 20 sistemas exclusivos, sem corte de distância."
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -134027,10 +134127,6 @@
       "translation": "Nenhum ponto próximo"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "Nenhum sistema próximo correspondeu a esta pesquisa."
-    },
-    {
       "source": "No new logs available",
       "translation": "Nenhum novo registro disponível"
     },
@@ -134077,6 +134173,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "Nenhum projeto corresponde a esses filtros."
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "Nenhum local publicado atendeu a esses critérios. Nenhum corte de distância foi aplicado."
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -134969,10 +135069,6 @@
     {
       "source": "Open on Raven",
       "translation": "Abra no Raven"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "Abra a pesquisa Spansh original"
     },
     {
       "source": "Open predictions",
@@ -140091,8 +140187,8 @@
       "translation": "Corra Lua"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "Execute primeiro uma pesquisa de variante ausente."
+      "source": "Run a Spansh landmark search first.",
+      "translation": "Execute primeiro uma pesquisa de ponto de referência Spansh."
     },
     {
       "source": "RuntimeProcessName",
@@ -140371,10 +140467,6 @@
       "translation": "PISTA ESPECIAL"
     },
     {
-      "source": "SPECIES",
-      "translation": "Espécies"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "GRUPOS DE RECOMPENSA DE ESPÉCIES"
     },
@@ -140445,6 +140537,10 @@
     {
       "source": "STOCK",
       "translation": "ESTOQUE"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "SUBTIPOS (OPCIONAL)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -141199,6 +141295,10 @@
       "translation": "Pesquisar mercados"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "Pesquise um tipo ou subtipo de marco; uma variante separada é opcional."
+    },
+    {
       "source": "Search all guides",
       "translation": "Pesquise todos os guias"
     },
@@ -141231,8 +141331,16 @@
       "translation": "Pesquisa limpa. Escolha os critérios para pesquisar novamente."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Contexto de pesquisa alterado. Execute a pesquisa novamente."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Critérios de pesquisa alterados. Atualize para carregar mercados de acordo com esses critérios."
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "Critérios de pesquisa alterados. Execute a pesquisa novamente."
     },
     {
       "source": "Search destinations",
@@ -141279,6 +141387,10 @@
       "translation": "Pesquise o registro durável do diário do jogo e exporte um pacote de reprodução de diagnóstico local."
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "Pesquise a entrada selecionada ou todas as entradas de um grupo."
+    },
+    {
       "source": "Search+",
       "translation": "Pesquisar+"
     },
@@ -141307,8 +141419,8 @@
       "translation": "Pesquisando em {0}"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "Pesquisando perto de {0}…"
+      "source": "Searching published Codex locations…",
+      "translation": "Pesquisando locais do Codex publicados…"
     },
     {
       "source": "Searching…",
@@ -141511,10 +141623,6 @@
       "translation": "Selecione um resultado para abrir o guia completo."
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "Selecione uma linha para copiá-la ou inspecioná-la em Canonn e Spansh."
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "Selecione uma configuração salva para remover."
     },
@@ -141615,6 +141723,10 @@
       "translation": "O boxel selecionado utiliza apenas os sistemas e corpos gravados no boxel atualmente aberto."
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "Entradas selecionadas: {0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "Pasta selecionada"
     },
@@ -141693,10 +141805,6 @@
     {
       "source": "SendText",
       "translation": "EnviarTexto"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "Separe várias cores com vírgulas ou ponto e vírgula."
     },
     {
       "source": "Separation",
@@ -142883,6 +142991,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + observações locais do Powerplay"
     },
@@ -142929,6 +143041,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh substituto"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh pontos de referência"
     },
     {
       "source": "Spansh lookup",
@@ -143949,10 +144065,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "Estrato Tectônico"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "Estrato, Bactéria ou outro sinal do códice"
     },
     {
       "source": "Streaming",
@@ -145073,6 +145185,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "A preferência de imagem do Codex foi alterada para esta sessão, mas não pôde ser salva: {0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "A pesquisa de localização do Codex falhou: {0}"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "A pesquisa de localização do Codex expirou."
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -146249,14 +146369,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "A janela de origem nativa {0} não pôde ser suprimida."
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "A pesquisa do sistema próximo falhou: {0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "A busca no sistema próximo expirou."
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -147955,6 +148067,10 @@
       "translation": "Digite A, B ou G para ruínas ou .site <type> para qualquer layout de Guardião mapeado."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "O tipo aceita um nome. Separe vários subtipos ou variantes com vírgulas ou ponto e vírgula. Cada lista corresponde a qualquer um de seus nomes."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Digite pelo menos 3 caracteres para sugestões do sistema."
     },
@@ -148989,6 +149105,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "Montagem de utilitário {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "VARIANTES (OPCIONAL)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -151171,8 +151291,16 @@
       "translation": "requerido por dss"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "por exemplo Esmeralda, Azul-petróleo"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "por exemplo Perigoso"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "por exemplo Molusco"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -156705,6 +156833,10 @@
       "translation": "Сигнализация"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "Моллюск Альбенс Белл"
+    },
+    {
       "source": "Alexandrite",
       "translation": "Александрит"
     },
@@ -158049,10 +158181,6 @@
       "translation": "БИО ОБРАЗЕЦ 2 / 3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "Биологический сигнал"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "БИОЛОГИЧЕСКИЙ КОДЕКС"
     },
@@ -158555,10 +158683,6 @@
     {
       "source": "Biological sample location",
       "translation": "Расположение биологического образца"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "Биологический сигнал"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -159231,6 +159355,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "Кодекс Бинго"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "Запись или группа Кодекса"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "РАСПОЛОЖЕНИЯ КОДЕКСА"
     },
     {
       "source": "COLLECT",
@@ -160185,6 +160317,14 @@
       "translation": "Выбирайте Windows Mixed Reality только при установке Windows, где программное обеспечение гарнитуры и мост SteamVR остаются доступными. Прежде чем менять версии Windows, проверьте текущую поддержку поставщика."
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "Выберите запись или группу Кодекса, чтобы найти до 20 ближайших систем без ограничения расстояния."
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "Выберите запись или группу Кодекса."
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "Выберите файл учетных данных Google Cloud OAuth для настольного приложения."
     },
@@ -160235,6 +160375,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "Выберите путешествие из списка истории или начните новое."
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "Выберите тип или подтип ориентира. Вариант не является обязательным."
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -160331,6 +160475,10 @@
     {
       "source": "Choose an end date",
       "translation": "Выберите дату окончания"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "Выберите запись или группу либо введите название Кодекса. Группы вместе ищут свои записи."
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -160783,6 +160931,10 @@
     {
       "source": "Codex entry",
       "translation": "Запись Кодекса"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "Запись или группа Кодекса"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -162913,8 +163065,8 @@
       "translation": "Дефицит (тусклый)"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "Определите сферическую границу или найдите близлежащие биологические системы."
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "Определите сферическую границу или найдите ближайшие местоположения Кодекса."
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -164337,10 +164489,6 @@
       "translation": "Изумруд"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "Изумрудный, Бирюзовый"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "Аварийные силовые элементы"
     },
@@ -164585,10 +164733,6 @@
       "translation": "Введите систему отсчета и расстояние. Выберите минерал/металл, размер посадочной площадки, а также минимальный и максимальный спрос."
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "Введите биологический сигнал или недостающие варианты, чтобы найти близлежащие системы."
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "Введите имя конфигурации и выберите Сохранить. В дереве просматриваются сохраненные задания; сохраненные конфигурации принадлежат командиру и идентификатору корабля."
     },
@@ -164603,10 +164747,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "Введите сгенерированное имя системы."
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "Введите род, вид и хотя бы один вариант цвета."
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -164709,10 +164849,6 @@
       "translation": "Войдите или просканируйте систему с помощью биологических сигналов."
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "Введите биологический сигнал, чтобы найти."
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "Введите ниже имя процесса композитора без расширения файла."
     },
@@ -164755,6 +164891,10 @@
     {
       "source": "Entry actions",
       "translation": "Входные действия"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "Запись или группа"
     },
     {
       "source": "Entry {0} of {1}",
@@ -165757,6 +165897,10 @@
       "translation": "Найдите горячие точки для этого товара"
     },
     {
+      "source": "Find landmarks",
+      "translation": "Найдите достопримечательности"
+    },
+    {
       "source": "Find last visit",
       "translation": "Найти последний визит"
     },
@@ -165765,20 +165909,20 @@
       "translation": "Найдите торговцев материалами"
     },
     {
-      "source": "Find missing variants",
-      "translation": "Найдите недостающие варианты"
+      "source": "Find missing colors",
+      "translation": "Найдите недостающие цвета"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "Найдите близлежащие биологические системы"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "Найдите близлежащие тела с выбранными биологическими вариантами цвета."
+      "source": "Find missing entries",
+      "translation": "Найдите недостающие записи"
     },
     {
       "source": "Find nearest",
       "translation": "Найти ближайший"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "Найти ближайшие офисы Кодекса"
     },
     {
       "source": "Find prices",
@@ -165803,14 +165947,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "Найдите самый последний переход FSD в {0}."
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "Найдите ближайшие системы, содержащие сигнал кодекса Canonn."
-    },
-    {
-      "source": "Find variants",
-      "translation": "Найти варианты"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -166237,12 +166373,12 @@
       "translation": "Найдено {0} совпадений. Выберите центральную систему."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Найдено {0} соответствующих систем."
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "Найдена система(ы), соответствующая {0}, ближайшая первая."
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "Обнаружено {0} близлежащих систем."
+      "source": "Found {0} matching systems.",
+      "translation": "Найдено {0} соответствующих систем."
     },
     {
       "source": "Frame Shift Drive",
@@ -166539,10 +166675,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · Записи {0} · обновлен {1}"
-    },
-    {
-      "source": "GENUS",
-      "translation": "Род"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -169349,6 +169481,10 @@
       "translation": "ПОСАДОЧНЫЕ ПАРКОВКИ ЗАБЛОКИРОВАНЫ"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "ТИП ОСНОВАНИЯ (ДОПОЛНИТЕЛЬНО)"
+    },
+    {
       "source": "LASER",
       "translation": "ЛАЗЕР"
     },
@@ -169687,6 +169823,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "Восстановление макета не удалось"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "Оставьте пустым для любого варианта. Например, Альбенс является частью подтипа Моллюска, а не цвета."
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -170559,10 +170699,6 @@
     {
       "source": "MISSING",
       "translation": "Отсутствует"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "ОТСУТСТВУЮЩИЕ ВАРИАНТЫ ЦВЕТА"
     },
     {
       "source": "MISSION 1",
@@ -171501,10 +171637,6 @@
       "translation": "Отсутствует"
     },
     {
-      "source": "Missing variants",
-      "translation": "Отсутствующие варианты"
-    },
-    {
       "source": "Mission",
       "translation": "Миссия"
     },
@@ -171813,10 +171945,6 @@
       "translation": "РЯДОМ"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "БЛИЖАЙШАЯ БИОЛОГИЯ"
-    },
-    {
       "source": "NEED",
       "translation": "НУЖНО"
     },
@@ -172027,6 +172155,10 @@
     {
       "source": "Nearest first",
       "translation": "Сначала ближайший"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "Ближайшие опубликованные совпадения от {0}; до 20 уникальных систем, без ограничения расстояния."
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -172753,10 +172885,6 @@
       "translation": "Нет близлежащей точки"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "Ни одна близлежащая система не соответствовала этому запросу."
-    },
-    {
       "source": "No new logs available",
       "translation": "Новых журналов нет."
     },
@@ -172803,6 +172931,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "Ни один проект не соответствует этим фильтрам."
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "Ни одно из опубликованных местоположений не соответствовало этим критериям. Ограничение по расстоянию не применялось."
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -173695,10 +173827,6 @@
     {
       "source": "Open on Raven",
       "translation": "Открыть на Вороне"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "Открыть исходный поиск Spansh"
     },
     {
       "source": "Open predictions",
@@ -178817,8 +178945,8 @@
       "translation": "Запустить Луа"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "Сначала запустите поиск отсутствующих вариантов."
+      "source": "Run a Spansh landmark search first.",
+      "translation": "Сначала запустите поиск ориентира Spansh."
     },
     {
       "source": "RuntimeProcessName",
@@ -179097,10 +179225,6 @@
       "translation": "СПЕЦИАЛЬНАЯ ПОДСКАЗКА"
     },
     {
-      "source": "SPECIES",
-      "translation": "Виды"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "ГРУППЫ ВИДОВЫХ НАГРАЖДЕНИЙ"
     },
@@ -179171,6 +179295,10 @@
     {
       "source": "STOCK",
       "translation": "АКЦИЯ"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "ПОДТИПЫ (НЕОБЯЗАТЕЛЬНО)"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -179925,6 +180053,10 @@
       "translation": "Поиск рынков"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "Найдите тип или подтип ориентира; отдельный вариант не является обязательным."
+    },
+    {
       "source": "Search all guides",
       "translation": "Искать все руководства"
     },
@@ -179957,8 +180089,16 @@
       "translation": "Поиск очищен. Выберите критерии для повторного поиска."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Контекст поиска изменен. Запустите поиск еще раз."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Критерии поиска изменены. Обновите, чтобы загрузить рынки по этим критериям."
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "Критерии поиска изменены. Запустите поиск еще раз."
     },
     {
       "source": "Search destinations",
@@ -180005,6 +180145,10 @@
       "translation": "Выполните поиск в надежной записи игрового журнала и экспортируйте ограниченный пакет диагностических повторов."
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "Найдите выбранную запись или все записи в группе."
+    },
+    {
       "source": "Search+",
       "translation": "Поиск+"
     },
@@ -180033,8 +180177,8 @@
       "translation": "Поиск из {0}"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "Поиск рядом с {0}…"
+      "source": "Searching published Codex locations…",
+      "translation": "Поиск опубликованных местоположений Кодекса…"
     },
     {
       "source": "Searching…",
@@ -180237,10 +180381,6 @@
       "translation": "Выберите результат, чтобы открыть полное руководство."
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "Выберите строку, чтобы скопировать ее или проверить на Canonn и Spansh."
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "Выберите сохраненную конфигурацию для удаления."
     },
@@ -180341,6 +180481,10 @@
       "translation": "Выбранный бокс использует только записанные системы и тела в открытом в данный момент бокселе."
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "Выбранные записи: {0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "Выбранная папка"
     },
@@ -180419,10 +180563,6 @@
     {
       "source": "SendText",
       "translation": "Отправитьтекст"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "Разделяйте несколько цветов запятыми или точками с запятой."
     },
     {
       "source": "Separation",
@@ -181609,6 +181749,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + местные наблюдения за Powerplay"
     },
@@ -181655,6 +181799,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh резервный вариант"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh достопримечательности"
     },
     {
       "source": "Spansh lookup",
@@ -182675,10 +182823,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "Тектонический слой"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "Stratum, Bacterium или другой сигнал кодекса"
     },
     {
       "source": "Streaming",
@@ -183799,6 +183943,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "Настройки изображения Кодекса изменились для этого сеанса, но не удалось сохранить: {0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "Не удалось найти местоположение Кодекса: {0}."
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "Время поиска местоположения в Кодексе истекло."
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -184975,14 +185127,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "Не удалось подавить собственное исходное окно {0}."
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "Не удалось выполнить поиск близлежащей системы: {0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "Время поиска близлежащей системы истекло."
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -186681,6 +186825,10 @@
       "translation": "Введите A, B или G для руин или .site <тип> для любого отображенного макета Стражей."
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "Тип принимает одно имя. Разделяйте несколько подтипов или вариантов запятыми или точками с запятой. Каждый список соответствует любому из своих имен."
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "Введите не менее 3 символов для предложения системы."
     },
@@ -187715,6 +187863,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "Утилита монтирования {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "ВАРИАНТЫ (ОПЦИОНАЛЬНО)"
     },
     {
       "source": "VDXR / OpenXR",
@@ -189897,8 +190049,16 @@
       "translation": "требуется dss"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "например Изумрудный, Бирюзовый"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "например Опасный"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "например Моллюск"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -195431,6 +195591,10 @@
       "translation": "报警"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "阿尔本斯贝尔软体动物"
+    },
+    {
       "source": "Alexandrite",
       "translation": "紫翠玉"
     },
@@ -196775,10 +196939,6 @@
       "translation": "生物样本 2 / 3"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "生物信号"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "生物学法典"
     },
@@ -197281,10 +197441,6 @@
     {
       "source": "Biological sample location",
       "translation": "生物样本位置"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "生物信号"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -197957,6 +198113,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "宾果法典"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "法典条目或组"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "法典地点"
     },
     {
       "source": "COLLECT",
@@ -198911,6 +199075,14 @@
       "translation": "仅在其耳机软件和 SteamVR 桥仍然可用的 Windows 安装上选择 Windows Mixed Reality。在更改 Windows 版本之前，请检查供应商的当前支持。"
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "选择 Codex 条目或组可查找最多 20 个最近的系统，没有距离限制。"
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "选择法典条目或组。"
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "为桌面应用选择 Google Cloud OAuth 凭据文件。"
     },
@@ -198961,6 +199133,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "从历史列表中选择旅程或开始新的旅程。"
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "选择地标类型或子类型。变体是可选的。"
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -199057,6 +199233,10 @@
     {
       "source": "Choose an end date",
       "translation": "选择结束日期"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "选择一个条目或组，或者键入 Codex 名称。小组一起搜索他们的条目。"
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -199509,6 +199689,10 @@
     {
       "source": "Codex entry",
       "translation": "法典条目"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "法典条目或组"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -201639,8 +201823,8 @@
       "translation": "赤字（暗淡）"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "定义球形边界或查找附近的生物系统。"
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "定义球形边界或查找最近的法典位置。"
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -203063,10 +203247,6 @@
       "translation": "翠"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "祖母绿、青色"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "应急电池"
     },
@@ -203311,10 +203491,6 @@
       "translation": "输入参考系和距离。选择矿物/金属、着陆垫尺寸以及最小和最大需求。"
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "输入生物信号或缺失的变体以查找附近的系统。"
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "输入配置名称并选择保存。树预览已保存的作业；保存的配置属于指挥官和舰艇身份。"
     },
@@ -203329,10 +203505,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "输入生成的系统名称。"
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "输入属、种和至少一种变体颜色。"
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -203435,10 +203607,6 @@
       "translation": "使用生物信号输入或扫描系统。"
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "输入生物信号进行查找。"
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "在下面输入合成器的进程名称，不带文件扩展名。"
     },
@@ -203481,6 +203649,10 @@
     {
       "source": "Entry actions",
       "translation": "入场动作"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "参赛作品或团体"
     },
     {
       "source": "Entry {0} of {1}",
@@ -204483,6 +204655,10 @@
       "translation": "寻找该商品的热点"
     },
     {
+      "source": "Find landmarks",
+      "translation": "寻找地标"
+    },
+    {
       "source": "Find last visit",
       "translation": "查找上次访问"
     },
@@ -204491,20 +204667,20 @@
       "translation": "寻找材料贸易商"
     },
     {
-      "source": "Find missing variants",
-      "translation": "查找缺失的变体"
+      "source": "Find missing colors",
+      "translation": "寻找缺失的颜色"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "寻找附近的生物系统"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "查找附近具有选定生物颜色变体的尸体。"
+      "source": "Find missing entries",
+      "translation": "查找缺失的条目"
     },
     {
       "source": "Find nearest",
       "translation": "查找最近的"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "查找最近的法典地点"
     },
     {
       "source": "Find prices",
@@ -204529,14 +204705,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "找到最近的 FSD 跳转到 {0}。"
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "查找包含 Canonn 法典信号的最近系统。"
-    },
-    {
-      "source": "Find variants",
-      "translation": "查找变体"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -204963,12 +205131,12 @@
       "translation": "找到 {0} 匹配项。选择中心系统。"
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "找到 {0} 匹配系统。"
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "找到 {0} 匹配系统，最近的优先。"
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "发现附近的 {0} 系统。"
+      "source": "Found {0} matching systems.",
+      "translation": "找到 {0} 匹配系统。"
     },
     {
       "source": "Frame Shift Drive",
@@ -205265,10 +205433,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "GEC · {0} 条目 · 更新了 {1}"
-    },
-    {
-      "source": "GENUS",
-      "translation": "属"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -208075,6 +208239,10 @@
       "translation": "停机坪已锁定"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "地标类型（可选）"
+    },
+    {
       "source": "LASER",
       "translation": "激光"
     },
@@ -208413,6 +208581,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "布局恢复失败"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "将任何变体留空。例如，阿尔本色是软体动物亚型的一部分，而不是一种颜色。"
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -209285,10 +209457,6 @@
     {
       "source": "MISSING",
       "translation": "失踪"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "缺少多种颜色"
     },
     {
       "source": "MISSION 1",
@@ -210227,10 +210395,6 @@
       "translation": "失踪"
     },
     {
-      "source": "Missing variants",
-      "translation": "缺失变体"
-    },
-    {
       "source": "Mission",
       "translation": "使命"
     },
@@ -210539,10 +210703,6 @@
       "translation": "近"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "附近的生物"
-    },
-    {
       "source": "NEED",
       "translation": "需要"
     },
@@ -210753,6 +210913,10 @@
     {
       "source": "Nearest first",
       "translation": "最近的优先"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "{0} 最近发布的比赛；多达 20 个独特的系统，无距离限制。"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -211479,10 +211643,6 @@
       "translation": "附近没有点"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "附近没有与此搜索匹配的系统。"
-    },
-    {
       "source": "No new logs available",
       "translation": "没有可用的新日志"
     },
@@ -211529,6 +211689,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "没有项目符合这些过滤器。"
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "没有发布的位置符合这些标准。没有应用距离截止。"
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -212421,10 +212585,6 @@
     {
       "source": "Open on Raven",
       "translation": "在乌鸦上打开"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "打开原始 Spansh 搜索"
     },
     {
       "source": "Open predictions",
@@ -217543,8 +217703,8 @@
       "translation": "运行Lua"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "首先运行缺失变体搜索。"
+      "source": "Run a Spansh landmark search first.",
+      "translation": "首先运行 Spansh 地标搜索。"
     },
     {
       "source": "RuntimeProcessName",
@@ -217823,10 +217983,6 @@
       "translation": "特别线索"
     },
     {
-      "source": "SPECIES",
-      "translation": "物种"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "物种奖励组"
     },
@@ -217897,6 +218053,10 @@
     {
       "source": "STOCK",
       "translation": "库存"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "亚型（可选）"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -218651,6 +218811,10 @@
       "translation": "搜索市场"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "搜索地标类型或子类型；单独的变体是可选的。"
+    },
+    {
       "source": "Search all guides",
       "translation": "搜索所有指南"
     },
@@ -218683,8 +218847,16 @@
       "translation": "搜索已清除。选择再次搜索的条件。"
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "搜索上下文已更改。再次运行搜索。"
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "搜索条件已更改。刷新以加载这些标准的市场。"
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "搜索条件已更改。再次运行搜索。"
     },
     {
       "source": "Search destinations",
@@ -218731,6 +218903,10 @@
       "translation": "搜索持久的游戏日志记录并导出有限的诊断重播包。"
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "搜索选定的条目或组中的所有条目。"
+    },
+    {
       "source": "Search+",
       "translation": "搜索+"
     },
@@ -218759,8 +218935,8 @@
       "translation": "从 {0} 搜索"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "正在 {0} 附近搜索…"
+      "source": "Searching published Codex locations…",
+      "translation": "搜索已发布的法典位置..."
     },
     {
       "source": "Searching…",
@@ -218963,10 +219139,6 @@
       "translation": "选择一个结果以打开完整指南。"
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "选择一行进行复制或在 Canonn 和 Spansh 上检查它。"
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "选择要删除的已保存配置。"
     },
@@ -219067,6 +219239,10 @@
       "translation": "选定的 boxel 仅使用当前打开的 boxel 中记录的系统和主体。"
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "所选条目：{0}"
+    },
+    {
       "source": "Selected folder",
       "translation": "选定的文件夹"
     },
@@ -219145,10 +219321,6 @@
     {
       "source": "SendText",
       "translation": "发送文本"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "用逗号或分号分隔多种颜色。"
     },
     {
       "source": "Separation",
@@ -220335,6 +220507,10 @@
       "translation": "Spansh"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "Spansh + Canonn"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "Spansh + 本地 Powerplay 观察"
     },
@@ -220381,6 +220557,10 @@
     {
       "source": "Spansh fallback",
       "translation": "Spansh 后备"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "Spansh 地标"
     },
     {
       "source": "Spansh lookup",
@@ -221401,10 +221581,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "构造地层"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "地层、细菌或其他法典信号"
     },
     {
       "source": "Streaming",
@@ -222525,6 +222701,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "此会话的 Codex 图像首选项已更改，但无法保存：{0}"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "法典位置搜索失败：{0}"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "Codex 位置搜索超时。"
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -223701,14 +223885,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "无法抑制本机 {0} 源窗口。"
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "附近系统搜索失败：{0}"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "附近系统搜索超时。"
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -225407,6 +225583,10 @@
       "translation": "输入 A、B 或 G 表示废墟，或输入 .site <type> 表示任何映射的 Guardian 布局。"
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "类型接受一个名称。用逗号或分号分隔多个子类型或变体。每个列表都与其任意名称匹配。"
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "输入至少 3 个字符以获取系统建议。"
     },
@@ -226441,6 +226621,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "实用安装 {0}"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "变体（可选）"
     },
     {
       "source": "VDXR / OpenXR",
@@ -228623,8 +228807,16 @@
       "translation": "DSS 要求"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "例如祖母绿、青色"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "例如危险的"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "例如软体动物"
     },
     {
       "source": "e.g. Platinum ×2",
@@ -234157,6 +234349,10 @@
       "translation": "* ALARM >>>!"
     },
     {
+      "source": "Albens Bell Mollusc",
+      "translation": "* ALBENS BELL MOLLUSC >>>!"
+    },
+    {
       "source": "Alexandrite",
       "translation": "* ALEXANDRITE >>>!"
     },
@@ -235501,10 +235697,6 @@
       "translation": "* BIO SAMPLE 2 / 3 >>>!"
     },
     {
-      "source": "BIOLOGICAL SIGNAL",
-      "translation": "* BIOLOGICAL SIGNAL >>>!"
-    },
-    {
       "source": "BIOLOGY CODEX",
       "translation": "* BIOLOGY CODEX >>>!"
     },
@@ -236007,10 +236199,6 @@
     {
       "source": "Biological sample location",
       "translation": "* BIOLOGICAL SAMPLE LOCATION >>>!"
-    },
-    {
-      "source": "Biological signal",
-      "translation": "* BIOLOGICAL SIGNAL >>>!"
     },
     {
       "source": "Biological signal cannot be identified from current data.",
@@ -236683,6 +236871,14 @@
     {
       "source": "CODEX BINGO",
       "translation": "* CODEX BINGO >>>!"
+    },
+    {
+      "source": "CODEX ENTRY OR GROUP",
+      "translation": "* CODEX ENTRY OR GROUP >>>!"
+    },
+    {
+      "source": "CODEX LOCATIONS",
+      "translation": "* CODEX LOCATIONS >>>!"
     },
     {
       "source": "COLLECT",
@@ -237637,6 +237833,14 @@
       "translation": "* CHOOSE WINDOWS MIXED REALITY ONLY ON A WINDOWS INSTALLATION WHERE ITS HEADSET SOFTWARE AND STEAMVR BRIDGE REMAIN AVAILABLE. CHECK THE VENDOR’S CURRENT SUPPORT BEFORE CHANGING WINDOWS VERSIONS. >>>!"
     },
     {
+      "source": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+      "translation": "* CHOOSE A CODEX ENTRY OR GROUP TO FIND UP TO 20 NEAREST SYSTEMS, WITH NO DISTANCE CUTOFF. >>>!"
+    },
+    {
+      "source": "Choose a Codex entry or group.",
+      "translation": "* CHOOSE A CODEX ENTRY OR GROUP. >>>!"
+    },
+    {
       "source": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
       "translation": "* CHOOSE A GOOGLE CLOUD OAUTH CREDENTIALS FILE FOR A DESKTOP APP. >>>!"
     },
@@ -237687,6 +237891,10 @@
     {
       "source": "Choose a journey from the history list or begin a new one.",
       "translation": "* CHOOSE A JOURNEY FROM THE HISTORY LIST OR BEGIN A NEW ONE. >>>!"
+    },
+    {
+      "source": "Choose a landmark type or subtype. A variant is optional.",
+      "translation": "* CHOOSE A LANDMARK TYPE OR SUBTYPE. A VARIANT IS OPTIONAL. >>>!"
     },
     {
       "source": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -237783,6 +237991,10 @@
     {
       "source": "Choose an end date",
       "translation": "* CHOOSE AN END DATE >>>!"
+    },
+    {
+      "source": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+      "translation": "* CHOOSE AN ENTRY OR GROUP, OR TYPE A CODEX NAME. GROUPS SEARCH THEIR ENTRIES TOGETHER. >>>!"
     },
     {
       "source": "Choose an existing absolute screenshot source folder.",
@@ -238235,6 +238447,10 @@
     {
       "source": "Codex entry",
       "translation": "* CODEX ENTRY >>>!"
+    },
+    {
+      "source": "Codex entry or group",
+      "translation": "* CODEX ENTRY OR GROUP >>>!"
     },
     {
       "source": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -240365,8 +240581,8 @@
       "translation": "* DEFICIT (DIM) >>>!"
     },
     {
-      "source": "Define a spherical boundary or find nearby biological systems.",
-      "translation": "* DEFINE A SPHERICAL BOUNDARY OR FIND NEARBY BIOLOGICAL SYSTEMS. >>>!"
+      "source": "Define a spherical boundary or find nearest Codex locations.",
+      "translation": "* DEFINE A SPHERICAL BOUNDARY OR FIND NEAREST CODEX LOCATIONS. >>>!"
     },
     {
       "source": "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
@@ -241789,10 +242005,6 @@
       "translation": "* EMERALD >>>!"
     },
     {
-      "source": "Emerald, Teal",
-      "translation": "* EMERALD, TEAL >>>!"
-    },
-    {
       "source": "Emergency power cells",
       "translation": "* EMERGENCY POWER CELLS >>>!"
     },
@@ -242037,10 +242249,6 @@
       "translation": "* ENTER A REFERENCE SYSTEM AND DISTANCE. CHOOSE A MINERAL / METAL, LANDING PAD SIZE, AND MINIMUM AND MAXIMUM DEMAND. >>>!"
     },
     {
-      "source": "Enter a biological signal or missing variants to find nearby systems.",
-      "translation": "* ENTER A BIOLOGICAL SIGNAL OR MISSING VARIANTS TO FIND NEARBY SYSTEMS. >>>!"
-    },
-    {
       "source": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
       "translation": "* ENTER A CONFIGURATION NAME AND SELECT SAVE. THE TREE PREVIEWS THE SAVED ASSIGNMENTS; SAVED CONFIGURATIONS BELONG TO THE COMMANDER AND SHIP IDENTITY. >>>!"
     },
@@ -242055,10 +242263,6 @@
     {
       "source": "Enter a generated system name.",
       "translation": "* ENTER A GENERATED SYSTEM NAME. >>>!"
-    },
-    {
-      "source": "Enter a genus, species, and at least one variant color.",
-      "translation": "* ENTER A GENUS, SPECIES, AND AT LEAST ONE VARIANT COLOR. >>>!"
     },
     {
       "source": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -242161,10 +242365,6 @@
       "translation": "* ENTER OR SCAN A SYSTEM WITH BIOLOGICAL SIGNALS. >>>!"
     },
     {
-      "source": "Enter the biological signal to find.",
-      "translation": "* ENTER THE BIOLOGICAL SIGNAL TO FIND. >>>!"
-    },
-    {
       "source": "Enter the compositor's process name below without a file extension.",
       "translation": "* ENTER THE COMPOSITOR'S PROCESS NAME BELOW WITHOUT A FILE EXTENSION. >>>!"
     },
@@ -242207,6 +242407,10 @@
     {
       "source": "Entry actions",
       "translation": "* ENTRY ACTIONS >>>!"
+    },
+    {
+      "source": "Entry or group",
+      "translation": "* ENTRY OR GROUP >>>!"
     },
     {
       "source": "Entry {0} of {1}",
@@ -243209,6 +243413,10 @@
       "translation": "* FIND HOTSPOTS FOR THIS COMMODITY >>>!"
     },
     {
+      "source": "Find landmarks",
+      "translation": "* FIND LANDMARKS >>>!"
+    },
+    {
       "source": "Find last visit",
       "translation": "* FIND LAST VISIT >>>!"
     },
@@ -243217,20 +243425,20 @@
       "translation": "* FIND MATERIAL TRADERS >>>!"
     },
     {
-      "source": "Find missing variants",
-      "translation": "* FIND MISSING VARIANTS >>>!"
+      "source": "Find missing colors",
+      "translation": "* FIND MISSING COLORS >>>!"
     },
     {
-      "source": "Find nearby biological systems",
-      "translation": "* FIND NEARBY BIOLOGICAL SYSTEMS >>>!"
-    },
-    {
-      "source": "Find nearby bodies with selected biological color variants.",
-      "translation": "* FIND NEARBY BODIES WITH SELECTED BIOLOGICAL COLOR VARIANTS. >>>!"
+      "source": "Find missing entries",
+      "translation": "* FIND MISSING ENTRIES >>>!"
     },
     {
       "source": "Find nearest",
       "translation": "* FIND NEAREST >>>!"
+    },
+    {
+      "source": "Find nearest Codex locations",
+      "translation": "* FIND NEAREST CODEX LOCATIONS >>>!"
     },
     {
       "source": "Find prices",
@@ -243255,14 +243463,6 @@
     {
       "source": "Find the most recent FSD jump into {0}.",
       "translation": "* FIND THE MOST RECENT FSD JUMP INTO {0}. >>>!"
-    },
-    {
-      "source": "Find the nearest systems containing a Canonn codex signal.",
-      "translation": "* FIND THE NEAREST SYSTEMS CONTAINING A CANONN CODEX SIGNAL. >>>!"
-    },
-    {
-      "source": "Find variants",
-      "translation": "* FIND VARIANTS >>>!"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -243689,12 +243889,12 @@
       "translation": "* FOUND {0} MATCHES. CHOOSE THE CENTER SYSTEM. >>>!"
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "* FOUND {0} MATCHING SYSTEMS. >>>!"
+      "source": "Found {0} matching system(s), nearest first.",
+      "translation": "* FOUND {0} MATCHING SYSTEM(S), NEAREST FIRST. >>>!"
     },
     {
-      "source": "Found {0} nearby system(s).",
-      "translation": "* FOUND {0} NEARBY SYSTEM(S). >>>!"
+      "source": "Found {0} matching systems.",
+      "translation": "* FOUND {0} MATCHING SYSTEMS. >>>!"
     },
     {
       "source": "Frame Shift Drive",
@@ -243991,10 +244191,6 @@
     {
       "source": "GEC · {0} entries · updated {1}",
       "translation": "* GEC · {0} ENTRIES · UPDATED {1} >>>!"
-    },
-    {
-      "source": "GENUS",
-      "translation": "* GENUS >>>!"
     },
     {
       "source": "GENUS IDENTIFIED",
@@ -246801,6 +246997,10 @@
       "translation": "* LANDING PADS LOCKED >>>!"
     },
     {
+      "source": "LANDMARK TYPE (OPTIONAL)",
+      "translation": "* LANDMARK TYPE (OPTIONAL) >>>!"
+    },
+    {
       "source": "LASER",
       "translation": "* LASER >>>!"
     },
@@ -247139,6 +247339,10 @@
     {
       "source": "Layout recovery failed",
       "translation": "* LAYOUT RECOVERY FAILED >>>!"
+    },
+    {
+      "source": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+      "translation": "* LEAVE BLANK FOR ANY VARIANT. FOR EXAMPLE, ALBENS IS PART OF THE MOLLUSC SUBTYPE, NOT A COLOR. >>>!"
     },
     {
       "source": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -248011,10 +248215,6 @@
     {
       "source": "MISSING",
       "translation": "* MISSING >>>!"
-    },
-    {
-      "source": "MISSING VARIANT COLORS",
-      "translation": "* MISSING VARIANT COLORS >>>!"
     },
     {
       "source": "MISSION 1",
@@ -248953,10 +249153,6 @@
       "translation": "* MISSING >>>!"
     },
     {
-      "source": "Missing variants",
-      "translation": "* MISSING VARIANTS >>>!"
-    },
-    {
       "source": "Mission",
       "translation": "* MISSION >>>!"
     },
@@ -249265,10 +249461,6 @@
       "translation": "* NEAR >>>!"
     },
     {
-      "source": "NEARBY BIOLOGY",
-      "translation": "* NEARBY BIOLOGY >>>!"
-    },
-    {
       "source": "NEED",
       "translation": "* NEED >>>!"
     },
@@ -249479,6 +249671,10 @@
     {
       "source": "Nearest first",
       "translation": "* NEAREST FIRST >>>!"
+    },
+    {
+      "source": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+      "translation": "* NEAREST PUBLISHED MATCHES FROM {0}; UP TO 20 UNIQUE SYSTEMS, NO DISTANCE CUTOFF. >>>!"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -250205,10 +250401,6 @@
       "translation": "* NO NEARBY POINT >>>!"
     },
     {
-      "source": "No nearby systems matched this search.",
-      "translation": "* NO NEARBY SYSTEMS MATCHED THIS SEARCH. >>>!"
-    },
-    {
       "source": "No new logs available",
       "translation": "* NO NEW LOGS AVAILABLE >>>!"
     },
@@ -250255,6 +250447,10 @@
     {
       "source": "No projects match these filters.",
       "translation": "* NO PROJECTS MATCH THESE FILTERS. >>>!"
+    },
+    {
+      "source": "No published locations matched these criteria. No distance cutoff was applied.",
+      "translation": "* NO PUBLISHED LOCATIONS MATCHED THESE CRITERIA. NO DISTANCE CUTOFF WAS APPLIED. >>>!"
     },
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -251147,10 +251343,6 @@
     {
       "source": "Open on Raven",
       "translation": "* OPEN ON RAVEN >>>!"
-    },
-    {
-      "source": "Open original Spansh search",
-      "translation": "* OPEN ORIGINAL SPANSH SEARCH >>>!"
     },
     {
       "source": "Open predictions",
@@ -256269,8 +256461,8 @@
       "translation": "* RUN LUA >>>!"
     },
     {
-      "source": "Run a missing-variant search first.",
-      "translation": "* RUN A MISSING-VARIANT SEARCH FIRST. >>>!"
+      "source": "Run a Spansh landmark search first.",
+      "translation": "* RUN A SPANSH LANDMARK SEARCH FIRST. >>>!"
     },
     {
       "source": "RuntimeProcessName",
@@ -256549,10 +256741,6 @@
       "translation": "* SPECIAL CLUE >>>!"
     },
     {
-      "source": "SPECIES",
-      "translation": "* SPECIES >>>!"
-    },
-    {
       "source": "SPECIES REWARD GROUPS",
       "translation": "* SPECIES REWARD GROUPS >>>!"
     },
@@ -256623,6 +256811,10 @@
     {
       "source": "STOCK",
       "translation": "* STOCK >>>!"
+    },
+    {
+      "source": "SUBTYPES (OPTIONAL)",
+      "translation": "* SUBTYPES (OPTIONAL) >>>!"
     },
     {
       "source": "SURFACE LATITUDE",
@@ -257377,6 +257569,10 @@
       "translation": "* SEARCH MARKETS >>>!"
     },
     {
+      "source": "Search a landmark type or subtype; a separate variant is optional.",
+      "translation": "* SEARCH A LANDMARK TYPE OR SUBTYPE; A SEPARATE VARIANT IS OPTIONAL. >>>!"
+    },
+    {
       "source": "Search all guides",
       "translation": "* SEARCH ALL GUIDES >>>!"
     },
@@ -257409,8 +257605,16 @@
       "translation": "* SEARCH CLEARED. CHOOSE CRITERIA TO SEARCH AGAIN. >>>!"
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "* SEARCH CONTEXT CHANGED. RUN THE SEARCH AGAIN. >>>!"
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "* SEARCH CRITERIA CHANGED. REFRESH TO LOAD MARKETS FOR THESE CRITERIA. >>>!"
+    },
+    {
+      "source": "Search criteria changed. Run the search again.",
+      "translation": "* SEARCH CRITERIA CHANGED. RUN THE SEARCH AGAIN. >>>!"
     },
     {
       "source": "Search destinations",
@@ -257457,6 +257661,10 @@
       "translation": "* SEARCH THE DURABLE GAME JOURNAL RECORD AND EXPORT A BOUNDED DIAGNOSTIC REPLAY PACKAGE. >>>!"
     },
     {
+      "source": "Search the selected entry or all entries in a group.",
+      "translation": "* SEARCH THE SELECTED ENTRY OR ALL ENTRIES IN A GROUP. >>>!"
+    },
+    {
       "source": "Search+",
       "translation": "* SEARCH+ >>>!"
     },
@@ -257485,8 +257693,8 @@
       "translation": "* SEARCHING FROM {0} >>>!"
     },
     {
-      "source": "Searching near {0}…",
-      "translation": "* SEARCHING NEAR {0}… >>>!"
+      "source": "Searching published Codex locations…",
+      "translation": "* SEARCHING PUBLISHED CODEX LOCATIONS… >>>!"
     },
     {
       "source": "Searching…",
@@ -257689,10 +257897,6 @@
       "translation": "* SELECT A RESULT TO OPEN THE COMPLETE GUIDE. >>>!"
     },
     {
-      "source": "Select a row to copy it or inspect it on Canonn and Spansh.",
-      "translation": "* SELECT A ROW TO COPY IT OR INSPECT IT ON CANONN AND SPANSH. >>>!"
-    },
-    {
       "source": "Select a saved configuration to remove.",
       "translation": "* SELECT A SAVED CONFIGURATION TO REMOVE. >>>!"
     },
@@ -257793,6 +257997,10 @@
       "translation": "* SELECTED BOXEL USES ONLY THE RECORDED SYSTEMS AND BODIES IN THE BOXEL CURRENTLY OPEN. >>>!"
     },
     {
+      "source": "Selected entries: {0}",
+      "translation": "* SELECTED ENTRIES: {0} >>>!"
+    },
+    {
       "source": "Selected folder",
       "translation": "* SELECTED FOLDER >>>!"
     },
@@ -257871,10 +258079,6 @@
     {
       "source": "SendText",
       "translation": "* SENDTEXT >>>!"
-    },
-    {
-      "source": "Separate multiple colors with commas or semicolons.",
-      "translation": "* SEPARATE MULTIPLE COLORS WITH COMMAS OR SEMICOLONS. >>>!"
     },
     {
       "source": "Separation",
@@ -259061,6 +259265,10 @@
       "translation": "* SPANSH >>>!"
     },
     {
+      "source": "Spansh + Canonn",
+      "translation": "* SPANSH + CANONN >>>!"
+    },
+    {
       "source": "Spansh + local Powerplay observations",
       "translation": "* SPANSH + LOCAL POWERPLAY OBSERVATIONS >>>!"
     },
@@ -259107,6 +259315,10 @@
     {
       "source": "Spansh fallback",
       "translation": "* SPANSH FALLBACK >>>!"
+    },
+    {
+      "source": "Spansh landmarks",
+      "translation": "* SPANSH LANDMARKS >>>!"
     },
     {
       "source": "Spansh lookup",
@@ -260127,10 +260339,6 @@
     {
       "source": "Stratum Tectonicas",
       "translation": "* STRATUM TECTONICAS >>>!"
-    },
-    {
-      "source": "Stratum, Bacterium, or another codex signal",
-      "translation": "* STRATUM, BACTERIUM, OR ANOTHER CODEX SIGNAL >>>!"
     },
     {
       "source": "Streaming",
@@ -261251,6 +261459,14 @@
     {
       "source": "The Codex image preference changed for this session but could not be saved: {0}",
       "translation": "* THE CODEX IMAGE PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "The Codex location search failed: {0}",
+      "translation": "* THE CODEX LOCATION SEARCH FAILED: {0} >>>!"
+    },
+    {
+      "source": "The Codex location search timed out.",
+      "translation": "* THE CODEX LOCATION SEARCH TIMED OUT. >>>!"
     },
     {
       "source": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -262427,14 +262643,6 @@
     {
       "source": "The native {0} source window could not be suppressed.",
       "translation": "* THE NATIVE {0} SOURCE WINDOW COULD NOT BE SUPPRESSED. >>>!"
-    },
-    {
-      "source": "The nearby-system search failed: {0}",
-      "translation": "* THE NEARBY-SYSTEM SEARCH FAILED: {0} >>>!"
-    },
-    {
-      "source": "The nearby-system search timed out.",
-      "translation": "* THE NEARBY-SYSTEM SEARCH TIMED OUT. >>>!"
     },
     {
       "source": "The nearest Guardian point is not a local raw point.",
@@ -264133,6 +264341,10 @@
       "translation": "* TYPE A, B, OR G FOR RUINS, OR .SITE <TYPE> FOR ANY MAPPED GUARDIAN LAYOUT. >>>!"
     },
     {
+      "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+      "translation": "* TYPE ACCEPTS ONE NAME. SEPARATE MULTIPLE SUBTYPES OR VARIANTS WITH COMMAS OR SEMICOLONS. EACH LIST MATCHES ANY OF ITS NAMES. >>>!"
+    },
+    {
       "source": "Type at least 3 characters for system suggestions.",
       "translation": "* TYPE AT LEAST 3 CHARACTERS FOR SYSTEM SUGGESTIONS. >>>!"
     },
@@ -265167,6 +265379,10 @@
     {
       "source": "Utility mount {0}",
       "translation": "* UTILITY MOUNT {0} >>>!"
+    },
+    {
+      "source": "VARIANTS (OPTIONAL)",
+      "translation": "* VARIANTS (OPTIONAL) >>>!"
     },
     {
       "source": "VDXR / OpenXR",
@@ -267349,8 +267565,16 @@
       "translation": "* DSS-REQUIRED >>>!"
     },
     {
+      "source": "e.g. Emerald, Teal",
+      "translation": "* E.G. EMERALD, TEAL >>>!"
+    },
+    {
       "source": "e.g. Hazardous",
       "translation": "* E.G. HAZARDOUS >>>!"
+    },
+    {
+      "source": "e.g. Mollusc",
+      "translation": "* E.G. MOLLUSC >>>!"
     },
     {
       "source": "e.g. Platinum ×2",

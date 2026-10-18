@@ -264,7 +264,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.Equal("2 of 31 systems complete", viewModel.SystemProgress);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task ChangingStartDateAndBothRulesUsesTheLatestOptionsAndRetainsTheManualRange()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);

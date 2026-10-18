@@ -1773,20 +1773,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     {
         ArgumentNullException.ThrowIfNull(request);
         SelectedNavigation = NavigationItems.Single(item => item.Key == SearchNavigationKey);
-        if (request.Mode == CodexBingoNearestMode.Signal && !string.IsNullOrWhiteSpace(request.Signal))
-        {
-            await NearestSystems.SearchCodexSignalAsync(request.Signal);
-            return;
-        }
-
-        if (
-            request.Mode == CodexBingoNearestMode.MissingVariants
-            && !string.IsNullOrWhiteSpace(request.Genus)
-            && !string.IsNullOrWhiteSpace(request.Species)
-        )
-        {
-            await NearestSystems.SearchCodexVariantsAsync(request.Genus, request.Species, request.Variants);
-        }
+        await NearestSystems.SearchCodexAsync(request.Query);
     }
 
     public string SelectedThemeName => selectedTheme.DisplayName;
@@ -4646,6 +4633,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
+        TryDispose(NearestSystems.Dispose);
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
         TryDispose(FleetCarrierWorkspace.Dispose);
