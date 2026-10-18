@@ -63,6 +63,7 @@ public sealed partial class ColonizationViewModel
 
     private void StopPlannedProjects()
     {
+        FlushPlannedSystemsSave();
         plannedReadVersion++;
         SystemEditor.Sites.CollectionChanged -= OnPlanningSitesChanged;
         SystemEditor.PropertyChanged -= OnPlanningEditorChanged;
@@ -126,7 +127,7 @@ public sealed partial class ColonizationViewModel
         }
         plannedReadVersion++;
         UpdatePlannedSystem(snapshot);
-        SavePlannedSystems();
+        SchedulePlannedSystemsSave();
         RebuildProjectRows();
         UpdateProjectSummary();
     }
@@ -251,22 +252,6 @@ public sealed partial class ColonizationViewModel
             when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
         {
             return (null, "Planned site requirements could not be refreshed: " + exception.Message);
-        }
-    }
-
-    private void SavePlannedSystems()
-    {
-        if (CommanderName is null)
-        {
-            return;
-        }
-        try
-        {
-            settingsStore.SavePlannedSystems(CommanderName, plannedSystems.Values);
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            StatusMessage = "The planned site requirements could not be saved to disk.";
         }
     }
 

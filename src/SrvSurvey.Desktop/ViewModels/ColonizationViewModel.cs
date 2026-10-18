@@ -449,6 +449,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 }
                 else
                 {
+                    FlushPlannedSystemsSave();
                     StopAutoRefresh();
                     CancelDockingRefresh();
                     ClearProjects();
@@ -650,6 +651,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             return;
         }
 
+        FlushPlannedSystemsSave();
         StopAutoRefresh();
         CancelDockingRefresh();
         recovery.SetCommander(normalized);
