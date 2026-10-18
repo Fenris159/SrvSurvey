@@ -13,6 +13,34 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class CloudBackupManagementTests
 {
     [AvaloniaFact]
+    public async Task DisposingDuringACloudTransferCancelsItAndRejectsLateUiActions()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = token =>
+            {
+                started.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        int captures = 0;
+        vm.BeforeCapture = () => captures++;
+        Task upload = vm.BackupAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        vm.Dispose();
+        await upload.WaitAsync(TimeSpan.FromSeconds(5));
+        await vm.BackupAsync();
+
+        Assert.Equal(1, captures);
+        Assert.Empty(cloud.Uploaded);
+        Assert.False(vm.CanCancelOperation);
+    }
+
+    [AvaloniaFact]
     public async Task CloudDownloadsRemainCancellableBeforeTheFilePickerAndWritePhase()
     {
         using var root = new ProfileSyncTestRoot();

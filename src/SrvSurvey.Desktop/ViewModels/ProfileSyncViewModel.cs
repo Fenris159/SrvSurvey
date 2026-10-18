@@ -12,6 +12,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private bool cancellableOperation;
     private CancellationTokenSource? authorization;
     private CancellationTokenSource? operationCancellation;
+    private CancellationToken operationToken;
     private TaskCompletionSource? operationFinished;
     private bool automatic;
     private bool restoreMachineSettings;
@@ -62,8 +63,8 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
     }
     public bool IsLinking => authorization is not null;
-    public bool CanCancelOperation => IsBusy && cancellableOperation;
-    private CancellationToken OperationToken => operationCancellation?.Token ?? CancellationToken.None;
+    public bool CanCancelOperation => !disposed && IsBusy && cancellableOperation;
+    private CancellationToken OperationToken => operationToken;
     public bool IsLinked => service.IsLinked;
     public bool IsConfigured => service.IsConfigured;
     public bool NeedsClientSetup => !IsConfigured;
@@ -360,7 +361,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     /// <summary>Prevents overlapping UI operations and contains actionable failures.</summary>
     private async Task RunAsync(Func<Task> action, bool cancellable = true)
     {
-        if (IsBusy)
+        if (IsBusy || disposed)
         {
             return;
         }
@@ -369,6 +370,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         TaskCompletionSource? completion = cancellable ? new(TaskCreationOptions.RunContinuationsAsynchronously) : null;
         operationFinished = completion;
         operationCancellation = cancellation;
+        operationToken = cancellation.Token;
         cancellableOperation = cancellable;
         IsBusy = true;
         error = null;
@@ -393,6 +395,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         finally
         {
             operationCancellation = null;
+            operationToken = default;
             operationFinished = null;
             cancellableOperation = false;
             IsBusy = false;
@@ -438,6 +441,8 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         disposed = true;
         authorization?.Cancel();
         operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
         service.Changed -= OnServiceChanged;
         service.Dispose();
     }
