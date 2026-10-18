@@ -44,7 +44,9 @@ to prevent subtle shifting while flying.
   edits are saved before switching commander or closing the application.
   Toggling Raven access preserves saved planning selections and ShoppingList
   allocations when planning data is temporarily unavailable. Travel refreshes
-  fetch only the current system and cancel superseded planning reads.
+  fetch only the current system and cancel superseded planning reads. Deleted
+  plans retire saved focus, and confirmed publications reconcile saved drafts
+  even when the player travels before the response arrives.
 - **Keep carrier comparisons consistent.** **Use Carrier** persists between
   sessions and stays synchronized with **FC Diff** in both directions. **LOADED**
   recalculates from the selected carrier's cargo against remaining project needs,

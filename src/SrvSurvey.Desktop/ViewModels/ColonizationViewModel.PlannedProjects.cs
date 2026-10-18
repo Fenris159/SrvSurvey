@@ -64,6 +64,7 @@ public sealed partial class ColonizationViewModel
     {
         SystemEditor.Sites.CollectionChanged += OnPlanningSitesChanged;
         SystemEditor.PropertyChanged += OnPlanningEditorChanged;
+        SystemEditor.SystemPublished += OnPlanningSystemPublished;
     }
 
     private void StopPlannedProjects()
@@ -71,6 +72,7 @@ public sealed partial class ColonizationViewModel
         plannedReadVersion++;
         SystemEditor.Sites.CollectionChanged -= OnPlanningSitesChanged;
         SystemEditor.PropertyChanged -= OnPlanningEditorChanged;
+        SystemEditor.SystemPublished -= OnPlanningSystemPublished;
         foreach (ColonizationSystemSiteRowViewModel row in observedSites)
         {
             row.PropertyChanged -= OnPlanningSiteChanged;
@@ -148,6 +150,24 @@ public sealed partial class ColonizationViewModel
         UpdateProjectSummary();
     }
 
+    private void OnPlanningSystemPublished(string commander, ColonizationSystemRecord snapshot)
+    {
+        if (disposed || !IsEnabled || !string.Equals(CommanderName, commander, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+        if (string.Equals(snapshot.Name, recovery.CurrentSystemName, StringComparison.OrdinalIgnoreCase))
+        {
+            CancelCurrentPlannedSystemRead(clearPending: false);
+        }
+        planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
+        localPlanningDrafts.Remove(snapshot.Name);
+        UpdatePlannedSystem(snapshot);
+        SchedulePlannedSystemsSave();
+        RebuildProjectRows();
+        UpdateProjectSummary();
+    }
+
     private async Task RefreshPlannedProjectsAsync(
         IReadOnlyList<ColonizationProject> freshProjects,
         int startedEditVersion,
@@ -175,6 +195,7 @@ public sealed partial class ColonizationViewModel
         string[] names = freshProjects
             .Select(project => project.SystemName)
             .Concat(plannedSystems.Keys)
+            .Concat(localPlanningDrafts.Keys)
             .Concat(discoveredByName.Keys)
             .Append(recovery.CurrentSystemName ?? string.Empty)
             .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -313,17 +334,20 @@ public sealed partial class ColonizationViewModel
 
     private void RebuildProjectRows()
     {
-        IEnumerable<ColonizationProject> plans = plannedSystems.Values.SelectMany(system =>
-            ColonizationPlannedProjects.Create(
-                system,
-                buildCatalog,
-                recovery.Projects,
-                CommanderName,
-                string.Equals(system.Name, recovery.CurrentSystemName, StringComparison.OrdinalIgnoreCase)
-                    ? currentStarPosition
-                    : []
+        ColonizationProject[] plans = plannedSystems
+            .Values.SelectMany(system =>
+                ColonizationPlannedProjects.Create(
+                    system,
+                    buildCatalog,
+                    recovery.Projects,
+                    CommanderName,
+                    string.Equals(system.Name, recovery.CurrentSystemName, StringComparison.OrdinalIgnoreCase)
+                        ? currentStarPosition
+                        : []
+                )
             )
-        );
+            .ToArray();
+        RetireMissingPlannedFocus(plans);
         Projects = recovery.Projects.Concat(plans).Select(CreateRow).ToArray();
     }
 

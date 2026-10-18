@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Colonization;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class ColonizationViewModel
@@ -5,6 +7,23 @@ public sealed partial class ColonizationViewModel
     private string? localFocusProjectId;
 
     private string? FocusProjectId => localFocusProjectId ?? primaryProjectId;
+
+    private void RetireMissingPlannedFocus(IReadOnlyList<ColonizationProject> plans)
+    {
+        if (
+            localFocusProjectId is not { Length: > 0 } focusId
+            || !authoritativePlanningPrefixes.Any(prefix => focusId.StartsWith(prefix, StringComparison.Ordinal))
+            || plans.Any(plan => string.Equals(plan.BuildId, focusId, StringComparison.OrdinalIgnoreCase))
+        )
+        {
+            return;
+        }
+        localFocusProjectId = null;
+        if (CommanderName is { } commander && ClearSavedLocalFocus(commander) is { } warning)
+        {
+            plannedReadWarning = "Project focus could not be saved: " + warning;
+        }
+    }
 
     /// <summary>Focuses catalog plans locally and keeps live-build focus synchronized with Raven.</summary>
     public async Task ToggleFocusProjectAsync(ColonizationProjectRowViewModel row)

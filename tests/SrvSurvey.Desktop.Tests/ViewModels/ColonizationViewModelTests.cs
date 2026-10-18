@@ -3229,6 +3229,8 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         public List<SystemUpdateCall> SystemUpdates { get; } = [];
 
+        public Task<ColonizationSystemRecord>? SystemPublishTask { get; set; }
+
         public List<SystemSitePatchCall> SystemSitePatches { get; } = [];
 
         public Queue<Exception> SystemSiteFailures { get; } = new();
@@ -3494,15 +3496,16 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         )
         {
             SystemUpdates.Add(new SystemUpdateCall(systemNameOrAddress, update, apiKey));
-            return Task.FromResult(
-                new ColonizationSystemRecord
-                {
-                    SystemAddress = 42,
-                    Name = systemNameOrAddress,
-                    Architect = update.Architect,
-                    Sites = update.UpdatedSites,
-                }
-            );
+            return SystemPublishTask
+                ?? Task.FromResult(
+                    new ColonizationSystemRecord
+                    {
+                        SystemAddress = 42,
+                        Name = systemNameOrAddress,
+                        Architect = update.Architect,
+                        Sites = update.UpdatedSites,
+                    }
+                );
         }
 
         /// <summary>

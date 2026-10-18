@@ -88,6 +88,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    internal event Action<string, ColonizationSystemRecord>? SystemPublished;
+
     public ICommand LoadCommand { get; }
 
     public ICommand RequestBodyImportCommand { get; }
@@ -615,6 +617,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         IReadOnlyList<ColonizationSystemSite> edited = pendingEditedSites ?? SnapshotVisibleSites();
+        string publishingCommander = context.CommanderName!;
         int version = contextVersion;
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
@@ -656,6 +659,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 plan.Update,
                 context.RavenApiKey!
             );
+            SystemPublished?.Invoke(publishingCommander, updated);
             if (version != contextVersion)
             {
                 return;
