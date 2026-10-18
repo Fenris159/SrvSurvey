@@ -6,9 +6,11 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MiningWorkspaceViewModelTests
 {
-    /// <summary>Reading cargo repeatedly and changing unrelated mining text must preserve bound row collections.</summary>
-    [Fact]
-    public void OverlayRefreshRetainsUnchangedMiningRows()
+    /// <summary>Unchanged refreshes retain rows, while a commander change clears the previous cargo.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OverlayRefreshRetainsUnchangedMiningRows(bool includeCommanderEvent)
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
@@ -43,6 +45,21 @@ public sealed partial class MiningWorkspaceViewModelTests
             Assert.Same(cargoRows, cargo.Items);
             Assert.Same(prospects, activity.Prospects);
             Assert.Same(refined, activity.Refined);
+
+            JournalEventEnvelope nextCommander = FiregroupsWorkspaceViewModelTests.Event(
+                """{"event":"LoadGame","FID":"F-OTHER-CMDR","Commander":"Other","Ship":"python"}"""
+            );
+            context.Apply(nextCommander);
+            workspace.Apply(
+                new(null, includeCommanderEvent ? [nextCommander] : [], status, null, null, null, [], false),
+                context,
+                null,
+                status
+            );
+            Assert.Empty(workspace.Cargo);
+            Assert.Empty(cargo.Items);
+            Assert.False(cargo.HasItems);
+            Assert.Equal(0, cargo.FillPercentage);
         }
         finally
         {
