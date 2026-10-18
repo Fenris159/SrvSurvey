@@ -1,0 +1,133 @@
+using SrvSurvey.Core.Colonization;
+using SrvSurvey.Desktop.ViewModels;
+
+namespace SrvSurvey.Desktop.Tests.ViewModels;
+
+public sealed partial class ColonizationViewModelTests
+{
+    [Fact]
+    public async Task JumpPlanningReadsOnlyCurrentSystemAndKeepsOtherPlans()
+    {
+        StubRavenColonialClient client = ReviewPlanningClient();
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        int discoveries = client.PlanningDiscoveryCommanders.Count;
+        var requests = new List<string>();
+        ColonizationSystemRecord next = client.PlanningSystems!["Sol"] with
+        {
+            Name = "Achenar",
+            SystemAddress = 43,
+            Sites = [client.PlanningSystems["Sol"].Sites[0] with { Id = "remote", Name = "Remote Plan" }],
+        };
+        client.LoadPlanningSystem = (name, _) =>
+        {
+            requests.Add(name);
+            return Task.FromResult(name == "Achenar" ? next : client.PlanningSystems[name]);
+        };
+        model.UpdateSystemContext("Achenar", null, 43);
+        await model.CurrentSystemPlanningTask;
+        Assert.Equal(["Achenar"], requests);
+        Assert.Equal(discoveries, client.PlanningDiscoveryCommanders.Count);
+        Assert.Contains(model.Projects, row => row.BuildName == "Remote Plan (Plan)");
+        Assert.Contains(model.Projects, row => row.BuildName == "Test Project (Plan)");
+        model.UpdateSystemContext("Achenar", null, 43);
+        Assert.Single(requests);
+    }
+
+    [Theory]
+    [InlineData("jump", false)]
+    [InlineData("consent", false)]
+    [InlineData("commander", false)]
+    [InlineData("dispose", false)]
+    [InlineData("refresh", false)]
+    [InlineData("jump", true)]
+    [InlineData("consent", true)]
+    [InlineData("commander", true)]
+    [InlineData("dispose", true)]
+    [InlineData("refresh", true)]
+    public async Task JumpPlanningCancelsSupersededReads(string change, bool honorsCancellation)
+    {
+        StubRavenColonialClient client = ReviewPlanningClient();
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        ColonizationSystemRecord home = client.PlanningSystems!["Sol"];
+        var response = new TaskCompletionSource<ColonizationSystemRecord>();
+        CancellationToken captured = default;
+        client.LoadPlanningSystem = (_, token) =>
+        {
+            captured = token;
+            return honorsCancellation ? response.Task.WaitAsync(token) : response.Task;
+        };
+        try
+        {
+            model.UpdateSystemContext("Sol", null, 42);
+            Task pending = model.CurrentSystemPlanningTask;
+            Assert.True(captured.CanBeCanceled);
+            client.LoadPlanningSystem = (name, _) => Task.FromResult(client.PlanningSystems[name]);
+            switch (change)
+            {
+                case "jump":
+                    model.UpdateSystemContext("Achenar", null, 43);
+                    break;
+                case "consent":
+                    model.IsEnabled = false;
+                    model.IsEnabled = true;
+                    break;
+                case "commander":
+                    await model.SetCommanderAsync("Other Cmdr");
+                    break;
+                case "dispose":
+                    model.Dispose();
+                    break;
+                case "refresh":
+                    await model.RefreshAsync();
+                    break;
+            }
+            Assert.True(captured.IsCancellationRequested);
+            response.TrySetResult(home with { Sites = [home.Sites[0] with { Name = "Stale Plan" }] });
+            await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.DoesNotContain(model.Projects, row => row.BuildName == "Stale Plan (Plan)");
+        }
+        finally
+        {
+            response.TrySetResult(home);
+        }
+    }
+
+    [Fact]
+    public async Task JumpPlanningKeepsNewerLocalEdits()
+    {
+        StubRavenColonialClient client = ReviewPlanningClient();
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        model.UpdateSystemContext("Sol", null, 42);
+        await model.CurrentSystemPlanningTask;
+        await model.SystemEditor.LoadAsync();
+        var response = new TaskCompletionSource<ColonizationSystemRecord>();
+        client.LoadPlanningSystem = (_, _) => response.Task;
+        model.UpdateSystemContext("Sol", new(1, 2, 3), 42);
+        Task pending = model.CurrentSystemPlanningTask;
+        model.SystemEditor.Sites[0].Name = "Newer Local Plan";
+        response.SetResult(client.PlanningSystems!["Sol"]);
+        await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Contains(model.Projects, row => row.BuildName == "Newer Local Plan (Plan)");
+        Assert.DoesNotContain(model.Projects, row => row.BuildName == "Test Project (Plan)");
+    }
+
+    [Fact]
+    public async Task JumpPlanningFailureKeepsCachedNeeds()
+    {
+        StubRavenColonialClient client = ReviewPlanningClient();
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        client.LoadPlanningSystem = (_, _) =>
+            Task.FromException<ColonizationSystemRecord>(new HttpRequestException("Offline"));
+        model.UpdateSystemContext("Sol", null, 42);
+        await model.CurrentSystemPlanningTask;
+        Assert.Contains(model.Projects, row => row.BuildName == "Test Project (Plan)");
+    }
+}

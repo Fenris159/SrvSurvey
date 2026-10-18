@@ -450,6 +450,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 else
                 {
                     FlushPlannedSystemsSave();
+                    CancelCurrentPlannedSystemRead();
                     StopAutoRefresh();
                     CancelDockingRefresh();
                     ClearProjects();
@@ -652,6 +653,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         }
 
         FlushPlannedSystemsSave();
+        CancelCurrentPlannedSystemRead();
         StopAutoRefresh();
         CancelDockingRefresh();
         recovery.SetCommander(normalized);
@@ -896,7 +898,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         plannedReadVersion++;
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
-        _ = RefreshPlannedProjectsAsync(CancellationToken.None);
+        RefreshCurrentPlannedSystem();
     }
 
     public void ReportLinkFailure(string message)
@@ -907,6 +909,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     public void Dispose()
     {
         disposed = true;
+        FlushPlannedSystemsSave();
+        CancelCurrentPlannedSystemRead();
         StopPlannedProjects();
         StopAutoRefresh();
         CloseMarketSearchWorkspace();

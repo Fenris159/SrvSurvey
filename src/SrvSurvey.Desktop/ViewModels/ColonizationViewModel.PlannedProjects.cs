@@ -63,7 +63,6 @@ public sealed partial class ColonizationViewModel
 
     private void StopPlannedProjects()
     {
-        FlushPlannedSystemsSave();
         plannedReadVersion++;
         SystemEditor.Sites.CollectionChanged -= OnPlanningSitesChanged;
         SystemEditor.PropertyChanged -= OnPlanningEditorChanged;
@@ -141,6 +140,7 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
+        CancelCurrentPlannedSystemRead();
         int readVersion = ++plannedReadVersion;
         int profileVersion = recovery.ProfileVersion;
         (IReadOnlyList<ColonizationSystemRecord> discovered, string? warning) = await ReadCommanderPlanningSystemsAsync(
