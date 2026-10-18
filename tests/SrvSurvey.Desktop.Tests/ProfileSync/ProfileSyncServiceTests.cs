@@ -61,8 +61,8 @@ public sealed class ProfileSyncServiceTests
         }
         finally
         {
-            initialization.Dispose();
-            operation.Dispose();
+            await initialization.DisposeAsync();
+            await operation.DisposeAsync();
             await Task.WhenAll(one, two).WaitAsync(TimeSpan.FromSeconds(5));
         }
         Assert.False(File.Exists(journal));
