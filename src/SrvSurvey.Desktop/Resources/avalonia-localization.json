@@ -21781,6 +21781,10 @@
       "translation": "RavenDangerBrush"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -22135,6 +22139,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -60515,6 +60523,10 @@
       "translation": "CuervoPeligroCepillo"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CuervoPeligroprimer planoCepillo"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "CuervoFlotantePanelSombra"
     },
@@ -60869,6 +60881,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "CuervoSuperficieCepillo"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "CuervoEtiquetaRellenoBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -99249,6 +99265,10 @@
       "translation": "CorbeauDangerBrosse"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CorbeauDangerPremier PlanBrosse"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -99603,6 +99623,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrosse"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -137983,6 +138007,10 @@
       "translation": "RavenDangerEscova"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -138337,6 +138365,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -176717,6 +176749,10 @@
       "translation": "ВоронОпасностьКисть"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "ВоронОпасностьПередний планКисть"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "ВоронПлавающийПанельТень"
     },
@@ -177071,6 +177107,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "ВоронПоверхностьКисть"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "ВоронТегЗаполнитьКисть"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -215451,6 +215491,10 @@
       "translation": "乌鸦危险画笔"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "乌鸦危险前景画笔"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "乌鸦浮动面板阴影"
     },
@@ -215805,6 +215849,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "乌鸦表面画笔"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "乌鸦标签填充画笔"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -254185,6 +254233,10 @@
       "translation": "* RAVENDANGERBRUSH >>>!"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "* RAVENDANGERFOREGROUNDBRUSH >>>!"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "* RAVENFLOATINGPANELSHADOW >>>!"
     },
@@ -254539,6 +254591,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "* RAVENSURFACEBRUSH >>>!"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "* RAVENTAGFILLBRUSH >>>!"
     },
     {
       "source": "RavenTertiaryTextBrush",

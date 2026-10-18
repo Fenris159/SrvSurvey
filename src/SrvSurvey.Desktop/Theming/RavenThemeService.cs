@@ -182,6 +182,7 @@ public sealed class RavenThemeService
         SetBrush("RavenAccentHoverBrush", theme.AccentHoverColor);
         SetBrush("RavenControlAccentBrush", theme.ControlAccentColor);
         SetBrush("RavenControlAccentHoverBrush", theme.ControlAccentHoverColor);
+        SetBrush("RavenTagFillBrush", theme.TagFillColor);
         SetBrush("RavenAccentMutedBrush", theme.AccentMutedColor);
         SetBrush("RavenSecondaryFillBrush", theme.SecondaryFillColor);
         SetBrush("RavenInteractiveHoverBrush", theme.InteractiveHoverColor);
@@ -202,6 +203,7 @@ public sealed class RavenThemeService
         SetBrush("RavenSuccessBrush", theme.SuccessColor);
         SetBrush("RavenWarningBrush", theme.WarningColor);
         SetBrush("RavenDangerBrush", theme.DangerColor);
+        SetBrush("RavenDangerForegroundBrush", theme.DangerForegroundColor);
         ApplyWindowChromeResources(theme);
         ApplyFluentCheckBoxResources(theme);
         ApplyDepthResources(theme);

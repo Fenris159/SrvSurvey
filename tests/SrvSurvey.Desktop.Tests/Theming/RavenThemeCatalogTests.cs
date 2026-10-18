@@ -43,12 +43,14 @@ public sealed class RavenThemeCatalogTests
         Assert.Equal("#F0E4BC", theme.AccentHoverColor);
         Assert.Equal("#F5F5F5", theme.ControlAccentColor);
         Assert.Equal("#EDEDED", theme.ControlAccentHoverColor);
+        Assert.Equal("#B8AA7B", theme.TagFillColor);
         Assert.Equal("#262626", theme.AccentMutedColor);
         Assert.Equal("#0A0A0A", theme.AccentForegroundColor);
         Assert.Equal("#EDEDED", theme.TextColor);
         Assert.Equal("#A3A3A3", theme.MutedTextColor);
         Assert.Equal("#2A2A2A", theme.BorderColor);
         Assert.Equal("#FF7B72", theme.DangerColor);
+        Assert.Equal("#0A0A0A", theme.DangerForegroundColor);
     }
 
     [Fact]

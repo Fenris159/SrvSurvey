@@ -43697,6 +43697,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "RavenDangerForegroundBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
     "Text": "RavenFloatingPanelShadow",
     "IsFormat": false,
     "SourceKinds": [
@@ -44402,6 +44410,14 @@
   },
   {
     "Text": "RavenSurfaceBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "RavenTagFillBrush",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

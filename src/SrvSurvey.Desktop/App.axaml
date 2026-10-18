@@ -20,6 +20,7 @@
     <SolidColorBrush x:Key="RavenAccentHoverBrush" Color="#5092D8" />
     <SolidColorBrush x:Key="RavenControlAccentBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenControlAccentHoverBrush" Color="#5092D8" />
+    <SolidColorBrush x:Key="RavenTagFillBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenAccentMutedBrush" Color="#13293F" />
     <SolidColorBrush x:Key="RavenSecondaryFillBrush" Color="#030325" />
     <SolidColorBrush x:Key="RavenInteractiveHoverBrush" Color="#13293F" />
@@ -39,6 +40,7 @@
     <BoxShadows x:Key="RavenWarningInsetShadow">inset 0 0 10 2 #99F7C948</BoxShadows>
     <BoxShadows x:Key="RavenFloatingPanelShadow">0 8 24 0 #66000000</BoxShadows>
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
+    <SolidColorBrush x:Key="RavenDangerForegroundBrush" Color="#0A0A0A" />
     <SolidColorBrush x:Key="SrvSurveyWindowChromeTextBrush" Color="#E5E5E5" />
     <!-- Stable legacy-overlay fallbacks. RavenThemeService replaces these
          from theme.json before normal runtime overlays are opened. -->
