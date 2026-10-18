@@ -412,7 +412,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     /// <summary>Updates the cached presentation rows whenever the active messages or their limit changes.</summary>
     private void RefreshVisibleMessages()
     {
-        visibleMessages = Messages.TakeLast(VisibleMessageLimit).ToArray();
+        visibleMessages = OverlayListRetention.Keep(visibleMessages, Messages.TakeLast(VisibleMessageLimit).ToArray());
         OnPropertyChanged(nameof(VisibleMessages));
     }
 
