@@ -324,10 +324,16 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     {
         using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         Task? pending = operationFinished?.Task;
-        authorization?.Cancel();
-        operationCancellation?.Cancel();
         try
         {
+            if (authorization is { } linking)
+            {
+                await linking.CancelAsync().WaitAsync(deadline.Token);
+            }
+            if (operationCancellation is { } operation)
+            {
+                await operation.CancelAsync().WaitAsync(deadline.Token);
+            }
             if (pending is not null)
             {
                 await pending.WaitAsync(deadline.Token);
