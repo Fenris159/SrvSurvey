@@ -204,8 +204,19 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     public Task RefreshBackupsAsync() => RunAsync(() => service.RefreshBackupsAsync(OperationToken));
 
     /// <summary>Retrieves the cloud choice captured before opening a save picker.</summary>
-    internal Task<byte[]?> DownloadBackupAsync(ProfileBackupOption backup) =>
-        service.DownloadBackupAsync(backup.Backup, OperationToken);
+    internal async Task<byte[]?> DownloadBackupAsync(ProfileBackupOption backup)
+    {
+        byte[]? bytes = null;
+        await RunAsync(async () =>
+        {
+            byte[]? downloaded = await service.DownloadBackupAsync(backup.Backup, OperationToken);
+            if (!OperationToken.IsCancellationRequested)
+            {
+                bytes = downloaded;
+            }
+        });
+        return bytes;
+    }
 
     /// <summary>Requests explicit confirmation for the current cloud choice without deleting it.</summary>
     public void BeginDeleteSelectedBackup()

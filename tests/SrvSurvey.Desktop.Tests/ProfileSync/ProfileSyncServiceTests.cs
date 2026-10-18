@@ -10,6 +10,71 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class ProfileSyncServiceTests
 {
     [Fact]
+    public async Task AHandledRecoveryFailureRetainsItsReaderMarker()
+    {
+        using var root = new ProfileSyncTestRoot();
+        await File.WriteAllTextAsync(Path.Combine(root.Store.StateDirectory, "active-restore.json"), "\"invalid\"");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await first.StartupAsync();
+        Assert.Contains("could not complete", first.Status);
+        using var second = new ProfileSyncService(root.Store, new FakeProfileDrive());
+
+        await second.StartupAsync();
+
+        Assert.Contains("deferred", second.Status);
+        Assert.Equal(2, Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock").Count());
+    }
+
+    [Fact]
+    public async Task ConcurrentColdStartupsRecoverBeforeEitherRegistersAWorkspaceReader()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"before\"}]");
+        ProfileSnapshot before = root.Store.Capture();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"before\"},{\"Name\":\"new\"}]");
+        root.Store.Apply(before);
+        string rollback = Directory
+            .EnumerateDirectories(Path.Combine(root.Store.StateDirectory, "restore-backups"))
+            .Single();
+        string journal = Path.Combine(root.Store.StateDirectory, "active-restore.json");
+        await File.WriteAllTextAsync(journal, System.Text.Json.JsonSerializer.Serialize(Path.GetFileName(rollback)));
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"partially restored\"}]");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using var second = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using var initialization = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "startup.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        using var operation = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "operation.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        Task one = first.StartupAsync();
+        Task two = second.StartupAsync();
+        try
+        {
+            Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+        }
+        finally
+        {
+            initialization.Dispose();
+            operation.Dispose();
+            await Task.WhenAll(one, two).WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.False(File.Exists(journal));
+        Assert.Contains("new", await File.ReadAllTextAsync(root.Path("data", "bookmarks.json")));
+        first.Dispose();
+        second.Dispose();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"later edit\"}]");
+        root.Store.RecoverInterruptedRestore();
+        Assert.Contains("later edit", await File.ReadAllTextAsync(root.Path("data", "bookmarks.json")));
+    }
+
+    [Fact]
     public async Task StartupCanceledBehindAnotherOperationStillRegistersItsLiveReader()
     {
         using var root = new ProfileSyncTestRoot();
@@ -485,6 +550,7 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     internal int? FailDeletionAfter { get; set; }
     internal byte[]? DownloadBytes { get; set; }
     internal bool IncludeSizes { get; set; } = true;
+    internal Func<CancellationToken, Task>? BeforeDownload { get; set; }
 
     /// <summary>Pauses upload so shutdown tests can check close guards while a backup is in progress.</summary>
     internal Func<CancellationToken, Task>? BeforeUpload { get; set; }
@@ -528,10 +594,18 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
         Task.FromResult(files.Single(file => file.Metadata.Id == id).Snapshot);
 
     /// <summary>Returns cloud bytes for export, including configured malformed-payload and transport scenarios.</summary>
-    public Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken) =>
-        Failure is null
-            ? Task.FromResult(DownloadBytes ?? files.Single(file => file.Metadata.Id == id).Snapshot.Serialize())
-            : Task.FromException<byte[]>(Failure);
+    public async Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken)
+    {
+        if (Failure is not null)
+        {
+            throw Failure;
+        }
+        if (BeforeDownload is not null)
+        {
+            await BeforeDownload(cancellationToken);
+        }
+        return DownloadBytes ?? files.Single(file => file.Metadata.Id == id).Snapshot.Serialize();
+    }
 
     /// <summary>Records deletions and simulates a failure partway through a confirmed selection.</summary>
     public Task DeleteAsync(string id, CancellationToken cancellationToken)

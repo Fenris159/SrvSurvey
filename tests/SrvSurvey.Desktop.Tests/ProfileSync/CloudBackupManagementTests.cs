@@ -12,6 +12,35 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CloudBackupManagementTests
 {
+    [AvaloniaFact]
+    public async Task CloudDownloadsRemainCancellableBeforeTheFilePickerAndWritePhase()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeDownload = token =>
+            {
+                started.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        cloud.Add(root.Store.Capture());
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        await vm.RefreshBackupsAsync();
+        ProfileBackupOption selected = Assert.Single(vm.Backups);
+        Task<byte[]?> download = vm.DownloadBackupAsync(selected);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.True(vm.CanCancelOperation);
+        vm.CancelOperation();
+
+        Assert.Null(await download.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.False(vm.IsBusy);
+        Assert.False(vm.RestartRequired);
+        Assert.Single(vm.Backups);
+    }
+
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]

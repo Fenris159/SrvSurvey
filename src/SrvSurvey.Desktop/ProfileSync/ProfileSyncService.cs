@@ -39,29 +39,29 @@ internal sealed class ProfileSyncService : IDisposable
     internal event Action? Changed;
 
     /// <summary>Applies downloads before workspaces load, or safely defers when another instance is active.</summary>
-    internal Task StartupAsync(CancellationToken cancellationToken = default)
+    internal async Task StartupAsync(CancellationToken cancellationToken = default)
     {
-        string livePath = Path.Combine(Store.StateDirectory, $"live-{Environment.ProcessId}-{Guid.NewGuid():N}.lock");
-        liveLease ??= new FileStream(
-            livePath,
-            FileMode.CreateNew,
-            FileAccess.ReadWrite,
-            FileShare.Read,
-            1,
-            FileOptions.DeleteOnClose
-        );
-        return RunWithinAsync(SynchronizeStartupAsync, TimeSpan.FromSeconds(45), cancellationToken);
+        try
+        {
+            await StartRegisteredProfileAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (IsExpectedFailure(exception))
+        {
+            SetStatus("Backup/sync could not complete. Local data was retained. " + exception.Message);
+        }
     }
 
-    /// <summary>Performs optional startup restoration only while no other instance is reading the profile.</summary>
-    private async Task SynchronizeStartupAsync(CancellationToken token)
+    private async Task StartRegisteredProfileAsync(CancellationToken cancellationToken)
     {
-        if (DeferForOtherReaders())
+        (bool another, bool restored, SyncMergeResult? restoreConflicts) = await InitializeReaderAsync()
+            .ConfigureAwait(false);
+        if (another)
         {
+            SetStatus(
+                "Cloud restore is deferred while another SrvSurvey instance is open. Close all instances before restarting to apply it."
+            );
             return;
         }
-        Store.RecoverInterruptedRestore();
-        bool restored = Store.ApplyPending(out SyncMergeResult? restoreConflicts);
         if (restoreConflicts is not null)
         {
             pendingMerge = restoreConflicts;
@@ -81,9 +81,52 @@ internal sealed class ProfileSyncService : IDisposable
             {
                 SetStatus("Google Drive is linked. Automatic sync is off; use Backup now or Sync now.");
             }
-
             return;
         }
+        await RunWithinAsync(SynchronizeStartupAsync, TimeSpan.FromSeconds(45), cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>Serializes recovery and live-reader registration without holding a lock across cloud requests.</summary>
+    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> InitializeReaderAsync()
+    {
+        await using FileStream initialization = await AcquireLeaseAsync(
+                Path.Combine(Store.StateDirectory, "startup.lock"),
+                CancellationToken.None
+            )
+            .ConfigureAwait(false);
+        bool another = HasOtherLiveInstance();
+        bool restored = false;
+        SyncMergeResult? conflicts = null;
+        try
+        {
+            if (!another)
+            {
+                Store.RecoverInterruptedRestore();
+                restored = Store.ApplyPending(out conflicts);
+            }
+        }
+        finally
+        {
+            string livePath = Path.Combine(
+                Store.StateDirectory,
+                $"live-{Environment.ProcessId}-{Guid.NewGuid():N}.lock"
+            );
+            liveLease ??= new FileStream(
+                livePath,
+                FileMode.CreateNew,
+                FileAccess.ReadWrite,
+                FileShare.Read,
+                1,
+                FileOptions.DeleteOnClose
+            );
+        }
+        return (another, restored, conflicts);
+    }
+
+    /// <summary>Performs optional cloud reads, then excludes new readers while applying their result.</summary>
+    private async Task SynchronizeStartupAsync(CancellationToken token)
+    {
         ProfileSnapshot local = Store.Capture();
         SyncMergeResult merge = await MergeCloudAsync(local, token).ConfigureAwait(false);
         if (merge.Conflicts.Count > 0)
@@ -98,6 +141,11 @@ internal sealed class ProfileSyncService : IDisposable
             return;
         }
         ProfileSnapshot merged = local with { Portable = merge.Values };
+        await using FileStream initialization = await AcquireLeaseAsync(
+                Path.Combine(Store.StateDirectory, "startup.lock"),
+                token
+            )
+            .ConfigureAwait(false);
         if (DeferForOtherReaders())
         {
             return;
@@ -453,15 +501,7 @@ internal sealed class ProfileSyncService : IDisposable
                         : "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again."
                 );
             }
-            catch (Exception exception)
-                when (exception
-                        is IOException
-                            or InvalidDataException
-                            or UnauthorizedAccessException
-                            or HttpRequestException
-                            or InvalidOperationException
-                            or JsonException
-                )
+            catch (Exception exception) when (IsExpectedFailure(exception))
             {
                 SetStatus("Backup/sync could not complete. Local data was retained. " + exception.Message);
             }
@@ -475,6 +515,15 @@ internal sealed class ProfileSyncService : IDisposable
             Changed?.Invoke();
         }
     }
+
+    private static bool IsExpectedFailure(Exception exception) =>
+        exception
+            is IOException
+                or InvalidDataException
+                or UnauthorizedAccessException
+                or HttpRequestException
+                or InvalidOperationException
+                or JsonException;
 
     /// <summary>Acquires a file lease rather than relying on process-local locks for multiple commanders.</summary>
     private static async Task<FileStream> AcquireLeaseAsync(string path, CancellationToken cancellationToken)

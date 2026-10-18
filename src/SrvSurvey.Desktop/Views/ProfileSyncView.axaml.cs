@@ -107,13 +107,13 @@ public partial class ProfileSyncView : UserControl
         {
             return;
         }
+        byte[]? bytes = await vm.DownloadBackupAsync(backup);
+        if (bytes is null)
+        {
+            return;
+        }
         await vm.FileOperationAsync(async () =>
         {
-            byte[]? bytes = await vm.DownloadBackupAsync(backup);
-            if (bytes is null)
-            {
-                return;
-            }
             using IStorageFile? file = await top.StorageProvider.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {

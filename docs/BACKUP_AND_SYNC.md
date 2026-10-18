@@ -28,6 +28,8 @@ The backup format remains versioned JSON and supports profiles up to **128 MiB**
 
 Uploads transfer 1 MiB chunks and check Google's acknowledged byte range after a timeout or temporary network failure. Accepted bytes are not sent again, and interrupted transfers retry at most three times before retaining the local recovery copy. Cloud history is pruned only after Google confirms the complete upload. Manual backup/sync operations allow up to ten minutes and expose **Cancel operation**; startup sync has a 45-second limit and shutdown backup has a two-minute limit so automatic work remains bounded.
 
+Interrupted-restore recovery and live-reader registration share a short startup guard, separate from network transfers. Concurrent cold starts recover files before either instance loads its workspaces. Cloud downloads remain cancellable until the operating-system save picker opens; local file pickers and writes use their own controls.
+
 When Google explicitly reports expired or revoked authorization, SrvSurvey asks you to **Disconnect**, then **Link Google Drive** again. Failed refreshes preserve shared authorization, including a newer login saved by another Commander instance. Successful linking clears cached cloud history and selection before enabling account actions. A rejected publisher client setup produces a separate message rather than asking users to repeatedly re-link. Error descriptions and authorization tokens are excluded from diagnostics.
 
 ## Recovery and history
