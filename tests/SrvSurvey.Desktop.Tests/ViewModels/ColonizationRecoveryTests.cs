@@ -11,6 +11,18 @@ public sealed partial class ColonizationViewModelTests
 {
     private DateTimeOffset recoveryTime = DateTimeOffset.UtcNow;
 
+    /// <summary>Linking squadron cargo explains its sync sources without suggesting a market-only replacement.</summary>
+    [Fact]
+    public void SquadronPublishMessageDescribesManifestAndLiveCargoSync()
+    {
+        string message = ColonizationDeliveryMessages.Describe(
+            new ColonizationDeliveryNotice(ColonizationDeliveryNoticeKind.SquadronCarrierPublished, "SQD-001")
+        );
+
+        Assert.Contains("SQD-001", message);
+        Assert.Contains("Frontier manifests and live cargo movements", message);
+    }
+
     /// <summary>Loads the replacement commander automatically after the obsolete request releases its busy ownership.</summary>
     [Fact]
     public async Task CommanderSwitchQueuesReplacementRefresh()

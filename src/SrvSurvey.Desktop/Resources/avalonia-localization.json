@@ -21009,6 +21009,10 @@
       "translation": "Veröffentlicht und verlinkt {0}. Öffnen Sie den Warenmarkt, um die Fracht zu synchronisieren."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Veröffentlicht und verlinkt {0}. Geschwaderfrachtaktualisierungen von Frontier Manifesten und Live-Frachtbewegungen."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Veröffentlicht und verlinkt {0}; seine Ladung ist bereits aktuell."
     },
@@ -59733,6 +59737,10 @@
     {
       "source": "Published and linked {0}. Open its commodity market to synchronize cargo.",
       "translation": "Publicado y vinculado {0}. Abrir su mercado de productos básicos para sincronizar la carga."
+    },
+    {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Publicado y vinculado {0}. Actualizaciones de carga de escuadrón a partir de manifiestos Frontier y movimientos de carga en vivo."
     },
     {
       "source": "Published and linked {0}; its cargo is already current.",
@@ -98461,6 +98469,10 @@
       "translation": "Publié et lié {0}. Ouvrir son marché des matières premières pour synchroniser le fret."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publié et lié. Mises à jour du fret de l'escadron à partir des manifestes Frontier et des mouvements de fret en direct."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publié et lié {0} ; sa cargaison est déjà à jour."
     },
@@ -137185,6 +137197,10 @@
     {
       "source": "Published and linked {0}. Open its commodity market to synchronize cargo.",
       "translation": "Publicado e vinculado {0}. Abra seu mercado de commodities para sincronizar a carga."
+    },
+    {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publicado e vinculado. Atualizações de carga do esquadrão de manifestos Frontier e movimentos de carga ao vivo."
     },
     {
       "source": "Published and linked {0}; its cargo is already current.",
@@ -175913,6 +175929,10 @@
       "translation": "Опубликовано и связано с {0}. Откройте свой товарный рынок для синхронизации грузов."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Опубликован и связан {0}. Обновления о грузах эскадрильи от Frontier отражают и показывают движение грузов в реальном времени."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Опубликовано и связано с {0}; его груз уже в наличии."
     },
@@ -214639,6 +214659,10 @@
       "translation": "已发布并链接 {0}。开放其商品市场，同步货运。"
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "已发布并链接 {0}。来自 Frontier 的中队货物更新舱单和实时货物动态。"
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "已发布并链接 {0}；它的货物已经是最新的。"
     },
@@ -253363,6 +253387,10 @@
     {
       "source": "Published and linked {0}. Open its commodity market to synchronize cargo.",
       "translation": "* PUBLISHED AND LINKED {0}. OPEN ITS COMMODITY MARKET TO SYNCHRONIZE CARGO. >>>!"
+    },
+    {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "* PUBLISHED AND LINKED {0}. SQUADRON CARGO UPDATES FROM FRONTIER MANIFESTS AND LIVE CARGO MOVEMENTS. >>>!"
     },
     {
       "source": "Published and linked {0}; its cargo is already current.",

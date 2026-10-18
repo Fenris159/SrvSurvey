@@ -2295,7 +2295,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         using var entered = new ManualResetEventSlim(false);
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier with { Cargo = [] }]),
             FleetCarrierResponse = carrier,
             GateGetFleetCarrier = gate,
             EnteredGetFleetCarrier = entered,
@@ -2305,16 +2305,15 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents([
-            Event(
-                "Docked",
-                """
-                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
-                "StationName":"SQD-001","StationType":"FleetCarrier",
-                "StationServices":["commodities","squadronBank"]
-                """
-            ),
-        ]);
+        JournalEventEnvelope dock = Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+            "StationName":"SQD-001","StationType":"FleetCarrier",
+            "StationServices":["commodities","squadronBank"]
+            """
+        );
+        viewModel.ApplyJournalEvents([dock]);
         viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
@@ -2334,7 +2333,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             }
         );
 
-        Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80, stationName: "SQD-001"));
+        Task dockSync = viewModel.SynchronizeLiveProjectsAsync([dock], allowPublishing: true);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await viewModel.SynchronizeLiveProjectsAsync(
             [
@@ -2350,7 +2349,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         Assert.Empty(client.FleetCarrierAdjustments);
 
         gate.SetResult(true);
-        await marketSync;
+        await dockSync;
 
         FleetCarrierAdjustmentCall queued = Assert.Single(client.FleetCarrierAdjustments);
         Assert.Equal(-5, queued.Changes["steel"]);

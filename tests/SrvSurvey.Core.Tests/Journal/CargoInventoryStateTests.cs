@@ -212,6 +212,108 @@ public sealed class CargoInventoryStateTests
         Assert.Empty(state.GetDiff());
     }
 
+    /// <summary>The first full inventory establishes a baseline; existing cargo is not a new transfer.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InitialInventoryIsNotReportedAsCarrierMovement(bool journal)
+    {
+        var state = new CargoInventoryState();
+        if (journal)
+        {
+            state.Apply(Event("Cargo", "\"Inventory\":[{\"Name\":\"steel\",\"Count\":50}]"));
+        }
+        else
+        {
+            state.Reset(Snapshot("Ship", new CargoItem("steel", null, 50, 0)));
+        }
+        Assert.Empty(state.GetDiff(excludeMarketChanges: true));
+    }
+
+    /// <summary>Market exclusion uses effective clamped movement and leaves ordinary inventory differences intact.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MarketExclusionPreservesOtherMovementsAndCanBeDisabled(bool exclude)
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot("Ship", new CargoItem("steel", null, 3, 0)));
+        state.CaptureBeforeSnapshot();
+        state.Apply(Event("MarketSell", "\"Type\":\"STEEL\",\"Count\":5"));
+        state.Apply(Event("CollectCargo", "\"Type\":\"water\""));
+
+        Dictionary<string, int> diff = state.GetDiff(excludeMarketChanges: exclude);
+
+        Assert.Equal(1, diff["water"]);
+        Assert.Equal(exclude ? 0 : -3, diff.GetValueOrDefault("steel"));
+        Assert.Empty(state.GetDiff(excludeMarketChanges: true));
+    }
+
+    /// <summary>Missing commodities and no-op market events cannot introduce phantom differences.</summary>
+    [Fact]
+    public void InvalidMarketEventsDoNotChangeTheDifference()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot("Ship"));
+        Assert.False(state.Apply(Event("MarketBuy", "\"Count\":5")));
+        Assert.False(state.Apply(Event("MarketBuy", "\"Type\":\"steel\",\"Count\":0")));
+        Assert.False(state.Apply(Event("MarketSell", "\"Type\":\"steel\",\"Count\":5")));
+        Assert.Empty(state.GetDiff(excludeMarketChanges: true));
+    }
+
+    /// <summary>New snapshots reset market accounting only when a bank transfer has not frozen the baseline.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SnapshotMarketAccountingUsesTheSameBaselineAsCargo(bool journal)
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot("Ship"));
+        state.Apply(Event("MarketBuy", "\"Type\":\"steel\",\"Count\":5"));
+        if (journal)
+        {
+            state.Apply(Event("Cargo", "\"Inventory\":[{\"Name\":\"steel\",\"Count\":7}]"));
+        }
+        else
+        {
+            state.Reset(Snapshot("Ship", new CargoItem("steel", null, 7, 0)));
+        }
+        Assert.Equal(2, Assert.Single(state.GetDiff(excludeMarketChanges: true)).Value);
+        state.Apply(Event("MarketBuy", "\"Type\":\"steel\",\"Count\":5"));
+        state.Reset(null);
+        state.Reset(Snapshot("Ship", new CargoItem("steel", null, 50, 0)));
+        Assert.Empty(state.GetDiff(excludeMarketChanges: true));
+    }
+
+    /// <summary>Rejects an aggregate bank movement outside Raven's integer count range instead of wrapping it.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OversizedNonMarketDifferencesAreRejected(bool sell)
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot("Ship", new CargoItem("steel", null, sell ? int.MaxValue : 0, 0)));
+        state.CaptureBeforeSnapshot();
+        for (int i = 0; i < 3; i++)
+        {
+            if (i > 0)
+            {
+                state.Apply(
+                    Event(
+                        "CargoTransfer",
+                        $$"""
+                        "Transfers":[{"Type":"steel","Count":{{int.MaxValue}},"Direction":"{{(
+                            sell ? "toship" : "tocarrier"
+                        )}}"}]
+                        """
+                    )
+                );
+            }
+            state.Apply(Event(sell ? "MarketSell" : "MarketBuy", $"\"Type\":\"steel\",\"Count\":{int.MaxValue}"));
+        }
+        Assert.Throws<InvalidDataException>(() => state.GetDiff(excludeMarketChanges: true));
+    }
+
     private static CargoSnapshot Snapshot(string vessel, params CargoItem[] items)
     {
         return new CargoSnapshot(

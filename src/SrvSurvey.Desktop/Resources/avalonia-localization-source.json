@@ -42151,6 +42151,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
     "Text": "Published and linked {0}; its cargo is already current.",
     "IsFormat": true,
     "SourceKinds": [
