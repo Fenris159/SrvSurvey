@@ -18,6 +18,14 @@ public sealed partial class ColonizationView : UserControl
         InitializeComponent();
     }
 
+    private void UncheckProjectSelection_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.Colonization.UncheckProjectSelection();
+        }
+    }
+
     /// <summary>Opens the clicked project's read-only popout without changing project selection or primary status.</summary>
     private void OpenProjectPreview_Click(object? sender, RoutedEventArgs eventArgs)
     {

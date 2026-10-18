@@ -1264,6 +1264,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "\u003C--Uncheck Selection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "? of {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -64052,6 +64060,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
+    "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Unclaimed biology",

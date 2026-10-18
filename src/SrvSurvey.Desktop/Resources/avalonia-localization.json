@@ -633,6 +633,10 @@
       "translation": "; ignoriert {0} fehlerhafte/teilweise Zeile(n)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Auswahl deaktivieren"
+    },
+    {
       "source": "? of {0}",
       "translation": "? von {0}"
     },
@@ -31937,6 +31941,10 @@
       "translation": "Deaktivieren Sie „Alle“."
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Deaktivieren Sie „Anzeigen“ für jedes Projekt, das dem ausgewählten System und Build-Status entspricht."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Nicht beanspruchte Biologie"
     },
@@ -39357,6 +39365,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; ignorado {0} líneas mal formadas/parciales"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar selección"
     },
     {
       "source": "? of {0}",
@@ -70663,6 +70675,10 @@
       "translation": "Desmarcar todo"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada proyecto que coincida con el sistema seleccionado y el estado de compilación."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biología no reclamada"
     },
@@ -78083,6 +78099,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; {0} ligne(s) malformée(s)/partielle(s) ignorée(s)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Décochez la sélection"
     },
     {
       "source": "? of {0}",
@@ -109389,6 +109409,10 @@
       "translation": "Décocher tout"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Décochez Afficher pour chaque projet correspondant au système sélectionné et à l'état de construction."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologie non réclamée"
     },
@@ -116809,6 +116833,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; ignorado {0} linha(s) mal formada(s)/parcial(is)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar seleção"
     },
     {
       "source": "? of {0}",
@@ -148115,6 +148143,10 @@
       "translation": "Desmarque tudo"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada projeto que corresponda ao sistema selecionado e ao status de construção."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologia não reclamada"
     },
@@ -155535,6 +155567,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; игнорируется {0} неверно сформированная/неполная строка(ы)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Снять выделение"
     },
     {
       "source": "? of {0}",
@@ -186841,6 +186877,10 @@
       "translation": "Снимите все флажки"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Снимите флажок «Показывать для каждого проекта, соответствующего выбранной системе и статусу сборки»."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Невостребованная биология"
     },
@@ -194261,6 +194301,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": ";忽略 {0} 格式错误/部分行"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--取消选中选择"
     },
     {
       "source": "? of {0}",
@@ -225567,6 +225611,10 @@
       "translation": "取消选中全部"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "取消选中与所选系统和构建状态匹配的每个项目的“显示”。"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "无人认领的生物学"
     },
@@ -232987,6 +233035,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "* ; IGNORED {0} MALFORMED/PARTIAL LINE(S) >>>!"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "* <--UNCHECK SELECTION >>>!"
     },
     {
       "source": "? of {0}",
@@ -264291,6 +264343,10 @@
     {
       "source": "Uncheck All",
       "translation": "* UNCHECK ALL >>>!"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "* UNCHECK SHOW FOR EVERY PROJECT MATCHING THE SELECTED SYSTEM AND BUILD STATUS. >>>!"
     },
     {
       "source": "Unclaimed biology",

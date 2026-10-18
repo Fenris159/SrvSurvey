@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Tests.ViewModels;
@@ -79,6 +80,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             }
             ComboBox systems = view.FindControl<ComboBox>("ProjectSystemFilter")!;
             ComboBox stages = view.FindControl<ComboBox>("ProjectBuildFilter")!;
+            Button uncheck = view.FindControl<Button>("UncheckProjectSelectionButton")!;
             Button manifest = view.FindControl<Button>("EditCarrierManifestButton")!;
             systems.BringIntoView();
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
@@ -87,9 +89,12 @@ public sealed partial class ColonizationShoppingPresentationTests
             }
             Point systemPosition = systems.TranslatePoint(default, view)!.Value;
             Point stagePosition = stages.TranslatePoint(default, view)!.Value;
+            Point uncheckPosition = uncheck.TranslatePoint(default, view)!.Value;
             Point manifestPosition = manifest.TranslatePoint(default, view)!.Value;
-            Assert.True(systemPosition.X < stagePosition.X && stagePosition.X < manifestPosition.X);
-            Assert.InRange(Math.Abs(systemPosition.Y - manifestPosition.Y), 0, 3);
+            Assert.True(systemPosition.X < stagePosition.X && stagePosition.X < uncheckPosition.X);
+            Assert.InRange(Math.Abs(systemPosition.Y - uncheckPosition.Y), 0, 3);
+            Assert.True(manifestPosition.Y > uncheckPosition.Y || manifestPosition.X > uncheckPosition.X);
+            Assert.Equal("<--Uncheck Selection", uncheck.Content);
             stages.SelectedItem = main.Colonization.ProjectBuildOptions.Single(option =>
                 option.Value == ColonizationProjectBuildFilter.Planning
             );
@@ -98,6 +103,12 @@ public sealed partial class ColonizationShoppingPresentationTests
                 Assert.NotNull(frame);
             }
             Assert.True(Assert.Single(main.Colonization.VisibleProjects).Project.IsPlanned);
+            uncheck.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.False(main.Colonization.Projects.Single(row => row.Project.IsPlanned).IsShown);
+            Assert.All(
+                main.Colonization.Projects.Where(row => !row.Project.IsPlanned),
+                row => Assert.True(row.IsShown)
+            );
             systems.SelectedItem = main.Colonization.ProjectSystemOptions.Single(option =>
                 option.SystemName == "Achenar"
             );
@@ -106,6 +117,12 @@ public sealed partial class ColonizationShoppingPresentationTests
                 Assert.NotNull(frame);
             }
             Assert.True(main.Colonization.HasNoMatchingProjects);
+            uncheck.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.False(main.Colonization.Projects.Single(row => row.Project.IsPlanned).IsShown);
+            Assert.All(
+                main.Colonization.Projects.Where(row => !row.Project.IsPlanned),
+                row => Assert.True(row.IsShown)
+            );
             stages.SelectedItem = main.Colonization.ProjectBuildOptions[0];
             Assert.Equal("Achenar Build", Assert.Single(main.Colonization.VisibleProjects).BuildName);
             systems.SelectedItem = main.Colonization.ProjectSystemOptions[0];
