@@ -12,11 +12,13 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CloudBackupManagementTests
 {
-    [AvaloniaFact]
-    public async Task ShutdownCancelsTheActiveManualUploadBeforeItsFinalBackup()
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ShutdownCancelsAndDrainsManualUploadsBeforeItCompletes(bool automatic)
     {
         using var root = new ProfileSyncTestRoot();
-        root.Store.SavePreferences(new(Automatic: true));
+        root.Store.SavePreferences(new(Automatic: automatic));
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         int uploads = 0;
         var cloud = new FakeProfileDrive
@@ -38,8 +40,9 @@ public sealed class CloudBackupManagementTests
         try
         {
             await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(manual.IsCompleted);
             await manual.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.Single(cloud.Uploaded);
+            Assert.Equal(automatic ? 1 : 0, cloud.Uploaded.Count);
         }
         finally
         {

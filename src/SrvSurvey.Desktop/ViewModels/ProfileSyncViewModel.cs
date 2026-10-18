@@ -12,6 +12,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private bool cancellableOperation;
     private CancellationTokenSource? authorization;
     private CancellationTokenSource? operationCancellation;
+    private TaskCompletionSource? operationFinished;
     private bool automatic;
     private bool restoreMachineSettings;
     private ProfileBackupOption? selectedBackup;
@@ -291,13 +292,16 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
 
     /// <summary>Requests the existing coordinated application restart.</summary>
     public Task RequestRestartAsync() =>
-        RunAsync(async () =>
-        {
-            if (RestartRequested is not null)
+        RunAsync(
+            async () =>
             {
-                await RestartRequested.Invoke();
-            }
-        });
+                if (RestartRequested is not null)
+                {
+                    await RestartRequested.Invoke();
+                }
+            },
+            cancellable: false
+        );
 
     /// <summary>Contains file picker and storage errors in the normal status area.</summary>
     public Task FileOperationAsync(Func<Task> action) => RunAsync(action, cancellable: false);
@@ -316,11 +320,24 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     }
 
     /// <summary>Allows the runtime to back up after all workspace producers have stopped.</summary>
-    internal Task ShutdownAsync()
+    internal async Task ShutdownAsync()
     {
+        using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        Task? pending = operationFinished?.Task;
         authorization?.Cancel();
         operationCancellation?.Cancel();
-        return service.ShutdownAsync(CancellationToken.None);
+        try
+        {
+            if (pending is not null)
+            {
+                await pending.WaitAsync(deadline.Token);
+            }
+            await service.ShutdownAsync(deadline.Token);
+        }
+        catch (OperationCanceledException) when (deadline.IsCancellationRequested)
+        {
+            // Orderly shutdown remains bounded; recovery copies already saved by the operation remain local.
+        }
     }
 
     /// <summary>Prevents overlapping UI operations and contains actionable failures.</summary>
@@ -332,6 +349,8 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
 
         using var cancellation = new CancellationTokenSource();
+        TaskCompletionSource? completion = cancellable ? new(TaskCreationOptions.RunContinuationsAsynchronously) : null;
+        operationFinished = completion;
         operationCancellation = cancellation;
         cancellableOperation = cancellable;
         IsBusy = true;
@@ -357,9 +376,11 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         finally
         {
             operationCancellation = null;
+            operationFinished = null;
             cancellableOperation = false;
             IsBusy = false;
             Refresh();
+            completion?.TrySetResult();
         }
     }
 
