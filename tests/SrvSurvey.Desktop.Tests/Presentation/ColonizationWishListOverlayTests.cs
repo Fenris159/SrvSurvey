@@ -187,7 +187,7 @@ public sealed class ColonizationWishListOverlayTests
             );
             Assert.IsType<ColonizationWishListOverlayPresentation>(preview.RuntimePresentation);
             Render(preview);
-            Assert.Equal("Colonization wish list", preview.EditorFolderTabLabelControl.Text);
+            Assert.Equal("Colonization ShoppingList", preview.EditorFolderTabLabelControl.Text);
             ColonizationWishListViewModel model = Assert.IsType<ColonizationWishListViewModel>(
                 preview.RuntimePresentation.DataContext
             );

@@ -37,7 +37,7 @@ public sealed class ColonizationShoppingViewModelTests
         Assert.All(model.Needs, need => Assert.True(need.IsSelected));
         Assert.Equal(2, resultUpdates);
         Assert.Equal("Steel: 60, Water: 50", model.NeedsText);
-        Assert.Single(model.Results);
+        Assert.Equal(2, model.Results.Count);
         Assert.Equal(purchases, model.CaptureState().WishList);
         Assert.Equal(1, search.Calls);
         model.Dispose();
@@ -486,17 +486,22 @@ public sealed class ColonizationShoppingViewModelTests
         model.ShowShortSupply = false;
         Assert.Collection(
             model.Results,
+            row => Assert.Equal("Port 1", row.Station),
             row => Assert.Equal("Port 2", row.Station),
             row => Assert.Equal("Port 3", row.Station)
         );
-        Assert.All(model.Results.SelectMany(row => row.AvailableSupplies), supply => Assert.True(supply.IsEnough));
+        Assert.All(
+            model.Results.SelectMany(row => row.AvailableSupplies).Where(supply => !supply.IsWishListed),
+            supply => Assert.True(supply.IsEnough)
+        );
         model.Sort = "Most commodities available";
-        Assert.Equal("Port 3", model.Results[0].Station);
+        Assert.Equal("Port 1", model.Results[0].Station);
+        Assert.Equal("Port 3", model.Results[1].Station);
         Assert.Equal(2, model.Results[0].Matches);
         model.SortBy("Most commodities available");
         Assert.Equal("Port 2", model.Results[0].Station);
         model.ShowShortSupply = true;
-        Assert.Equal(3, model.Results.Count);
+        Assert.Equal(4, model.Results.Count);
         Assert.Equal(2, model.CaptureState().WishList.Count);
         model.ShowShortSupply = false;
         var offline = new SearchStub([]);
@@ -508,7 +513,7 @@ public sealed class ColonizationShoppingViewModelTests
         );
         Assert.False(restored.ShowShortSupply);
         Assert.Equal("Most commodities available", restored.Sort);
-        Assert.Equal(2, restored.Results.Count);
+        Assert.Equal(3, restored.Results.Count);
         Assert.Equal(2, restored.CaptureState().WishList.Count);
         Assert.Equal(0, offline.Calls);
         Assert.Equal(1, search.Calls);

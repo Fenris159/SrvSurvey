@@ -143,6 +143,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         SyncFleetCarrierCargoCommand = syncFleetCarrierCargoCommand;
         ProjectEditor = new ColonizationProjectEditorViewModel(this.client, this.buildCatalog, OnProjectCreatedAsync);
         SystemEditor = new ColonizationSystemEditorViewModel(this.client, this.buildCatalog);
+        InitializePlannedProjects();
         CommodityOverlay = new ColonizationCommodityOverlayViewModel();
         CommodityOverlay.ApplyPreferences(overlayPreferences);
         UpdateProjectEditorContext();
@@ -158,7 +159,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// <summary>Connects the combined report to the same native popout lifecycle as individual previews.</summary>
     internal void SetCombinedReportOpener(Action? opener) => combinedReportOpener = opener;
 
-    /// <summary>Opens all workspace projects without changing their Show or primary selection.</summary>
+    /// <summary>Opens all workspace projects without changing their Show or focus selection.</summary>
     public void OpenCombinedReport()
     {
         if (IsEnabled && HasProjects)
@@ -170,14 +171,17 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// <summary>Creates a report whose membership follows every workspace build and whose trips use the current ship.</summary>
     internal ColonizationProjectPreviewViewModel CreateCombinedReport() =>
         new(
-            client as IRavenColonialProjectReader
-                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            new WorkspaceProjectReader(
+                this,
+                client as IRavenColonialProjectReader
+                    ?? throw new InvalidOperationException("The Raven build preview reader is unavailable.")
+            ),
             () => Projects.Select(row => row.Project.BuildId).ToArray(),
             () => IsEnabled,
             () => recovery.ShipCargoCapacity
         );
 
-    /// <summary>Opens the clicked build independently of its Show checkbox and current primary project.</summary>
+    /// <summary>Opens the clicked build independently of its Show checkbox and current project focus.</summary>
     public void OpenProjectPreview(ColonizationProject project)
     {
         if (IsEnabled)
@@ -190,8 +194,11 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     internal ColonizationProjectPreviewViewModel CreateProjectPreview(string buildId)
     {
         return new ColonizationProjectPreviewViewModel(
-            client as IRavenColonialProjectReader
-                ?? throw new InvalidOperationException("The Raven build preview reader is unavailable."),
+            new WorkspaceProjectReader(
+                this,
+                client as IRavenColonialProjectReader
+                    ?? throw new InvalidOperationException("The Raven build preview reader is unavailable.")
+            ),
             buildId,
             () => IsEnabled,
             () => recovery.ShipCargoCapacity
@@ -503,6 +510,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             }
 
             projects = value;
+            UpdateProjectFilters();
             if (hasCurrentShoppingProjects)
             {
                 ReconcileShoppingSelection(value.Select(row => row.Project.BuildId));
@@ -530,6 +538,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasProjects));
             OnPropertyChanged(nameof(HasNoProjects));
+            EnsureMarketSearchWorkspace();
         }
     }
 
@@ -648,6 +657,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         OnPropertyChanged(nameof(CommanderStatus));
         RaiseCommandStates();
         NotifyContributionRecovery();
+        ResetProjectFilters();
         ClearProjects();
         RestoreShoppingSelection();
         UpdateProjectEditorContext();
@@ -881,8 +891,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         currentStarPosition = position is GalacticCoordinate nextCoordinate
             ? [nextCoordinate.X, nextCoordinate.Y, nextCoordinate.Z]
             : [];
+        plannedReadVersion++;
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        _ = RefreshPlannedProjectsAsync(CancellationToken.None);
     }
 
     public void ReportLinkFailure(string message)
@@ -893,9 +905,9 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     public void Dispose()
     {
         disposed = true;
+        StopPlannedProjects();
         StopAutoRefresh();
-        shoppingWorkspace?.Dispose();
-        shoppingWorkspace = null;
+        CloseMarketSearchWorkspace();
         CancelDockingRefresh();
         OnPropertyChanged(nameof(CanAutoRefresh));
     }
@@ -1235,17 +1247,17 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
             hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
+            await RefreshPlannedProjectsAsync(cancellationToken, result.Projects);
+            if (disposed || !IsEnabled || version != recovery.ProfileVersion)
+            {
+                return false;
+            }
             hasCurrentShoppingProjects = true;
             recovery.ReplaceWorkspace(result.Projects, result.FleetCarriers);
-            Projects = recovery.Projects.Select(CreateRow).ToArray();
+            RebuildProjectRows();
             HasUnsavedProjectVisibility = false;
             UpdateProjectSummary();
-            StatusMessage = Projects.Count switch
-            {
-                0 => "No active Raven Colonial projects were found for this commander.",
-                1 => "Loaded 1 active Raven Colonial project.",
-                _ => $"Loaded {Projects.Count:N0} active Raven Colonial projects.",
-            };
+            StatusMessage = ProjectLoadStatus();
             return true;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -1300,7 +1312,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         hiddenProjectIds = snapshot.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
         primaryProjectId = snapshot.PrimaryProjectId;
         recovery.ReplaceWorkspace(snapshot.Projects, snapshot.FleetCarriers);
-        Projects = recovery.Projects.Select(CreateRow).ToArray();
+        RebuildProjectRows();
         HasUnsavedProjectVisibility = false;
         UpdateProjectSummary();
         string warning =
@@ -1335,7 +1347,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             hiddenProjectIds = saved.ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (ColonizationProjectRowViewModel row in Projects)
             {
-                row.UpdateShown(!hiddenProjectIds.Contains(row.Project.BuildId));
+                row.UpdateShown(
+                    !hiddenProjectIds.Contains(row.Project.BuildId)
+                        && !hiddenPlannedProjectIds.Contains(row.Project.BuildId)
+                );
             }
 
             HasUnsavedProjectVisibility = false;
@@ -1368,63 +1383,14 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         return new ColonizationProjectRowViewModel(
             project,
             type,
-            string.Equals(project.BuildId, primaryProjectId, StringComparison.OrdinalIgnoreCase),
-            !hiddenProjectIds.Contains(project.BuildId),
+            string.Equals(project.BuildId, FocusProjectId, StringComparison.OrdinalIgnoreCase),
+            !hiddenProjectIds.Contains(project.BuildId) && !hiddenPlannedProjectIds.Contains(project.BuildId),
             OnProjectShownChanged,
-            TogglePrimaryProjectAsync
+            ToggleFocusProjectAsync
         )
         {
             IsShoppingSelected = shoppingProjectIds.Contains(project.BuildId),
         };
-    }
-
-    /// <summary>Changes the captured commander's primary project without applying results to a replacement profile.</summary>
-    public async Task TogglePrimaryProjectAsync(ColonizationProjectRowViewModel row)
-    {
-        ArgumentNullException.ThrowIfNull(row);
-        if (!IsEnabled || IsBusy || CommanderName is null)
-        {
-            return;
-        }
-
-        string? nextPrimaryId = row.IsPrimary ? null : row.Project.BuildId;
-        int version = recovery.ProfileVersion;
-        IsBusy = true;
-        StatusMessage = nextPrimaryId is null
-            ? "Clearing the primary Raven Colonial project..."
-            : $"Setting {row.BuildName} as the primary Raven Colonial project...";
-        try
-        {
-            await client.SetPrimaryProjectAsync(CommanderName, nextPrimaryId, CancellationToken.None);
-            if (version != recovery.ProfileVersion)
-            {
-                return;
-            }
-            primaryProjectId = nextPrimaryId;
-            Projects = recovery.Projects.Select(CreateRow).ToArray();
-            StatusMessage = nextPrimaryId is null
-                ? "The primary Raven Colonial project was cleared."
-                : $"{row.BuildName} is now the primary Raven Colonial project.";
-        }
-        catch (Exception exception)
-            when (exception
-                    is HttpRequestException
-                        or InvalidDataException
-                        or TaskCanceledException
-                        or ArgumentException
-            )
-        {
-            if (version != recovery.ProfileVersion)
-            {
-                return;
-            }
-            StatusMessage = "The primary project was not changed: " + exception.Message;
-        }
-        finally
-        {
-            IsBusy = false;
-            await RefreshPendingAsync(CancellationToken.None);
-        }
     }
 
     /// <summary>Installs a successfully created project before optional cleanup and ignores obsolete callback results.</summary>
@@ -1435,7 +1401,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
     private void OnRecoveryProjectsChanged()
     {
-        Projects = recovery.Projects.Select(CreateRow).ToArray();
+        RebuildProjectRows();
         UpdateProjectSummary();
     }
 
@@ -1472,6 +1438,11 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
     private void OnProjectShownChanged(ColonizationProjectRowViewModel row, bool isShown)
     {
+        if (row.Project.IsPlanned)
+        {
+            SetPlannedProjectShown(row.Project, isShown);
+            return;
+        }
         if (isShown)
         {
             hiddenProjectIds.Remove(row.Project.BuildId);
@@ -1489,7 +1460,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     {
         ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals(
             Projects.Select(row => row.Project),
-            hiddenProjectIds,
+            hiddenProjectIds.Concat(hiddenPlannedProjectIds),
             recovery.ShipCargoCapacity
         );
         string trips = totals.TripsInCurrentShip is long tripCount
@@ -1543,8 +1514,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
     private void ClearProjects()
     {
-        shoppingWorkspace = null;
+        CloseMarketSearchWorkspace();
         hasCurrentShoppingProjects = false;
+        plannedReadVersion++;
+        plannedSystems.Clear();
         Projects = [];
         recovery.ClearWorkspace();
         hiddenProjectIds.Clear();
@@ -1573,8 +1546,9 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 new ColonizationCommodityPlanRequest
                 {
                     Projects = Projects.Select(row => row.Project),
-                    HiddenBuildIds = hiddenProjectIds,
-                    PrimaryBuildId = primaryProjectId,
+                    HiddenBuildIds = hiddenProjectIds.Concat(hiddenPlannedProjectIds).ToArray(),
+                    PrimaryBuildId = FocusProjectId,
+                    PlanningCarrierMarketId = SelectedPlanningCarrierMarketId,
                     CommanderName = CommanderName,
                     FleetCarriers = recovery.FleetCarriers,
                     ShipCargo = shipCargo,
@@ -1857,18 +1831,18 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
     public ColonizationProjectRowViewModel(
         ColonizationProject project,
         string typeDescription,
-        bool isPrimary,
+        bool isFocused,
         bool isShown,
         Action<ColonizationProjectRowViewModel, bool> changed,
-        Func<ColonizationProjectRowViewModel, Task> togglePrimary
+        Func<ColonizationProjectRowViewModel, Task> toggleFocus
     )
     {
         Project = project;
         TypeDescription = typeDescription;
-        IsPrimary = isPrimary;
+        IsFocused = isFocused;
         this.isShown = isShown;
         this.changed = changed;
-        TogglePrimaryCommand = new RowAsyncCommand(() => togglePrimary(this));
+        ToggleFocusCommand = new RowAsyncCommand(() => toggleFocus(this));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -1877,25 +1851,30 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 
     public string BuildName => Project.BuildName;
 
+    public string ProjectPreviewHint =>
+        Project.IsPlanned
+            ? "View catalog requirements for this planned site. Actual depot needs may differ."
+            : "Open live build preview";
+
     public string SystemName => Project.SystemName;
 
     public string SystemAddressText => SystemAddressFormatter.Format(Project.SystemAddress);
 
     public string TypeDescription { get; }
 
-    public bool IsPrimary { get; }
+    public bool IsFocused { get; }
 
-    public string PrimaryLabel => IsPrimary ? "PRIMARY" : string.Empty;
+    public string FocusLabel => IsFocused ? "FOCUS" : string.Empty;
 
-    public string PrimaryActionLabel => IsPrimary ? "Clear primary" : "Make primary";
+    public string FocusActionLabel => IsFocused ? "Clear Focus" : "Make Focus";
 
-    public ICommand TogglePrimaryCommand { get; }
+    public ICommand ToggleFocusCommand { get; }
 
-    public string CarrierCoverageText { get; private set; } = "0%";
+    public string CarrierCoverageText { get; private set; } = "0.00%";
 
     internal void UpdateCarrierCoverage(double percent)
     {
-        string text = percent.ToString("0", CultureInfo.InvariantCulture) + "%";
+        string text = percent.ToString("0.00", CultureInfo.InvariantCulture) + "%";
         if (CarrierCoverageText != text)
         {
             CarrierCoverageText = text;
@@ -1903,16 +1882,27 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
         }
     }
 
-    public string ProgressText =>
-        Project.IsFleetCarrierLoading
-            ? $"? of {Project.MaximumRequired:N0}"
-            : Project.Progress switch
+    public string ProgressText
+    {
+        get
+        {
+            if (Project.IsPlanned)
+            {
+                return $"~{Project.MaximumRequired:N0} t";
+            }
+            if (Project.IsFleetCarrierLoading)
+            {
+                return $"? of {Project.MaximumRequired:N0}";
+            }
+            return Project.Progress switch
             {
                 double progress => (progress * 100).ToString("0", CultureInfo.InvariantCulture)
                     + "% of "
                     + Project.MaximumRequired.ToString("N0", CultureInfo.CurrentCulture),
                 null => "Progress unavailable",
             };
+        }
+    }
 
     public bool IsShoppingSelected
     {
@@ -1966,7 +1956,7 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 
         public async void Execute(object? parameter)
         {
-            if (isExecuting)
+            if (!CanExecute(parameter))
             {
                 return;
             }

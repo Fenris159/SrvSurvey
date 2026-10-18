@@ -145,7 +145,7 @@ public sealed class OverlayPanelVisibilityEntryViewModel : INotifyPropertyChange
     /// <summary>Explains automatic availability and the colonization panel's persistent manual activation.</summary>
     public string Description =>
         PlotterName == "PlotBuildCommodities"
-            ? "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it."
+            ? "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings."
             : $"When off, the {DisplayName} panel is rendered inactive and is not visible until toggled on.";
 
     public IReadOnlyList<OverlaySettingsCategory> SettingsCategories => Definition.SettingsCategories;

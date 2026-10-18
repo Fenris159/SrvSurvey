@@ -53,8 +53,11 @@ The module that owns dragging overlay panels, the working placements those drags
 _Avoid_: OverlayInteractionViewModel drag, managed overlay window drag session
 
 **Overlay category shortcut**:
-A navigation control that opens a lean, category-filtered overlay configuration window without routing through a complete settings catalog.
+A navigation control that opens workspace overlay settings without routing through a complete settings catalog.
 _Avoid_: Overlay gear, complete overlay settings
+
+**Workspace overlay settings**:
+The workspace's category-filtered window for configuring its overlay panels and assigning their shortcuts.
 
 **Keyboard activation**:
 A configured shortcut candidate from the desktop hook, the game display, or the Wayland portal, after focus evidence has been sampled.

@@ -720,14 +720,14 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
-                        "Focused primary project",
-                        "The Commander shopping focus is explicit Raven state and is separate from a system's primary-port order.",
+                        "Project focus",
+                        "Project focus selects the colonization overlay's needs independently of Market Search and system site order.",
                         [
-                            "Choose Make primary on the intended project before focusing the shopping plan.",
-                            "Use Clear primary only when you intentionally want aggregate planning across visible projects.",
+                            "Choose Make Focus on a live build or planned site to track its needs in the colonization overlay.",
+                            "Use Clear Focus to return to combined needs from projects checked under Show.",
                         ],
                         [
-                            "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
+                            "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
                         ]
                     ),
                     Section(
@@ -758,7 +758,7 @@ public static class GuideCatalog
                         [
                             "Need is the remaining project requirement; FC is the cargo on linked carriers; Ship is the current usable ship inventory.",
                             "A check means that source has enough for the row. A direction marker calls out the next useful item or focused project. Dimmed rows are unavailable or already satisfied.",
-                            "The overlay can focus a primary project, the docked build site, a local aggregate, or all visible projects depending on game context and settings.",
+                            "The overlay can focus a project or planned site, the docked build site, or all visible projects depending on game context and settings.",
                             "Fresh Market and Cargo events reconcile carrier and ship totals. Ambiguous multi-client cargo is excluded until a fresh unambiguous file write arrives.",
                         ]
                     ),

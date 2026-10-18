@@ -2,12 +2,13 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-/// <summary>Owns a shopping snapshot and local market filters for one nonmodal workspace.</summary>
+/// <summary>Owns the embedded market-search snapshot and its local filters.</summary>
 public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable, IDisposable
 {
     private const string DistanceSort = "Distance";
@@ -133,7 +134,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         SaveWorkspace();
     }
 
-    /// <summary>Returns removed wish-list quantities to the market search.</summary>
+    /// <summary>Returns removed ShoppingList quantities to the market search.</summary>
     internal bool RemoveWishListItems(IReadOnlyList<ColonizationWishListItem> items)
     {
         if (disposed)
@@ -146,7 +147,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         return true;
     }
 
-    /// <summary>Explicitly discards the saved results and the wish list that belongs to them.</summary>
+    /// <summary>Explicitly discards the saved results and the ShoppingList that belongs to them.</summary>
     public void ClearSearch()
     {
         searchVersion++;
@@ -221,8 +222,11 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     public string ResultsReferenceSystem => HasSearchResults ? completedSystem : ReferenceSystem;
     public string NeedsText => string.Join(", ", VisibleNeeds.Select(need => need.Label));
     public string TotalText =>
-        $"{Needs.Sum(need => need.Remaining):N0} tonnes still to plan across {VisibleNeeds.Count:N0} commodities";
+        $"{Needs.Sum(need => need.Remaining):N0} tonnes remaining across {VisibleNeeds.Count:N0} commodities";
+    public ICommand? OpenWishListCommand { get; init; }
     public IReadOnlyList<ShoppingMarketRowViewModel> Results { get; private set; } = [];
+
+    public double ResultTableMinimumHeight => 33 * Math.Min(20, Results.Count) + 1;
     public bool IsBusy { get; private set; }
     public bool CanSearch => !disposed && !IsBusy && (Needs.Count > 0 || refreshProjects is not null);
     public string Status { get; private set; } = "Choose a reference system and search Spansh and Ardent.";
@@ -653,7 +657,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private void FilterResults()
     {
         UpdateRemainingNeeds();
-        ColonizationShoppingNeed[] active = VisibleNeeds
+        ColonizationShoppingNeed[] active = Needs
             .Where(need => need.IsSelected)
             .Select(need => need.Need with { Required = need.Remaining })
             .ToArray();
@@ -668,7 +672,9 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             double.TryParse(MaximumArrivalText, NumberStyles.Number, CultureInfo.CurrentCulture, out double arrival)
             && double.IsFinite(arrival)
             && arrival >= 0;
-        IEnumerable<ShoppingMarketRowViewModel> rows = plan.GetAvailableQuotes()
+        IReadOnlyList<ColonizationWishListItem> wishList = plan.Snapshot();
+        IEnumerable<ShoppingMarketRowViewModel> rows = ColonizationShopping
+            .Merge(quotes)
             .Where(quote =>
                 quote.PadSize >= pad
                 && (!ExcludeCarriers || !quote.StationType.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
@@ -683,7 +689,8 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
                 expandedMarkets.Contains(group.Key),
                 OnExpansionChanged,
                 OnWishListChanged,
-                ShowShortSupply
+                ShowShortSupply,
+                wishList
             ))
             .Where(row => row.Matches > 0 && (!RequireFullSupply || row.CanFulfillAll));
         IEnumerable<ShoppingMarketRowViewModel> ordered = Sort switch
@@ -702,6 +709,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Changed(nameof(DistanceSortLabel));
         Changed(nameof(ArrivalSortLabel));
         Changed(nameof(Results));
+        Changed(nameof(ResultTableMinimumHeight));
         Changed(nameof(ResultSummary));
     }
 

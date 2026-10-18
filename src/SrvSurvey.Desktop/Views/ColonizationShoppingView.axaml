@@ -1,12 +1,11 @@
-<Window xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
-        x:Class="SrvSurvey.Desktop.ColonizationShoppingWindow"
+        x:Class="SrvSurvey.Desktop.Views.ColonizationShoppingView"
         x:DataType="vm:ColonizationShoppingViewModel"
-        Title="Colonization shopping" Width="700" Height="660" MinWidth="640" MinHeight="480"
-        WindowStartupLocation="CenterOwner">
-  <Window.Styles>
+        >
+  <UserControl.Styles>
     <Style Selector="Button, ToggleButton">
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Padding" Value="5,2" />
@@ -26,22 +25,6 @@
     <Style Selector="CheckBox">
       <Setter Property="FontSize" Value="12" />
       <Setter Property="MinHeight" Value="24" />
-    </Style>
-    <Style Selector="ToggleButton.commodity">
-      <Setter Property="Padding" Value="4,2" />
-      <Setter Property="Margin" Value="0,0,6,5" />
-      <Setter Property="MinHeight" Value="20" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
-    </Style>
-    <Style Selector="ToggleButton.commodity:checked, ToggleButton.commodity:checked:pointerover, ToggleButton.commodity:checked:pressed">
-      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
-    </Style>
-    <Style Selector="ToggleButton.commodity:checked /template/ ContentPresenter, ToggleButton.commodity:checked:pointerover /template/ ContentPresenter, ToggleButton.commodity:checked:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
     </Style>
     <Style Selector="ToggleButton.short-supply">
       <Setter Property="FontSize" Value="11" />
@@ -73,11 +56,24 @@
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
     <Style Selector="Button.supply-button">
+      <Setter Property="Padding" Value="4,2" />
+      <Setter Property="Margin" Value="0,0,6,5" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
+    <Style Selector="Button.supply-button /template/ ContentPresenter">
+      <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+    <Style Selector="Button.supply-button TextBlock">
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
     <Style Selector="Button.supply-button.wished">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
     </Style>
     <Style Selector="Button.table-link">
@@ -90,20 +86,20 @@
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
-    <Style Selector="TextBlock.supply">
-      <Setter Property="FontSize" Value="12" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    <Style Selector="ListBox.shopping-results ListBoxItem /template/ ContentPresenter, ListBox.shopping-results ListBoxItem:selected /template/ ContentPresenter, ListBox.shopping-results ListBoxItem:pointerover /template/ ContentPresenter, ListBox.shopping-results ListBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
-    <Style Selector="TextBlock.supply.enough">
-      <Setter Property="Foreground" Value="{DynamicResource RavenSuccessBrush}" />
+    <Style Selector="ListBox.shopping-results /template/ ScrollViewer /template/ ScrollContentPresenter">
+      <Setter Property="Margin" Value="0,0,24,0" />
     </Style>
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0" />
       <Setter Property="MinHeight" Value="0" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
-  </Window.Styles>
-  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
     <Border Padding="12,10" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
       <StackPanel Spacing="3">
         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -115,8 +111,7 @@
     </Border>
     <StackPanel Grid.Row="1" Margin="12,8,12,4" Spacing="3">
       <WrapPanel>
-        <TextBlock FontSize="12" FontWeight="SemiBold" Text="{Binding TotalText}" VerticalAlignment="Center" Margin="0,0,12,4" />
-        <Button Classes="link" Content="Copy needs" behaviors:ClipboardCopyBehavior.Text="{Binding NeedsText}" ToolTip.Tip="Copy comma separated needs" Margin="0,0,8,4" />
+        <Button x:Name="CopyShoppingNeeds" Content="Copy needs" behaviors:ClipboardCopyBehavior.Text="{Binding NeedsText}" ToolTip.Tip="Copy comma separated needs" Margin="0,0,8,4" />
         <Button x:Name="SelectAllShoppingNeeds" Content="Select All" Click="SelectAllNeeds_Click" Margin="0,0,8,4" />
         <Button x:Name="SelectNoShoppingNeeds" Content="Select None" Click="SelectNoNeeds_Click" Margin="0,0,0,4" />
       </WrapPanel>
@@ -124,7 +119,7 @@
         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:ShoppingNeedViewModel">
-            <ToggleButton Classes="commodity" Content="{Binding Label}" IsChecked="{Binding IsSelected, Mode=TwoWay}" ToolTip.Tip="Toggle this commodity in market results" />
+            <ToggleButton Classes="commodity colonization-tag" Content="{Binding Label}" IsChecked="{Binding IsSelected, Mode=TwoWay}" ToolTip.Tip="Toggle this commodity in market results" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
@@ -177,6 +172,14 @@
       </StackPanel>
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="2" Margin="0,4,0,0" />
     </StackPanel>
+    <StackPanel Grid.Row="4" Margin="12,8,12,8" Spacing="6">
+    <WrapPanel>
+      <TextBlock x:Name="RemainingShoppingNeeds" FontSize="12" FontWeight="SemiBold" Text="{Binding TotalText}" VerticalAlignment="Center" Margin="0,0,12,4" />
+      <Button x:Name="OpenShoppingWishList" Content="Open ShoppingList" Command="{Binding OpenWishListCommand}" Margin="0,0,0,4" />
+    </WrapPanel>
+    <TextBlock x:Name="ShoppingListInstructions" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}"
+               Text="Click a commodity tag to add it to ShoppingList; click again to remove it. Selected tags use the secondary highlight." />
+    </StackPanel>
     <WrapPanel Grid.Row="3" Margin="12,2,12,4">
       <Button x:Name="ClearMarketSearch" Content="Clear Search" IsVisible="{Binding HasSearchResults}" Click="ClearSearch_Click" Margin="0,0,12,0" />
       <Button x:Name="ExpandAllMarkets" Content="{Binding ExpandAllText}" Click="ExpandAll_Click" Margin="0,0,12,0" />
@@ -187,9 +190,9 @@
       </StackPanel>
 
     </WrapPanel>
-    <ScrollViewer Grid.Row="4" Margin="12,0,12,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-      <Grid Grid.IsSharedSizeScope="True" RowDefinitions="Auto,*" HorizontalAlignment="Left">
-        <Grid x:Name="ShoppingResultsHeader" ColumnSpacing="6" HorizontalAlignment="Left" Margin="0,0,22,0">
+    <ScrollViewer Grid.Row="5" Margin="0,0,0,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+      <Grid Grid.IsSharedSizeScope="True" RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
+        <Grid x:Name="ShoppingResultsHeader" ColumnSpacing="6" HorizontalAlignment="Left" Margin="12,0,36,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" SharedSizeGroup="ShopStation" />
             <ColumnDefinition Width="Auto" SharedSizeGroup="ShopPad" />
@@ -205,14 +208,15 @@
           <Button Grid.Column="4" Classes="table-heading" Content="{Binding DistanceSortLabel}" Tag="Distance" Click="Sort_Click" />
           <Button Grid.Column="5" Classes="table-heading" Content="{Binding ArrivalSortLabel}" Tag="Arrival" Click="Sort_Click" />
         </Grid>
-        <ListBox x:Name="ShoppingResults" Grid.Row="1" ItemsSource="{Binding Results}" IsEnabled="{Binding !IsBusy}"
+        <ListBox x:Name="ShoppingResults" Classes="shopping-results" Grid.Row="1" ItemsSource="{Binding Results}" IsEnabled="{Binding !IsBusy}"
+                 MinHeight="{Binding ResultTableMinimumHeight}" MaxHeight="661" HorizontalAlignment="Stretch"
                  BorderThickness="0,1,0,0" BorderBrush="{DynamicResource RavenBorderBrush}"
                  Background="Transparent" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ShoppingMarketRowViewModel">
               <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,2" Background="Transparent" PointerReleased="MarketRow_PointerReleased">
                 <StackPanel Spacing="0">
-                  <Grid Classes="market-summary" ColumnSpacing="6" HorizontalAlignment="Left">
+                  <Grid Classes="market-summary" ColumnSpacing="6" HorizontalAlignment="Left" MinHeight="28" Margin="12,0">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto" SharedSizeGroup="ShopStation" />
                       <ColumnDefinition Width="Auto" SharedSizeGroup="ShopPad" />
@@ -223,7 +227,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Spacing="2">
                       <Button Classes="table-link" Command="{Binding ToggleExpandedCommand}" Content="{Binding ExpansionGlyph}" ToolTip.Tip="Expand or collapse commodities" />
-                      <Button Classes="table-link" Command="{Binding ToggleWishListCommand}" ToolTip.Tip="Toggle all offered commodities in the wish list">
+                      <Button Classes="table-link" Command="{Binding ToggleWishListCommand}" ToolTip.Tip="Toggle all offered commodities in the ShoppingList">
                         <TextBlock FontSize="12" Text="{Binding Station}" MaxWidth="250" TextTrimming="CharacterEllipsis" />
                       </Button>
                     </StackPanel>
@@ -235,11 +239,11 @@
                     <TextBlock Grid.Column="4" FontSize="12" Text="{Binding DistanceText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="5" FontSize="12" Text="{Binding ArrivalText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                   </Grid>
-                  <ItemsControl Classes="market-supplies" MaxWidth="750" HorizontalAlignment="Left" ItemsSource="{Binding AvailableSupplies}" IsVisible="{Binding IsExpanded}" Margin="20,1,0,2">
+                  <ItemsControl Classes="market-supplies" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableSupplies}" IsVisible="{Binding IsExpanded}" Margin="32,1,12,2">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
-                        <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}" Margin="0,0,6,0">
+                        <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
                           <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
                         </Button>
                       </DataTemplate>
@@ -252,7 +256,7 @@
         </ListBox>
       </Grid>
     </ScrollViewer>
-    <Border Grid.Row="5" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
+    <Border Grid.Row="6" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
       <StackPanel Spacing="2">
         <TextBlock FontSize="11" Classes="muted" Text="{Binding Status}" TextWrapping="Wrap" />
         <ScrollViewer x:Name="ShoppingWarnings" MaxHeight="72" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -261,4 +265,4 @@
       </StackPanel>
     </Border>
   </Grid>
-</Window>
+</UserControl>

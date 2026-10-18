@@ -139,6 +139,83 @@ public sealed class DesktopRuntimeTests
         }
     }
 
+    /// <summary>The shortcut updates live groups, the bound checkbox preference, and persisted settings on each press.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CollapseCoveredGroupsShortcutUpdatesAndPersistsDisplayStyle(bool hideCollapsedGroups)
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null);
+        var window = new MainWindow(main);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
+        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
+        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        ColonizationViewModel colonization = main.Colonization;
+        colonization.CollapseCoveredCommodityGroups = false;
+        colonization.HideCollapsedCommodityGroups = hideCollapsedGroups;
+        colonization.CommodityOverlay.Apply(
+            new ColonizationCommodityPlan
+            {
+                Title = "Test build",
+                ProjectNames = ["Test build"],
+                FleetCarriers = [new ColonizationFleetCarrier { MarketId = 1, Name = "ABC-123" }],
+                Rows =
+                [
+                    new ColonizationCommodityPlanRow
+                    {
+                        Commodity = "steel",
+                        DisplayName = "Steel",
+                        Category = "Metals",
+                        Needed = 100,
+                        OnFleetCarriers = 100,
+                    },
+                ],
+            },
+            new EliteStatus { Flags = StatusFlags.Docked }
+        );
+        var store = new ColonizationSettingsStore(main.AppDataPaths.UiSettingsPath);
+        try
+        {
+            Assert.False(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+            InputBindingViewModel binding = main.InputSettings.Bindings.Single(item =>
+                item.Definition.Action == GlobalInputAction.ToggleCollapseCoveredColonyGroups
+            );
+            Assert.Equal("ALT CTRL SHIFT X", binding.Chord);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+
+            Assert.True(colonization.CollapseCoveredCommodityGroups);
+            Assert.True(store.LoadOverlayPreferences().CollapseCoveredGroups);
+            Assert.Equal(hideCollapsedGroups, colonization.HideCollapsedCommodityGroups);
+            Assert.Equal(hideCollapsedGroups, store.LoadOverlayPreferences().HideCollapsedGroups);
+            if (hideCollapsedGroups)
+            {
+                Assert.Empty(colonization.CommodityOverlay.Groups);
+            }
+            else
+            {
+                Assert.True(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+            }
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+
+            Assert.False(colonization.CollapseCoveredCommodityGroups);
+            Assert.False(store.LoadOverlayPreferences().CollapseCoveredGroups);
+            Assert.Equal(hideCollapsedGroups, colonization.HideCollapsedCommodityGroups);
+            Assert.Equal(hideCollapsedGroups, store.LoadOverlayPreferences().HideCollapsedGroups);
+            Assert.False(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [Fact]
     public async Task ConcurrentShutdownRequestsShareOneOrderedStop()
     {

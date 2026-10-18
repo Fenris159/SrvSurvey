@@ -1892,7 +1892,7 @@
           <TextBlock Classes="card-title" Text="Panel availability and shortcuts" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="These switches and shortcuts control panel availability. See each panel's description for its visibility behavior. Shortcut fields are optional and have no default binding." />
+                     Text="These switches control panel availability. See each panel's description for its visibility behavior. Assign shortcuts here or in Settings → Input." />
         </StackPanel>
         <ItemsControl x:Name="PanelVisibilityItems">
           <ItemsControl.ItemTemplate>
@@ -1925,6 +1925,32 @@
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <Grid x:Name="CollapseCoveredGroupsShortcutRow"
+              Margin="0,4"
+              ColumnDefinitions="*,260"
+              ColumnSpacing="24">
+          <StackPanel Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Collapse cargo groups when enough on FCs" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.Definition.Description}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock Classes="muted" FontSize="11" Text="Collapse/expand shortcut" />
+            <controls:ShortcutCaptureBox x:Name="CollapseCoveredGroupsShortcutBox"
+                                         Chord="{Binding CollapseCoveredColonyGroupsBinding.Chord, Mode=TwoWay}"
+                                         PlaceholderText="Click, then hold shortcut keys"
+                                         ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
+            <TextBlock Classes="muted"
+                       FontSize="10"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="10"
+                       IsVisible="{Binding CollapseCoveredColonyGroupsBinding.HasValidationError}"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.ValidationMessage}" />
+          </StackPanel>
+        </Grid>
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    IsVisible="{Binding OverlayPanelVisibility.HasPersistenceStatus}"
                    TextWrapping="Wrap"

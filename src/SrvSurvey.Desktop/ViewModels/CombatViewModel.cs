@@ -330,11 +330,18 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private void RebuildMassacreMissions()
     {
-        massacreMissions = state
+        IReadOnlyList<MassacreMissionViewModel> updated = state
             .MassacreMissions.OrderBy(mission => mission.TargetFaction, StringComparer.Ordinal)
             .ThenBy(mission => mission.MissionGiver, StringComparer.Ordinal)
             .Select(mission => new MassacreMissionViewModel(mission))
             .ToArray();
+        massacreMissions = OverlayListRetention.Keep(
+            massacreMissions,
+            updated,
+            (left, right) =>
+                (left.MissionId, left.TargetFaction, left.MissionGiver, left.Remaining, left.KillCount)
+                == (right.MissionId, right.TargetFaction, right.MissionGiver, right.Remaining, right.KillCount)
+        );
     }
 
     private void NotifyOverlayState()

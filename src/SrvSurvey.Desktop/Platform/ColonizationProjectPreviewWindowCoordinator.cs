@@ -14,8 +14,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         StringComparer.OrdinalIgnoreCase
     );
     private bool disposed;
-    private string? shoppingSelectionKey;
-    internal ColonizationShoppingWindow? ShoppingWindow { get; private set; }
     internal ColonizationWishListWindow? WishListWindow { get; private set; }
     internal ColonizationCarrierManifestWindow? CarrierManifestWindow { get; private set; }
 
@@ -26,7 +24,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         viewModel.SetProjectPreviewOpener(ShowOrActivate);
         viewModel.SetCombinedReportOpener(ShowCombinedReport);
-        viewModel.SetShoppingOpener(ShowShopping);
         viewModel.SetWishListOpener(ShowWishList);
         viewModel.SetCarrierManifestOpener(ShowCarrierManifest);
         viewModel.PropertyChanged += OnContextChanged;
@@ -85,32 +82,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         }
     }
 
-    /// <summary>Reopens the matching shopping workspace or restores its durable snapshot.</summary>
-    internal void ShowShopping(IReadOnlyList<ColonizationProject> selected)
-    {
-        if (disposed || !viewModel.IsEnabled || selected.Count == 0)
-        {
-            return;
-        }
-
-        if (ShoppingWindow is not null && shoppingSelectionKey == viewModel.ShoppingSelectionKey)
-        {
-            if (ShoppingWindow.WindowState == WindowState.Minimized)
-            {
-                ShoppingWindow.WindowState = WindowState.Normal;
-            }
-            ShoppingWindow.Activate();
-            return;
-        }
-
-        ShoppingWindow?.Close();
-        shoppingSelectionKey = viewModel.ShoppingSelectionKey;
-        var window = new ColonizationShoppingWindow(viewModel.CreateShopping(selected));
-        ShoppingWindow = window;
-        window.Closed += OnShoppingClosed;
-        window.Show(owner);
-    }
-
     internal void ShowWishList()
     {
         if (disposed || !viewModel.IsEnabled || viewModel.CommanderName is null)
@@ -138,19 +109,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
             window.Closed -= OnWishListClosed;
         }
         WishListWindow = null;
-    }
-
-    private void OnShoppingClosed(object? sender, EventArgs args)
-    {
-        if (sender is ColonizationShoppingWindow window)
-        {
-            window.Closed -= OnShoppingClosed;
-        }
-
-        if (ReferenceEquals(ShoppingWindow, sender))
-        {
-            ShoppingWindow = null;
-        }
     }
 
     /// <summary>Restores an existing popout or starts its isolated refresh loop with the shared owner.</summary>
@@ -188,7 +146,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         disposed = true;
         viewModel.SetProjectPreviewOpener(null);
         viewModel.SetCombinedReportOpener(null);
-        viewModel.SetShoppingOpener(null);
         viewModel.SetWishListOpener(null);
         viewModel.SetCarrierManifestOpener(null);
         viewModel.PropertyChanged -= OnContextChanged;
@@ -217,10 +174,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         {
             CarrierManifestWindow?.Close();
         }
-        if (eventArgs.PropertyName == nameof(ColonizationViewModel.ShoppingSelectionKey))
-        {
-            ShoppingWindow?.Close();
-        }
         if (
             eventArgs.PropertyName == nameof(ColonizationViewModel.CommanderName)
             || eventArgs.PropertyName == nameof(ColonizationViewModel.IsEnabled) && !viewModel.IsEnabled
@@ -238,7 +191,6 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
     {
         CarrierManifestWindow?.Close();
         WishListWindow?.Close();
-        ShoppingWindow?.Close();
         foreach (ColonizationProjectPreviewWindow window in windows.Values.ToArray())
         {
             window.Close();

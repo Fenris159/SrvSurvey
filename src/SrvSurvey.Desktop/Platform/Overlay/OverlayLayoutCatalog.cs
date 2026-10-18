@@ -64,7 +64,7 @@ public static class OverlayLayoutCatalog
         ),
         Define(
             "PlotColonizationWishList",
-            "Colonization wish list",
+            "Colonization ShoppingList",
             "Colonization.WishList",
             OverlayLayoutCategory.CombatAndColonization,
             OverlaySettingsCategory.Colonization,

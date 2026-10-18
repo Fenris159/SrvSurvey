@@ -12,6 +12,11 @@ Triage uses the five default canonical labels. See `docs/agents/triage-labels.md
 
 Domain documentation uses the single-context layout. See `docs/agents/domain.md`.
 
+## Overlay settings design
+
+When adding or changing overlay controls or shortcut assignment, follow
+`docs/agents/overlay-settings.md`.
+
 ## C# quality checks
 
 `SonarAnalyzer.CSharp` is applied to every C# project from `Directory.Build.props`,

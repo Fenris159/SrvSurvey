@@ -73,6 +73,7 @@ public enum GlobalInputAction
     ToggleVrOverlayInteraction,
     ToggleExplorationPoisVisibility,
     ToggleColonizationWishListVisibility,
+    ToggleCollapseCoveredColonyGroups,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -194,6 +195,13 @@ public static class GlobalInputActionCatalog
             "Collapse construction data",
             "Collapse or expand construction commodity rows.",
             "ALT SHIFT S"
+        ),
+        Define(
+            GlobalInputAction.ToggleCollapseCoveredColonyGroups,
+            "toggleCollapseCoveredColonyGroups",
+            "Toggle cargo group collapse",
+            "Collapse or expand cargo groups covered by linked Fleet Carriers.",
+            "ALT CTRL SHIFT X"
         ),
         Define(
             GlobalInputAction.NextWindow,
@@ -363,7 +371,7 @@ public static class GlobalInputActionCatalog
         DefineOverlayToggle(
             GlobalInputAction.ToggleColonizationWishListVisibility,
             "toggleColonizationWishListVisibility",
-            "Colonization wish list",
+            "Colonization ShoppingList",
             "PlotColonizationWishList"
         ),
         DefineOverlayToggle(

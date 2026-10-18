@@ -881,6 +881,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => bodyInformation;
         private set
         {
+            if (value is not null)
+            {
+                value = value with
+                {
+                    Materials = OverlayListRetention.Keep(bodyInformation?.Materials, value.Materials),
+                    AtmosphereComposition = OverlayListRetention.Keep(
+                        bodyInformation?.AtmosphereComposition,
+                        value.AtmosphereComposition
+                    ),
+                    Rings = OverlayListRetention.Keep(bodyInformation?.Rings, value.Rings),
+                };
+            }
             if (SetField(ref bodyInformation, value))
             {
                 OnPropertyChanged(nameof(HasBodyInformation));
@@ -898,6 +910,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => biologySurvey;
         private set
         {
+            value = value?.RetainUnchangedRows(biologySurvey);
             if (SetField(ref biologySurvey, value))
             {
                 OnPropertyChanged(nameof(HasBiologySurvey));
@@ -954,6 +967,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => biologyStatus;
         private set
         {
+            if (value is not null)
+            {
+                value = value with { Signals = OverlayListRetention.Keep(biologyStatus?.Signals, value.Signals) };
+            }
             if (SetField(ref biologyStatus, value))
             {
                 OnPropertyChanged(nameof(HasBiologyStatus));
@@ -1027,7 +1044,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => fssBodies;
         private set
         {
-            if (SetField(ref fssBodies, value))
+            if (SetField(ref fssBodies, OverlayListRetention.Keep(fssBodies, value)))
             {
                 OnPropertyChanged(nameof(HasFssBodies));
             }
@@ -1100,7 +1117,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasLastFssSignals => !string.IsNullOrWhiteSpace(LastFssSignalsText);
 
+    private IReadOnlyList<BiologySignalRewardBandViewModel> lastFssRewardBands = [];
+
     public IReadOnlyList<BiologySignalRewardBandViewModel> LastFssBiologyRewardBands =>
+        lastFssRewardBands = OverlayListRetention.Keep(lastFssRewardBands, ReadLastFssBiologyRewardBands());
+
+    private IReadOnlyList<BiologySignalRewardBandViewModel> ReadLastFssBiologyRewardBands() =>
         editorLastFssRewardBands
         ?? (
             LastFssBody is { } body
@@ -1173,7 +1195,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => dssBodies;
         private set
         {
-            if (SetField(ref dssBodies, value))
+            if (SetField(ref dssBodies, OverlayListRetention.Keep(dssBodies, value)))
             {
                 OnPropertyChanged(nameof(HasDssBodies));
                 OnPropertyChanged(nameof(DssHeading));
@@ -1190,7 +1212,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => biologicalBodies;
         private set
         {
-            if (SetField(ref biologicalBodies, value))
+            if (SetField(ref biologicalBodies, OverlayListRetention.Keep(biologicalBodies, value)))
             {
                 OnPropertyChanged(nameof(HasBiologicalBodies));
                 OnPropertyChanged(nameof(BiologicalHeading));

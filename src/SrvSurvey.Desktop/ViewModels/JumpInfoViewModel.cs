@@ -265,7 +265,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<JumpInfoDetailLineViewModel> DetailLines
     {
         get => detailLines;
-        private set => SetField(ref detailLines, value);
+        private set => SetField(ref detailLines, OverlayListRetention.Keep(detailLines, value));
     }
 
     public bool HasDetailLines => DetailLines.Count > 0;

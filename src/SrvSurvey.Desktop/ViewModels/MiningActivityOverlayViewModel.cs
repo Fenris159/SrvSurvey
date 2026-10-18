@@ -86,10 +86,13 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     public bool HasProspectReport => Prospects.Count > 0;
     public bool HasQualifyingProspect => Prospects.Any(prospect => prospect.Qualifies);
 
+    private static bool SameProspect(MiningProspectOverlayRowViewModel left, MiningProspectOverlayRowViewModel right) =>
+        left == right with { Materials = left.Materials } && left.Materials.SequenceEqual(right.Materials);
+
     private void RefreshNotices()
     {
-        Refined = Notices.Where(n => n.Kind == "Refined").ToArray();
-        Collected = Notices.Where(n => n.Kind == "Collected").ToArray();
+        Refined = OverlayListRetention.Keep(Refined, Notices.Where(n => n.Kind == "Refined").ToArray());
+        Collected = OverlayListRetention.Keep(Collected, Notices.Where(n => n.Kind == "Collected").ToArray());
     }
 
     public bool HasRefined => Refined.Count > 0;
@@ -147,7 +150,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
         }
 
         RefreshNotices();
-        recentProspects = null;
+        recentProspects = OverlayListRetention.Keep(Prospects, ReadProspects(), SameProspect);
         foreach (
             string? name in new[]
             {
