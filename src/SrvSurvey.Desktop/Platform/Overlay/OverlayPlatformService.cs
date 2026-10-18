@@ -102,9 +102,6 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
 {
     private const int ExtendedWindowStyle = -20;
     private const long ToolWindow = 0x00000080L;
-    private const long Transparent = 0x00000020L;
-    private const long Layered = 0x00080000L;
-    private const long NoActivate = 0x08000000L;
     private const uint NoSize = 0x0001;
     private const uint NoMove = 0x0002;
     private const uint NoZOrder = 0x0004;
@@ -141,9 +138,7 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
         }
 
         nint style = GetWindowLongPtr(handle, ExtendedWindowStyle);
-        nint updated = interactive
-            ? (style | (nint)(ToolWindow | Layered)) & ~(nint)(Transparent | NoActivate)
-            : style | (nint)(ToolWindow | Transparent | Layered | NoActivate);
+        nint updated = WindowsOverlayWindowStyles.Apply(window, style, interactive);
         Marshal.SetLastPInvokeError(0);
         nint previous = SetWindowLongPtr(handle, ExtendedWindowStyle, updated);
         int error = Marshal.GetLastPInvokeError();

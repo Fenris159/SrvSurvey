@@ -219,6 +219,12 @@ session. Before promoting a release, verify on clean supported systems:
 3. Journal attachment, game-window tracking, click-through overlays, global
    input, capture-dependent features, and overlay update cost during play.
 4. Backup/import/restart using a representative existing profile.
+5. On Windows, enable joined streaming with Elite running, switch to OBS, and
+   select `[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay` in Window Capture.
+   Verify that switching focus preserves the capture source, returning to Elite
+   resumes overlay content, and disabling joined streaming removes its window.
+   Also verify transparent capture and click-through behavior with the user's
+   OBS capture method; headless lifecycle/style tests do not exercise native OBS.
 
 Overlay runtime testing must cover both presentation backends. Leave
 `SRVSURVEY_OVERLAY_HOST` unset to verify the established separate-window path
