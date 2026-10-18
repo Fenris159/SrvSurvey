@@ -214,6 +214,7 @@ public sealed partial class ColonizationViewModel
         authoritativePlanningPrefixes.Clear();
         planningSystemEditVersions.Clear();
         localPlanningDrafts.Clear();
+        latestPlanningSnapshots.Clear();
         if (CommanderName is not null)
         {
             foreach (ColonizationSystemRecord system in settingsStore.LoadPlannedSystems(CommanderName))

@@ -46,7 +46,8 @@ to prevent subtle shifting while flying.
   allocations when planning data is temporarily unavailable. Travel refreshes
   fetch only the current system and cancel superseded planning reads. Deleted
   plans retire saved focus, and confirmed publications reconcile saved drafts
-  even when the player travels before the response arrives.
+  even when the player travels before the response arrives. Late or invalid
+  responses preserve newer planning data.
 - **Keep carrier comparisons consistent.** **Use Carrier** persists between
   sessions and stays synchronized with **FC Diff** in both directions. **LOADED**
   recalculates from the selected carrier's cargo against remaining project needs,

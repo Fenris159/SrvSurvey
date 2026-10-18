@@ -15,6 +15,9 @@ public sealed partial class ColonizationViewModel
     private readonly Dictionary<string, ColonizationSystemRecord> localPlanningDrafts = new(
         StringComparer.OrdinalIgnoreCase
     );
+    private readonly Dictionary<string, ColonizationSystemRecord> latestPlanningSnapshots = new(
+        StringComparer.OrdinalIgnoreCase
+    );
     private string? plannedReadWarning;
     private readonly HashSet<string> hiddenPlannedProjectIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<ColonizationSystemSiteRowViewModel> observedSites = [];
@@ -135,14 +138,16 @@ public sealed partial class ColonizationViewModel
             return;
         }
         CancelCurrentPlannedSystemRead(clearPending: false);
-        planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
         if (SystemEditor.HasLocalChanges)
         {
+            planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
             localPlanningDrafts[snapshot.Name] = snapshot;
         }
         else
         {
             localPlanningDrafts.Remove(snapshot.Name);
+            planningSystemEditVersions.Remove(snapshot.Name);
+            snapshot = KeepNewestPlanningSnapshot(snapshot);
         }
         UpdatePlannedSystem(snapshot);
         SchedulePlannedSystemsSave();
@@ -160,9 +165,9 @@ public sealed partial class ColonizationViewModel
         {
             CancelCurrentPlannedSystemRead(clearPending: false);
         }
-        planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
         localPlanningDrafts.Remove(snapshot.Name);
-        UpdatePlannedSystem(snapshot);
+        planningSystemEditVersions.Remove(snapshot.Name);
+        UpdatePlannedSystem(KeepNewestPlanningSnapshot(snapshot));
         SchedulePlannedSystemsSave();
         RebuildProjectRows();
         UpdateProjectSummary();
@@ -249,9 +254,17 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
-        if (authoritative && CurrentEditorDraft(snapshot.Name) is null)
+        if (authoritative)
         {
-            localPlanningDrafts.Remove(snapshot.Name);
+            snapshot = KeepNewestPlanningSnapshot(snapshot);
+            if (CurrentEditorDraft(snapshot.Name) is null)
+            {
+                localPlanningDrafts.Remove(snapshot.Name);
+            }
+        }
+        else if (latestPlanningSnapshots.TryGetValue(snapshot.Name, out ColonizationSystemRecord? latest))
+        {
+            snapshot = latest;
         }
         UpdatePlannedSystem(ResolvePlanningSnapshot(snapshot));
     }
@@ -265,6 +278,19 @@ public sealed partial class ColonizationViewModel
 
     private ColonizationSystemRecord ResolvePlanningSnapshot(ColonizationSystemRecord snapshot) =>
         CurrentEditorDraft(snapshot.Name) ?? localPlanningDrafts.GetValueOrDefault(snapshot.Name) ?? snapshot;
+
+    private ColonizationSystemRecord KeepNewestPlanningSnapshot(ColonizationSystemRecord snapshot)
+    {
+        if (
+            latestPlanningSnapshots.TryGetValue(snapshot.Name, out ColonizationSystemRecord? latest)
+            && latest.Revision > snapshot.Revision
+        )
+        {
+            return latest;
+        }
+        latestPlanningSnapshots[snapshot.Name] = snapshot;
+        return snapshot;
+    }
 
     private bool IsCurrentPlannedRead(int readVersion, int profileVersion) =>
         !disposed && IsEnabled && readVersion == plannedReadVersion && profileVersion == recovery.ProfileVersion;

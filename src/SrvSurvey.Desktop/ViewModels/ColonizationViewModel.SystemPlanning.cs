@@ -44,7 +44,7 @@ public sealed partial class ColonizationViewModel
             plannedReadWarning = warning;
             if (snapshot is not null)
             {
-                UpdatePlannedSystem(ResolvePlanningSnapshot(snapshot));
+                UpdatePlannedSystem(ResolvePlanningSnapshot(KeepNewestPlanningSnapshot(snapshot)));
                 SavePlannedSystems();
                 RebuildProjectRows();
                 UpdateProjectSummary();

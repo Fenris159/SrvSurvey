@@ -14,6 +14,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 {
     private const int MaximumBufferedJournalEvents = 2048;
     private int contextVersion;
+    private int sessionVersion;
     private IReadOnlyList<ColonizationSystemSite>? pendingEditedSites;
 
     private readonly IRavenColonialClient client;
@@ -291,6 +292,14 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
+        if (
+            context.IsExternalDataEnabled != updatedContext.IsExternalDataEnabled
+            || !string.Equals(context.CommanderName, updatedContext.CommanderName, StringComparison.OrdinalIgnoreCase)
+            || context.RavenApiKey != updatedContext.RavenApiKey
+        )
+        {
+            sessionVersion++;
+        }
         bool changed = !string.Equals(
             GetLoadedContextIdentity(context),
             GetLoadedContextIdentity(updatedContext),
@@ -570,7 +579,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             {
                 ReviewSummary = "The local workspace already matches Raven Colonial.";
                 StatusMessage = "There are no Raven site changes to publish.";
-                HasLocalChanges = false;
+                ApplyLoadedSystem(latest);
                 return;
             }
 
@@ -618,6 +627,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
         IReadOnlyList<ColonizationSystemSite> edited = pendingEditedSites ?? SnapshotVisibleSites();
         string publishingCommander = context.CommanderName!;
+        int publishingSession = sessionVersion;
         int version = contextVersion;
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
@@ -659,7 +669,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 plan.Update,
                 context.RavenApiKey!
             );
-            SystemPublished?.Invoke(publishingCommander, updated);
+            ValidateLoadedSystem(updated);
+            if (publishingSession == sessionVersion)
+            {
+                SystemPublished?.Invoke(publishingCommander, updated);
+            }
             if (version != contextVersion)
             {
                 return;
