@@ -168,17 +168,17 @@ public sealed class MiningSearchSessionTests
     public async Task AbandonedReplacementDoesNotStartAfterWaitingForThePreviousCancellation()
     {
         using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
-        var cancellationEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool cancellationEntered = false;
         var releaseWork = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var releaseCancellation = new ManualResetEventSlim();
         bool replacementStarted = false;
         Task first = session.RunAsync(
             async token =>
             {
                 using CancellationTokenRegistration registration = token.Register(() =>
                 {
-                    cancellationEntered.TrySetResult();
-                    releaseCancellation.Wait(CancellationToken.None);
+                    cancellationEntered = true;
+                    // The replacement still awaits this callback's completion.
+                    session.Abandon();
                 });
                 await releaseWork.Task;
             },
@@ -194,16 +194,15 @@ public sealed class MiningSearchSessionTests
         );
         try
         {
-            await cancellationEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            session.Abandon();
+            await replacement;
         }
         finally
         {
-            releaseCancellation.Set();
             releaseWork.SetResult();
+            await first;
         }
 
-        await Task.WhenAll(first, replacement);
+        Assert.True(cancellationEntered);
         Assert.False(replacementStarted);
         Assert.False(session.IsBusy);
     }
