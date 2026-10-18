@@ -63,10 +63,10 @@ public sealed class ResponsiveWorkspaceMarkupTests
         XDocument view = LoadDesktopFile("Views", "ColonizationView.axaml");
         XElement button = view.Descendants()
             .Where(element => element.Name.LocalName == "Button")
-            .Single(element => element.Attribute("Command")?.Value == "{Binding TogglePrimaryCommand}");
+            .Single(element => element.Attribute("Command")?.Value == "{Binding ToggleFocusCommand}");
         XElement label = Assert.Single(button.Elements(), element => element.Name.LocalName == "TextBlock");
 
-        Assert.Equal("{Binding PrimaryActionLabel}", label.Attribute("Text")?.Value);
+        Assert.Equal("{Binding FocusActionLabel}", label.Attribute("Text")?.Value);
         Assert.Equal("Wrap", label.Attribute("TextWrapping")?.Value);
     }
 

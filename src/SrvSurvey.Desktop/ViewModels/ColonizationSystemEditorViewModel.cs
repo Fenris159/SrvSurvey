@@ -14,6 +14,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 {
     private const int MaximumBufferedJournalEvents = 2048;
     private int contextVersion;
+    private int sessionVersion;
     private IReadOnlyList<ColonizationSystemSite>? pendingEditedSites;
 
     private readonly IRavenColonialClient client;
@@ -88,6 +89,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    internal event Action<string, ColonizationSystemRecord>? SystemPublished;
+
     public ICommand LoadCommand { get; }
 
     public ICommand RequestBodyImportCommand { get; }
@@ -122,6 +125,13 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public bool IsLoaded => system is not null;
 
     public long? LoadedSystemAddress => system?.SystemAddress;
+
+    internal ColonizationSystemRecord? PlanningSnapshot =>
+        system is null ? null : system with { Sites = SnapshotVisibleSites() };
+
+    internal ColonizationSystemRecord? AuthoritativePlanningSnapshot => system;
+
+    internal bool IsReplacingSites { get; private set; }
 
     public string SystemTitle =>
         system is null ? context.SystemName ?? "No live system" : $"{system.Name} ({system.SystemAddress})";
@@ -284,6 +294,14 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
+        if (
+            context.IsExternalDataEnabled != updatedContext.IsExternalDataEnabled
+            || !string.Equals(context.CommanderName, updatedContext.CommanderName, StringComparison.OrdinalIgnoreCase)
+            || context.RavenApiKey != updatedContext.RavenApiKey
+        )
+        {
+            sessionVersion++;
+        }
         bool changed = !string.Equals(
             GetLoadedContextIdentity(context),
             GetLoadedContextIdentity(updatedContext),
@@ -339,10 +357,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         RaiseScanProperties();
         if (changed > 0)
         {
-            ReplaceVisibleSites(sites);
             MarkLocalChange(
                 $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally."
             );
+            ReplaceVisibleSites(sites);
         }
     }
 
@@ -357,8 +375,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         List<ColonizationSystemSite> sites = SnapshotVisibleSites();
         if (journalTracker.ApplyStatusDestination(sites, status, CaptureUnknownSurfaceSites))
         {
-            ReplaceVisibleSites(sites);
             MarkLocalChange("The selected Elite destination updated a Raven site locally.");
+            ReplaceVisibleSites(sites);
         }
     }
 
@@ -493,10 +511,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             catalogBuildTypes
         );
         Subscribe(row);
+        MarkLocalChange($"Added '{name}' locally.");
         Sites.Insert(0, row);
         SelectedSite = row;
         NewSiteName = string.Empty;
-        MarkLocalChange($"Added '{name}' locally.");
     }
 
     public void RemoveSelectedSite()
@@ -507,10 +525,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         ColonizationSystemSiteRowViewModel removed = SelectedSite;
+        MarkLocalChange($"Removed '{removed.Name}' locally.");
         Unsubscribe(removed);
         Sites.Remove(removed);
         SelectedSite = null;
-        MarkLocalChange($"Removed '{removed.Name}' locally.");
     }
 
     /// <summary>Reconciles local edits against current Raven sites and retains the edited snapshot for confirmation.</summary>
@@ -528,16 +546,18 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         int version = contextVersion;
+        List<ColonizationSystemSite> localSites = SnapshotSites();
         IsBusy = true;
         ClearReview();
         StatusMessage = "Refreshing Raven data and checking for concurrent changes...";
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion)
+            if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
             }
+            ValidateLoadedSystem(latest);
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 StatusMessage = "Raven secured this system after it was loaded. No changes can be published.";
@@ -561,9 +581,9 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
             if (!plan.HasChanges)
             {
+                ApplyLoadedSystem(latest, applyJournalEnrichment: false);
                 ReviewSummary = "The local workspace already matches Raven Colonial.";
                 StatusMessage = "There are no Raven site changes to publish.";
-                HasLocalChanges = false;
                 return;
             }
 
@@ -610,16 +630,20 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         IReadOnlyList<ColonizationSystemSite> edited = pendingEditedSites ?? SnapshotVisibleSites();
+        string publishingCommander = context.CommanderName!;
+        int publishingSession = sessionVersion;
         int version = contextVersion;
+        List<ColonizationSystemSite> localSites = SnapshotSites();
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion)
+            if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
             }
+            ValidateLoadedSystem(latest);
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 ClearReview();
@@ -642,7 +666,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             }
             if (!plan.HasChanges)
             {
-                ApplyLoadedSystem(latest);
+                ApplyLoadedSystem(latest, applyJournalEnrichment: false);
                 StatusMessage = "The local workspace already matches Raven Colonial.";
                 return;
             }
@@ -651,6 +675,12 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 plan.Update,
                 context.RavenApiKey!
             );
+            if (publishingSession != sessionVersion)
+            {
+                return;
+            }
+            ValidateLoadedSystem(updated);
+            SystemPublished?.Invoke(publishingCommander, updated);
             if (version != contextVersion)
             {
                 return;
@@ -673,7 +703,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyLoadedSystem(ColonizationSystemRecord loaded)
+    private void ApplyLoadedSystem(ColonizationSystemRecord loaded, bool applyJournalEnrichment = true)
     {
         ValidateLoadedSystem(loaded);
         system = CloneSystem(loaded);
@@ -685,16 +715,19 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             ?? [];
         baseline = loaded.Sites.Select(CloneSite).ToList();
         CanEdit = CanCommanderEdit(loaded, context.CommanderName);
-        journalTracker = new ColonizationSystemSiteJournalTracker(
-            loaded.SystemAddress,
-            loaded.Name,
-            loaded.Bodies?.Select(body => body.Number)
-        );
         var editableSites = loaded.Sites.Select(CloneSite).ToList();
-        if (CanEdit)
+        if (applyJournalEnrichment)
         {
-            journalTracker.ApplyJournalEvents(editableSites, bufferedJournalEvents);
-            journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
+            journalTracker = new ColonizationSystemSiteJournalTracker(
+                loaded.SystemAddress,
+                loaded.Name,
+                loaded.Bodies?.Select(body => body.Number)
+            );
+            if (CanEdit)
+            {
+                journalTracker.ApplyJournalEvents(editableSites, bufferedJournalEvents);
+                journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
+            }
         }
 
         SplitSitesForViewer(loaded.Sites, editableSites);
@@ -736,20 +769,29 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private void ReplaceRows(IEnumerable<ColonizationSystemSite> sites)
     {
-        foreach (ColonizationSystemSiteRowViewModel row in Sites)
+        IsReplacingSites = true;
+        try
         {
-            Unsubscribe(row);
-        }
+            foreach (ColonizationSystemSiteRowViewModel row in Sites)
+            {
+                Unsubscribe(row);
+            }
 
-        Sites.Clear();
-        foreach (ColonizationSystemSite site in sites)
+            Sites.Clear();
+            foreach (ColonizationSystemSite site in sites)
+            {
+                var row = new ColonizationSystemSiteRowViewModel(site, catalogBuildTypes);
+                Subscribe(row);
+                Sites.Add(row);
+            }
+
+            SelectedSite = null;
+        }
+        finally
         {
-            var row = new ColonizationSystemSiteRowViewModel(site, catalogBuildTypes);
-            Subscribe(row);
-            Sites.Add(row);
+            IsReplacingSites = false;
         }
-
-        SelectedSite = null;
+        OnPropertyChanged(nameof(PlanningSnapshot));
     }
 
     private List<ColonizationSystemSite> SnapshotVisibleSites()
@@ -980,6 +1022,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             throw new InvalidDataException("Raven Colonial returned an incomplete system identity.");
         }
 
+        if (loaded.Sites is null || loaded.Sites.Any(site => site is null))
+        {
+            throw new InvalidDataException("Raven Colonial returned unnamed or duplicate system sites.");
+        }
+
         IGrouping<string, ColonizationSystemSite>? duplicateId = loaded
             .Sites.Where(site => !string.IsNullOrWhiteSpace(site.Id))
             .GroupBy(site => site.Id, StringComparer.Ordinal)
@@ -1163,6 +1210,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     private string marketIdText;
     private string marketIdWarning = string.Empty;
     private ColonizationSystemSiteStatus status;
+    private bool hasExplicitStatus;
 
     public ColonizationSystemSiteRowViewModel(
         ColonizationSystemSite site,
@@ -1178,6 +1226,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
         marketId = site.MarketId;
         marketIdText = FormatMarketId(site.MarketId);
         status = site.Status;
+        hasExplicitStatus = site.HasExplicitStatus;
         extensionData = site.ExtensionData.ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Clone(),
@@ -1284,7 +1333,14 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     public ColonizationSystemSiteStatus Status
     {
         get => status;
-        set => SetField(ref status, value);
+        set
+        {
+            if (status != value)
+            {
+                hasExplicitStatus = true;
+                SetField(ref status, value);
+            }
+        }
     }
 
     public ColonizationSystemSite ToSite()
@@ -1297,7 +1353,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
             BuildType = BuildType,
             BuildId = BuildId,
             MarketId = MarketId,
-            Status = Status,
+            SerializedStatus = hasExplicitStatus ? Status : null,
             ExtensionData = extensionData.ToDictionary(
                 pair => pair.Key,
                 pair => pair.Value.Clone(),

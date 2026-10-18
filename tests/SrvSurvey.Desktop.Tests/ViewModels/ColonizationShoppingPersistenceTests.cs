@@ -180,7 +180,7 @@ public sealed partial class ColonizationViewModelTests
             )
         )
         {
-            Assert.Empty(reopened.Results);
+            Assert.True(Assert.Single(reopened.Results).IsWishListed);
             Assert.True(reopened.IsFullyPlanned);
             Assert.Equal("250", reopened.MaximumArrivalText);
             Assert.Equal(0, offline.Calls);
@@ -194,7 +194,7 @@ public sealed partial class ColonizationViewModelTests
     }
 
     [Fact]
-    public async Task ChangedSelectionInvalidatesSavedSearchAndRejectsOldWindowWrites()
+    public async Task ChangedSelectionRetainsCriteriaAndRejectsObsoleteSessionWrites()
     {
         var client = new StubRavenColonialClient
         {
@@ -214,21 +214,25 @@ public sealed partial class ColonizationViewModelTests
             new ColonizationShoppingViewModelTests.SearchStub([])
         );
         Assert.Equal("Reopen Search", model.SearchMarketsButtonText);
+        first.RadiusText = "25";
         model.Projects[1].IsShoppingSelected = true;
+        first.RadiusText = "500";
+        first.SaveWorkspace();
         first.Dispose();
-        Assert.Equal("Search Markets", model.SearchMarketsButtonText);
+        Assert.Equal("Reopen Search", model.SearchMarketsButtonText);
         using ColonizationViewModel restarted = Create(client);
         await restarted.SetCommanderAsync("Test Cmdr");
-        Assert.Equal("Search Markets", restarted.SearchMarketsButtonText);
+        Assert.Equal("Reopen Search", restarted.SearchMarketsButtonText);
         Assert.All(restarted.Projects, row => Assert.True(row.IsShoppingSelected));
         using ColonizationShoppingViewModel second = restarted.CreateShopping(
             restarted.Projects.Select(row => row.Project).ToArray(),
             new ColonizationShoppingViewModelTests.SearchStub([])
         );
         Assert.Empty(second.Results);
+        Assert.Equal("25", second.RadiusText);
         client.Workspace = new ColonizationCommanderProjects([Project("one", "Port", remaining: 100)], [], null, []);
         await restarted.RefreshAsync();
-        Assert.Equal("Search Markets", restarted.SearchMarketsButtonText);
+        Assert.Equal("Reopen Search", restarted.SearchMarketsButtonText);
     }
 
     [Theory]
@@ -253,8 +257,8 @@ public sealed partial class ColonizationViewModelTests
         );
         shopping.ReferenceSystem = "Sol";
         await shopping.SearchAsync();
-        shopping.Results[0].ToggleWishListCommand.Execute(null);
-        shopping.Results[0].ToggleWishListCommand.Execute(null);
+        shopping.Results.Single(row => row.Station == "Port 1").ToggleWishListCommand.Execute(null);
+        shopping.Results.Single(row => row.Station == "Port 2").ToggleWishListCommand.Execute(null);
         if (closeSearchFirst)
         {
             shopping.Dispose();
@@ -340,8 +344,8 @@ public sealed partial class ColonizationViewModelTests
         );
         shopping.ReferenceSystem = "Sol";
         await shopping.SearchAsync();
-        shopping.Results[0].ToggleWishListCommand.Execute(null);
-        shopping.Results[0].ToggleWishListCommand.Execute(null);
+        shopping.Results.Single(row => row.Station == "Port 1").ToggleWishListCommand.Execute(null);
+        shopping.Results.Single(row => row.Station == "Port 2").ToggleWishListCommand.Execute(null);
         if (closeSearch)
         {
             shopping.Dispose();
@@ -436,10 +440,8 @@ public sealed partial class ColonizationViewModelTests
         await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(100, Assert.Single(model.Projects).Project.Commodities["steel"]);
         Assert.False(model.CanSearchMarkets);
-        bool opened = false;
-        model.SetShoppingOpener(_ => opened = true);
         model.OpenShopping();
-        Assert.False(opened);
+        Assert.Null(model.MarketSearchWorkspace);
         Assert.Throws<InvalidOperationException>(() =>
             model.CreateShopping([model.Projects[0].Project], new ColonizationShoppingViewModelTests.SearchStub([]))
         );

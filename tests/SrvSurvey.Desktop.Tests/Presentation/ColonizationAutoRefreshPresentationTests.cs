@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -28,6 +29,8 @@ public sealed partial class ColonizationShoppingPresentationTests
             Width = 1180,
             Height = 800,
         };
+        window.Resources["RavenControlAccentBrush"] = new SolidColorBrush(Color.Parse("#F5F5F5"));
+        window.Resources["RavenAccentForegroundBrush"] = new SolidColorBrush(Color.Parse("#0A0A0A"));
         try
         {
             window.Show();
@@ -50,6 +53,14 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.True(spinner.IsVisible);
             using WriteableBitmap? active = window.CaptureRenderedFrame();
             Assert.NotNull(active);
+            Assert.All(
+                toggle.GetVisualDescendants().OfType<TextBlock>(),
+                label =>
+                    Assert.Equal(
+                        Color.Parse("#0A0A0A"),
+                        Assert.IsType<ISolidColorBrush>(label.Foreground, exactMatch: false).Color
+                    )
+            );
             // Avalonia supplies a default TransformGroup for transform keyframes.
             TransformGroup transforms = Assert.IsType<TransformGroup>(spinner.RenderTransform);
             Assert.Single(transforms.Children.OfType<RotateTransform>());

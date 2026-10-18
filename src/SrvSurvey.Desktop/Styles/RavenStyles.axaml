@@ -822,4 +822,36 @@
   <Style Selector="Separator">
     <Setter Property="Background" Value="{DynamicResource RavenBorderBrush}" />
   </Style>
+    <Style Selector="ToggleButton.colonization-tag">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="4,2" />
+      <Setter Property="Margin" Value="0,0,6,5" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.colonization-tag.colonization-project-tag">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.colonization-project-tag:not(:checked) /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.colonization-project-tag:checked">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.colonization-tag:checked, ToggleButton.colonization-tag:checked:pointerover, ToggleButton.colonization-tag:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.colonization-tag:checked /template/ ContentPresenter, ToggleButton.colonization-tag:checked:pointerover /template/ ContentPresenter, ToggleButton.colonization-tag:checked:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
 </Styles>

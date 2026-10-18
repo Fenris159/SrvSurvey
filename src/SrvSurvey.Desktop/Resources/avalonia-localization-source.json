@@ -2385,6 +2385,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "ALT CTRL SHIFT X",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "ALT CTRL W",
     "IsFormat": false,
     "SourceKinds": [
@@ -3666,6 +3674,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "All Projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectFilters.cs"
+  },
+  {
     "Text": "All Squadron Carrier data points ({0})",
     "IsFormat": true,
     "SourceKinds": [
@@ -3719,7 +3735,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "All platinum",
@@ -4969,7 +4985,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Arrived at hop #{0}: {1}.",
@@ -8260,6 +8276,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
   },
   {
+    "Text": "Building",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectFilters.cs"
+  },
+  {
     "Text": "Building a map draft",
     "IsFormat": false,
     "SourceKinds": [
@@ -9216,12 +9240,13 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Cancel",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
@@ -10134,7 +10159,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
@@ -10505,7 +10530,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Choose Make primary on the intended project before focusing the shopping plan.",
+    "Text": "Choose Make Focus on a live build or planned site to track its needs in the colonization overlay.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11290,12 +11315,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Clear Focus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Clear Search",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Clear all SrvSurvey cloud backups",
@@ -11344,14 +11377,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "Clear primary",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Clear rigs automatically when boarding your ship",
@@ -11434,12 +11459,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RamTahViewModel.cs"
   },
   {
-    "Text": "Clearing the primary Raven Colonial project...",
+    "Text": "Clearing project focus...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
     "Text": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
@@ -11448,6 +11473,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Click a commodity tag to add it to ShoppingList; click again to remove it. Selected tags use the secondary highlight.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or \u2212 / \u002B controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
@@ -11893,6 +11926,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Collapse or expand cargo groups covered by linked Fleet Carriers.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Collapse or expand construction commodity rows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11907,6 +11948,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Collapse/expand shortcut",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "CollapseCoveredGroups",
@@ -12072,9 +12121,19 @@
     "Text": "Colonization",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Colonization ShoppingList",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
   },
   {
     "Text": "Colonization commodities",
@@ -12085,30 +12144,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Colonization projects",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "Colonization shopping",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
-  },
-  {
-    "Text": "Colonization wish list",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp",
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Colonization.AutoShowCommodityOverlay",
@@ -14275,7 +14316,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Copy coordinates",
@@ -14347,7 +14388,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Copy next",
@@ -15269,7 +15310,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Current temperature {0} K is too cold.",
@@ -19349,7 +19390,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Enter",
@@ -19909,7 +19950,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Exclude Secondary Stars",
@@ -19933,7 +19974,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Exec",
@@ -20054,7 +20095,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Expand sidebar",
@@ -20940,6 +20981,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "FOCUS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "FOLLOWED ROUTE",
     "IsFormat": false,
     "SourceKinds": [
@@ -21603,6 +21653,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Filter projects by build status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Filter projects by system. A saved Raven API key discovers planned sites across your Raven systems.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Filter systems, rings, minerals or notes",
@@ -22425,20 +22491,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
-    "Text": "Focused primary project",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Focused the next Elite Dangerous window; overlays will follow it.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderInstancesViewModel.cs"
+  },
+  {
+    "Text": "Focusing {0}...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
     "Text": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
@@ -25592,6 +25658,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "HiddenPlannedProjects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.PlannedProjects.cs"
   },
   {
     "Text": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -30274,7 +30348,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
   },
   {
     "Text": "Loaded Raven Colonial cargo baseline for {0}.",
@@ -30434,7 +30508,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
+  },
+  {
+    "Text": "Loaded {0} active projects and {1} planned sites.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
   },
   {
     "Text": "Loaded {0} events from {1}; {2} bootstrap events recognized{3}.",
@@ -30747,6 +30829,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
+  },
+  {
+    "Text": "Local focus preferences could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
     "Text": "Local ring discoveries",
@@ -31499,20 +31589,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
-    "Text": "Make primary",
+    "Text": "Make Focus",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Male 1",
@@ -31924,12 +32006,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Market Search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Market age (days)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Market cargo",
@@ -32823,7 +32913,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Minimum percentage",
@@ -35009,7 +35099,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
   },
   {
     "Text": "No active journey",
@@ -35818,6 +35908,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "No projects match these filters.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -37377,6 +37475,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open ShoppingList",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Open Spansh",
     "IsFormat": false,
     "SourceKinds": [
@@ -37556,9 +37662,9 @@
     "Text": "Open live build preview",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Open log folder",
@@ -39493,15 +39599,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
-    "Text": "PRIMARY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp",
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "PRISTINE",
     "IsFormat": false,
     "SourceKinds": [
@@ -39587,7 +39684,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Pad 02 | 164 m",
@@ -40038,6 +40135,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan\u2019s catalog estimates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Planned purchases (tonnes)",
     "IsFormat": false,
     "SourceKinds": [
@@ -40045,6 +40150,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
+  },
+  {
+    "Text": "Planned site requirements could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
+  },
+  {
+    "Text": "Planned systems could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
+  },
+  {
+    "Text": "Planning",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectFilters.cs"
   },
   {
     "Text": "PlanningCarriers",
@@ -41766,6 +41895,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "Project focus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Project focus could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
+  },
+  {
+    "Text": "Project focus selects the colonization overlay\u0027s needs independently of Market Search and system site order.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Project focus was cleared.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
+  },
+  {
     "Text": "Project name",
     "IsFormat": false,
     "SourceKinds": [
@@ -41780,6 +41941,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
+  },
+  {
+    "Text": "Project preparation cancelled; nothing was published.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "Project refresh failed without changing your selection: {0}",
@@ -41812,6 +41981,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "ProjectFocus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.ProjectFocus.cs"
+  },
+  {
+    "Text": "Projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Propagito",
@@ -42997,7 +43182,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Radius (LY)",
@@ -45097,6 +45282,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
+    "Text": "Refresh projects to load available project choices.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Refresh reference data",
     "IsFormat": false,
     "SourceKinds": [
@@ -45442,7 +45635,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
-    "Text": "Remove commodity from wish list",
+    "Text": "Remove commodity from ShoppingList",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -45466,7 +45659,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
-    "Text": "Remove from wish list",
+    "Text": "Remove from ShoppingList",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -45554,7 +45747,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Remove station from wish list",
+    "Text": "Remove station from ShoppingList",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -48217,14 +48410,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
-    "Text": "SHOP",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "SHOW",
     "IsFormat": false,
     "SourceKinds": [
@@ -50109,7 +50294,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Search procedural boxels, track every generated system, and choose what counts as complete.",
@@ -50366,7 +50551,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -50422,7 +50607,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Select Open Library to browse saved searches by favorite, name, creation date, last modified date, completion, and notes. Resume Selected restores its tree, options, and completed systems.",
@@ -50431,6 +50616,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select Projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Select Refresh to scan commander profiles and the game state.",
@@ -50649,7 +50842,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Select a station or commodities in Search Markets to build your wish list.",
+    "Text": "Select a station or commodities in Search Markets to build your ShoppingList.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -50762,7 +50955,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "Select project for shopping",
+    "Text": "Select projects above to load their commodity needs.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -51291,21 +51484,13 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Setting {0} as the primary Raven Colonial project...",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
     "Text": "Settings",
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Settings \u003E Data \u0026 migration can back up your profile to Google Drive or a local file. Link the same Google account on each computer to synchronize portable preferences and saved work.",
@@ -51942,12 +52127,21 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "ShoppingList",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListOverlayPresentation.axaml"
+  },
+  {
     "Text": "Short supply",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Shortcut bindings",
@@ -52143,7 +52337,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show controls aggregate cargo requirements and is saved with Save selection. Shop selects builds for a separate market search.",
+    "Text": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -52380,7 +52574,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Show or hide construction commodity requirements.",
@@ -52460,7 +52654,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Show station/target details in left nav panel",
@@ -53300,7 +53494,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Sorted by {0} {1}",
@@ -53866,7 +54060,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "SrvSurvey colonization wish list overlay",
+    "Text": "SrvSurvey colonization ShoppingList overlay",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -55601,7 +55795,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Success",
@@ -56477,6 +56671,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
+    "Text": "System Editor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "System biology",
@@ -57766,14 +57968,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CodexImageSettingsViewModel.cs"
   },
   {
-    "Text": "The Commander shopping focus is explicit Raven state and is separate from a system\u0027s primary-port order.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58260,6 +58454,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The ShoppingList was updated but could not be saved to disk.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
     "Text": "The Spansh route could not be imported: {0}",
@@ -60326,7 +60528,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
   },
   {
-    "Text": "The overlay can focus a primary project, the docked build site, a local aggregate, or all visible projects depending on game context and settings.",
+    "Text": "The overlay can focus a project or planned site, the docked build site, or all visible projects depending on game context and settings.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -60550,6 +60752,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "The planned project visibility could not be saved to disk.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedProjects.cs"
+  },
+  {
     "Text": "The planned site does not identify a build layout.",
     "IsFormat": false,
     "SourceKinds": [
@@ -60564,6 +60774,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "The planned site requirements could not be saved to disk.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.PlannedPersistence.cs"
   },
   {
     "Text": "The platform could not open {0}.",
@@ -60636,22 +60854,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
-  },
-  {
-    "Text": "The primary Raven Colonial project was cleared.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "The primary project was not changed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "The privacy preference was not changed because it could not be saved: {0}",
@@ -61910,20 +62112,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The updated ShoppingList could not be saved to disk.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
+  },
+  {
     "Text": "The updated carrier selection could not be saved to disk.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.CarrierPlanning.cs"
-  },
-  {
-    "Text": "The updated wish list could not be saved to disk.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
     "Text": "The updater merges live discoveries, local edits, and the latest Raven copy before publishing.",
@@ -61964,14 +62166,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "The wish list was updated but could not be saved to disk.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
     "Text": "The working route could not be retained: {0}",
@@ -62199,7 +62393,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "These switches and shortcuts control panel availability. See each panel\u0027s description for its visibility behavior. Shortcut fields are optional and have no default binding.",
+    "Text": "These switches control panel availability. See each panel\u0027s description for its visibility behavior. Assign shortcuts here or in Settings \u2192 Input.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -62681,15 +62875,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Toggle all offered commodities in the wish list",
+    "Text": "Toggle all offered commodities in the ShoppingList",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Toggle body information",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Toggle cargo group collapse",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -62806,7 +63008,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Toggle {0} 2x to confirm.",
@@ -63425,7 +63627,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to hide it.",
+    "Text": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64830,14 +65032,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use Clear primary only when you intentionally want aggregate planning across visible projects.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65116,7 +65310,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Use current origin",
@@ -66032,6 +66226,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ErrorReportWindow.axaml"
   },
   {
+    "Text": "View catalog requirements for this planned site. Actual depot needs may differ.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "View commander",
     "IsFormat": false,
     "SourceKinds": [
@@ -66376,14 +66578,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "WISH LIST",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListOverlayPresentation.axaml"
   },
   {
     "Text": "WITH FIRST FOOTFALL",
@@ -67432,7 +67626,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationShoppingWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Which systems are included?",
@@ -67722,22 +67916,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "Wish List",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
-  },
-  {
-    "Text": "Wish list",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
@@ -75749,12 +75927,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs"
   },
   {
-    "Text": "{0} is now the primary Raven Colonial project.",
+    "Text": "{0} is now the focus.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
     "Text": "{0} is outside the allowed range.",
@@ -76597,7 +76775,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
-    "Text": "{0} tonnes still to plan across {1} commodities",
+    "Text": "{0} tonnes remaining across {1} commodities",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -77259,6 +77437,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
+  },
+  {
+    "Text": "~{0} t",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "\u00B7 FF bonus",

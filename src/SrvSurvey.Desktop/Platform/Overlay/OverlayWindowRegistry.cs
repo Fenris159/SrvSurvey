@@ -323,7 +323,8 @@ public sealed class OverlayWindowRegistry
         return new OverlayVisibilityFacts(
             Requested: requested,
             HostEligible: true,
-            UserEnabled: IsUserVisible(definition.Name),
+            // Colonization availability pins manual display; its coordinator owns automatic visibility.
+            UserEnabled: definition.Name == "PlotBuildCommodities" || IsUserVisible(definition.Name),
             GalaxyMapAllowed: !galaxyMapContextActive || definition.ShowInGalaxyMap,
             EditorSuppressed: editorSuppressed,
             ManualSuppressed: manualSuppressed,

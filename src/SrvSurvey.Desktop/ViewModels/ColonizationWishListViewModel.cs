@@ -7,6 +7,10 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationWishListViewModel(Action<IReadOnlyList<ColonizationWishListItem>>? removeItems = null)
     : WorkspaceObservable
 {
+    private IReadOnlyList<ColonizationShoppingNeed>? previousNeeds;
+    private IReadOnlyList<ColonizationMarketQuote> previousQuotes = [];
+    private IReadOnlyList<ColonizationWishListItem> previousAllocations = [];
+
     public IReadOnlyList<ColonizationWishListNode> Stations { get; private set; } = [];
     public bool HasItems => Stations.Count > 0;
     public string Summary =>
@@ -14,6 +18,18 @@ public sealed class ColonizationWishListViewModel(Action<IReadOnlyList<Colonizat
 
     internal void Apply(ColonizationShoppingState? state, IReadOnlyList<ColonizationShoppingNeed> needs)
     {
+        IReadOnlyList<ColonizationMarketQuote> quotes = state?.Quotes ?? [];
+        IReadOnlyList<ColonizationWishListItem> allocations = state?.WishList ?? [];
+        if (
+            previousNeeds is not null
+            && previousNeeds.SequenceEqual(needs)
+            && previousQuotes.SequenceEqual(quotes)
+            && previousAllocations.SequenceEqual(allocations)
+        )
+        {
+            return;
+        }
+
         var plan = new ColonizationShoppingPlan(needs, state?.Quotes ?? [], state?.WishList);
         var requirements = needs.ToDictionary(need => need.Commodity, StringComparer.Ordinal);
         var markets = ColonizationShopping
@@ -38,6 +54,9 @@ public sealed class ColonizationWishListViewModel(Action<IReadOnlyList<Colonizat
                 new WorkspaceCommand(() => removeItems?.Invoke(group.ToArray()))
             ))
             .ToArray();
+        previousNeeds = needs.ToArray();
+        previousQuotes = quotes.ToArray();
+        previousAllocations = allocations.ToArray();
         Changed(nameof(Stations));
         Changed(nameof(HasItems));
         Changed(nameof(Summary));

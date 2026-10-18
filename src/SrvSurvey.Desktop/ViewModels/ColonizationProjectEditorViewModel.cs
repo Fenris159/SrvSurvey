@@ -64,7 +64,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         projectFactory = new ColonizationProjectFactory(this.buildCatalog);
         projectPublisher = new ColonizationProjectPublisher(this.client);
         Locations = Enum.GetValues<ColonizationBuildLocation>();
-        prepareCommand = new AsyncCommand(PrepareAsync, () => CanPrepare);
+        prepareCommand = new AsyncCommand(PrepareAsync, () => !IsBusy && (IsPrepared || CanPrepare));
         reviewCommand = new AsyncCommand(ReviewAsync, () => CanReview);
         confirmCommand = new AsyncCommand(ConfirmCreateAsync, () => IsConfirmationPending && !IsBusy);
         cancelReviewCommand = new DelegateCommand(CancelReview, () => IsConfirmationPending && !IsBusy);
@@ -107,6 +107,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             if (SetField(ref isPrepared, value))
             {
                 OnPropertyChanged(nameof(IsEditorVisible));
+                OnPropertyChanged(nameof(PrepareButtonText));
                 RaiseCommandStates();
             }
         }
@@ -128,7 +129,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public string PrepareButtonText => IsBusy ? "Loading project context..." : "Prepare new project";
+    public string PrepareButtonText =>
+        (IsBusy, IsPrepared) switch
+        {
+            (true, _) => "Loading project context...",
+            (_, true) => "Cancel",
+            _ => "Prepare new project",
+        };
 
     public string ReviewButtonText => IsBusy ? "Working..." : "Review project";
 
@@ -431,6 +438,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
 
     public async Task PrepareAsync()
     {
+        if (IsPrepared && !IsBusy && !interactionInFlight)
+        {
+            CancelPreparation();
+            return;
+        }
         if (!CanPrepare || interactionInFlight)
         {
             StatusMessage = GetUnavailableReason(context);
@@ -758,6 +770,33 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Project review cancelled; nothing was published.";
         OnPropertyChanged(nameof(IsConfirmationPending));
         OnPropertyChanged(nameof(ConfirmationSummary));
+        RaiseCommandStates();
+    }
+
+    private void CancelPreparation()
+    {
+        contextVersion++;
+        ClearConfirmation();
+        IsPrepared = false;
+        selectedSystemSite = null;
+        SystemSites = [];
+        OnPropertyChanged(nameof(SelectedSystemSite));
+        OnPropertyChanged(nameof(IsPlannedSiteSelected));
+        isSystemArchitect = false;
+        OnPropertyChanged(nameof(IsBuildSelectionEnabled));
+        ProjectName = string.Empty;
+        ArchitectName = string.Empty;
+        Notes = string.Empty;
+        SetArchitectFromRaven(false);
+        bodyNumberFollowsContext = true;
+        bodyNameFollowsContext = true;
+        AssignBodyNumber("-1");
+        AssignBodyName(string.Empty);
+        ClearRequiredFieldFlags();
+        selectedLocation = ColonizationBuildLocation.Orbital;
+        OnPropertyChanged(nameof(SelectedLocation));
+        UpdateBuildOptions();
+        StatusMessage = "Project preparation cancelled; nothing was published.";
         RaiseCommandStates();
     }
 

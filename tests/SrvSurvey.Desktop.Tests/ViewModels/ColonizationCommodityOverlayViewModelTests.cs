@@ -105,17 +105,48 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     }
 
     [Fact]
-    public void StationServicesRequiresMarketOrConstructionSite()
+    public void DockedSelectedProjectsDoNotRequireMarketOrConstructionSite()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
 
         viewModel.Apply(Plan(), Status(GuiFocus.StationServices));
 
-        Assert.False(viewModel.ShouldAutoShow);
+        Assert.True(viewModel.ShouldAutoShow);
 
         viewModel.Apply(Plan(), Status(GuiFocus.StationServices), updatedHasMarketSinceDocking: true);
 
         Assert.True(viewModel.ShouldAutoShow);
+    }
+
+    /// <summary>Docking visibility requires selected project content and still respects excluded game contexts.</summary>
+    [Theory]
+    [InlineData(StatusFlags.Docked, GuiFocus.NoFocus, true, true)]
+    [InlineData(StatusFlags.Docked, GuiFocus.StationServices, true, true)]
+    [InlineData(StatusFlags.Docked, GuiFocus.NoFocus, false, false)]
+    [InlineData(StatusFlags.Docked, GuiFocus.StationServices, false, false)]
+    [InlineData(StatusFlags.Docked, GuiFocus.GalaxyMap, true, false)]
+    [InlineData(StatusFlags.Docked, GuiFocus.ExternalPanel, true, false)]
+    [InlineData(StatusFlags.InMainShip, GuiFocus.NoFocus, true, false)]
+    [InlineData(StatusFlags.Docked | StatusFlags.FsdJump, GuiFocus.NoFocus, true, false)]
+    [InlineData(StatusFlags.Docked | StatusFlags.FsdJump, GuiFocus.StationServices, true, false)]
+    public void AutomaticDockingRespectsProjectSelectionAndGameContext(
+        StatusFlags flags,
+        GuiFocus focus,
+        bool selected,
+        bool expected
+    )
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        ColonizationCommodityPlan plan = Plan();
+        viewModel.Apply(
+            plan with
+            {
+                ProjectNames = selected ? plan.ProjectNames : [],
+            },
+            new EliteStatus { Flags = flags, GuiFocus = focus }
+        );
+
+        Assert.Equal(expected, viewModel.ShouldAutoShow);
     }
 
     [Fact]

@@ -1562,6 +1562,7 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.Track8 => await ToggleQuickTrackerAsync(8),
             GlobalInputAction.RefreshColonyData => RefreshColonyData(),
             GlobalInputAction.CollapseColonyData => CollapseColonyData(),
+            GlobalInputAction.ToggleCollapseCoveredColonyGroups => ToggleCollapseCoveredColonyGroups(),
             GlobalInputAction.ToggleImageEmbed => ToggleImageEmbed(),
             _ => false,
         };
@@ -1689,6 +1690,14 @@ internal sealed partial class DesktopRuntime
     private bool CollapseColonyData()
     {
         mainViewModel?.Colonization.CommodityOverlay.ToggleSatisfiedGroups();
+        return true;
+    }
+
+    /// <summary>Updates the saved collapse option and live commodity groups together.</summary>
+    private bool ToggleCollapseCoveredColonyGroups()
+    {
+        ColonizationViewModel colonization = mainViewModel!.Colonization;
+        colonization.CollapseCoveredCommodityGroups = !colonization.CollapseCoveredCommodityGroups;
         return true;
     }
 

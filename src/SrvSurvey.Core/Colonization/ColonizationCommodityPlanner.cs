@@ -11,6 +11,9 @@ public sealed class ColonizationCommodityPlanRequest
 
     public string? PrimaryBuildId { get; init; }
 
+    /// <summary>Carrier used to provision planned sites; zero includes all commander carriers.</summary>
+    public long PlanningCarrierMarketId { get; init; }
+
     public string? CommanderName { get; init; }
 
     public IReadOnlyList<ColonizationFleetCarrier>? FleetCarriers { get; init; }
@@ -57,7 +60,8 @@ public static class ColonizationCommodityPlanner
         ColonizationFleetCarrier[] relevantCarriers = SelectCarriers(
             relevantProjects,
             carriers,
-            atConstructionSite && localProject is null
+            atConstructionSite && localProject is null,
+            request.PlanningCarrierMarketId
         );
         Dictionary<string, Requirement> requirements = hasCurrentDepot
             ? CreateDepotRequirements(depot!)
@@ -146,7 +150,8 @@ public static class ColonizationCommodityPlanner
     private static ColonizationFleetCarrier[] SelectCarriers(
         IReadOnlyList<ColonizationProject> projects,
         IReadOnlyList<ColonizationFleetCarrier> carriers,
-        bool includeAll
+        bool includeAll,
+        long planningCarrierMarketId
     )
     {
         if (includeAll)
@@ -155,10 +160,18 @@ public static class ColonizationCommodityPlanner
         }
 
         var marketIds = projects
+            .Where(project => !project.IsPlanned)
             .SelectMany(project => project.LinkedFleetCarriers)
             .Select(carrier => carrier.MarketId)
             .ToHashSet();
-        return carriers.Where(carrier => marketIds.Contains(carrier.MarketId)).ToArray();
+        bool hasPlans = projects.Any(project => project.IsPlanned);
+        return carriers
+            .Where(carrier =>
+                marketIds.Contains(carrier.MarketId)
+                || (hasPlans && (planningCarrierMarketId <= 0 || carrier.MarketId == planningCarrierMarketId))
+            )
+            .DistinctBy(carrier => carrier.MarketId)
+            .ToArray();
     }
 
     private static Dictionary<string, Requirement> CreateDepotRequirements(ColonizationConstructionDepotSnapshot depot)

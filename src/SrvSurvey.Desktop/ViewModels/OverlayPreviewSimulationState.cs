@@ -93,7 +93,7 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Materials", "Polonium 0.8% | Tellurium 1.2%")
             ),
             "PlotColonizationWishList" => Content(
-                "Wish list",
+                "ShoppingList",
                 "Planned purchases (tonnes)",
                 "2 STATIONS | 4 COMMODITIES",
                 Row("Abraham Lincoln · Sol", "Steel: 200 | Polymers: 120"),

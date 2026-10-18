@@ -79,6 +79,9 @@ public sealed record ColonizationProject
     public string? ETag { get; init; }
 
     [JsonIgnore]
+    public bool IsPlanned { get; init; }
+
+    [JsonIgnore]
     public bool IsFleetCarrierLoading =>
         string.Equals(BuildType, FleetCarrierLoadingBuildType, StringComparison.OrdinalIgnoreCase);
 
