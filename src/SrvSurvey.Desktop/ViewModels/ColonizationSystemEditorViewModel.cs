@@ -546,13 +546,14 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         int version = contextVersion;
+        List<ColonizationSystemSite> localSites = SnapshotSites();
         IsBusy = true;
         ClearReview();
         StatusMessage = "Refreshing Raven data and checking for concurrent changes...";
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion || !SiteListsEqual(edited, SnapshotSites()))
+            if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
             }
@@ -632,12 +633,13 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         string publishingCommander = context.CommanderName!;
         int publishingSession = sessionVersion;
         int version = contextVersion;
+        List<ColonizationSystemSite> localSites = SnapshotSites();
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
-            if (version != contextVersion || !SiteListsEqual(edited.ToList(), SnapshotSites()))
+            if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
             }

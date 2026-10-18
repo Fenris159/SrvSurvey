@@ -8,6 +8,32 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationSystemEditorViewModelTests
 {
+    [Theory]
+    [InlineData("Renamed Site ", null)]
+    [InlineData("Renamed Site", "")]
+    public async Task NormalizedFieldsDoNotPreventReviewOrPublication(string name, string? buildId)
+    {
+        ColonizationSystemRecord original = System();
+        var client = new StubClient
+        {
+            Current = original with { Sites = [original.Sites[0] with { BuildId = buildId }] },
+        };
+        ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+        await editor.LoadAsync();
+        editor.Sites[0].Name = name;
+
+        await editor.ReviewAsync();
+
+        Assert.True(editor.IsPublishConfirmationPending);
+        await editor.ConfirmPublishAsync();
+        Assert.Equal(1, client.UpdateCount);
+        ColonizationSystemSite published = Assert.Single(client.LastUpdate!.UpdatedSites);
+        Assert.Equal("Renamed Site", published.Name);
+        Assert.Null(published.BuildId);
+        Assert.False(editor.HasLocalChanges);
+    }
+
     [Fact]
     public async Task AlreadyAppliedReviewRetainsEditsMadeDuringTheRequest()
     {
