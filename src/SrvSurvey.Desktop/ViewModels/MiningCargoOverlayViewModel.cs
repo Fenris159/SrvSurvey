@@ -11,18 +11,19 @@ public sealed record MiningCargoOverlayItemViewModel(string Name, int Count, boo
 public sealed class MiningCargoOverlayViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningWorkspaceViewModel? workspace;
+    private IReadOnlyList<MiningCargoOverlayItemViewModel> items;
 
     public MiningCargoOverlayViewModel(MiningWorkspaceViewModel? workspace)
     {
         this.workspace = workspace;
+        items = workspace is null ? PreviewItems : ReadItems(workspace);
         workspace?.PropertyChanged += OnChanged;
     }
 
     public string Capacity => ReadCapacity();
     public string Remaining => workspace is null ? "529 T REMAINING" : $"{workspace.CargoRemaining:N0} T REMAINING";
     public double FillPercentage => workspace?.CargoFillPercentage ?? 44.9;
-    public IReadOnlyList<MiningCargoOverlayItemViewModel> Items =>
-        workspace is null ? PreviewItems : ReadItems(workspace);
+    public IReadOnlyList<MiningCargoOverlayItemViewModel> Items => items;
     public bool HasItems => Items.Count > 0;
 
     private static readonly MiningCargoOverlayItemViewModel[] PreviewItems =
@@ -86,16 +87,18 @@ public sealed class MiningCargoOverlayViewModel : WorkspaceObservable, IDisposab
             return;
         }
 
-        foreach (
-            string property in new[]
-            {
-                nameof(Capacity),
-                nameof(Remaining),
-                nameof(FillPercentage),
-                nameof(Items),
-                nameof(HasItems),
-            }
-        )
+        IReadOnlyList<MiningCargoOverlayItemViewModel> updated = OverlayListRetention.Keep(
+            items,
+            ReadItems(workspace!)
+        );
+        if (!ReferenceEquals(items, updated))
+        {
+            items = updated;
+            Changed(nameof(Items));
+            Changed(nameof(HasItems));
+        }
+
+        foreach (string property in new[] { nameof(Capacity), nameof(Remaining), nameof(FillPercentage) })
         {
             Changed(property);
         }

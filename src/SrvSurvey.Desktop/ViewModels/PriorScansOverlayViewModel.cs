@@ -71,7 +71,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         get => species;
         private set
         {
-            if (SetField(ref species, value))
+            if (SetField(ref species, OverlayListRetention.Keep(species, value, SameSpecies)))
             {
                 OnPropertyChanged(nameof(HasSpecies));
                 OnPropertyChanged(nameof(SpeciesCountText));
@@ -85,7 +85,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         get => radarTargets;
         private set
         {
-            if (SetField(ref radarTargets, value))
+            if (SetField(ref radarTargets, OverlayListRetention.Keep(radarTargets, value)))
             {
                 OnPropertyChanged(nameof(HasRadarTargets));
             }
@@ -99,8 +99,11 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     public IReadOnlyList<PriorScanSurfaceMarkerViewModel> SurfaceMarkers
     {
         get => surfaceMarkers;
-        private set => SetField(ref surfaceMarkers, value);
+        private set => SetField(ref surfaceMarkers, OverlayListRetention.Keep(surfaceMarkers, value));
     }
+
+    private static bool SameSpecies(PriorScanSpeciesViewModel left, PriorScanSpeciesViewModel right) =>
+        left == right with { Targets = left.Targets } && left.Targets.SequenceEqual(right.Targets);
 
     public bool HasSpecies => Species.Count > 0;
 

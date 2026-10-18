@@ -36,6 +36,14 @@ public sealed class QuestIndicatorViewModelTests
         Assert.Equal("90° relative", location.Bearing);
         Assert.True(location.IsWithinTarget);
         Assert.Equal("✓", location.StateGlyph);
+        IReadOnlyList<QuestObjectiveRowViewModel> objectives = viewModel.Objectives;
+        IReadOnlyList<QuestIndicatorLocationViewModel> locations = viewModel.Locations;
+        viewModel.Update([snapshot], status, enabled: true);
+        Assert.Same(objectives, viewModel.Objectives);
+        Assert.Same(locations, viewModel.Locations);
+        viewModel.Update([snapshot], status with { Heading = 180 }, enabled: true);
+        Assert.Same(objectives, viewModel.Objectives);
+        Assert.NotSame(locations, viewModel.Locations);
     }
 
     [Fact]
