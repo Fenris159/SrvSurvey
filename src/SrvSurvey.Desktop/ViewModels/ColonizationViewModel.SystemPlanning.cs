@@ -56,9 +56,12 @@ public sealed partial class ColonizationViewModel
         }
     }
 
-    private void CancelCurrentPlannedSystemRead()
+    private void CancelCurrentPlannedSystemRead(bool clearPending = true)
     {
-        currentSystemPlanningPending = false;
+        if (clearPending)
+        {
+            currentSystemPlanningPending = false;
+        }
         CancellationTokenSource? cancellation = systemPlanningCancellation;
         systemPlanningCancellation = null;
         if (cancellation is not null)

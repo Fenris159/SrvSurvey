@@ -212,6 +212,8 @@ public sealed partial class ColonizationViewModel
         shoppingSession = CommanderName is null ? null : settingsStore.LoadShopping(CommanderName);
         plannedSystems.Clear();
         authoritativePlanningPrefixes.Clear();
+        planningSystemEditVersions.Clear();
+        localPlanningDrafts.Clear();
         if (CommanderName is not null)
         {
             foreach (ColonizationSystemRecord system in settingsStore.LoadPlannedSystems(CommanderName))

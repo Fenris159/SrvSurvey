@@ -3137,6 +3137,12 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         public Task<IReadOnlyList<ColonizationSystemRecord>>? PlanningDiscoveryTask { get; set; }
 
+        public Func<
+            string,
+            CancellationToken,
+            Task<IReadOnlyList<ColonizationSystemRecord>>
+        >? LoadPlanningDiscovery { get; set; }
+
         public Exception? PlanningDiscoveryFailure { get; set; }
 
         public List<string> PlanningDiscoveryCommanders { get; } = [];
@@ -3148,7 +3154,8 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         )
         {
             PlanningDiscoveryCommanders.Add(commander);
-            return PlanningDiscoveryTask
+            return LoadPlanningDiscovery?.Invoke(commander, cancellationToken)
+                ?? PlanningDiscoveryTask
                 ?? (
                     PlanningDiscoveryFailure is null
                         ? Task.FromResult(DiscoveredPlanningSystems)

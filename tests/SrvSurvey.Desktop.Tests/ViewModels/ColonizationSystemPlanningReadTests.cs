@@ -186,4 +186,87 @@ public sealed partial class ColonizationViewModelTests
         Assert.Single(requests, name => name == "Remote Colony");
         Assert.False(model.IsBusy);
     }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    public async Task QueuedJumpSurvivesAutoRefreshCancellationDuringDiscovery(
+        bool expire,
+        bool honorsCancellation,
+        bool withdrawConsent
+    )
+    {
+        var clock = new AutoRefreshClock();
+        StubRavenColonialClient client = ReviewPlanningClient();
+        using ColonizationViewModel model = Create(client, clock.DelayAsync);
+        model.IsEnabled = true;
+        model.SetCommanderProfile("F123", true, "test-key");
+        await model.SetCommanderAsync("Test Cmdr");
+        ColonizationSystemRecord destination = FilterPlanningSystem("Achenar", 43);
+        client.PlanningSystems!["Achenar"] = destination;
+        var workspaceEntered = new TaskCompletionSource();
+        var workspace = new TaskCompletionSource<ColonizationCommanderProjects>();
+        var discoveryEntered = new TaskCompletionSource();
+        var discovery = new TaskCompletionSource<IReadOnlyList<ColonizationSystemRecord>>();
+        client.LoadWorkspace = _ =>
+        {
+            workspaceEntered.TrySetResult();
+            return workspace.Task;
+        };
+        client.LoadPlanningDiscovery = (_, token) =>
+        {
+            discoveryEntered.TrySetResult();
+            return honorsCancellation ? discovery.Task.WaitAsync(token) : discovery.Task;
+        };
+        client.LoadPlanningSystem = (name, token) =>
+        {
+            token.ThrowIfCancellationRequested();
+            return Task.FromResult(client.PlanningSystems[name]);
+        };
+        try
+        {
+            model.IsAutoRefreshEnabled = true;
+            (await clock.NextTickAsync()).SetResult();
+            await workspaceEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            model.UpdateSystemContext("Achenar", null, 43);
+            workspace.SetResult(client.Workspace);
+            await discoveryEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            if (withdrawConsent)
+            {
+                model.IsEnabled = false;
+                model.IsEnabled = true;
+            }
+            else if (expire)
+            {
+                clock.Expire();
+                await WaitForAsync(() => !model.IsAutoRefreshEnabled);
+            }
+            else
+            {
+                model.IsAutoRefreshEnabled = false;
+            }
+            discovery.TrySetResult([]);
+            await model.AutoRefreshTask.WaitAsync(TimeSpan.FromSeconds(5));
+            await model.CurrentSystemPlanningTask.WaitAsync(TimeSpan.FromSeconds(5));
+            if (withdrawConsent)
+            {
+                Assert.DoesNotContain(model.Projects, row => row.Project.IsPlanned && row.Project.SystemAddress == 43);
+            }
+            else
+            {
+                Assert.Contains(model.Projects, row => row.Project.IsPlanned && row.Project.SystemAddress == 43);
+            }
+            Assert.False(model.IsBusy);
+            Assert.False(model.IsAutoRefreshEnabled);
+        }
+        finally
+        {
+            workspace.TrySetResult(client.Workspace);
+            discovery.TrySetResult([]);
+        }
+    }
 }

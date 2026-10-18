@@ -10,6 +10,11 @@ public sealed partial class ColonizationViewModel
         StringComparer.OrdinalIgnoreCase
     );
     private int plannedReadVersion;
+    private int planningEditVersion;
+    private readonly Dictionary<string, int> planningSystemEditVersions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ColonizationSystemRecord> localPlanningDrafts = new(
+        StringComparer.OrdinalIgnoreCase
+    );
     private string? plannedReadWarning;
     private readonly HashSet<string> hiddenPlannedProjectIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<ColonizationSystemSiteRowViewModel> observedSites = [];
@@ -106,7 +111,10 @@ public sealed partial class ColonizationViewModel
             ObservePlanningSites();
             ApplyEditorPlans();
         }
-        else if (args.PropertyName == nameof(SystemEditor.IsBusy) && !SystemEditor.IsBusy)
+        else if (
+            args.PropertyName == nameof(SystemEditor.HasLocalChanges)
+            || (args.PropertyName == nameof(SystemEditor.IsBusy) && !SystemEditor.IsBusy)
+        )
         {
             ApplyEditorPlans();
         }
@@ -124,7 +132,16 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
-        plannedReadVersion++;
+        CancelCurrentPlannedSystemRead(clearPending: false);
+        planningSystemEditVersions[snapshot.Name] = ++planningEditVersion;
+        if (SystemEditor.HasLocalChanges)
+        {
+            localPlanningDrafts[snapshot.Name] = snapshot;
+        }
+        else
+        {
+            localPlanningDrafts.Remove(snapshot.Name);
+        }
         UpdatePlannedSystem(snapshot);
         SchedulePlannedSystemsSave();
         RebuildProjectRows();
@@ -132,15 +149,17 @@ public sealed partial class ColonizationViewModel
     }
 
     private async Task RefreshPlannedProjectsAsync(
-        CancellationToken token,
-        IReadOnlyList<ColonizationProject>? freshProjects = null
+        IReadOnlyList<ColonizationProject> freshProjects,
+        int startedEditVersion,
+        CancellationToken token
     )
     {
         if (disposed || !IsEnabled || CommanderName is null)
         {
             return;
         }
-        CancelCurrentPlannedSystemRead();
+        // Keep travel queued until this refresh finishes, including cancellation during discovery.
+        CancelCurrentPlannedSystemRead(clearPending: false);
         int readVersion = ++plannedReadVersion;
         int profileVersion = recovery.ProfileVersion;
         (IReadOnlyList<ColonizationSystemRecord> discovered, string? warning) = await ReadCommanderPlanningSystemsAsync(
@@ -153,7 +172,7 @@ public sealed partial class ColonizationViewModel
         var discoveredByName = discovered
             .GroupBy(system => system.Name.Trim(), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
-        string[] names = (freshProjects ?? recovery.Projects)
+        string[] names = freshProjects
             .Select(project => project.SystemName)
             .Concat(plannedSystems.Keys)
             .Concat(discoveredByName.Keys)
@@ -162,10 +181,11 @@ public sealed partial class ColonizationViewModel
             .Select(name => name.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var snapshots = new List<ColonizationSystemRecord>();
+        var snapshots = new List<(ColonizationSystemRecord Snapshot, bool Authoritative)>();
         foreach (string systemName in names)
         {
             (ColonizationSystemRecord? snapshot, string? error) = await ReadPlannedSystemAsync(systemName, token);
+            bool authoritative = snapshot is not null;
             if (!IsCurrentPlannedRead(readVersion, profileVersion))
             {
                 return;
@@ -177,7 +197,7 @@ public sealed partial class ColonizationViewModel
             }
             if (snapshot is not null)
             {
-                snapshots.Add(ResolvePlanningSnapshot(snapshot));
+                snapshots.Add((snapshot, authoritative));
             }
         }
         if (!IsCurrentPlannedRead(readVersion, profileVersion))
@@ -186,21 +206,44 @@ public sealed partial class ColonizationViewModel
         }
         token.ThrowIfCancellationRequested();
         plannedReadWarning = warning;
-        foreach (ColonizationSystemRecord snapshot in snapshots)
+        foreach ((ColonizationSystemRecord snapshot, bool authoritative) in snapshots)
         {
-            UpdatePlannedSystem(snapshot);
+            ApplyRefreshedPlannedSystem(snapshot, startedEditVersion, authoritative);
         }
         SavePlannedSystems();
         RebuildProjectRows();
         UpdateProjectSummary();
     }
 
-    private ColonizationSystemRecord ResolvePlanningSnapshot(ColonizationSystemRecord snapshot) =>
+    private void ApplyRefreshedPlannedSystem(
+        ColonizationSystemRecord snapshot,
+        int startedEditVersion,
+        bool authoritative
+    )
+    {
+        if (
+            planningSystemEditVersions.TryGetValue(snapshot.Name, out int editedVersion)
+            && editedVersion > startedEditVersion
+        )
+        {
+            return;
+        }
+        if (authoritative && CurrentEditorDraft(snapshot.Name) is null)
+        {
+            localPlanningDrafts.Remove(snapshot.Name);
+        }
+        UpdatePlannedSystem(ResolvePlanningSnapshot(snapshot));
+    }
+
+    private ColonizationSystemRecord? CurrentEditorDraft(string systemName) =>
         SystemEditor.HasLocalChanges
         && SystemEditor.PlanningSnapshot is { } edited
-        && string.Equals(edited.Name, snapshot.Name, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(edited.Name, systemName, StringComparison.OrdinalIgnoreCase)
             ? edited
-            : snapshot;
+            : null;
+
+    private ColonizationSystemRecord ResolvePlanningSnapshot(ColonizationSystemRecord snapshot) =>
+        CurrentEditorDraft(snapshot.Name) ?? localPlanningDrafts.GetValueOrDefault(snapshot.Name) ?? snapshot;
 
     private bool IsCurrentPlannedRead(int readVersion, int profileVersion) =>
         !disposed && IsEnabled && readVersion == plannedReadVersion && profileVersion == recovery.ProfileVersion;

@@ -55,7 +55,7 @@ to prevent subtle shifting while flying.
   scrolling when the table exceeds the workspace. **Prepare new project** turns
   into **Cancel** during review so the form can be cleared and restarted.
 - **Control cargo-group expansion from the keyboard.** **Ctrl+Alt+Shift+X**
-  toggles **Collapse cargo groups when enough on FC's**. Assign it under
+  toggles **Collapse cargo groups when enough on FCs**. Assign it under
   **Panel availability and shortcuts** in Colonization overlay settings or in
   the master input shortcut list. **Hide collapsed groups** remains a separate
   display preference.

@@ -1224,6 +1224,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     private async Task<bool> RefreshProjectsCoreAsync(CancellationToken cancellationToken)
     {
         int version = recovery.ProfileVersion;
+        int startedEditVersion = planningEditVersion;
         if (CommanderName is not { } commander)
         {
             return false;
@@ -1253,7 +1254,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 return false;
             }
 
-            await RefreshPlannedProjectsAsync(cancellationToken, result.Projects);
+            await RefreshPlannedProjectsAsync(result.Projects, startedEditVersion, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (disposed || !IsEnabled || version != recovery.ProfileVersion)
             {
