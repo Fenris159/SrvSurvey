@@ -24270,7 +24270,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
-    "Text": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+    "Text": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

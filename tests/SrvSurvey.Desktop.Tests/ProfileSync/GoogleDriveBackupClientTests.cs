@@ -10,6 +10,44 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class GoogleDriveBackupClientTests
 {
+    [Fact]
+    public async Task StaleRefreshFailurePreservesAnotherInstancesNewAuthorization()
+    {
+        using var root = new ProfileSyncTestRoot();
+        int exchanges = 0;
+        using var stale = new DriveHarness(
+            root,
+            _ =>
+                Task.FromResult(
+                    ++exchanges == 1
+                        ? Json(Token(expires: -1))
+                        : new HttpResponseMessage(HttpStatusCode.BadRequest)
+                        {
+                            Content = new StringContent("{\"error\":\"invalid_grant\"}"),
+                        }
+                )
+        );
+        await stale.LinkAsync();
+        using var linked = new DriveHarness(
+            root,
+            _ => Task.FromResult(Json(Token().Replace("access-test", "new-access", StringComparison.Ordinal)))
+        );
+        await linked.LinkAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => stale.Drive.ListAsync(CancellationToken.None));
+
+        using var reopened = new DriveHarness(
+            root,
+            request =>
+            {
+                Assert.Equal("new-access", request.Headers.Authorization!.Parameter);
+                return Task.FromResult(Json("{\"files\":[]}"));
+            }
+        );
+        Assert.True(reopened.Drive.IsLinked);
+        Assert.Empty(await reopened.Drive.ListAsync(CancellationToken.None));
+    }
+
     [Theory]
     [InlineData("bytes=5-9")]
     [InlineData("bytes=0-9999999999")]
@@ -160,7 +198,7 @@ public sealed class GoogleDriveBackupClientTests
     }
 
     [Theory]
-    [InlineData("invalid_grant", false, "Link Google Drive again")]
+    [InlineData("invalid_grant", true, "Disconnect and link Google Drive again")]
     [InlineData("invalid_client", true, "publisher")]
     public async Task RefreshFailureDistinguishesExpiredConsentFromPublisherSetup(
         string code,

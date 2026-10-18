@@ -76,6 +76,6 @@
     <Button Classes="primary" HorizontalAlignment="Left" Content="Restart SrvSurvey to apply" IsVisible="{Binding RestartRequired}" Click="Restart_Click" />
   </StackPanel>
   <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" />
-  <Button Classes="secondary" Content="Cancel operation" HorizontalAlignment="Left" IsVisible="{Binding IsBusy}" Click="CancelOperation_Click" />
+  <Button Classes="secondary" Content="Cancel operation" HorizontalAlignment="Left" IsVisible="{Binding CanCancelOperation}" Click="CancelOperation_Click" />
   </StackPanel>
 </UserControl>

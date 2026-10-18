@@ -12101,8 +12101,8 @@
       "translation": "Das Google Desktop-Client-Setup wurde geladen. Verknüpfen Sie Google Drive, um fortzufahren."
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "Die Google Drive-Autorisierung ist abgelaufen oder wurde widerrufen. Verknüpfen Sie Google Drive erneut."
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Die Google Drive-Autorisierung ist abgelaufen oder wurde widerrufen. Trennen Sie die Verbindung zu Google Drive und verknüpfen Sie es erneut."
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -50883,8 +50883,8 @@
       "translation": "Configuración del cliente de Google Desktop cargada. Vincula Google Drive para continuar."
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "La autorización de Google Drive expiró o fue revocada. Vuelva a vincular Google Drive."
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "La autorización de Google Drive expiró o fue revocada. Desconecta y vincula Google Drive nuevamente."
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -89665,8 +89665,8 @@
       "translation": "Configuration du client Google Desktop chargée. Associez Google Drive pour continuer."
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "L'autorisation Google Drive a expiré ou a été révoquée. Associez à nouveau Google Drive."
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "L'autorisation Google Drive a expiré ou a été révoquée. Déconnectez-vous et associez à nouveau Google Drive."
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -128447,8 +128447,8 @@
       "translation": "Configuração do cliente Google Desktop carregada. Vincule o Google Drive para continuar."
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "A autorização do Google Drive expirou ou foi revogada. Vincule o Google Drive novamente."
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "A autorização do Google Drive expirou ou foi revogada. Desconecte e vincule o Google Drive novamente."
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -167229,8 +167229,8 @@
       "translation": "Настройка клиента Google Desktop загружена. Свяжите Google Диск, чтобы продолжить."
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "Срок действия авторизации Google Диска истек или она была отозвана. Свяжите Google Диск еще раз."
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Срок действия авторизации Google Диска истек или она была отозвана. Отключитесь и снова привяжите Google Диск."
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -206011,8 +206011,8 @@
       "translation": "已加载 Google 桌面客户端安装程序。链接 Google 云端硬盘以继续。"
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "Google 云端硬盘授权已过期或被撤销。再次链接 Google 云端硬盘。"
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Google 云端硬盘授权已过期或被撤销。断开并再次链接 Google 云端硬盘。"
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",
@@ -244793,8 +244793,8 @@
       "translation": "* GOOGLE DESKTOP CLIENT SETUP LOADED. LINK GOOGLE DRIVE TO CONTINUE. >>>!"
     },
     {
-      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
-      "translation": "* GOOGLE DRIVE AUTHORIZATION EXPIRED OR WAS REVOKED. LINK GOOGLE DRIVE AGAIN. >>>!"
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "* GOOGLE DRIVE AUTHORIZATION EXPIRED OR WAS REVOKED. DISCONNECT AND LINK GOOGLE DRIVE AGAIN. >>>!"
     },
     {
       "source": "Google Drive authorization was cancelled or its state did not match.",

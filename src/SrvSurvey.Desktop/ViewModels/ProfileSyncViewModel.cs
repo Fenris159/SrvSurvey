@@ -9,6 +9,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private readonly ProfileSyncService service;
     private bool isBusy;
     private bool disposed;
+    private bool cancellableOperation;
     private CancellationTokenSource? authorization;
     private CancellationTokenSource? operationCancellation;
     private bool automatic;
@@ -20,6 +21,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private static readonly string[] RefreshProperties =
     [
         nameof(IsLinked),
+        nameof(CanCancelOperation),
         nameof(IsConfigured),
         nameof(NeedsClientSetup),
         nameof(CanLink),
@@ -59,6 +61,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
     }
     public bool IsLinking => authorization is not null;
+    public bool CanCancelOperation => IsBusy && cancellableOperation;
     private CancellationToken OperationToken => operationCancellation?.Token ?? CancellationToken.None;
     public bool IsLinked => service.IsLinked;
     public bool IsConfigured => service.IsConfigured;
@@ -162,6 +165,10 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     /// <summary>Cancels a cloud operation while retaining local data and recovery backups.</summary>
     public void CancelOperation()
     {
+        if (!CanCancelOperation)
+        {
+            return;
+        }
         authorization?.Cancel();
         operationCancellation?.Cancel();
     }
@@ -293,7 +300,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         });
 
     /// <summary>Contains file picker and storage errors in the normal status area.</summary>
-    public Task FileOperationAsync(Func<Task> action) => RunAsync(action);
+    public Task FileOperationAsync(Func<Task> action) => RunAsync(action, cancellable: false);
 
     /// <summary>Accepts a bounded file selected by the user.</summary>
     public void AcceptFile(byte[] bytes, bool clientSetup)
@@ -309,10 +316,15 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     }
 
     /// <summary>Allows the runtime to back up after all workspace producers have stopped.</summary>
-    internal Task ShutdownAsync() => service.ShutdownAsync(CancellationToken.None);
+    internal Task ShutdownAsync()
+    {
+        authorization?.Cancel();
+        operationCancellation?.Cancel();
+        return service.ShutdownAsync(CancellationToken.None);
+    }
 
     /// <summary>Prevents overlapping UI operations and contains actionable failures.</summary>
-    private async Task RunAsync(Func<Task> action)
+    private async Task RunAsync(Func<Task> action, bool cancellable = true)
     {
         if (IsBusy)
         {
@@ -321,6 +333,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
 
         using var cancellation = new CancellationTokenSource();
         operationCancellation = cancellation;
+        cancellableOperation = cancellable;
         IsBusy = true;
         error = null;
         try
@@ -344,6 +357,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         finally
         {
             operationCancellation = null;
+            cancellableOperation = false;
             IsBusy = false;
             Refresh();
         }

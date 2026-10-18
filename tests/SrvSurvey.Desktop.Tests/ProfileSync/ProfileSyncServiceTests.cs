@@ -10,6 +10,39 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class ProfileSyncServiceTests
 {
     [Fact]
+    public async Task StartupCanceledBehindAnotherOperationStillRegistersItsLiveReader()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\"}");
+        ProfileSnapshot old = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"current\"}");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await first.StartupAsync();
+        root.Store.StageExplicitRestore(old, false);
+        using var waiting = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using (
+            var blocker = new FileStream(
+                Path.Combine(root.Store.StateDirectory, "operation.lock"),
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        using (var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50)))
+        {
+            await waiting.StartupAsync(cancellation.Token);
+        }
+        first.Dispose();
+        using var third = new ProfileSyncService(root.Store, new FakeProfileDrive());
+
+        await third.StartupAsync();
+
+        Assert.Contains("deferred", third.Status);
+        Assert.True(third.RestartRequired);
+        Assert.Contains("current", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Fact]
     public async Task SlowBackupsCanFinishAfterTheOriginalOperationDeadline()
     {
         using var root = new ProfileSyncTestRoot();

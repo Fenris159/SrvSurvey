@@ -39,80 +39,80 @@ internal sealed class ProfileSyncService : IDisposable
     internal event Action? Changed;
 
     /// <summary>Applies downloads before workspaces load, or safely defers when another instance is active.</summary>
-    internal Task StartupAsync(CancellationToken cancellationToken = default) =>
-        RunWithinAsync(
-            async token =>
-            {
-                bool another = HasOtherLiveInstance();
-                string livePath = Path.Combine(
-                    Store.StateDirectory,
-                    $"live-{Environment.ProcessId}-{Guid.NewGuid():N}.lock"
-                );
-                liveLease ??= new FileStream(
-                    livePath,
-                    FileMode.CreateNew,
-                    FileAccess.ReadWrite,
-                    FileShare.Read,
-                    1,
-                    FileOptions.DeleteOnClose
-                );
-                if (another)
-                {
-                    SetStatus(
-                        "Cloud restore is deferred while another SrvSurvey instance is open. Close all instances before restarting to apply it."
-                    );
-                    return;
-                }
-                Store.RecoverInterruptedRestore();
-                bool restored = Store.ApplyPending(out SyncMergeResult? restoreConflicts);
-                if (restoreConflicts is not null)
-                {
-                    pendingMerge = restoreConflicts;
-                    pendingSnapshot = Store.Capture();
-                    SetStatus(
-                        $"{restoreConflicts.Conflicts.Count} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained."
-                    );
-                    return;
-                }
-                if (!Store.LoadPreferences().Automatic || !IsLinked)
-                {
-                    if (restored)
-                    {
-                        SetStatus("The selected backup was restored before loading your workspaces.");
-                    }
-                    else if (IsLinked)
-                    {
-                        SetStatus("Google Drive is linked. Automatic sync is off; use Backup now or Sync now.");
-                    }
-
-                    return;
-                }
-                ProfileSnapshot local = Store.Capture();
-                SyncMergeResult merge = await MergeCloudAsync(local, token).ConfigureAwait(false);
-                if (merge.Conflicts.Count > 0)
-                {
-                    Store.SaveBackup(local);
-                    Store.SaveBaseline(local);
-                    pendingMerge = merge;
-                    pendingSnapshot = local;
-                    SetStatus(
-                        $"{merge.Conflicts.Count} conflicting changes need a choice in Data & migration. Local data is unchanged."
-                    );
-                    return;
-                }
-                ProfileSnapshot merged = local with { Portable = merge.Values };
-                Store.Apply(merged);
-                Store.SaveBaseline(merged);
-                SetStatus("Startup sync complete. Portable preferences and workspace data are up to date.");
-            },
-            TimeSpan.FromSeconds(45),
-            cancellationToken
+    internal Task StartupAsync(CancellationToken cancellationToken = default)
+    {
+        string livePath = Path.Combine(Store.StateDirectory, $"live-{Environment.ProcessId}-{Guid.NewGuid():N}.lock");
+        liveLease ??= new FileStream(
+            livePath,
+            FileMode.CreateNew,
+            FileAccess.ReadWrite,
+            FileShare.Read,
+            1,
+            FileOptions.DeleteOnClose
         );
+        return RunWithinAsync(SynchronizeStartupAsync, TimeSpan.FromSeconds(45), cancellationToken);
+    }
+
+    /// <summary>Performs optional startup restoration only while no other instance is reading the profile.</summary>
+    private async Task SynchronizeStartupAsync(CancellationToken token)
+    {
+        if (DeferForOtherReaders())
+        {
+            return;
+        }
+        Store.RecoverInterruptedRestore();
+        bool restored = Store.ApplyPending(out SyncMergeResult? restoreConflicts);
+        if (restoreConflicts is not null)
+        {
+            pendingMerge = restoreConflicts;
+            pendingSnapshot = Store.Capture();
+            SetStatus(
+                $"{restoreConflicts.Conflicts.Count} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained."
+            );
+            return;
+        }
+        if (!Store.LoadPreferences().Automatic || !IsLinked)
+        {
+            if (restored)
+            {
+                SetStatus("The selected backup was restored before loading your workspaces.");
+            }
+            else if (IsLinked)
+            {
+                SetStatus("Google Drive is linked. Automatic sync is off; use Backup now or Sync now.");
+            }
+
+            return;
+        }
+        ProfileSnapshot local = Store.Capture();
+        SyncMergeResult merge = await MergeCloudAsync(local, token).ConfigureAwait(false);
+        if (merge.Conflicts.Count > 0)
+        {
+            Store.SaveBackup(local);
+            Store.SaveBaseline(local);
+            pendingMerge = merge;
+            pendingSnapshot = local;
+            SetStatus(
+                $"{merge.Conflicts.Count} conflicting changes need a choice in Data & migration. Local data is unchanged."
+            );
+            return;
+        }
+        ProfileSnapshot merged = local with { Portable = merge.Values };
+        if (DeferForOtherReaders())
+        {
+            return;
+        }
+        Store.Apply(merged);
+        Store.SaveBaseline(merged);
+        SetStatus("Startup sync complete. Portable preferences and workspace data are up to date.");
+    }
 
     /// <summary>Connects this machine only; automatic sync is enabled after explicit linking.</summary>
     internal async Task LinkAsync(CancellationToken cancellationToken = default)
     {
         await drive.LinkAsync(cancellationToken).ConfigureAwait(false);
+        Backups = [];
+        HasBackupHistory = false;
         Store.SavePreferences(Store.LoadPreferences() with { Automatic = true });
         SetStatus("Google Drive linked. Use Sync now to check other machines, or Backup now to save this profile.");
     }
@@ -432,14 +432,16 @@ internal sealed class ProfileSyncService : IDisposable
         CancellationToken cancellationToken
     )
     {
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(operationTimeout);
+        bool acquired = false;
         try
         {
-            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(operationTimeout);
             string path = Path.Combine(Store.StateDirectory, "operation.lock");
             try
             {
+                await gate.WaitAsync(deadline.Token).ConfigureAwait(false);
+                acquired = true;
                 await using FileStream lease = await AcquireLeaseAsync(path, deadline.Token).ConfigureAwait(false);
                 await action(deadline.Token).ConfigureAwait(false);
             }
@@ -466,7 +468,10 @@ internal sealed class ProfileSyncService : IDisposable
         }
         finally
         {
-            gate.Release();
+            if (acquired)
+            {
+                gate.Release();
+            }
             Changed?.Invoke();
         }
     }
@@ -489,10 +494,32 @@ internal sealed class ProfileSyncService : IDisposable
     }
 
     /// <summary>Detects live profile readers so startup restore cannot race another commander's workspaces.</summary>
+    private bool DeferForOtherReaders()
+    {
+        if (!HasOtherLiveInstance())
+        {
+            return false;
+        }
+        SetStatus(
+            "Cloud restore is deferred while another SrvSurvey instance is open. Close all instances before restarting to apply it."
+        );
+        return true;
+    }
+
     private bool HasOtherLiveInstance()
     {
         foreach (string file in Directory.EnumerateFiles(Store.StateDirectory, "live-*.lock"))
         {
+            if (
+                string.Equals(
+                    Path.GetFullPath(file),
+                    liveLease?.Name,
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                )
+            )
+            {
+                continue;
+            }
             try
             {
                 using var probe = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);

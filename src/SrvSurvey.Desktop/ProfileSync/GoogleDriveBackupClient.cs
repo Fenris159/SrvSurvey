@@ -508,9 +508,8 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
                 .ConfigureAwait(false);
             if (errorCode == "invalid_grant")
             {
-                Disconnect();
                 throw new InvalidOperationException(
-                    "Google Drive authorization expired or was revoked. Link Google Drive again."
+                    "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again."
                 );
             }
             if (errorCode == "invalid_client")
