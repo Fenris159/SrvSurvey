@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace SrvSurvey.Core.Colonization;
 
 /// <summary>Projects visible planned sites into catalog-based cargo estimates without creating live Raven builds.</summary>
@@ -22,7 +25,8 @@ public static class ColonizationPlannedProjects
         foreach (ColonizationSystemSite site in system.Sites)
         {
             if (
-                site.Status != ColonizationSystemSiteStatus.Plan
+                !site.HasExplicitStatus
+                || site.Status != ColonizationSystemSiteStatus.Plan
                 || !ColonizationSiteVisibility.CanViewerSeeSite(site, isArchitect, catalog)
                 || !catalog.TryResolveSiteBuildType(site.BuildType, out ColonizationBuildCost? build)
                 || build is null
@@ -35,7 +39,7 @@ public static class ColonizationPlannedProjects
             projects.Add(
                 new ColonizationProject
                 {
-                    BuildId = BuildIdPrefix + system.SystemAddress + ":" + site.Id,
+                    BuildId = BuildIdPrefix + system.SystemAddress + ":" + SiteIdentity(site),
                     BuildName = site.Name + " (Plan)",
                     BuildType = ColonizationBuildCatalog.NormalizeSiteBuildTypeKey(site.BuildType),
                     SystemAddress = system.SystemAddress,
@@ -57,6 +61,12 @@ public static class ColonizationPlannedProjects
         }
         return projects;
     }
+
+    private static string SiteIdentity(ColonizationSystemSite site) =>
+        string.IsNullOrWhiteSpace(site.Id)
+            ? "name:"
+                + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(site.Name.Trim().ToUpperInvariant())))
+            : site.Id;
 
     private static bool RepresentsSite(
         ColonizationProject project,

@@ -154,22 +154,24 @@ public static class ColonizationCommodityPlanner
         long planningCarrierMarketId
     )
     {
-        if (projects.Any(project => project.IsPlanned))
-        {
-            return carriers
-                .Where(carrier => planningCarrierMarketId <= 0 || carrier.MarketId == planningCarrierMarketId)
-                .ToArray();
-        }
         if (includeAll)
         {
             return carriers.ToArray();
         }
 
         var marketIds = projects
+            .Where(project => !project.IsPlanned)
             .SelectMany(project => project.LinkedFleetCarriers)
             .Select(carrier => carrier.MarketId)
             .ToHashSet();
-        return carriers.Where(carrier => marketIds.Contains(carrier.MarketId)).ToArray();
+        bool hasPlans = projects.Any(project => project.IsPlanned);
+        return carriers
+            .Where(carrier =>
+                marketIds.Contains(carrier.MarketId)
+                || (hasPlans && (planningCarrierMarketId <= 0 || carrier.MarketId == planningCarrierMarketId))
+            )
+            .DistinctBy(carrier => carrier.MarketId)
+            .ToArray();
     }
 
     private static Dictionary<string, Requirement> CreateDepotRequirements(ColonizationConstructionDepotSnapshot depot)

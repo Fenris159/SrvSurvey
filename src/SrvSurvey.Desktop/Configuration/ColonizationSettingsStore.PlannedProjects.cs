@@ -36,7 +36,10 @@ public sealed partial class ColonizationSettingsStore
     internal IReadOnlyList<string> LoadHiddenPlannedProjects(string commander)
     {
         JsonObject root = documentStore.Load();
-        return root[ColonizationSectionKey]?["HiddenPlannedProjects"]?[commander.ToUpperInvariant()] is JsonArray ids
+        return
+            root[ColonizationSectionKey] is JsonObject section
+            && section["HiddenPlannedProjects"] is JsonObject choices
+            && choices[commander.ToUpperInvariant()] is JsonArray ids
             ? ids.OfType<JsonValue>()
                 .Select(value => value.TryGetValue<string>(out string? id) ? id : null)
                 .OfType<string>()

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:views="using:SrvSurvey.Desktop.Views"
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         x:Class="SrvSurvey.Desktop.Views.ColonizationShoppingView"
         x:DataType="vm:ColonizationShoppingViewModel"
@@ -91,7 +92,7 @@
       <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
     <Style Selector="ListBox.shopping-results /template/ ScrollViewer /template/ ScrollContentPresenter">
-      <Setter Property="Margin" Value="0,0,24,0" />
+      <Setter Property="Margin" Value="{x:Static views:ColonizationShoppingView.ResultsScrollbarMargin}" />
     </Style>
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0" />
@@ -190,7 +191,7 @@
       </StackPanel>
 
     </WrapPanel>
-    <ScrollViewer Grid.Row="5" Margin="0,0,0,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="MarketResultsViewport" Grid.Row="5" Margin="0,0,0,6" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
       <Grid Grid.IsSharedSizeScope="True" RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
         <Grid x:Name="ShoppingResultsHeader" ColumnSpacing="6" HorizontalAlignment="Left" Margin="12,0,36,0">
           <Grid.ColumnDefinitions>
@@ -239,16 +240,19 @@
                     <TextBlock Grid.Column="4" FontSize="12" Text="{Binding DistanceText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="5" FontSize="12" Text="{Binding ArrivalText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                   </Grid>
-                  <ItemsControl Classes="market-supplies" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableSupplies}" IsVisible="{Binding IsExpanded}" Margin="32,1,12,2">
-                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
-                        <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
-                          <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
-                        </Button>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
+                  <Border IsVisible="{Binding IsExpanded}" HorizontalAlignment="Left" Padding="32,1,12,2"
+                          MaxWidth="{Binding #MarketResultsViewport.Viewport.Width, Converter={x:Static views:ColonizationShoppingView.ExpandedCommodityWidth}}">
+                    <ItemsControl Classes="market-supplies" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableSupplies}">
+                      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
+                          <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
+                            <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
+                          </Button>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Border>
                 </StackPanel>
               </Border>
             </DataTemplate>

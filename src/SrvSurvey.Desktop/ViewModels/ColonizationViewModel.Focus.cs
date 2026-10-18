@@ -21,6 +21,7 @@ public sealed partial class ColonizationViewModel
         StatusMessage = nextId is null ? "Clearing project focus..." : $"Focusing {row.BuildName}...";
         try
         {
+            string? persistenceWarning = null;
             if (row.Project.IsPlanned)
             {
                 string localId = nextId ?? string.Empty;
@@ -35,12 +36,16 @@ public sealed partial class ColonizationViewModel
                     return;
                 }
                 primaryProjectId = nextId;
-                settingsStore.SaveLocalProjectFocus(commander, null);
                 localFocusProjectId = null;
+                persistenceWarning = ClearSavedLocalFocus(commander);
             }
             RebuildProjectRows();
             UpdateProjectSummary();
             StatusMessage = nextId is null ? "Project focus was cleared." : $"{row.BuildName} is now the focus.";
+            if (persistenceWarning is not null)
+            {
+                StatusMessage += " Local focus preferences could not be saved: " + persistenceWarning;
+            }
         }
         catch (Exception exception)
             when (exception
@@ -61,6 +66,19 @@ public sealed partial class ColonizationViewModel
         {
             IsBusy = false;
             await RefreshPendingAsync(CancellationToken.None);
+        }
+    }
+
+    private string? ClearSavedLocalFocus(string commander)
+    {
+        try
+        {
+            settingsStore.SaveLocalProjectFocus(commander, null);
+            return null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return exception.Message;
         }
     }
 }

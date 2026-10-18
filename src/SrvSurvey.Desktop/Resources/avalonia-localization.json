@@ -15369,6 +15369,10 @@
       "translation": "Referenzbild der lokalen Flora"
     },
     {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
     },
@@ -54089,6 +54093,10 @@
     {
       "source": "Local flora reference image",
       "translation": "Imagen de referencia de la flora local."
+    },
+    {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -92813,6 +92821,10 @@
       "translation": "Image de référence de la flore locale"
     },
     {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
     },
@@ -131533,6 +131545,10 @@
     {
       "source": "Local flora reference image",
       "translation": "Imagem de referência da flora local"
+    },
+    {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "Não foi possível salvar as preferências de foco local: {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -170257,6 +170273,10 @@
       "translation": "Справочное изображение местной флоры"
     },
     {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "Не удалось сохранить настройки локального фокуса: {0}."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
     },
@@ -208979,6 +208999,10 @@
       "translation": "当地植物区系参考图像"
     },
     {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "无法保存本地焦点首选项：{0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
     },
@@ -247699,6 +247723,10 @@
     {
       "source": "Local flora reference image",
       "translation": "* LOCAL FLORA REFERENCE IMAGE >>>!"
+    },
+    {
+      "source": "Local focus preferences could not be saved: {0}",
+      "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
     },
     {
       "source": "Local ring discoveries",

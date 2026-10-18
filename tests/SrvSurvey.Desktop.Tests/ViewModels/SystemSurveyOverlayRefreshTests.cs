@@ -48,7 +48,7 @@ public sealed partial class SystemSurveyViewModelTests
         }
 
         object before = ReadOverlayRows(model, list);
-        Assert.NotEmpty(Assert.IsAssignableFrom<IEnumerable>(before));
+        Assert.NotEmpty(Assert.IsType<IEnumerable>(before, exactMatch: false));
         model.ApplyUpdate([], status with { Heading = 180 });
         Assert.Same(before, ReadOverlayRows(model, list));
         Assert.Equal(180, model.CurrentStatus!.Heading);

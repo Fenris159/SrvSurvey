@@ -3241,6 +3241,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse { get; set; } = [];
         public Dictionary<string, ColonizationSystemRecord>? PlanningSystems { get; set; }
         public Task<ColonizationSystemRecord>? PlanningSystemTask { get; set; }
+        public Func<string, CancellationToken, Task<ColonizationSystemRecord>>? LoadPlanningSystem { get; set; }
         public HttpRequestException? PlanningSystemFailure { get; set; }
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
@@ -3457,7 +3458,8 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
         ) =>
-            PlanningSystemTask
+            LoadPlanningSystem?.Invoke(systemNameOrAddress, cancellationToken)
+            ?? PlanningSystemTask
             ?? (
                 PlanningSystemFailure is not null
                     ? Task.FromException<ColonizationSystemRecord>(PlanningSystemFailure)

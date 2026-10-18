@@ -112,25 +112,27 @@
         </ToggleButton>
       </StackPanel>
     </Grid>
-    <Border Grid.Row="1" Margin="0,0,0,20" Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}">
-      <StackPanel Spacing="12">
-        <TextBlock Classes="card-title" Text="Unconfirmed construction deliveries" />
-        <TextBlock TextWrapping="Wrap" Text="Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey." />
-        <ItemsControl ItemsSource="{Binding Colonization.UnconfirmedContributions}"
-                      IsEnabled="{Binding Colonization.CanSelectUnconfirmedContributions}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:ColonizationPendingContributionRowViewModel">
-              <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,0,0,8">
-                <TextBlock TextWrapping="Wrap" Text="{Binding Summary}" />
-              </CheckBox>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <WrapPanel>
-          <Button Classes="secondary" Margin="0,0,12,0" Content="Retry selected deliveries" Command="{Binding Colonization.RetryUnconfirmedContributionsCommand}" />
-          <Button Classes="secondary" Content="Dismiss selected deliveries" Command="{Binding Colonization.DismissConfirmedContributionsCommand}" />
-        </WrapPanel>
-      </StackPanel>
+    <Border Grid.Row="1" Margin="0,0,0,20" Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}" MaxHeight="260">
+      <ScrollViewer x:Name="UnconfirmedDeliveryRecoveryScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="card-title" Text="Unconfirmed construction deliveries" />
+          <TextBlock TextWrapping="Wrap" Text="Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey." />
+          <ItemsControl ItemsSource="{Binding Colonization.UnconfirmedContributions}"
+                        IsEnabled="{Binding Colonization.CanSelectUnconfirmedContributions}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ColonizationPendingContributionRowViewModel">
+                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,0,0,8">
+                  <TextBlock TextWrapping="Wrap" Text="{Binding Summary}" />
+                </CheckBox>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <WrapPanel>
+            <Button Classes="secondary" Margin="0,0,12,0" Content="Retry selected deliveries" Command="{Binding Colonization.RetryUnconfirmedContributionsCommand}" />
+            <Button Classes="secondary" Content="Dismiss selected deliveries" Command="{Binding Colonization.DismissConfirmedContributionsCommand}" />
+          </WrapPanel>
+        </StackPanel>
+      </ScrollViewer>
     </Border>
     <TabControl x:Name="ColonizationTabs" Grid.Row="2" SelectedIndex="{Binding Colonization.SelectedWorkspaceTabIndex, Mode=TwoWay}">
       <TabControl.ItemsPanel><ItemsPanelTemplate><controls:AdaptiveTabHeaderPanel /></ItemsPanelTemplate></TabControl.ItemsPanel>

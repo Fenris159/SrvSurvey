@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -10,6 +12,11 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class ColonizationShoppingView : UserControl
 {
     private ColonizationShoppingViewModel ViewModel => (ColonizationShoppingViewModel)DataContext!;
+
+    public static Thickness ResultsScrollbarMargin { get; } = new(0, 0, 24, 0);
+
+    public static FuncValueConverter<double, double> ExpandedCommodityWidth { get; } =
+        new(width => Math.Max(0, width - ResultsScrollbarMargin.Right));
 
     public ColonizationShoppingView() => InitializeComponent();
 

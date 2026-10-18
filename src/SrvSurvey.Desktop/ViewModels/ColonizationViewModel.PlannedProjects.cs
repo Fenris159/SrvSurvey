@@ -13,6 +13,7 @@ public sealed partial class ColonizationViewModel
     private string? plannedReadWarning;
     private readonly HashSet<string> hiddenPlannedProjectIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<ColonizationSystemSiteRowViewModel> observedSites = [];
+    private readonly HashSet<string> authoritativePlanningPrefixes = new(StringComparer.Ordinal);
 
     private string ProjectLoadStatus()
     {
@@ -74,6 +75,16 @@ public sealed partial class ColonizationViewModel
 
     private void OnPlanningSitesChanged(object? sender, NotifyCollectionChangedEventArgs args)
     {
+        if (SystemEditor.IsReplacingSites)
+        {
+            return;
+        }
+        ObservePlanningSites();
+        ApplyEditorPlans();
+    }
+
+    private void ObservePlanningSites()
+    {
         foreach (ColonizationSystemSiteRowViewModel row in observedSites)
         {
             row.PropertyChanged -= OnPlanningSiteChanged;
@@ -84,14 +95,18 @@ public sealed partial class ColonizationViewModel
             observedSites.Add(row);
             row.PropertyChanged += OnPlanningSiteChanged;
         }
-        ApplyEditorPlans();
     }
 
     private void OnPlanningSiteChanged(object? sender, PropertyChangedEventArgs args) => ApplyEditorPlans();
 
     private void OnPlanningEditorChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName == nameof(SystemEditor.IsBusy) && !SystemEditor.IsBusy)
+        if (args.PropertyName == nameof(SystemEditor.PlanningSnapshot))
+        {
+            ObservePlanningSites();
+            ApplyEditorPlans();
+        }
+        else if (args.PropertyName == nameof(SystemEditor.IsBusy) && !SystemEditor.IsBusy)
         {
             ApplyEditorPlans();
         }
@@ -99,10 +114,17 @@ public sealed partial class ColonizationViewModel
 
     private void ApplyEditorPlans()
     {
-        if (disposed || !IsEnabled || SystemEditor.IsBusy || SystemEditor.PlanningSnapshot is not { } snapshot)
+        if (
+            disposed
+            || !IsEnabled
+            || SystemEditor.IsBusy
+            || SystemEditor.IsReplacingSites
+            || SystemEditor.PlanningSnapshot is not { } snapshot
+        )
         {
             return;
         }
+        plannedReadVersion++;
         UpdatePlannedSystem(snapshot);
         SavePlannedSystems();
         RebuildProjectRows();
@@ -161,6 +183,7 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
+        token.ThrowIfCancellationRequested();
         plannedReadWarning = warning;
         foreach (ColonizationSystemRecord snapshot in snapshots)
         {
@@ -249,7 +272,8 @@ public sealed partial class ColonizationViewModel
 
     private void UpdatePlannedSystem(ColonizationSystemRecord snapshot)
     {
-        if (snapshot.Sites.Any(site => site.Status == ColonizationSystemSiteStatus.Plan))
+        authoritativePlanningPrefixes.Add(ColonizationPlannedProjects.BuildIdPrefix + snapshot.SystemAddress + ":");
+        if (snapshot.Sites.Any(site => site.HasExplicitStatus && site.Status == ColonizationSystemSiteStatus.Plan))
         {
             plannedSystems[snapshot.Name] = snapshot;
         }

@@ -35,6 +35,12 @@ to prevent subtle shifting while flying.
   interaction above the results. The remaining-tonnes summary and **Open
   ShoppingList** button sit together above the table; **Copy needs** uses the
   same button style as the other search actions.
+- **Keep planning changes reliable.** Editor updates preserve ShoppingList
+  allocations, and delayed refreshes keep newer local edits and removals.
+  Removed plans leave Market Search, legacy sites without an explicit planning
+  status stay out of the project list, and planned sites without Raven IDs keep
+  distinct supply requirements. Mixed live and planned projects retain linked
+  carrier cargo coverage.
 - **Keep carrier comparisons consistent.** **Use Carrier** persists between
   sessions and stays synchronized with **FC Diff** in both directions. **LOADED**
   recalculates from the selected carrier's cargo against remaining project needs,

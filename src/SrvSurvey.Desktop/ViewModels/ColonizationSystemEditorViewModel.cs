@@ -126,6 +126,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     internal ColonizationSystemRecord? PlanningSnapshot =>
         system is null ? null : system with { Sites = SnapshotVisibleSites() };
 
+    internal bool IsReplacingSites { get; private set; }
+
     public string SystemTitle =>
         system is null ? context.SystemName ?? "No live system" : $"{system.Name} ({system.SystemAddress})";
 
@@ -739,20 +741,29 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private void ReplaceRows(IEnumerable<ColonizationSystemSite> sites)
     {
-        foreach (ColonizationSystemSiteRowViewModel row in Sites)
+        IsReplacingSites = true;
+        try
         {
-            Unsubscribe(row);
-        }
+            foreach (ColonizationSystemSiteRowViewModel row in Sites)
+            {
+                Unsubscribe(row);
+            }
 
-        Sites.Clear();
-        foreach (ColonizationSystemSite site in sites)
+            Sites.Clear();
+            foreach (ColonizationSystemSite site in sites)
+            {
+                var row = new ColonizationSystemSiteRowViewModel(site, catalogBuildTypes);
+                Subscribe(row);
+                Sites.Add(row);
+            }
+
+            SelectedSite = null;
+        }
+        finally
         {
-            var row = new ColonizationSystemSiteRowViewModel(site, catalogBuildTypes);
-            Subscribe(row);
-            Sites.Add(row);
+            IsReplacingSites = false;
         }
-
-        SelectedSite = null;
+        OnPropertyChanged(nameof(PlanningSnapshot));
     }
 
     private List<ColonizationSystemSite> SnapshotVisibleSites()
@@ -1166,6 +1177,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     private string marketIdText;
     private string marketIdWarning = string.Empty;
     private ColonizationSystemSiteStatus status;
+    private bool hasExplicitStatus;
 
     public ColonizationSystemSiteRowViewModel(
         ColonizationSystemSite site,
@@ -1181,6 +1193,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
         marketId = site.MarketId;
         marketIdText = FormatMarketId(site.MarketId);
         status = site.Status;
+        hasExplicitStatus = site.HasExplicitStatus;
         extensionData = site.ExtensionData.ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Clone(),
@@ -1287,7 +1300,14 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     public ColonizationSystemSiteStatus Status
     {
         get => status;
-        set => SetField(ref status, value);
+        set
+        {
+            if (status != value)
+            {
+                hasExplicitStatus = true;
+                SetField(ref status, value);
+            }
+        }
     }
 
     public ColonizationSystemSite ToSite()
@@ -1300,7 +1320,7 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
             BuildType = BuildType,
             BuildId = BuildId,
             MarketId = MarketId,
-            Status = Status,
+            SerializedStatus = hasExplicitStatus ? Status : null,
             ExtensionData = extensionData.ToDictionary(
                 pair => pair.Key,
                 pair => pair.Value.Clone(),

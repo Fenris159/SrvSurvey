@@ -211,6 +211,7 @@ public sealed partial class ColonizationViewModel
         localFocusProjectId = CommanderName is null ? null : settingsStore.LoadLocalProjectFocus(CommanderName);
         shoppingSession = CommanderName is null ? null : settingsStore.LoadShopping(CommanderName);
         plannedSystems.Clear();
+        authoritativePlanningPrefixes.Clear();
         if (CommanderName is not null)
         {
             foreach (ColonizationSystemRecord system in settingsStore.LoadPlannedSystems(CommanderName))
@@ -266,6 +267,7 @@ public sealed partial class ColonizationViewModel
             projectIds.Concat(
                 shoppingProjectIds.Where(id =>
                     id.StartsWith(ColonizationPlannedProjects.BuildIdPrefix, StringComparison.Ordinal)
+                    && !authoritativePlanningPrefixes.Any(prefix => id.StartsWith(prefix, StringComparison.Ordinal))
                 )
             )
         );

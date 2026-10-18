@@ -30831,6 +30831,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
   },
   {
+    "Text": "Local focus preferences could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
+  },
+  {
     "Text": "Local ring discoveries",
     "IsFormat": false,
     "SourceKinds": [

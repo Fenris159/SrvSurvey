@@ -73,7 +73,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.NotNull(selected);
             ListBoxItem item = results.GetVisualDescendants().OfType<ListBoxItem>().First();
             ContentPresenter presenter = item.GetVisualDescendants().OfType<ContentPresenter>().First();
-            Assert.True(presenter.Background is null || presenter.Background is ISolidColorBrush { Color.A: 0 });
+            Assert.True(presenter.Background is null or ISolidColorBrush { Color.A: 0 });
             ScrollBar bar = results
                 .GetVisualDescendants()
                 .OfType<ScrollBar>()

@@ -1245,13 +1245,14 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 return false;
             }
 
-            hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
-            primaryProjectId = result.PrimaryProjectId;
             await RefreshPlannedProjectsAsync(cancellationToken, result.Projects);
+            cancellationToken.ThrowIfCancellationRequested();
             if (disposed || !IsEnabled || version != recovery.ProfileVersion)
             {
                 return false;
             }
+            hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            primaryProjectId = result.PrimaryProjectId;
             hasCurrentShoppingProjects = true;
             recovery.ReplaceWorkspace(result.Projects, result.FleetCarriers);
             RebuildProjectRows();
