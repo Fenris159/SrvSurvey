@@ -130,4 +130,60 @@ public sealed partial class ColonizationViewModelTests
         await model.CurrentSystemPlanningTask;
         Assert.Contains(model.Projects, row => row.BuildName == "Test Project (Plan)");
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task JumpsDuringFullRefreshKeepDiscoveredAndUpdatedRemotePlans(bool duringSystemRead, bool cached)
+    {
+        StubRavenColonialClient client = ReviewPlanningClient();
+        ColonizationSystemRecord remote = FilterPlanningSystem("Remote Colony", 47);
+        client.PlanningSystems![remote.Name] = remote;
+        client.DiscoveredPlanningSystems = cached ? [remote] : [];
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        model.SetCommanderProfile("F123", true, "test-key");
+        await model.SetCommanderAsync("Test Cmdr");
+        if (cached)
+        {
+            model.UpdateSystemContext("Sol", null, 42);
+            await model.CurrentSystemPlanningTask;
+            await model.SystemEditor.LoadAsync();
+        }
+        int discoveries = client.PlanningDiscoveryCommanders.Count;
+        remote = remote with { Sites = [remote.Sites[0] with { Name = "Updated Remote Plan" }] };
+        client.PlanningSystems[remote.Name] = remote;
+        client.DiscoveredPlanningSystems = [remote];
+        var discovery = new TaskCompletionSource<IReadOnlyList<ColonizationSystemRecord>>();
+        var system = new TaskCompletionSource<ColonizationSystemRecord>();
+        var requests = new List<string>();
+        if (!duringSystemRead)
+        {
+            client.PlanningDiscoveryTask = discovery.Task;
+        }
+        client.LoadPlanningSystem = (name, _) =>
+        {
+            requests.Add(name);
+            return duringSystemRead && name == "Sol" ? system.Task : Task.FromResult(client.PlanningSystems[name]);
+        };
+        Task refresh = model.RefreshAsync();
+        Assert.True(model.IsBusy);
+        model.UpdateSystemContext("Achenar", null, 43);
+        model.UpdateSystemContext("Sol", null, 42);
+        model.UpdateSystemContext("Achenar", null, 43);
+        discovery.TrySetResult([remote]);
+        system.TrySetResult(client.PlanningSystems["Sol"]);
+        await refresh.WaitAsync(TimeSpan.FromSeconds(5));
+        await model.CurrentSystemPlanningTask.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(
+            "Updated Remote Plan (Plan)",
+            Assert.Single(model.Projects, row => row.Project.IsPlanned && row.Project.SystemAddress == 47).BuildName
+        );
+        Assert.Equal(discoveries + 1, client.PlanningDiscoveryCommanders.Count);
+        Assert.Single(requests, name => name == "Sol");
+        Assert.Single(requests, name => name == "Remote Colony");
+        Assert.False(model.IsBusy);
+    }
 }

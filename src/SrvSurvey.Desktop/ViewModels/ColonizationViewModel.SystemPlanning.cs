@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed partial class ColonizationViewModel
 {
     private CancellationTokenSource? systemPlanningCancellation;
+    private bool currentSystemPlanningPending;
 
     internal Task CurrentSystemPlanningTask { get; private set; } = Task.CompletedTask;
 
@@ -13,6 +14,12 @@ public sealed partial class ColonizationViewModel
         CancelCurrentPlannedSystemRead();
         if (disposed || !IsEnabled || CommanderName is null || string.IsNullOrWhiteSpace(recovery.CurrentSystemName))
         {
+            return;
+        }
+        if (IsBusy)
+        {
+            // Preserve the full refresh's ownership and coalesce travel into one destination read.
+            currentSystemPlanningPending = true;
             return;
         }
         systemPlanningCancellation = new CancellationTokenSource();
@@ -51,6 +58,7 @@ public sealed partial class ColonizationViewModel
 
     private void CancelCurrentPlannedSystemRead()
     {
+        currentSystemPlanningPending = false;
         CancellationTokenSource? cancellation = systemPlanningCancellation;
         systemPlanningCancellation = null;
         if (cancellation is not null)

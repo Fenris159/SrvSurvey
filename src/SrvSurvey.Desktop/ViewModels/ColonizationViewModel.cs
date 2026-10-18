@@ -895,7 +895,6 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         currentStarPosition = position is GalacticCoordinate nextCoordinate
             ? [nextCoordinate.X, nextCoordinate.Y, nextCoordinate.Z]
             : [];
-        plannedReadVersion++;
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
         RefreshCurrentPlannedSystem();
@@ -1180,15 +1179,18 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         (DismissConfirmedContributionsCommand as AsyncCommand)?.RaiseCanExecuteChanged();
     }
 
-    /// <summary>Runs one requested workspace refresh after the current busy operation releases ownership.</summary>
+    /// <summary>Runs requested workspace and destination refreshes after the busy operation releases ownership.</summary>
     private async Task RefreshPendingAsync(CancellationToken cancellationToken = default)
     {
-        if (!refreshPending)
+        if (refreshPending)
         {
-            return;
+            refreshPending = false;
+            await RefreshAsync(cancellationToken);
         }
-        refreshPending = false;
-        await RefreshAsync(cancellationToken);
+        if (currentSystemPlanningPending)
+        {
+            RefreshCurrentPlannedSystem();
+        }
     }
 
     /// <summary>Loads the active commander workspace and services refreshes requested while an obsolete load was busy.</summary>
