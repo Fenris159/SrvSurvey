@@ -50265,6 +50265,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
   },
   {
+    "Text": "Search context changed. Run the search again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Search criteria changed. Refresh to load markets for these criteria.",
     "IsFormat": false,
     "SourceKinds": [

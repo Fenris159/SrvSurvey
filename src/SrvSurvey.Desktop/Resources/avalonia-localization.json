@@ -25057,6 +25057,10 @@
       "translation": "Suche gelöscht. Wählen Sie Kriterien für die erneute Suche aus."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Suchkontext geändert. Führen Sie die Suche erneut aus."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Suchkriterien geändert. Aktualisieren Sie, um Märkte für diese Kriterien zu laden."
     },
@@ -63809,6 +63813,10 @@
     {
       "source": "Search cleared. Choose criteria to search again.",
       "translation": "Búsqueda borrada. Elija criterios para buscar nuevamente."
+    },
+    {
+      "source": "Search context changed. Run the search again.",
+      "translation": "El contexto de búsqueda cambió. Ejecute la búsqueda nuevamente."
     },
     {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
@@ -102565,6 +102573,10 @@
       "translation": "Recherche effacée. Choisissez les critères pour effectuer une nouvelle recherche."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Le contexte de recherche a changé. Relancez la recherche."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Les critères de recherche ont changé. Actualisez pour charger les marchés pour ces critères."
     },
@@ -141317,6 +141329,10 @@
     {
       "source": "Search cleared. Choose criteria to search again.",
       "translation": "Pesquisa limpa. Escolha os critérios para pesquisar novamente."
+    },
+    {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Contexto de pesquisa alterado. Execute a pesquisa novamente."
     },
     {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
@@ -180073,6 +180089,10 @@
       "translation": "Поиск очищен. Выберите критерии для повторного поиска."
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "Контекст поиска изменен. Запустите поиск еще раз."
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "Критерии поиска изменены. Обновите, чтобы загрузить рынки по этим критериям."
     },
@@ -218827,6 +218847,10 @@
       "translation": "搜索已清除。选择再次搜索的条件。"
     },
     {
+      "source": "Search context changed. Run the search again.",
+      "translation": "搜索上下文已更改。再次运行搜索。"
+    },
+    {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",
       "translation": "搜索条件已更改。刷新以加载这些标准的市场。"
     },
@@ -257579,6 +257603,10 @@
     {
       "source": "Search cleared. Choose criteria to search again.",
       "translation": "* SEARCH CLEARED. CHOOSE CRITERIA TO SEARCH AGAIN. >>>!"
+    },
+    {
+      "source": "Search context changed. Run the search again.",
+      "translation": "* SEARCH CONTEXT CHANGED. RUN THE SEARCH AGAIN. >>>!"
     },
     {
       "source": "Search criteria changed. Refresh to load markets for these criteria.",

@@ -40,6 +40,8 @@ public sealed class CodexSearchCatalog
         variants = new(Variants, StringComparer.OrdinalIgnoreCase);
         CodexBingoNode root = CodexBingoCatalog.Build(ExobiologyReferenceCatalog.LoadEmbedded().Entries);
         Options = Nodes(root)
+            // An unqualified category name takes precedence over a subgroup under another category.
+            .OrderBy(node => node.Kind == CodexBingoNodeKind.HudCategory ? 0 : 1)
             .SelectMany(node => OptionsForNode(node))
             .DistinctBy(option => option.Label, StringComparer.OrdinalIgnoreCase)
             .OrderBy(option => option.Label, StringComparer.OrdinalIgnoreCase)

@@ -28,13 +28,13 @@ public sealed partial class NearestSystemsClient
                     )
                 )
             );
-        SearchOutcome[] outcomes = await Task.WhenAll(
+        ProviderOutcome<NearestSystemsSearchResult>[] outcomes = await Task.WhenAll(
                 searches.Select(async search =>
                 {
                     await concurrency.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        return await TrySearchAsync(search, cancellationToken).ConfigureAwait(false);
+                        return await TryProviderAsync(search, cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -61,17 +61,17 @@ public sealed partial class NearestSystemsClient
             .Take(ResultLimit)
             .Select(MergeRows)
             .ToArray();
-        var coverage = new List<string>();
+        var coverage = results
+            .Select(result => result.CoverageNote)
+            .Where(note => !string.IsNullOrWhiteSpace(note))
+            .Select(note => note!)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
         int failures = outcomes.Count(outcome => outcome.Error is not null);
         if (failures > 0)
         {
             coverage.Add($"{failures:N0} location search(es) failed; these results are incomplete.");
         }
-        if (plan.CanonnNames.Count > 0)
-        {
-            coverage.Add("Some entries use Canonn's approximate candidate ordering.");
-        }
-
         if (plan.UnsupportedNames.Count > 0)
         {
             coverage.Add(
@@ -90,17 +90,20 @@ public sealed partial class NearestSystemsClient
         };
     }
 
-    private static async Task<SearchOutcome> TrySearchAsync(
-        Func<Task<NearestSystemsSearchResult>> search,
+    private static async Task<ProviderOutcome<T>> TryProviderAsync<T>(
+        Func<Task<T>> search,
         CancellationToken cancellationToken
     )
+        where T : class
     {
         try
         {
             return new(await search().ConfigureAwait(false), null);
         }
-        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidDataException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or JsonException or InvalidDataException or IOException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return new(null, exception);
         }
         catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -109,13 +112,15 @@ public sealed partial class NearestSystemsClient
         }
     }
 
-    private sealed record SearchOutcome(NearestSystemsSearchResult? Result, Exception? Error);
+    private sealed record ProviderOutcome<T>(T? Result, Exception? Error)
+        where T : class;
 
     private static NearestSystemSearchRow MergeRows(IEnumerable<NearestSystemSearchRow> rows)
     {
         NearestSystemSearchRow first = rows.First();
         return first with
         {
+            SystemAddress = rows.Select(row => row.SystemAddress).FirstOrDefault(address => address is > 0),
             Notes = string.Join("; ", rows.Select(row => row.Notes).Distinct(StringComparer.OrdinalIgnoreCase)),
             Source =
                 rows.Select(row => row.Source).Distinct().Count() > 1 ? NearestSystemSource.Combined : first.Source,

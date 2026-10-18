@@ -3,7 +3,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class NearestSystemsViewModelTests
+public sealed partial class NearestSystemsViewModelTests
 {
     [Fact]
     public async Task CanonnSearchUsesCurrentContextAndSupportsRowActions()
@@ -69,7 +69,10 @@ public sealed class NearestSystemsViewModelTests
                         new GalacticCoordinate(4, 5, 6),
                         42,
                         NearestSystemSource.Spansh
-                    ),
+                    )
+                    {
+                        SpanshSearchReference = "search-1",
+                    },
                 ],
                 "search-1"
             ),
@@ -351,6 +354,8 @@ public sealed class NearestSystemsViewModelTests
 
         public NearestSystemsSearchResult VariantResult { get; init; } = new([], null);
 
+        public Func<CancellationToken, Task<NearestSystemsSearchResult>>? LandmarkSearch { get; init; }
+
         public GalacticCoordinate Reference { get; private set; }
 
         public string? CodexName { get; private set; }
@@ -404,7 +409,7 @@ public sealed class NearestSystemsViewModelTests
             LandmarkType = filter.Type;
             LandmarkSubtypes = string.Join(", ", filter.Subtypes);
             LandmarkVariants = filter.Variants;
-            return Task.FromResult(VariantResult);
+            return LandmarkSearch?.Invoke(cancellationToken) ?? Task.FromResult(VariantResult);
         }
     }
 

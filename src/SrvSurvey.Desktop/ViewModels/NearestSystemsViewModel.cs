@@ -82,7 +82,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
     public IReadOnlyList<string> LandmarkSubtypeOptions => catalog.Subtypes;
     public IReadOnlyList<string> LandmarkVariantOptions => catalog.Variants;
     public string CriteriaSummary =>
-        selectedQuery is { MatchVariants: true, Entries.Count: > 1 } query
+        selectedQuery is { MatchVariants: true, Entries.Count: > 0 } query
             ? "Selected entries: "
                 + string.Join(", ", query.Entries.Select(entry => ShortEntryName(entry.Name, query.Label)))
             : string.Empty;
@@ -113,6 +113,8 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
             Results = [];
             SelectedResult = null;
             SpanshSearchReference = null;
+            CoverageNote = string.Empty;
+            ResultOrigin = string.Empty;
             StatusMessage = value.Description;
             OnPropertyChanged(nameof(IsCodexMode));
             OnPropertyChanged(nameof(IsLandmarkMode));
@@ -292,10 +294,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
             return;
         }
 
-        searchVersion++;
-        cancelSearch?.Invoke();
-        cancelSearch = null;
-        IsSearching = false;
+        CancelPendingSearch("Search context changed. Run the search again.");
         ReferenceSystemName = nextSystemName;
         referencePosition = position;
         referenceSystemAddress = nextSystemAddress;
@@ -369,34 +368,12 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
             ResultOrigin =
                 $"Nearest published matches from {ReferenceSystemName}; up to 20 unique systems, no distance cutoff.";
             StatusMessage = "Searching published Codex locations…";
-            NearestSystemsSearchResult searchResult = IsCodexMode
-                ? await nearestSystemsClient.SearchCodexAsync(
-                    position,
-                    selectedQuery ?? catalog.Resolve(CodexName),
-                    commanderName,
-                    operation.Token
-                )
-                : await nearestSystemsClient.SearchLandmarksAsync(
-                    position,
-                    new CodexLandmarkFilter(
-                        LandmarkType.Trim(),
-                        ParseValues(LandmarkSubtypes),
-                        ParseValues(LandmarkVariants)
-                    ),
-                    operation.Token
-                );
+            NearestSystemsSearchResult searchResult = await QueryLocationsAsync(position, operation.Token);
             if (version != searchVersion)
             {
                 return;
             }
-            Results = searchResult.Rows.Select(row => new NearestSystemRowViewModel(row)).ToArray();
-            SelectedResult = Results.Count > 0 ? Results[0] : null;
-            SpanshSearchReference = searchResult.SpanshSearchReference;
-            CoverageNote = searchResult.CoverageNote ?? string.Empty;
-            StatusMessage =
-                Results.Count == 0
-                    ? "No published locations matched these criteria. No distance cutoff was applied."
-                    : $"Found {Results.Count:N0} matching system(s), nearest first.";
+            ApplySearchResult(searchResult);
         }
         catch (OperationCanceledException)
         {
@@ -406,7 +383,13 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
             }
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or JsonException or InvalidDataException or ArgumentException)
+            when (exception
+                    is HttpRequestException
+                        or JsonException
+                        or InvalidDataException
+                        or IOException
+                        or ArgumentException
+            )
         {
             if (version == searchVersion)
             {
@@ -421,6 +404,39 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
                 IsSearching = false;
             }
         }
+    }
+
+    private Task<NearestSystemsSearchResult> QueryLocationsAsync(
+        GalacticCoordinate position,
+        CancellationToken token
+    ) =>
+        IsCodexMode
+            ? nearestSystemsClient.SearchCodexAsync(
+                position,
+                selectedQuery ?? catalog.Resolve(CodexName),
+                commanderName,
+                token
+            )
+            : nearestSystemsClient.SearchLandmarksAsync(
+                position,
+                new CodexLandmarkFilter(
+                    LandmarkType.Trim(),
+                    ParseValues(LandmarkSubtypes),
+                    ParseValues(LandmarkVariants)
+                ),
+                token
+            );
+
+    private void ApplySearchResult(NearestSystemsSearchResult searchResult)
+    {
+        Results = searchResult.Rows.Select(row => new NearestSystemRowViewModel(row)).ToArray();
+        SelectedResult = Results.Count > 0 ? Results[0] : null;
+        SpanshSearchReference = searchResult.SpanshSearchReference;
+        CoverageNote = searchResult.CoverageNote ?? string.Empty;
+        StatusMessage =
+            Results.Count == 0
+                ? "No published locations matched these criteria. No distance cutoff was applied."
+                : $"Found {Results.Count:N0} matching system(s), nearest first.";
     }
 
     public Task CopySystemAsync()
@@ -497,7 +513,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
 
     private string? SpanshSearchReference
     {
-        get => SelectedResult?.SpanshSearchReference ?? spanshSearchReference;
+        get => SelectedResult is { } selected ? selected.SpanshSearchReference : spanshSearchReference;
         set
         {
             if (!SetField(ref spanshSearchReference, value))
@@ -515,7 +531,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
         return !disposed && !IsSearching && referencePosition is not null && HasValidInputs();
     }
 
-    private void CancelPendingSearch()
+    private void CancelPendingSearch(string message = "Search criteria changed. Run the search again.")
     {
         if (cancelSearch is null)
         {
@@ -525,7 +541,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged, IDisposabl
         cancelSearch();
         cancelSearch = null;
         IsSearching = false;
-        StatusMessage = "Search criteria changed. Run the search again.";
+        StatusMessage = message;
     }
 
     private bool HasValidInputs() =>

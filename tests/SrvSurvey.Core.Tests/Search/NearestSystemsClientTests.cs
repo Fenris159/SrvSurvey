@@ -5,7 +5,7 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Search;
 
-public sealed class NearestSystemsClientTests
+public sealed partial class NearestSystemsClientTests
 {
     /// <summary>NSP subtypes have no separate color and use the current Spansh value-list contract.</summary>
     [Fact]
@@ -209,7 +209,7 @@ public sealed class NearestSystemsClientTests
             );
         Assert.Equal("Known", Assert.Single(result.Rows).SystemName);
         Assert.Contains("incomplete", result.CoverageNote);
-        Assert.Contains("approximate", result.CoverageNote);
+        Assert.Equal(NearestSystemSource.Spansh, result.Rows[0].Source);
     }
 
     /// <summary>Sources merged at one system retain both feature notes and the row's original search reference.</summary>
@@ -220,7 +220,7 @@ public sealed class NearestSystemsClientTests
             request.Method == HttpMethod.Post
                 ? Json("{\"search_reference\":\"saved\",\"results\":[" + Body("Known", 1, "Albens Bell Mollusc") + "]}")
                 : Json(
-                    "{\"nearest\":[{\"system\":\"Known\",\"distance\":9011,\"x\":1,\"y\":2,\"z\":3,\"english_name\":\"Unknown feature\"}]}"
+                    "{\"nearest\":[{\"system\":\"Known\",\"distance\":9010.99,\"x\":1,\"y\":2,\"z\":3,\"english_name\":\"Unknown feature\"}]}"
                 )
         );
         NearestSystemsSearchResult result = await Create(handler)
@@ -231,6 +231,8 @@ public sealed class NearestSystemsClientTests
             );
         NearestSystemSearchRow row = Assert.Single(result.Rows);
         Assert.Equal(NearestSystemSource.Combined, row.Source);
+        Assert.Equal(42, row.SystemAddress);
+        Assert.Equal(9010.99, row.Distance);
         Assert.Contains("Albens Bell Mollusc", row.Notes);
         Assert.Contains("Unknown feature", row.Notes);
         Assert.Equal("saved", row.SpanshSearchReference);

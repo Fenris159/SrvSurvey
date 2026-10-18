@@ -53,8 +53,18 @@ public sealed partial class NearestSystemsClient
                 )
                 .ConfigureAwait(false)
             ?? throw new InvalidDataException("Spansh returned an empty search response.");
+        return await ReadLandmarkPagesAsync(first, filter, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<NearestSystemsSearchResult> ReadLandmarkPagesAsync(
+        SpanshBodies first,
+        CodexLandmarkFilter filter,
+        CancellationToken cancellationToken
+    )
+    {
         var bodies = new List<SpanshBody>();
         var seenBodies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        bool incomplete = false;
         SpanshBodies page = first;
         for (int index = 0; index < SpanshRoutes.SearchResultLimit / ResultLimit; index++)
         {
@@ -77,15 +87,25 @@ public sealed partial class NearestSystemsClient
                 break;
             }
 
-            page = await ReadAsync<SpanshBodies>(
-                    new Uri(
-                        spanshBaseUri,
-                        $"bodies/search/recall/{Uri.EscapeDataString(first.SearchReference)}/{index + 1}"
-                    ),
-                    "Spansh Codex search page",
+            ProviderOutcome<SpanshBodies> outcome = await TryProviderAsync(
+                    () =>
+                        ReadAsync<SpanshBodies>(
+                            new Uri(
+                                spanshBaseUri,
+                                $"bodies/search/recall/{Uri.EscapeDataString(first.SearchReference)}/{index + 1}"
+                            ),
+                            "Spansh Codex search page",
+                            cancellationToken
+                        ),
                     cancellationToken
                 )
                 .ConfigureAwait(false);
+            if (outcome.Result is null)
+            {
+                incomplete = true;
+                break;
+            }
+            page = outcome.Result;
         }
         NearestSystemSearchRow[] rows = bodies
             .OrderBy(body => body.Distance)
@@ -93,7 +113,10 @@ public sealed partial class NearestSystemsClient
             .Take(ResultLimit)
             .Select(group => CreateSpanshRow(group, filter, first.SearchReference))
             .ToArray();
-        return new(rows, first.SearchReference);
+        return new(rows, first.SearchReference)
+        {
+            CoverageNote = incomplete ? "Spansh could not load all result pages; these results are incomplete." : null,
+        };
     }
 
     private static void AddField(Dictionary<string, object> predicate, string name, IReadOnlyList<string> values)

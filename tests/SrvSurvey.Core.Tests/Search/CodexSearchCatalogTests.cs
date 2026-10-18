@@ -18,6 +18,22 @@ public sealed class CodexSearchCatalogTests
         Assert.Equal(color is null ? [] : [color], filter.Variants);
     }
 
+    [Theory]
+    [InlineData("Thargoid", "Thargoid", 21)]
+    [InlineData("None (More Thargoid)", "None", 12)]
+    public void CategoryNamesRetainTheirOwnEntriesInsteadOfAnotherCategorysSubgroup(string name, string hud, int count)
+    {
+        var catalog = new CodexSearchCatalog();
+        CodexSearchQuery query = catalog.Resolve(name);
+        Assert.Equal(count, query.Entries.Count);
+        Assert.All(query.Entries, entry => Assert.Equal(hud, entry.HudCategory));
+        if (hud == "Thargoid")
+        {
+            Assert.NotEmpty(catalog.Plan(query).Landmarks);
+            Assert.Empty(catalog.Plan(query).UnsupportedNames);
+        }
+    }
+
     [Fact]
     public void DifferentSpeciesColorSetsRemainSeparateOrQueries()
     {
