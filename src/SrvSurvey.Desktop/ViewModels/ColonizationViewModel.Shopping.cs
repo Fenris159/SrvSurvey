@@ -7,7 +7,6 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class ColonizationViewModel
 {
-    private Action<IReadOnlyList<ColonizationProject>>? shoppingOpener;
     private Action? wishListOpener;
     private readonly WorkspaceCommand wishListCommand;
     private readonly HashSet<string> shoppingProjectIds = new(StringComparer.OrdinalIgnoreCase);
@@ -20,13 +19,49 @@ public sealed partial class ColonizationViewModel
     // Imported cache data can be displayed before Raven responds, but must not trim saved purchases.
     private bool hasCurrentShoppingProjects;
 
-    internal void SetShoppingOpener(Action<IReadOnlyList<ColonizationProject>>? opener) => shoppingOpener = opener;
-
     internal void SetWishListOpener(Action? opener) => wishListOpener = opener;
 
     public ColonizationWishListViewModel WishList { get; }
 
     public ICommand OpenWishListCommand => wishListCommand;
+
+    public ColonizationShoppingViewModel? MarketSearchWorkspace => shoppingWorkspace;
+
+    private int selectedWorkspaceTabIndex;
+
+    public int SelectedWorkspaceTabIndex
+    {
+        get => selectedWorkspaceTabIndex;
+        set
+        {
+            int selected = Math.Clamp(value, 0, 3);
+            if (selectedWorkspaceTabIndex == selected)
+            {
+                return;
+            }
+            selectedWorkspaceTabIndex = selected;
+            OnPropertyChanged();
+            EnsureMarketSearchWorkspace();
+        }
+    }
+
+    private void EnsureMarketSearchWorkspace(long? preferredCarrierMarketId = null)
+    {
+        if (selectedWorkspaceTabIndex == 1 && CanSearchMarkets && shoppingWorkspace is null)
+        {
+            CreateShopping(
+                Projects.Where(row => row.IsShoppingSelected).Select(row => row.Project).ToArray(),
+                preferredCarrierMarketId: preferredCarrierMarketId
+            );
+        }
+    }
+
+    private void CloseMarketSearchWorkspace()
+    {
+        shoppingWorkspace?.Dispose();
+        shoppingWorkspace = null;
+        OnPropertyChanged(nameof(MarketSearchWorkspace));
+    }
 
     private void ReconcileWishList()
     {
@@ -58,7 +93,7 @@ public sealed partial class ColonizationViewModel
             if (!search.WishList.SequenceEqual(allocations))
             {
                 shoppingSession = shoppingSession with { Search = search with { WishList = allocations } };
-                SaveShoppingSession("The updated wish list could not be saved to disk.");
+                SaveShoppingSession("The updated ShoppingList could not be saved to disk.");
             }
         }
         WishList.Apply(shoppingSession?.Search, needs);
@@ -91,7 +126,7 @@ public sealed partial class ColonizationViewModel
             Search = search with { WishList = search.WishList.Where(item => !keys.Contains(item.Key())).ToArray() },
         };
         ReconcileWishList();
-        SaveShoppingSession("The wish list was updated but could not be saved to disk.");
+        SaveShoppingSession("The ShoppingList was updated but could not be saved to disk.");
     }
 
     public bool CanSearchMarkets =>
@@ -101,16 +136,11 @@ public sealed partial class ColonizationViewModel
 
     public string SearchMarketsButtonText => shoppingSession?.Search is not null ? "Reopen Search" : "Search Markets";
 
-    internal string ShoppingSelectionKey =>
-        string.Join("|", shoppingProjectIds.Order(StringComparer.OrdinalIgnoreCase));
-
-    /// <summary>Captures shopping selection independently from saved cargo visibility or the primary build.</summary>
+    /// <summary>Opens the embedded search for the selected project tags without changing overlay visibility.</summary>
     public void OpenShopping()
     {
-        if (CanSearchMarkets)
-        {
-            shoppingOpener?.Invoke(Projects.Where(row => row.IsShoppingSelected).Select(row => row.Project).ToArray());
-        }
+        SelectedWorkspaceTabIndex = 1;
+        EnsureMarketSearchWorkspace();
     }
 
     internal Func<IColonizationMarketSearch> MarketSearchFactory { get; set; } =
@@ -118,7 +148,8 @@ public sealed partial class ColonizationViewModel
 
     internal ColonizationShoppingViewModel CreateShopping(
         IReadOnlyList<ColonizationProject> selected,
-        IColonizationMarketSearch? marketSearch = null
+        IColonizationMarketSearch? marketSearch = null,
+        long? preferredCarrierMarketId = null
     )
     {
         if (!hasCurrentShoppingProjects)
@@ -139,7 +170,7 @@ public sealed partial class ColonizationViewModel
             restoredState: matches ? shoppingSession?.Search : null,
             saveState: state =>
             {
-                // An older open window must not overwrite a subsequently changed project selection.
+                // An obsolete search session must not overwrite a changed project selection.
                 if (commander is null || version != shoppingSelectionVersion)
                 {
                     return;
@@ -148,24 +179,50 @@ public sealed partial class ColonizationViewModel
                 if (string.Equals(commander, CommanderName, StringComparison.OrdinalIgnoreCase))
                 {
                     shoppingSession = session;
+                    if (planningCarrierMarketId != state.SelectedCarrierMarketId)
+                    {
+                        planningCarrierMarketId = state.SelectedCarrierMarketId;
+                        OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
+                        OnPropertyChanged(nameof(SelectedPlanningCarrier));
+                        SavePlanningCarrier();
+                        UpdateCommodityPlan();
+                    }
                     ReconcileWishList();
                     OnPropertyChanged(nameof(SearchMarketsButtonText));
                 }
                 settingsStore.SaveShopping(commander, session);
             },
             refreshProjects: token => RefreshShoppingProjectsAsync(commander, version, ids, token)
-        );
+        )
+        {
+            OpenWishListCommand = wishListCommand,
+        };
         shoppingWorkspace = model;
-        model.UpdateCarriers(LinkedFleetCarriers, planningCarrierMarketId);
+        model.UpdateCarriers(LinkedFleetCarriers, preferredCarrierMarketId ?? planningCarrierMarketId);
         model.SaveWorkspace();
+        OnPropertyChanged(nameof(MarketSearchWorkspace));
         return model;
     }
 
     private void RestoreShoppingSelection()
     {
         shoppingSelectionVersion++;
-        shoppingWorkspace = null;
+        CloseMarketSearchWorkspace();
+        localFocusProjectId = CommanderName is null ? null : settingsStore.LoadLocalProjectFocus(CommanderName);
         shoppingSession = CommanderName is null ? null : settingsStore.LoadShopping(CommanderName);
+        plannedSystems.Clear();
+        if (CommanderName is not null)
+        {
+            foreach (ColonizationSystemRecord system in settingsStore.LoadPlannedSystems(CommanderName))
+            {
+                plannedSystems[system.Name] = system;
+            }
+        }
+        hiddenPlannedProjectIds.Clear();
+        if (CommanderName is not null)
+        {
+            hiddenPlannedProjectIds.UnionWith(settingsStore.LoadHiddenPlannedProjects(CommanderName));
+        }
         RestorePlanningCarrier();
         shoppingProjectIds.Clear();
         shoppingProjectIds.UnionWith(shoppingSession?.ProjectIds ?? []);
@@ -175,13 +232,15 @@ public sealed partial class ColonizationViewModel
 
     private void SaveShoppingSelection()
     {
+        ColonizationShoppingState? state =
+            shoppingProjectIds.Count == 0 ? null : shoppingWorkspace?.CaptureState() ?? shoppingSession?.Search;
         shoppingSelectionVersion++;
-        shoppingWorkspace = null;
-        shoppingSession = new ColonizationShoppingSession(shoppingProjectIds.ToArray(), null);
-        OnPropertyChanged(nameof(ShoppingSelectionKey));
+        CloseMarketSearchWorkspace();
+        shoppingSession = new ColonizationShoppingSession(shoppingProjectIds.ToArray(), state);
         ReconcileWishList();
         OnPropertyChanged(nameof(SearchMarketsButtonText));
         SaveShoppingSession("The shopping selection could not be saved to disk.");
+        EnsureMarketSearchWorkspace(state?.SelectedCarrierMarketId);
     }
 
     private void SaveShoppingSession(string failureMessage)
@@ -203,7 +262,13 @@ public sealed partial class ColonizationViewModel
     private void ReconcileShoppingSelection(IEnumerable<string> projectIds)
     {
         int previousCount = shoppingProjectIds.Count;
-        shoppingProjectIds.IntersectWith(projectIds);
+        shoppingProjectIds.IntersectWith(
+            projectIds.Concat(
+                shoppingProjectIds.Where(id =>
+                    id.StartsWith(ColonizationPlannedProjects.BuildIdPrefix, StringComparison.Ordinal)
+                )
+            )
+        );
         if (previousCount != shoppingProjectIds.Count)
         {
             SaveShoppingSelection();

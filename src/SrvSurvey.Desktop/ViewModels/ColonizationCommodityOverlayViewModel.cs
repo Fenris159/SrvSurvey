@@ -133,6 +133,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
 
             OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return Plan.HasContent
+                && status?.Flags.HasFlag(StatusFlags.FsdJump) != true
                 && mode
                     is not OverlayGameMode.FsdJumping
                         and not OverlayGameMode.GalaxyMap
@@ -143,6 +144,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                     || preferences.ShowOnRightPanel
                         && mode == OverlayGameMode.InternalPanel
                         && Plan.ProjectNames.Count > 0
+                    || status is { Docked: true } && Plan.ProjectNames.Count > 0
                     || Plan.IsAtConstructionSite && mode == OverlayGameMode.Docked
                     || isSquadronBankOpen
                 );
@@ -306,7 +308,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
     /// <summary>Builds category rows using coverage rules and omits collapsed groups when requested.</summary>
     private void RebuildGroups()
     {
-        Groups = Plan
+        ColonizationCommodityGroupViewModel[] updatedGroups = Plan
             .Rows.GroupBy(row => row.Category)
             .Select(group =>
             {
@@ -342,6 +344,23 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
             })
             .Where(group => !preferences.HideCollapsedGroups || !group.IsCollapsed)
             .ToArray();
+
+        // Status.json changes frequently in flight. Replacing identical rows tears
+        // down shared-size columns and briefly shrinks the right-anchored window.
+        bool unchanged =
+            groups.Count == updatedGroups.Length
+            && groups
+                .Zip(updatedGroups)
+                .All(pair =>
+                    pair.First.Name == pair.Second.Name
+                    && pair.First.IsCollapsed == pair.Second.IsCollapsed
+                    && pair.First.CollapsedSummary == pair.Second.CollapsedSummary
+                    && pair.First.Rows.SequenceEqual(pair.Second.Rows)
+                );
+        if (!unchanged)
+        {
+            Groups = updatedGroups;
+        }
     }
 
     private void RaisePlanProperties()

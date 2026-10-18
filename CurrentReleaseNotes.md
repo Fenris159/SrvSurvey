@@ -1,100 +1,81 @@
-# SrvSurvey-XP 2.1.3.0-rc.66
+# SrvSurvey-XP 2.1.3.0-rc.67
 
-RC66 adds a colonization shopping workflow: choose the projects you are working
-on, find nearby markets, and allocate purchases into a persistent wish list.
-A matching in-game overlay keeps that list within reach. Fleet Carrier manifest
-editing, carrier stock coverage, and optional live project refresh help teams
-coordinate their construction supplies.
+RC67 reorganizes Colonization into a tabbed workspace, brings planned projects
+into supply planning, and makes carrier coverage and ShoppingList controls easier
+to use. Overlay panels also retain unchanged content during routine refreshes
+to prevent subtle shifting while flying.
 
-## What's new
+## What's changed
 
-- **Choose projects for shopping.** The colonization workspace lists linked
-  planned sites and active builds. Use the **Shop** checkboxes and **Search Markets**
-  to combine their remaining commodity needs in a separate window. The existing
-  **Show** selection continues to control the cargo report independently.
-- **Search Spansh and Ardent together.** Start near your current system or choose
-  another system with the shared autocomplete. Set the radius, market age,
-  minimum pad size and arrival distance, and exclude carriers or surface ports.
-  Compact station rows show the system, distance, arrival distance and matching
-  goods, with green/red stock comparisons. Expand a row to inspect its goods;
-  click a system name to copy it.
-- **Filter the goods you want to buy.** Toggle individual need tags, or use
-  **Select All** and **Select None**. Hide **Short supply** offers and sort by
-  **Most commodities available** to compare useful stops. The controls and tags
-  wrap to fit smaller windows, including readable monochrome highlights.
-- **Account for goods already loaded.** **Use Carrier** defaults to **ALL** and
-  includes every carrier linked to the commander. **LOADED** estimates the share
-  of each project's remaining needs covered by that stock, with surplus capped
-  for each commodity. The choice is retained per commander and sets the starting
-  carrier for the manifest editor and the search's **FC Diff** selector. FC Diff
-  starts enabled and can use all linked carriers or one carrier.
-- **Allocate a wish list without overbuying.** Click a station name to allocate
-  its offered goods, or click individual commodities to choose your stops.
-  Purchases are capped by station stock and remaining need; allocated quantities
-  reduce the needs and offers still shown. **Wish List** opens a compact station
-  and system tree with quantities to buy. Remove individual goods or whole stops
-  with the red remove buttons to return their quantities to the search.
-- **Keep the plan between sessions.** **Reopen Search** restores saved results,
-  filters and the wish list for the same selected projects. **Refresh** updates
-  project needs from Raven Colonial before fetching market stock. Starting or
-  refreshing a market search, changing the selected projects, or using
-  **Clear Search** starts a fresh wish list. Project-only refreshes reconcile
-  the existing list against the updated requirements.
-- **Follow the wish list in-game.** A nonempty list appears in a themed passive
-  overlay alongside the existing colonization panels. Its default position is
-  the left-center of the monitor, its width follows the text, and its contents
-  scroll after reaching half the screen height. Overlay alignment controls work
-  as usual. Interactive mode enables removing goods or stops and copying system
-  names directly from the panel.
-- **Edit linked Fleet Carrier manifests.** **Edit Carrier Manifest** opens a
-  compact, category-grouped editor for all commander-linked carriers, including
-  teammates' carriers. Select the carrier, update its system using autocomplete,
-  edit numeric quantities, add goods, remove them with the mini trash buttons,
-  or switch between table and text entry. Save updates its Raven Colonial
-  location and manifest.
-- **Compare with local carrier observations.** The read-only **Journal** column
-  shows available CAPI totals plus later journal transactions; unavailable data
-  displays **N/A**. **Hide Non-Colony Commodities** starts enabled, preserves
-  hidden cargo when saving, and shows other goods in their proper categories
-  when turned off. Frontier refresh enforces five minutes between attempts,
-  including after reopening the editor or restarting SrvSurvey.
-- **Follow team progress automatically.** The optional **Auto Refresh** control
-  beside **Refresh Projects** fetches project data every 60 seconds and animates
-  while active. It updates the needs, carrier coverage and wish-list quantities
-  without replacing saved market results. It is session-only, stops on commander
-  changes, and turns itself off after one hour; hover help explains these limits.
-
-## Reliability
-
-- Spansh searches combine the required commodities and reuse saved search pages.
-  Ardent allows up to three nearby commodity requests at once. Partial provider
-  results remain usable, repeated limit warnings collapse into a short summary,
-  and a complete provider outage retains the previous market results.
-- Carrier response errors stay in the editor instead of escaping its event
-  handlers. Journal comparisons accept newer CAPI totals after docking at another
-  port, and older saved FC Diff preferences behave consistently before and after
-  reopening Search.
-- Search tables retain their columns after resizing. Numeric manifest entry uses
-  normal caret placement and rejects non-numeric typing and pasted text.
+- **Navigate Colonization by task.** The workspace now opens on **Projects**,
+  followed by **Market Search**, **System Editor**, and **Settings**. Project
+  creation sits above **My build projects** and **Live Depot**. Consent and
+  carrier-sync settings have a dedicated page with their controls always visible.
+- **Plan supplies before construction begins.** Planned sites appear beside
+  active builds with **(Plan)** appended to their names. Plans from the commander's
+  Raven Colonial systems and locally saved systems can be listed independently
+  of the player's current location. **All Systems** and **All Projects** filters
+  narrow the list by system or by **Building** and **Planning** status.
+- **Choose a project to focus.** **FOCUS** and **Make Focus** replace the primary
+  project labels. Planned projects can also receive focus so their commodity
+  requirements can guide carrier loading before a live depot exists.
+- **Select projects inside Market Search.** Project tags replace the **Shop**
+  column and combine the needs of the selected projects. Both selected and
+  unselected tags retain a button appearance. **Show** remains an independent
+  control for the colonization overlay.
+- **Search markets within the workspace.** Market Search now occupies its tab
+  instead of a separate window. Results use the available workspace width,
+  expanded commodity tags wrap, and scrolling begins after space for at least
+  20 compact result rows. Column headers stay aligned, scrollbars sit outside
+  the result content, and expanding a station does not add a selection highlight.
+- **Build a ShoppingList with commodity tags.** Wishlist is now called
+  **ShoppingList** throughout the interface. Station commodity tags remain
+  visible after selection, use a secondary highlight when allocated, and can
+  be clicked again to remove the allocation. Brief instructions explain this
+  interaction above the results. The remaining-tonnes summary and **Open
+  ShoppingList** button sit together above the table; **Copy needs** uses the
+  same button style as the other search actions.
+- **Keep carrier comparisons consistent.** **Use Carrier** persists between
+  sessions and stays synchronized with **FC Diff** in both directions. **LOADED**
+  recalculates from the selected carrier's cargo against remaining project needs,
+  including after deliveries, and displays decimal precision. Project headings
+  and values use distinct, aligned columns.
+- **Edit system sites without cramped fields.** System Editor shows its sites
+  directly in a single-line table with usable field widths and horizontal
+  scrolling when the table exceeds the workspace. **Prepare new project** turns
+  into **Cancel** during review so the form can be cleared and restarted.
+- **Control cargo-group expansion from the keyboard.** **Ctrl+Alt+Shift+X**
+  toggles **Collapse cargo groups when enough on FC's**. Assign it under
+  **Panel availability and shortcuts** in Colonization overlay settings or in
+  the master input shortcut list. **Hide collapsed groups** remains a separate
+  display preference.
+- **Show the colonization overlay when docked.** Auto-hide-until-docked now
+  reveals selected projects while docked even when the always-available
+  Colonization commodities panel is disabled. Enabled **Auto Refresh** also
+  keeps readable text contrast in the monochrome theme.
+- **Keep overlay content steady during refreshes.** Unchanged rows are retained
+  in Colonization, Biology and survey panels, mining cargo and notices, Guardian,
+  exploration and galaxy-map panels, quests, combat missions, notifications,
+  and ShoppingList. Real changes still update the displayed information and
+  available actions.
 
 ## Update channel and packages
 
-RC66 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC67 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.66`
-- Tag: `xp2-v2.1.3.0-rc.66`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.66-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.66-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.66-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.66-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.67`
+- Tag: `xp2-v2.1.3.0-rc.67`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.67-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.67-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.67-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.67-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
 This remains a development preview. Market stock and carrier comparisons use
-available observations and can lag in-game changes. Broad market searches can
-still take a long time; refresh or narrow the search when needed. Carrier edits
-update Raven Colonial's records and do not move an in-game carrier or transfer
-physical cargo.
+available observations and can lag in-game changes. Refresh project and market
+data when planning purchases. Carrier manifest edits update Raven Colonial's
+records and do not transfer physical cargo.

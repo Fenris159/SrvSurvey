@@ -3,7 +3,7 @@
 In Colonization → **My build projects**, select a project name to open its live,
 read-only preview. Multiple builds can have their own windows open. Selecting the
 same name again activates its existing window. Opening a preview leaves **Show**,
-the primary project, and delivery tracking unchanged.
+the project focus, and delivery tracking unchanged.
 
 **Combined Build Report**, before **Open Raven builds**, opens the same window for
 all workspace projects, including hidden projects. It sums cargo requirements and
@@ -14,7 +14,7 @@ The system selector to the left of **Refresh** starts at **All Systems**. Choose
 system to combine only its builds across every report section and the CSV export.
 Switching systems uses the last complete snapshot without making extra API calls.
 Refresh keeps the selected system while it has projects, otherwise returning to
-**All Systems**. The filter leaves workspace **Show** and primary choices intact.
+**All Systems**. The filter leaves workspace **Show** and focus choices intact.
 
 The window refreshes every 30 seconds and provides an immediate **Refresh** button.
 Closing it stops its refreshes and cancels pending reads. Disabling Raven access or

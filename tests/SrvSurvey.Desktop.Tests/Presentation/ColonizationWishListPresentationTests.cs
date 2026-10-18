@@ -51,8 +51,9 @@ public sealed partial class ColonizationShoppingPresentationTests
                 project.IsShoppingSelected = true;
             }
             model.OpenShopping();
-            ColonizationShoppingWindow window = coordinator.ShoppingWindow!;
-            var search = (ColonizationShoppingViewModel)window.DataContext!;
+            ColonizationShoppingViewModel search = model.MarketSearchWorkspace!;
+            var window = new ColonizationShoppingTestWindow(search);
+            window.Show(owner);
             await search.SearchAsync();
             model.OpenWishListCommand.Execute(null);
             ColonizationWishListWindow wish = coordinator.WishListWindow!;
@@ -74,10 +75,10 @@ public sealed partial class ColonizationShoppingPresentationTests
             LeftClick(window, station);
             Assert.True(overlay.IsVisible);
             Assert.Equal("Steel: 40, Water: 30", search.NeedsText);
-            Assert.Single(search.Results);
+            Assert.Equal(2, search.Results.Count);
             Assert.Equal("Steel: 60", model.WishList.Stations[0].Children[0].Label);
             Assert.Equal("Water: 20", model.WishList.Stations[0].Children[1].Label);
-            search.Results[0].IsExpanded = true;
+            search.Results.Single(row => row.Station == "Port 2").IsExpanded = true;
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
             {
                 Assert.NotNull(frame);
@@ -86,7 +87,9 @@ public sealed partial class ColonizationShoppingPresentationTests
                     PngBitmapEncoderOptions.Default
                 );
             }
-            ShoppingSupplyViewModel steel = search.Results[0].AvailableSupplies[0];
+            ShoppingSupplyViewModel steel = search
+                .Results.Single(row => row.Station == "Port 2")
+                .AvailableSupplies.Single(supply => supply.Need.Commodity == "steel");
             Assert.Equal("Steel: 40", steel.TableLabel);
             Button steelButton = window
                 .GetVisualDescendants()
@@ -98,14 +101,16 @@ public sealed partial class ColonizationShoppingPresentationTests
             {
                 Assert.NotNull(frame);
             }
-            ShoppingSupplyViewModel water = search.Results[0].AvailableSupplies[0];
+            ShoppingSupplyViewModel water = search
+                .Results.Single(row => row.Station == "Port 2")
+                .AvailableSupplies.Single(supply => supply.Need.Commodity == "water");
             Button waterButton = window
                 .GetVisualDescendants()
                 .OfType<Button>()
                 .Single(button => button.Command == water.ToggleWishListCommand);
             LeftClick(window, waterButton);
             Assert.True(search.IsFullyPlanned);
-            Assert.Empty(search.Results);
+            Assert.All(search.Results, row => Assert.True(row.IsWishListed));
             Assert.Empty(window.FindControl<ItemsControl>("ShoppingNeeds")!.ItemsSource!);
             using (WriteableBitmap? frame = wish.CaptureRenderedFrame())
             {
@@ -123,11 +128,13 @@ public sealed partial class ColonizationShoppingPresentationTests
             await clipboard.SetTextAsync("before");
             LeftClick(wish, wishSystem);
             Assert.Equal("Sol", await clipboard.TryGetTextAsync());
-            window.Close();
+            window.Hide();
+            model.SelectedWorkspaceTabIndex = 0;
             Assert.True(overlay.IsVisible);
             Assert.True(wish.IsVisible);
             model.OpenShopping();
-            var restored = (ColonizationShoppingViewModel)coordinator.ShoppingWindow!.DataContext!;
+            ColonizationShoppingViewModel restored = model.MarketSearchWorkspace!;
+            Assert.Same(search, restored);
             Assert.True(restored.IsFullyPlanned);
             using (WriteableBitmap? frame = wish.CaptureRenderedFrame())
             {
@@ -174,9 +181,7 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .Single(button => button.Command == port.RemoveCommand);
             LeftClick(live, removePort);
             Assert.Equal("Steel: 100, Water: 30", restored.NeedsText);
-            coordinator
-                .ShoppingWindow.FindControl<Button>("ClearMarketSearch")!
-                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            window.FindControl<Button>("ClearMarketSearch")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.False(model.WishList.HasItems);
             Assert.False(overlay.IsVisible);
             Assert.Empty(restored.Results);

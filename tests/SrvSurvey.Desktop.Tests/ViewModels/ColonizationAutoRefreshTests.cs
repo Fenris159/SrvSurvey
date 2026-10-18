@@ -254,7 +254,8 @@ public sealed partial class ColonizationViewModelTests
         response.SetResult(ShoppingWorkspace(50));
         await marketRefresh;
         Assert.Equal(1, markets.Calls);
-        Assert.Contains("Refresh failed", shopping.Status);
+        Assert.False(shopping.CanSearch);
+        Assert.False(shopping.IsBusy);
         model.IsEnabled = false;
         await shopping.SearchAsync();
         Assert.Equal(3, client.LoadCount);

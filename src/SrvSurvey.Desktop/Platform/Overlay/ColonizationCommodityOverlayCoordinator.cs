@@ -10,7 +10,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
     private readonly HostedOverlayWindow hostedWindow;
     private readonly OverlayWindowRegistry windowRegistry;
     private bool userEnabled;
-    private bool manualShow;
+    private bool? manualVisibility;
     private bool isSuppressed;
     private bool disposed;
 
@@ -55,7 +55,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
         bool show = !IsVisible;
         availability.Panels.Single(panel => panel.PlotterName == PlotterName).IsEnabled = show;
-        manualShow = show;
+        manualVisibility = show;
 
         SynchronizeIntent();
     }
@@ -108,7 +108,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         userEnabled = enabled;
-        manualShow = enabled;
+        manualVisibility = enabled ? true : null;
         SynchronizeIntent();
     }
 
@@ -120,7 +120,12 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             return;
         }
 
-        bool wantsWindow = manualShow && viewModel.CanShowManually || viewModel.ShouldAutoShow;
+        bool wantsWindow = manualVisibility switch
+        {
+            true => viewModel.CanShowManually,
+            false => false,
+            null => viewModel.ShouldAutoShow,
+        };
         hostedWindow.Reconcile(!isSuppressed && wantsWindow);
     }
 }

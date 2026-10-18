@@ -18,10 +18,8 @@ public sealed partial class ColonizationViewModelTests
             ),
         };
         using ColonizationViewModel model = Create(client);
-        IReadOnlyList<ColonizationProject>? opened = null;
-        model.SetShoppingOpener(selected => opened = selected);
         model.OpenShopping();
-        Assert.Null(opened);
+        Assert.Null(model.MarketSearchWorkspace);
         model.IsEnabled = true;
         await model.SetCommanderAsync("Test Cmdr");
         Assert.False(model.CanSearchMarkets);
@@ -30,7 +28,7 @@ public sealed partial class ColonizationViewModelTests
         row.IsShoppingSelected = true;
         Assert.True(model.SearchMarketsCommand.CanExecute(null));
         model.SearchMarketsCommand.Execute(null);
-        Assert.Same(row.Project, Assert.Single(opened!));
+        Assert.Equal(row.Project.BuildId, Assert.Single(model.MarketSearchWorkspace!.ProjectIds));
         Assert.False(row.IsShown);
         Assert.False(model.HasUnsavedProjectVisibility);
         Assert.Equal(0, client.SaveCount);
@@ -45,7 +43,6 @@ public sealed partial class ColonizationViewModelTests
         Assert.False(model.CanSearchMarkets);
         await model.SetCommanderAsync(null);
         Assert.Empty(model.Projects);
-        model.SetShoppingOpener(null);
     }
 
     [Fact]

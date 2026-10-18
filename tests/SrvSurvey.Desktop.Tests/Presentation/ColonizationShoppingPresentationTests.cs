@@ -20,6 +20,8 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class ColonizationShoppingPresentationTests
 {
+    private static readonly string[] workspaceTabOrder = ["Projects", "Market Search", "System Editor", "Settings"];
+
     [AvaloniaTheory]
     [InlineData(1180)]
     [InlineData(820)]
@@ -38,7 +40,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             search
         );
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model) { Width = width };
+        var window = new ColonizationShoppingTestWindow(model) { Width = width };
         try
         {
             window.Show();
@@ -225,10 +227,14 @@ public sealed partial class ColonizationShoppingPresentationTests
         );
         await model.SearchAsync();
         model.Results[2].IsExpanded = true;
-        var window = new ColonizationShoppingWindow(model) { Height = 560 };
+        var window = new ColonizationShoppingTestWindow(model) { Height = 560 };
         try
         {
             window.Show();
+            window.UpdateLayout();
+            Assert.IsType<ScrollViewer>(window.Content).ScrollToEnd();
+            window.UpdateLayout();
+            window.FindControl<ListBox>("ShoppingResults")!.ScrollIntoView(model.Results[^1]);
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
             frame.Save(
@@ -272,7 +278,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             search
         );
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model);
+        var window = new ColonizationShoppingTestWindow(model);
         try
         {
             window.Show();
@@ -287,7 +293,7 @@ public sealed partial class ColonizationShoppingPresentationTests
                 PngBitmapEncoderOptions.Default
             );
             Assert.Equal(2000, results.ItemCount);
-            Assert.InRange(results.Bounds.Height, 1, 600);
+            Assert.InRange(results.Bounds.Height, 1, 720);
             Assert.InRange(window.FindControl<ScrollViewer>("ShoppingWarnings")!.Bounds.Height, 1, 72);
             int realized = results.GetVisualDescendants().OfType<ListBoxItem>().Count();
             Assert.InRange(realized, 1, 100);
@@ -299,76 +305,69 @@ public sealed partial class ColonizationShoppingPresentationTests
     }
 
     [AvaloniaFact]
-    public async Task OpensSelectedSnapshotAndClosesOnConsentCommanderAndOwnerChanges()
+    public async Task EmbeddedSearchSurvivesTabChangesAndStopsOnCommanderOrConsentChanges()
     {
         string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-shopping-" + Guid.NewGuid().ToString("N"));
-        using var http = new HttpClient(new RavenHandler());
+        using var http = new HttpClient(
+            new RavenHandler { LinkedCarriers = [new() { MarketId = 42, Name = "AAA-111" }] }
+        );
         using var model = new ColonizationViewModel(
             new ColonizationSettingsStore(Path.Combine(directory, "ui.json")),
             new RavenColonialClient(http)
         );
-        var owner = new Window();
-        using var coordinator = new ColonizationProjectPreviewWindowCoordinator(model, owner);
         try
         {
-            owner.Show();
-            coordinator.ShowShopping([]);
-            Assert.Null(coordinator.ShoppingWindow);
+            Assert.Equal(0, model.SelectedWorkspaceTabIndex);
+            model.SelectedWorkspaceTabIndex = -1;
+            Assert.Equal(0, model.SelectedWorkspaceTabIndex);
             model.IsEnabled = true;
             await model.SetCommanderAsync("Example Cmdr");
             model.Projects[0].IsShoppingSelected = true;
             model.OpenShopping();
-            ColonizationShoppingWindow first = coordinator.ShoppingWindow!;
-            Assert.True(first.IsVisible);
-            Assert.Equal("First", ((ColonizationShoppingViewModel)first.DataContext!).ProjectSummary);
-            model.OpenShopping();
-            Assert.True(first.IsVisible);
-            Assert.Same(first, coordinator.ShoppingWindow);
-            Assert.Equal("Reopen Search", model.SearchMarketsButtonText);
-            first.WindowState = WindowState.Minimized;
-            model.OpenShopping();
-            Assert.Equal(WindowState.Normal, first.WindowState);
-            var shopping = (ColonizationShoppingViewModel)first.DataContext;
-            shopping.ReferenceSystem = "Sol";
-            shopping.RadiusText = "25";
-            first.Close();
-            model.OpenShopping();
-            Assert.NotSame(first, coordinator.ShoppingWindow);
-            var reopened = (ColonizationShoppingViewModel)coordinator.ShoppingWindow!.DataContext!;
-            Assert.Equal("Sol", reopened.ReferenceSystem);
-            Assert.Equal("25", reopened.RadiusText);
-            model.Projects[1].IsShoppingSelected = true;
-            model.OpenShopping();
-            Assert.NotSame(reopened, coordinator.ShoppingWindow.DataContext);
-            Assert.Equal(
-                "First, Second",
-                ((ColonizationShoppingViewModel)coordinator.ShoppingWindow.DataContext!).ProjectSummary
+            ColonizationShoppingViewModel first = Assert.IsType<ColonizationShoppingViewModel>(
+                model.MarketSearchWorkspace
             );
+            Assert.Equal("First", first.ProjectSummary);
+            first.ReferenceSystem = "Sol";
+            first.RadiusText = "25";
+            first.SelectedCarrier = first.CarrierOptions.Single(choice => choice.MarketId == 42);
+            model.SelectedWorkspaceTabIndex = 0;
+            model.OpenShopping();
+            Assert.Same(first, model.MarketSearchWorkspace);
+            Assert.Equal("Sol", first.ReferenceSystem);
+            model.Projects[1].IsShoppingSelected = true;
+            ColonizationShoppingViewModel revised = Assert.IsType<ColonizationShoppingViewModel>(
+                model.MarketSearchWorkspace
+            );
+            Assert.NotSame(first, revised);
+            Assert.False(first.CanSearch);
+            Assert.Equal("First, Second", revised.ProjectSummary);
+            Assert.Equal("Sol", revised.ReferenceSystem);
+            Assert.Equal("25", revised.RadiusText);
+            Assert.Equal(42, revised.SelectedCarrier.MarketId);
+            Assert.Equal(42, model.SelectedPlanningCarrierMarketId);
             model.IsEnabled = false;
-            Assert.Null(coordinator.ShoppingWindow);
+            Assert.Null(model.MarketSearchWorkspace);
+            Assert.False(revised.CanSearch);
             model.IsEnabled = true;
             await model.RefreshAsync();
             model.Projects[0].IsShoppingSelected = true;
             model.OpenShopping();
+            Assert.NotNull(model.MarketSearchWorkspace);
             await model.SetCommanderAsync(null);
-            Assert.Null(coordinator.ShoppingWindow);
-            await model.SetCommanderAsync("Example Cmdr");
-            model.Projects[0].IsShoppingSelected = true;
-            model.OpenShopping();
-            owner.Close();
-            Assert.Null(coordinator.ShoppingWindow);
-            coordinator.ShowShopping(ColonizationShoppingViewModelTests.Projects());
-            Assert.Null(coordinator.ShoppingWindow);
+            Assert.Null(model.MarketSearchWorkspace);
+            model.SelectedWorkspaceTabIndex = 99;
+            Assert.Equal(3, model.SelectedWorkspaceTabIndex);
         }
         finally
         {
-            owner.Close();
+            model.Dispose();
             Directory.Delete(directory, true);
         }
     }
 
     [AvaloniaFact]
-    public async Task ProjectShoppingCheckboxEnablesSearchButtonWithoutChangingShow()
+    public async Task ProjectTagsLoadMarketNeedsWithoutChangingOverlaySelection()
     {
         using var http = new HttpClient(new RavenHandler());
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
@@ -377,8 +376,6 @@ public sealed partial class ColonizationShoppingPresentationTests
         );
         main.Colonization.IsEnabled = true;
         await main.Colonization.SetCommanderAsync("Example Cmdr");
-        IReadOnlyList<ColonizationProject>? selected = null;
-        main.Colonization.SetShoppingOpener(projects => selected = projects);
         var view = new Views.ColonizationView { DataContext = main };
         var owner = new Window
         {
@@ -389,26 +386,45 @@ public sealed partial class ColonizationShoppingPresentationTests
         try
         {
             owner.Show();
-            using WriteableBitmap? frame = owner.CaptureRenderedFrame();
-            Assert.NotNull(frame);
-            Button search = view.FindControl<Button>("SearchMarketsButton")!;
-            Button wishList = view.FindControl<Button>("OpenWishListButton")!;
-            Assert.Equal("Wish List", wishList.Content);
-            Assert.Same(search.Parent, wishList.Parent);
-            Assert.True(wishList.IsEnabled);
-            Assert.False(search.IsEnabled);
-            CheckBox shopping = view.GetVisualDescendants()
-                .OfType<CheckBox>()
-                .First(box =>
-                    box.DataContext is ColonizationProjectRowViewModel
-                    && box.GetValue(Avalonia.Automation.AutomationProperties.NameProperty)
-                        == "Select project for shopping"
-                );
-            shopping.IsChecked = true;
-            Assert.True(search.IsEnabled);
-            search.Command!.Execute(null);
-            Assert.Equal("1", Assert.Single(selected!).BuildId);
+            Assert.Null(view.FindControl<Button>("SearchMarketsButton"));
+            Assert.Null(view.FindControl<Button>("OpenWishListButton"));
+            TabControl tabs = view.FindControl<TabControl>("ColonizationTabs")!;
+            Assert.Equal(workspaceTabOrder, tabs.Items.OfType<TabItem>().Select(item => item.Header));
+            tabs.SelectedIndex = 1;
+            using (WriteableBitmap? frame = owner.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            ToggleButton[] tags = view.FindControl<ItemsControl>("MarketSearchProjects")!
+                .GetVisualDescendants()
+                .OfType<ToggleButton>()
+                .ToArray();
+            Assert.Equal(2, tags.Length);
+            Assert.False(main.Colonization.CanSearchMarkets);
+            tags[0].IsChecked = true;
+            Assert.True(main.Colonization.CanSearchMarkets);
+            Assert.Equal("1", Assert.Single(main.Colonization.MarketSearchWorkspace!.ProjectIds));
             Assert.False(main.Colonization.HasUnsavedProjectVisibility);
+            Assert.All(main.Colonization.Projects, row => Assert.True(row.IsShown));
+            tags[0].IsChecked = false;
+            Assert.Null(main.Colonization.MarketSearchWorkspace);
+            tags[1].IsChecked = true;
+            Assert.Equal("2", Assert.Single(main.Colonization.MarketSearchWorkspace!.ProjectIds));
+            foreach (int index in new[] { 0, 2, 3, 1 })
+            {
+                tabs.SelectedIndex = index;
+                using WriteableBitmap? frame = owner.CaptureRenderedFrame();
+                Assert.NotNull(frame);
+                frame.Save(
+                    Path.Combine(Path.GetTempPath(), $"srvsurvey-colonization-tab-{index}.png"),
+                    PngBitmapEncoderOptions.Default
+                );
+                Assert.DoesNotContain(
+                    view.GetVisualDescendants().OfType<Expander>(),
+                    item => item.IsEffectivelyVisible
+                );
+            }
+            Assert.Equal(1, main.Colonization.SelectedWorkspaceTabIndex);
         }
         finally
         {
@@ -441,7 +457,7 @@ public sealed partial class ColonizationShoppingPresentationTests
     [AvaloniaFact]
     public void DesignerWindowClosesWithoutStartingRequests()
     {
-        var window = new ColonizationShoppingWindow();
+        var window = new ColonizationShoppingTestWindow();
         window.Show();
         Assert.False(window.FindControl<Button>("RunMarketSearch")!.IsEnabled);
         window.Close();
@@ -451,6 +467,10 @@ public sealed partial class ColonizationShoppingPresentationTests
     {
         public ConcurrentBag<string> MarketSources { get; } = [];
         public IReadOnlyList<ColonizationFleetCarrier> LinkedCarriers { get; init; } = [];
+        public ColonizationSystemRecord? SystemRecord { get; init; }
+        public Dictionary<string, ColonizationSystemRecord> AdditionalSystems { get; init; } = [];
+        public IReadOnlyList<ColonizationProject> ActiveProjects { get; set; } =
+            ColonizationShoppingViewModelTests.Projects();
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -471,9 +491,13 @@ public sealed partial class ColonizationShoppingPresentationTests
             string path = request.RequestUri.AbsolutePath;
             string json = path switch
             {
-                _ when path.EndsWith("/active", StringComparison.Ordinal) => JsonSerializer.Serialize(
-                    ColonizationShoppingViewModelTests.Projects()
-                ),
+                _ when AdditionalSystems.TryGetValue(path, out ColonizationSystemRecord? system) =>
+                    JsonSerializer.Serialize(system),
+                _ when (
+                        path.EndsWith("/system/Sol", StringComparison.Ordinal)
+                        || path.EndsWith("/system/42", StringComparison.Ordinal)
+                    ) && SystemRecord is not null => JsonSerializer.Serialize(SystemRecord),
+                _ when path.EndsWith("/active", StringComparison.Ordinal) => JsonSerializer.Serialize(ActiveProjects),
                 _ when path.EndsWith("/primary", StringComparison.Ordinal) => "null",
                 _ when path.EndsWith("/fc/all", StringComparison.Ordinal) => JsonSerializer.Serialize(LinkedCarriers),
                 _ when path.StartsWith("/api/fc/", StringComparison.Ordinal) => JsonSerializer.Serialize(

@@ -61,7 +61,8 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
         bool initiallyExpanded = false,
         Action<string, bool>? expansionChanged = null,
         Action<IReadOnlyList<ColonizationWishListItem>, bool>? wishListChanged = null,
-        bool showShortSupply = true
+        bool showShortSupply = true,
+        IReadOnlyList<ColonizationWishListItem>? wishList = null
     )
     {
         this.expansionChanged = expansionChanged;
@@ -83,15 +84,30 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
             _ => "?",
         };
         Supplies = needs
-            .Select(need => new ShoppingSupplyViewModel(
-                need,
-                quotes.FirstOrDefault(quote => quote.Commodity == need.Commodity),
-                false,
-                supply => SetWishListed([supply], !supply.IsWishListed)
-            ))
+            .Select(need =>
+            {
+                long allocated =
+                    wishList
+                        ?.FirstOrDefault(item => item.MarketKey == key && item.Commodity == need.Commodity)
+                        ?.Quantity
+                    ?? 0;
+                return new ShoppingSupplyViewModel(
+                    need with
+                    {
+                        Required = need.Required + allocated,
+                    },
+                    quotes.FirstOrDefault(quote => quote.Commodity == need.Commodity),
+                    allocated > 0,
+                    supply => SetWishListed([supply], !supply.IsWishListed),
+                    allocated
+                );
+            })
             .ToArray();
         AvailableSupplies = Supplies
-            .Where(supply => supply.Stock > 0 && (showShortSupply || supply.IsEnough))
+            .Where(supply =>
+                supply.IsWishListed
+                || supply.Need.Required > 0 && supply.Stock > 0 && (showShortSupply || supply.IsEnough)
+            )
             .ToArray();
         ToggleWishListCommand = new WorkspaceCommand(() => SetWishListed(AvailableSupplies, !IsWishListed));
     }
@@ -125,6 +141,7 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
 public sealed class ShoppingSupplyViewModel : WorkspaceObservable
 {
     private bool isWishListed;
+    private readonly long allocatedQuantity;
     public ColonizationShoppingNeed Need { get; }
     public ColonizationMarketQuote? Quote { get; }
     public bool IsWishListed => isWishListed;
@@ -134,12 +151,14 @@ public sealed class ShoppingSupplyViewModel : WorkspaceObservable
         ColonizationShoppingNeed need,
         ColonizationMarketQuote? quote,
         bool initiallyWishListed = false,
-        Action<ShoppingSupplyViewModel>? toggle = null
+        Action<ShoppingSupplyViewModel>? toggle = null,
+        long allocatedQuantity = 0
     )
     {
         Need = need;
         Quote = quote;
         isWishListed = initiallyWishListed;
+        this.allocatedQuantity = allocatedQuantity;
         ToggleWishListCommand = new WorkspaceCommand(() => toggle?.Invoke(this));
     }
 
@@ -148,9 +167,10 @@ public sealed class ShoppingSupplyViewModel : WorkspaceObservable
     public long Stock => Quote?.Stock ?? 0;
     public bool IsEnough => Stock >= Need.Required;
     public string Label => $"{Need.DisplayName}: {Stock:N0} / {Need.Required:N0}";
-    public string TableLabel => $"{Need.DisplayName}: {Math.Min(Stock, Need.Required):N0}";
+    public string TableLabel =>
+        $"{Need.DisplayName}: {(IsWishListed ? allocatedQuantity : Math.Min(Stock, Need.Required)):N0}";
     public string Detail =>
         Quote is null
             ? "No supply reported"
-            : $"Still need {Need.Required:N0} · Location Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
+            : $"Still need {Math.Max(0, Need.Required - allocatedQuantity):N0} · Location Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
 }

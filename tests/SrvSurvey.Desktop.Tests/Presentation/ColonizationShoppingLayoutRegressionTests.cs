@@ -37,7 +37,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             search
         );
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model) { Width = width };
+        var window = new ColonizationShoppingTestWindow(model) { Width = width };
         try
         {
             window.Show();
@@ -98,7 +98,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             },
         ]);
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model) { Width = 700 };
+        var window = new ColonizationShoppingTestWindow(model) { Width = 700 };
         try
         {
             window.Show();
@@ -141,7 +141,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             ],
             () => "Sol"
         );
-        var window = new ColonizationShoppingWindow(model) { Width = 640 };
+        var window = new ColonizationShoppingTestWindow(model) { Width = 640 };
         window.Resources["RavenControlAccentBrush"] = new SolidColorBrush(Color.Parse("#F5F5F5"));
         window.Resources["RavenAccentBrush"] = new SolidColorBrush(Color.Parse("#E6D59A"));
         window.Resources["RavenAccentForegroundBrush"] = new SolidColorBrush(Color.Parse("#0A0A0A"));
@@ -203,7 +203,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             () => "Sol",
             search
         );
-        var window = new ColonizationShoppingWindow(model);
+        var window = new ColonizationShoppingTestWindow(model);
         Task? pending = null;
         try
         {
@@ -241,7 +241,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             ])
         );
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model);
+        var window = new ColonizationShoppingTestWindow(model);
         try
         {
             window.Show();
@@ -286,7 +286,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             new ColonizationShoppingViewModelTests.SearchStub(quotes)
         );
         await model.SearchAsync();
-        var window = new ColonizationShoppingWindow(model);
+        var window = new ColonizationShoppingTestWindow(model);
         try
         {
             window.Show();

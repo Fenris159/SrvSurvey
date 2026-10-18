@@ -107,25 +107,35 @@ public sealed class ThemeWorkspaceMarkupTests
     }
 
     [Fact]
-    public void LegacyCollapsingHeadersUseRoundedSectionChrome()
+    public void ColonizationSettingsAndSystemEditorUseStaticPages()
     {
         XDocument colonization = LoadDesktopFile("Views", "ColonizationView.axaml");
-        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         XElement[] expanders = colonization
             .Descendants()
             .Where(element => element.Name.LocalName == "Expander")
             .ToArray();
 
-        Assert.Equal(2, expanders.Length);
-        Assert.All(
-            expanders,
-            expander =>
-                Assert.Contains(
-                    "section-pill",
-                    expander.Attribute("Classes")?.Value ?? string.Empty,
-                    StringComparison.Ordinal
-                )
+        Assert.Empty(expanders);
+        XElement settings = Assert.Single(
+            colonization.Descendants(),
+            element => element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "Settings"
         );
+        XElement system = Assert.Single(
+            colonization.Descendants(),
+            element => element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "System Editor"
+        );
+        Assert.Contains(settings.Descendants(), element => element.Attribute("Text")?.Value == "External data consent");
+        Assert.Contains(
+            settings.Descendants(),
+            element => element.Attribute("Text")?.Value == "Fleet Carrier cargo sync"
+        );
+        Assert.Contains(system.Descendants(), element => element.Attribute("Text")?.Value == "Raven system sites");
+    }
+
+    [Fact]
+    public void LegacyCollapsingHeadersUseRoundedSectionChrome()
+    {
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         Assert.Contains(
             styles.Descendants(),
             element =>

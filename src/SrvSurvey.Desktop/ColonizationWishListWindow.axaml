@@ -4,7 +4,7 @@
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         x:Class="SrvSurvey.Desktop.ColonizationWishListWindow"
         x:DataType="vm:ColonizationWishListViewModel"
-        Title="Colonization wish list" Width="580" Height="500" MinWidth="400" MinHeight="300"
+        Title="Colonization ShoppingList" Width="580" Height="500" MinWidth="400" MinHeight="300"
         WindowStartupLocation="CenterOwner">
   <Window.Styles>
     <Style Selector="TreeViewItem">
@@ -34,7 +34,7 @@
   </Window.Styles>
   <Grid RowDefinitions="Auto,*,Auto" Margin="12" RowSpacing="8">
     <StackPanel Spacing="3">
-      <TextBlock Text="Wish List" FontSize="18" FontWeight="SemiBold" />
+      <TextBlock Text="ShoppingList" FontSize="18" FontWeight="SemiBold" />
       <TextBlock Text="Planned purchases (tonnes)" FontSize="12" Classes="muted" />
     </StackPanel>
     <TreeView x:Name="WishListTree" Grid.Row="1" ItemsSource="{Binding Stations}"
@@ -42,7 +42,7 @@
       <TreeView.ItemTemplate>
         <TreeDataTemplate x:DataType="vm:ColonizationWishListNode" ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Classes="remove-wish" Content="×" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove from wish list" AutomationProperties.Name="Remove from wish list" />
+            <Button Classes="remove-wish" Content="×" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove from ShoppingList" AutomationProperties.Name="Remove from ShoppingList" />
             <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center" />
             <Button Classes="system-link" IsVisible="{Binding HasSystem}" Content="{Binding System}"
                     behaviors:ClipboardCopyBehavior.Text="{Binding System}" />
@@ -51,7 +51,7 @@
       </TreeView.ItemTemplate>
     </TreeView>
     <TextBlock Grid.Row="1" IsVisible="{Binding !HasItems}" FontSize="12" Classes="muted" TextWrapping="Wrap"
-               Text="Select a station or commodities in Search Markets to build your wish list." />
+               Text="Select a station or commodities in Search Markets to build your ShoppingList." />
     <TextBlock Grid.Row="2" Text="{Binding Summary}" FontSize="11" Classes="muted" />
   </Grid>
 </Window>

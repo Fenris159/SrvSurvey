@@ -17,12 +17,26 @@ public sealed partial class ColonizationViewModel
             ?? PlanningCarrierOptions[0];
         set
         {
-            if (updatingPlanningCarriers || value is null || !SetField(ref planningCarrierMarketId, value.MarketId))
+            if (value is not null)
+            {
+                SelectedPlanningCarrierMarketId = value.MarketId;
+            }
+        }
+    }
+
+    /// <summary>Keeps the saved carrier identity available while its dropdown options are loading.</summary>
+    public long SelectedPlanningCarrierMarketId
+    {
+        get => planningCarrierMarketId;
+        set
+        {
+            if (updatingPlanningCarriers || !SetField(ref planningCarrierMarketId, value))
             {
                 return;
             }
+            OnPropertyChanged(nameof(SelectedPlanningCarrier));
             SavePlanningCarrier();
-            UpdateProjectCarrierCoverage();
+            UpdateCommodityPlan();
             ApplyPlanningCarrierToShopping();
         }
     }
@@ -51,6 +65,7 @@ public sealed partial class ColonizationViewModel
             try
             {
                 OnPropertyChanged(nameof(PlanningCarrierOptions));
+                OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
                 OnPropertyChanged(nameof(SelectedPlanningCarrier));
             }
             finally

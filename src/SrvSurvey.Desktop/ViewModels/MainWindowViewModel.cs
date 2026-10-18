@@ -459,6 +459,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             VrOverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action == GlobalInputAction.ToggleVrOverlayInteraction
             );
+            CollapseCoveredColonyGroupsBinding = InputSettings.Bindings.Single(binding =>
+                binding.Definition.Action == GlobalInputAction.ToggleCollapseCoveredColonyGroups
+            );
             OverlayTheme =
                 overlayThemeSettings
                 ?? new OverlayThemeSettingsViewModel(
@@ -1117,6 +1120,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public InputBindingViewModel OverlayInteractionBinding { get; }
 
     public InputBindingViewModel VrOverlayInteractionBinding { get; }
+
+    public InputBindingViewModel CollapseCoveredColonyGroupsBinding { get; }
 
     public OverlayThemeSettingsViewModel OverlayTheme { get; }
 

@@ -123,6 +123,9 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     public long? LoadedSystemAddress => system?.SystemAddress;
 
+    internal ColonizationSystemRecord? PlanningSnapshot =>
+        system is null ? null : system with { Sites = SnapshotVisibleSites() };
+
     public string SystemTitle =>
         system is null ? context.SystemName ?? "No live system" : $"{system.Name} ({system.SystemAddress})";
 

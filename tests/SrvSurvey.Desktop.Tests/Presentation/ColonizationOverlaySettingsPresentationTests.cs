@@ -1,8 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -43,6 +47,41 @@ public sealed class ColonizationOverlaySettingsPresentationTests
             CheckBox hide = view.FindControl<CheckBox>("HideCollapsedCommodityGroupsCheckBox")!;
             CheckBox autoHide = view.FindControl<CheckBox>("ColonizationAutoHideUntilDockedCheckBox")!;
             CheckBox hideBadges = view.FindControl<CheckBox>("HideCommodityRowBadgesCheckBox")!;
+            ShortcutCaptureBox shortcut = view.FindControl<ShortcutCaptureBox>("CollapseCoveredGroupsShortcutBox")!;
+            InputBindingViewModel inputBinding = main.InputSettings.Bindings.Single(binding =>
+                binding.Definition.Action == GlobalInputAction.ToggleCollapseCoveredColonyGroups
+            );
+            Assert.Same(inputBinding, main.CollapseCoveredColonyGroupsBinding);
+            Assert.True(shortcut.IsEffectivelyVisible);
+            Assert.Contains(view.FindControl<Border>("PanelVisibilityCard")!, shortcut.GetLogicalAncestors());
+            Assert.DoesNotContain(
+                view.FindControl<Border>("ColonizationShoppingCard")!,
+                shortcut.GetLogicalAncestors()
+            );
+            Assert.Equal("ALT CTRL SHIFT X", shortcut.Chord);
+            shortcut.BeginCapture();
+            shortcut.CaptureKeyDown(Key.LeftAlt);
+            shortcut.CaptureKeyDown(Key.LeftCtrl);
+            shortcut.CaptureKeyDown(Key.LeftShift);
+            shortcut.CaptureKeyDown(Key.Y);
+            shortcut.CaptureKeyUp(Key.Y);
+            shortcut.CaptureKeyUp(Key.LeftShift);
+            shortcut.CaptureKeyUp(Key.LeftCtrl);
+            shortcut.CaptureKeyUp(Key.LeftAlt);
+            Assert.Equal("ALT CTRL SHIFT Y", inputBinding.Chord);
+            var inputStore = new GlobalInputSettingsStore(main.AppDataPaths.UiSettingsPath);
+            Assert.Equal(
+                "ALT CTRL SHIFT Y",
+                inputStore.Load().Bindings[GlobalInputAction.ToggleCollapseCoveredColonyGroups]
+            );
+            inputBinding.Chord = "ALT CTRL SHIFT Z";
+            Assert.Equal("ALT CTRL SHIFT Z", shortcut.Chord);
+            main.InputSettings.ResetBindingsCommand.Execute(null);
+            Assert.Equal("ALT CTRL SHIFT X", shortcut.Chord);
+            Assert.Equal(
+                "ALT CTRL SHIFT X",
+                inputStore.Load().Bindings[GlobalInputAction.ToggleCollapseCoveredColonyGroups]
+            );
             Assert.Equal("Hide row badges", hideBadges.Content);
             Assert.Equal(false, hideBadges.IsChecked);
             Assert.Equal("Auto hide colonization overlay until docked", autoHide.Content);
@@ -76,6 +115,7 @@ public sealed class ColonizationOverlaySettingsPresentationTests
 
             collapse.IsChecked = false;
             Assert.False(hide.IsEnabled);
+            Assert.True(shortcut.IsEnabled);
             Assert.Equal(true, hide.IsChecked);
             Assert.Contains("expanded", main.Colonization.CommodityOverlay.CollapseModeText);
             collapse.IsChecked = true;
@@ -103,5 +143,16 @@ public sealed class ColonizationOverlaySettingsPresentationTests
                 Directory.Delete(directory, recursive: true);
             }
         }
+    }
+
+    /// <summary>Keeps the cargo-group shortcut in its colonization workspace.</summary>
+    [AvaloniaTheory]
+    [InlineData(OverlaySettingsCategory.Global)]
+    [InlineData(OverlaySettingsCategory.Exploration)]
+    [InlineData(OverlaySettingsCategory.Travel)]
+    public void CargoGroupShortcutIsHiddenInOtherWorkspaces(OverlaySettingsCategory category)
+    {
+        var view = new Views.OverlaySettingsView(category);
+        Assert.False(view.FindControl<Grid>("CollapseCoveredGroupsShortcutRow")!.IsVisible);
     }
 }
