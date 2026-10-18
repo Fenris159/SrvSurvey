@@ -1520,7 +1520,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         CloseMarketSearchWorkspace();
         hasCurrentShoppingProjects = false;
         plannedReadVersion++;
-        plannedSystems.Clear();
+        // Keep this commander's snapshots with their authority during consent changes.
+        // RestoreShoppingSelection replaces both when the commander changes.
         Projects = [];
         recovery.ClearWorkspace();
         hiddenProjectIds.Clear();

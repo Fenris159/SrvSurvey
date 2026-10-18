@@ -42,6 +42,8 @@ to prevent subtle shifting while flying.
   distinct supply requirements. Mixed live and planned projects retain linked
   carrier cargo coverage. Rapid site edits coalesce local cache writes; pending
   edits are saved before switching commander or closing the application.
+  Toggling Raven access preserves saved planning selections and ShoppingList
+  allocations when planning data is temporarily unavailable.
 - **Keep carrier comparisons consistent.** **Use Carrier** persists between
   sessions and stays synchronized with **FC Diff** in both directions. **LOADED**
   recalculates from the selected carrier's cargo against remaining project needs,
