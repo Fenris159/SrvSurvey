@@ -9,6 +9,20 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncServiceTests
 {
+    [Fact]
+    public async Task SlowBackupsCanFinishAfterTheOriginalOperationDeadline()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[]");
+        var cloud = new FakeProfileDrive { BeforeUpload = token => Task.Delay(TimeSpan.FromSeconds(26), token) };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.BackupAsync();
+
+        Assert.Single(cloud.Uploaded);
+        Assert.Contains("saved locally and to Google Drive", service.Status);
+    }
+
     /// <summary>Verifies that optional startup construction failure returns a fallback and logs the cause.</summary>
     [Fact]
     public async Task OptionalStartupConstructionFailureReturnsAFallbackAndLogsTheCause()

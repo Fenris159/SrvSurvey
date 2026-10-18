@@ -40,7 +40,7 @@ internal sealed class ProfileSyncService : IDisposable
 
     /// <summary>Applies downloads before workspaces load, or safely defers when another instance is active.</summary>
     internal Task StartupAsync(CancellationToken cancellationToken = default) =>
-        RunAsync(
+        RunWithinAsync(
             async token =>
             {
                 bool another = HasOtherLiveInstance();
@@ -105,6 +105,7 @@ internal sealed class ProfileSyncService : IDisposable
                 Store.SaveBaseline(merged);
                 SetStatus("Startup sync complete. Portable preferences and workspace data are up to date.");
             },
+            TimeSpan.FromSeconds(45),
             cancellationToken
         );
 
@@ -156,18 +157,23 @@ internal sealed class ProfileSyncService : IDisposable
 
     /// <summary>Saves a local recovery copy and uploads it when this machine is linked.</summary>
     internal Task BackupAsync(CancellationToken cancellationToken = default) =>
-        RunAsync(
+        BackupWithinAsync(TimeSpan.FromMinutes(10), cancellationToken);
+
+    private Task BackupWithinAsync(TimeSpan operationTimeout, CancellationToken cancellationToken) =>
+        RunWithinAsync(
             async token =>
             {
                 if (RestartRequired)
                 {
                     throw new InvalidOperationException("Restart to apply the staged restore before backing up again.");
                 }
+                SetStatus("Saving a local recovery backup...");
                 ProfileSnapshot snapshot = Store.Capture();
                 string file = Store.SaveBackup(snapshot);
                 Store.SaveBaseline(snapshot);
                 if (IsLinked)
                 {
+                    SetStatus($"Uploading backup to Google Drive ({new FileInfo(file).Length / 1048576d:N1} MiB)...");
                     await drive.UploadAsync(snapshot, token).ConfigureAwait(false);
                     SetStatus("Backup saved locally and to Google Drive. Ten recent backups are retained per machine.");
                 }
@@ -176,6 +182,7 @@ internal sealed class ProfileSyncService : IDisposable
                     SetStatus("Local backup saved: " + file);
                 }
             },
+            operationTimeout,
             cancellationToken
         );
 
@@ -197,9 +204,10 @@ internal sealed class ProfileSyncService : IDisposable
                 }
 
                 ProfileSnapshot local = Store.Capture();
-                Store.SaveBackup(local);
+                string file = Store.SaveBackup(local);
                 Store.SaveBaseline(local);
                 SyncMergeResult merge = await MergeCloudAsync(local, token).ConfigureAwait(false);
+                SetStatus($"Uploading backup to Google Drive ({new FileInfo(file).Length / 1048576d:N1} MiB)...");
                 await drive.UploadAsync(local, token).ConfigureAwait(false);
                 pendingMerge = merge;
                 pendingSnapshot = local;
@@ -380,12 +388,13 @@ internal sealed class ProfileSyncService : IDisposable
             return;
         }
 
-        await BackupAsync(cancellationToken).ConfigureAwait(false);
+        await BackupWithinAsync(TimeSpan.FromMinutes(2), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Downloads the latest immutable snapshot for each machine and merges independent changes.</summary>
     private async Task<SyncMergeResult> MergeCloudAsync(ProfileSnapshot local, CancellationToken cancellationToken)
     {
+        SetStatus("Checking Google Drive backup history...");
         IReadOnlyList<DriveBackup> backups = await drive.ListAsync(cancellationToken).ConfigureAwait(false);
         Backups = backups.OrderByDescending(backup => backup.CreatedUtc).ToArray();
         HasBackupHistory = true;
@@ -398,6 +407,7 @@ internal sealed class ProfileSyncService : IDisposable
                 .OrderBy(backup => backup.CreatedUtc)
         )
         {
+            SetStatus("Downloading a Google Drive backup for comparison...");
             ProfileSnapshot remote = await drive.DownloadAsync(backup.Id, cancellationToken).ConfigureAwait(false);
             if (remote.DeviceId != backup.DeviceId)
             {
@@ -413,18 +423,33 @@ internal sealed class ProfileSyncService : IDisposable
     }
 
     /// <summary>Serializes local operations across instances and bounds background network work.</summary>
-    private async Task RunAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+    private Task RunAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken) =>
+        RunWithinAsync(action, TimeSpan.FromMinutes(10), cancellationToken);
+
+    private async Task RunWithinAsync(
+        Func<CancellationToken, Task> action,
+        TimeSpan operationTimeout,
+        CancellationToken cancellationToken
+    )
     {
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(TimeSpan.FromSeconds(25));
+            deadline.CancelAfter(operationTimeout);
             string path = Path.Combine(Store.StateDirectory, "operation.lock");
             try
             {
                 await using FileStream lease = await AcquireLeaseAsync(path, deadline.Token).ConfigureAwait(false);
                 await action(deadline.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                SetStatus(
+                    cancellationToken.IsCancellationRequested
+                        ? "Backup/sync canceled. Local data and recovery backups were retained."
+                        : "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again."
+                );
             }
             catch (Exception exception)
                 when (exception
@@ -432,7 +457,6 @@ internal sealed class ProfileSyncService : IDisposable
                             or InvalidDataException
                             or UnauthorizedAccessException
                             or HttpRequestException
-                            or OperationCanceledException
                             or InvalidOperationException
                             or JsonException
                 )

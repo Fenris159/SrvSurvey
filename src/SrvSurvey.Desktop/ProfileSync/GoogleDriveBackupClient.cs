@@ -57,6 +57,8 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
 {
     private const int MaximumMetadataResponseBytes = 4 * 1024 * 1024;
     private const int MaximumTokenResponseBytes = 64 * 1024;
+    private const int UploadChunkBytes = 1024 * 1024;
+    private const int MaximumUploadRetries = 3;
     private static readonly string Scope = WellKnownUris.GoogleDriveAppDataScope.AbsoluteUri;
     private static readonly string TokenEndpoint = WellKnownUris.GoogleOAuthToken.AbsoluteUri;
     private static readonly string FilesEndpoint = WellKnownUris.GoogleDriveFiles.AbsoluteUri;
@@ -72,7 +74,7 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
     internal GoogleDriveBackupClient(ProfileSyncStore store, HttpClient? client = null, Action<Uri>? openBrowser = null)
     {
         this.store = store;
-        this.client = client ?? new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        this.client = client ?? new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
         this.openBrowser =
             openBrowser ?? (uri => Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }));
         tokenPath = Path.Combine(store.StateDirectory, "google-authorization.dat");
@@ -315,15 +317,7 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
         {
             throw new InvalidDataException("Google Drive returned an invalid upload session.");
         }
-        using var payload = new ByteArrayContent(bytes);
-        payload.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        using HttpResponseMessage response = await SendAsync(
-                HttpMethod.Put,
-                location.AbsoluteUri,
-                payload,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
+        await UploadContentAsync(location, bytes, cancellationToken).ConfigureAwait(false);
         IReadOnlyList<DriveBackup> backups = await ListAsync(cancellationToken).ConfigureAwait(false);
         foreach (
             DriveBackup old in backups
@@ -335,6 +329,115 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
             await DeleteAsync(old.Id, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    /// <summary>Resumes interrupted transfers from Google's acknowledged byte range without creating another backup.</summary>
+    private async Task UploadContentAsync(Uri location, byte[] bytes, CancellationToken cancellationToken)
+    {
+        int offset = 0;
+        int sentThrough = 0;
+        int retries = 0;
+        bool checkStatus = false;
+        while (offset < bytes.Length || checkStatus)
+        {
+            using ByteArrayContent payload = CreateUploadPayload(bytes, offset, checkStatus);
+            int count = checked((int)payload.Headers.ContentLength.GetValueOrDefault());
+            sentThrough = Math.Max(sentThrough, offset + count);
+            try
+            {
+                using HttpResponseMessage response = await SendAsync(
+                        HttpMethod.Put,
+                        location.AbsoluteUri,
+                        payload,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    ValidateCompletedUpload(sentThrough, bytes.Length);
+                    return;
+                }
+                int next = ReadUploadOffset(response, sentThrough);
+                if ((!checkStatus && next <= offset) || (checkStatus && next == bytes.Length))
+                {
+                    throw new InvalidDataException("Google Drive did not confirm backup upload progress.");
+                }
+                if (next > offset)
+                {
+                    retries = 0;
+                }
+                offset = next;
+                checkStatus = offset == bytes.Length;
+            }
+            catch (Exception exception)
+                when (retries < MaximumUploadRetries && IsTransientUploadFailure(exception, cancellationToken))
+            {
+                retries++;
+                checkStatus = true;
+                await Task.Delay(TimeSpan.FromSeconds(1 << (retries - 1)), cancellationToken).ConfigureAwait(false);
+            }
+        }
+        throw new InvalidDataException("Google Drive did not confirm the completed backup.");
+    }
+
+    /// <summary>Creates either a bounded data chunk or Google's empty status probe.</summary>
+    private static ByteArrayContent CreateUploadPayload(byte[] bytes, int offset, bool checkStatus)
+    {
+        int count = checkStatus ? 0 : Math.Min(UploadChunkBytes, bytes.Length - offset);
+        var payload = new ByteArrayContent(bytes, offset, count);
+        payload.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        payload.Headers.ContentRange = checkStatus
+            ? new ContentRangeHeaderValue(bytes.Length)
+            : new ContentRangeHeaderValue(offset, offset + count - 1, bytes.Length);
+        return payload;
+    }
+
+    /// <summary>Never prunes backup history after a server response that skipped unsent content.</summary>
+    private static void ValidateCompletedUpload(int sentThrough, int totalBytes)
+    {
+        if (sentThrough != totalBytes)
+        {
+            throw new InvalidDataException("Google Drive completed an upload before all backup data was sent.");
+        }
+    }
+
+    /// <summary>Accepts only a contiguous prefix that the client has actually sent.</summary>
+    private static int ReadUploadOffset(HttpResponseMessage response, int sentThrough)
+    {
+        if (!response.Headers.TryGetValues("Range", out IEnumerable<string>? values))
+        {
+            return 0;
+        }
+        string[] headers = values.ToArray();
+        if (
+            headers.Length == 1
+            && RangeHeaderValue.TryParse(headers[0], out RangeHeaderValue? range)
+            && string.Equals(range.Unit, "bytes", StringComparison.OrdinalIgnoreCase)
+            && range.Ranges.Count == 1
+        )
+        {
+            RangeItemHeaderValue acknowledged = range.Ranges.Single();
+            if (acknowledged.From == 0 && acknowledged.To is long end && end >= 0 && end < sentThrough)
+            {
+                return checked((int)end + 1);
+            }
+        }
+        throw new InvalidDataException("Google Drive returned an invalid backup upload range.");
+    }
+
+    /// <summary>Retries interrupted requests without retrying revoked authorization or caller cancellation.</summary>
+    private static bool IsTransientUploadFailure(Exception exception, CancellationToken cancellationToken) =>
+        !cancellationToken.IsCancellationRequested
+        && exception
+            is OperationCanceledException
+                or HttpRequestException
+                {
+                    StatusCode: null
+                        or HttpStatusCode.RequestTimeout
+                        or HttpStatusCode.InternalServerError
+                        or HttpStatusCode.BadGateway
+                        or HttpStatusCode.ServiceUnavailable
+                        or HttpStatusCode.GatewayTimeout
+                };
 
     /// <summary>Authorizes each operation without placing tokens in URLs or diagnostic messages.</summary>
     private async Task<HttpResponseMessage> SendAsync(
@@ -378,7 +481,7 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
         HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        if (response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode || (method == HttpMethod.Put && (int)response.StatusCode == 308))
         {
             return response;
         }
@@ -401,6 +504,21 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
+            string? errorCode = await ReadAuthorizationErrorAsync(response.Content, cancellationToken)
+                .ConfigureAwait(false);
+            if (errorCode == "invalid_grant")
+            {
+                Disconnect();
+                throw new InvalidOperationException(
+                    "Google Drive authorization expired or was revoked. Link Google Drive again."
+                );
+            }
+            if (errorCode == "invalid_client")
+            {
+                throw new InvalidOperationException(
+                    "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration."
+                );
+            }
             throw new InvalidOperationException(
                 $"Google authorization failed (HTTP {(int)response.StatusCode}); link Google Drive again if access was revoked."
             );
@@ -420,6 +538,29 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
         }
 
         return new(access, refresh, DateTimeOffset.UtcNow.AddSeconds(json["expires_in"]?.GetValue<int>() ?? 3600));
+    }
+
+    /// <summary>Reads only Google's error code; descriptions and credentials never enter diagnostics.</summary>
+    private static async Task<string?> ReadAuthorizationErrorAsync(
+        HttpContent content,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            byte[] bytes = await ReadBodyAsync(content, MaximumTokenResponseBytes, cancellationToken)
+                .ConfigureAwait(false);
+            return
+                JsonNode.Parse(bytes) is JsonObject error
+                && error["error"] is JsonValue code
+                && code.TryGetValue(out string? value)
+                ? value
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     /// <summary>Loads Windows-protected tokens or a Linux user-only authorization file.</summary>

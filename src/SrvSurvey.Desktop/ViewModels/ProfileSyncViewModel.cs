@@ -10,6 +10,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private bool isBusy;
     private bool disposed;
     private CancellationTokenSource? authorization;
+    private CancellationTokenSource? operationCancellation;
     private bool automatic;
     private bool restoreMachineSettings;
     private ProfileBackupOption? selectedBackup;
@@ -58,6 +59,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
     }
     public bool IsLinking => authorization is not null;
+    private CancellationToken OperationToken => operationCancellation?.Token ?? CancellationToken.None;
     public bool IsLinked => service.IsLinked;
     public bool IsConfigured => service.IsConfigured;
     public bool NeedsClientSetup => !IsConfigured;
@@ -157,6 +159,13 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     /// <summary>Stops waiting for browser authorization without changing an existing linked account.</summary>
     public void CancelLink() => authorization?.Cancel();
 
+    /// <summary>Cancels a cloud operation while retaining local data and recovery backups.</summary>
+    public void CancelOperation()
+    {
+        authorization?.Cancel();
+        operationCancellation?.Cancel();
+    }
+
     /// <summary>Disconnects this machine without deleting backup history.</summary>
     public Task DisconnectAsync() =>
         RunAsync(() =>
@@ -172,7 +181,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         RunAsync(() =>
         {
             BeforeCapture?.Invoke();
-            return service.BackupAsync(CancellationToken.None);
+            return service.BackupAsync(OperationToken);
         });
 
     /// <summary>Checks cloud changes and stages a merged profile for restart.</summary>
@@ -180,15 +189,15 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         RunAsync(() =>
         {
             BeforeCapture?.Invoke();
-            return service.SynchronizeAsync(CancellationToken.None);
+            return service.SynchronizeAsync(OperationToken);
         });
 
     /// <summary>Lists retained cloud snapshots for an explicit restore.</summary>
-    public Task RefreshBackupsAsync() => RunAsync(() => service.RefreshBackupsAsync(CancellationToken.None));
+    public Task RefreshBackupsAsync() => RunAsync(() => service.RefreshBackupsAsync(OperationToken));
 
     /// <summary>Retrieves the cloud choice captured before opening a save picker.</summary>
     internal Task<byte[]?> DownloadBackupAsync(ProfileBackupOption backup) =>
-        service.DownloadBackupAsync(backup.Backup, CancellationToken.None);
+        service.DownloadBackupAsync(backup.Backup, OperationToken);
 
     /// <summary>Requests explicit confirmation for the current cloud choice without deleting it.</summary>
     public void BeginDeleteSelectedBackup()
@@ -227,24 +236,22 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
             return Task.CompletedTask;
         }
         CancelDeleteBackups();
-        return RunAsync(() => service.DeleteBackupsAsync(targets, CancellationToken.None));
+        return RunAsync(() => service.DeleteBackupsAsync(targets, OperationToken));
     }
 
     /// <summary>Stages the selected cloud backup and requested machine scope.</summary>
     public Task RestoreAsync() =>
         RunAsync(() =>
             SelectedBackup is { } backup
-                ? service.RestoreAsync(backup.Backup, RestoreMachineSettings, CancellationToken.None)
+                ? service.RestoreAsync(backup.Backup, RestoreMachineSettings, OperationToken)
                 : throw new InvalidOperationException("Select a backup to restore.")
         );
 
     /// <summary>Uses cloud or staged-backup values for conflicts while preserving independent local changes.</summary>
-    public Task UseCloudAsync() =>
-        RunAsync(() => service.ResolveConflictsAsync(useCloud: true, CancellationToken.None));
+    public Task UseCloudAsync() => RunAsync(() => service.ResolveConflictsAsync(useCloud: true, OperationToken));
 
     /// <summary>Keeps local values for conflicts while preserving independent cloud changes.</summary>
-    public Task KeepLocalAsync() =>
-        RunAsync(() => service.ResolveConflictsAsync(useCloud: false, CancellationToken.None));
+    public Task KeepLocalAsync() => RunAsync(() => service.ResolveConflictsAsync(useCloud: false, OperationToken));
 
     /// <summary>Imports Desktop OAuth client configuration for development or custom distributions.</summary>
     public Task ImportClientAsync(byte[] bytes) =>
@@ -312,6 +319,8 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
+        using var cancellation = new CancellationTokenSource();
+        operationCancellation = cancellation;
         IsBusy = true;
         error = null;
         try
@@ -334,6 +343,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
         finally
         {
+            operationCancellation = null;
             IsBusy = false;
             Refresh();
         }
@@ -375,6 +385,7 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     {
         disposed = true;
         authorization?.Cancel();
+        operationCancellation?.Cancel();
         service.Changed -= OnServiceChanged;
         service.Dispose();
     }

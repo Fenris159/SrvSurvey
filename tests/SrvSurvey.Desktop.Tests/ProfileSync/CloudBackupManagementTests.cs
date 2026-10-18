@@ -9,6 +9,34 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CloudBackupManagementTests
 {
+    [AvaloniaFact]
+    public async Task CancelingAnUploadRetainsTheLocalRecoverySnapshot()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[]");
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = async token =>
+            {
+                started.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+
+        Task backup = vm.BackupAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(vm.IsBusy);
+        vm.CancelOperation();
+        await backup.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.False(vm.IsBusy);
+        Assert.Empty(cloud.Uploaded);
+        Assert.Contains("canceled", vm.StatusText);
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(root.Store.StateDirectory, "backups"), "*.json"));
+    }
+
     /// <summary>Verifies that selected deletion requires confirmation and keeps the confirmed choice.</summary>
     [AvaloniaFact]
     public async Task SelectedDeletionRequiresConfirmationAndKeepsTheConfirmedChoice()

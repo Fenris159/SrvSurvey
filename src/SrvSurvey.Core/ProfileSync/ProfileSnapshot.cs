@@ -23,14 +23,13 @@ public sealed record ProfileSnapshot(
 )
 {
     public const int CurrentSchema = 1;
-    public const int MaximumBytes = 32 * 1024 * 1024;
+    public const int MaximumBytes = 128 * 1024 * 1024;
 
     /// <summary>Limits each snapshot collection, including portable deletion history.</summary>
     public const int MaximumValues = 100_000;
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
     /// <summary>Serializes a snapshot for local export or Google Drive.</summary>
-    public byte[] Serialize() => JsonSerializer.SerializeToUtf8Bytes(this, Options);
+    public byte[] Serialize() => JsonSerializer.SerializeToUtf8Bytes(this);
 
     /// <summary>Validates a downloaded snapshot before it can change local files.</summary>
     public static ProfileSnapshot Parse(byte[] bytes)
@@ -38,7 +37,7 @@ public sealed record ProfileSnapshot(
         ArgumentNullException.ThrowIfNull(bytes);
         if (bytes.Length > MaximumBytes)
         {
-            throw new InvalidDataException("The backup exceeds the supported size.");
+            throw new InvalidDataException($"The backup exceeds the supported size of {MaximumBytes / 1048576} MiB.");
         }
 
         ProfileSnapshot snapshot;

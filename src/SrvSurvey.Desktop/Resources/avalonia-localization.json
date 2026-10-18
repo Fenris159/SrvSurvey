@@ -3329,8 +3329,16 @@
       "translation": "Sicherung ausgewählt. Starten Sie SrvSurvey neu, um es wiederherzustellen. Es wurde eine lokale Rollback-Kopie gespeichert."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Sicherung/Synchronisierung abgebrochen. Lokale Daten- und Wiederherstellungs-Backups wurden beibehalten."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "Sicherung/Synchronisierung konnte nicht abgeschlossen werden. Lokale Daten wurden beibehalten. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Zeitüberschreitung bei Sicherung/Synchronisierung. Lokale Daten- und Wiederherstellungs-Backups wurden beibehalten. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
     },
     {
       "source": "Backups",
@@ -4617,10 +4625,6 @@
       "translation": "Abbrechen"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Brechen Sie die Google-Verknüpfung ab"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Positionsbearbeitung abbrechen"
     },
@@ -4639,6 +4643,10 @@
     {
       "source": "Cancel edit",
       "translation": "Bearbeitung abbrechen"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Vorgang abbrechen"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -5155,6 +5163,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Sicherungsverlauf von Google Drive wird überprüft..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -8873,6 +8885,10 @@
       "translation": "{0} von {1} Bytes heruntergeladen"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Laden Sie zum Vergleich ein Google Drive-Backup herunter ..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Herunterladen in den Update-Cache. Die Installation und das Profil sind noch unberührt."
     },
@@ -12085,12 +12101,28 @@
       "translation": "Das Google Desktop-Client-Setup wurde geladen. Verknüpfen Sie Google Drive, um fortzufahren."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "Die Google Drive-Autorisierung ist abgelaufen oder wurde widerrufen. Verknüpfen Sie Google Drive erneut."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Die Google Drive-Autorisierung wurde storniert oder ihr Status stimmte nicht überein."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Sicherung und Synchronisierung von Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive hat einen Upload abgeschlossen, bevor alle Sicherungsdaten gesendet wurden."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive hat den Fortschritt des Backup-Uploads nicht bestätigt."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive hat die abgeschlossene Sicherung nicht bestätigt."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -12121,6 +12153,10 @@
       "translation": "Google Drive-Anfrage fehlgeschlagen (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive hat einen ungültigen Backup-Upload-Bereich zurückgegeben."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive hat eine ungültige Upload-Sitzung zurückgegeben."
     },
@@ -12139,6 +12175,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "Die Google-Verknüpfung ist verfügbar, wenn Ihr Build das Desktop-OAuth-Client-Setup des Herausgebers umfasst. Entwicklungs-Builds können dieses Setup aus Daten und Migration importieren."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google hat die Client-Einrichtung dieser App abgelehnt. Der Herausgeber muss die Google Drive-Konfiguration aktualisieren."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -21585,6 +21625,10 @@
       "translation": "Die Verfolgung von Ram Tah ist nicht verfügbar."
     },
     {
+      "source": "Range",
+      "translation": "Reichweite"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Reichweite (LY)"
     },
@@ -24755,6 +24799,10 @@
     {
       "source": "Saved {0}.",
       "translation": "Gespeichert {0}."
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "Lokales Wiederherstellungs-Backup wird gespeichert..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -32381,6 +32429,10 @@
       "translation": "{0} Green Gas Giant-Kandidaten hochgeladen."
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Backup wird auf Google Drive hochgeladen ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "Obergeschoss"
     },
@@ -34547,6 +34599,10 @@
     {
       "source": "by {0}",
       "translation": "von {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "Bytes"
     },
     {
       "source": "ca",
@@ -42055,8 +42111,16 @@
       "translation": "Copia de seguridad seleccionada. Reinicie SrvSurvey para restaurarlo; Se ha guardado una copia de reversión local."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Copia de seguridad/sincronización cancelada. Se conservaron los datos locales y las copias de seguridad de recuperación."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "No se pudo completar la copia de seguridad/sincronización. Se conservaron los datos locales. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Se agotó el tiempo de espera de la copia de seguridad/sincronización. Se conservaron los datos locales y las copias de seguridad de recuperación. Comprueba tu conexión y vuelve a intentarlo."
     },
     {
       "source": "Backups",
@@ -43343,10 +43407,6 @@
       "translation": "Cancelar"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Cancelar vinculación de Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Cancelar edición de posición"
     },
@@ -43365,6 +43425,10 @@
     {
       "source": "Cancel edit",
       "translation": "Cancelar edición"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Cancelar operación"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -43881,6 +43945,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminadoPresionado"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Comprobando el historial de copias de seguridad de Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -47599,6 +47667,10 @@
       "translation": "Descargado {0} de {1} bytes"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Descargando una copia de seguridad de Google Drive para comparar..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Descargando en el caché de actualización. La instalación y el perfil aún están intactos."
     },
@@ -50811,12 +50883,28 @@
       "translation": "Configuración del cliente de Google Desktop cargada. Vincula Google Drive para continuar."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "La autorización de Google Drive expiró o fue revocada. Vuelva a vincular Google Drive."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "La autorización de Google Drive fue cancelada o su estado no coincidía."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Copia de seguridad y sincronización de Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive completó una carga antes de que se enviaran todos los datos de la copia de seguridad."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive no confirmó el progreso de la carga de la copia de seguridad."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive no confirmó la copia de seguridad completa."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -50847,6 +50935,10 @@
       "translation": "Error en la solicitud de Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive devolvió un rango de carga de respaldo no válido."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive devolvió una sesión de carga no válida."
     },
@@ -50865,6 +50957,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "La vinculación de Google está disponible cuando su compilación incluye la configuración del cliente Desktop OAuth del editor. Las compilaciones de desarrollo pueden importar esa configuración desde Datos y migración."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google rechazó la configuración del cliente de esta aplicación. El editor debe actualizar la configuración de Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -60311,6 +60407,10 @@
       "translation": "El seguimiento de Ram Tah no está disponible."
     },
     {
+      "source": "Range",
+      "translation": "Rango"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Rango (LY)"
     },
@@ -63481,6 +63581,10 @@
     {
       "source": "Saved {0}.",
       "translation": "Guardado {0}."
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "Guardando una copia de seguridad de recuperación local..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -71107,6 +71211,10 @@
       "translation": "Se subieron {0} candidatos a Gigante del Gas Verde."
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Subiendo copia de seguridad a Google Drive ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "Planta superior"
     },
@@ -73273,6 +73381,10 @@
     {
       "source": "by {0}",
       "translation": "por {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "bytes"
     },
     {
       "source": "ca",
@@ -80781,8 +80893,16 @@
       "translation": "Sauvegarde sélectionnée. Redémarrez SrvSurvey pour le restaurer ; une copie de restauration locale a été enregistrée."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Sauvegarde/synchronisation annulée. Les données locales et les sauvegardes de récupération ont été conservées."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "La sauvegarde/synchronisation n'a pas pu se terminer. Les données locales ont été conservées. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "La sauvegarde/synchronisation a expiré. Les données locales et les sauvegardes de récupération ont été conservées. Vérifiez votre connexion et réessayez."
     },
     {
       "source": "Backups",
@@ -82069,10 +82189,6 @@
       "translation": "Annuler"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Annuler la liaison Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Annuler la modification de position"
     },
@@ -82091,6 +82207,10 @@
     {
       "source": "Cancel edit",
       "translation": "Annuler la modification"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Annuler l'opération"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -82607,6 +82727,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Vérification de l'historique des sauvegardes de Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -86325,6 +86449,10 @@
       "translation": "{0} téléchargés sur {1} octets"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Téléchargement d'une sauvegarde Google Drive pour comparaison..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Téléchargement dans le cache de mise à jour. L'installation et le profil sont toujours intacts."
     },
@@ -89537,12 +89665,28 @@
       "translation": "Configuration du client Google Desktop chargée. Associez Google Drive pour continuer."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "L'autorisation Google Drive a expiré ou a été révoquée. Associez à nouveau Google Drive."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "L'autorisation Google Drive a été annulée ou son état ne correspondait pas."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Sauvegarde et synchronisation Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive a terminé un téléchargement avant que toutes les données de sauvegarde ne soient envoyées."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive n'a pas confirmé la progression du téléchargement de la sauvegarde."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive n'a pas confirmé la sauvegarde terminée."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -89573,6 +89717,10 @@
       "translation": "Échec de la requête Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive a renvoyé une plage de téléchargement de sauvegarde non valide."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive a renvoyé une session de téléchargement non valide."
     },
@@ -89591,6 +89739,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "La liaison Google est disponible lorsque votre build inclut la configuration du client Desktop OAuth de l'éditeur. Les versions de développement peuvent importer cette configuration à partir de Données et migration."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google a rejeté la configuration client de cette application. L'éditeur doit mettre à jour la configuration de Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -99037,6 +99189,10 @@
       "translation": "Le suivi de Ram Tah n’est pas disponible."
     },
     {
+      "source": "Range",
+      "translation": "Gamme"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Portée (LY)"
     },
@@ -102207,6 +102363,10 @@
     {
       "source": "Saved {0}.",
       "translation": "{0} enregistré."
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "Enregistrement d'une sauvegarde de récupération locale..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -109833,6 +109993,10 @@
       "translation": "Les candidats {0} géants du gaz vert ont été téléchargés."
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Téléchargement de la sauvegarde sur Google Drive ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "Étage supérieur"
     },
@@ -111999,6 +112163,10 @@
     {
       "source": "by {0}",
       "translation": "par {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "octets"
     },
     {
       "source": "ca",
@@ -119507,8 +119675,16 @@
       "translation": "Backup selecionado. Reinicie SrvSurvey para restaurá-lo; uma cópia de reversão local foi salva."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Backup/sincronização cancelada. Os dados locais e os backups de recuperação foram mantidos."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "O backup/sincronização não pôde ser concluído. Os dados locais foram retidos. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "O backup/sincronização expirou. Os dados locais e os backups de recuperação foram mantidos. Verifique sua conexão e tente novamente."
     },
     {
       "source": "Backups",
@@ -120795,10 +120971,6 @@
       "translation": "Cancelar"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Cancelar vinculação do Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Cancelar edição de posição"
     },
@@ -120817,6 +120989,10 @@
     {
       "source": "Cancel edit",
       "translation": "Cancelar edição"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Cancelar operação"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -121333,6 +121509,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Verificando o histórico de backup do Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -125051,6 +125231,10 @@
       "translation": "Download de {0} de {1} bytes"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Baixando um backup do Google Drive para comparação..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Baixando no cache de atualização. A instalação e o perfil ainda estão intactos."
     },
@@ -128263,12 +128447,28 @@
       "translation": "Configuração do cliente Google Desktop carregada. Vincule o Google Drive para continuar."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "A autorização do Google Drive expirou ou foi revogada. Vincule o Google Drive novamente."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "A autorização do Google Drive foi cancelada ou seu estado não corresponde."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Backup e sincronização do Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "O Google Drive concluiu um upload antes de todos os dados de backup serem enviados."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "O Google Drive não confirmou o progresso do upload do backup."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "O Google Drive não confirmou o backup concluído."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -128299,6 +128499,10 @@
       "translation": "Falha na solicitação do Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "O Google Drive retornou um intervalo de upload de backup inválido."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "O Google Drive retornou uma sessão de upload inválida."
     },
@@ -128317,6 +128521,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "A vinculação do Google está disponível quando sua versão inclui a configuração do cliente Desktop OAuth do editor. As compilações de desenvolvimento podem importar essa configuração de Dados e migração."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "O Google rejeitou a configuração do cliente deste app. O editor precisa atualizar a configuração do Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -137763,6 +137971,10 @@
       "translation": "O rastreamento de Ram Tah não está disponível."
     },
     {
+      "source": "Range",
+      "translation": "Faixa"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Alcance (LY)"
     },
@@ -140933,6 +141145,10 @@
     {
       "source": "Saved {0}.",
       "translation": "Salvo {0}."
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "Salvando um backup de recuperação local..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -148559,6 +148775,10 @@
       "translation": "Carregado {0} candidatos a Gigante de Gás Verde."
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Fazendo upload do backup para o Google Drive ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "Andar superior"
     },
@@ -150725,6 +150945,10 @@
     {
       "source": "by {0}",
       "translation": "por {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "bytes"
     },
     {
       "source": "ca",
@@ -158233,8 +158457,16 @@
       "translation": "Резервная копия выбрана. Перезапустите SrvSurvey, чтобы восстановить его; сохранена локальная копия отката."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Резервное копирование/синхронизация отменены. Локальные данные и резервные копии для восстановления были сохранены."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "Резервное копирование/синхронизация не удалось завершить. Локальные данные были сохранены. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Время резервного копирования/синхронизации истекло. Локальные данные и резервные копии для восстановления были сохранены. Проверьте подключение и повторите попытку."
     },
     {
       "source": "Backups",
@@ -159521,10 +159753,6 @@
       "translation": "Отмена"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Отменить привязку к Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Отменить редактирование позиции"
     },
@@ -159543,6 +159771,10 @@
     {
       "source": "Cancel edit",
       "translation": "Отменить редактирование"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Отменить операцию"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -160059,6 +160291,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Проверка истории резервного копирования на Google Диске..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -163777,6 +164013,10 @@
       "translation": "Скачано {0} из {1} байт."
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Скачивание резервной копии с Google Диска для сравнения..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Загрузка в кэш обновлений. Установка и профиль остаются нетронутыми."
     },
@@ -166989,12 +167229,28 @@
       "translation": "Настройка клиента Google Desktop загружена. Свяжите Google Диск, чтобы продолжить."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "Срок действия авторизации Google Диска истек или она была отозвана. Свяжите Google Диск еще раз."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Авторизация Google Диска отменена или ее состояние не соответствует."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Резервное копирование и синхронизация Google Диска"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Диск завершил загрузку до того, как были отправлены все резервные данные."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Диск не подтвердил ход загрузки резервной копии."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Диск не подтвердил завершение резервного копирования."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -167025,6 +167281,10 @@
       "translation": "Не удалось выполнить запрос на Google Диск (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Диск вернул неверный диапазон загрузки резервной копии."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Диск возвратил неверный сеанс загрузки."
     },
@@ -167043,6 +167303,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "Связывание с Google доступно, если ваша сборка включает настройку клиента OAuth для настольных компьютеров издателя. В сборках для разработки можно импортировать эту настройку из раздела «Данные и миграция»."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google отклонил настройку клиента этого приложения. Издателю необходимо обновить конфигурацию Google Диска."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -176489,6 +176753,10 @@
       "translation": "Отслеживание Рам Та недоступно."
     },
     {
+      "source": "Range",
+      "translation": "Диапазон"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Диапазон (ЛИ)"
     },
@@ -179659,6 +179927,10 @@
     {
       "source": "Saved {0}.",
       "translation": "Сохранено {0}."
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "Сохранение локальной резервной копии для восстановления..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -187285,6 +187557,10 @@
       "translation": "Загружены кандидаты на {0} гигантов зеленого газа."
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Загрузка резервной копии на Google Диск ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "Верхний этаж"
     },
@@ -189451,6 +189727,10 @@
     {
       "source": "by {0}",
       "translation": "автор {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "байты"
     },
     {
       "source": "ca",
@@ -196959,8 +197239,16 @@
       "translation": "已选择备份。重启SrvSurvey即可恢复；已保存本地回滚副本。"
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "备份/同步已取消。保留本地数据和恢复备份。"
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "备份/同步无法完成。本地数据被保留。 {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "备份/同步超时。保留本地数据和恢复备份。检查您的连接并重试。"
     },
     {
       "source": "Backups",
@@ -198247,10 +198535,6 @@
       "translation": "取消"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "取消 Google 链接"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "取消位置编辑"
     },
@@ -198269,6 +198553,10 @@
     {
       "source": "Cancel edit",
       "translation": "取消编辑"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "取消操作"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -198785,6 +199073,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "复选框检查字形前景不确定按下"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "正在检查 Google 云端硬盘备份历史记录..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -202503,6 +202795,10 @@
       "translation": "已下载 {0} 字节，共 {1} 字节"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "正在下载 Google 云端硬盘备份以进行比较..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "下载到更新缓存中。安装和配置文件仍然保持不变。"
     },
@@ -205715,12 +206011,28 @@
       "translation": "已加载 Google 桌面客户端安装程序。链接 Google 云端硬盘以继续。"
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "Google 云端硬盘授权已过期或被撤销。再次链接 Google 云端硬盘。"
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Google 云端硬盘授权已取消或其状态不匹配。"
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Google 云端硬盘备份和同步"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "在发送所有备份数据之前，Google 云端硬盘已完成上传。"
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google 云端硬盘未确认备份上传进度。"
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive 未确认备份已完成。"
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -205751,6 +206063,10 @@
       "translation": "Google 云端硬盘请求失败 (HTTP {0})。"
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google 云端硬盘返回无效的备份上传范围。"
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google 云端硬盘返回无效的上传会话。"
     },
@@ -205769,6 +206085,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "当您的版本包含发布者的桌面 OAuth 客户端设置时，Google 链接可用。开发版本可以从数据和迁移导入该设置。"
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google 拒绝了此应用的客户端设置。发布商需要更新 Google 云端硬盘配置。"
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -215215,6 +215535,10 @@
       "translation": "Ram Tah 追踪不可用。"
     },
     {
+      "source": "Range",
+      "translation": "范围"
+    },
+    {
       "source": "Range (LY)",
       "translation": "射程（LY）"
     },
@@ -218385,6 +218709,10 @@
     {
       "source": "Saved {0}.",
       "translation": "已保存 {0}。"
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "保存本地恢复备份..."
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -226011,6 +226339,10 @@
       "translation": "已上传 {0} 绿色气体巨星候选者。"
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "正在将备份上传到 Google 云端硬盘 ({0} MiB)..."
+    },
+    {
       "source": "Upper floor",
       "translation": "上层"
     },
@@ -228177,6 +228509,10 @@
     {
       "source": "by {0}",
       "translation": "通过 {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "字节"
     },
     {
       "source": "ca",
@@ -235685,8 +236021,16 @@
       "translation": "* BACKUP SELECTED. RESTART SRVSURVEY TO RESTORE IT; A LOCAL ROLLBACK COPY HAS BEEN SAVED. >>>!"
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "* BACKUP/SYNC CANCELED. LOCAL DATA AND RECOVERY BACKUPS WERE RETAINED. >>>!"
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "* BACKUP/SYNC COULD NOT COMPLETE. LOCAL DATA WAS RETAINED. {0} >>>!"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "* BACKUP/SYNC TIMED OUT. LOCAL DATA AND RECOVERY BACKUPS WERE RETAINED. CHECK YOUR CONNECTION AND TRY AGAIN. >>>!"
     },
     {
       "source": "Backups",
@@ -236973,10 +237317,6 @@
       "translation": "* CANCEL >>>!"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "* CANCEL GOOGLE LINKING >>>!"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "* CANCEL POSITION EDITING >>>!"
     },
@@ -236995,6 +237335,10 @@
     {
       "source": "Cancel edit",
       "translation": "* CANCEL EDIT >>>!"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "* CANCEL OPERATION >>>!"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -237511,6 +237855,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "* CHECKBOXCHECKGLYPHFOREGROUNDINDETERMINATEPRESSED >>>!"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "* CHECKING GOOGLE DRIVE BACKUP HISTORY... >>>!"
     },
     {
       "source": "Checking and validating published reference data...",
@@ -241229,6 +241577,10 @@
       "translation": "* DOWNLOADED {0} OF {1} BYTES >>>!"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "* DOWNLOADING A GOOGLE DRIVE BACKUP FOR COMPARISON... >>>!"
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "* DOWNLOADING INTO THE UPDATE CACHE. THE INSTALLATION AND PROFILE ARE STILL UNTOUCHED. >>>!"
     },
@@ -244441,12 +244793,28 @@
       "translation": "* GOOGLE DESKTOP CLIENT SETUP LOADED. LINK GOOGLE DRIVE TO CONTINUE. >>>!"
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Link Google Drive again.",
+      "translation": "* GOOGLE DRIVE AUTHORIZATION EXPIRED OR WAS REVOKED. LINK GOOGLE DRIVE AGAIN. >>>!"
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "* GOOGLE DRIVE AUTHORIZATION WAS CANCELLED OR ITS STATE DID NOT MATCH. >>>!"
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "* GOOGLE DRIVE BACKUP AND SYNC >>>!"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "* GOOGLE DRIVE COMPLETED AN UPLOAD BEFORE ALL BACKUP DATA WAS SENT. >>>!"
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "* GOOGLE DRIVE DID NOT CONFIRM BACKUP UPLOAD PROGRESS. >>>!"
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "* GOOGLE DRIVE DID NOT CONFIRM THE COMPLETED BACKUP. >>>!"
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -244477,6 +244845,10 @@
       "translation": "* GOOGLE DRIVE REQUEST FAILED (HTTP {0}). >>>!"
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "* GOOGLE DRIVE RETURNED AN INVALID BACKUP UPLOAD RANGE. >>>!"
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "* GOOGLE DRIVE RETURNED AN INVALID UPLOAD SESSION. >>>!"
     },
@@ -244495,6 +244867,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "* GOOGLE LINKING IS AVAILABLE WHEN YOUR BUILD INCLUDES THE PUBLISHER'S DESKTOP OAUTH CLIENT SETUP. DEVELOPMENT BUILDS CAN IMPORT THAT SETUP FROM DATA & MIGRATION. >>>!"
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "* GOOGLE REJECTED THIS APP'S CLIENT SETUP. THE PUBLISHER NEEDS TO UPDATE THE GOOGLE DRIVE CONFIGURATION. >>>!"
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -253941,6 +254317,10 @@
       "translation": "* RAM TAH TRACKING IS UNAVAILABLE. >>>!"
     },
     {
+      "source": "Range",
+      "translation": "* RANGE >>>!"
+    },
+    {
       "source": "Range (LY)",
       "translation": "* RANGE (LY) >>>!"
     },
@@ -257111,6 +257491,10 @@
     {
       "source": "Saved {0}.",
       "translation": "* SAVED {0}. >>>!"
+    },
+    {
+      "source": "Saving a local recovery backup...",
+      "translation": "* SAVING A LOCAL RECOVERY BACKUP... >>>!"
     },
     {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
@@ -264737,6 +265121,10 @@
       "translation": "* UPLOADED {0} GREEN GAS GIANT CANDIDATES. >>>!"
     },
     {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "* UPLOADING BACKUP TO GOOGLE DRIVE ({0} MIB)... >>>!"
+    },
+    {
       "source": "Upper floor",
       "translation": "* UPPER FLOOR >>>!"
     },
@@ -266903,6 +267291,10 @@
     {
       "source": "by {0}",
       "translation": "* BY {0} >>>!"
+    },
+    {
+      "source": "bytes",
+      "translation": "* BYTES >>>!"
     },
     {
       "source": "ca",
