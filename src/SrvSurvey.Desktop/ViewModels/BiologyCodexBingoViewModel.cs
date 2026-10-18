@@ -126,7 +126,11 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         );
         findNearestCommand = new AsyncCommand(
             FindNearestAsync,
-            () => SelectedNode is not null && nearestSearchHandler is not null && !IsBusy
+            () =>
+                SelectedNode is not null
+                && SelectedNode.Definition.Kind != CodexBingoNodeKind.Root
+                && nearestSearchHandler is not null
+                && !IsBusy
         );
         findMissingVariantsCommand = new AsyncCommand(FindMissingVariantsAsync, CanFindMissingVariants);
         rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(rootDefinition, new HashSet<long>()));

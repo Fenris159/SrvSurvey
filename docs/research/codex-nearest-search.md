@@ -247,10 +247,6 @@ does not supply a generic mapping for all Codex categories.
 [Original nearest window](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/forms/FormNearestSystems.cs#L17-L152),
 [original Spansh builder](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/net/spansh.cs#L1113-L1137).
 
-Downloaded working evidence is under `/tmp/codex-nearest-research`, including
-the complete `landmarks-values.json`, provider responses and pinned upstream
-source. These temporary files are investigation material, not runtime inputs.
-
 ## Implementation verification
 
 The replacement client was also exercised against live Spansh using the user's
