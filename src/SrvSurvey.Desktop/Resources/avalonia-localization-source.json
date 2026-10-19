@@ -64244,7 +64244,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
   },
   {
-    "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "Text": "Uncheck Selection for filtered projects",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -64252,7 +64252,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Uncheck Show for filtered projects",
+    "Text": "Uncheck Show for every project matching the selected system and build status.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
