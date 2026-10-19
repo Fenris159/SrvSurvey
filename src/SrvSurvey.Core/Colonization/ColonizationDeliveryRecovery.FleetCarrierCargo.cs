@@ -786,7 +786,10 @@ public sealed partial class ColonizationDeliveryRecovery
         && !cargoWritesInFlight.Contains((RecoveryOwner, marketId))
         && (pending.Length == 0 || !IsCargoBaselinePending(marketId))
         // Older retained files have no observation time; require a manifest fetched after loading them.
-        && pending.All(item => (item.RecordedAt ?? item.ObservedAt ?? retainedCargoLoadedAt) < capturedAt);
+        && pending.All(item =>
+            (item.ObservedAt ?? item.RecordedAt ?? retainedCargoLoadedAt) < capturedAt
+            && (item.RecordedAt ?? DateTimeOffset.MinValue) < capturedAt
+        );
 
     /// <summary>A complete manifest also supplies zero for retained commodities absent from its cargo rows.</summary>
     private static Dictionary<string, int> CreateCapiReconciliationTotals(

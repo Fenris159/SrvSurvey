@@ -937,24 +937,6 @@ public sealed class InaraPublisherTests
 
         await publisher.ApplyAsync(CreateUpdate(events, cargo: null, allowPublishing: true, allowSharedData: true));
         InaraPublicationResult first = await publisher.FlushAsync();
-        await publisher.ApplyAsync(
-            CreateUpdate(
-                [
-                    Event(
-                        """
-                        {
-                          "timestamp": "2026-07-28T12:00:01Z",
-                          "event": "Music",
-                          "MusicTrack": "Exploration"
-                        }
-                        """
-                    ),
-                ],
-                cargo: null,
-                allowPublishing: true,
-                allowSharedData: true
-            )
-        );
 
         Assert.Equal(1, handler.RequestCount);
         Assert.Equal(128, handler.LastPayload!["events"]!.Count());

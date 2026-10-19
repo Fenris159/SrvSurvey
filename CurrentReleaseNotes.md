@@ -45,8 +45,8 @@ search groups or individual entries without mandatory colors, and find up to
   complete Frontier manifests and live adjustments remain supported. If a cargo
   write has an uncertain outcome, undock and refresh Frontier data: an accepted
   full manifest reconciles retained writes after Raven acknowledges its totals,
-  allowing later cargo updates to continue. Cached manifests cannot retire newer
-  bank movements, and manifest replacement waits for active cargo retries.
+  allowing later cargo updates to continue. Cached manifests cannot retire newly observed
+  movements, and manifest replacement waits for active cargo retries.
 - **Keep Codex Bingo open.** Finding nearest locations for an entry, a parent
   group, or missing entries preserves the Bingo window and its selection. The
   window stays available until you close it.

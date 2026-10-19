@@ -8,6 +8,39 @@ public sealed partial class ColonizationDeliveryRecoveryTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task CachedFullManifestMustPostdateBothJournalAndLocalObservation(bool journalTimeNewer)
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 75);
+        now = snapshot.FetchedAt.AddSeconds(journalTimeNewer ? -1 : 1);
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(false) with
+        {
+            Timestamp = snapshot.FetchedAt.AddSeconds(journalTimeNewer ? 1 : -1),
+        };
+        cargo.Apply(market);
+        await recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.Equal(0, client.ReplaceCargoCount);
+        Assert.Single(store.LoadPendingCargoAdjustments());
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot fresh = LinkedCarrierCapiSnapshot(false, 70) with
+        {
+            FetchedAt = snapshot.FetchedAt.AddSeconds(2),
+            CarrierFetchedAt = snapshot.FetchedAt.AddSeconds(2),
+        };
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(fresh);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(70, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task CachedFullManifestCannotRetireAnUndatedBankMovement(bool legacyRecord)
     {
         RecordingRavenClient client = CarrierClient(75, "SQD-001");
@@ -94,6 +127,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
         ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
         global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 70);
+        now = snapshot.FetchedAt.AddSeconds(-2);
         CargoInventoryState cargo = ShipCargo(10);
         JournalEventEnvelope market = SquadronMarketEvent(false) with { Timestamp = snapshot.FetchedAt.AddSeconds(-1) };
         cargo.Apply(market);
@@ -118,6 +152,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
         ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
         global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 80);
+        now = snapshot.FetchedAt.AddSeconds(-2);
         CargoInventoryState cargo = ShipCargo(10);
         JournalEventEnvelope market = SquadronMarketEvent(false) with { Timestamp = snapshot.FetchedAt.AddSeconds(-1) };
         cargo.Apply(market);
@@ -154,6 +189,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             TaskCreationOptions.RunContinuationsAsynchronously
         );
         client.AdjustmentResponseTask = response.Task;
+        now = LinkedCarrierCapiSnapshot(false, 80).FetchedAt.AddSeconds(-2);
         ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
         CargoInventoryState cargo = ShipCargo(10);
         JournalEventEnvelope market = SquadronMarketEvent(false);
