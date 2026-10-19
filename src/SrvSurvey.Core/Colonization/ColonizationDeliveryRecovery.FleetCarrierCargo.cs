@@ -30,13 +30,8 @@ public sealed partial class ColonizationDeliveryRecovery
     private (long MarketId, DateTimeOffset Timestamp)? lastSyncedMarket;
 
     /// <summary>
-    /// When true, the next squadron cargo GetDiff is skipped because MarketBuy/Sell
-    /// already sent AdjustFleetCarrierCargo for this linked squadron FC (legacy parity).
-    /// </summary>
-    private bool skipNextCargoEvent;
-
-    /// <summary>
-    /// Whether the current Market.json belongs to a linked carrier opened since docking, ignoring busy state.
+    /// Whether the current Market.json can replace linked personal-carrier cargo, ignoring busy state.
+    /// Squadron bank totals require a full manifest rather than market-only stock.
     /// </summary>
     public bool CanSyncFleetCarrierCargo
     {
@@ -61,24 +56,19 @@ public sealed partial class ColonizationDeliveryRecovery
             ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
             return dock?.Timestamp is not null
                 && dock.MarketId == currentMarket.MarketId
-                && currentMarket.Timestamp > dock.Timestamp;
+                && currentMarket.Timestamp > dock.Timestamp
+                && !ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock);
         }
     }
 
     /// <summary>
-    /// Freeze ship cargo before CargoTransfer mutates the live projection when docked on a
-    /// linked squadron fleet carrier. Squadron carriers do not use journal transfer deltas;
-    /// they rely on the aggregate ship cargo difference.
+    /// Freeze ship cargo before CargoTransfer mutates the live projection. Desktop cargo projection
+    /// precedes docking context, so eligibility is checked later by live synchronization.
     /// </summary>
     public void PrepareSquadronCargoTransferSnapshot(CargoInventoryState cargo)
     {
         ArgumentNullException.ThrowIfNull(cargo);
-        if (
-            !FleetCarrierCargoSyncEnabled
-            || apiKey is null
-            || constructionState.CurrentDock is not { } dock
-            || !IsLinkedSquadronFleetCarrier(dock)
-        )
+        if (!FleetCarrierCargoSyncEnabled || apiKey is null)
         {
             return;
         }
@@ -277,15 +267,10 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
-    private void ClearSquadronCargoSyncState(CargoInventoryState? cargoInventory)
+    private static void ClearSquadronCargoSyncState(CargoInventoryState? cargoInventory)
     {
-        // Drop held squadron state when publishing is disabled so lastInventory /
-        // skipNext cannot survive across later cargo updates.
-        skipNextCargoEvent = false;
-        if (cargoInventory?.HasPreservedSnapshot == true)
-        {
-            cargoInventory.ClearPreservedSnapshot();
-        }
+        // Consume the baseline as well as the held flag so disabled publishing cannot leak old movement.
+        cargoInventory?.GetDiff();
     }
 
     /// <summary>Converts expected squadron cargo synchronization failures into recoverable notices.</summary>
@@ -327,11 +312,7 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         if (!FleetCarrierCargoSyncEnabled || apiKey is null || constructionState.CurrentDock is not { } dock)
         {
-            skipNextCargoEvent = false;
-            if (cargo.HasPreservedSnapshot)
-            {
-                cargo.ClearPreservedSnapshot();
-            }
+            cargo.GetDiff();
 
             return null;
         }
@@ -342,7 +323,7 @@ public sealed partial class ColonizationDeliveryRecovery
         }
 
         // Compute diff while inventory is stable; network I/O stays outside GetDiff's lock.
-        Dictionary<string, int> shipDiff = cargo.GetDiff();
+        Dictionary<string, int> shipDiff = cargo.GetDiff(excludeMarketChanges: true);
         if (shipDiff.Count == 0)
         {
             return null;
@@ -368,36 +349,18 @@ public sealed partial class ColonizationDeliveryRecovery
         );
     }
 
-    /// <summary>Applies legacy squadron diff gating: market-adjusted polls, unlinked docks, and inactive cargo are skipped.</summary>
+    /// <summary>Discards movement outside the linked squadron dock; active polls consume each difference once.</summary>
     private bool ShouldSendSquadronCargoDiff(
         CargoInventoryState cargo,
         bool cargoActivity,
         ColonizationDockingSnapshot dock
     )
     {
-        // MarketBuy/Sell already adjusted the FC. Suppress GetDiff only when there is
-        // no preserved transfer snapshot — transfer capture baselines after market
-        // events, so its GetDiff must still be sent (same-poll Market+Transfer).
-        if (skipNextCargoEvent)
-        {
-            skipNextCargoEvent = false;
-            if (!cargo.HasPreservedSnapshot)
-            {
-                return false;
-            }
-        }
-
         if (!IsLinkedSquadronFleetCarrier(dock))
         {
-            if (cargo.HasPreservedSnapshot)
-            {
-                cargo.ClearPreservedSnapshot();
-            }
-
+            cargo.GetDiff();
             return false;
         }
-
-        // Match legacy: only run after Cargo activity / preserved transfer snapshot.
         return cargoActivity || cargo.HasPreservedSnapshot;
     }
 
@@ -433,11 +396,6 @@ public sealed partial class ColonizationDeliveryRecovery
 
         if (TryQueuePendingCargoDelta(dock.MarketId, adjustments, journalEvent.Timestamp))
         {
-            SuppressSquadronCargoDiffAfterMarketAdjustment(
-                journalEvent.EventName,
-                dock,
-                preferShipCargoDiffForSquadron
-            );
             return new(ColonizationDeliveryNoticeKind.CarrierCargoQueued, Count: adjustments.Count);
         }
 
@@ -518,14 +476,6 @@ public sealed partial class ColonizationDeliveryRecovery
         SavePendingCargoAdjustments();
         if (blocked)
         {
-            if (GetJournalDockForMarket(marketId) is { } blockedDock)
-            {
-                SuppressSquadronCargoDiffAfterMarketAdjustment(
-                    sourceEventName,
-                    blockedDock,
-                    preferShipCargoDiffForSquadron
-                );
-            }
             return new(ColonizationDeliveryNoticeKind.CarrierCargoQueuedBehindUnconfirmed);
         }
         cargoWritesInFlight.Add((pending.Owner, marketId));
@@ -544,19 +494,13 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 return null;
             }
-            ApplyAcknowledgedCargoAdjustment(
-                marketId,
-                updatedCargo,
-                sourceEventName,
-                preferShipCargoDiffForSquadron,
-                cargoInventory
-            );
+            ApplyAcknowledgedCargoAdjustment(marketId, updatedCargo, preferShipCargoDiffForSquadron, cargoInventory);
             return new(ColonizationDeliveryNoticeKind.CarrierCargoAdjusted, sourceEventName, Count: adjustments.Count);
         }
         catch (Exception exception)
             when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
         {
-            RetainFailedCargoAdjustment(pending, exception, sourceEventName, preferShipCargoDiffForSquadron, version);
+            RetainFailedCargoAdjustment(pending, exception);
             throw;
         }
         finally
@@ -569,11 +513,10 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
-    /// <summary>Installs Raven's acknowledged cargo and suppresses a duplicate squadron difference for the same purchase.</summary>
+    /// <summary>Installs acknowledged cargo and drops a transfer capture when journal fallback handled the movement.</summary>
     private void ApplyAcknowledgedCargoAdjustment(
         long marketId,
         IReadOnlyDictionary<string, int> updatedCargo,
-        string sourceEventName,
         bool preferShipCargoDiffForSquadron,
         CargoInventoryState? cargoInventory
     )
@@ -592,27 +535,10 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             ReplaceLocalFleetCarrier(localCarrier with { Cargo = CopyCargo(updatedCargo) });
         }
-
-        // Market buy/sell already adjusted the FC; suppress market-only GetDiff so
-        // squadron carriers are not double-counted. Transfer snapshots still send.
-        if (constructionState.CurrentDock is { } currentDock && currentDock.MarketId == marketId)
-        {
-            SuppressSquadronCargoDiffAfterMarketAdjustment(
-                sourceEventName,
-                currentDock,
-                preferShipCargoDiffForSquadron
-            );
-        }
     }
 
     /// <summary>Records failure only while the adjustment remains pending, preserving the original transport exception.</summary>
-    private void RetainFailedCargoAdjustment(
-        ColonizationPendingCargoAdjustment pending,
-        Exception exception,
-        string sourceEventName,
-        bool preferShipCargoDiffForSquadron,
-        int version
-    )
+    private void RetainFailedCargoAdjustment(ColonizationPendingCargoAdjustment pending, Exception exception)
     {
         int index = failedCargoAdjustments.IndexOf(pending);
         if (index >= 0)
@@ -621,30 +547,6 @@ public sealed partial class ColonizationDeliveryRecovery
             SavePendingCargoAdjustments();
         }
         nextWriteRetry = utcNow().Add(WriteRetryDelay);
-        if (version != profileVersion)
-        {
-            return;
-        }
-        if (GetJournalDockForMarket(pending.MarketId) is { } dock)
-        {
-            SuppressSquadronCargoDiffAfterMarketAdjustment(sourceEventName, dock, preferShipCargoDiffForSquadron);
-        }
-    }
-
-    private void SuppressSquadronCargoDiffAfterMarketAdjustment(
-        string eventName,
-        ColonizationDockingSnapshot dock,
-        bool preferShipCargoDiffForSquadron
-    )
-    {
-        if (
-            preferShipCargoDiffForSquadron
-            && eventName is "MarketBuy" or "MarketSell"
-            && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock)
-        )
-        {
-            skipNextCargoEvent = true;
-        }
     }
 
     private bool IsLinkedFleetCarrier(long marketId) => fleetCarriers.Any(carrier => carrier.MarketId == marketId);
@@ -664,6 +566,13 @@ public sealed partial class ColonizationDeliveryRecovery
         int version
     )
     {
+        if (ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock))
+        {
+            observer.FleetCarrierStatusChanged(
+                new(ColonizationDeliveryNoticeKind.SquadronCarrierPublished, GetCarrierName(registered))
+            );
+            return;
+        }
         MarketSnapshot? market = GetFreshFleetCarrierMarket(dock);
         if (market is null)
         {

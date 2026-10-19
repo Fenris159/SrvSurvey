@@ -119,6 +119,9 @@ public enum ColonizationDeliveryNoticeKind
     /// <summary>The carrier was published; its market must be opened to synchronize cargo.</summary>
     CarrierPublishedAwaitingMarket,
 
+    /// <summary>A squadron carrier was linked without using its commodity market as a full cargo manifest.</summary>
+    SquadronCarrierPublished,
+
     /// <summary>The carrier was published and its cargo was already current.</summary>
     CarrierPublishedCargoCurrent,
 

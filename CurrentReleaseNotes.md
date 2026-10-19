@@ -1,11 +1,42 @@
-# SrvSurvey-XP 2.1.3.0-rc.68
+# SrvSurvey-XP 2.1.3.0-rc.69
 
-RC68 keeps Codex Bingo open while you search and makes nearest Codex locations
-easier to find. Search groups or individual entries without mandatory color
-filters, and see up to 20 matching systems with details about the actual feature.
+RC69 combines more reliable Google Drive backups, clearer colonization shopping,
+joined-overlay capture fixes, and corrected squadron carrier cargo tracking.
+It also includes the Codex Bingo and nearest-search improvements: keep Bingo open,
+search groups or individual entries without mandatory colors, and find up to
+20 matching systems.
 
 ## What's changed
 
+- **Back up larger profiles to Google Drive.** Portable profiles are compacted
+  before upload, and the supported size increases from 32 MiB to 128 MiB.
+  Existing backups remain readable; use an updated build on each linked computer
+  when sharing backups above the old limit.
+- **Resume interrupted backups.** Drive uploads use acknowledged chunks with
+  bounded retries instead of restarting the entire transfer. Manual backup and
+  sync operations have up to ten minutes and a **Cancel operation** control.
+  Failed or canceled transfers retain local recovery data, and startup/shutdown
+  work keeps its own shorter deadline.
+- **Understand backup failures.** Progress identifies capture, comparison, and
+  upload stages. Expired authorization gives disconnect/re-link guidance,
+  while publisher configuration errors have a separate message. Concurrent
+  instances preserve newer saved authorization during a failed refresh.
+- **Uncheck matching colonization projects together.** In **My build projects**,
+  **<--Uncheck Selection** clears **Show** only for projects matching both the
+  selected system and build-status filters.
+- **Read market tags in every theme.** Short-supply commodity tags match the
+  **Short supply** toggle color. ShoppingList selections keep their secondary
+  fill and gain a shortage-colored outline when needed. Monochrome tags use
+  muted champagne instead of bright white, and tooltip text remains readable.
+- **Find the joined stream overlay in Windows OBS.** The enabled capture surface
+  is eligible for OBS window selection and stays open when switching from Elite
+  to OBS. Look for **[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay**.
+  Other gameplay panels keep their existing focus behavior.
+- **Track squadron carrier cargo once per movement.** Bank transfers and market
+  purchases/sales are reconciled against the same ship inventory baseline, so
+  count-only Cargo events cannot repeat a purchase or omit an interleaved bank
+  movement. Market-only stock no longer replaces combined squadron cargo;
+  complete Frontier manifests and live adjustments remain supported.
 - **Keep Codex Bingo open.** Finding nearest locations for an entry, a parent
   group, or missing entries preserves the Bingo window and its selection. The
   window stays available until you close it.
@@ -44,15 +75,15 @@ filters, and see up to 20 matching systems with details about the actual feature
 
 ## Update channel and packages
 
-RC68 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC69 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.68`
-- Tag: `xp2-v2.1.3.0-rc.68`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.68-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.68-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.68-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.68-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.69`
+- Tag: `xp2-v2.1.3.0-rc.69`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.69-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.69-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

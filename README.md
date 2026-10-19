@@ -347,6 +347,8 @@ alignment practical before placing and tracking the rig.
 - Supports separate native overlay windows and a combined host, configurable
   keyboard/controller shortcuts, click-through behavior and vehicle-specific
   exceptions.
+- Provides a [joined stream overlay](docs/JOINED_STREAM_OVERLAY.md) named
+  SrvSurveyWindowOne for capture software such as OBS.
 - Ships English, Deutsch, Español, Français, Português (Brasil), Русский and
   简体中文 interfaces, plus a Pseudo locale for localization testing.
 - Handles narrow layouts with application-wide horizontal mouse-wheel, trackpad

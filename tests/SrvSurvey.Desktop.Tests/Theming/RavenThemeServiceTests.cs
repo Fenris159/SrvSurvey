@@ -104,6 +104,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.Equal(theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light, application.RequestedThemeVariant);
             SolidColorBrush accent = Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
+            Assert.Equal(
+                Color.Parse(theme.TagFillColor),
+                Assert.IsType<SolidColorBrush>(application.Resources["RavenTagFillBrush"]).Color
+            );
+            Assert.Equal(
+                Color.Parse(theme.DangerForegroundColor),
+                Assert.IsType<SolidColorBrush>(application.Resources["RavenDangerForegroundBrush"]).Color
+            );
             SolidColorBrush selectedMutedText = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenSelectedMutedTextBrush"]
             );

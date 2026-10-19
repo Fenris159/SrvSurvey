@@ -115,6 +115,8 @@ public static class ColonizationDeliveryMessages
             ColonizationDeliveryNoticeKind.CarrierPublishing => $"Publishing {notice.Name} to Raven Colonial...",
             ColonizationDeliveryNoticeKind.CarrierPublishedAwaitingMarket => $"Published and linked {notice.Name}. "
                 + "Open its commodity market to synchronize cargo.",
+            ColonizationDeliveryNoticeKind.SquadronCarrierPublished => $"Published and linked {notice.Name}. "
+                + "Squadron cargo updates from Frontier manifests and live cargo movements.",
             ColonizationDeliveryNoticeKind.CarrierPublishedCargoCurrent => $"Published and linked {notice.Name}; "
                 + "its cargo is already current.",
             ColonizationDeliveryNoticeKind.CarrierPublishedCargoUpdated => $"Published and linked {notice.Name} and "

@@ -11,15 +11,15 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class StreamOverlayCoordinatorTests
 {
     [AvaloniaFact]
-    public void EnablingWhileEliteIsInBackgroundDoesNotOpenWindow()
+    public void EnablingWhileEliteIsInBackgroundOpensTheCaptureWindow()
     {
         using var context = new TestContext(isForeground: false);
 
-        Assert.Empty(context.Harness.PreparedWindows);
+        Assert.True(Assert.Single(context.Harness.PreparedWindows).IsVisible);
     }
 
     [AvaloniaFact]
-    public void FocusLossClosesWindowAndReturningToEliteRestoresTopmostWindow()
+    public void FocusLossKeepsTheSameCaptureWindowAvailableToObs()
     {
         using var context = new TestContext(isForeground: true);
         Window original = Assert.Single(context.Harness.PreparedWindows);
@@ -31,8 +31,8 @@ public sealed class StreamOverlayCoordinatorTests
         context.Harness.GameWindow = context.Harness.GameWindow with { IsForeground = false };
         context.Synchronize();
 
-        Assert.True(closed);
-        Assert.False(original.IsVisible);
+        Assert.False(closed);
+        Assert.True(original.IsVisible);
         Assert.True(context.ViewModel.Enabled);
         context.Synchronize();
         Assert.Single(context.Harness.PreparedWindows);
@@ -40,14 +40,13 @@ public sealed class StreamOverlayCoordinatorTests
         context.Harness.GameWindow = context.Harness.GameWindow with { IsForeground = true };
         context.Synchronize();
 
-        Assert.Equal(2, context.Harness.PreparedWindows.Count);
-        Window restored = context.Harness.PreparedWindows[1];
-        Assert.True(restored.IsVisible);
-        Assert.True(restored.Topmost);
+        Assert.Same(original, Assert.Single(context.Harness.PreparedWindows));
+        Assert.True(original.IsVisible);
+        Assert.True(original.Topmost);
     }
 
     [AvaloniaFact]
-    public void SuppliedTrackerOverrideKeepsWindowUntilOverrideEndsButCannotShowMinimizedGame()
+    public void CaptureRemainsDiscoverableWithHiddenEliteAndValidBoundsUntilTheGameWindowIsGone()
     {
         using var context = new TestContext(isForeground: false, keepVisible: true);
         Window window = Assert.Single(context.Harness.PreparedWindows);
@@ -56,17 +55,29 @@ public sealed class StreamOverlayCoordinatorTests
 
         context.KeepVisible = false;
         context.Synchronize();
-        Assert.False(window.IsVisible);
+        Assert.True(window.IsVisible);
 
         context.KeepVisible = true;
         context.Synchronize();
-        Assert.Equal(2, context.Harness.PreparedWindows.Count);
-        Window restored = context.Harness.PreparedWindows[1];
-        Assert.True(restored.IsVisible);
+        Assert.Same(window, Assert.Single(context.Harness.PreparedWindows));
 
         context.Harness.GameWindow = context.Harness.GameWindow with { IsVisible = false };
         context.Synchronize();
-        Assert.False(restored.IsVisible);
+        Assert.True(window.IsVisible);
+        context.Harness.GameWindow = GameWindowSnapshot.Unavailable;
+        context.Synchronize();
+        Assert.False(window.IsVisible);
+    }
+
+    [AvaloniaFact]
+    public void DisablingCaptureInTheBackgroundClosesItsWindow()
+    {
+        using var context = new TestContext(isForeground: false);
+        Window window = Assert.Single(context.Harness.PreparedWindows);
+        context.ViewModel.Enabled = false;
+        context.Synchronize();
+        Assert.False(window.IsVisible);
+        Assert.Single(context.Harness.PreparedWindows);
     }
 
     private sealed class TestContext : IDisposable

@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.68**. Its development tag
-is `xp2-v2.1.3.0-rc.68`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.68`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.69**. Its development tag
+is `xp2-v2.1.3.0-rc.69`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.69`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and
@@ -79,10 +79,10 @@ XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
 
-## RC68 release sequence
+## RC69 release sequence
 
-RC51 remains the permanent legacy bridge and RC67 is the preceding published preview. Do not
-dispatch RC68 until its pull request has merged into
+RC51 remains the permanent legacy bridge and RC68 is the preceding published preview. Do not
+dispatch RC69 until its pull request has merged into
 `SrvSurvey-Avalonia` and the external publishing step has been explicitly
 approved. Then update the local branch and verify the checked-in release
 contract before starting the workflow:
@@ -90,7 +90,7 @@ contract before starting the workflow:
 ```console
 git switch SrvSurvey-Avalonia
 git pull --ff-only origin SrvSurvey-Avalonia
-pwsh ./scripts/Resolve-CrossPlatformReleaseContract.ps1 -Version 2.1.3.0-rc.68
+pwsh ./scripts/Resolve-CrossPlatformReleaseContract.ps1 -Version 2.1.3.0-rc.69
 gh workflow run build-srvsurvey-xp.yml \
   --repo Fenris159/SrvSurvey \
   --ref SrvSurvey-Avalonia \
@@ -106,22 +106,22 @@ run_id=$(gh run list \
 gh run watch "$run_id" --repo Fenris159/SrvSurvey --exit-status
 ```
 
-The resolver output must report `xp2-v2.1.3.0-rc.68` and schema 2. After the
+The resolver output must report `xp2-v2.1.3.0-rc.69` and schema 2. After the
 workflow succeeds, verify rather than replace its published assets:
 
 ```console
-gh release view xp2-v2.1.3.0-rc.68 \
+gh release view xp2-v2.1.3.0-rc.69 \
   --repo Fenris159/SrvSurvey \
   --json tagName,isDraft,isPrerelease,targetCommitish,assets
-gh release download xp2-v2.1.3.0-rc.68 \
+gh release download xp2-v2.1.3.0-rc.69 \
   --repo Fenris159/SrvSurvey \
   --pattern release-index.json \
-  --dir artifacts/verify-rc68
-pwsh -Command '$index = Get-Content artifacts/verify-rc68/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC68 release index contract failed." }'
+  --dir artifacts/verify-rc69
+pwsh -Command '$index = Get-Content artifacts/verify-rc69/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC69 release index contract failed." }'
 ```
 
 Confirm that legacy clients still select `xp-v2.1.3.0-rc.51` and an RC51 client
-selects `xp2-v2.1.3.0-rc.68`. Continue sequential RC version increments in the
+selects `xp2-v2.1.3.0-rc.69`. Continue sequential RC version increments in the
 `xp2-v` namespace; do not create any additional `xp-v` tag.
 
 ## User-facing release notes
@@ -219,6 +219,12 @@ session. Before promoting a release, verify on clean supported systems:
 3. Journal attachment, game-window tracking, click-through overlays, global
    input, capture-dependent features, and overlay update cost during play.
 4. Backup/import/restart using a representative existing profile.
+5. On Windows, enable joined streaming with Elite running, switch to OBS, and
+   select `[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay` in Window Capture.
+   Verify that switching focus preserves the capture source, returning to Elite
+   resumes overlay content, and disabling joined streaming removes its window.
+   Also verify transparent capture and click-through behavior with the user's
+   OBS capture method; headless lifecycle/style tests do not exercise native OBS.
 
 Overlay runtime testing must cover both presentation backends. Leave
 `SRVSURVEY_OVERLAY_HOST` unset to verify the established separate-window path

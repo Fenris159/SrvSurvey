@@ -844,14 +844,14 @@
       <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.colonization-project-tag:checked">
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenTagFillBrush}" />
     </Style>
     <Style Selector="ToggleButton.colonization-tag:checked, ToggleButton.colonization-tag:checked:pointerover, ToggleButton.colonization-tag:checked:pressed">
-      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
     </Style>
     <Style Selector="ToggleButton.colonization-tag:checked /template/ ContentPresenter, ToggleButton.colonization-tag:checked:pointerover /template/ ContentPresenter, ToggleButton.colonization-tag:checked:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
     </Style>
 </Styles>

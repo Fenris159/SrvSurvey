@@ -387,7 +387,6 @@ public sealed partial class ColonizationDeliveryRecovery
         if (cargoInventory is not null && !preferSquadronCargoDiff)
         {
             cargoInventory.GetDiff();
-            skipNextCargoEvent = false;
         }
 
         return notices;
@@ -583,10 +582,6 @@ public sealed partial class ColonizationDeliveryRecovery
         journalDocks.TryGetValue(journalEvent, out ColonizationDockingSnapshot? dock)
             ? dock
             : constructionState.CurrentDock;
-
-    /// <summary>Resolves a known dock for suppression after a failed market adjustment.</summary>
-    private ColonizationDockingSnapshot? GetJournalDockForMarket(long marketId) =>
-        journalDocks.Values.FirstOrDefault(dock => dock?.MarketId == marketId) ?? constructionState.CurrentDock;
 
     /// <summary>Only explicit client-error responses are safe for automatic replay; server and transport failures may follow a committed write.</summary>
     private static bool IsDefiniteRejection(Exception exception) =>

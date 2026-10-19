@@ -633,6 +633,10 @@
       "translation": "; ignoriert {0} fehlerhafte/teilweise Zeile(n)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Auswahl deaktivieren"
+    },
+    {
       "source": "? of {0}",
       "translation": "? von {0}"
     },
@@ -21053,6 +21057,10 @@
       "translation": "Veröffentlicht und verlinkt {0}. Öffnen Sie den Warenmarkt, um die Fracht zu synchronisieren."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Veröffentlicht und verlinkt {0}. Geschwaderfrachtaktualisierungen von Frontier Manifesten und Live-Frachtbewegungen."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Veröffentlicht und verlinkt {0}; seine Ladung ist bereits aktuell."
     },
@@ -21825,6 +21833,10 @@
       "translation": "RavenDangerBrush"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -22179,6 +22191,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -32013,6 +32029,10 @@
       "translation": "Deaktivieren Sie „Alle“."
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Deaktivieren Sie „Anzeigen“ für jedes Projekt, das dem ausgewählten System und Build-Status entspricht."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Nicht beanspruchte Biologie"
     },
@@ -39453,6 +39473,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; ignorado {0} líneas mal formadas/parciales"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar selección"
     },
     {
       "source": "? of {0}",
@@ -59875,6 +59899,10 @@
       "translation": "Publicado y vinculado {0}. Abrir su mercado de productos básicos para sincronizar la carga."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Publicado y vinculado {0}. Actualizaciones de carga de escuadrón a partir de manifiestos Frontier y movimientos de carga en vivo."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publicado y vinculado {0}; su carga ya está vigente."
     },
@@ -60647,6 +60675,10 @@
       "translation": "CuervoPeligroCepillo"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CuervoPeligroprimer planoCepillo"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "CuervoFlotantePanelSombra"
     },
@@ -61001,6 +61033,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "CuervoSuperficieCepillo"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "CuervoEtiquetaRellenoBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -70835,6 +70871,10 @@
       "translation": "Desmarcar todo"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada proyecto que coincida con el sistema seleccionado y el estado de compilación."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biología no reclamada"
     },
@@ -78275,6 +78315,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; {0} ligne(s) malformée(s)/partielle(s) ignorée(s)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Décochez la sélection"
     },
     {
       "source": "? of {0}",
@@ -98697,6 +98741,10 @@
       "translation": "Publié et lié {0}. Ouvrir son marché des matières premières pour synchroniser le fret."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publié et lié. Mises à jour du fret de l'escadron à partir des manifestes Frontier et des mouvements de fret en direct."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publié et lié {0} ; sa cargaison est déjà à jour."
     },
@@ -99469,6 +99517,10 @@
       "translation": "CorbeauDangerBrosse"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CorbeauDangerPremier PlanBrosse"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -99823,6 +99875,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrosse"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -109657,6 +109713,10 @@
       "translation": "Décocher tout"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Décochez Afficher pour chaque projet correspondant au système sélectionné et à l'état de construction."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologie non réclamée"
     },
@@ -117097,6 +117157,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; ignorado {0} linha(s) mal formada(s)/parcial(is)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar seleção"
     },
     {
       "source": "? of {0}",
@@ -137519,6 +137583,10 @@
       "translation": "Publicado e vinculado {0}. Abra seu mercado de commodities para sincronizar a carga."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publicado e vinculado. Atualizações de carga do esquadrão de manifestos Frontier e movimentos de carga ao vivo."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publicado e vinculado {0}; sua carga já está atual."
     },
@@ -138291,6 +138359,10 @@
       "translation": "RavenDangerEscova"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "RavenFloatingPanelShadow"
     },
@@ -138645,6 +138717,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -148479,6 +148555,10 @@
       "translation": "Desmarque tudo"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada projeto que corresponda ao sistema selecionado e ao status de construção."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologia não reclamada"
     },
@@ -155919,6 +155999,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "; игнорируется {0} неверно сформированная/неполная строка(ы)"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Снять выделение"
     },
     {
       "source": "? of {0}",
@@ -176341,6 +176425,10 @@
       "translation": "Опубликовано и связано с {0}. Откройте свой товарный рынок для синхронизации грузов."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Опубликован и связан {0}. Обновления о грузах эскадрильи от Frontier отражают и показывают движение грузов в реальном времени."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Опубликовано и связано с {0}; его груз уже в наличии."
     },
@@ -177113,6 +177201,10 @@
       "translation": "ВоронОпасностьКисть"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "ВоронОпасностьПередний планКисть"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "ВоронПлавающийПанельТень"
     },
@@ -177467,6 +177559,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "ВоронПоверхностьКисть"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "ВоронТегЗаполнитьКисть"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -187301,6 +187397,10 @@
       "translation": "Снимите все флажки"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Снимите флажок «Показывать для каждого проекта, соответствующего выбранной системе и статусу сборки»."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Невостребованная биология"
     },
@@ -194741,6 +194841,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": ";忽略 {0} 格式错误/部分行"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "<--取消选中选择"
     },
     {
       "source": "? of {0}",
@@ -215163,6 +215267,10 @@
       "translation": "已发布并链接 {0}。开放其商品市场，同步货运。"
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "已发布并链接 {0}。来自 Frontier 的中队货物更新舱单和实时货物动态。"
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "已发布并链接 {0}；它的货物已经是最新的。"
     },
@@ -215935,6 +216043,10 @@
       "translation": "乌鸦危险画笔"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "乌鸦危险前景画笔"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "乌鸦浮动面板阴影"
     },
@@ -216289,6 +216401,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "乌鸦表面画笔"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "乌鸦标签填充画笔"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -226123,6 +226239,10 @@
       "translation": "取消选中全部"
     },
     {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "取消选中与所选系统和构建状态匹配的每个项目的“显示”。"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "无人认领的生物学"
     },
@@ -233563,6 +233683,10 @@
     {
       "source": "; ignored {0} malformed/partial line(s)",
       "translation": "* ; IGNORED {0} MALFORMED/PARTIAL LINE(S) >>>!"
+    },
+    {
+      "source": "<--Uncheck Selection",
+      "translation": "* <--UNCHECK SELECTION >>>!"
     },
     {
       "source": "? of {0}",
@@ -253985,6 +254109,10 @@
       "translation": "* PUBLISHED AND LINKED {0}. OPEN ITS COMMODITY MARKET TO SYNCHRONIZE CARGO. >>>!"
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "* PUBLISHED AND LINKED {0}. SQUADRON CARGO UPDATES FROM FRONTIER MANIFESTS AND LIVE CARGO MOVEMENTS. >>>!"
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "* PUBLISHED AND LINKED {0}; ITS CARGO IS ALREADY CURRENT. >>>!"
     },
@@ -254757,6 +254885,10 @@
       "translation": "* RAVENDANGERBRUSH >>>!"
     },
     {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "* RAVENDANGERFOREGROUNDBRUSH >>>!"
+    },
+    {
       "source": "RavenFloatingPanelShadow",
       "translation": "* RAVENFLOATINGPANELSHADOW >>>!"
     },
@@ -255111,6 +255243,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "* RAVENSURFACEBRUSH >>>!"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "* RAVENTAGFILLBRUSH >>>!"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -264943,6 +265079,10 @@
     {
       "source": "Uncheck All",
       "translation": "* UNCHECK ALL >>>!"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "* UNCHECK SHOW FOR EVERY PROJECT MATCHING THE SELECTED SYSTEM AND BUILD STATUS. >>>!"
     },
     {
       "source": "Unclaimed biology",

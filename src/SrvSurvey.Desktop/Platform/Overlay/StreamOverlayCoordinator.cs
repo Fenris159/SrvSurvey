@@ -32,6 +32,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 RequiresLayoutCatalog = false,
                 ApplyLayoutTheme = false,
                 RetryPassivePreparationOnPoll = true,
+                IsGameWindowEligible = snapshot => snapshot.IsAvailable,
             }
         );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;

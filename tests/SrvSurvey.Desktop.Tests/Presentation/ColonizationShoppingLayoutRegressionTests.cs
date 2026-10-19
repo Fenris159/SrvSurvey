@@ -143,6 +143,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         );
         var window = new ColonizationShoppingTestWindow(model) { Width = 640 };
         window.Resources["RavenControlAccentBrush"] = new SolidColorBrush(Color.Parse("#F5F5F5"));
+        window.Resources["RavenTagFillBrush"] = new SolidColorBrush(Color.Parse("#B8AA7B"));
         window.Resources["RavenAccentBrush"] = new SolidColorBrush(Color.Parse("#E6D59A"));
         window.Resources["RavenAccentForegroundBrush"] = new SolidColorBrush(Color.Parse("#0A0A0A"));
         try

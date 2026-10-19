@@ -1264,6 +1264,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "\u003C--Uncheck Selection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "? of {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -42239,6 +42247,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
     "Text": "Published and linked {0}; its cargo is already current.",
     "IsFormat": true,
     "SourceKinds": [
@@ -43785,6 +43801,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "RavenDangerForegroundBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
     "Text": "RavenFloatingPanelShadow",
     "IsFormat": false,
     "SourceKinds": [
@@ -44490,6 +44514,14 @@
   },
   {
     "Text": "RavenSurfaceBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "RavenTagFillBrush",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64202,6 +64234,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
+    "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Unclaimed biology",
