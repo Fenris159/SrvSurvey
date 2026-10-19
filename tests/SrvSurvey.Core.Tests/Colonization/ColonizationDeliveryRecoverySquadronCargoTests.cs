@@ -5,6 +5,176 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    [Fact]
+    public async Task FailedFullManifestReplacementRetainsUncertainCargoForTheNextRefresh()
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 70);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(false) with { Timestamp = snapshot.FetchedAt.AddSeconds(-1) };
+        cargo.Apply(market);
+        await recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        client.ReplaceCargo = _ =>
+            Task.FromException<IReadOnlyDictionary<string, int>>(new HttpRequestException("offline"));
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.True(Assert.Single(store.LoadPendingCargoAdjustments()).OutcomeUnknown);
+        client.ReplaceCargo = null;
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(70, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
+    [Fact]
+    public async Task TransactionsQueuedDuringFullManifestRecoveryReplayAfterItsAcknowledgement()
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 80);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(false) with { Timestamp = snapshot.FetchedAt.AddSeconds(-1) };
+        cargo.Apply(market);
+        await recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        client.ReplaceCargo = async replacement =>
+        {
+            recovery.ApplyJournalEvents([CarrierDock(squadron: true, stationName: "SQD-001")], null);
+            JournalEventEnvelope next = SquadronMarketEvent(false) with
+            {
+                Timestamp = snapshot.FetchedAt.AddSeconds(1),
+            };
+            cargo.Apply(next);
+            await recovery.SynchronizeLiveEventsAsync([next], true, cargo, cargoActivity: true);
+            client.FleetCarrierResponse = client.FleetCarrierResponse! with
+            {
+                Cargo = new Dictionary<string, int>(replacement),
+            };
+            return replacement;
+        };
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.Equal(75, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+        Assert.Equal(2, client.FleetCarrierAdjustments.Count);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Fact]
+    public async Task FullManifestCannotOvertakeARelativeCargoWriteInFlight()
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        var response = new TaskCompletionSource<IReadOnlyDictionary<string, int>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        client.AdjustmentResponseTask = response.Task;
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(false);
+        cargo.Apply(market);
+        Task writing = recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        try
+        {
+            Assert.Single(client.FleetCarrierAdjustments);
+            recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+
+            await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(false, 80));
+
+            Assert.Equal(0, client.ReplaceCargoCount);
+        }
+        finally
+        {
+            response.TrySetResult(new Dictionary<string, int> { ["steel"] = 70 });
+            await writing.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Theory]
+    [InlineData(false, 75)]
+    [InlineData(true, 75)]
+    [InlineData(false, 0)]
+    public async Task AcceptedFullSquadronManifestReconcilesUncertainAndDependentWrites(bool alreadySeeded, int total)
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, total);
+        if (alreadySeeded)
+        {
+            recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+            await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(false, 75));
+            recovery.ApplyJournalEvents([CarrierDock(squadron: true, stationName: "SQD-001")], null);
+        }
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(sell: false) with
+        {
+            Timestamp = snapshot.FetchedAt.AddSeconds(1),
+        };
+        cargo.Apply(market);
+        await recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        JournalEventEnvelope bank = SquadronBankEvent(5, toCarrier: true);
+        recovery.PrepareSquadronCargoTransferSnapshot(cargo);
+        cargo.Apply(bank);
+        await recovery.SynchronizeLiveEventsAsync([bank], true, cargo, cargoActivity: true);
+        Assert.Equal(2, store.LoadPendingCargoAdjustments().Count);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        snapshot = snapshot with
+        {
+            Carrier = null,
+            SquadronCarrier = snapshot.Carrier,
+            FetchedAt = snapshot.FetchedAt.AddSeconds(2),
+            SquadronCarrierFetchedAt = snapshot.FetchedAt.AddSeconds(2),
+        };
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(total, Assert.Single(recovery.FleetCarriers).Cargo.GetValueOrDefault("steel"));
+        Assert.Equal(1, client.ReplaceCargoCount);
+        recovery.ApplyJournalEvents([CarrierDock(squadron: true, stationName: "SQD-001")], null);
+        JournalEventEnvelope next = SquadronMarketEvent(sell: true) with
+        {
+            Timestamp = snapshot.FetchedAt.AddSeconds(1),
+        };
+        cargo.Apply(next);
+        await recovery.SynchronizeLiveEventsAsync([next], true, cargo, cargoActivity: true);
+        Assert.Equal(2, client.FleetCarrierAdjustments.Count);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SquadronManifestCannotRetireAnUncoveredWrite(bool stillDocked)
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 75);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope market = SquadronMarketEvent(false) with
+        {
+            Timestamp = snapshot.FetchedAt.AddSeconds(stillDocked ? -1 : 1),
+        };
+        cargo.Apply(market);
+        await recovery.SynchronizeLiveEventsAsync([market], true, cargo, cargoActivity: true);
+        if (!stillDocked)
+        {
+            recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        }
+        snapshot = snapshot with { SquadronCarrier = snapshot.Carrier, Carrier = null };
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.True(Assert.Single(store.LoadPendingCargoAdjustments()).OutcomeUnknown);
+        Assert.Equal(0, client.ReplaceCargoCount);
+    }
+
     /// <summary>Count-only journal cargo must not replay a purchase or sale already retained for Raven.</summary>
     [Theory]
     [InlineData(false)]

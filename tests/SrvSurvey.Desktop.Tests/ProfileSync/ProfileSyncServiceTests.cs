@@ -10,6 +10,131 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class ProfileSyncServiceTests
 {
     [Fact]
+    public async Task StartupCannotReplaceCausalHistoryRecordedDuringTheCloudRead()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"local\"}");
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        cloud.BeforeDownload = _ =>
+        {
+            ProfileSnapshot newer = root.Store.Capture();
+            foreach (SyncValue value in newer.Portable.Values)
+            {
+                value.Clock["another-device"] = 1;
+            }
+            root.Store.SaveBaseline(newer);
+            return Task.CompletedTask;
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.StartupAsync();
+
+        Assert.Contains("changed", service.Status);
+        Assert.Equal(1, Assert.Single(root.Store.LoadBaseline()!.Portable.Values).Clock["another-device"]);
+    }
+
+    [Fact]
+    public async Task StartupRetainsEditsFromAReaderThatClosedDuringTheDownload()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"before\"}");
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        cloud.BeforeDownload = async token =>
+        {
+            using var other = new ProfileSyncService(root.Store, new FakeProfileDrive());
+            await other.StartupAsync(token);
+            root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"edited by another reader\"}");
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.StartupAsync();
+
+        Assert.Contains("edited by another reader", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.Contains("changed", service.Status);
+    }
+
+    [Fact]
+    public async Task StartupConflictKeepsTheSnapshotCapturedUnderTheGuard()
+    {
+        ProfileSyncTestRoot? activeRoot = null;
+        bool editInjected = false;
+        using var root = new ProfileSyncTestRoot(_ =>
+        {
+            string path = Path.Combine(activeRoot!.Store.StateDirectory, "startup.lock");
+            try
+            {
+                using var lease = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                activeRoot.Write("config", "cross-platform-ui.json", "{\"Theme\":\"newer local edit\"}");
+                editInjected = true;
+            }
+            catch (IOException)
+            {
+                // A malformed layout logs during capture, exposing whether its startup guard is held.
+            }
+        });
+        activeRoot = root;
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"restore\"}");
+        ProfileSnapshot restore = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"staged baseline\"}");
+        root.Store.StageExplicitRestore(restore, false);
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"conflicting local edit\"}");
+        root.Write("data", "plotters.json", "invalid JSON");
+        using var service = new ProfileSyncService(root.Store, new FakeProfileDrive { IsLinked = false });
+
+        await service.StartupAsync();
+
+        Assert.Single(service.Conflicts);
+        if (!editInjected)
+        {
+            root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"newer local edit\"}");
+        }
+        await service.ResolveConflictsAsync(false);
+        Assert.True(root.Store.ApplyPending());
+        Assert.Contains("newer local edit", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelAfterCloudRestoreDownloadCannotStageTheRestore(bool duringCapture)
+    {
+        using var cancellation = new CancellationTokenSource();
+        using var remote = new ProfileSyncTestRoot();
+        remote.Write("config", "cross-platform-ui.json", "{\"Theme\":\"remote\"}");
+        using var root = new ProfileSyncTestRoot(_ => cancellation.Cancel());
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"local\"}");
+        if (duringCapture)
+        {
+            root.Write("data", "plotters.json", "invalid JSON");
+        }
+        var cloud = new FakeProfileDrive
+        {
+            BeforeDownload = _ =>
+            {
+                if (!duringCapture)
+                {
+                    cancellation.Cancel();
+                }
+                return Task.CompletedTask;
+            },
+        };
+        cloud.Add(remote.Store.Capture());
+        DriveBackup backup = Assert.Single(await cloud.ListAsync(CancellationToken.None));
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.RestoreAsync(backup, false, cancellation.Token);
+
+        Assert.True(cancellation.IsCancellationRequested);
+        Assert.False(service.RestartRequired);
+        Assert.Contains("canceled", service.Status);
+        Assert.Contains("local", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Fact]
     public async Task UnsafeRecoveryFailureCannotBecomeAnOptionalCloudFallback()
     {
         using var root = new ProfileSyncTestRoot();
@@ -606,8 +731,14 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
             : Task.FromException<IReadOnlyList<DriveBackup>>(Failure);
 
     /// <summary>Returns the simulated snapshot identified by its cloud file ID.</summary>
-    public Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken) =>
-        Task.FromResult(files.Single(file => file.Metadata.Id == id).Snapshot);
+    public async Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken)
+    {
+        if (BeforeDownload is not null)
+        {
+            await BeforeDownload(cancellationToken);
+        }
+        return files.Single(file => file.Metadata.Id == id).Snapshot;
+    }
 
     /// <summary>Returns cloud bytes for export, including configured malformed-payload and transport scenarios.</summary>
     public async Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken)

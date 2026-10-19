@@ -361,7 +361,7 @@ public sealed class CargoInventoryState
         foreach (KeyValuePair<string, long> market in marketChangesSinceSnapshot)
         {
             long remaining = diffs.GetValueOrDefault(market.Key) - market.Value;
-            if (remaining < -int.MaxValue || remaining > int.MaxValue)
+            if (remaining is < -int.MaxValue or > int.MaxValue)
             {
                 throw new InvalidDataException("The non-market cargo difference exceeds the supported count.");
             }

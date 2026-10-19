@@ -12,6 +12,8 @@ public sealed class StreamOverlayCoordinator : IDisposable
     private readonly StreamOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
     private readonly HostedOverlayWindow hostedWindow;
+    private PixelRect captureBounds;
+    private nint captureHandle;
     private bool disposed;
 
     public StreamOverlayCoordinator(StreamOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
@@ -32,7 +34,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 RequiresLayoutCatalog = false,
                 ApplyLayoutTheme = false,
                 RetryPassivePreparationOnPoll = true,
-                IsGameWindowEligible = snapshot => snapshot.IsAvailable,
+                IsGameWindowEligible = IsGameWindowEligible,
             }
         );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -70,7 +72,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -79,7 +81,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -130,11 +132,26 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
-    private static PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    /// <summary>Keeps the capture handle across minimization without accepting iconic or empty geometry.</summary>
+    private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
     {
-        PixelRect gameBounds = placement.GameBounds;
-        Screen screen = placement.Screen;
+        if (captureHandle != snapshot.NativeHandle)
+        {
+            captureHandle = snapshot.NativeHandle;
+            captureBounds = default;
+        }
+        if (snapshot.IsAvailable && snapshot.IsVisible)
+        {
+            captureBounds = snapshot.ClientBounds;
+        }
+        return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+    }
+
+    private PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    {
+        PixelRect gameBounds = captureBounds;
         Window target = placement.Window;
+        Screen screen = target.Screens.ScreenFromBounds(gameBounds) ?? placement.Screen;
         target.Width = gameBounds.Width / screen.Scaling;
         target.Height = gameBounds.Height / screen.Scaling;
         return gameBounds.Position;

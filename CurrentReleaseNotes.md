@@ -16,11 +16,14 @@ search groups or individual entries without mandatory colors, and find up to
   bounded retries instead of restarting the entire transfer. Manual backup and
   sync operations have up to ten minutes and a **Cancel operation** control.
   Failed or canceled transfers retain local recovery data, and startup/shutdown
-  work keeps its own shorter deadline.
+  work keeps its own shorter deadline. Canceling a cloud restore during local
+  preparation also prevents it from being staged for the next startup.
 - **Understand backup failures.** Progress identifies capture, comparison, and
   upload stages. Expired authorization gives disconnect/re-link guidance,
   while publisher configuration errors have a separate message. Concurrent
-  instances preserve newer saved authorization during a failed refresh.
+  instances preserve newer saved authorization during a failed refresh. Startup
+  sync preserves edits made by another instance during cloud requests, and
+  conflict choices retain the local snapshot used to identify the conflict.
 - **Uncheck matching colonization projects together.** In **My build projects**,
   **<--Uncheck Selection** clears **Show** only for projects matching both the
   selected system and build-status filters.
@@ -30,13 +33,17 @@ search groups or individual entries without mandatory colors, and find up to
   muted champagne instead of bright white, and tooltip text remains readable.
 - **Find the joined stream overlay in Windows OBS.** The enabled capture surface
   is eligible for OBS window selection and stays open when switching from Elite
-  to OBS. Look for **[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay**.
+  to OBS. Minimizing Elite retains the last usable capture size and position.
+  Look for **[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay**.
   Other gameplay panels keep their existing focus behavior.
 - **Track squadron carrier cargo once per movement.** Bank transfers and market
   purchases/sales are reconciled against the same ship inventory baseline, so
   count-only Cargo events cannot repeat a purchase or omit an interleaved bank
   movement. Market-only stock no longer replaces combined squadron cargo;
-  complete Frontier manifests and live adjustments remain supported.
+  complete Frontier manifests and live adjustments remain supported. If a cargo
+  write has an uncertain outcome, undock and refresh Frontier data: an accepted
+  full manifest reconciles retained writes after Raven acknowledges its totals,
+  allowing later cargo updates to continue.
 - **Keep Codex Bingo open.** Finding nearest locations for an entry, a parent
   group, or missing entries preserves the Bingo window and its selection. The
   window stays available until you close it.

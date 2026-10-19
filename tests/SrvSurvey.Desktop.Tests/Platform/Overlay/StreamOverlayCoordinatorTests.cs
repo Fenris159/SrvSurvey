@@ -11,6 +11,52 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class StreamOverlayCoordinatorTests
 {
     [AvaloniaFact]
+    public void StartingWithMinimizedEliteWaitsForAUsableCanvas()
+    {
+        using var context = new TestContext(isForeground: false, isVisible: false);
+        Assert.Empty(context.Harness.PreparedWindows);
+        context.Harness.GameWindow = context.Harness.GameWindow with { IsVisible = true };
+
+        context.Synchronize();
+
+        Assert.True(Assert.Single(context.Harness.PreparedWindows).IsVisible);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MinimizedEliteRetainsTheCaptureCanvasUntilUsableBoundsReturn(bool emptyBounds)
+    {
+        using var context = new TestContext(isForeground: true);
+        Window original = Assert.Single(context.Harness.PreparedWindows);
+        var size = new Size(original.Width, original.Height);
+        PixelPoint position = original.Position;
+        context.Harness.GameWindow = context.Harness.GameWindow with
+        {
+            IsVisible = false,
+            IsForeground = false,
+            ClientBounds = emptyBounds ? default : new PixelRect(-32000, -32000, 33920, 33080),
+        };
+
+        context.Synchronize();
+
+        Assert.True(original.IsVisible);
+        Assert.Equal(size, new Size(original.Width, original.Height));
+        Assert.Equal(position, original.Position);
+        context.Harness.GameWindow = context.Harness.GameWindow with
+        {
+            IsVisible = true,
+            IsForeground = true,
+            ClientBounds = new PixelRect(10, 20, 1280, 720),
+        };
+        context.Synchronize();
+        Assert.Same(original, Assert.Single(context.Harness.PreparedWindows));
+        Assert.Equal(new PixelPoint(10, 20), original.Position);
+        Assert.Equal(1280, original.Width);
+        Assert.Equal(720, original.Height);
+    }
+
+    [AvaloniaFact]
     public void EnablingWhileEliteIsInBackgroundOpensTheCaptureWindow()
     {
         using var context = new TestContext(isForeground: false);
@@ -86,7 +132,7 @@ public sealed class StreamOverlayCoordinatorTests
         private readonly OverlayWindowRegistry registry = new();
         private readonly StreamOverlayCoordinator coordinator;
 
-        public TestContext(bool isForeground, bool keepVisible = false)
+        public TestContext(bool isForeground, bool keepVisible = false, bool isVisible = true)
         {
             KeepVisible = keepVisible;
             Harness = new HostedOverlayTestHarness(
@@ -98,7 +144,7 @@ public sealed class StreamOverlayCoordinatorTests
                     (nint)42,
                     123,
                     new PixelRect(0, 0, 1920, 1080),
-                    IsVisible: true,
+                    IsVisible: isVisible,
                     IsForeground: isForeground
                 ),
             };

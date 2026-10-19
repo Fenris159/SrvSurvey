@@ -150,7 +150,8 @@ public sealed partial class ColonizationShoppingPresentationTests
                 && supply.Need.Commodity == commodity
         );
 
-    private static Color SupplyBrushColor(IBrush? brush) => Assert.IsAssignableFrom<ISolidColorBrush>(brush).Color;
+    private static Color SupplyBrushColor(IBrush? brush) =>
+        Assert.IsType<ISolidColorBrush>(brush, exactMatch: false).Color;
 
     private static void ApplySupplyTheme(Window window, RavenThemeDefinition theme)
     {

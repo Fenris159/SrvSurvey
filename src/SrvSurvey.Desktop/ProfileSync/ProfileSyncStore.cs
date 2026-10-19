@@ -276,7 +276,11 @@ internal sealed class ProfileSyncStore
     }
 
     /// <summary>Stages an explicit restore while in-memory workspaces are still running.</summary>
-    internal void StageRestore(ProfileSnapshot snapshot, bool restoreMachine)
+    internal void StageRestore(
+        ProfileSnapshot snapshot,
+        bool restoreMachine,
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateScope(snapshot);
         if (restoreMachine && !IsOriginalMachine(snapshot))
@@ -299,14 +303,21 @@ internal sealed class ProfileSyncStore
         );
         byte[] bytes = staged.Serialize();
         _ = ProfileSnapshot.Parse(bytes);
+        cancellationToken.ThrowIfCancellationRequested();
         WriteAtomic(PendingPath, bytes);
     }
 
     /// <summary>Turns an older backup into new changes, including deletion of portable values absent from it.</summary>
-    internal void StageExplicitRestore(ProfileSnapshot snapshot, bool restoreMachine)
+    internal void StageExplicitRestore(
+        ProfileSnapshot snapshot,
+        bool restoreMachine,
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateScope(snapshot);
+        cancellationToken.ThrowIfCancellationRequested();
         ProfileSnapshot current = Capture();
+        cancellationToken.ThrowIfCancellationRequested();
         var values = new Dictionary<string, SyncValue>(StringComparer.Ordinal);
         foreach (string key in current.Portable.Keys.Union(snapshot.Portable.Keys, StringComparer.Ordinal))
         {
@@ -316,17 +327,22 @@ internal sealed class ProfileSyncStore
             wanted ??= new(null, true, []);
             values[key] = ProfileSyncMerge.Resolve(Device.Id, new(key, previous, wanted), useRemote: true);
         }
+        cancellationToken.ThrowIfCancellationRequested();
         SaveBaseline(current);
-        StageRestore(snapshot with { Portable = values }, restoreMachine);
+        StageRestore(snapshot with { Portable = values }, restoreMachine, cancellationToken);
     }
 
     /// <summary>Applies a queued restore before workspaces and journal producers are constructed.</summary>
     internal bool ApplyPending() => ApplyPending(out _);
 
     /// <summary>Merges a queued restore with subsequent edits, deferring conflicting changes for an explicit choice.</summary>
-    internal bool ApplyPending(out SyncMergeResult? conflicts)
+    internal bool ApplyPending(out SyncMergeResult? conflicts) => ApplyPending(out conflicts, out _);
+
+    /// <summary>Returns the exact capture used for conflicts so callers can retain it under their startup guard.</summary>
+    internal bool ApplyPending(out SyncMergeResult? conflicts, out ProfileSnapshot? conflictSnapshot)
     {
         conflicts = null;
+        conflictSnapshot = null;
         if (!File.Exists(PendingPath))
         {
             return false;
@@ -347,6 +363,7 @@ internal sealed class ProfileSyncStore
         {
             SaveBackup(current);
             conflicts = merge;
+            conflictSnapshot = current;
             return false;
         }
         ProfileSnapshot snapshot = staged with

@@ -30,6 +30,8 @@ Uploads transfer 1 MiB chunks and check Google's acknowledged byte range after a
 
 Interrupted-restore recovery and live-reader registration share a short startup guard, separate from network transfers. Concurrent cold starts recover files before either instance loads its workspaces. Cloud downloads remain cancellable until the operating-system save picker opens; local file pickers and writes use their own controls.
 
+After startup cloud reads, SrvSurvey checks the local profile again under the startup guard before applying anything. Edits or causal-history changes made by another instance defer that sync, even if the other instance has already closed. Restore conflicts retain the exact guarded capture used to identify them, so Keep local preserves subsequent edits. Canceling a cloud restore is checked after local preparation and immediately before its staged file is published.
+
 The startup guard has a 45-second acquisition limit and honors cancellation. If local recovery or reader registration cannot be verified safely, the new instance stops before loading workspaces and records recovery details in the application log. Cloud/network failures continue to retain local data and allow the application to open.
 
 When Google explicitly reports expired or revoked authorization, SrvSurvey asks you to **Disconnect**, then **Link Google Drive** again. Failed refreshes preserve shared authorization, including a newer login saved by another Commander instance. Successful linking clears cached cloud history and selection before enabling account actions. A rejected publisher client setup produces a separate message rather than asking users to repeatedly re-link. Error descriptions and authorization tokens are excluded from diagnostics.

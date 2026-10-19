@@ -7,7 +7,7 @@ public sealed partial class ColonizationDeliveryRecovery
 {
     /// <summary>
     /// Market IDs that already received a once-per-session CAPI full-manifest seed.
-    /// Further Frontier refreshes are ignored for Raven cargo; journals keep totals live.
+    /// Further Frontier refreshes are ignored unless retained writes require full-manifest recovery.
     /// </summary>
     private readonly HashSet<long> capiCargoSeededMarketIds = [];
 
@@ -155,7 +155,8 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>
     /// Seeds RavenColonial with a full CAPI cargo manifest once per linked carrier per
     /// session (EDMC parity). Later Frontier refreshes are ignored; journal deltas keep
-    /// linked + workspace totals current between CAPI updates. The independent local comparison
+    /// linked + workspace totals current between CAPI updates. Retained writes can request another
+    /// accepted full baseline before live updates resume. The independent local comparison
     /// accepts newer CAPI snapshots without requiring Raven publishing to be enabled.
     /// </summary>
     public async Task SeedLinkedCarrierCargoFromCapiAsync(FrontierAccountSnapshot? snapshot)
@@ -659,11 +660,10 @@ public sealed partial class ColonizationDeliveryRecovery
         }
 
         ColonizationFleetCarrier? localCarrier = fleetCarriers.FirstOrDefault(c => c.MarketId == linkedMarketId);
-        (bool accepted, string reason) = ColonizationFleetCarrierCapiCargoSeeder.ShouldAcceptSnapshot(
+        (bool accepted, string reason, ColonizationPendingCargoAdjustment[] covered) = GetCapiManifestPolicy(
             linkedMarketId,
-            isDocked || constructionState.CurrentDock is not null,
-            capiCargoSeededMarketIds,
             fetchedAt,
+            isDocked,
             localCarrier?.Cargo
         );
         if (!accepted)
@@ -671,9 +671,10 @@ public sealed partial class ColonizationDeliveryRecovery
             return;
         }
 
-        IReadOnlyDictionary<string, int> totals = ColonizationFleetCarrierCapiCargoSeeder.CreateCargoTotals(carrier);
+        Dictionary<string, int> totals = CreateCapiReconciliationTotals(carrier, covered);
         if (
             localCarrier is not null
+            && covered.Length == 0
             && !ColonizationFleetCarrierCapiCargoSeeder.ManifestsDiffer(localCarrier.Cargo, totals)
         )
         {
@@ -703,6 +704,9 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 ReplaceLocalFleetCarrier(current with { Cargo = CopyCargo(updatedCargo) });
             }
+            // An acknowledged full manifest covers these retained writes, including undated bank differences.
+            // Writes queued after this baseline began remain owned by CompleteCargoBaselineAsync.
+            RetireCapiCargoWrites(covered);
 
             observer.FleetCarrierStatusChanged(
                 new(ColonizationDeliveryNoticeKind.CapiCargoSeeded, Detail: reason, Count: linkedMarketId)
@@ -731,6 +735,69 @@ public sealed partial class ColonizationDeliveryRecovery
                 await CompleteCargoBaselineAsync(linkedMarketId, CancellationToken.None);
             }
         }
+    }
+
+    /// <summary>Allows another accepted full baseline only when retained writes need reconciliation.</summary>
+    private (bool Accepted, string Reason, ColonizationPendingCargoAdjustment[] Covered) GetCapiManifestPolicy(
+        long marketId,
+        DateTimeOffset? fetchedAt,
+        bool isDocked,
+        IReadOnlyDictionary<string, int>? localCargo
+    )
+    {
+        ColonizationPendingCargoAdjustment[] covered = failedCargoAdjustments
+            .Where(item => item.Owner == RecoveryOwner && item.MarketId == marketId)
+            .ToArray();
+        if (!CanReconcileCapiManifest(marketId, fetchedAt, covered))
+        {
+            return (false, string.Empty, covered);
+        }
+        (bool accepted, string reason) = ColonizationFleetCarrierCapiCargoSeeder.ShouldAcceptSnapshot(
+            marketId,
+            isDocked || constructionState.CurrentDock is not null,
+            covered.Length > 0 ? [] : capiCargoSeededMarketIds,
+            fetchedAt,
+            localCargo
+        );
+        return (accepted, reason, covered);
+    }
+
+    /// <summary>Clears only the retained records superseded by an acknowledged full-manifest replacement.</summary>
+    private void RetireCapiCargoWrites(ColonizationPendingCargoAdjustment[] covered)
+    {
+        foreach (ColonizationPendingCargoAdjustment pending in covered)
+        {
+            failedCargoAdjustments.Remove(pending);
+        }
+        if (covered.Length > 0)
+        {
+            SavePendingCargoAdjustments();
+        }
+    }
+
+    /// <summary>Retains newer movement and avoids replacing a baseline while a relative write can still commit.</summary>
+    private bool CanReconcileCapiManifest(
+        long marketId,
+        DateTimeOffset? fetchedAt,
+        ColonizationPendingCargoAdjustment[] pending
+    ) =>
+        fetchedAt is { } capturedAt
+        && !cargoWritesInFlight.Contains((RecoveryOwner, marketId))
+        && (pending.Length == 0 || !IsCargoBaselinePending(marketId))
+        && !pending.Any(item => item.RecordedAt is { } recordedAt && recordedAt > capturedAt);
+
+    /// <summary>A complete manifest also supplies zero for retained commodities absent from its cargo rows.</summary>
+    private static Dictionary<string, int> CreateCapiReconciliationTotals(
+        FrontierCarrierSnapshot carrier,
+        ColonizationPendingCargoAdjustment[] pending
+    )
+    {
+        Dictionary<string, int> totals = CopyCargo(ColonizationFleetCarrierCapiCargoSeeder.CreateCargoTotals(carrier));
+        foreach (string commodity in pending.SelectMany(item => item.Delta.Keys))
+        {
+            totals.TryAdd(commodity, 0);
+        }
+        return totals;
     }
 
     /// <summary>Installs an authoritative market baseline before applying transactions recorded while synchronization was pending.</summary>

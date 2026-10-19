@@ -11149,16 +11149,16 @@
       "translation": "Warnung vor Aktualisierungen des Flottenbetreibers"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus, da sich die Raven-Fracht gleichzeitig geändert hat. Aktualisieren Sie den Markt, um ihn in Einklang zu bringen."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus, da sich die Raven-Fracht gleichzeitig geändert hat. Aktualisieren Sie den Markt oder lösen Sie die Daten eines Geschwaderträgers ab und aktualisieren Sie sie Frontier, um sie abzugleichen."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Updates für Flottenbetreiber stehen noch aus: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus; Aktualisieren Sie Ihren Markt, um einen unsicheren Schreibvorgang in Einklang zu bringen."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus; Aktualisieren Sie seinen Markt oder lösen Sie die Daten eines Geschwaderträgers ab und aktualisieren Sie sie Frontier, um einen unsicheren Schreibvorgang auszugleichen."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -27675,6 +27675,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Startsynchronisierung abgeschlossen. Die tragbaren Einstellungen und Arbeitsbereichsdaten sind auf dem neuesten Stand."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "Die Startsynchronisierung wurde verzögert, da sich das lokale Profil beim Überprüfen von Google Drive geändert hat. Lokale Änderungen wurden beibehalten; Verwenden Sie „Jetzt synchronisieren“, um Cloud-Änderungen zu überprüfen."
     },
     {
       "source": "State",
@@ -49991,16 +49995,16 @@
       "translation": "Advertencia de actualización de Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes porque la carga de Raven cambió al mismo tiempo. Actualizar su mercado para conciliar."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes porque la carga de Raven cambió al mismo tiempo. Actualizar su mercado, o desacoplar y actualizar Frontier los datos de un portaaviones de escuadrón, para conciliarlos."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Las actualizaciones de Fleet Carrier siguen pendientes: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes; actualizar su mercado para conciliar una escritura incierta."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes; actualizar su mercado, o desacoplar y actualizar Frontier los datos de un portaaviones de escuadrón, para conciliar una escritura incierta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -66517,6 +66521,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronización de inicio completa. Las preferencias portátiles y los datos del espacio de trabajo están actualizados."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "La sincronización de inicio se aplazó porque el perfil local cambió mientras revisaba Google Drive. Se mantuvieron las ediciones locales; use Sincronizar ahora para revisar los cambios en la nube."
     },
     {
       "source": "State",
@@ -88833,16 +88841,16 @@
       "translation": "Avertissement de mise à jour de Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Les mises à jour de Fleet Carrier restent en attente car la cargaison Raven a changé simultanément. Rafraîchir son marché pour se réconcilier."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente car la cargaison Raven a changé simultanément. Actualisez son marché, ou désamarrez et actualisez les données Frontier d'un porte-avions d'escadron, pour effectuer le rapprochement."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Les mises à jour de Fleet Carrier restent en attente : {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Les mises à jour de Fleet Carrier restent en attente ; rafraîchir son marché pour concilier une écriture incertaine."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente ; actualiser son marché, ou désancrer et actualiser Frontier les données d'un porte-avions d'escadron, pour rapprocher une écriture incertaine."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -105359,6 +105367,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Synchronisation de démarrage terminée. Les préférences portables et les données de l'espace de travail sont à jour."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "La synchronisation du démarrage a été différée, car le profil local a été modifié lors de la vérification de Google Drive. Les modifications locales ont été conservées ; utilisez Sync maintenant pour examiner les modifications apportées au cloud."
     },
     {
       "source": "State",
@@ -127675,16 +127687,16 @@
       "translation": "Aviso de atualização da Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "As atualizações do Fleet Carrier permanecem pendentes porque a carga Raven mudou simultaneamente. Atualize seu mercado para reconciliar."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "As atualizações do Fleet Carrier permanecem pendentes porque a carga Raven mudou simultaneamente. Atualize seu mercado ou desencaixe e atualize os dados Frontier de um porta-aviões de esquadrão para reconciliar."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "As atualizações da Fleet Carrier permanecem pendentes: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "As atualizações da Fleet Carrier permanecem pendentes; atualizar seu mercado para conciliar uma escrita incerta."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "As atualizações da Fleet Carrier permanecem pendentes; atualizar seu mercado ou desencaixar e atualizar dados Frontier para um porta-aviões de esquadrão, para reconciliar uma gravação incerta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -144201,6 +144213,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronização de inicialização concluída. As preferências portáteis e os dados do espaço de trabalho estão atualizados."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "A sincronização de inicialização foi adiada porque o perfil local foi alterado durante a verificação do Google Drive. As edições locais foram mantidas; use o Sync agora para revisar as alterações na nuvem."
     },
     {
       "source": "State",
@@ -166517,16 +166533,16 @@
       "translation": "Предупреждение об обновлении авиаперевозчика"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Обновления Fleet Carrier остаются в ожидании, поскольку одновременно с этим изменился груз Raven. Обновите свой рынок, чтобы примириться."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Обновления Fleet Carrier остаются в ожидании, поскольку одновременно с этим изменился груз Raven. Обновите свой рынок или отстыкуйтесь и обновите Frontier данные эскадрильи авианосца для согласования."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Обновления Fleet Carrier ожидаются: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Обновления Fleet Carrier ожидаются; обновить свой рынок, чтобы исправить неопределенную запись."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Обновления Fleet Carrier ожидаются; обновить свой рынок или отстыковаться и обновить Frontier данные для эскадрильи авианосца, чтобы согласовать неопределенную запись."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -183043,6 +183059,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Синхронизация запуска завершена. Портативные настройки и данные рабочей области актуальны."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "Синхронизация запуска была отложена, поскольку локальный профиль изменился при проверке Google Диска. Локальные правки были сохранены; используйте «Синхронизировать сейчас», чтобы просмотреть изменения в облаке."
     },
     {
       "source": "State",
@@ -205359,16 +205379,16 @@
       "translation": "舰队承运人更新警告"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "由于 Raven 货物同时发生变化，舰队承运人更新仍悬而未决。刷新其市场调和。"
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "由于 Raven 货物同时发生变化，舰队承运人更新仍悬而未决。刷新其市场，或取消停靠并刷新中队航母的 Frontier 数据，以进行协调。"
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "舰队承运人更新仍在等待中：{0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "舰队承运人更新仍悬而未决；刷新其市场以协调不确定的写入。"
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "舰队承运人更新仍悬而未决；刷新其市场，或取消对接并刷新中队航母的Frontier数据，以协调不确定的写入。"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -221885,6 +221905,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "启动同步完成。便携式首选项和工作区数据是最新的。"
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "启动同步被推迟，因为在检查 Google 云端硬盘时本地配置文件发生了更改。保留本地编辑；立即使用同步来查看云更改。"
     },
     {
       "source": "State",
@@ -244201,16 +244225,16 @@
       "translation": "* FLEET CARRIER UPDATE WARNING >>>!"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING BECAUSE RAVEN CARGO CHANGED CONCURRENTLY. REFRESH ITS MARKET TO RECONCILE. >>>!"
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING BECAUSE RAVEN CARGO CHANGED CONCURRENTLY. REFRESH ITS MARKET, OR UNDOCK AND REFRESH FRONTIER DATA FOR A SQUADRON CARRIER, TO RECONCILE. >>>!"
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "* FLEET CARRIER UPDATES REMAIN PENDING: {0} >>>!"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING; REFRESH ITS MARKET TO RECONCILE AN UNCERTAIN WRITE. >>>!"
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING; REFRESH ITS MARKET, OR UNDOCK AND REFRESH FRONTIER DATA FOR A SQUADRON CARRIER, TO RECONCILE AN UNCERTAIN WRITE. >>>!"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -260727,6 +260751,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "* STARTUP SYNC COMPLETE. PORTABLE PREFERENCES AND WORKSPACE DATA ARE UP TO DATE. >>>!"
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "* STARTUP SYNC WAS DEFERRED BECAUSE THE LOCAL PROFILE CHANGED WHILE CHECKING GOOGLE DRIVE. LOCAL EDITS WERE RETAINED; USE SYNC NOW TO REVIEW CLOUD CHANGES. >>>!"
     },
     {
       "source": "State",

@@ -97,9 +97,9 @@ public static class ColonizationDeliveryMessages
             ColonizationDeliveryNoticeKind.CarrierBaselineNotLoaded => "Fleet Carrier dock baseline was not loaded: "
                 + notice.Detail,
             ColonizationDeliveryNoticeKind.CarrierCargoPendingUncertain =>
-                "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+                "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
             ColonizationDeliveryNoticeKind.CarrierCargoPendingConcurrentChange =>
-                "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+                "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
             ColonizationDeliveryNoticeKind.CarrierCargoPendingFailed => "Fleet Carrier updates remain pending: "
                 + notice.Detail,
             ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved =>

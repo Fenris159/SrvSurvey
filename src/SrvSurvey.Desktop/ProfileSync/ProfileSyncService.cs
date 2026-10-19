@@ -58,10 +58,8 @@ internal sealed class ProfileSyncService : IDisposable
 
     private async Task StartRegisteredProfileAsync(CancellationToken cancellationToken)
     {
-        (bool another, bool restored, SyncMergeResult? restoreConflicts) = await InitializeReaderAsync(
-                cancellationToken
-            )
-            .ConfigureAwait(false);
+        (bool another, bool restored, SyncMergeResult? restoreConflicts, ProfileSnapshot? conflictSnapshot) =
+            await InitializeReaderAsync(cancellationToken).ConfigureAwait(false);
         if (another)
         {
             SetStatus(
@@ -72,7 +70,7 @@ internal sealed class ProfileSyncService : IDisposable
         if (restoreConflicts is not null)
         {
             pendingMerge = restoreConflicts;
-            pendingSnapshot = Store.Capture();
+            pendingSnapshot = conflictSnapshot;
             SetStatus(
                 $"{restoreConflicts.Conflicts.Count} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained."
             );
@@ -95,9 +93,12 @@ internal sealed class ProfileSyncService : IDisposable
     }
 
     /// <summary>Serializes recovery and live-reader registration without holding a lock across cloud requests.</summary>
-    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> InitializeReaderAsync(
-        CancellationToken cancellationToken
-    )
+    private async Task<(
+        bool Another,
+        bool Restored,
+        SyncMergeResult? Conflicts,
+        ProfileSnapshot? Snapshot
+    )> InitializeReaderAsync(CancellationToken cancellationToken)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(45));
@@ -114,9 +115,12 @@ internal sealed class ProfileSyncService : IDisposable
         }
     }
 
-    private async Task<(bool Another, bool Restored, SyncMergeResult? Conflicts)> RegisterReaderAsync(
-        CancellationToken cancellationToken
-    )
+    private async Task<(
+        bool Another,
+        bool Restored,
+        SyncMergeResult? Conflicts,
+        ProfileSnapshot? Snapshot
+    )> RegisterReaderAsync(CancellationToken cancellationToken)
     {
         await using FileStream initialization = await AcquireLeaseAsync(
                 Path.Combine(Store.StateDirectory, "startup.lock"),
@@ -126,13 +130,14 @@ internal sealed class ProfileSyncService : IDisposable
         bool another = false;
         bool restored = false;
         SyncMergeResult? conflicts = null;
+        ProfileSnapshot? conflictSnapshot = null;
         try
         {
             another = HasOtherLiveInstance();
             if (!another)
             {
                 Store.RecoverInterruptedRestore();
-                restored = Store.ApplyPending(out conflicts);
+                restored = Store.ApplyPending(out conflicts, out conflictSnapshot);
             }
         }
         finally
@@ -150,7 +155,7 @@ internal sealed class ProfileSyncService : IDisposable
                 FileOptions.DeleteOnClose
             );
         }
-        return (another, restored, conflicts);
+        return (another, restored, conflicts, conflictSnapshot);
     }
 
     /// <summary>Performs optional cloud reads, then excludes new readers while applying their result.</summary>
@@ -158,6 +163,23 @@ internal sealed class ProfileSyncService : IDisposable
     {
         ProfileSnapshot local = Store.Capture();
         SyncMergeResult merge = await MergeCloudAsync(local, token).ConfigureAwait(false);
+        await using FileStream initialization = await AcquireLeaseAsync(
+                Path.Combine(Store.StateDirectory, "startup.lock"),
+                token
+            )
+            .ConfigureAwait(false);
+        if (DeferForOtherReaders())
+        {
+            return;
+        }
+        ProfileSnapshot fresh = Store.Capture();
+        if (!SameCapture(local.Portable, fresh.Portable))
+        {
+            SetStatus(
+                "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes."
+            );
+            return;
+        }
         if (merge.Conflicts.Count > 0)
         {
             Store.SaveBackup(local);
@@ -170,15 +192,7 @@ internal sealed class ProfileSyncService : IDisposable
             return;
         }
         ProfileSnapshot merged = local with { Portable = merge.Values };
-        await using FileStream initialization = await AcquireLeaseAsync(
-                Path.Combine(Store.StateDirectory, "startup.lock"),
-                token
-            )
-            .ConfigureAwait(false);
-        if (DeferForOtherReaders())
-        {
-            return;
-        }
+        token.ThrowIfCancellationRequested();
         Store.Apply(merged);
         Store.SaveBaseline(merged);
         SetStatus("Startup sync complete. Portable preferences and workspace data are up to date.");
@@ -300,7 +314,7 @@ internal sealed class ProfileSyncService : IDisposable
                 }
                 else
                 {
-                    Store.StageRestore(local with { Portable = merge.Values }, restoreMachine: false);
+                    Store.StageRestore(local with { Portable = merge.Values }, restoreMachine: false, token);
                     SetStatus("Cloud changes are ready. Restart SrvSurvey to load the synchronized profile.");
                 }
             },
@@ -341,7 +355,7 @@ internal sealed class ProfileSyncService : IDisposable
                     values[conflict.Key] = ProfileSyncMerge.Resolve(Store.Device.Id, current, useCloud);
                 }
                 ProfileSnapshot resolved = (staged ?? fresh) with { Portable = values, CreatedUtc = fresh.CreatedUtc };
-                Store.StageRestore(resolved, restoreMachine: staged is not null);
+                Store.StageRestore(resolved, restoreMachine: staged is not null, token);
                 if (IsLinked)
                 {
                     await drive.UploadAsync(resolved, token).ConfigureAwait(false);
@@ -376,8 +390,10 @@ internal sealed class ProfileSyncService : IDisposable
             async token =>
             {
                 ProfileSnapshot snapshot = await drive.DownloadAsync(backup.Id, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
                 Store.SaveBackup(Store.Capture());
-                Store.StageExplicitRestore(snapshot, restoreMachine);
+                token.ThrowIfCancellationRequested();
+                Store.StageExplicitRestore(snapshot, restoreMachine, token);
                 SetStatus("Backup selected. Restart SrvSurvey to restore it; a local rollback copy has been saved.");
             },
             cancellationToken
@@ -609,6 +625,11 @@ internal sealed class ProfileSyncService : IDisposable
         }
         return false;
     }
+
+    /// <summary>Rejects a stale startup capture, including intervening changes to causal history.</summary>
+    private static bool SameCapture(Dictionary<string, SyncValue> first, Dictionary<string, SyncValue> second) =>
+        Equivalent(first, second)
+        && first.All(pair => pair.Value.Includes(second[pair.Key]) && second[pair.Key].Includes(pair.Value));
 
     /// <summary>Compares content without treating counter-only updates as a restart requirement.</summary>
     private static bool Equivalent(Dictionary<string, SyncValue> first, Dictionary<string, SyncValue> second) =>
