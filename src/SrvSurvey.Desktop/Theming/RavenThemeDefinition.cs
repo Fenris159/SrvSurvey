@@ -33,6 +33,8 @@ public sealed record RavenThemeDefinition(
 
     public string ControlAccentHoverColor { get; init; } = AccentHoverColor;
 
+    public string TagFillColor { get; init; } = AccentColor;
+
     public string FocusRingColor { get; init; } = AccentColor;
 
     public string ModalScrimColor { get; init; } = "#8C000000";
@@ -42,6 +44,8 @@ public sealed record RavenThemeDefinition(
     public string WarningColor { get; init; } = IsDark ? "#F7C948" : "#8A5D00";
 
     public string DangerColor { get; init; } = IsDark ? "#FF7B72" : "#C50F1F";
+
+    public string DangerForegroundColor { get; init; } = IsDark ? "#0A0A0A" : "#FFFFFF";
 
     public bool UseSurfaceOnlyDepth { get; init; }
 }

@@ -10,6 +10,303 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class GoogleDriveBackupClientTests
 {
+    [Fact]
+    public async Task StaleRefreshFailurePreservesAnotherInstancesNewAuthorization()
+    {
+        using var root = new ProfileSyncTestRoot();
+        int exchanges = 0;
+        using var stale = new DriveHarness(
+            root,
+            _ =>
+                Task.FromResult(
+                    ++exchanges == 1
+                        ? Json(Token(expires: -1))
+                        : new HttpResponseMessage(HttpStatusCode.BadRequest)
+                        {
+                            Content = new StringContent("{\"error\":\"invalid_grant\"}"),
+                        }
+                )
+        );
+        await stale.LinkAsync();
+        using var linked = new DriveHarness(
+            root,
+            _ => Task.FromResult(Json(Token().Replace("access-test", "new-access", StringComparison.Ordinal)))
+        );
+        await linked.LinkAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => stale.Drive.ListAsync(CancellationToken.None));
+
+        using var reopened = new DriveHarness(
+            root,
+            request =>
+            {
+                Assert.Equal("new-access", request.Headers.Authorization!.Parameter);
+                return Task.FromResult(Json("{\"files\":[]}"));
+            }
+        );
+        Assert.True(reopened.Drive.IsLinked);
+        Assert.Empty(await reopened.Drive.ListAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("bytes=5-9")]
+    [InlineData("bytes=0-9999999999")]
+    [InlineData("bytes=0-10,20-30")]
+    [InlineData("invalid")]
+    [InlineData(null)]
+    [InlineData("premature-completion")]
+    public async Task InvalidUploadAcknowledgementsNeverTriggerHistoryCleanup(string? acknowledgement)
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[\"" + new string('x', 2 * 1024 * 1024) + "\"]");
+        bool cleanedUp = false;
+        using var harness = new DriveHarness(
+            root,
+            request =>
+            {
+                if (request.RequestUri!.AbsolutePath.EndsWith("/token", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(Json(Token()));
+                }
+                if (request.Method == HttpMethod.Post)
+                {
+                    HttpResponseMessage session = Json("{}");
+                    session.Headers.Location = new Uri("https://www.googleapis.com/upload/session-test");
+                    return Task.FromResult(session);
+                }
+                if (request.Method != HttpMethod.Put)
+                {
+                    cleanedUp = true;
+                    return Task.FromResult(Json("{\"files\":[]}"));
+                }
+                if (acknowledgement == "premature-completion")
+                {
+                    return Task.FromResult(Json("{\"id\":\"incomplete\"}"));
+                }
+                var response = new HttpResponseMessage((HttpStatusCode)308);
+                if (acknowledgement is not null)
+                {
+                    response.Headers.TryAddWithoutValidation("Range", acknowledgement);
+                }
+                return Task.FromResult(response);
+            }
+        );
+        await harness.LinkAsync();
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            harness.Drive.UploadAsync(root.Store.Capture(), CancellationToken.None)
+        );
+
+        Assert.False(cleanedUp);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task LostOrRateLimitedUploadResponseChecksWhetherGoogleAcceptedTheData(bool accepted, bool rateLimited)
+    {
+        using var root = new ProfileSyncTestRoot();
+        int sends = 0;
+        int probes = 0;
+        using var harness = new DriveHarness(
+            root,
+            request =>
+            {
+                if (request.RequestUri!.AbsolutePath.EndsWith("/token", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(Json(Token()));
+                }
+                if (request.Method == HttpMethod.Post)
+                {
+                    HttpResponseMessage session = Json("{}");
+                    session.Headers.Location = new Uri("https://www.googleapis.com/upload/session-test");
+                    return Task.FromResult(session);
+                }
+                if (request.Method == HttpMethod.Get)
+                {
+                    return Task.FromResult(Json("{\"files\":[]}"));
+                }
+                if (request.Content!.Headers.ContentLength == 0)
+                {
+                    probes++;
+                    return Task.FromResult(
+                        accepted ? Json("{\"id\":\"complete\"}") : new HttpResponseMessage((HttpStatusCode)308)
+                    );
+                }
+                if (++sends == 1)
+                {
+                    if (rateLimited)
+                    {
+                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+                    }
+                    throw new TaskCanceledException("Simulated request timeout.");
+                }
+                return Task.FromResult(Json("{\"id\":\"complete\"}"));
+            }
+        );
+        await harness.LinkAsync();
+
+        await harness.Drive.UploadAsync(root.Store.Capture(), CancellationToken.None);
+
+        Assert.Equal(accepted ? 1 : 2, sends);
+        Assert.Equal(1, probes);
+    }
+
+    [Theory]
+    [InlineData(false, 4)]
+    [InlineData(true, 1)]
+    public async Task UploadRetriesAreBoundedAndCallerCancellationIsImmediate(bool cancel, int expectedRequests)
+    {
+        using var root = new ProfileSyncTestRoot();
+        using var cancellation = new CancellationTokenSource();
+        int sends = 0;
+        using var harness = new DriveHarness(
+            root,
+            request =>
+            {
+                if (request.RequestUri!.AbsolutePath.EndsWith("/token", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(Json(Token()));
+                }
+                if (request.Method == HttpMethod.Post)
+                {
+                    HttpResponseMessage session = Json("{}");
+                    session.Headers.Location = new Uri("https://www.googleapis.com/upload/session-test");
+                    return Task.FromResult(session);
+                }
+                Assert.Equal(HttpMethod.Put, request.Method);
+                sends++;
+                if (cancel)
+                {
+                    cancellation.Cancel();
+                    throw new OperationCanceledException(cancellation.Token);
+                }
+                throw new HttpRequestException("Unavailable", null, HttpStatusCode.ServiceUnavailable);
+            }
+        );
+        await harness.LinkAsync();
+
+        if (cancel)
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                harness.Drive.UploadAsync(root.Store.Capture(), cancellation.Token)
+            );
+        }
+        else
+        {
+            await Assert.ThrowsAsync<HttpRequestException>(() =>
+                harness.Drive.UploadAsync(root.Store.Capture(), cancellation.Token)
+            );
+        }
+        Assert.Equal(expectedRequests, sends);
+    }
+
+    [Theory]
+    [InlineData("invalid_grant", true, "Disconnect and link Google Drive again")]
+    [InlineData("invalid_client", true, "publisher")]
+    public async Task RefreshFailureDistinguishesExpiredConsentFromPublisherSetup(
+        string code,
+        bool linked,
+        string message
+    )
+    {
+        using var root = new ProfileSyncTestRoot();
+        int exchanges = 0;
+        using var harness = new DriveHarness(
+            root,
+            _ =>
+                Task.FromResult(
+                    ++exchanges == 1
+                        ? Json(Token(expires: -1))
+                        : new HttpResponseMessage(HttpStatusCode.BadRequest)
+                        {
+                            Content = new StringContent(
+                                "{\"error\":\"" + code + "\",\"error_description\":\"private-response-secret\"}"
+                            ),
+                        }
+                )
+        );
+        await harness.LinkAsync();
+
+        InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            harness.Drive.ListAsync(CancellationToken.None)
+        );
+
+        Assert.Contains(message, failure.Message);
+        Assert.DoesNotContain("private-response-secret", failure.Message);
+        Assert.Equal(linked, harness.Drive.IsLinked);
+        Assert.Equal(linked, File.Exists(Path.Combine(root.Store.StateDirectory, "google-authorization.dat")));
+    }
+
+    [Fact]
+    public async Task InterruptedUploadResumesAfterBytesAlreadyAcceptedWithoutDuplicatingTheBackup()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[\"" + new string('x', 2 * 1024 * 1024 + 100) + "\"]");
+        ProfileSnapshot snapshot = root.Store.Capture();
+        byte[] expected = snapshot.Serialize();
+        using var received = new MemoryStream();
+        int sessions = 0;
+        int probes = 0;
+        bool interrupted = false;
+        using var harness = new DriveHarness(
+            root,
+            async request =>
+            {
+                if (request.RequestUri!.AbsolutePath.EndsWith("/token", StringComparison.Ordinal))
+                {
+                    return Json(Token());
+                }
+                if (request.Method == HttpMethod.Post)
+                {
+                    sessions++;
+                    HttpResponseMessage session = Json("{}");
+                    session.Headers.Location = new Uri("https://www.googleapis.com/upload/session-test");
+                    return session;
+                }
+                if (request.Method == HttpMethod.Get)
+                {
+                    Assert.Equal(expected, received.ToArray());
+                    return Json("{\"files\":[]}");
+                }
+                Assert.Equal(HttpMethod.Put, request.Method);
+                byte[] part = await request.Content!.ReadAsByteArrayAsync();
+                if (part.Length == 0)
+                {
+                    probes++;
+                    Assert.Equal("bytes */" + expected.Length, request.Content.Headers.ContentRange!.ToString());
+                }
+                else
+                {
+                    Assert.InRange(part.Length, 1, 1024 * 1024);
+                    Assert.Equal(received.Length, request.Content.Headers.ContentRange!.From);
+                    await received.WriteAsync(part);
+                    if (!interrupted)
+                    {
+                        interrupted = true;
+                        throw new HttpRequestException("Connection lost after Google accepted the chunk.");
+                    }
+                }
+                if (received.Length == expected.Length)
+                {
+                    return Json("{\"id\":\"complete\"}");
+                }
+                var incomplete = new HttpResponseMessage((HttpStatusCode)308);
+                incomplete.Headers.Add("Range", "bytes=0-" + (received.Length - 1));
+                return incomplete;
+            }
+        );
+        await harness.LinkAsync();
+
+        await harness.Drive.UploadAsync(snapshot, CancellationToken.None);
+
+        Assert.Equal(expected, received.ToArray());
+        Assert.Equal(1, sessions);
+        Assert.Equal(1, probes);
+    }
+
     /// <summary>Verifies that browser link validates PKCE and state persists authorization and disconnects.</summary>
     [Fact]
     public async Task BrowserLinkValidatesPkceAndStatePersistsAuthorizationAndDisconnects()

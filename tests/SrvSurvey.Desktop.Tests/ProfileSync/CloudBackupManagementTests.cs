@@ -1,14 +1,186 @@
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Views;
 
 namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CloudBackupManagementTests
 {
+    [AvaloniaFact]
+    public async Task DisposingDuringACloudTransferCancelsItAndRejectsLateUiActions()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = token =>
+            {
+                started.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        int captures = 0;
+        vm.BeforeCapture = () => captures++;
+        Task upload = vm.BackupAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        vm.Dispose();
+        await upload.WaitAsync(TimeSpan.FromSeconds(5));
+        await vm.BackupAsync();
+
+        Assert.Equal(1, captures);
+        Assert.Empty(cloud.Uploaded);
+        Assert.False(vm.CanCancelOperation);
+    }
+
+    [AvaloniaFact]
+    public async Task CloudDownloadsRemainCancellableBeforeTheFilePickerAndWritePhase()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeDownload = token =>
+            {
+                started.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        cloud.Add(root.Store.Capture());
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        await vm.RefreshBackupsAsync();
+        ProfileBackupOption selected = Assert.Single(vm.Backups);
+        Task<byte[]?> download = vm.DownloadBackupAsync(selected);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.True(vm.CanCancelOperation);
+        vm.CancelOperation();
+
+        Assert.Null(await download.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.False(vm.IsBusy);
+        Assert.False(vm.RestartRequired);
+        Assert.Single(vm.Backups);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ShutdownCancelsAndDrainsManualUploadsBeforeItCompletes(bool automatic)
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Store.SavePreferences(new(Automatic: automatic));
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int uploads = 0;
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = token =>
+            {
+                if (++uploads > 1)
+                {
+                    return Task.CompletedTask;
+                }
+                started.SetResult();
+                return Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        Task manual = vm.BackupAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Task shutdown = vm.ShutdownAsync();
+        try
+        {
+            await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(manual.IsCompleted);
+            await manual.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(automatic ? 1 : 0, cloud.Uploaded.Count);
+        }
+        finally
+        {
+            vm.CancelOperation();
+            await Task.WhenAll(manual, shutdown).WaitAsync(TimeSpan.FromSeconds(5));
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task LocalFileOperationsDoNotAdvertiseCancellationTheyCannotHonor()
+    {
+        using var root = new ProfileSyncTestRoot();
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, new FakeProfileDrive()));
+        var view = new ProfileSyncView { DataContext = vm };
+        var window = new Window { Content = view };
+        window.Show();
+        var finish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task operation = vm.FileOperationAsync(() => finish.Task);
+        try
+        {
+            Assert.True(vm.IsBusy);
+            window.UpdateLayout();
+            Button cancel = view.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Cancel operation"));
+            Assert.False(cancel.IsEffectivelyVisible);
+        }
+        finally
+        {
+            finish.SetResult();
+            await operation;
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task RelinkingClearsHistoryAndSelectionFromThePreviousAccount()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+        await vm.RefreshBackupsAsync();
+        vm.SelectedBackup = Assert.Single(vm.Backups);
+        cloud.IsLinked = false;
+
+        await vm.LinkAsync();
+
+        Assert.Empty(vm.Backups);
+        Assert.Null(vm.SelectedBackup);
+        Assert.False(vm.CanClearBackups);
+    }
+
+    [AvaloniaFact]
+    public async Task CancelingAnUploadRetainsTheLocalRecoverySnapshot()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[]");
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = async token =>
+            {
+                started.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+        };
+        using var vm = new ProfileSyncViewModel(new ProfileSyncService(root.Store, cloud));
+
+        Task backup = vm.BackupAsync();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(vm.IsBusy);
+        vm.CancelOperation();
+        await backup.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.False(vm.IsBusy);
+        Assert.Empty(cloud.Uploaded);
+        Assert.Contains("canceled", vm.StatusText);
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(root.Store.StateDirectory, "backups"), "*.json"));
+    }
+
     /// <summary>Verifies that selected deletion requires confirmation and keeps the confirmed choice.</summary>
     [AvaloniaFact]
     public async Task SelectedDeletionRequiresConfirmationAndKeepsTheConfirmedChoice()

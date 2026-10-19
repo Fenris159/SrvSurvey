@@ -12,10 +12,22 @@ public sealed class StreamOverlayCoordinator : IDisposable
     private readonly StreamOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
     private readonly HostedOverlayWindow hostedWindow;
+    private readonly TimeProvider timeProvider;
+    private long? unavailableSince;
+    private PixelRect captureBounds;
+    private nint captureHandle;
     private bool disposed;
 
     public StreamOverlayCoordinator(StreamOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
+        : this(viewModel, presentationSession, TimeProvider.System) { }
+
+    internal StreamOverlayCoordinator(
+        StreamOverlayViewModel viewModel,
+        OverlayPresentationSession presentationSession,
+        TimeProvider timeProvider
+    )
     {
+        this.timeProvider = timeProvider;
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         ArgumentNullException.ThrowIfNull(presentationSession);
         registry = presentationSession.WindowRegistry;
@@ -32,6 +44,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 RequiresLayoutCatalog = false,
                 ApplyLayoutTheme = false,
                 RetryPassivePreparationOnPoll = true,
+                IsGameWindowEligible = IsGameWindowEligible,
             }
         );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -69,7 +82,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -78,7 +91,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -129,11 +142,38 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
-    private static PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    /// <summary>Keeps the capture handle across minimization without accepting iconic or empty geometry.</summary>
+    private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
     {
-        PixelRect gameBounds = placement.GameBounds;
-        Screen screen = placement.Screen;
+        if (snapshot.NativeHandle == nint.Zero)
+        {
+            unavailableSince ??= timeProvider.GetTimestamp();
+            if (timeProvider.GetElapsedTime(unavailableSince.Value) < TimeSpan.FromSeconds(2))
+            {
+                return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+            }
+            captureHandle = nint.Zero;
+            captureBounds = default;
+            return false;
+        }
+        unavailableSince = null;
+        if (captureHandle != snapshot.NativeHandle)
+        {
+            captureHandle = snapshot.NativeHandle;
+            captureBounds = default;
+        }
+        if (snapshot.IsAvailable && snapshot.IsVisible)
+        {
+            captureBounds = snapshot.ClientBounds;
+        }
+        return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+    }
+
+    private PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    {
+        PixelRect gameBounds = captureBounds;
         Window target = placement.Window;
+        Screen screen = target.Screens.ScreenFromBounds(gameBounds) ?? placement.Screen;
         target.Width = gameBounds.Width / screen.Scaling;
         target.Height = gameBounds.Height / screen.Scaling;
         return gameBounds.Position;

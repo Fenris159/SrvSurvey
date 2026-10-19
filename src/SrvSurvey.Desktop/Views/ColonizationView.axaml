@@ -355,6 +355,11 @@
                       </DataTemplate>
                     </ComboBox.ItemTemplate>
                   </ComboBox>
+                  <Button x:Name="UncheckProjectSelectionButton" Margin="0,0,8,4" Classes="secondary"
+                          AutomationProperties.Name="Uncheck Selection for filtered projects"
+                          IsEnabled="{Binding Colonization.HasProjects}"
+                          Click="UncheckProjectSelection_Click" Content="&lt;--Uncheck Selection"
+                          ToolTip.Tip="Uncheck Show for every project matching the selected system and build status." />
                   <Button x:Name="EditCarrierManifestButton" Margin="0,0,8,0" Classes="secondary"
                           Command="{Binding Colonization.EditCarrierManifestCommand}" Content="Edit Carrier Manifest"
                           ToolTip.Tip="Edit cargo and location for any carrier linked to this commander. Requires a saved Raven API key." />

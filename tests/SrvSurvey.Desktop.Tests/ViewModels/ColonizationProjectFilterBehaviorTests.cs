@@ -6,6 +6,77 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class ColonizationViewModelTests
 {
     [Theory]
+    [InlineData(null, ColonizationProjectBuildFilter.All)]
+    [InlineData(null, ColonizationProjectBuildFilter.Building)]
+    [InlineData(null, ColonizationProjectBuildFilter.Planning)]
+    [InlineData("Sol", ColonizationProjectBuildFilter.All)]
+    [InlineData("Sol", ColonizationProjectBuildFilter.Building)]
+    [InlineData("Sol", ColonizationProjectBuildFilter.Planning)]
+    [InlineData("Remote Colony", ColonizationProjectBuildFilter.All)]
+    [InlineData("Remote Colony", ColonizationProjectBuildFilter.Building)]
+    [InlineData("Remote Colony", ColonizationProjectBuildFilter.Planning)]
+    public async Task UncheckSelectionUsesBothFiltersAndPreservesShoppingSelection(
+        string? system,
+        ColonizationProjectBuildFilter stage
+    )
+    {
+        StubRavenColonialClient client = ProjectFilterClient();
+        client.Workspace = client.Workspace with
+        {
+            Projects =
+            [
+                .. client.Workspace.Projects,
+                Project("complete", "Completed Build", 0) with
+                {
+                    IsComplete = true,
+                    SystemName = "Sol",
+                },
+            ],
+        };
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        model.ProjectSystemFilter = model.ProjectSystemOptions.Single(option => option.SystemName == system);
+        model.ProjectBuildFilter = model.ProjectBuildOptions.Single(option => option.Value == stage);
+        foreach (ColonizationProjectRowViewModel row in model.Projects)
+        {
+            row.IsShoppingSelected = true;
+        }
+
+        model.UncheckProjectSelection();
+        model.UncheckProjectSelection();
+
+        Assert.Equal(4, model.Projects.Count);
+        Assert.All(
+            model.Projects,
+            row =>
+            {
+                bool shouldRemainShown = stage switch
+                {
+                    ColonizationProjectBuildFilter.Planning => !row.Project.IsPlanned,
+                    ColonizationProjectBuildFilter.Building => row.Project.IsPlanned || row.Project.IsComplete,
+                    _ => false,
+                };
+                Assert.Equal(shouldRemainShown || (system is not null && row.SystemName != system), row.IsShown);
+                Assert.True(row.IsShoppingSelected);
+            }
+        );
+        Assert.Equal(
+            model.Projects.Any(row => !row.Project.IsPlanned && !row.IsShown),
+            model.HasUnsavedProjectVisibility
+        );
+        Assert.Equal(0, client.SaveCount);
+        await model.SaveProjectVisibilityAsync();
+        Assert.Equal(
+            model
+                .Projects.Where(row => !row.Project.IsPlanned && !row.IsShown)
+                .Select(row => row.Project.BuildId)
+                .Order(),
+            client.LastSavedHiddenIds.Order()
+        );
+    }
+
+    [Theory]
     [InlineData(null, ColonizationProjectBuildFilter.All, 3)]
     [InlineData("Sol", ColonizationProjectBuildFilter.All, 1)]
     [InlineData("Sol", ColonizationProjectBuildFilter.Planning, 0)]

@@ -9,6 +9,259 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncServiceTests
 {
+    [Fact]
+    public async Task StartupCannotReplaceCausalHistoryRecordedDuringTheCloudRead()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"local\"}");
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        cloud.BeforeDownload = _ =>
+        {
+            ProfileSnapshot newer = root.Store.Capture();
+            foreach (SyncValue value in newer.Portable.Values)
+            {
+                value.Clock["another-device"] = 1;
+            }
+            root.Store.SaveBaseline(newer);
+            return Task.CompletedTask;
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.StartupAsync();
+
+        Assert.Contains("changed", service.Status);
+        Assert.Equal(1, Assert.Single(root.Store.LoadBaseline()!.Portable.Values).Clock["another-device"]);
+    }
+
+    [Fact]
+    public async Task StartupRetainsEditsFromAReaderThatClosedDuringTheDownload()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"before\"}");
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        cloud.BeforeDownload = async token =>
+        {
+            using var other = new ProfileSyncService(root.Store, new FakeProfileDrive());
+            await other.StartupAsync(token);
+            root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"edited by another reader\"}");
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.StartupAsync();
+
+        Assert.Contains("edited by another reader", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.Contains("changed", service.Status);
+    }
+
+    [Fact]
+    public async Task StartupConflictKeepsTheSnapshotCapturedUnderTheGuard()
+    {
+        ProfileSyncTestRoot? activeRoot = null;
+        bool editInjected = false;
+        using var root = new ProfileSyncTestRoot(_ =>
+        {
+            string path = Path.Combine(activeRoot!.Store.StateDirectory, "startup.lock");
+            try
+            {
+                using var lease = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                activeRoot.Write("config", "cross-platform-ui.json", "{\"Theme\":\"newer local edit\"}");
+                editInjected = true;
+            }
+            catch (IOException)
+            {
+                // A malformed layout logs during capture, exposing whether its startup guard is held.
+            }
+        });
+        activeRoot = root;
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"restore\"}");
+        ProfileSnapshot restore = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"staged baseline\"}");
+        root.Store.StageExplicitRestore(restore, false);
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"conflicting local edit\"}");
+        root.Write("data", "plotters.json", "invalid JSON");
+        using var service = new ProfileSyncService(root.Store, new FakeProfileDrive { IsLinked = false });
+
+        await service.StartupAsync();
+
+        Assert.Single(service.Conflicts);
+        if (!editInjected)
+        {
+            root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"newer local edit\"}");
+        }
+        await service.ResolveConflictsAsync(false);
+        Assert.True(root.Store.ApplyPending());
+        Assert.Contains("newer local edit", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelAfterCloudRestoreDownloadCannotStageTheRestore(bool duringCapture)
+    {
+        using var cancellation = new CancellationTokenSource();
+        using var remote = new ProfileSyncTestRoot();
+        remote.Write("config", "cross-platform-ui.json", "{\"Theme\":\"remote\"}");
+        using var root = new ProfileSyncTestRoot(_ => cancellation.Cancel());
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"local\"}");
+        if (duringCapture)
+        {
+            root.Write("data", "plotters.json", "invalid JSON");
+        }
+        var cloud = new FakeProfileDrive
+        {
+            BeforeDownload = _ =>
+            {
+                if (!duringCapture)
+                {
+                    cancellation.Cancel();
+                }
+                return Task.CompletedTask;
+            },
+        };
+        cloud.Add(remote.Store.Capture());
+        DriveBackup backup = Assert.Single(await cloud.ListAsync(CancellationToken.None));
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.RestoreAsync(backup, false, cancellation.Token);
+
+        Assert.True(cancellation.IsCancellationRequested);
+        Assert.False(service.RestartRequired);
+        Assert.Contains("canceled", service.Status);
+        Assert.Contains("local", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Fact]
+    public async Task UnsafeRecoveryFailureCannotBecomeAnOptionalCloudFallback()
+    {
+        using var root = new ProfileSyncTestRoot();
+        await File.WriteAllTextAsync(Path.Combine(root.Store.StateDirectory, "active-restore.json"), "\"invalid\"");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await Assert.ThrowsAsync<ProfileInitializationException>(() =>
+            App.StartProfileSyncAsync(() => first, _ => { })
+        );
+        Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+    }
+
+    [Fact]
+    public async Task StartupGuardCancellationStopsUnsafeInitializationWithoutHanging()
+    {
+        using var root = new ProfileSyncTestRoot();
+        using var service = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await using var blocker = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "startup.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+
+        await Assert.ThrowsAsync<ProfileInitializationException>(() =>
+            service.StartupAsync(cancellation.Token).WaitAsync(TimeSpan.FromSeconds(5))
+        );
+
+        Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+    }
+
+    [Fact]
+    public async Task ConcurrentColdStartupsRecoverBeforeEitherRegistersAWorkspaceReader()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"before\"}]");
+        ProfileSnapshot before = root.Store.Capture();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"before\"},{\"Name\":\"new\"}]");
+        root.Store.Apply(before);
+        string rollback = Directory
+            .EnumerateDirectories(Path.Combine(root.Store.StateDirectory, "restore-backups"))
+            .Single();
+        string journal = Path.Combine(root.Store.StateDirectory, "active-restore.json");
+        await File.WriteAllTextAsync(journal, System.Text.Json.JsonSerializer.Serialize(Path.GetFileName(rollback)));
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"partially restored\"}]");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using var second = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using var initialization = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "startup.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        using var operation = new FileStream(
+            Path.Combine(root.Store.StateDirectory, "operation.lock"),
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None
+        );
+        Task one = first.StartupAsync();
+        Task two = second.StartupAsync();
+        try
+        {
+            Assert.Empty(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+        }
+        finally
+        {
+            await initialization.DisposeAsync();
+            await operation.DisposeAsync();
+            await Task.WhenAll(one, two).WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.False(File.Exists(journal));
+        Assert.Contains("new", await File.ReadAllTextAsync(root.Path("data", "bookmarks.json")));
+        first.Dispose();
+        second.Dispose();
+        root.Write("data", "bookmarks.json", "[{\"Name\":\"later edit\"}]");
+        root.Store.RecoverInterruptedRestore();
+        Assert.Contains("later edit", await File.ReadAllTextAsync(root.Path("data", "bookmarks.json")));
+    }
+
+    [Fact]
+    public async Task StartupCanceledBehindAnotherOperationStillRegistersItsLiveReader()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old\"}");
+        ProfileSnapshot old = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"current\"}");
+        using var first = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        await first.StartupAsync();
+        root.Store.StageExplicitRestore(old, false);
+        using var waiting = new ProfileSyncService(root.Store, new FakeProfileDrive());
+        using (
+            var blocker = new FileStream(
+                Path.Combine(root.Store.StateDirectory, "operation.lock"),
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        using (var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(50)))
+        {
+            await waiting.StartupAsync(cancellation.Token);
+        }
+        first.Dispose();
+        using var third = new ProfileSyncService(root.Store, new FakeProfileDrive());
+
+        await third.StartupAsync();
+
+        Assert.Contains("deferred", third.Status);
+        Assert.True(third.RestartRequired);
+        Assert.Contains("current", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+    }
+
+    [Fact]
+    public async Task SlowBackupsCanFinishAfterTheOriginalOperationDeadline()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("data", "bookmarks.json", "[]");
+        var cloud = new FakeProfileDrive { BeforeUpload = token => Task.Delay(TimeSpan.FromSeconds(26), token) };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        await service.BackupAsync();
+
+        Assert.Single(cloud.Uploaded);
+        Assert.Contains("saved locally and to Google Drive", service.Status);
+    }
+
     /// <summary>Verifies that optional startup construction failure returns a fallback and logs the cause.</summary>
     [Fact]
     public async Task OptionalStartupConstructionFailureReturnsAFallbackAndLogsTheCause()
@@ -438,6 +691,7 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
     internal int? FailDeletionAfter { get; set; }
     internal byte[]? DownloadBytes { get; set; }
     internal bool IncludeSizes { get; set; } = true;
+    internal Func<CancellationToken, Task>? BeforeDownload { get; set; }
 
     /// <summary>Pauses upload so shutdown tests can check close guards while a backup is in progress.</summary>
     internal Func<CancellationToken, Task>? BeforeUpload { get; set; }
@@ -477,14 +731,28 @@ internal sealed class FakeProfileDrive : IGoogleDriveBackupClient
             : Task.FromException<IReadOnlyList<DriveBackup>>(Failure);
 
     /// <summary>Returns the simulated snapshot identified by its cloud file ID.</summary>
-    public Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken) =>
-        Task.FromResult(files.Single(file => file.Metadata.Id == id).Snapshot);
+    public async Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken)
+    {
+        if (BeforeDownload is not null)
+        {
+            await BeforeDownload(cancellationToken);
+        }
+        return files.Single(file => file.Metadata.Id == id).Snapshot;
+    }
 
     /// <summary>Returns cloud bytes for export, including configured malformed-payload and transport scenarios.</summary>
-    public Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken) =>
-        Failure is null
-            ? Task.FromResult(DownloadBytes ?? files.Single(file => file.Metadata.Id == id).Snapshot.Serialize())
-            : Task.FromException<byte[]>(Failure);
+    public async Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken)
+    {
+        if (Failure is not null)
+        {
+            throw Failure;
+        }
+        if (BeforeDownload is not null)
+        {
+            await BeforeDownload(cancellationToken);
+        }
+        return DownloadBytes ?? files.Single(file => file.Metadata.Id == id).Snapshot.Serialize();
+    }
 
     /// <summary>Records deletions and simulates a failure partway through a confirmed selection.</summary>
     public Task DeleteAsync(string id, CancellationToken cancellationToken)

@@ -1264,6 +1264,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "\u003C--Uncheck Selection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "? of {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -4532,14 +4540,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
-    "Text": "Application instance startup check failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
-  },
-  {
     "Text": "Application logging is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4586,6 +4586,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
+  },
+  {
+    "Text": "Application startup failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
     "Text": "Application theme",
@@ -6662,8 +6670,24 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
+    "Text": "Backup/sync canceled. Local data and recovery backups were retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "Backup/sync could not complete. Local data was retained. {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
+    "Text": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -9260,14 +9284,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
-    "Text": "Cancel Google linking",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
-  },
-  {
     "Text": "Cancel Position Editing",
     "IsFormat": false,
     "SourceKinds": [
@@ -9306,6 +9322,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
+    "Text": "Cancel operation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
   },
   {
     "Text": "Cancel overlay position and appearance changes",
@@ -10344,6 +10368,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "Checking Google Drive backup history...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
     "Text": "Checking and validating published reference data...",
@@ -17842,6 +17874,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Downloading a Google Drive backup for comparison...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "Downloading into the update cache. The installation and profile are still untouched.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22323,7 +22363,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
-    "Text": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+    "Text": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22339,7 +22379,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
-    "Text": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+    "Text": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -24246,6 +24286,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
+    "Text": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
     "Text": "Google Drive authorization was cancelled or its state did not match.",
     "IsFormat": false,
     "SourceKinds": [
@@ -24260,6 +24308,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Google Drive completed an upload before all backup data was sent.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
+    "Text": "Google Drive did not confirm backup upload progress.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
+    "Text": "Google Drive did not confirm the completed backup.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
   },
   {
     "Text": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -24318,6 +24390,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
   },
   {
+    "Text": "Google Drive returned an invalid backup upload range.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
     "Text": "Google Drive returned an invalid upload session.",
     "IsFormat": false,
     "SourceKinds": [
@@ -24356,6 +24436,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Google rejected this app\u0027s client setup. The publisher needs to update the Google Drive configuration.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
   },
   {
     "Text": "Google returned an invalid authorization response.",
@@ -30861,6 +30949,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
+  },
+  {
+    "Text": "Local profile initialization failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
     "Text": "Local ring discoveries",
@@ -42151,6 +42247,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
     "Text": "Published and linked {0}; its cargo is already current.",
     "IsFormat": true,
     "SourceKinds": [
@@ -43305,6 +43409,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Range",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
     "Text": "Range (LY)",
     "IsFormat": false,
     "SourceKinds": [
@@ -43682,6 +43794,14 @@
   },
   {
     "Text": "RavenDangerBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "RavenDangerForegroundBrush",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -44394,6 +44514,14 @@
   },
   {
     "Text": "RavenSurfaceBrush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "RavenTagFillBrush",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -49663,6 +49791,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Saving a local recovery backup...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54140,6 +54276,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "SrvSurvey could not refresh its desktop callback registration. {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -54180,7 +54324,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
-    "Text": "SrvSurvey could not verify whether another instance is running: {0}",
+    "Text": "SrvSurvey could not start safely: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -55365,6 +55509,14 @@
   },
   {
     "Text": "Startup sync complete. Portable preferences and workspace data are up to date.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
+    "Text": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64092,6 +64244,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
   },
   {
+    "Text": "Uncheck Selection for filtered projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Unclaimed biology",
     "IsFormat": false,
     "SourceKinds": [
@@ -64980,6 +65148,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "Uploading backup to Google Drive ({0} MiB)...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
     "Text": "Upper floor",
@@ -69330,6 +69506,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "bytes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
   },
   {
     "Text": "ca",

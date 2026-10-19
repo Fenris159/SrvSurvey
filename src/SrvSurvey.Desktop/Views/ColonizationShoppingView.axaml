@@ -61,7 +61,7 @@
       <Setter Property="Margin" Value="0,0,6,5" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="BorderBrush" Value="Transparent" />
-      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
@@ -69,13 +69,21 @@
       <Setter Property="Background" Value="{Binding $parent[Button].Background}" />
       <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
     </Style>
-    <Style Selector="Button.supply-button TextBlock">
+    <Style Selector="Button.supply-button > TextBlock.supply">
       <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+    </Style>
+    <Style Selector="Button.supply-button.short-supply">
+      <Setter Property="Background" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerForegroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
     <Style Selector="Button.supply-button.wished">
       <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Button.supply-button.short-supply.wished">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
     <Style Selector="Button.table-link">
       <Setter Property="Cursor" Value="Hand" />
@@ -246,7 +254,7 @@
                       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
-                          <Button Classes="supply-button" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
+                          <Button Classes="supply-button" Classes.short-supply="{Binding !IsEnough}" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
                             <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
                           </Button>
                         </DataTemplate>

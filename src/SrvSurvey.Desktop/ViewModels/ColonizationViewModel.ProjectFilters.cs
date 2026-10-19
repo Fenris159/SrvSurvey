@@ -48,6 +48,15 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    /// <summary>Clears Show for projects matching the selected system and build category.</summary>
+    public void UncheckProjectSelection()
+    {
+        foreach (ColonizationProjectRowViewModel row in VisibleProjects)
+        {
+            row.IsShown = false;
+        }
+    }
+
     private void UpdateProjectFilters()
     {
         ProjectSystemOptions =

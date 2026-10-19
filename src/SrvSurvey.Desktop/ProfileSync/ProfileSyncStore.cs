@@ -18,6 +18,7 @@ internal sealed record ProfileSyncDevice(string Id, string Name, string Platform
 /// <summary>Captures allowed profile data and restores it transactionally with a local rollback copy.</summary>
 internal sealed class ProfileSyncStore
 {
+    private const string BaselineFileName = "baseline.json";
     private static readonly JsonDocumentOptions JsonOptions = new()
     {
         CommentHandling = JsonCommentHandling.Skip,
@@ -63,13 +64,13 @@ internal sealed class ProfileSyncStore
 
     /// <summary>Returns the last local change counters, including deletions.</summary>
     internal ProfileSnapshot? LoadBaseline() =>
-        File.Exists(Path.Combine(StateDirectory, "baseline.json"))
-            ? ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, "baseline.json")))
+        File.Exists(Path.Combine(StateDirectory, BaselineFileName))
+            ? ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, BaselineFileName)))
             : null;
 
     /// <summary>Records captured counters only after the snapshot is safely stored locally.</summary>
     internal void SaveBaseline(ProfileSnapshot snapshot) =>
-        WriteAtomic(Path.Combine(StateDirectory, "baseline.json"), snapshot.Serialize());
+        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), snapshot.Serialize());
 
     /// <summary>Reads allowed profile data without including credentials, journals, or queued API reports.</summary>
     internal ProfileSnapshot Capture()
@@ -276,7 +277,14 @@ internal sealed class ProfileSyncStore
     }
 
     /// <summary>Stages an explicit restore while in-memory workspaces are still running.</summary>
-    internal void StageRestore(ProfileSnapshot snapshot, bool restoreMachine)
+    internal void StageRestore(
+        ProfileSnapshot snapshot,
+        bool restoreMachine,
+        CancellationToken cancellationToken = default
+    ) => WriteAtomic(PendingPath, PrepareRestore(snapshot, restoreMachine, cancellationToken));
+
+    /// <summary>Completes validation and cancelable serialization before publishing restore state.</summary>
+    private byte[] PrepareRestore(ProfileSnapshot snapshot, bool restoreMachine, CancellationToken cancellationToken)
     {
         ValidateScope(snapshot);
         if (restoreMachine && !IsOriginalMachine(snapshot))
@@ -299,14 +307,21 @@ internal sealed class ProfileSyncStore
         );
         byte[] bytes = staged.Serialize();
         _ = ProfileSnapshot.Parse(bytes);
-        WriteAtomic(PendingPath, bytes);
+        cancellationToken.ThrowIfCancellationRequested();
+        return bytes;
     }
 
     /// <summary>Turns an older backup into new changes, including deletion of portable values absent from it.</summary>
-    internal void StageExplicitRestore(ProfileSnapshot snapshot, bool restoreMachine)
+    internal void StageExplicitRestore(
+        ProfileSnapshot snapshot,
+        bool restoreMachine,
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateScope(snapshot);
+        cancellationToken.ThrowIfCancellationRequested();
         ProfileSnapshot current = Capture();
+        cancellationToken.ThrowIfCancellationRequested();
         var values = new Dictionary<string, SyncValue>(StringComparer.Ordinal);
         foreach (string key in current.Portable.Keys.Union(snapshot.Portable.Keys, StringComparer.Ordinal))
         {
@@ -316,17 +331,25 @@ internal sealed class ProfileSyncStore
             wanted ??= new(null, true, []);
             values[key] = ProfileSyncMerge.Resolve(Device.Id, new(key, previous, wanted), useRemote: true);
         }
-        SaveBaseline(current);
-        StageRestore(snapshot with { Portable = values }, restoreMachine);
+        byte[] pendingBytes = PrepareRestore(snapshot with { Portable = values }, restoreMachine, cancellationToken);
+        byte[] baselineBytes = current.Serialize();
+        cancellationToken.ThrowIfCancellationRequested();
+        // Publish both prepared values without cancellation between the baseline and its pending restore.
+        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), baselineBytes);
+        WriteAtomic(PendingPath, pendingBytes);
     }
 
     /// <summary>Applies a queued restore before workspaces and journal producers are constructed.</summary>
     internal bool ApplyPending() => ApplyPending(out _);
 
     /// <summary>Merges a queued restore with subsequent edits, deferring conflicting changes for an explicit choice.</summary>
-    internal bool ApplyPending(out SyncMergeResult? conflicts)
+    internal bool ApplyPending(out SyncMergeResult? conflicts) => ApplyPending(out conflicts, out _);
+
+    /// <summary>Returns the exact capture used for conflicts so callers can retain it under their startup guard.</summary>
+    internal bool ApplyPending(out SyncMergeResult? conflicts, out ProfileSnapshot? conflictSnapshot)
     {
         conflicts = null;
+        conflictSnapshot = null;
         if (!File.Exists(PendingPath))
         {
             return false;
@@ -347,6 +370,7 @@ internal sealed class ProfileSyncStore
         {
             SaveBackup(current);
             conflicts = merge;
+            conflictSnapshot = current;
             return false;
         }
         ProfileSnapshot snapshot = staged with

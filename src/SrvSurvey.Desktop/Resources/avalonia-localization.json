@@ -633,6 +633,10 @@
       "translation": "; ignoriert {0} fehlerhafte/teilweise Zeile(n)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Auswahl deaktivieren"
+    },
+    {
       "source": "? of {0}",
       "translation": "? von {0}"
     },
@@ -2265,10 +2269,6 @@
       "translation": "Anwendungsausgang"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Die Startprüfung der Anwendungsinstanz ist fehlgeschlagen: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "Die Anwendungsprotokollierung ist nicht verfügbar."
     },
@@ -2291,6 +2291,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Das Herunterfahren des Anwendungsdienstes ist fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Anwendungsstart fehlgeschlagen: {0}"
     },
     {
       "source": "Application theme",
@@ -3329,8 +3333,16 @@
       "translation": "Sicherung ausgewählt. Starten Sie SrvSurvey neu, um es wiederherzustellen. Es wurde eine lokale Rollback-Kopie gespeichert."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Sicherung/Synchronisierung abgebrochen. Lokale Daten- und Wiederherstellungs-Backups wurden beibehalten."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "Sicherung/Synchronisierung konnte nicht abgeschlossen werden. Lokale Daten wurden beibehalten. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Zeitüberschreitung bei Sicherung/Synchronisierung. Lokale Daten- und Wiederherstellungs-Backups wurden beibehalten. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
     },
     {
       "source": "Backups",
@@ -4621,10 +4633,6 @@
       "translation": "Abbrechen"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Brechen Sie die Google-Verknüpfung ab"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Positionsbearbeitung abbrechen"
     },
@@ -4643,6 +4651,10 @@
     {
       "source": "Cancel edit",
       "translation": "Bearbeitung abbrechen"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Vorgang abbrechen"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -5159,6 +5171,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Sicherungsverlauf von Google Drive wird überprüft..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -8897,6 +8913,10 @@
       "translation": "{0} von {1} Bytes heruntergeladen"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Laden Sie zum Vergleich ein Google Drive-Backup herunter ..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Herunterladen in den Update-Cache. Die Installation und das Profil sind noch unberührt."
     },
@@ -11129,16 +11149,16 @@
       "translation": "Warnung vor Aktualisierungen des Flottenbetreibers"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus, da sich die Raven-Fracht gleichzeitig geändert hat. Aktualisieren Sie den Markt, um ihn in Einklang zu bringen."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus, da sich die Raven-Fracht gleichzeitig geändert hat. Aktualisieren Sie den Markt oder lösen Sie die Daten eines Geschwaderträgers ab und aktualisieren Sie sie Frontier, um sie abzugleichen."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Updates für Flottenbetreiber stehen noch aus: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus; Aktualisieren Sie Ihren Markt, um einen unsicheren Schreibvorgang in Einklang zu bringen."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus; Aktualisieren Sie seinen Markt oder lösen Sie die Daten eines Geschwaderträgers ab und aktualisieren Sie sie Frontier, um einen unsicheren Schreibvorgang auszugleichen."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -12089,12 +12109,28 @@
       "translation": "Das Google Desktop-Client-Setup wurde geladen. Verknüpfen Sie Google Drive, um fortzufahren."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Die Google Drive-Autorisierung ist abgelaufen oder wurde widerrufen. Trennen Sie die Verbindung zu Google Drive und verknüpfen Sie es erneut."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Die Google Drive-Autorisierung wurde storniert oder ihr Status stimmte nicht überein."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Sicherung und Synchronisierung von Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive hat einen Upload abgeschlossen, bevor alle Sicherungsdaten gesendet wurden."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive hat den Fortschritt des Backup-Uploads nicht bestätigt."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive hat die abgeschlossene Sicherung nicht bestätigt."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -12125,6 +12161,10 @@
       "translation": "Google Drive-Anfrage fehlgeschlagen (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive hat einen ungültigen Backup-Upload-Bereich zurückgegeben."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive hat eine ungültige Upload-Sitzung zurückgegeben."
     },
@@ -12143,6 +12183,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "Die Google-Verknüpfung ist verfügbar, wenn Ihr Build das Desktop-OAuth-Client-Setup des Herausgebers umfasst. Entwicklungs-Builds können dieses Setup aus Daten und Migration importieren."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google hat die Client-Einrichtung dieser App abgelehnt. Der Herausgeber muss die Google Drive-Konfiguration aktualisieren."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -15383,6 +15427,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Die Initialisierung des lokalen Profils ist fehlgeschlagen: {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -21009,6 +21057,10 @@
       "translation": "Veröffentlicht und verlinkt {0}. Öffnen Sie den Warenmarkt, um die Fracht zu synchronisieren."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Veröffentlicht und verlinkt {0}. Geschwaderfrachtaktualisierungen von Frontier Manifesten und Live-Frachtbewegungen."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Veröffentlicht und verlinkt {0}; seine Ladung ist bereits aktuell."
     },
@@ -21585,6 +21637,10 @@
       "translation": "Die Verfolgung von Ram Tah ist nicht verfügbar."
     },
     {
+      "source": "Range",
+      "translation": "Reichweite"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Reichweite (LY)"
     },
@@ -21775,6 +21831,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "RavenDangerBrush"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -22131,6 +22191,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -24757,6 +24821,10 @@
       "translation": "Gespeichert {0}."
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "Lokales Wiederherstellungs-Backup wird gespeichert..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "Das Speichern eines persönlichen API-Schlüssels ermöglicht die direkte EDSM Kontosynchronisierung für den aktiven Commander. SrvSurvey sendet den hier angezeigten aktuellen Commander-Namen, der mit dem bei EDSM registrierten Commander übereinstimmen muss. Dies ist unabhängig von der EDDN-Freigabe und aktiviert nicht EDDN."
     },
@@ -26989,6 +27057,10 @@
       "translation": "SrvSurvey konnte seinen ausführbaren Pfad für die Frontier-Autorisierung nicht ermitteln."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey konnte das lokale Profil nicht sicher vorbereiten. Schließen Sie andere Instanzen und versuchen Sie es erneut. Einzelheiten zur Wiederherstellung finden Sie im Anwendungsprotokoll."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey konnte seine Desktop-Rückrufregistrierung nicht aktualisieren. {0}"
     },
@@ -27009,8 +27081,8 @@
       "translation": "SrvSurvey konnte nach dem Update-Rollback nicht neu gestartet werden."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey konnte nicht überprüfen, ob eine andere Instanz ausgeführt wird: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey konnte nicht sicher gestartet werden: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -27603,6 +27675,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Startsynchronisierung abgeschlossen. Die tragbaren Einstellungen und Arbeitsbereichsdaten sind auf dem neuesten Stand."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "Die Startsynchronisierung wurde verzögert, da sich das lokale Profil beim Überprüfen von Google Drive geändert hat. Lokale Änderungen wurden beibehalten; Verwenden Sie „Jetzt synchronisieren“, um Cloud-Änderungen zu überprüfen."
     },
     {
       "source": "State",
@@ -31957,6 +32033,14 @@
       "translation": "Deaktivieren Sie „Alle“."
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "Deaktivieren Sie die Auswahl für gefilterte Projekte"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Deaktivieren Sie „Anzeigen“ für jedes Projekt, das dem ausgewählten System und Build-Status entspricht."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Nicht beanspruchte Biologie"
     },
@@ -32399,6 +32483,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "{0} Green Gas Giant-Kandidaten hochgeladen."
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Backup wird auf Google Drive hochgeladen ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -34571,6 +34659,10 @@
     {
       "source": "by {0}",
       "translation": "von {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "Bytes"
     },
     {
       "source": "ca",
@@ -39391,6 +39483,10 @@
       "translation": "; ignorado {0} líneas mal formadas/parciales"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar selección"
+    },
+    {
       "source": "? of {0}",
       "translation": "? de {0}"
     },
@@ -41023,10 +41119,6 @@
       "translation": "Salida de la aplicación"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Error en la verificación de inicio de la instancia de la aplicación: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "El registro de aplicaciones no está disponible."
     },
@@ -41049,6 +41141,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Error al cerrar el servicio de aplicaciones: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Error al iniciar la aplicación: {0}"
     },
     {
       "source": "Application theme",
@@ -42087,8 +42183,16 @@
       "translation": "Copia de seguridad seleccionada. Reinicie SrvSurvey para restaurarlo; Se ha guardado una copia de reversión local."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Copia de seguridad/sincronización cancelada. Se conservaron los datos locales y las copias de seguridad de recuperación."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "No se pudo completar la copia de seguridad/sincronización. Se conservaron los datos locales. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Se agotó el tiempo de espera de la copia de seguridad/sincronización. Se conservaron los datos locales y las copias de seguridad de recuperación. Comprueba tu conexión y vuelve a intentarlo."
     },
     {
       "source": "Backups",
@@ -43379,10 +43483,6 @@
       "translation": "Cancelar"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Cancelar vinculación de Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Cancelar edición de posición"
     },
@@ -43401,6 +43501,10 @@
     {
       "source": "Cancel edit",
       "translation": "Cancelar edición"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Cancelar operación"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -43917,6 +44021,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminadoPresionado"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Comprobando el historial de copias de seguridad de Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -47655,6 +47763,10 @@
       "translation": "Descargado {0} de {1} bytes"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Descargando una copia de seguridad de Google Drive para comparar..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Descargando en el caché de actualización. La instalación y el perfil aún están intactos."
     },
@@ -49887,16 +49999,16 @@
       "translation": "Advertencia de actualización de Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes porque la carga de Raven cambió al mismo tiempo. Actualizar su mercado para conciliar."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes porque la carga de Raven cambió al mismo tiempo. Actualizar su mercado, o desacoplar y actualizar Frontier los datos de un portaaviones de escuadrón, para conciliarlos."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Las actualizaciones de Fleet Carrier siguen pendientes: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes; actualizar su mercado para conciliar una escritura incierta."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes; actualizar su mercado, o desacoplar y actualizar Frontier los datos de un portaaviones de escuadrón, para conciliar una escritura incierta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -50847,12 +50959,28 @@
       "translation": "Configuración del cliente de Google Desktop cargada. Vincula Google Drive para continuar."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "La autorización de Google Drive expiró o fue revocada. Desconecta y vincula Google Drive nuevamente."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "La autorización de Google Drive fue cancelada o su estado no coincidía."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Copia de seguridad y sincronización de Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive completó una carga antes de que se enviaran todos los datos de la copia de seguridad."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive no confirmó el progreso de la carga de la copia de seguridad."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive no confirmó la copia de seguridad completa."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -50883,6 +51011,10 @@
       "translation": "Error en la solicitud de Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive devolvió un rango de carga de respaldo no válido."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive devolvió una sesión de carga no válida."
     },
@@ -50901,6 +51033,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "La vinculación de Google está disponible cuando su compilación incluye la configuración del cliente Desktop OAuth del editor. Las compilaciones de desarrollo pueden importar esa configuración desde Datos y migración."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google rechazó la configuración del cliente de esta aplicación. El editor debe actualizar la configuración de Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -54141,6 +54277,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Error al inicializar el perfil local: {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -59767,6 +59907,10 @@
       "translation": "Publicado y vinculado {0}. Abrir su mercado de productos básicos para sincronizar la carga."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Publicado y vinculado {0}. Actualizaciones de carga de escuadrón a partir de manifiestos Frontier y movimientos de carga en vivo."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publicado y vinculado {0}; su carga ya está vigente."
     },
@@ -60343,6 +60487,10 @@
       "translation": "El seguimiento de Ram Tah no está disponible."
     },
     {
+      "source": "Range",
+      "translation": "Rango"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Rango (LY)"
     },
@@ -60533,6 +60681,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "CuervoPeligroCepillo"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CuervoPeligroprimer planoCepillo"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -60889,6 +61041,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "CuervoSuperficieCepillo"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "CuervoEtiquetaRellenoBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -63515,6 +63671,10 @@
       "translation": "Guardado {0}."
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "Guardando una copia de seguridad de recuperación local..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "Guardar una clave API personal permite la sincronización directa de la cuenta EDSM para el Commander activo. SrvSurvey envía el nombre del Comandante actual que se muestra aquí, que debe coincidir con el Comandante registrado con EDSM. Esto es independiente del uso compartido EDDN y no habilita EDDN."
     },
@@ -65747,6 +65907,10 @@
       "translation": "SrvSurvey no pudo determinar su ruta ejecutable para la autorización Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey no pudo preparar el perfil local de forma segura. Cierre otras instancias y vuelva a intentarlo. Consulte el registro de la aplicación para obtener detalles de recuperación."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey no pudo actualizar el registro de devolución de llamada de su escritorio. {0}"
     },
@@ -65767,8 +65931,8 @@
       "translation": "SrvSurvey no pudo reiniciarse después de la reversión de la actualización."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey no pudo verificar si se está ejecutando otra instancia: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey no se pudo iniciar de forma segura: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -66361,6 +66525,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronización de inicio completa. Las preferencias portátiles y los datos del espacio de trabajo están actualizados."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "La sincronización de inicio se aplazó porque el perfil local cambió mientras revisaba Google Drive. Se mantuvieron las ediciones locales; use Sincronizar ahora para revisar los cambios en la nube."
     },
     {
       "source": "State",
@@ -70715,6 +70883,14 @@
       "translation": "Desmarcar todo"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "Desmarcar Selección para proyectos filtrados"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada proyecto que coincida con el sistema seleccionado y el estado de compilación."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biología no reclamada"
     },
@@ -71157,6 +71333,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "Se subieron {0} candidatos a Gigante del Gas Verde."
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Subiendo copia de seguridad a Google Drive ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -73329,6 +73509,10 @@
     {
       "source": "by {0}",
       "translation": "por {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "bytes"
     },
     {
       "source": "ca",
@@ -78149,6 +78333,10 @@
       "translation": "; {0} ligne(s) malformée(s)/partielle(s) ignorée(s)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Décochez la sélection"
+    },
+    {
       "source": "? of {0}",
       "translation": "? de {0}"
     },
@@ -79781,10 +79969,6 @@
       "translation": "Sortie de l'application"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Échec de la vérification du démarrage de l'instance d'application : {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "La journalisation des applications n'est pas disponible."
     },
@@ -79807,6 +79991,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Échec de l'arrêt du service d'application : {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Échec du démarrage de l'application : {0}"
     },
     {
       "source": "Application theme",
@@ -80845,8 +81033,16 @@
       "translation": "Sauvegarde sélectionnée. Redémarrez SrvSurvey pour le restaurer ; une copie de restauration locale a été enregistrée."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Sauvegarde/synchronisation annulée. Les données locales et les sauvegardes de récupération ont été conservées."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "La sauvegarde/synchronisation n'a pas pu se terminer. Les données locales ont été conservées. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "La sauvegarde/synchronisation a expiré. Les données locales et les sauvegardes de récupération ont été conservées. Vérifiez votre connexion et réessayez."
     },
     {
       "source": "Backups",
@@ -82137,10 +82333,6 @@
       "translation": "Annuler"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Annuler la liaison Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Annuler la modification de position"
     },
@@ -82159,6 +82351,10 @@
     {
       "source": "Cancel edit",
       "translation": "Annuler la modification"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Annuler l'opération"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -82675,6 +82871,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Vérification de l'historique des sauvegardes de Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -86413,6 +86613,10 @@
       "translation": "{0} téléchargés sur {1} octets"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Téléchargement d'une sauvegarde Google Drive pour comparaison..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Téléchargement dans le cache de mise à jour. L'installation et le profil sont toujours intacts."
     },
@@ -88645,16 +88849,16 @@
       "translation": "Avertissement de mise à jour de Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Les mises à jour de Fleet Carrier restent en attente car la cargaison Raven a changé simultanément. Rafraîchir son marché pour se réconcilier."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente car la cargaison Raven a changé simultanément. Actualisez son marché, ou désamarrez et actualisez les données Frontier d'un porte-avions d'escadron, pour effectuer le rapprochement."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Les mises à jour de Fleet Carrier restent en attente : {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Les mises à jour de Fleet Carrier restent en attente ; rafraîchir son marché pour concilier une écriture incertaine."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente ; actualiser son marché, ou désancrer et actualiser Frontier les données d'un porte-avions d'escadron, pour rapprocher une écriture incertaine."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -89605,12 +89809,28 @@
       "translation": "Configuration du client Google Desktop chargée. Associez Google Drive pour continuer."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "L'autorisation Google Drive a expiré ou a été révoquée. Déconnectez-vous et associez à nouveau Google Drive."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "L'autorisation Google Drive a été annulée ou son état ne correspondait pas."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Sauvegarde et synchronisation Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Drive a terminé un téléchargement avant que toutes les données de sauvegarde ne soient envoyées."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Drive n'a pas confirmé la progression du téléchargement de la sauvegarde."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive n'a pas confirmé la sauvegarde terminée."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -89641,6 +89861,10 @@
       "translation": "Échec de la requête Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Drive a renvoyé une plage de téléchargement de sauvegarde non valide."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Drive a renvoyé une session de téléchargement non valide."
     },
@@ -89659,6 +89883,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "La liaison Google est disponible lorsque votre build inclut la configuration du client Desktop OAuth de l'éditeur. Les versions de développement peuvent importer cette configuration à partir de Données et migration."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google a rejeté la configuration client de cette application. L'éditeur doit mettre à jour la configuration de Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -92899,6 +93127,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Échec de l'initialisation du profil local : {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -98525,6 +98757,10 @@
       "translation": "Publié et lié {0}. Ouvrir son marché des matières premières pour synchroniser le fret."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publié et lié. Mises à jour du fret de l'escadron à partir des manifestes Frontier et des mouvements de fret en direct."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publié et lié {0} ; sa cargaison est déjà à jour."
     },
@@ -99101,6 +99337,10 @@
       "translation": "Le suivi de Ram Tah n’est pas disponible."
     },
     {
+      "source": "Range",
+      "translation": "Gamme"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Portée (LY)"
     },
@@ -99291,6 +99531,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "CorbeauDangerBrosse"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "CorbeauDangerPremier PlanBrosse"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -99647,6 +99891,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrosse"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -102273,6 +102521,10 @@
       "translation": "{0} enregistré."
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "Enregistrement d'une sauvegarde de récupération locale..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "L'enregistrement d'une clé API personnelle permet la synchronisation directe du compte EDSM pour le Commander actif. SrvSurvey envoie le nom du commandant actuel affiché ici, qui doit correspondre au commandant enregistré avec EDSM. Ceci est distinct du partage EDDN et n'active pas EDDN."
     },
@@ -104505,6 +104757,10 @@
       "translation": "SrvSurvey n'a pas pu déterminer son chemin d'accès exécutable pour l'autorisation Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey n'a pas pu préparer le profil local en toute sécurité. Fermez les autres instances et réessayez. Consultez le journal des applications pour plus de détails sur la récupération."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey n'a pas pu actualiser son enregistrement de rappel sur le bureau. {0}"
     },
@@ -104525,8 +104781,8 @@
       "translation": "SrvSurvey n'a pas pu redémarrer après l'annulation de la mise à jour."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey n'a pas pu vérifier si une autre instance est en cours d'exécution : {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey n'a pas pu démarrer en toute sécurité : {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -105119,6 +105375,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Synchronisation de démarrage terminée. Les préférences portables et les données de l'espace de travail sont à jour."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "La synchronisation du démarrage a été différée, car le profil local a été modifié lors de la vérification de Google Drive. Les modifications locales ont été conservées ; utilisez Sync maintenant pour examiner les modifications apportées au cloud."
     },
     {
       "source": "State",
@@ -109473,6 +109733,14 @@
       "translation": "Décocher tout"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "Décochez la sélection pour les projets filtrés"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Décochez Afficher pour chaque projet correspondant au système sélectionné et à l'état de construction."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologie non réclamée"
     },
@@ -109915,6 +110183,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "Les candidats {0} géants du gaz vert ont été téléchargés."
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Téléchargement de la sauvegarde sur Google Drive ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -112087,6 +112359,10 @@
     {
       "source": "by {0}",
       "translation": "par {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "octets"
     },
     {
       "source": "ca",
@@ -116907,6 +117183,10 @@
       "translation": "; ignorado {0} linha(s) mal formada(s)/parcial(is)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Desmarcar seleção"
+    },
+    {
       "source": "? of {0}",
       "translation": "? de {0}"
     },
@@ -118539,10 +118819,6 @@
       "translation": "Saída do aplicativo"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Falha na verificação de inicialização da instância do aplicativo: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "O log do aplicativo não está disponível."
     },
@@ -118565,6 +118841,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Falha no encerramento do serviço de aplicativo: {0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Falha na inicialização do aplicativo: {0}"
     },
     {
       "source": "Application theme",
@@ -119603,8 +119883,16 @@
       "translation": "Backup selecionado. Reinicie SrvSurvey para restaurá-lo; uma cópia de reversão local foi salva."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Backup/sincronização cancelada. Os dados locais e os backups de recuperação foram mantidos."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "O backup/sincronização não pôde ser concluído. Os dados locais foram retidos. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "O backup/sincronização expirou. Os dados locais e os backups de recuperação foram mantidos. Verifique sua conexão e tente novamente."
     },
     {
       "source": "Backups",
@@ -120895,10 +121183,6 @@
       "translation": "Cancelar"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Cancelar vinculação do Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Cancelar edição de posição"
     },
@@ -120917,6 +121201,10 @@
     {
       "source": "Cancel edit",
       "translation": "Cancelar edição"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Cancelar operação"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -121433,6 +121721,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Verificando o histórico de backup do Google Drive..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -125171,6 +125463,10 @@
       "translation": "Download de {0} de {1} bytes"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Baixando um backup do Google Drive para comparação..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Baixando no cache de atualização. A instalação e o perfil ainda estão intactos."
     },
@@ -127403,16 +127699,16 @@
       "translation": "Aviso de atualização da Fleet Carrier"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "As atualizações do Fleet Carrier permanecem pendentes porque a carga Raven mudou simultaneamente. Atualize seu mercado para reconciliar."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "As atualizações do Fleet Carrier permanecem pendentes porque a carga Raven mudou simultaneamente. Atualize seu mercado ou desencaixe e atualize os dados Frontier de um porta-aviões de esquadrão para reconciliar."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "As atualizações da Fleet Carrier permanecem pendentes: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "As atualizações da Fleet Carrier permanecem pendentes; atualizar seu mercado para conciliar uma escrita incerta."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "As atualizações da Fleet Carrier permanecem pendentes; atualizar seu mercado ou desencaixar e atualizar dados Frontier para um porta-aviões de esquadrão, para reconciliar uma gravação incerta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -128363,12 +128659,28 @@
       "translation": "Configuração do cliente Google Desktop carregada. Vincule o Google Drive para continuar."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "A autorização do Google Drive expirou ou foi revogada. Desconecte e vincule o Google Drive novamente."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "A autorização do Google Drive foi cancelada ou seu estado não corresponde."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Backup e sincronização do Google Drive"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "O Google Drive concluiu um upload antes de todos os dados de backup serem enviados."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "O Google Drive não confirmou o progresso do upload do backup."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "O Google Drive não confirmou o backup concluído."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -128399,6 +128711,10 @@
       "translation": "Falha na solicitação do Google Drive (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "O Google Drive retornou um intervalo de upload de backup inválido."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "O Google Drive retornou uma sessão de upload inválida."
     },
@@ -128417,6 +128733,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "A vinculação do Google está disponível quando sua versão inclui a configuração do cliente Desktop OAuth do editor. As compilações de desenvolvimento podem importar essa configuração de Dados e migração."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "O Google rejeitou a configuração do cliente deste app. O editor precisa atualizar a configuração do Google Drive."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -131657,6 +131977,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Falha na inicialização do perfil local: {0}"
     },
     {
       "source": "Local ring discoveries",
@@ -137283,6 +137607,10 @@
       "translation": "Publicado e vinculado {0}. Abra seu mercado de commodities para sincronizar a carga."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "{0} publicado e vinculado. Atualizações de carga do esquadrão de manifestos Frontier e movimentos de carga ao vivo."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Publicado e vinculado {0}; sua carga já está atual."
     },
@@ -137859,6 +138187,10 @@
       "translation": "O rastreamento de Ram Tah não está disponível."
     },
     {
+      "source": "Range",
+      "translation": "Faixa"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Alcance (LY)"
     },
@@ -138049,6 +138381,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "RavenDangerEscova"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "RavenDangerForegroundBrush"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -138405,6 +138741,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "RavenSurfaceBrush"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "RavenTagFillBrush"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -141031,6 +141371,10 @@
       "translation": "Salvo {0}."
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "Salvando um backup de recuperação local..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "Salvar uma chave de API pessoal permite a sincronização direta da conta EDSM para o Commander ativo. SrvSurvey envia o nome do Comandante atual mostrado aqui, que deve corresponder ao Comandante registrado em EDSM. Isso é separado do compartilhamento EDDN e não ativa EDDN."
     },
@@ -143263,6 +143607,10 @@
       "translation": "SrvSurvey não conseguiu determinar seu caminho executável para autorização de Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey não conseguiu preparar o perfil local com segurança. Feche outras instâncias e tente novamente. Consulte o log do aplicativo para obter detalhes de recuperação."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey não pôde atualizar o registro de retorno de chamada da área de trabalho. {0}"
     },
@@ -143283,8 +143631,8 @@
       "translation": "SrvSurvey não pôde reiniciar após a reversão da atualização."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey não foi possível verificar se outra instância está em execução: {0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey não pôde ser iniciado com segurança: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -143877,6 +144225,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Sincronização de inicialização concluída. As preferências portáteis e os dados do espaço de trabalho estão atualizados."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "A sincronização de inicialização foi adiada porque o perfil local foi alterado durante a verificação do Google Drive. As edições locais foram mantidas; use o Sync agora para revisar as alterações na nuvem."
     },
     {
       "source": "State",
@@ -148231,6 +148583,14 @@
       "translation": "Desmarque tudo"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "Desmarque Seleção para projetos filtrados"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Desmarque Mostrar para cada projeto que corresponda ao sistema selecionado e ao status de construção."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologia não reclamada"
     },
@@ -148673,6 +149033,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "Carregado {0} candidatos a Gigante de Gás Verde."
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Fazendo upload do backup para o Google Drive ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -150845,6 +151209,10 @@
     {
       "source": "by {0}",
       "translation": "por {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "bytes"
     },
     {
       "source": "ca",
@@ -155665,6 +156033,10 @@
       "translation": "; игнорируется {0} неверно сформированная/неполная строка(ы)"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--Снять выделение"
+    },
+    {
       "source": "? of {0}",
       "translation": "? из {0}"
     },
@@ -157297,10 +157669,6 @@
       "translation": "Выход из приложения"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "Не удалось проверить запуск экземпляра приложения: {0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "Журналирование приложений недоступно."
     },
@@ -157323,6 +157691,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "Не удалось завершить работу службы приложений: {0}."
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "Не удалось запустить приложение: {0}."
     },
     {
       "source": "Application theme",
@@ -158361,8 +158733,16 @@
       "translation": "Резервная копия выбрана. Перезапустите SrvSurvey, чтобы восстановить его; сохранена локальная копия отката."
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "Резервное копирование/синхронизация отменены. Локальные данные и резервные копии для восстановления были сохранены."
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "Резервное копирование/синхронизация не удалось завершить. Локальные данные были сохранены. {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "Время резервного копирования/синхронизации истекло. Локальные данные и резервные копии для восстановления были сохранены. Проверьте подключение и повторите попытку."
     },
     {
       "source": "Backups",
@@ -159653,10 +160033,6 @@
       "translation": "Отмена"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "Отменить привязку к Google"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "Отменить редактирование позиции"
     },
@@ -159675,6 +160051,10 @@
     {
       "source": "Cancel edit",
       "translation": "Отменить редактирование"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "Отменить операцию"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -160191,6 +160571,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "Проверка истории резервного копирования на Google Диске..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -163929,6 +164313,10 @@
       "translation": "Скачано {0} из {1} байт."
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "Скачивание резервной копии с Google Диска для сравнения..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "Загрузка в кэш обновлений. Установка и профиль остаются нетронутыми."
     },
@@ -166161,16 +166549,16 @@
       "translation": "Предупреждение об обновлении авиаперевозчика"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "Обновления Fleet Carrier остаются в ожидании, поскольку одновременно с этим изменился груз Raven. Обновите свой рынок, чтобы примириться."
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "Обновления Fleet Carrier остаются в ожидании, поскольку одновременно с этим изменился груз Raven. Обновите свой рынок или отстыкуйтесь и обновите Frontier данные эскадрильи авианосца для согласования."
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "Обновления Fleet Carrier ожидаются: {0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "Обновления Fleet Carrier ожидаются; обновить свой рынок, чтобы исправить неопределенную запись."
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "Обновления Fleet Carrier ожидаются; обновить свой рынок или отстыковаться и обновить Frontier данные для эскадрильи авианосца, чтобы согласовать неопределенную запись."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -167121,12 +167509,28 @@
       "translation": "Настройка клиента Google Desktop загружена. Свяжите Google Диск, чтобы продолжить."
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Срок действия авторизации Google Диска истек или она была отозвана. Отключитесь и снова привяжите Google Диск."
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Авторизация Google Диска отменена или ее состояние не соответствует."
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Резервное копирование и синхронизация Google Диска"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "Google Диск завершил загрузку до того, как были отправлены все резервные данные."
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google Диск не подтвердил ход загрузки резервной копии."
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Диск не подтвердил завершение резервного копирования."
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -167157,6 +167561,10 @@
       "translation": "Не удалось выполнить запрос на Google Диск (HTTP {0})."
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google Диск вернул неверный диапазон загрузки резервной копии."
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google Диск возвратил неверный сеанс загрузки."
     },
@@ -167175,6 +167583,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "Связывание с Google доступно, если ваша сборка включает настройку клиента OAuth для настольных компьютеров издателя. В сборках для разработки можно импортировать эту настройку из раздела «Данные и миграция»."
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google отклонил настройку клиента этого приложения. Издателю необходимо обновить конфигурацию Google Диска."
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -170415,6 +170827,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "Не удалось инициализировать локальный профиль: {0}."
     },
     {
       "source": "Local ring discoveries",
@@ -176041,6 +176457,10 @@
       "translation": "Опубликовано и связано с {0}. Откройте свой товарный рынок для синхронизации грузов."
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "Опубликован и связан {0}. Обновления о грузах эскадрильи от Frontier отражают и показывают движение грузов в реальном времени."
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "Опубликовано и связано с {0}; его груз уже в наличии."
     },
@@ -176617,6 +177037,10 @@
       "translation": "Отслеживание Рам Та недоступно."
     },
     {
+      "source": "Range",
+      "translation": "Диапазон"
+    },
+    {
       "source": "Range (LY)",
       "translation": "Диапазон (ЛИ)"
     },
@@ -176807,6 +177231,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "ВоронОпасностьКисть"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "ВоронОпасностьПередний планКисть"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -177163,6 +177591,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "ВоронПоверхностьКисть"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "ВоронТегЗаполнитьКисть"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -179789,6 +180221,10 @@
       "translation": "Сохранено {0}."
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "Сохранение локальной резервной копии для восстановления..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "Сохранение личного API-ключа позволяет осуществлять прямую EDSM синхронизацию учетной записи для активного Commander. SrvSurvey отправляет текущее имя командира, показанное здесь, которое должно совпадать с именем командира, зарегистрированным в EDSM. Это отделено от общего доступа EDDN и не включает EDDN."
     },
@@ -182021,6 +182457,10 @@
       "translation": "SrvSurvey не удалось определить путь к исполняемому файлу для авторизации Frontier."
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey не удалось безопасно подготовить локальный профиль. Закройте другие экземпляры и повторите попытку. Подробности восстановления см. в журнале приложения."
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey не удалось обновить регистрацию обратного вызова рабочего стола. {0}"
     },
@@ -182041,8 +182481,8 @@
       "translation": "SrvSurvey не удалось перезапустить после отката обновления."
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey не удалось проверить, запущен ли другой экземпляр: {0}."
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey не удалось безопасно запустить: {0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -182635,6 +183075,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "Синхронизация запуска завершена. Портативные настройки и данные рабочей области актуальны."
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "Синхронизация запуска была отложена, поскольку локальный профиль изменился при проверке Google Диска. Локальные правки были сохранены; используйте «Синхронизировать сейчас», чтобы просмотреть изменения в облаке."
     },
     {
       "source": "State",
@@ -186989,6 +187433,14 @@
       "translation": "Снимите все флажки"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "Снимите флажок «Выбор для отфильтрованных проектов»."
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "Снимите флажок «Показывать для каждого проекта, соответствующего выбранной системе и статусу сборки»."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Невостребованная биология"
     },
@@ -187431,6 +187883,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "Загружены кандидаты на {0} гигантов зеленого газа."
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "Загрузка резервной копии на Google Диск ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -189603,6 +190059,10 @@
     {
       "source": "by {0}",
       "translation": "автор {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "байты"
     },
     {
       "source": "ca",
@@ -194423,6 +194883,10 @@
       "translation": ";忽略 {0} 格式错误/部分行"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "<--取消选中选择"
+    },
+    {
       "source": "? of {0}",
       "translation": "？ {0}"
     },
@@ -196055,10 +196519,6 @@
       "translation": "应用程序退出"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "应用程序实例启动检查失败：{0}"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "应用程序日志记录不可用。"
     },
@@ -196081,6 +196541,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "应用程序服务关闭失败：{0}"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "应用程序启动失败：{0}"
     },
     {
       "source": "Application theme",
@@ -197119,8 +197583,16 @@
       "translation": "已选择备份。重启SrvSurvey即可恢复；已保存本地回滚副本。"
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "备份/同步已取消。保留本地数据和恢复备份。"
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "备份/同步无法完成。本地数据被保留。 {0}"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "备份/同步超时。保留本地数据和恢复备份。检查您的连接并重试。"
     },
     {
       "source": "Backups",
@@ -198411,10 +198883,6 @@
       "translation": "取消"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "取消 Google 链接"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "取消位置编辑"
     },
@@ -198433,6 +198901,10 @@
     {
       "source": "Cancel edit",
       "translation": "取消编辑"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "取消操作"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -198949,6 +199421,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "复选框检查字形前景不确定按下"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "正在检查 Google 云端硬盘备份历史记录..."
     },
     {
       "source": "Checking and validating published reference data...",
@@ -202687,6 +203163,10 @@
       "translation": "已下载 {0} 字节，共 {1} 字节"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "正在下载 Google 云端硬盘备份以进行比较..."
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "下载到更新缓存中。安装和配置文件仍然保持不变。"
     },
@@ -204919,16 +205399,16 @@
       "translation": "舰队承运人更新警告"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "由于 Raven 货物同时发生变化，舰队承运人更新仍悬而未决。刷新其市场调和。"
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "由于 Raven 货物同时发生变化，舰队承运人更新仍悬而未决。刷新其市场，或取消停靠并刷新中队航母的 Frontier 数据，以进行协调。"
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "舰队承运人更新仍在等待中：{0}"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "舰队承运人更新仍悬而未决；刷新其市场以协调不确定的写入。"
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "舰队承运人更新仍悬而未决；刷新其市场，或取消对接并刷新中队航母的Frontier数据，以协调不确定的写入。"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -205879,12 +206359,28 @@
       "translation": "已加载 Google 桌面客户端安装程序。链接 Google 云端硬盘以继续。"
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "Google 云端硬盘授权已过期或被撤销。断开并再次链接 Google 云端硬盘。"
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "Google 云端硬盘授权已取消或其状态不匹配。"
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "Google 云端硬盘备份和同步"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "在发送所有备份数据之前，Google 云端硬盘已完成上传。"
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "Google 云端硬盘未确认备份上传进度。"
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "Google Drive 未确认备份已完成。"
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -205915,6 +206411,10 @@
       "translation": "Google 云端硬盘请求失败 (HTTP {0})。"
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "Google 云端硬盘返回无效的备份上传范围。"
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "Google 云端硬盘返回无效的上传会话。"
     },
@@ -205933,6 +206433,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "当您的版本包含发布者的桌面 OAuth 客户端设置时，Google 链接可用。开发版本可以从数据和迁移导入该设置。"
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "Google 拒绝了此应用的客户端设置。发布商需要更新 Google 云端硬盘配置。"
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -209173,6 +209677,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "无法保存本地焦点首选项：{0}"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "本地配置文件初始化失败：{0}"
     },
     {
       "source": "Local ring discoveries",
@@ -214799,6 +215307,10 @@
       "translation": "已发布并链接 {0}。开放其商品市场，同步货运。"
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "已发布并链接 {0}。来自 Frontier 的中队货物更新舱单和实时货物动态。"
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "已发布并链接 {0}；它的货物已经是最新的。"
     },
@@ -215375,6 +215887,10 @@
       "translation": "Ram Tah 追踪不可用。"
     },
     {
+      "source": "Range",
+      "translation": "范围"
+    },
+    {
       "source": "Range (LY)",
       "translation": "射程（LY）"
     },
@@ -215565,6 +216081,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "乌鸦危险画笔"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "乌鸦危险前景画笔"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -215921,6 +216441,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "乌鸦表面画笔"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "乌鸦标签填充画笔"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -218547,6 +219071,10 @@
       "translation": "已保存 {0}。"
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "保存本地恢复备份..."
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "保存个人 API 密钥可以实现活动指挥官的直接 EDSM 帐户同步。 SrvSurvey 发送此处显示的当前指挥官名称，该名称必须与通过 EDSM 注册的指挥官匹配。这与 EDDN 共享分开，并且不启用 EDDN。"
     },
@@ -220779,6 +221307,10 @@
       "translation": "SrvSurvey 无法确定 Frontier 授权的可执行路径。"
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "SrvSurvey 无法安全地准备本地配置文件。关闭其他实例并重试。有关恢复详细信息，请参阅应用程序日志。"
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "SrvSurvey 无法刷新其桌面回调注册。 {0}"
     },
@@ -220799,8 +221331,8 @@
       "translation": "SrvSurvey 更新回滚后无法重新启动。"
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "SrvSurvey 无法验证另一个实例是否正在运行：{0}"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "SrvSurvey无法安全启动：{0}"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -221393,6 +221925,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "启动同步完成。便携式首选项和工作区数据是最新的。"
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "启动同步被推迟，因为在检查 Google 云端硬盘时本地配置文件发生了更改。保留本地编辑；立即使用同步来查看云更改。"
     },
     {
       "source": "State",
@@ -225747,6 +226283,14 @@
       "translation": "取消选中全部"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "取消选中筛选项目的选择"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "取消选中与所选系统和构建状态匹配的每个项目的“显示”。"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "无人认领的生物学"
     },
@@ -226189,6 +226733,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "已上传 {0} 绿色气体巨星候选者。"
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "正在将备份上传到 Google 云端硬盘 ({0} MiB)..."
     },
     {
       "source": "Upper floor",
@@ -228361,6 +228909,10 @@
     {
       "source": "by {0}",
       "translation": "通过 {0}"
+    },
+    {
+      "source": "bytes",
+      "translation": "字节"
     },
     {
       "source": "ca",
@@ -233181,6 +233733,10 @@
       "translation": "* ; IGNORED {0} MALFORMED/PARTIAL LINE(S) >>>!"
     },
     {
+      "source": "<--Uncheck Selection",
+      "translation": "* <--UNCHECK SELECTION >>>!"
+    },
+    {
       "source": "? of {0}",
       "translation": "* ? OF {0} >>>!"
     },
@@ -234813,10 +235369,6 @@
       "translation": "* APPLICATION EXIT >>>!"
     },
     {
-      "source": "Application instance startup check failed: {0}",
-      "translation": "* APPLICATION INSTANCE STARTUP CHECK FAILED: {0} >>>!"
-    },
-    {
       "source": "Application logging is unavailable.",
       "translation": "* APPLICATION LOGGING IS UNAVAILABLE. >>>!"
     },
@@ -234839,6 +235391,10 @@
     {
       "source": "Application service shutdown failed: {0}",
       "translation": "* APPLICATION SERVICE SHUTDOWN FAILED: {0} >>>!"
+    },
+    {
+      "source": "Application startup failed: {0}",
+      "translation": "* APPLICATION STARTUP FAILED: {0} >>>!"
     },
     {
       "source": "Application theme",
@@ -235877,8 +236433,16 @@
       "translation": "* BACKUP SELECTED. RESTART SRVSURVEY TO RESTORE IT; A LOCAL ROLLBACK COPY HAS BEEN SAVED. >>>!"
     },
     {
+      "source": "Backup/sync canceled. Local data and recovery backups were retained.",
+      "translation": "* BACKUP/SYNC CANCELED. LOCAL DATA AND RECOVERY BACKUPS WERE RETAINED. >>>!"
+    },
+    {
       "source": "Backup/sync could not complete. Local data was retained. {0}",
       "translation": "* BACKUP/SYNC COULD NOT COMPLETE. LOCAL DATA WAS RETAINED. {0} >>>!"
+    },
+    {
+      "source": "Backup/sync timed out. Local data and recovery backups were retained. Check your connection and try again.",
+      "translation": "* BACKUP/SYNC TIMED OUT. LOCAL DATA AND RECOVERY BACKUPS WERE RETAINED. CHECK YOUR CONNECTION AND TRY AGAIN. >>>!"
     },
     {
       "source": "Backups",
@@ -237169,10 +237733,6 @@
       "translation": "* CANCEL >>>!"
     },
     {
-      "source": "Cancel Google linking",
-      "translation": "* CANCEL GOOGLE LINKING >>>!"
-    },
-    {
       "source": "Cancel Position Editing",
       "translation": "* CANCEL POSITION EDITING >>>!"
     },
@@ -237191,6 +237751,10 @@
     {
       "source": "Cancel edit",
       "translation": "* CANCEL EDIT >>>!"
+    },
+    {
+      "source": "Cancel operation",
+      "translation": "* CANCEL OPERATION >>>!"
     },
     {
       "source": "Cancel overlay position and appearance changes",
@@ -237707,6 +238271,10 @@
     {
       "source": "CheckBoxCheckGlyphForegroundIndeterminatePressed",
       "translation": "* CHECKBOXCHECKGLYPHFOREGROUNDINDETERMINATEPRESSED >>>!"
+    },
+    {
+      "source": "Checking Google Drive backup history...",
+      "translation": "* CHECKING GOOGLE DRIVE BACKUP HISTORY... >>>!"
     },
     {
       "source": "Checking and validating published reference data...",
@@ -241445,6 +242013,10 @@
       "translation": "* DOWNLOADED {0} OF {1} BYTES >>>!"
     },
     {
+      "source": "Downloading a Google Drive backup for comparison...",
+      "translation": "* DOWNLOADING A GOOGLE DRIVE BACKUP FOR COMPARISON... >>>!"
+    },
+    {
       "source": "Downloading into the update cache. The installation and profile are still untouched.",
       "translation": "* DOWNLOADING INTO THE UPDATE CACHE. THE INSTALLATION AND PROFILE ARE STILL UNTOUCHED. >>>!"
     },
@@ -243677,16 +244249,16 @@
       "translation": "* FLEET CARRIER UPDATE WARNING >>>!"
     },
     {
-      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
-      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING BECAUSE RAVEN CARGO CHANGED CONCURRENTLY. REFRESH ITS MARKET TO RECONCILE. >>>!"
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING BECAUSE RAVEN CARGO CHANGED CONCURRENTLY. REFRESH ITS MARKET, OR UNDOCK AND REFRESH FRONTIER DATA FOR A SQUADRON CARRIER, TO RECONCILE. >>>!"
     },
     {
       "source": "Fleet Carrier updates remain pending: {0}",
       "translation": "* FLEET CARRIER UPDATES REMAIN PENDING: {0} >>>!"
     },
     {
-      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
-      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING; REFRESH ITS MARKET TO RECONCILE AN UNCERTAIN WRITE. >>>!"
+      "source": "Fleet Carrier updates remain pending; refresh its market, or undock and refresh Frontier data for a squadron carrier, to reconcile an uncertain write.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING; REFRESH ITS MARKET, OR UNDOCK AND REFRESH FRONTIER DATA FOR A SQUADRON CARRIER, TO RECONCILE AN UNCERTAIN WRITE. >>>!"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -244637,12 +245209,28 @@
       "translation": "* GOOGLE DESKTOP CLIENT SETUP LOADED. LINK GOOGLE DRIVE TO CONTINUE. >>>!"
     },
     {
+      "source": "Google Drive authorization expired or was revoked. Disconnect and link Google Drive again.",
+      "translation": "* GOOGLE DRIVE AUTHORIZATION EXPIRED OR WAS REVOKED. DISCONNECT AND LINK GOOGLE DRIVE AGAIN. >>>!"
+    },
+    {
       "source": "Google Drive authorization was cancelled or its state did not match.",
       "translation": "* GOOGLE DRIVE AUTHORIZATION WAS CANCELLED OR ITS STATE DID NOT MATCH. >>>!"
     },
     {
       "source": "Google Drive backup and sync",
       "translation": "* GOOGLE DRIVE BACKUP AND SYNC >>>!"
+    },
+    {
+      "source": "Google Drive completed an upload before all backup data was sent.",
+      "translation": "* GOOGLE DRIVE COMPLETED AN UPLOAD BEFORE ALL BACKUP DATA WAS SENT. >>>!"
+    },
+    {
+      "source": "Google Drive did not confirm backup upload progress.",
+      "translation": "* GOOGLE DRIVE DID NOT CONFIRM BACKUP UPLOAD PROGRESS. >>>!"
+    },
+    {
+      "source": "Google Drive did not confirm the completed backup.",
+      "translation": "* GOOGLE DRIVE DID NOT CONFIRM THE COMPLETED BACKUP. >>>!"
     },
     {
       "source": "Google Drive disconnected on this machine. Cloud backups were retained.",
@@ -244673,6 +245261,10 @@
       "translation": "* GOOGLE DRIVE REQUEST FAILED (HTTP {0}). >>>!"
     },
     {
+      "source": "Google Drive returned an invalid backup upload range.",
+      "translation": "* GOOGLE DRIVE RETURNED AN INVALID BACKUP UPLOAD RANGE. >>>!"
+    },
+    {
       "source": "Google Drive returned an invalid upload session.",
       "translation": "* GOOGLE DRIVE RETURNED AN INVALID UPLOAD SESSION. >>>!"
     },
@@ -244691,6 +245283,10 @@
     {
       "source": "Google linking is available when your build includes the publisher's Desktop OAuth client setup. Development builds can import that setup from Data & migration.",
       "translation": "* GOOGLE LINKING IS AVAILABLE WHEN YOUR BUILD INCLUDES THE PUBLISHER'S DESKTOP OAUTH CLIENT SETUP. DEVELOPMENT BUILDS CAN IMPORT THAT SETUP FROM DATA & MIGRATION. >>>!"
+    },
+    {
+      "source": "Google rejected this app's client setup. The publisher needs to update the Google Drive configuration.",
+      "translation": "* GOOGLE REJECTED THIS APP'S CLIENT SETUP. THE PUBLISHER NEEDS TO UPDATE THE GOOGLE DRIVE CONFIGURATION. >>>!"
     },
     {
       "source": "Google returned an invalid authorization response.",
@@ -247931,6 +248527,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "Local profile initialization failed: {0}",
+      "translation": "* LOCAL PROFILE INITIALIZATION FAILED: {0} >>>!"
     },
     {
       "source": "Local ring discoveries",
@@ -253557,6 +254157,10 @@
       "translation": "* PUBLISHED AND LINKED {0}. OPEN ITS COMMODITY MARKET TO SYNCHRONIZE CARGO. >>>!"
     },
     {
+      "source": "Published and linked {0}. Squadron cargo updates from Frontier manifests and live cargo movements.",
+      "translation": "* PUBLISHED AND LINKED {0}. SQUADRON CARGO UPDATES FROM FRONTIER MANIFESTS AND LIVE CARGO MOVEMENTS. >>>!"
+    },
+    {
       "source": "Published and linked {0}; its cargo is already current.",
       "translation": "* PUBLISHED AND LINKED {0}; ITS CARGO IS ALREADY CURRENT. >>>!"
     },
@@ -254133,6 +254737,10 @@
       "translation": "* RAM TAH TRACKING IS UNAVAILABLE. >>>!"
     },
     {
+      "source": "Range",
+      "translation": "* RANGE >>>!"
+    },
+    {
       "source": "Range (LY)",
       "translation": "* RANGE (LY) >>>!"
     },
@@ -254323,6 +254931,10 @@
     {
       "source": "RavenDangerBrush",
       "translation": "* RAVENDANGERBRUSH >>>!"
+    },
+    {
+      "source": "RavenDangerForegroundBrush",
+      "translation": "* RAVENDANGERFOREGROUNDBRUSH >>>!"
     },
     {
       "source": "RavenFloatingPanelShadow",
@@ -254679,6 +255291,10 @@
     {
       "source": "RavenSurfaceBrush",
       "translation": "* RAVENSURFACEBRUSH >>>!"
+    },
+    {
+      "source": "RavenTagFillBrush",
+      "translation": "* RAVENTAGFILLBRUSH >>>!"
     },
     {
       "source": "RavenTertiaryTextBrush",
@@ -257305,6 +257921,10 @@
       "translation": "* SAVED {0}. >>>!"
     },
     {
+      "source": "Saving a local recovery backup...",
+      "translation": "* SAVING A LOCAL RECOVERY BACKUP... >>>!"
+    },
+    {
       "source": "Saving a personal API key enables direct EDSM account synchronization for the active Commander. SrvSurvey sends the current Commander name shown here, which must match the Commander registered with EDSM. This is separate from EDDN sharing and does not enable EDDN.",
       "translation": "* SAVING A PERSONAL API KEY ENABLES DIRECT EDSM ACCOUNT SYNCHRONIZATION FOR THE ACTIVE COMMANDER. SRVSURVEY SENDS THE CURRENT COMMANDER NAME SHOWN HERE, WHICH MUST MATCH THE COMMANDER REGISTERED WITH EDSM. THIS IS SEPARATE FROM EDDN SHARING AND DOES NOT ENABLE EDDN. >>>!"
     },
@@ -259537,6 +260157,10 @@
       "translation": "* SRVSURVEY COULD NOT DETERMINE ITS EXECUTABLE PATH FOR FRONTIER AUTHORIZATION. >>>!"
     },
     {
+      "source": "SrvSurvey could not prepare the local profile safely. Close other instances and retry. See the application log for recovery details.",
+      "translation": "* SRVSURVEY COULD NOT PREPARE THE LOCAL PROFILE SAFELY. CLOSE OTHER INSTANCES AND RETRY. SEE THE APPLICATION LOG FOR RECOVERY DETAILS. >>>!"
+    },
+    {
       "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
       "translation": "* SRVSURVEY COULD NOT REFRESH ITS DESKTOP CALLBACK REGISTRATION. {0} >>>!"
     },
@@ -259557,8 +260181,8 @@
       "translation": "* SRVSURVEY COULD NOT RESTART AFTER UPDATE ROLLBACK. >>>!"
     },
     {
-      "source": "SrvSurvey could not verify whether another instance is running: {0}",
-      "translation": "* SRVSURVEY COULD NOT VERIFY WHETHER ANOTHER INSTANCE IS RUNNING: {0} >>>!"
+      "source": "SrvSurvey could not start safely: {0}",
+      "translation": "* SRVSURVEY COULD NOT START SAFELY: {0} >>>!"
     },
     {
       "source": "SrvSurvey desktop application registration is unavailable: {0}",
@@ -260151,6 +260775,10 @@
     {
       "source": "Startup sync complete. Portable preferences and workspace data are up to date.",
       "translation": "* STARTUP SYNC COMPLETE. PORTABLE PREFERENCES AND WORKSPACE DATA ARE UP TO DATE. >>>!"
+    },
+    {
+      "source": "Startup sync was deferred because the local profile changed while checking Google Drive. Local edits were retained; use Sync now to review cloud changes.",
+      "translation": "* STARTUP SYNC WAS DEFERRED BECAUSE THE LOCAL PROFILE CHANGED WHILE CHECKING GOOGLE DRIVE. LOCAL EDITS WERE RETAINED; USE SYNC NOW TO REVIEW CLOUD CHANGES. >>>!"
     },
     {
       "source": "State",
@@ -264505,6 +265133,14 @@
       "translation": "* UNCHECK ALL >>>!"
     },
     {
+      "source": "Uncheck Selection for filtered projects",
+      "translation": "* UNCHECK SELECTION FOR FILTERED PROJECTS >>>!"
+    },
+    {
+      "source": "Uncheck Show for every project matching the selected system and build status.",
+      "translation": "* UNCHECK SHOW FOR EVERY PROJECT MATCHING THE SELECTED SYSTEM AND BUILD STATUS. >>>!"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "* UNCLAIMED BIOLOGY >>>!"
     },
@@ -264947,6 +265583,10 @@
     {
       "source": "Uploaded {0} Green Gas Giant candidates.",
       "translation": "* UPLOADED {0} GREEN GAS GIANT CANDIDATES. >>>!"
+    },
+    {
+      "source": "Uploading backup to Google Drive ({0} MiB)...",
+      "translation": "* UPLOADING BACKUP TO GOOGLE DRIVE ({0} MIB)... >>>!"
     },
     {
       "source": "Upper floor",
@@ -267119,6 +267759,10 @@
     {
       "source": "by {0}",
       "translation": "* BY {0} >>>!"
+    },
+    {
+      "source": "bytes",
+      "translation": "* BYTES >>>!"
     },
     {
       "source": "ca",

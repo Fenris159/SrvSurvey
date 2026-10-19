@@ -8,6 +8,7 @@ public sealed partial class ColonizationDeliveryRecovery
     private readonly List<ColonizationPendingContribution> pendingContributions = [];
     private readonly HashSet<(string Owner, long MarketId)> cargoWritesInFlight = [];
     private readonly HashSet<(string Owner, string EventId)> contributionsInFlight = [];
+    private readonly DateTimeOffset retainedCargoLoadedAt;
     private DateTimeOffset nextWriteRetry;
     private bool retryingWrites;
     private string? contributionSaveFailure;
@@ -198,6 +199,7 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken
     )
     {
+        cargoWritesInFlight.Add((pending.Owner, pending.MarketId));
         try
         {
             ColonizationFleetCarrier? remote = await client.GetFleetCarrierAsync(pending.MarketId, cancellationToken);
@@ -245,6 +247,10 @@ public sealed partial class ColonizationDeliveryRecovery
                 SavePendingCargoAdjustments();
             }
             return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingFailed, Detail: exception.Message);
+        }
+        finally
+        {
+            cargoWritesInFlight.Remove((pending.Owner, pending.MarketId));
         }
     }
 

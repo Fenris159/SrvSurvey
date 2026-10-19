@@ -423,12 +423,14 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         client.GateGetFleetCarrier = gate;
         client.EnteredGetFleetCarrier = entered;
         ColonizationDeliveryRecovery recovery = Create(client, apiKey: "secret-key", carrierSync: true);
-        recovery.ApplyJournalEvents([CarrierDock(squadron: true, stationName: "SQD-001")], null);
+        recovery.ReplaceWorkspace([], [client.FleetCarrierResponse! with { Cargo = [] }]);
+        JournalEventEnvelope dock = CarrierDock(squadron: true, stationName: "SQD-001");
+        recovery.ApplyJournalEvents([dock], null);
         recovery.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
         CargoInventoryState cargo = ShipCargo(0);
         cargo.Apply(SteelBuy);
 
-        Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(80, "SQD-001"));
+        Task dockSync = recovery.SynchronizeLiveEventsAsync([dock], true);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await recovery.SynchronizeLiveEventsAsync(
             [SteelBuy with { Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1) }],
@@ -439,7 +441,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(client.FleetCarrierAdjustments);
 
         gate.SetResult(true);
-        await marketSync;
+        await dockSync;
 
         Assert.Equal(-5, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
     }
@@ -696,9 +698,11 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         client.GateGetFleetCarrier = gate;
         client.EnteredGetFleetCarrier = entered;
         ColonizationDeliveryRecovery recovery = Create(client, apiKey: "secret-key", carrierSync: true);
-        recovery.ApplyJournalEvents([CarrierDock(squadron: true, stationName: "SQD-001")], null);
+        recovery.ReplaceWorkspace([], [client.FleetCarrierResponse! with { Cargo = [] }]);
+        JournalEventEnvelope dock = CarrierDock(squadron: true, stationName: "SQD-001");
+        recovery.ApplyJournalEvents([dock], null);
         CargoInventoryState cargo = ShipCargo(50);
-        Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(75, "SQD-001"));
+        Task dockSync = recovery.SynchronizeLiveEventsAsync([dock], true);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         recovery.PrepareSquadronCargoTransferSnapshot(cargo);
         cargo.Apply(Event("CargoTransfer", """ "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}] """));
@@ -710,7 +714,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             cargoActivity: true
         );
         gate.SetResult(true);
-        await marketSync;
+        await dockSync;
 
         Assert.Equal(
             new ColonizationDeliveryNotice(ColonizationDeliveryNoticeKind.SquadronCargoQueued, Count: 1),

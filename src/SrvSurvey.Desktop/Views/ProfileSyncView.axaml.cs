@@ -20,12 +20,12 @@ public partial class ProfileSyncView : UserControl
         }
     }
 
-    /// <summary>Cancels a pending browser authorization.</summary>
-    private void CancelLink_Click(object? sender, RoutedEventArgs args)
+    /// <summary>Cancels authorization or a cloud transfer while retaining local data.</summary>
+    private void CancelOperation_Click(object? sender, RoutedEventArgs args)
     {
         if (DataContext is ProfileSyncViewModel vm)
         {
-            vm.CancelLink();
+            vm.CancelOperation();
         }
     }
 
@@ -107,13 +107,13 @@ public partial class ProfileSyncView : UserControl
         {
             return;
         }
+        byte[]? bytes = await vm.DownloadBackupAsync(backup);
+        if (bytes is null)
+        {
+            return;
+        }
         await vm.FileOperationAsync(async () =>
         {
-            byte[]? bytes = await vm.DownloadBackupAsync(backup);
-            if (bytes is null)
-            {
-                return;
-            }
             using IStorageFile? file = await top.StorageProvider.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {

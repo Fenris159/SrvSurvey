@@ -7,6 +7,26 @@ namespace SrvSurvey.Core.Tests.ProfileSync;
 
 public sealed class ProfileSyncMergeTests
 {
+    [Fact]
+    public void ProfilesLargerThanTheOriginalLimitRoundTripWithoutLosingValues()
+    {
+        string content = new('x', 33 * 1024 * 1024);
+        var snapshot = new ProfileSnapshot(
+            1,
+            "A",
+            "Desktop",
+            "Linux",
+            DateTimeOffset.UtcNow,
+            new() { ["survey"] = Value(content, "A") },
+            []
+        );
+
+        var restored = ProfileSnapshot.Parse(snapshot.Serialize());
+
+        Assert.Equal(content, restored.Portable["survey"].Value!.GetValue<string>());
+        Assert.Equal(1, restored.Portable["survey"].Clock["A"]);
+    }
+
     /// <summary>Verifies that capture tracks independent changes and deletes without changing unedited counters.</summary>
     [Fact]
     public void CaptureTracksIndependentChangesAndDeletesWithoutChangingUneditedCounters()

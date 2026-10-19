@@ -73,9 +73,9 @@
       <TextBlock Classes="muted" TextWrapping="Wrap" Text="This build does not yet include Google's application setup. The publisher must configure a Google Cloud Desktop OAuth client. For a development build, import that client JSON here before linking." />
       <Button Classes="secondary" HorizontalAlignment="Left" Content="Import Google client setup" Click="ClientSetup_Click" />
     </StackPanel>
-    <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" />
     <Button Classes="primary" HorizontalAlignment="Left" Content="Restart SrvSurvey to apply" IsVisible="{Binding RestartRequired}" Click="Restart_Click" />
   </StackPanel>
-  <Button Classes="secondary" Content="Cancel Google linking" HorizontalAlignment="Left" IsVisible="{Binding IsLinking}" Click="CancelLink_Click" />
+  <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" />
+  <Button Classes="secondary" Content="Cancel operation" HorizontalAlignment="Left" IsVisible="{Binding CanCancelOperation}" Click="CancelOperation_Click" />
   </StackPanel>
 </UserControl>

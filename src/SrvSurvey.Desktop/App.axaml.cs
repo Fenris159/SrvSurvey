@@ -105,10 +105,8 @@ public sealed partial class App : Application
                         or NotSupportedException
             )
         {
-            Program.ApplicationLog?.Append("Application instance startup check failed: " + exception.Message);
-            await Console.Error.WriteLineAsync(
-                "SrvSurvey could not verify whether another instance is running: " + exception.Message
-            );
+            Program.ApplicationLog?.Append("Application startup failed: " + exception.Message);
+            await Console.Error.WriteLineAsync("SrvSurvey could not start safely: " + exception.Message);
             await ShutdownOnUiThreadAsync(desktop, exitCode: 1);
         }
         finally
@@ -132,6 +130,12 @@ public sealed partial class App : Application
             service = createService();
             await service.StartupAsync().ConfigureAwait(false);
             return service;
+        }
+        catch (ProfileInitializationException exception)
+        {
+            service?.Dispose();
+            log("Local profile initialization failed: " + exception);
+            throw;
         }
         catch (Exception exception)
         {
