@@ -18,6 +18,7 @@ internal sealed record ProfileSyncDevice(string Id, string Name, string Platform
 /// <summary>Captures allowed profile data and restores it transactionally with a local rollback copy.</summary>
 internal sealed class ProfileSyncStore
 {
+    private const string BaselineFileName = "baseline.json";
     private static readonly JsonDocumentOptions JsonOptions = new()
     {
         CommentHandling = JsonCommentHandling.Skip,
@@ -63,13 +64,13 @@ internal sealed class ProfileSyncStore
 
     /// <summary>Returns the last local change counters, including deletions.</summary>
     internal ProfileSnapshot? LoadBaseline() =>
-        File.Exists(Path.Combine(StateDirectory, "baseline.json"))
-            ? ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, "baseline.json")))
+        File.Exists(Path.Combine(StateDirectory, BaselineFileName))
+            ? ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, BaselineFileName)))
             : null;
 
     /// <summary>Records captured counters only after the snapshot is safely stored locally.</summary>
     internal void SaveBaseline(ProfileSnapshot snapshot) =>
-        WriteAtomic(Path.Combine(StateDirectory, "baseline.json"), snapshot.Serialize());
+        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), snapshot.Serialize());
 
     /// <summary>Reads allowed profile data without including credentials, journals, or queued API reports.</summary>
     internal ProfileSnapshot Capture()
@@ -334,7 +335,7 @@ internal sealed class ProfileSyncStore
         byte[] baselineBytes = current.Serialize();
         cancellationToken.ThrowIfCancellationRequested();
         // Publish both prepared values without cancellation between the baseline and its pending restore.
-        WriteAtomic(Path.Combine(StateDirectory, "baseline.json"), baselineBytes);
+        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), baselineBytes);
         WriteAtomic(PendingPath, pendingBytes);
     }
 
