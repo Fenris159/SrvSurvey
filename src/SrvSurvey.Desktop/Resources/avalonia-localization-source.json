@@ -3602,6 +3602,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
   },
   {
+    "Text": "Albens Bell Mollusc",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
     "Text": "Alexandrite",
     "IsFormat": false,
     "SourceKinds": [
@@ -6292,14 +6300,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
-    "Text": "BIOLOGICAL SIGNAL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "BIOLOGY CODEX",
     "IsFormat": false,
     "SourceKinds": [
@@ -7326,14 +7326,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
-    "Text": "Biological signal",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Biological signal cannot be identified from current data.",
@@ -8684,6 +8676,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "CODEX ENTRY OR GROUP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "CODEX LOCATIONS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "COLLECT",
@@ -10610,6 +10618,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose a Codex entry or group to find up to 20 nearest systems, with no distance cutoff.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Choose a Codex entry or group.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Choose a Google Cloud OAuth credentials file for a Desktop app.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10712,6 +10736,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Choose a landmark type or subtype. A variant is optional.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Choose a linked squadron carrier, or dock there to identify it automatically.",
@@ -10905,6 +10937,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Choose an entry or group, or type a Codex name. Groups search their entries together.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Choose an existing absolute screenshot source folder.",
@@ -11810,6 +11850,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Codex entry or group",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Codex image cache ready: {0} downloaded, {1} already cached, {2} local, and {3} unavailable.",
@@ -14348,7 +14396,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Copy entry ID",
@@ -14492,7 +14540,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Copy system name",
@@ -16084,7 +16132,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
-    "Text": "Define a spherical boundary or find nearby biological systems.",
+    "Text": "Define a spherical boundary or find nearest Codex locations.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18952,14 +19000,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
-    "Text": "Emerald, Teal",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "Emergency power cells",
     "IsFormat": false,
     "SourceKinds": [
@@ -19449,14 +19489,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enter a biological signal or missing variants to find nearby systems.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
     "Text": "Enter a configuration name and select Save. The tree previews the saved assignments; saved configurations belong to the Commander and ship identity.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19487,14 +19519,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "Enter a genus, species, and at least one variant color.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Enter a keyboard shortcut or controller chord, or leave blank.",
@@ -19697,14 +19721,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
-    "Text": "Enter the biological signal to find.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
     "Text": "Enter the compositor\u0027s process name below without a file extension.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19791,6 +19807,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "Entry or group",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Entry {0} of {1}",
@@ -21800,6 +21824,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Find landmarks",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Find last visit",
     "IsFormat": false,
     "SourceKinds": [
@@ -21816,28 +21848,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Find missing variants",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
-    "Text": "Find nearby biological systems",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
-    "Text": "Find nearby bodies with selected biological color variants.",
+    "Text": "Find missing colors",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Find missing entries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
     "Text": "Find nearest",
@@ -21847,6 +21871,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "Find nearest Codex locations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Find prices",
@@ -21895,22 +21927,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Find the nearest systems containing a Canonn codex signal.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
-    "Text": "Find variants",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Find \u2192 Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -22763,20 +22779,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
+    "Text": "Found {0} matching system(s), nearest first.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Found {0} matching systems.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Found {0} nearby system(s).",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Frame Shift Drive",
@@ -23304,7 +23320,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "GALACTIC REGION",
@@ -23369,14 +23385,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
-  },
-  {
-    "Text": "GENUS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "GENUS IDENTIFIED",
@@ -29060,6 +29068,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
+    "Text": "LANDMARK TYPE (OPTIONAL)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
     "Text": "LASER",
     "IsFormat": false,
     "SourceKinds": [
@@ -29741,6 +29757,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
+    "Text": "Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
@@ -31497,14 +31521,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "MISSING VARIANT COLORS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "MISSION 1",
@@ -33390,14 +33406,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
-    "Text": "Missing variants",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
     "Text": "Mission",
     "IsFormat": false,
     "SourceKinds": [
@@ -34015,14 +34023,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/PriorScansOverlayPresentation.axaml"
   },
   {
-    "Text": "NEARBY BIOLOGY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "NEED",
     "IsFormat": false,
     "SourceKinds": [
@@ -34453,6 +34453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Nearest published matches from {0}; up to 20 unique systems, no distance cutoff.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Nearest relic tower A02 \u00B7 38.4 m \u00B7 toggle shields 2x to conf.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34474,7 +34482,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Nearest: {0} \u00B7 {1} \u00B7 {2} m",
@@ -35902,14 +35910,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
-    "Text": "No nearby systems matched this search.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
     "Text": "No new logs available",
     "IsFormat": false,
     "SourceKinds": [
@@ -36004,6 +36004,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "No published locations matched these criteria. No distance cutoff was applied.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
@@ -37351,7 +37359,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Open Colonization and check Enable colonization features.",
@@ -37584,7 +37592,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Open Steam Link in the headset, pair the PC, and wait for SteamVR to report the headset ready.",
@@ -37793,14 +37801,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "Open original Spansh search",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "Open predictions",
@@ -42942,7 +42942,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "REFINED",
@@ -48064,7 +48064,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
-    "Text": "Run a missing-variant search first.",
+    "Text": "Run a Spansh landmark search first.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -48374,7 +48374,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "SEARCH RESULTS",
@@ -48398,7 +48398,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "SECURITY",
@@ -48599,7 +48599,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "SOURCE BMP FOLDER",
@@ -48624,14 +48624,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
-  },
-  {
-    "Text": "SPECIES",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "SPECIES REWARD GROUPS",
@@ -48777,6 +48769,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
+    "Text": "SUBTYPES (OPTIONAL)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "SURFACE LATITUDE",
@@ -50297,6 +50297,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
   },
   {
+    "Text": "Search a landmark type or subtype; a separate variant is optional.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Search all guides",
     "IsFormat": false,
     "SourceKinds": [
@@ -50361,12 +50369,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
   },
   {
+    "Text": "Search context changed. Run the search again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Search criteria changed. Refresh to load markets for these criteria.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
+  },
+  {
+    "Text": "Search criteria changed. Run the search again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Search destinations",
@@ -50457,6 +50481,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Search the selected entry or all entries in a group.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Search\u002B",
     "IsFormat": false,
     "SourceKinds": [
@@ -50513,8 +50545,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Searching near {0}\u2026",
-    "IsFormat": true,
+    "Text": "Searching published Codex locations\u2026",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -50922,14 +50954,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
   },
   {
-    "Text": "Select a row to copy it or inspect it on Canonn and Spansh.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
     "Text": "Select a saved configuration to remove.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51131,6 +51155,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
+    "Text": "Selected entries: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Selected folder",
     "IsFormat": false,
     "SourceKinds": [
@@ -51152,7 +51184,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Selected surface commodities",
@@ -51289,14 +51321,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
-  },
-  {
-    "Text": "Separate multiple colors with commas or semicolons.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "Separation",
@@ -53674,6 +53698,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
+    "Text": "Spansh \u002B Canonn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
     "Text": "Spansh \u002B local Powerplay observations",
     "IsFormat": false,
     "SourceKinds": [
@@ -53769,6 +53801,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Spansh landmarks",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "Spansh lookup",
@@ -55820,14 +55860,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "Stratum, Bacterium, or another codex signal",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
     "Text": "Streaming",
@@ -58078,6 +58110,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CodexImageSettingsViewModel.cs"
+  },
+  {
+    "Text": "The Codex location search failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "The Codex location search timed out.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
@@ -60430,22 +60478,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
-  },
-  {
-    "Text": "The nearby-system search failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
-    "Text": "The nearby-system search timed out.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "The nearest Guardian point is not a local raw point.",
@@ -63758,19 +63790,17 @@
     "Text": "Tussock",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Tussock Capillum",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Tussock Stigmasis",
@@ -63844,6 +63874,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "Type at least 3 characters for system suggestions.",
@@ -65927,6 +65965,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "VARIANTS (OPTIONAL)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "VDXR / OpenXR",
@@ -70302,12 +70348,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "e.g. Emerald, Teal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
     "Text": "e.g. Hazardous",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "e.g. Mollusc",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
     "Text": "e.g. Platinum \u00D72",

@@ -188,7 +188,7 @@ public sealed class DiagnosticReplayContextTests
         using HttpClient client = DiagnosticReplayContext.CreateNetworkClient();
         var viewModel = new NearestSystemsViewModel(new NearestSystemsClient(client), new EmptySystemResolver());
         viewModel.UpdateContext("Replay System", new GalacticCoordinate(1, 2, 3), "Imported");
-        viewModel.BiologicalSignal = "Stratum";
+        viewModel.CodexName = "Stratum";
 
         await viewModel.SearchAsync();
 

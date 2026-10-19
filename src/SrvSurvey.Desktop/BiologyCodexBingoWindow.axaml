@@ -249,7 +249,7 @@
                 <Button Classes="secondary"
                         Margin="0,0,8,8"
                         Command="{Binding FindMissingVariantsCommand}"
-                        Content="Find missing variants" />
+                        Content="{Binding MissingSearchLabel}" />
               </WrapPanel>
               <Button Classes="secondary"
                       HorizontalAlignment="Left"

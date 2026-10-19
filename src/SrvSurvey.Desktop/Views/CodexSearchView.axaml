@@ -1,0 +1,243 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             x:Class="SrvSurvey.Desktop.Views.CodexSearchView"
+             x:DataType="vm:NearestSystemsViewModel">
+  <StackPanel Spacing="18">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+        <TextBlock Classes="eyebrow"
+                   VerticalAlignment="Center"
+                   Text="CODEX LOCATIONS" />
+        <Separator Grid.Column="1" VerticalAlignment="Center" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,2*,Auto"
+                ColumnSpacing="24">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="REFERENCE SYSTEM" />
+              <Button Classes="link" HorizontalAlignment="Left"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding ReferenceSystemName}">
+                <TextBlock FontSize="24" FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Text="{Binding ReferenceSystemName}" />
+              </Button>
+              <Button Classes="link" HorizontalAlignment="Left"
+                      IsVisible="{Binding HasReferenceSystemAddress}"
+                      behaviors:ClipboardCopyBehavior.Text="{Binding ReferenceSystemAddress}">
+                <TextBlock Classes="muted monospace"
+                           Text="{Binding ReferenceSystemAddressText}" />
+              </Button>
+              <TextBlock Classes="muted monospace"
+                         TextWrapping="Wrap"
+                         Text="{Binding ReferencePosition}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Classes="muted" Text="SEARCH MODE" />
+              <TextBlock Classes="card-title"
+                         Text="{Binding SelectedMode.Label}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding SelectedMode.Description}" />
+            </StackPanel>
+            <Border Grid.Column="2"
+                    Classes="badge"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="11"
+                         Text="{Binding Results.Count, StringFormat='{}{0} RESULTS'}" />
+            </Border>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Find nearest Codex locations" />
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="SEARCH TYPE" />
+              <ComboBox ItemsSource="{Binding Modes}"
+                        HorizontalAlignment="Stretch"
+                        SelectedItem="{Binding SelectedMode, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:NearestSystemsSearchModeOptionViewModel">
+                    <StackPanel Spacing="2">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Label}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="{Binding SelectedMode.Description}" />
+            </StackPanel>
+            <StackPanel Spacing="6" IsVisible="{Binding IsCodexMode}">
+              <TextBlock Classes="muted" Text="CODEX ENTRY OR GROUP" />
+              <AutoCompleteBox x:Name="CodexNameInput" Text="{Binding CodexName, Mode=TwoWay}"
+                               ItemsSource="{Binding CodexOptions}"
+                               MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
+                               PlaceholderText="Entry or group" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Choose an entry or group, or type a Codex name. Groups search their entries together." />
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CriteriaSummary}" />
+            </StackPanel>
+            <StackPanel Spacing="12" IsVisible="{Binding IsLandmarkMode}">
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names." />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="muted" Text="LANDMARK TYPE (OPTIONAL)" />
+                  <AutoCompleteBox x:Name="LandmarkTypeInput" Text="{Binding LandmarkType, Mode=TwoWay}"
+                                   ItemsSource="{Binding LandmarkTypes}"
+                                   MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
+                                   PlaceholderText="e.g. Mollusc" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Classes="muted" Text="SUBTYPES (OPTIONAL)" />
+                  <AutoCompleteBox x:Name="LandmarkSubtypeInput" Text="{Binding LandmarkSubtypes, Mode=TwoWay}"
+                                   ItemsSource="{Binding LandmarkSubtypeOptions}"
+                                   MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
+                                   PlaceholderText="Albens Bell Mollusc" />
+                </StackPanel>
+              </Grid>
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="VARIANTS (OPTIONAL)" />
+                <AutoCompleteBox x:Name="LandmarkVariantInput" Text="{Binding LandmarkVariants, Mode=TwoWay}"
+                                 ItemsSource="{Binding LandmarkVariantOptions}"
+                                 MinimumPrefixLength="0" FilterMode="Contains" IsTextCompletionEnabled="False"
+                                 PlaceholderText="e.g. Emerald, Teal" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Leave blank for any variant. For example, Albens is part of the Mollusc subtype, not a color." />
+              </StackPanel>
+            </StackPanel>
+            <Button Classes="primary"
+                    HorizontalAlignment="Left"
+                    MinWidth="132"
+                    Command="{Binding SearchCommand}"
+                    Content="{Binding SearchButtonText}" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding StatusMessage}" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CoverageNote}" />
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Selected result" />
+            <ContentControl Content="{Binding SelectedResult}">
+              <ContentControl.ContentTemplate>
+                <DataTemplate x:DataType="vm:NearestSystemRowViewModel">
+                  <StackPanel Spacing="16">
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="SYSTEM" />
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+                        <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                   Text="{Binding SystemName}" />
+                      </Button>
+                      <Button Classes="link" HorizontalAlignment="Left"
+                              IsVisible="{Binding HasSystemAddress}"
+                              behaviors:ClipboardCopyBehavior.Text="{Binding SystemAddress}">
+                        <TextBlock Classes="muted monospace"
+                                   Text="{Binding SystemAddressText}" />
+                      </Button>
+                    </StackPanel>
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="GALACTIC POSITION" />
+                      <TextBlock Classes="monospace"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Coordinate}" />
+                    </StackPanel>
+                  </StackPanel>
+                </DataTemplate>
+              </ContentControl.ContentTemplate>
+            </ContentControl>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding CopySystemCommand}"
+                      Content="Copy system" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding CopyCoordinatesCommand}"
+                      Content="Copy coordinates" />
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding OpenCanonnCommand}"
+                      Content="Open Canonn" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding OpenSpanshCommand}"
+                      Content="Open Spansh" />
+            </WrapPanel>
+            <Button Classes="secondary"
+                    HorizontalAlignment="Left"
+                    IsVisible="{Binding HasSpanshSearchReference}"
+                    Command="{Binding OpenSpanshSearchCommand}"
+                    Content="Open Spansh search" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card" IsVisible="{Binding HasResults}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Nearest systems" />
+              <TextBlock Classes="muted"
+                         Text="{Binding ResultOrigin}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding Results.Count, StringFormat='{}{0} unique systems'}" />
+          </Grid>
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8"
+                  Padding="12,8">
+            <Grid ColumnDefinitions="2*,*,4*,Auto" ColumnSpacing="12">
+              <TextBlock Classes="muted" Text="SYSTEM" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="DISTANCE" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="NOTES" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="SOURCE" />
+            </Grid>
+          </Border>
+          <ListBox ItemsSource="{Binding Results}"
+                   SelectedItem="{Binding SelectedResult, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NearestSystemRowViewModel">
+                <Grid Margin="8,10" ColumnDefinitions="2*,*,4*,Auto" ColumnSpacing="12">
+                  <TextBlock Classes="monospace"
+                             FontWeight="SemiBold"
+                             TextWrapping="Wrap"
+                             Text="{Binding SystemName}" />
+                  <TextBlock Grid.Column="1"
+                             Classes="muted"
+                             VerticalAlignment="Center"
+                             Text="{Binding Distance}" />
+                  <TextBlock Grid.Column="2"
+                             Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="{Binding Notes}" />
+                  <Border Grid.Column="3"
+                          Classes="badge"
+                          VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               Text="{Binding Source}" />
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </StackPanel>
+      </Border>
+  </StackPanel>
+</UserControl>

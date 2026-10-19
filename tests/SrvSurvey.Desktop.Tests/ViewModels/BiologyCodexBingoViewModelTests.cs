@@ -13,6 +13,46 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
     );
 
     [Fact]
+    public async Task FindNearestRequiresNonRootSelectionHandlerAndIdleState()
+    {
+        var store = new CommanderCodexStore(Path.Combine(temporaryDirectory, "data"));
+        using BiologyCodexBingoViewModel viewModel = CreateViewModel(
+            store,
+            CreateCatalog(),
+            Path.Combine(temporaryDirectory, "journals")
+        );
+        Assert.False(viewModel.FindNearestCommand.CanExecute(null));
+        viewModel.SetNearestSearchHandler(_ => Task.CompletedTask);
+        Assert.False(viewModel.FindNearestCommand.CanExecute(null));
+
+        viewModel.SelectedNode = viewModel.RootNodes[0];
+        Assert.Equal(CodexBingoNodeKind.Root, viewModel.SelectedNode.Definition.Kind);
+        Assert.False(viewModel.FindNearestCommand.CanExecute(null));
+
+        viewModel.SelectedNode = viewModel.RootNodes[0].Find("species:$Codex_Ent_Aleoids_01_Name;");
+        Assert.True(viewModel.FindNearestCommand.CanExecute(null));
+        viewModel.SelectedNode = viewModel.RootNodes[0].Find("entry:2310101");
+        Assert.True(viewModel.FindNearestCommand.CanExecute(null));
+        viewModel.SetNearestSearchHandler(null);
+        Assert.False(viewModel.FindNearestCommand.CanExecute(null));
+        viewModel.SetNearestSearchHandler(_ => Task.CompletedTask);
+
+        bool observedBusyState = false;
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(viewModel.IsBusy) && viewModel.IsBusy)
+            {
+                observedBusyState = true;
+                Assert.False(viewModel.FindNearestCommand.CanExecute(null));
+            }
+        };
+        await viewModel.RefreshAsync();
+
+        Assert.True(observedBusyState);
+        Assert.True(viewModel.FindNearestCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task CalculatesScopesAndSupportsLegacyEntryActions()
     {
         string dataDirectory = Path.Combine(temporaryDirectory, "data");
@@ -95,10 +135,9 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
 
         await viewModel.FindMissingVariantsAsync();
 
-        Assert.Equal(CodexBingoNearestMode.MissingVariants, nearest!.Mode);
-        Assert.Equal("Aleoida", nearest.Genus);
-        Assert.Equal("Aleoida Arcus", nearest.Species);
-        Assert.Equal(["Blue"], nearest.Variants);
+        Assert.Equal("Aleoida Arcus", nearest!.Query.Label);
+        Assert.True(nearest.Query.MatchVariants);
+        Assert.Equal("Aleoida Arcus - Blue", Assert.Single(nearest.Query.Entries).Name);
 
         CodexBingoTreeNodeViewModel discovered = Assert.IsType<CodexBingoTreeNodeViewModel>(
             viewModel.RootNodes[0].Find("entry:2310101")
