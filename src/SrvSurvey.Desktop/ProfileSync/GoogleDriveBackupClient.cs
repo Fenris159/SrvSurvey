@@ -433,6 +433,7 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
                 {
                     StatusCode: null
                         or HttpStatusCode.RequestTimeout
+                        or HttpStatusCode.TooManyRequests
                         or HttpStatusCode.InternalServerError
                         or HttpStatusCode.BadGateway
                         or HttpStatusCode.ServiceUnavailable

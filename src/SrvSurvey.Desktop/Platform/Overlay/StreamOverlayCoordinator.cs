@@ -12,12 +12,22 @@ public sealed class StreamOverlayCoordinator : IDisposable
     private readonly StreamOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
     private readonly HostedOverlayWindow hostedWindow;
+    private readonly TimeProvider timeProvider;
+    private long? unavailableSince;
     private PixelRect captureBounds;
     private nint captureHandle;
     private bool disposed;
 
     public StreamOverlayCoordinator(StreamOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
+        : this(viewModel, presentationSession, TimeProvider.System) { }
+
+    internal StreamOverlayCoordinator(
+        StreamOverlayViewModel viewModel,
+        OverlayPresentationSession presentationSession,
+        TimeProvider timeProvider
+    )
     {
+        this.timeProvider = timeProvider;
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         ArgumentNullException.ThrowIfNull(presentationSession);
         registry = presentationSession.WindowRegistry;
@@ -135,6 +145,18 @@ public sealed class StreamOverlayCoordinator : IDisposable
     /// <summary>Keeps the capture handle across minimization without accepting iconic or empty geometry.</summary>
     private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
     {
+        if (snapshot.NativeHandle == nint.Zero)
+        {
+            unavailableSince ??= timeProvider.GetTimestamp();
+            if (timeProvider.GetElapsedTime(unavailableSince.Value) < TimeSpan.FromSeconds(2))
+            {
+                return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+            }
+            captureHandle = nint.Zero;
+            captureBounds = default;
+            return false;
+        }
+        unavailableSince = null;
         if (captureHandle != snapshot.NativeHandle)
         {
             captureHandle = snapshot.NativeHandle;

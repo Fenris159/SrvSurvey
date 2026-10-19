@@ -13,11 +13,12 @@ search groups or individual entries without mandatory colors, and find up to
   Existing backups remain readable; use an updated build on each linked computer
   when sharing backups above the old limit.
 - **Resume interrupted backups.** Drive uploads use acknowledged chunks with
-  bounded retries instead of restarting the entire transfer. Manual backup and
+  bounded retries, including temporary rate limits, instead of restarting the entire transfer. Manual backup and
   sync operations have up to ten minutes and a **Cancel operation** control.
   Failed or canceled transfers retain local recovery data, and startup/shutdown
   work keeps its own shorter deadline. Canceling a cloud restore during local
-  preparation also prevents it from being staged for the next startup.
+  preparation also prevents it from being staged for the next startup, while
+  preserving any previously staged restore and its baseline.
 - **Understand backup failures.** Progress identifies capture, comparison, and
   upload stages. Expired authorization gives disconnect/re-link guidance,
   while publisher configuration errors have a separate message. Concurrent
@@ -33,7 +34,8 @@ search groups or individual entries without mandatory colors, and find up to
   muted champagne instead of bright white, and tooltip text remains readable.
 - **Find the joined stream overlay in Windows OBS.** The enabled capture surface
   is eligible for OBS window selection and stays open when switching from Elite
-  to OBS. Minimizing Elite retains the last usable capture size and position.
+  to OBS. Minimizing Elite retains the last usable capture size and position;
+  brief window-tracking failures have a bounded grace period.
   Look for **[SrvSurvey.Desktop.exe]: SrvSurveyWindowOne overlay**.
   Other gameplay panels keep their existing focus behavior.
 - **Track squadron carrier cargo once per movement.** Bank transfers and market
@@ -43,7 +45,8 @@ search groups or individual entries without mandatory colors, and find up to
   complete Frontier manifests and live adjustments remain supported. If a cargo
   write has an uncertain outcome, undock and refresh Frontier data: an accepted
   full manifest reconciles retained writes after Raven acknowledges its totals,
-  allowing later cargo updates to continue.
+  allowing later cargo updates to continue. Cached manifests cannot retire newer
+  bank movements, and manifest replacement waits for active cargo retries.
 - **Keep Codex Bingo open.** Finding nearest locations for an entry, a parent
   group, or missing entries preserves the Bingo window and its selection. The
   window stays available until you close it.

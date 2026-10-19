@@ -11,6 +11,30 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class StreamOverlayCoordinatorTests
 {
     [AvaloniaFact]
+    public void TransientUnavailableEliteRetainsTheSameCaptureWindow()
+    {
+        using var context = new TestContext(isForeground: true);
+        Window original = Assert.Single(context.Harness.PreparedWindows);
+        GameWindowSnapshot available = context.Harness.GameWindow;
+        context.Harness.GameWindow = GameWindowSnapshot.Unavailable;
+
+        context.Synchronize();
+
+        Assert.True(original.IsVisible);
+        context.Clock.Advance(TimeSpan.FromSeconds(1));
+        context.Harness.GameWindow = available;
+        context.Synchronize();
+        Assert.Same(original, Assert.Single(context.Harness.PreparedWindows));
+        context.Clock.Advance(TimeSpan.FromSeconds(3));
+        context.Harness.GameWindow = GameWindowSnapshot.Unavailable;
+        context.Synchronize();
+        Assert.True(original.IsVisible);
+        context.Clock.Advance(TimeSpan.FromSeconds(2));
+        context.Synchronize();
+        Assert.False(original.IsVisible);
+    }
+
+    [AvaloniaFact]
     public void StartingWithMinimizedEliteWaitsForAUsableCanvas()
     {
         using var context = new TestContext(isForeground: false, isVisible: false);
@@ -38,6 +62,8 @@ public sealed class StreamOverlayCoordinatorTests
             ClientBounds = emptyBounds ? default : new PixelRect(-32000, -32000, 33920, 33080),
         };
 
+        context.Synchronize();
+        context.Clock.Advance(TimeSpan.FromSeconds(10));
         context.Synchronize();
 
         Assert.True(original.IsVisible);
@@ -112,11 +138,14 @@ public sealed class StreamOverlayCoordinatorTests
         Assert.True(window.IsVisible);
         context.Harness.GameWindow = GameWindowSnapshot.Unavailable;
         context.Synchronize();
+        Assert.True(window.IsVisible);
+        context.Clock.Advance(TimeSpan.FromSeconds(2));
+        context.Synchronize();
         Assert.False(window.IsVisible);
     }
 
     [AvaloniaFact]
-    public void DisablingCaptureInTheBackgroundClosesItsWindow()
+    public void DisablingCaptureInTheBackgroundHidesItsWindow()
     {
         using var context = new TestContext(isForeground: false);
         Window window = Assert.Single(context.Harness.PreparedWindows);
@@ -126,11 +155,23 @@ public sealed class StreamOverlayCoordinatorTests
         Assert.Single(context.Harness.PreparedWindows);
     }
 
+    private sealed class ManualClock : TimeProvider
+    {
+        private long ticks;
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp() => ticks;
+
+        public void Advance(TimeSpan elapsed) => ticks += elapsed.Ticks;
+    }
+
     private sealed class TestContext : IDisposable
     {
         private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-stream-{Guid.NewGuid():N}");
         private readonly OverlayWindowRegistry registry = new();
         private readonly StreamOverlayCoordinator coordinator;
+
+        public ManualClock Clock { get; } = new();
 
         public TestContext(bool isForeground, bool keepVisible = false, bool isVisible = true)
         {
@@ -152,7 +193,7 @@ public sealed class StreamOverlayCoordinatorTests
             {
                 Enabled = true,
             };
-            coordinator = new StreamOverlayCoordinator(ViewModel, Harness.Session);
+            coordinator = new StreamOverlayCoordinator(ViewModel, Harness.Session, Clock);
         }
 
         public bool KeepVisible { get; set; }

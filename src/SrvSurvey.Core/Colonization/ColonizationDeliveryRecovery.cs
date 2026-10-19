@@ -55,6 +55,7 @@ public sealed partial class ColonizationDeliveryRecovery
         this.observer = observer ?? throw new ArgumentNullException(nameof(observer));
         this.delayAsync = delayAsync ?? Task.Delay;
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+        retainedCargoLoadedAt = this.utcNow();
         pendingContributions.AddRange(store.LoadPendingContributions());
         failedCargoAdjustments.AddRange(store.LoadPendingCargoAdjustments());
         foreach (ColonizationBuildSiteRepairVisit visit in store.LoadBuildSiteRepairVisits())

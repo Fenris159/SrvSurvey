@@ -280,7 +280,10 @@ internal sealed class ProfileSyncStore
         ProfileSnapshot snapshot,
         bool restoreMachine,
         CancellationToken cancellationToken = default
-    )
+    ) => WriteAtomic(PendingPath, PrepareRestore(snapshot, restoreMachine, cancellationToken));
+
+    /// <summary>Completes validation and cancelable serialization before publishing restore state.</summary>
+    private byte[] PrepareRestore(ProfileSnapshot snapshot, bool restoreMachine, CancellationToken cancellationToken)
     {
         ValidateScope(snapshot);
         if (restoreMachine && !IsOriginalMachine(snapshot))
@@ -304,7 +307,7 @@ internal sealed class ProfileSyncStore
         byte[] bytes = staged.Serialize();
         _ = ProfileSnapshot.Parse(bytes);
         cancellationToken.ThrowIfCancellationRequested();
-        WriteAtomic(PendingPath, bytes);
+        return bytes;
     }
 
     /// <summary>Turns an older backup into new changes, including deletion of portable values absent from it.</summary>
@@ -327,9 +330,12 @@ internal sealed class ProfileSyncStore
             wanted ??= new(null, true, []);
             values[key] = ProfileSyncMerge.Resolve(Device.Id, new(key, previous, wanted), useRemote: true);
         }
+        byte[] pendingBytes = PrepareRestore(snapshot with { Portable = values }, restoreMachine, cancellationToken);
+        byte[] baselineBytes = current.Serialize();
         cancellationToken.ThrowIfCancellationRequested();
-        SaveBaseline(current);
-        StageRestore(snapshot with { Portable = values }, restoreMachine, cancellationToken);
+        // Publish both prepared values without cancellation between the baseline and its pending restore.
+        WriteAtomic(Path.Combine(StateDirectory, "baseline.json"), baselineBytes);
+        WriteAtomic(PendingPath, pendingBytes);
     }
 
     /// <summary>Applies a queued restore before workspaces and journal producers are constructed.</summary>

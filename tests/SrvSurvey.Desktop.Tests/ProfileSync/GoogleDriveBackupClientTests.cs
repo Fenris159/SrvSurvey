@@ -101,9 +101,11 @@ public sealed class GoogleDriveBackupClientTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task LostUploadResponseChecksWhetherGoogleAcceptedTheData(bool accepted)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task LostOrRateLimitedUploadResponseChecksWhetherGoogleAcceptedTheData(bool accepted, bool rateLimited)
     {
         using var root = new ProfileSyncTestRoot();
         int sends = 0;
@@ -135,6 +137,10 @@ public sealed class GoogleDriveBackupClientTests
                 }
                 if (++sends == 1)
                 {
+                    if (rateLimited)
+                    {
+                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+                    }
                     throw new TaskCanceledException("Simulated request timeout.");
                 }
                 return Task.FromResult(Json("{\"id\":\"complete\"}"));

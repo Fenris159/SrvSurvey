@@ -431,7 +431,8 @@ public sealed partial class ColonizationDeliveryRecovery
             marketId,
             new Dictionary<string, int>(adjustments, StringComparer.OrdinalIgnoreCase),
             recordedAt,
-            null
+            null,
+            ObservedAt: utcNow()
         );
         failedCargoAdjustments.Add(pending);
         return await ApplyPendingFleetCarrierCargoAdjustmentAsync(
@@ -704,7 +705,7 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 ReplaceLocalFleetCarrier(current with { Cargo = CopyCargo(updatedCargo) });
             }
-            // An acknowledged full manifest covers these retained writes, including undated bank differences.
+            // A newer acknowledged full manifest covers the retained writes selected by the freshness guard.
             // Writes queued after this baseline began remain owned by CompleteCargoBaselineAsync.
             RetireCapiCargoWrites(covered);
 
@@ -784,7 +785,8 @@ public sealed partial class ColonizationDeliveryRecovery
         fetchedAt is { } capturedAt
         && !cargoWritesInFlight.Contains((RecoveryOwner, marketId))
         && (pending.Length == 0 || !IsCargoBaselinePending(marketId))
-        && !pending.Any(item => item.RecordedAt is { } recordedAt && recordedAt > capturedAt);
+        // Older retained files have no observation time; require a manifest fetched after loading them.
+        && pending.All(item => (item.RecordedAt ?? item.ObservedAt ?? retainedCargoLoadedAt) < capturedAt);
 
     /// <summary>A complete manifest also supplies zero for retained commodities absent from its cargo rows.</summary>
     private static Dictionary<string, int> CreateCapiReconciliationTotals(
@@ -1029,7 +1031,8 @@ public sealed partial class ColonizationDeliveryRecovery
                 item.RecordedAt,
                 null,
                 Attempted: false,
-                OutcomeUnknown: false
+                OutcomeUnknown: false,
+                ObservedAt: utcNow()
             ))
             .ToArray();
         failedCargoAdjustments.AddRange(retained);

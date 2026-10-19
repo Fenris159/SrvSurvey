@@ -32037,6 +32037,10 @@
       "translation": "Deaktivieren Sie „Anzeigen“ für jedes Projekt, das dem ausgewählten System und Build-Status entspricht."
     },
     {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "Deaktivieren Sie „Für gefilterte Projekte anzeigen“."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Nicht beanspruchte Biologie"
     },
@@ -70881,6 +70885,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Desmarque Mostrar para cada proyecto que coincida con el sistema seleccionado y el estado de compilación."
+    },
+    {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "Desmarque Mostrar para proyectos filtrados"
     },
     {
       "source": "Unclaimed biology",
@@ -109729,6 +109737,10 @@
       "translation": "Décochez Afficher pour chaque projet correspondant au système sélectionné et à l'état de construction."
     },
     {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "Décochez Afficher pour les projets filtrés"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Biologie non réclamée"
     },
@@ -148573,6 +148585,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Desmarque Mostrar para cada projeto que corresponda ao sistema selecionado e ao status de construção."
+    },
+    {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "Desmarque Mostrar para projetos filtrados"
     },
     {
       "source": "Unclaimed biology",
@@ -187421,6 +187437,10 @@
       "translation": "Снимите флажок «Показывать для каждого проекта, соответствующего выбранной системе и статусу сборки»."
     },
     {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "Снимите флажок «Показать для отфильтрованных проектов»."
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "Невостребованная биология"
     },
@@ -226267,6 +226287,10 @@
       "translation": "取消选中与所选系统和构建状态匹配的每个项目的“显示”。"
     },
     {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "取消选中“显示已过滤的项目”"
+    },
+    {
       "source": "Unclaimed biology",
       "translation": "无人认领的生物学"
     },
@@ -265111,6 +265135,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "* UNCHECK SHOW FOR EVERY PROJECT MATCHING THE SELECTED SYSTEM AND BUILD STATUS. >>>!"
+    },
+    {
+      "source": "Uncheck Show for filtered projects",
+      "translation": "* UNCHECK SHOW FOR FILTERED PROJECTS >>>!"
     },
     {
       "source": "Unclaimed biology",

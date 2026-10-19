@@ -5,6 +5,88 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CachedFullManifestCannotRetireAnUndatedBankMovement(bool legacyRecord)
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 75);
+        now = snapshot.FetchedAt.AddSeconds(1);
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("response lost"));
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        CargoInventoryState cargo = ShipCargo(10);
+        JournalEventEnvelope bank = SquadronBankEvent(5, toCarrier: true);
+        recovery.PrepareSquadronCargoTransferSnapshot(cargo);
+        cargo.Apply(bank);
+        await recovery.SynchronizeLiveEventsAsync([bank], true, cargo, cargoActivity: true);
+        ColonizationPendingCargoAdjustment pending = Assert.Single(store.LoadPendingCargoAdjustments());
+        Assert.Null(pending.RecordedAt);
+        if (legacyRecord)
+        {
+            store.SavePendingCargoAdjustments([pending with { ObservedAt = null }]);
+            recovery = SquadronRecovery(client);
+        }
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        snapshot = snapshot with { Carrier = null, SquadronCarrier = snapshot.Carrier };
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+        Assert.Equal(0, client.ReplaceCargoCount);
+        Assert.Single(store.LoadPendingCargoAdjustments());
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot fresh = LinkedCarrierCapiSnapshot(false, 80);
+        fresh = fresh with
+        {
+            Carrier = null,
+            SquadronCarrier = fresh.Carrier,
+            FetchedAt = now.AddSeconds(1),
+            SquadronCarrierFetchedAt = now.AddSeconds(1),
+        };
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(fresh);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(80, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
+    [Fact]
+    public async Task FullManifestCannotOvertakeARetainedCargoRetryInFlight()
+    {
+        RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 85);
+        store.SavePendingCargoAdjustments([
+            new(
+                "Test Cmdr|F123|True",
+                42,
+                new() { ["steel"] = 10 },
+                snapshot.FetchedAt.AddSeconds(-1),
+                null,
+                Attempted: false,
+                OutcomeUnknown: false
+            ),
+        ]);
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        var response = new TaskCompletionSource<IReadOnlyDictionary<string, int>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        client.AdjustmentResponseTask = response.Task;
+        Task retry = recovery.RetryPendingWritesAsync();
+        try
+        {
+            Assert.Single(client.FleetCarrierAdjustments);
+
+            await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+
+            Assert.Equal(0, client.ReplaceCargoCount);
+        }
+        finally
+        {
+            response.TrySetResult(new Dictionary<string, int> { ["steel"] = 85 });
+            await retry.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(85, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
     [Fact]
     public async Task FailedFullManifestReplacementRetainsUncertainCargoForTheNextRefresh()
     {
@@ -101,8 +183,14 @@ public sealed partial class ColonizationDeliveryRecoveryTests
     public async Task AcceptedFullSquadronManifestReconcilesUncertainAndDependentWrites(bool alreadySeeded, int total)
     {
         RecordingRavenClient client = CarrierClient(75, "SQD-001");
+        client.ReplaceCargo = replacement =>
+        {
+            client.FleetCarrierResponse = client.FleetCarrierResponse! with { Cargo = new(replacement) };
+            return Task.FromResult(replacement);
+        };
         ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
         global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, total);
+        now = snapshot.FetchedAt.AddSeconds(1);
         if (alreadySeeded)
         {
             recovery.ApplyJournalEvents([Event("Undocked", "")], null);
@@ -145,6 +233,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         await recovery.SynchronizeLiveEventsAsync([next], true, cargo, cargoActivity: true);
         Assert.Equal(2, client.FleetCarrierAdjustments.Count);
         Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(total + 5, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
     }
 
     [Theory]

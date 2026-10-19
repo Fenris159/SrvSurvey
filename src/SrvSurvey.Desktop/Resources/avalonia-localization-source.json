@@ -64252,6 +64252,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Uncheck Show for filtered projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Unclaimed biology",
     "IsFormat": false,
     "SourceKinds": [

@@ -43,16 +43,10 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .GetVisualDescendants()
                 .OfType<ToggleButton>()
                 .First();
-            Assert.Equal(
-                Color.Parse(themeKey == "monochrome-dark" ? "#B8AA7B" : theme.ControlAccentColor),
-                SupplyBrushColor(filter.Background)
-            );
+            Assert.Equal(Color.Parse(theme.TagFillColor), SupplyBrushColor(filter.Background));
             Assert.Equal(SupplyBrushColor(legend.Foreground), SupplyBrushColor(shortage.Background));
-            Assert.Equal(Color.Parse(theme.IsDark ? "#0A0A0A" : "#FFFFFF"), SupplyBrushColor(shortage.Foreground));
-            Assert.Equal(
-                Color.Parse(themeKey == "monochrome-dark" ? "#B8AA7B" : theme.ControlAccentColor),
-                SupplyBrushColor(enough.Background)
-            );
+            Assert.Equal(Color.Parse(theme.DangerForegroundColor), SupplyBrushColor(shortage.Foreground));
+            Assert.Equal(Color.Parse(theme.TagFillColor), SupplyBrushColor(enough.Background));
             shortage.Command!.Execute(null);
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
             {
@@ -161,12 +155,12 @@ public sealed partial class ColonizationShoppingPresentationTests
             {
                 ["RavenWindowBrush"] = theme.WindowColor,
                 ["RavenControlAccentBrush"] = theme.ControlAccentColor,
-                ["RavenTagFillBrush"] = theme.Key == "monochrome-dark" ? "#B8AA7B" : theme.ControlAccentColor,
+                ["RavenTagFillBrush"] = theme.TagFillColor,
                 ["RavenAccentForegroundBrush"] = theme.AccentForegroundColor,
                 ["RavenAccentBrush"] = theme.AccentColor,
                 ["RavenSecondaryFillBrush"] = theme.SecondaryFillColor,
                 ["RavenDangerBrush"] = theme.DangerColor,
-                ["RavenDangerForegroundBrush"] = theme.IsDark ? "#0A0A0A" : "#FFFFFF",
+                ["RavenDangerForegroundBrush"] = theme.DangerForegroundColor,
                 ["RavenTextBrush"] = theme.TextColor,
                 ["RavenHighestSurfaceBrush"] = theme.HighestSurfaceColor,
                 ["RavenStrongBorderBrush"] = theme.StrongBorderColor,

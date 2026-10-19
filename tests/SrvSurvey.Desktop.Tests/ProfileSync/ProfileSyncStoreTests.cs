@@ -11,6 +11,47 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    [Fact]
+    public void CancelDuringRestoreSerializationPreservesThePreviouslyStagedBaseline()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"old restore\"}");
+        ProfileSnapshot restore = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"first baseline\"}");
+        root.Store.StageExplicitRestore(restore, false);
+        byte[] baseline = File.ReadAllBytes(Path.Combine(root.Store.StateDirectory, "baseline.json"));
+        byte[] pending = File.ReadAllBytes(root.Store.PendingPath);
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"intervening local edit\"}");
+        using var cancellation = new CancellationTokenSource();
+        restore.Machine[Key("data", "plotters.json", "/Panel")] = JsonValue.Create(
+            new CancelDuringSerialization(cancellation)
+        );
+
+        Assert.Throws<OperationCanceledException>(() =>
+            root.Store.StageExplicitRestore(restore, true, cancellation.Token)
+        );
+
+        Assert.Equal(baseline, File.ReadAllBytes(Path.Combine(root.Store.StateDirectory, "baseline.json")));
+        Assert.Equal(pending, File.ReadAllBytes(root.Store.PendingPath));
+        Assert.False(root.Store.ApplyPending(out SyncMergeResult? conflicts));
+        Assert.NotEmpty(conflicts!.Conflicts);
+        Assert.Contains("intervening local edit", File.ReadAllText(root.Paths.UiSettingsPath));
+    }
+
+    /// <summary>Cancels at the serialization boundary after capture and change-counter preparation.</summary>
+    private sealed class CancelDuringSerialization(CancellationTokenSource cancellation)
+    {
+        [System.Text.Json.Serialization.JsonInclude]
+        public int Value
+        {
+            get
+            {
+                cancellation.Cancel();
+                return 1;
+            }
+        }
+    }
+
     /// <summary>Backup and restore preserve distinct commander scale, exception, and position keys across one shared installation.</summary>
     [Fact]
     public void BackupRestoreKeepsBothCommanderOverlaySettingsSeparate()
