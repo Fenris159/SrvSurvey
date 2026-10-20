@@ -126,7 +126,9 @@ public sealed partial class ColonizationSystemEditorViewModelTests
         CancellationToken token = client.CatalogToken;
         if (dispose)
         {
+            string statusBeforeDisposal = editor.SystemsStatusMessage;
             editor.Dispose();
+            Assert.Equal(statusBeforeDisposal, editor.SystemsStatusMessage);
             Assert.False(editor.CanRefreshSystems);
             Assert.False(editor.CanUseCurrentSystem);
         }
@@ -143,23 +145,38 @@ public sealed partial class ColonizationSystemEditorViewModelTests
         Assert.Equal("Other", Assert.Single(store.LoadSystemCatalog("Other Cmdr")!.Systems).Name);
     }
 
-    [Fact]
-    public async Task ConsentAndCancellationLeaveTheCatalogUsable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConsentAndCancellationLeaveTheCatalogUsable(bool hasCachedSystems)
     {
+        using var folder = new CatalogTestFolder();
+        var store = new ColonizationSettingsStore(folder.SettingsPath);
+        if (hasCachedSystems)
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            store.SaveSystemCatalog("Test Cmdr", new(now, now, [new("Cached", 47)]));
+        }
         var response = new TaskCompletionSource<IReadOnlyList<ColonizationArchitectSystem>>();
         var client = new StubClient { CatalogRead = () => response.Task };
-        using ColonizationSystemEditorViewModel editor = Create(client);
+        using var editor = new ColonizationSystemEditorViewModel(client, TinyCatalog(), store);
         editor.UpdateContext(Context() with { IsExternalDataEnabled = false });
         await editor.RefreshSystemsAsync();
         Assert.Equal(0, client.CatalogReadCount);
         editor.UpdateContext(Context());
+        string cachedStatus = editor.SystemsStatusMessage;
+        string[] cachedNames = editor.SystemNames.ToArray();
         Task pending = editor.RefreshSystemsAsync();
+        Assert.StartsWith("Refreshing", editor.SystemsStatusMessage);
         CancellationToken token = client.CatalogToken;
         editor.UpdateContext(Context() with { IsExternalDataEnabled = false });
+        Assert.Equal(cachedStatus, editor.SystemsStatusMessage);
+        Assert.Equal(cachedNames, editor.SystemNames);
         response.SetCanceled(token);
         await pending;
         Assert.False(editor.IsRefreshingSystems);
-        Assert.Empty(editor.SystemNames);
+        Assert.Equal(cachedStatus, editor.SystemsStatusMessage);
+        Assert.Equal(cachedNames, editor.SystemNames);
         Assert.False(editor.CanRefreshSystems);
     }
 

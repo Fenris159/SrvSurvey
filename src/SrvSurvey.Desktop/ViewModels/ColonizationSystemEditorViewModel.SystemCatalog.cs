@@ -200,6 +200,10 @@ public sealed partial class ColonizationSystemEditorViewModel
         cancelCatalogRefresh?.Invoke();
         cancelCatalogRefresh = null;
         IsRefreshingSystems = false;
+        if (!catalogDisposed)
+        {
+            ApplySystemCatalog();
+        }
     }
 
     public void Dispose()
