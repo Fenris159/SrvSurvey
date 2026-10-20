@@ -7,10 +7,11 @@ using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
+public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyChanged, IDisposable
 {
     private const int MaximumBufferedJournalEvents = 2048;
     private int contextVersion;
@@ -45,15 +46,24 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     private bool hasLocalChanges;
     private bool isBodyImportConfirmationPending;
     private bool captureUnknownSurfaceSites;
-    private string statusMessage = "Load a live system to review its Raven Colonial sites.";
+    private string statusMessage = "Choose a system to review its Raven Colonial sites.";
     private string reviewSummary = string.Empty;
     private IReadOnlyList<ColonizationSystemSiteConflict> conflicts = [];
     private IReadOnlyList<ColonizationSystemBodyOptionViewModel> bodies = [];
 
-    public ColonizationSystemEditorViewModel(IRavenColonialClient client, ColonizationBuildCatalog buildCatalog)
+    public ColonizationSystemEditorViewModel(
+        IRavenColonialClient client,
+        ColonizationBuildCatalog buildCatalog,
+        ColonizationSettingsStore? settingsStore = null,
+        Func<DateTimeOffset>? utcNow = null
+    )
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.buildCatalog = buildCatalog ?? throw new ArgumentNullException(nameof(buildCatalog));
+        catalogStore = settingsStore;
+        catalogUtcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+        refreshSystemsCommand = new AsyncCommand(RefreshSystemsAsync, () => CanRefreshSystems);
+        useCurrentSystemCommand = new DelegateCommand(UseCurrentSystem, () => CanUseCurrentSystem);
         catalogBuildTypes = ColonizationSiteBuildTypeChoice.FromCatalog(this.buildCatalog);
         loadCommand = new AsyncCommand(LoadAsync, () => CanLoad);
         requestBodyImportCommand = new DelegateCommand(
@@ -294,6 +304,40 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
+        bool commanderChanged = !string.Equals(
+            liveContext.CommanderName,
+            updatedContext.CommanderName,
+            StringComparison.OrdinalIgnoreCase
+        );
+        if (commanderChanged || liveContext.IsExternalDataEnabled != updatedContext.IsExternalDataEnabled)
+        {
+            CancelSystemCatalogRefresh();
+        }
+        liveContext = updatedContext;
+        if (commanderChanged)
+        {
+            hasManualSystemSelection = false;
+            RestoreSystemCatalog();
+        }
+        if (!hasManualSystemSelection)
+        {
+            SetField(
+                ref systemNameInput,
+                updatedContext.SystemName
+                    ?? updatedContext.SystemAddress?.ToString(CultureInfo.InvariantCulture)
+                    ?? string.Empty,
+                nameof(SystemNameInput)
+            );
+        }
+        ApplyEditorContext(hasManualSystemSelection ? SelectedSystemContext() : updatedContext);
+        OnPropertyChanged(nameof(CanRefreshSystems));
+        OnPropertyChanged(nameof(CanUseCurrentSystem));
+        refreshSystemsCommand.RaiseCanExecuteChanged();
+        useCurrentSystemCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ApplyEditorContext(ColonizationSystemEditorContext updatedContext)
+    {
         if (
             context.IsExternalDataEnabled != updatedContext.IsExternalDataEnabled
             || !string.Equals(context.CommanderName, updatedContext.CommanderName, StringComparison.OrdinalIgnoreCase)
@@ -321,7 +365,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             ? (IsLoaded) switch
             {
                 true => StatusMessage,
-                false => "The live system is ready to load from Raven Colonial.",
+                false => "The selected system is ready to load from Raven Colonial.",
             }
             : GetUnavailableReason(context);
         OnPropertyChanged(nameof(CanLoad));
@@ -392,10 +436,13 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         int version = contextVersion;
         IsBusy = true;
         ClearReview();
-        StatusMessage = "Loading the current system from Raven Colonial...";
+        StatusMessage = "Loading the selected system from Raven Colonial...";
         try
         {
-            ColonizationSystemRecord loaded = await client.GetSystemAsync(GetSystemIdentifier());
+            ColonizationSystemRecord loaded = await client.GetSystemAsync(
+                GetSystemIdentifier(),
+                CancellationToken.None
+            );
             if (version != contextVersion)
             {
                 return;
@@ -460,7 +507,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Importing the system body catalog into Raven Colonial...";
         try
         {
-            ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync(GetSystemIdentifier());
+            ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync(
+                GetSystemIdentifier(),
+                CancellationToken.None
+            );
             if (version != contextVersion)
             {
                 return;
@@ -552,7 +602,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Refreshing Raven data and checking for concurrent changes...";
         try
         {
-            ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
+            ColonizationSystemRecord latest = await client.GetSystemAsync(
+                GetSystemIdentifier(),
+                CancellationToken.None
+            );
             if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
@@ -638,7 +691,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
-            ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
+            ColonizationSystemRecord latest = await client.GetSystemAsync(
+                GetSystemIdentifier(),
+                CancellationToken.None
+            );
             if (version != contextVersion || !SiteListsEqual(localSites, SnapshotSites()))
             {
                 return;
@@ -673,7 +729,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             ColonizationSystemRecord updated = await client.UpdateSystemSitesAsync(
                 GetSystemIdentifier(),
                 plan.Update,
-                context.RavenApiKey!
+                context.RavenApiKey!,
+                CancellationToken.None
             );
             if (publishingSession != sessionVersion)
             {
@@ -973,6 +1030,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     private void RaiseCommandStates()
     {
         loadCommand.RaiseCanExecuteChanged();
+        useCurrentSystemCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanUseCurrentSystem));
         RequestBodyImportCommandState();
         addSiteCommand.RaiseCanExecuteChanged();
         removeSiteCommand.RaiseCanExecuteChanged();
@@ -1074,7 +1133,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
         if (string.IsNullOrWhiteSpace(value.SystemName) && value.SystemAddress is not > 0)
         {
-            return "Enter a live Elite system before loading Raven sites.";
+            return "Select or type a system before loading Raven sites.";
         }
 
         return "The Raven system context is incomplete.";

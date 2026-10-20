@@ -24,6 +24,107 @@ public sealed class ColonizationWishListOverlayTests
     private const string Plotter = "PlotColonizationWishList";
 
     [AvaloniaFact]
+    public void BothShoppingListSurfacesShowStationTripsAndUpdateTheirFooterWhenTheShipChanges()
+    {
+        var model = new ColonizationWishListViewModel();
+        model.UpdateShipCapacity(128);
+        ApplyStops(model, 2);
+        var window = new ColonizationWishListWindow(model);
+        var overlay = new ColonizationWishListOverlayWindow(model);
+        try
+        {
+            OverlayThemeResources.Apply(overlay, LegacyOverlayLayout.Empty, Plotter, new OverlayWindowRegistry());
+            window.Show();
+            overlay.Show();
+            Render(window);
+            Render(overlay);
+            foreach (Window surface in new Window[] { window, overlay })
+            {
+                TextBlock[] stationTrips = surface
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Where(text => text.Classes.Contains("station-trips") && text.IsVisible)
+                    .ToArray();
+                Assert.Equal(2, stationTrips.Length);
+                Assert.All(stationTrips, text => Assert.Equal("Estimated trips remaining: 1", text.Text));
+                foreach (TextBlock trips in stationTrips)
+                {
+                    ColonizationWishListNode station = Assert.IsType<ColonizationWishListNode>(trips.DataContext);
+                    Point tripsOrigin =
+                        trips.TranslatePoint(default, surface)
+                        ?? throw new InvalidOperationException("The trip estimate must be attached to its window.");
+                    foreach (ColonizationWishListNode commodity in station.Children)
+                    {
+                        TextBlock label = surface
+                            .GetVisualDescendants()
+                            .OfType<TextBlock>()
+                            .Single(text =>
+                                ReferenceEquals(text.DataContext, commodity) && text.Text == commodity.Label
+                            );
+                        Point commodityBottom =
+                            label.TranslatePoint(new Point(0, label.Bounds.Height), surface)
+                            ?? throw new InvalidOperationException("The commodity row must be attached to its window.");
+                        Assert.True(
+                            tripsOrigin.Y >= commodityBottom.Y,
+                            "Station trip estimates must appear below their commodity rows."
+                        );
+                    }
+                }
+                Assert.Contains(
+                    surface.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == model.TotalTripsText
+                );
+                if (surface == window)
+                {
+                    TreeViewItem branch = window
+                        .GetVisualDescendants()
+                        .OfType<TreeViewItem>()
+                        .Single(item => ReferenceEquals(item.Header, model.Stations[0]));
+                    branch.IsExpanded = false;
+                    Render(window);
+                    Assert.False(stationTrips[0].IsVisible);
+                    branch.IsExpanded = true;
+                    Render(window);
+                    Assert.True(stationTrips[0].IsVisible);
+                }
+            }
+            model.UpdateShipCapacity(64);
+            Render(window);
+            Render(overlay);
+            Assert.Equal(4, model.TotalTripsInCurrentShip);
+            foreach (Window surface in new Window[] { window, overlay })
+            {
+                Assert.Contains(
+                    surface.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == "Estimated trips remaining: 2"
+                );
+                Assert.Contains(
+                    surface.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == model.TotalTripsText
+                );
+                using WriteableBitmap? frame = surface.CaptureRenderedFrame();
+                Assert.NotNull(frame);
+                frame.Save(
+                    Path.Combine(
+                        Path.GetTempPath(),
+                        surface == window
+                            ? "srvsurvey-shopping-list-trips.png"
+                            : "srvsurvey-shopping-list-overlay-trips.png"
+                    ),
+                    PngBitmapEncoderOptions.Default
+                );
+            }
+            ApplyStops(model, 1);
+            Assert.Equal(2, model.TotalTripsInCurrentShip);
+        }
+        finally
+        {
+            window.Close();
+            overlay.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void LivePanelFollowsWishListGameVisibilityAndSharedSuppression()
     {
         var model = new ColonizationWishListViewModel();

@@ -51,6 +51,8 @@ public interface IColonizationMarketSearch
 
 public static class ColonizationShopping
 {
+    public static string DisplayName(string commodity) => ColonizationMarketCommodities.DisplayName(commodity);
+
     /// <summary>Sums remaining requirements once per selected, unfinished build, including planned builds.</summary>
     public static IReadOnlyList<ColonizationShoppingNeed> Aggregate(IEnumerable<ColonizationProject> projects)
     {

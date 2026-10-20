@@ -42,6 +42,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             Height = 1000,
         };
         window.Resources["RavenControlAccentBrush"] = new SolidColorBrush(Color.Parse("#F5F5F5"));
+        window.Resources["RavenTagFillBrush"] = new SolidColorBrush(Color.Parse("#B8AA7B"));
         window.Resources["RavenAccentForegroundBrush"] = new SolidColorBrush(Color.Parse("#0A0A0A"));
         window.Resources["RavenSecondaryFillBrush"] = new SolidColorBrush(Color.Parse("#262626"));
         window.Resources["RavenInteractiveHoverBrush"] = new SolidColorBrush(Color.Parse("#262626"));
@@ -70,7 +71,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             {
                 Assert.NotNull(frame);
             }
-            ToggleButtonTag(view, 0);
+            SetProjectTagSelection(view, 1, false);
             ColonizationShoppingViewModel search = main.Colonization.MarketSearchWorkspace!;
             await search.SearchAsync();
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
@@ -117,12 +118,12 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .Single(button => button.Command == chosen.ToggleWishListCommand);
             Assert.Contains("wished", chosenTag.Classes);
             Assert.Equal(
-                Color.Parse("#262626"),
+                Color.Parse("#B8AA7B"),
                 Assert.IsType<ISolidColorBrush>(chosenTag.Background, exactMatch: false).Color
             );
             TextBlock chosenLabel = Assert.Single(chosenTag.GetVisualDescendants().OfType<TextBlock>());
             Assert.Equal(
-                Color.Parse("#E5E5E5"),
+                Color.Parse("#0A0A0A"),
                 Assert.IsType<ISolidColorBrush>(chosenLabel.Foreground, exactMatch: false).Color
             );
             LeftClick(window, wishlist);
@@ -145,12 +146,12 @@ public sealed partial class ColonizationShoppingPresentationTests
         }
     }
 
-    private static void ToggleButtonTag(ColonizationView view, int index)
+    private static void SetProjectTagSelection(ColonizationView view, int index, bool selected)
     {
         view.FindControl<ItemsControl>("MarketSearchProjects")!
             .GetVisualDescendants()
             .OfType<Avalonia.Controls.Primitives.ToggleButton>()
             .ElementAt(index)
-            .IsChecked = true;
+            .IsChecked = selected;
     }
 }

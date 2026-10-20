@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.Localization;
 
 namespace SrvSurvey.Desktop.Controls;
 
-public sealed class GuardianSiteMapControl : Control
+public sealed class GuardianSiteMapControl : SurfaceMotionControl
 {
     public static readonly StyledProperty<GuardianSiteMapProjection?> ProjectionProperty = AvaloniaProperty.Register<
         GuardianSiteMapControl,
@@ -150,6 +150,19 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(CommanderMapPositionProperty, value);
     }
 
+    private GuardianSiteProximitySnapshot? DrawingProximity
+    {
+        get
+        {
+            if (Proximity is not { } value)
+            {
+                return null;
+            }
+            (double x, double y) = VisualDisplacement(CommanderHeading);
+            return value with { MapX = value.MapX + x, MapY = value.MapY - y };
+        }
+    }
+
     public double MapScale
     {
         get => GetValue(MapScaleProperty);
@@ -168,9 +181,11 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(RotateMapWithCommanderProperty, value);
     }
 
-    private double MapRotationHeading => ResolveMapRotationHeading(CommanderHeading, RotateMapWithCommander);
+    private double MapRotationHeading =>
+        ResolveMapRotationHeading(VisualHeading(CommanderHeading), RotateMapWithCommander);
 
-    private double CommanderGlyphHeading => ResolveCommanderGlyphHeading(CommanderHeading, RotateMapWithCommander);
+    private double CommanderGlyphHeading =>
+        ResolveCommanderGlyphHeading(VisualHeading(CommanderHeading), RotateMapWithCommander);
 
     public string? TargetPointName
     {
@@ -265,6 +280,7 @@ public sealed class GuardianSiteMapControl : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        BeginMotionFrame();
         var bounds = new Rect(Bounds.Size);
         if (!IsLegendOnly)
         {
@@ -296,7 +312,7 @@ public sealed class GuardianSiteMapControl : Control
             DrawMapImage(context, projection, mapImage, viewportCenter, scale);
         }
 
-        Point mapOrigin = TransformMapPoint(0, 0, Proximity, MapRotationHeading, viewportCenter, scale);
+        Point mapOrigin = TransformMapPoint(0, 0, DrawingProximity, MapRotationHeading, viewportCenter, scale);
         double gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
         DrawReferenceGrid(context, projection, mapImage, viewportCenter, mapOrigin, gridExtent, scale);
 
@@ -324,7 +340,7 @@ public sealed class GuardianSiteMapControl : Control
             DrawPoint(
                 context,
                 point,
-                TransformMapPoint(point.X, point.Y, Proximity, MapRotationHeading, viewportCenter, scale),
+                TransformMapPoint(point.X, point.Y, DrawingProximity, MapRotationHeading, viewportCenter, scale),
                 projection,
                 Math.Max(bounds.Width, bounds.Height),
                 scale
@@ -336,7 +352,7 @@ public sealed class GuardianSiteMapControl : Control
             DrawGroup(
                 context,
                 group,
-                TransformMapPoint(group.X, group.Y, Proximity, MapRotationHeading, viewportCenter, scale),
+                TransformMapPoint(group.X, group.Y, DrawingProximity, MapRotationHeading, viewportCenter, scale),
                 scale
             );
         }
@@ -377,13 +393,13 @@ public sealed class GuardianSiteMapControl : Control
         var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
         context.DrawLine(
             gridPen,
-            TransformMapPoint(0, -gridExtent, Proximity, MapRotationHeading, viewportCenter, scale),
-            TransformMapPoint(0, gridExtent, Proximity, MapRotationHeading, viewportCenter, scale)
+            TransformMapPoint(0, -gridExtent, DrawingProximity, MapRotationHeading, viewportCenter, scale),
+            TransformMapPoint(0, gridExtent, DrawingProximity, MapRotationHeading, viewportCenter, scale)
         );
         context.DrawLine(
             gridPen,
-            TransformMapPoint(-gridExtent, 0, Proximity, MapRotationHeading, viewportCenter, scale),
-            TransformMapPoint(gridExtent, 0, Proximity, MapRotationHeading, viewportCenter, scale)
+            TransformMapPoint(-gridExtent, 0, DrawingProximity, MapRotationHeading, viewportCenter, scale),
+            TransformMapPoint(gridExtent, 0, DrawingProximity, MapRotationHeading, viewportCenter, scale)
         );
         for (int ring = 1; ring <= 4; ring++)
         {
@@ -636,7 +652,14 @@ public sealed class GuardianSiteMapControl : Control
             .Points.Select(point => new
             {
                 Point = point,
-                Screen = TransformMapPoint(point.X, point.Y, Proximity, MapRotationHeading, viewportCenter, scale),
+                Screen = TransformMapPoint(
+                    point.X,
+                    point.Y,
+                    DrawingProximity,
+                    MapRotationHeading,
+                    viewportCenter,
+                    scale
+                ),
             })
             .Select(candidate => new
             {
@@ -790,7 +813,7 @@ public sealed class GuardianSiteMapControl : Control
             mapImage.Size.Width * projection.ImageScaleFactor,
             mapImage.Size.Height * projection.ImageScaleFactor
         );
-        using (context.PushTransform(CreateMapTransform(Proximity, MapRotationHeading, viewportCenter, scale)))
+        using (context.PushTransform(CreateMapTransform(DrawingProximity, MapRotationHeading, viewportCenter, scale)))
         {
             context.DrawImage(mapImage, new Rect(mapImage.Size), destination);
         }

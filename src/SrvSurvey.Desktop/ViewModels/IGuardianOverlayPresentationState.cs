@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -10,6 +11,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// </summary>
 public interface IGuardianOverlayPresentationState : INotifyPropertyChanged
 {
+    EliteStatus? MotionStatus { get; }
+
     int PreferredOverlayWidth { get; }
 
     int PreferredOverlayHeight { get; }

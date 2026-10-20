@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
 
-public sealed class HumanSiteMapControl : Control
+public sealed class HumanSiteMapControl : SurfaceMotionControl
 {
     public static readonly StyledProperty<HumanSiteMapProjection?> ProjectionProperty = AvaloniaProperty.Register<
         HumanSiteMapControl,
@@ -318,6 +318,7 @@ public sealed class HumanSiteMapControl : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        BeginMotionFrame();
         var bounds = new Rect(Bounds.Size);
         IBrush background = MapBackground ?? Brushes.Transparent;
         IBrush grid = GridBrush ?? Brushes.DimGray;
@@ -333,6 +334,8 @@ public sealed class HumanSiteMapControl : Control
         }
 
         Point center = bounds.Center;
+        (double offsetX, double offsetY) = VisualDisplacement(CommanderHeading);
+        commander = new HumanSiteMapPoint(commander.X + offsetX, commander.Y + offsetY);
         double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.1, 15) : 1;
         // Keep settlement geometry inside the map frame so out-of-range
         // markers disappear at the border instead of painting over UI.
@@ -806,7 +809,7 @@ public sealed class HumanSiteMapControl : Control
 
     private Point Transform(HumanSiteMapPoint point, Point center, HumanSiteMapPoint commander, double scale)
     {
-        return TransformMapPoint(point, commander, CommanderHeading, center, scale);
+        return TransformMapPoint(point, commander, VisualHeading(CommanderHeading), center, scale);
     }
 
     private IBrush GetBuildingBrush(string name)

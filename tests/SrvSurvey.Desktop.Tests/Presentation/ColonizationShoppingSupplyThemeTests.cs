@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -21,7 +22,63 @@ public sealed partial class ColonizationShoppingPresentationTests
     [InlineData("green-light")]
     [InlineData("green-dark")]
     [InlineData("monochrome-dark")]
-    public async Task MarketSupplyTagsMatchShortSupplyColorAndKeepShoppingSelectionDistinct(string themeKey)
+    public async Task ShoppingListActionsMatchButtonStyleAndLockUsesTheSecondaryHighlight(string themeKey)
+    {
+        using ColonizationShoppingViewModel model = SupplyThemeModel();
+        await model.SearchAsync();
+        model.Results[0].ToggleWishListCommand.Execute(null);
+        RavenThemeDefinition theme = RavenThemeCatalog.Get(themeKey);
+        var window = new ColonizationShoppingTestWindow(model) { Width = 1180 };
+        ApplySupplyTheme(window, theme);
+        try
+        {
+            window.Show();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Button open = window.FindControl<Button>("OpenShoppingWishList")!;
+            ToggleButton toggle = window.FindControl<ToggleButton>("LockShoppingList")!;
+            Button clear = window.FindControl<Button>("ClearShoppingList")!;
+            Assert.True(toggle.Bounds.Left > open.Bounds.Right);
+            Assert.True(clear.Bounds.Left > toggle.Bounds.Right);
+            Assert.Equal(open.FontSize, toggle.FontSize);
+            Assert.Equal(open.Padding, toggle.Padding);
+            Assert.Equal(open.MinHeight, clear.MinHeight);
+            LeftClick(window, toggle);
+            using WriteableBitmap? lockedFrame = window.CaptureRenderedFrame();
+            Assert.NotNull(lockedFrame);
+            Assert.True(model.IsWishListLocked);
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(toggle.Background));
+            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(toggle.Foreground));
+            Assert.Equal(Color.Parse(theme.AccentColor), SupplyBrushColor(toggle.BorderBrush));
+            ContentPresenter presenter = toggle.GetVisualDescendants().OfType<ContentPresenter>().First();
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(presenter.Background));
+            if (themeKey == "monochrome-dark")
+            {
+                lockedFrame.Save(
+                    Path.Combine(Path.GetTempPath(), "srvsurvey-shopping-list-lock-monochrome.png"),
+                    PngBitmapEncoderOptions.Default
+                );
+            }
+            LeftClick(window, clear);
+            Assert.Empty(model.CaptureState().WishList);
+            Assert.True(model.IsWishListLocked);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("blue-light")]
+    [InlineData("blue-dark")]
+    [InlineData("orange-dark")]
+    [InlineData("green-light")]
+    [InlineData("green-dark")]
+    [InlineData("monochrome-dark")]
+    public async Task MarketSupplyTagsHighlightShoppingSelectionsAndKeepShortSupplyDistinct(string themeKey)
     {
         using ColonizationShoppingViewModel model = SupplyThemeModel();
         await model.SearchAsync();
@@ -44,22 +101,44 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .OfType<ToggleButton>()
                 .First();
             Assert.Equal(Color.Parse(theme.TagFillColor), SupplyBrushColor(filter.Background));
-            Assert.Equal(SupplyBrushColor(legend.Foreground), SupplyBrushColor(shortage.Background));
-            Assert.Equal(Color.Parse(theme.DangerForegroundColor), SupplyBrushColor(shortage.Foreground));
-            Assert.Equal(Color.Parse(theme.TagFillColor), SupplyBrushColor(enough.Background));
+            Assert.Equal(SupplyBrushColor(legend.Foreground), SupplyBrushColor(shortage.BorderBrush));
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(shortage.Background));
+            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(shortage.Foreground));
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(enough.Background));
+            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(enough.Foreground));
+            Assert.Equal(Color.Parse(theme.AccentColor), SupplyBrushColor(enough.BorderBrush));
             shortage.Command!.Execute(null);
+            model
+                .Results[0]
+                .AvailableSupplies.Single(supply => supply.Need.Commodity == "steel")
+                .ToggleWishListCommand.Execute(null);
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
             {
                 Assert.NotNull(frame);
             }
             shortage = SupplyTag(window, "water");
-            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(shortage.Background));
+            enough = SupplyTag(window, "steel");
+            Assert.Equal(SupplyBrushColor(legend.Foreground), SupplyBrushColor(shortage.Background));
             Assert.Equal(Color.Parse(theme.DangerColor), SupplyBrushColor(shortage.BorderBrush));
-            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(shortage.Foreground));
+            Assert.Equal(Color.Parse(theme.DangerForegroundColor), SupplyBrushColor(shortage.Foreground));
+            Assert.Equal(Color.Parse(theme.TagFillColor), SupplyBrushColor(enough.Background));
+            Assert.Equal(Color.Parse(theme.AccentForegroundColor), SupplyBrushColor(enough.Foreground));
+            Assert.Equal(Colors.Transparent, SupplyBrushColor(enough.BorderBrush));
             shortage.Command!.Execute(null);
+            model
+                .Results[0]
+                .AvailableSupplies.Single(supply => supply.Need.Commodity == "steel")
+                .ToggleWishListCommand.Execute(null);
             using WriteableBitmap? final = window.CaptureRenderedFrame();
             Assert.NotNull(final);
-            Assert.Equal(Color.Parse(theme.DangerColor), SupplyBrushColor(SupplyTag(window, "water").Background));
+            shortage = SupplyTag(window, "water");
+            enough = SupplyTag(window, "steel");
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(shortage.Background));
+            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(shortage.Foreground));
+            Assert.Equal(Color.Parse(theme.DangerColor), SupplyBrushColor(shortage.BorderBrush));
+            Assert.Equal(Color.Parse(theme.SecondaryFillColor), SupplyBrushColor(enough.Background));
+            Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(enough.Foreground));
+            Assert.Equal(Color.Parse(theme.AccentColor), SupplyBrushColor(enough.BorderBrush));
             if (themeKey == "monochrome-dark")
             {
                 final.Save(

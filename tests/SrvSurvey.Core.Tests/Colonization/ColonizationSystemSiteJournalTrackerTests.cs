@@ -56,6 +56,77 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
         Assert.Empty(sites);
     }
 
+    [Theory]
+    [InlineData("Nav Beacon", "NavBeacon")]
+    [InlineData("Beacon", " navbeacon ")]
+    [InlineData("Nav Beacon", null)]
+    [InlineData(" Navigation Beacon ", null)]
+    [InlineData("compromised nav beacon", null)]
+    [InlineData("Compromised Navigation Beacon", null)]
+    public void NavigationBeaconSignalsNeverCreateSites(string name, string? signalType)
+    {
+        var payload = new Dictionary<string, object>
+        {
+            ["event"] = "FSSSignalDiscovered",
+            ["SystemAddress"] = 42,
+            ["SignalName"] = name,
+        };
+        if (signalType is not null)
+        {
+            payload["SignalType"] = signalType;
+        }
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
+        var sites = new List<ColonizationSystemSite>();
+
+        bool changed = tracker.ApplyJournalEvent(
+            sites,
+            Event(global::System.Text.Json.JsonSerializer.Serialize(payload))
+        );
+
+        Assert.False(changed);
+        Assert.Empty(sites);
+    }
+
+    [Theory]
+    [InlineData("Nav Beacon")]
+    [InlineData(" Navigation Beacon ")]
+    [InlineData("compromised nav beacon")]
+    [InlineData("Compromised Navigation Beacon")]
+    public void SelectedNavigationBeaconNeverCreatesSurfaceSite(string name)
+    {
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
+        var sites = new List<ColonizationSystemSite>();
+        var status = new EliteStatus
+        {
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 0,
+                Name = name,
+            },
+        };
+
+        Assert.False(tracker.ApplyStatusDestination(sites, status, captureUnknownSurfaceSite: true));
+        Assert.Empty(sites);
+    }
+
+    [Fact]
+    public void StationNameContainingNavigationBeaconTextRemainsAValidSite()
+    {
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
+        var sites = new List<ColonizationSystemSite>();
+
+        Assert.True(
+            tracker.ApplyJournalEvent(
+                sites,
+                Event(
+                    """{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Nav Beacon Outpost","SignalType":"Outpost"}"""
+                )
+            )
+        );
+        Assert.Equal("Nav Beacon Outpost", Assert.Single(sites).Name);
+    }
+
     [Fact]
     public void ScanProgressCombinesDiscoveryAndBodyScans()
     {

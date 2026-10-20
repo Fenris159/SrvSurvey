@@ -5,6 +5,100 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationShoppingPlanTests
 {
     [Fact]
+    public void PreservedSelectionsKeepFixedQuantitiesOutsideTheCurrentNeedsAndStock()
+    {
+        var plan = new ColonizationShoppingPlan(
+            [new("water", "Water", 30)],
+            [Quote(1, "steel", 5), Quote(2, "water", 100)],
+            [new("1", "steel", 50), new("missing", "steel", 20)],
+            preserveSelections: true
+        );
+        Assert.Equal(50, Assert.Single(plan.Snapshot()).Quantity);
+        Assert.Equal(1, Assert.Single(plan.SnapshotQuotes()).MarketId);
+        Assert.Equal(0, plan.Remaining("steel"));
+        plan.Select([new("2", "water")]);
+        Assert.Equal(30, plan.Snapshot()[1].Quantity);
+        plan.Remove([new("1", "steel")]);
+        Assert.Equal(0, plan.Remaining("steel"));
+        plan.Remove(plan.Snapshot());
+        Assert.Equal(30, plan.Remaining("water"));
+        Assert.Empty(plan.SnapshotQuotes());
+    }
+
+    [Fact]
+    public void RemovingPreservedSurplusCannotOverflowOrIncreaseNeedsPastTheirCurrentAmount()
+    {
+        var plan = new ColonizationShoppingPlan(
+            [new("steel", "Steel", 1)],
+            [Quote(1, "steel", 1), Quote(2, "steel", 1)],
+            [new("1", "steel", long.MaxValue), new("2", "steel", long.MaxValue)],
+            preserveSelections: true
+        );
+        plan.Remove([new("1", "steel")]);
+        Assert.Equal(0, plan.Remaining("steel"));
+        plan.Select([new("1", "steel")]);
+        Assert.Equal("2", Assert.Single(plan.Snapshot()).MarketKey);
+        plan.Remove(plan.Snapshot());
+        Assert.Equal(1, plan.Remaining("steel"));
+        Assert.Empty(plan.Snapshot());
+    }
+
+    [Theory]
+    [InlineData(10, 10, 200)]
+    [InlineData(30, 0, 190)]
+    [InlineData(220, 0, 0)]
+    [InlineData(1000, 0, 0)]
+    [InlineData(0, 20, 200)]
+    [InlineData(-1, 20, 200)]
+    public void PurchasesConsumeSmallestAllocationsFirstAndNeverAffectOtherGoods(
+        long purchased,
+        long smallRemaining,
+        long largeRemaining
+    )
+    {
+        ColonizationWishListItem[] original =
+        [
+            new("large", "steel", 200),
+            new("small", "steel", 20),
+            new("small", "water", 50),
+        ];
+
+        IReadOnlyList<ColonizationWishListItem> updated = ColonizationShoppingPlan.ConsumePurchase(
+            original,
+            "$Steel_Name;",
+            purchased
+        );
+
+        Assert.Equal(
+            smallRemaining,
+            updated.FirstOrDefault(item => item.MarketKey == "small" && item.Commodity == "steel")?.Quantity ?? 0
+        );
+        Assert.Equal(largeRemaining, updated.FirstOrDefault(item => item.MarketKey == "large")?.Quantity ?? 0);
+        Assert.Equal(50, updated.Single(item => item.Commodity == "water").Quantity);
+        Assert.Equal(20, original[1].Quantity);
+        Assert.All(updated, item => Assert.True(item.Quantity > 0));
+    }
+
+    [Fact]
+    public void PurchaseTiesUseSavedOrderAndUnlistedGoodsLeaveAllocationsUnchanged()
+    {
+        ColonizationWishListItem[] original = [new("first", "steel", 20), new("second", "steel", 20)];
+
+        IReadOnlyList<ColonizationWishListItem> updated = ColonizationShoppingPlan.ConsumePurchase(
+            original,
+            "Steel",
+            25
+        );
+
+        Assert.Equal(new("second", "steel", 15), Assert.Single(updated));
+        Assert.Equal(original, ColonizationShoppingPlan.ConsumePurchase(original, "water", 500));
+        Assert.Empty(
+            ColonizationShoppingPlan.ConsumePurchase([new("large", "steel", long.MaxValue)], "steel", long.MaxValue)
+        );
+        Assert.Throws<ArgumentNullException>(() => ColonizationShoppingPlan.ConsumePurchase(null!, "steel", 1));
+    }
+
+    [Fact]
     public void AllocatesInClickOrderAndCapsTheLastPurchaseToTheRemainingNeed()
     {
         var plan = new ColonizationShoppingPlan(

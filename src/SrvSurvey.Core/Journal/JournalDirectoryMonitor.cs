@@ -114,6 +114,8 @@ public sealed class JournalDirectoryMonitor
 
     public string? CurrentJournalPath => currentJournalPath;
 
+    public IReadOnlyList<string> JournalDirectories => Array.AsReadOnly(journalDirectories);
+
     public async Task<JournalMonitorUpdate> PollAsync(CancellationToken cancellationToken = default)
     {
         await pollLock.WaitAsync(cancellationToken).ConfigureAwait(false);

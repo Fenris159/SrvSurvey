@@ -34,6 +34,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private readonly Action<CanonnHumanSitePublicationResult>? reportCanonnPublication;
     private readonly Version clientVersion;
     private EliteStatus? status;
+
     private string? frontierId;
     private string? commanderName;
     private string? systemName;
@@ -135,6 +136,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public EliteStatus? MotionStatus => status;
 
     public HumanSiteTemplateAuthoringViewModel TemplateAuthor { get; }
 
@@ -705,6 +708,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         UpdateNavigation();
         NotifySiteState();
+        OnPropertyChanged(nameof(MotionStatus));
     }
 
     public void SetActiveBuildProjects(bool value)

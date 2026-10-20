@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -151,6 +152,57 @@ public sealed partial class ColonizationSystemEditorViewModelTests
         Assert.True(row.HasMarketIdWarning);
         Assert.Contains("too large", row.MarketIdWarning, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("99", row.MarketIdText);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task NavigationBeaconCannotEnterTheEditorOrPublishedSiteChanges(bool bufferBeforeLoad)
+    {
+        var client = new StubClient { Current = System() };
+        using ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Nav Beacon","SignalType":"NavBeacon"}""",
+                out JournalEventEnvelope? beacon,
+                out string? error
+            ),
+            error
+        );
+        if (bufferBeforeLoad)
+        {
+            editor.ApplyJournalEvents([beacon!]);
+        }
+        await editor.LoadAsync();
+        if (!bufferBeforeLoad)
+        {
+            editor.ApplyJournalEvents([beacon!]);
+        }
+        editor.CaptureUnknownSurfaceSites = true;
+        editor.UpdateStatus(
+            new EliteStatus
+            {
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Nav Beacon",
+                },
+            }
+        );
+
+        Assert.Equal("Orbital One", Assert.Single(editor.Sites).Name);
+        Assert.False(editor.HasLocalChanges);
+        editor.Sites[0].BodyNumber = 2;
+        await editor.ReviewAsync();
+        Assert.True(editor.CanConfirmPublish);
+        await editor.ConfirmPublishAsync();
+
+        Assert.Equal(1, client.UpdateCount);
+        Assert.Equal("site-1", Assert.Single(client.LastUpdate!.UpdatedSites).Id);
+        Assert.Empty(client.LastUpdate.DeletedSiteIds);
+        Assert.DoesNotContain(client.Current.Sites, site => site.Name == "Nav Beacon");
     }
 
     [Fact]
@@ -477,8 +529,28 @@ public sealed partial class ColonizationSystemEditorViewModelTests
         };
     }
 
-    private sealed class StubClient : IRavenColonialClient
+    private sealed class StubClient : IRavenColonialClient, IRavenColonialArchitectSystemReader
     {
+        public IReadOnlyList<ColonizationArchitectSystem> CatalogSystems { get; set; } = [];
+
+        public Func<Task<IReadOnlyList<ColonizationArchitectSystem>>>? CatalogRead { get; set; }
+
+        public int CatalogReadCount { get; private set; }
+
+        public CancellationToken CatalogToken { get; private set; }
+
+        public List<string> SystemIdentifiers { get; } = [];
+
+        public Task<IReadOnlyList<ColonizationArchitectSystem>> GetArchitectSystemsAsync(
+            string commander,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CatalogReadCount++;
+            CatalogToken = cancellationToken;
+            return CatalogRead?.Invoke() ?? Task.FromResult(CatalogSystems);
+        }
+
         public ColonizationSystemRecord Current { get; set; } = System();
 
         /// <summary>Delays system loading so tests can invalidate the original editor context before completion.</summary>
@@ -507,6 +579,7 @@ public sealed partial class ColonizationSystemEditorViewModelTests
         )
         {
             SystemReadCount++;
+            SystemIdentifiers.Add(systemNameOrAddress);
             return PendingRead ?? Task.FromResult(Current);
         }
 

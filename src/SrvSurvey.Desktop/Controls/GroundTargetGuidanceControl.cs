@@ -1,11 +1,22 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Desktop.Controls;
 
-public sealed class GroundTargetGuidanceControl : Control
+public sealed class GroundTargetGuidanceControl : SurfaceMotionControl
 {
+    public static readonly StyledProperty<SurfaceCoordinate?> TargetLocationProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        SurfaceCoordinate?
+    >(nameof(TargetLocation));
+
+    public SurfaceCoordinate? TargetLocation
+    {
+        get => GetValue(TargetLocationProperty);
+        set => SetValue(TargetLocationProperty, value);
+    }
     public static readonly StyledProperty<double> RelativeBearingDegreesProperty = AvaloniaProperty.Register<
         GroundTargetGuidanceControl,
         double
@@ -44,7 +55,8 @@ public sealed class GroundTargetGuidanceControl : Control
             AccentBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
-            MutedBrushProperty
+            MutedBrushProperty,
+            TargetLocationProperty
         );
     }
 
@@ -93,6 +105,7 @@ public sealed class GroundTargetGuidanceControl : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        BeginMotionFrame();
         if (Bounds.Width <= 0 || Bounds.Height <= 0)
         {
             return;
@@ -128,7 +141,11 @@ public sealed class GroundTargetGuidanceControl : Control
             new Point(center.X - radius + 7, center.Y)
         );
 
-        double bearingRadians = RelativeBearingDegrees * Math.PI / 180d;
+        double bearing =
+            VisualPose is { } pose && TargetLocation is { } targetLocation
+                ? SurfaceNavigation.GetBearing(pose.Location, targetLocation) - pose.Heading
+                : RelativeBearingDegrees;
+        double bearingRadians = bearing * Math.PI / 180d;
         var target = new Point(
             center.X + Math.Sin(bearingRadians) * (radius - 9),
             center.Y - Math.Cos(bearingRadians) * (radius - 9)

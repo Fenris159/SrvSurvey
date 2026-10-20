@@ -5,6 +5,14 @@ namespace SrvSurvey.Core.Colonization;
 
 public sealed class ColonizationSystemSiteJournalTracker
 {
+    private static readonly HashSet<string> NavigationBeaconNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Nav Beacon",
+        "Navigation Beacon",
+        "Compromised Nav Beacon",
+        "Compromised Navigation Beacon",
+    };
+
     private static readonly IReadOnlyDictionary<string, string> SignalBuildTypes = new Dictionary<string, string>(
         StringComparer.OrdinalIgnoreCase
     )
@@ -162,6 +170,7 @@ public sealed class ColonizationSystemSiteJournalTracker
         if (
             !IsUsableName(name)
             || HasNonEmptyString(root, "SignalName_Localised")
+            || string.Equals(type, "NavBeacon", StringComparison.OrdinalIgnoreCase)
             || string.Equals(type, "FleetCarrier", StringComparison.OrdinalIgnoreCase)
             || string.Equals(type, "SquadronCarrier", StringComparison.OrdinalIgnoreCase)
             || name!.Contains("Construction Site", StringComparison.OrdinalIgnoreCase)
@@ -346,7 +355,9 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private static bool IsUsableName(string? name)
     {
-        return !string.IsNullOrWhiteSpace(name) && !name.TrimStart().StartsWith('$');
+        return !string.IsNullOrWhiteSpace(name)
+            && !name.TrimStart().StartsWith('$')
+            && !NavigationBeaconNames.Contains(name.Trim());
     }
 
     private static bool HasNonEmptyString(JsonElement root, string propertyName)

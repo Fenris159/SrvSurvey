@@ -2113,13 +2113,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         TimeSpan interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
+        JournalDirectoryMonitor watchedMonitor = journalMonitor;
+        JournalDirectoryChangeSignal changes = new(watchedMonitor.JournalDirectories);
         try
         {
             while (!Volatile.Read(ref disposed))
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (journalMonitor is { } currentMonitor && !ReferenceEquals(watchedMonitor, currentMonitor))
+                {
+                    changes.Dispose();
+                    watchedMonitor = currentMonitor;
+                    changes = new JournalDirectoryChangeSignal(watchedMonitor.JournalDirectories);
+                }
                 await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
-                await Task.Delay(interval, cancellationToken);
+                await changes.WaitAsync(interval, cancellationToken);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -2129,6 +2137,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             StatusMessage = "Live journal monitoring stopped: " + exception.Message;
+        }
+        finally
+        {
+            changes.Dispose();
         }
     }
 

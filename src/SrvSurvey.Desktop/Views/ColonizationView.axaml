@@ -605,13 +605,57 @@
                         <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
                           <StackPanel Spacing="3">
                             <TextBlock Classes="eyebrow" Text="SYSTEM EDITOR" />
-                            <TextBlock Classes="card-title"
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                              <AutoCompleteBox x:Name="EditorSystemName" Classes="system-catalog"
+                                               Text="{Binding Colonization.SystemEditor.SystemNameInput, Mode=TwoWay}"
+                                               ItemsSource="{Binding Colonization.SystemEditor.SystemNames}"
+                                               IsEnabled="{Binding !Colonization.SystemEditor.IsBusy}"
+                                               MinimumPrefixLength="0" FilterMode="StartsWith"
+                                               IsTextCompletionEnabled="False" MaxDropDownHeight="194"
+                                               PlaceholderText="Select or type a system"
+                                               AutomationProperties.Name="System name"
+                                               TextChanged="EditorSystemName_TextChanged">
+                                <AutoCompleteBox.Styles>
+                                  <Style Selector="AutoCompleteBox.system-catalog /template/ Border#PART_SuggestionsContainer">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                  </Style>
+                                  <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
+                                  </Style>
+                                  <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox ListBoxItem">
+                                    <Setter Property="Height" Value="32" />
+                                    <Setter Property="MinHeight" Value="32" />
+                                    <Setter Property="MaxHeight" Value="32" />
+                                    <Setter Property="Padding" Value="8,0" />
+                                    <Setter Property="Margin" Value="0" />
+                                  </Style>
+                                </AutoCompleteBox.Styles>
+                                <AutoCompleteBox.InnerRightContent>
+                                  <Button x:Name="EditorSystemDropdown" Content="▾" Padding="8,0" MinWidth="32"
+                                          Background="Transparent" BorderThickness="0"
+                                          Click="EditorSystemDropdown_Click"
+                                          ToolTip.Tip="Show systems" AutomationProperties.Name="Show systems" />
+                                </AutoCompleteBox.InnerRightContent>
+                              </AutoCompleteBox>
+                              <Button x:Name="UseCurrentEditorSystem" Grid.Column="1" Classes="secondary"
+                                      Command="{Binding Colonization.SystemEditor.UseCurrentSystemCommand}"
+                                      Content="Use Current" />
+                            </Grid>
+                            <TextBlock Classes="muted" IsVisible="{Binding Colonization.SystemEditor.IsLoaded}"
                                        Text="{Binding Colonization.SystemEditor.SystemTitle}" />
+                            <TextBlock x:Name="EditorSystemCatalogStatus" Classes="muted" TextWrapping="Wrap"
+                                       Text="{Binding Colonization.SystemEditor.SystemsStatusMessage}" />
                             <TextBlock Classes="muted"
                                        TextWrapping="Wrap"
                                        Text="Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish." />
                           </StackPanel>
                           <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
+                          <Button x:Name="RefreshEditorSystems" Margin="0,0,8,0" Classes="secondary"
+                                  VerticalAlignment="Center"
+                                  Command="{Binding Colonization.SystemEditor.RefreshSystemsCommand}"
+                                  Content="Refresh Systems" />
                           <Button Margin="0,0,8,0"
                                   Classes="secondary"
                                   VerticalAlignment="Center"

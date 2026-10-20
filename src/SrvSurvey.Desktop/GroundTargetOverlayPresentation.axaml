@@ -27,6 +27,8 @@
 
       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
         <controls:GroundTargetGuidanceControl
+            MotionStatus="{Binding GroundTarget.MotionStatus}"
+            TargetLocation="{Binding GroundTarget.Target}"
             Width="104"
             Height="116"
             HorizontalAlignment="Center"

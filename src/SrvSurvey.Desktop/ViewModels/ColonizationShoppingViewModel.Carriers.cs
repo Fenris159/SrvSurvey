@@ -78,7 +78,7 @@ public sealed partial class ColonizationShoppingViewModel
 
     private void ReconcileCarrierNeeds()
     {
-        plan = new ColonizationShoppingPlan(EffectiveNeeds(Needs.Select(need => need.Need)), quotes, plan.Snapshot());
+        RebuildPlan(Needs.Select(need => need.Need), plan.Snapshot());
         FilterResults();
         SaveWorkspace();
     }

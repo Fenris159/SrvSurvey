@@ -4860,6 +4860,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Architect systems are cached for a day. Refresh Systems updates the list now.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.SystemCatalog.cs"
+  },
+  {
     "Text": "Archon Delaine",
     "IsFormat": false,
     "SourceKinds": [
@@ -10891,6 +10899,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "Choose a system to review its Raven Colonial sites.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "Choose a system-name text file",
     "IsFormat": false,
     "SourceKinds": [
@@ -11395,6 +11411,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Clear List",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Clear Search",
     "IsFormat": false,
     "SourceKinds": [
@@ -11547,7 +11571,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Click a commodity tag to add it to ShoppingList; click again to remove it. Selected tags use the secondary highlight.",
+    "Text": "Click a commodity tag to add it to ShoppingList; click again to remove it. Highlighted tags are on your ShoppingList.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18807,6 +18831,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "EditorSystemName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml.cs"
+  },
+  {
     "Text": "Edmund Mahon",
     "IsFormat": false,
     "SourceKinds": [
@@ -19537,14 +19569,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InputBindingViewModel.cs"
   },
   {
-    "Text": "Enter a live Elite system before loading Raven sites.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
-  },
-  {
     "Text": "Enter a mineral and 0\u201316 pending tons.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19927,6 +19951,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Estimated trips remaining: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
   },
   {
     "Text": "Evacuation shelter",
@@ -28771,6 +28803,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Keep ShoppingList when starting or clearing market searches.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30407,14 +30447,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
   },
   {
-    "Text": "Load a live system to review its Raven Colonial sites.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
-  },
-  {
     "Text": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30823,7 +30855,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Loading the current system from Raven Colonial...",
+    "Text": "Loading the selected system from Raven Colonial...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31038,6 +31070,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Lock List",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "LockToMonitor",
@@ -32179,7 +32219,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ShoppingPurchases.cs"
   },
   {
     "Text": "MarketID",
@@ -45242,6 +45282,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
+    "Text": "Refresh Systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Refresh active colonization project data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -45496,6 +45544,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "Refreshing architect systems from Raven Colonial...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.SystemCatalog.cs"
   },
   {
     "Text": "Refreshing commander data from Frontier...",
@@ -45753,6 +45809,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Remove all items from ShoppingList.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Remove commodity",
@@ -51107,6 +51171,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Select or type a system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Select or type a system before loading Raven sites.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "Select page",
     "IsFormat": false,
     "SourceKinds": [
@@ -52847,6 +52927,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Show systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Show the last tuned body in FSS",
@@ -57396,6 +57484,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "Systems could not be refreshed. Cached systems remain available: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.SystemCatalog.cs"
+  },
+  {
     "Text": "Systems in current boxel",
     "IsFormat": false,
     "SourceKinds": [
@@ -58654,6 +58750,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The ShoppingList purchases could not be saved to disk.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ShoppingPurchases.cs"
   },
   {
     "Text": "The ShoppingList was updated but could not be saved to disk.",
@@ -60304,14 +60408,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
-    "Text": "The live system is ready to load from Raven Colonial.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
-  },
-  {
     "Text": "The loaded construction requirements are stale.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61774,6 +61870,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+  },
+  {
+    "Text": "The selected system is ready to load from Raven Colonial.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "The selected system screenshot folder could not be opened.",
@@ -63347,6 +63451,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Total estimated trips: ship capacity unknown",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
+  },
+  {
+    "Text": "Total estimated trips: {0} \u00B7 Ship capacity: {1} t",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
+  },
+  {
     "Text": "Total reward:",
     "IsFormat": false,
     "SourceKinds": [
@@ -63737,6 +63857,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Trips: capacity unknown",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
   },
   {
     "Text": "Tritium",
@@ -65252,6 +65380,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Current",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
@@ -75843,6 +75979,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "{0} architect systems cached. Updated {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.SystemCatalog.cs"
   },
   {
     "Text": "{0} as scanned \u00B7 {1} if mapped",
