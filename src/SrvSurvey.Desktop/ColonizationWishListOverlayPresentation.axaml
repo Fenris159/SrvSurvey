@@ -66,13 +66,18 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </Border>
+                <TextBlock Text="{Binding TripsText}" Classes="station-trips muted type-caption" FontSize="10"
+                           Margin="17,1,0,0" />
               </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </ScrollViewer>
-      <TextBlock Grid.Row="2" Text="{Binding Summary}" FontSize="9" Classes="muted type-caption"
-                 MaxWidth="{Binding #WishListRows.Bounds.Width}" TextWrapping="Wrap" />
+      <StackPanel Grid.Row="2" Spacing="3" MaxWidth="{Binding #WishListRows.Bounds.Width}">
+        <TextBlock x:Name="ShoppingListTotalTrips" Text="{Binding TotalTripsText}" IsVisible="{Binding HasItems}"
+                   FontSize="10" Classes="type-detail" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}" />
+        <TextBlock Text="{Binding Summary}" FontSize="9" Classes="muted type-caption" TextWrapping="Wrap" />
+      </StackPanel>
     </Grid>
   </Border>
 </UserControl>

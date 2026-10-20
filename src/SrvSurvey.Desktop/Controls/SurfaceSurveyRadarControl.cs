@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
 
-public sealed class SurfaceSurveyRadarControl : Control
+public sealed class SurfaceSurveyRadarControl : SurfaceMotionControl
 {
     private const double MetersPerPixel = 4;
 
@@ -156,6 +156,7 @@ public sealed class SurfaceSurveyRadarControl : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        BeginMotionFrame();
         var bounds = new Rect(Bounds.Size);
         IBrush background = BackgroundBrush ?? Brushes.Transparent;
         IBrush grid = GridBrush ?? Brushes.DimGray;
@@ -223,12 +224,9 @@ public sealed class SurfaceSurveyRadarControl : Control
 
     private Point ToPoint(Point center, SurfaceRadarPointViewModel point)
     {
-        double radians = point.RelativeBearingDegrees * Math.PI / 180;
+        (double x, double y) = VisualRelativePoint(point.RelativeBearingDegrees, point.DistanceMeters);
         double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
-        return new Point(
-            center.X + Math.Sin(radians) * point.DistanceMeters / MetersPerPixel * scale,
-            center.Y - Math.Cos(radians) * point.DistanceMeters / MetersPerPixel * scale
-        );
+        return new Point(center.X + x / MetersPerPixel * scale, center.Y - y / MetersPerPixel * scale);
     }
 
     private static void DrawGrid(DrawingContext context, Rect bounds, Point center, IBrush brush)
@@ -246,12 +244,9 @@ public sealed class SurfaceSurveyRadarControl : Control
 
     private void DrawMarker(DrawingContext context, Rect bounds, Point center, SurfaceRadarMarkerViewModel marker)
     {
-        double radians = marker.RelativeBearingDegrees * Math.PI / 180d;
+        (double x, double y) = VisualRelativePoint(marker.RelativeBearingDegrees, marker.DistanceMeters);
         double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
-        var point = new Point(
-            center.X + Math.Sin(radians) * marker.DistanceMeters / MetersPerPixel * scale,
-            center.Y - Math.Cos(radians) * marker.DistanceMeters / MetersPerPixel * scale
-        );
+        var point = new Point(center.X + x / MetersPerPixel * scale, center.Y - y / MetersPerPixel * scale);
         double radius = marker.RadiusMeters / MetersPerPixel * scale;
         if (
             radius > 0

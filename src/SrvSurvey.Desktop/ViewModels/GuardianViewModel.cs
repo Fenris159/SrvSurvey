@@ -64,6 +64,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
     private GuardianSiteMapProjection? activeMapProjection;
     private GuardianSiteProximitySnapshot? proximity;
     private EliteStatus? currentStatus;
+
     private string? musicTrack;
     private string filterText = string.Empty;
     private string selectedKindFilter = AllKinds;
@@ -250,6 +251,8 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public EliteStatus? MotionStatus => currentStatus;
 
     public IReadOnlyList<string> KindFilters { get; }
 
@@ -1806,6 +1809,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         UpdateProximity();
         RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
+        OnPropertyChanged(nameof(MotionStatus));
     }
 
     public async Task UpdateStatusAsync(
@@ -1828,6 +1832,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         UpdateProximity();
         RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
+        OnPropertyChanged(nameof(MotionStatus));
         if (allowGesture && blink.Detected)
         {
             await HandleBlinkGestureAsync(status, cancellationToken);

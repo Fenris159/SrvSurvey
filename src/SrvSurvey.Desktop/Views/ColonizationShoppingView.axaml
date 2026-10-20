@@ -37,6 +37,16 @@
       <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
+    <Style Selector="ToggleButton.list-lock:checked">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.list-lock:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
     <Style Selector="ToggleButton.short-supply:checked">
       <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
@@ -60,9 +70,9 @@
       <Setter Property="Padding" Value="4,2" />
       <Setter Property="Margin" Value="0,0,6,5" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="BorderBrush" Value="Transparent" />
-      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.supply-button /template/ ContentPresenter">
@@ -73,16 +83,16 @@
       <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
     </Style>
     <Style Selector="Button.supply-button.short-supply">
-      <Setter Property="Background" Value="{DynamicResource RavenDangerBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenDangerForegroundBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
     <Style Selector="Button.supply-button.wished">
-      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
     <Style Selector="Button.supply-button.short-supply.wished">
+      <Setter Property="Background" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerForegroundBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
     </Style>
     <Style Selector="Button.table-link">
@@ -184,10 +194,14 @@
     <StackPanel Grid.Row="4" Margin="12,8,12,8" Spacing="6">
     <WrapPanel>
       <TextBlock x:Name="RemainingShoppingNeeds" FontSize="12" FontWeight="SemiBold" Text="{Binding TotalText}" VerticalAlignment="Center" Margin="0,0,12,4" />
-      <Button x:Name="OpenShoppingWishList" Content="Open ShoppingList" Command="{Binding OpenWishListCommand}" Margin="0,0,0,4" />
+      <Button x:Name="OpenShoppingWishList" Content="Open ShoppingList" Command="{Binding OpenWishListCommand}" Margin="0,0,8,4" />
+      <ToggleButton x:Name="LockShoppingList" Classes="list-lock" Content="Lock List" IsChecked="{Binding IsWishListLocked, Mode=TwoWay}"
+                    ToolTip.Tip="Keep ShoppingList when starting or clearing market searches." Margin="0,0,8,4" />
+      <Button x:Name="ClearShoppingList" Content="Clear List" Command="{Binding ClearWishListCommand}"
+              ToolTip.Tip="Remove all items from ShoppingList." Margin="0,0,0,4" />
     </WrapPanel>
     <TextBlock x:Name="ShoppingListInstructions" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}"
-               Text="Click a commodity tag to add it to ShoppingList; click again to remove it. Selected tags use the secondary highlight." />
+               Text="Click a commodity tag to add it to ShoppingList; click again to remove it. Highlighted tags are on your ShoppingList." />
     </StackPanel>
     <WrapPanel Grid.Row="3" Margin="12,2,12,4">
       <Button x:Name="ClearMarketSearch" Content="Clear Search" IsVisible="{Binding HasSearchResults}" Click="ClearSearch_Click" Margin="0,0,12,0" />

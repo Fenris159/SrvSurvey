@@ -57,6 +57,7 @@
 
       <Grid Grid.Row="1">
         <controls:HumanSiteMapControl
+            MotionStatus="{Binding HumanSite.MotionStatus}"
             MinHeight="180"
             IsVisible="{Binding HumanSite.HasKnownGeometry}"
             ClipToBounds="True"

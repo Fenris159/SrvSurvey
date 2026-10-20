@@ -142,7 +142,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         PublishFleetCarrierCommand = publishFleetCarrierCommand;
         SyncFleetCarrierCargoCommand = syncFleetCarrierCargoCommand;
         ProjectEditor = new ColonizationProjectEditorViewModel(this.client, this.buildCatalog, OnProjectCreatedAsync);
-        SystemEditor = new ColonizationSystemEditorViewModel(this.client, this.buildCatalog);
+        SystemEditor = new ColonizationSystemEditorViewModel(this.client, this.buildCatalog, settingsStore, utcNow);
         InitializePlannedProjects();
         CommodityOverlay = new ColonizationCommodityOverlayViewModel();
         CommodityOverlay.ApplyPreferences(overlayPreferences);
@@ -713,6 +713,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         CancellationToken cancellationToken = default
     )
     {
+        if (allowPublishing)
+        {
+            ApplyShoppingPurchases(journalEvents);
+        }
         IReadOnlyList<ColonizationDeliveryNotice> notices = await recovery.SynchronizeLiveEventsAsync(
             journalEvents,
             allowPublishing,
@@ -911,6 +915,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         FlushPlannedSystemsSave();
         CancelCurrentPlannedSystemRead();
         StopPlannedProjects();
+        SystemEditor.Dispose();
         StopAutoRefresh();
         CloseMarketSearchWorkspace();
         CancelDockingRefresh();
@@ -1444,6 +1449,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 recovery.ApiKey
             )
         );
+        if (SelectedWorkspaceTabIndex == 2)
+        {
+            SystemEditor.ActivateSystemCatalog();
+        }
     }
 
     private void OnProjectShownChanged(ColonizationProjectRowViewModel row, bool isShown)
@@ -1540,6 +1549,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
     private void UpdateCommodityPlan()
     {
+        WishList.UpdateShipCapacity(recovery.ShipCargoCapacity);
         UpdatePlanningCarriers();
         ReconcileShoppingCarriers();
         OnPropertyChanged(nameof(LinkedFleetCarriers));

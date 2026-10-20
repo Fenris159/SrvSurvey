@@ -38,12 +38,14 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private bool excludeSurface;
     private bool requireFullSupply;
     private bool showShortSupply = true;
+    private bool isWishListLocked;
     private bool disposed;
     private bool updatingCommoditySelection;
     private int searchVersion;
     private bool showSearchCriteria = true;
     private bool reverseSort;
     private ColonizationShoppingPlan plan;
+    private IReadOnlyList<string> appliedPurchaseIds = [];
     private readonly HashSet<string> expandedMarkets = new(StringComparer.Ordinal);
 
     public bool ShowSearchCriteria
@@ -51,6 +53,28 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         get => showSearchCriteria;
         set => Set(ref showSearchCriteria, value);
     }
+
+    public bool IsWishListLocked
+    {
+        get => isWishListLocked;
+        set
+        {
+            if (!disposed && Set(ref isWishListLocked, value))
+            {
+                if (!value)
+                {
+                    RebuildPlan(Needs.Select(need => need.Need), plan.Snapshot());
+                    FilterResults();
+                }
+                SaveWorkspace();
+            }
+        }
+    }
+
+    public ICommand ClearWishListCommand { get; }
+
+    public void ClearWishList() => RemoveWishListItems(plan.Snapshot());
+
     public string ExpandAllText => Results.Any(row => row.IsExpanded) ? "Collapse all" : "Expand all";
     public string StationSortLabel => SortLabel(StationSort, StationSort);
     public string MatchesSortLabel => SortLabel(MatchesSort, "Commodities");
@@ -147,7 +171,16 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         return true;
     }
 
-    /// <summary>Explicitly discards the saved results and the ShoppingList that belongs to them.</summary>
+    /// <summary>Keeps market tags and subsequent saves consistent with purchases applied to the shared list.</summary>
+    internal void ApplyPurchasedWishList(ColonizationShoppingState state)
+    {
+        appliedPurchaseIds = state.AppliedPurchaseIds;
+        RebuildPlan(Needs.Select(need => need.Need), state.WishList, state.WishListQuotes);
+        FilterResults();
+        SaveWorkspace();
+    }
+
+    /// <summary>Discards saved search results while respecting the ShoppingList lock.</summary>
     public void ClearSearch()
     {
         searchVersion++;
@@ -200,6 +233,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
         Needs = aggregate.Select(need => new ShoppingNeedViewModel(need)).ToArray();
         plan = new ColonizationShoppingPlan(aggregate, []);
+        ClearWishListCommand = new WorkspaceCommand(ClearWishList);
         VisibleNeeds = Needs;
 
         if (restoredState is not null)
@@ -511,6 +545,9 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             SearchedCommodities = searchedCommodities,
             Quotes = quotes,
             WishList = plan.Snapshot(),
+            IsWishListLocked = IsWishListLocked,
+            WishListQuotes = plan.SnapshotQuotes(),
+            AppliedPurchaseIds = appliedPurchaseIds,
             Warnings = Warnings,
             CompletedAt = completedAt,
             CompletedSystem = completedSystem,
@@ -519,6 +556,8 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
 
     private void Restore(ColonizationShoppingState state)
     {
+        appliedPurchaseIds = state.AppliedPurchaseIds;
+        isWishListLocked = state.IsWishListLocked;
         referenceSystem = state.ReferenceSystem;
         radiusText = state.RadiusText;
         maximumAgeText = state.MaximumAgeText;
@@ -542,7 +581,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         completedRadius = state.CompletedRadius;
         searchedCommodities = state.SearchedCommodities;
         expandedMarkets.UnionWith(state.ExpandedMarkets);
-        plan = new ColonizationShoppingPlan(EffectiveNeeds(Needs.Select(need => need.Need)), quotes, state.WishList);
+        RebuildPlan(Needs.Select(need => need.Need), state.WishList, state.WishListQuotes);
         foreach (ShoppingNeedViewModel need in Needs)
         {
             need.IsSelected = !state.ExcludedCommodities.Contains(need.Need.Commodity, StringComparer.Ordinal);
@@ -593,7 +632,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         }
         ColonizationProject[] selected = projects.ToArray();
         IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
-        plan = new ColonizationShoppingPlan(EffectiveNeeds(aggregate), quotes, plan.Snapshot());
+        RebuildPlan(aggregate, plan.Snapshot());
         Needs = aggregate
             .Select(need => new ShoppingNeedViewModel(need)
             {
@@ -637,8 +676,21 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         }
     }
 
-    private void ResetPlan() =>
-        plan = new ColonizationShoppingPlan(EffectiveNeeds(Needs.Select(need => need.Need)), quotes);
+    private void ResetPlan() => RebuildPlan(Needs.Select(need => need.Need), IsWishListLocked ? plan.Snapshot() : []);
+
+    private void RebuildPlan(
+        IEnumerable<ColonizationShoppingNeed> needs,
+        IReadOnlyList<ColonizationWishListItem> selections,
+        IReadOnlyList<ColonizationMarketQuote>? retainedQuotes = null
+    )
+    {
+        plan = new ColonizationShoppingPlan(
+            EffectiveNeeds(needs),
+            ColonizationShopping.Merge(quotes.Concat(retainedQuotes ?? plan.SnapshotQuotes())),
+            selections,
+            preserveSelections: IsWishListLocked
+        );
+    }
 
     private void UpdateRemainingNeeds()
     {

@@ -7,6 +7,44 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationWishListViewModelTests
 {
+    [Fact]
+    public void TripsUseEachStationsCombinedTonnesAndSumTheRoundedStationEstimates()
+    {
+        var model = new ColonizationWishListViewModel();
+        ColonizationShoppingNeed[] needs = [new("steel", "Steel", 220), new("water", "Water", 70)];
+        var state = new ColonizationShoppingState
+        {
+            Quotes = [Quote(1, "steel", 20), Quote(1, "water", 70), Quote(2, "steel", 200)],
+            WishList = [new("1", "steel", 20), new("1", "water", 70), new("2", "steel", 200)],
+        };
+        model.Apply(state, needs);
+        Assert.Null(model.TotalTripsInCurrentShip);
+        Assert.All(model.Stations, station => Assert.Null(station.TripsInCurrentShip));
+        Assert.Contains("unknown", model.TotalTripsText);
+
+        model.UpdateShipCapacity(100);
+        Assert.Equal([1L, 2L], model.Stations.Select(station => station.TripsInCurrentShip));
+        Assert.Equal(3, model.TotalTripsInCurrentShip);
+        Assert.Contains("100 t", model.TotalTripsText);
+        Assert.Equal(90, model.Stations[0].Tonnes);
+        model.UpdateShipCapacity(400);
+        Assert.Equal(2, model.TotalTripsInCurrentShip);
+        Assert.All(model.Stations, station => Assert.Equal(1, station.TripsInCurrentShip));
+        IReadOnlyList<ColonizationWishListNode> unchanged = model.Stations;
+        model.UpdateShipCapacity(400);
+        model.Apply(state, needs);
+        Assert.Same(unchanged, model.Stations);
+
+        state = state with { WishList = ColonizationShoppingPlan.ConsumePurchase(state.WishList, "steel", 30) };
+        model.Apply(state, needs);
+        Assert.Equal(190, model.Stations.Single(station => station.Label == "Port 2").Tonnes);
+        model.Apply(state with { WishList = [] }, needs);
+        Assert.False(model.HasItems);
+        Assert.Equal(0, model.TotalTripsInCurrentShip);
+        model.UpdateShipCapacity(-1);
+        Assert.Null(model.TotalTripsInCurrentShip);
+    }
+
     [Theory]
     [InlineData(40)]
     [InlineData(100)]

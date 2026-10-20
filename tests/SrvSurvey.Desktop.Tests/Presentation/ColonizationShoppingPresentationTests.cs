@@ -400,10 +400,12 @@ public sealed partial class ColonizationShoppingPresentationTests
                 .OfType<ToggleButton>()
                 .ToArray();
             Assert.Equal(2, tags.Length);
-            Assert.False(main.Colonization.CanSearchMarkets);
-            tags[0].IsChecked = true;
             Assert.True(main.Colonization.CanSearchMarkets);
-            Assert.Equal("1", Assert.Single(main.Colonization.MarketSearchWorkspace!.ProjectIds));
+            Assert.All(tags, tag => Assert.True(tag.IsChecked));
+            Assert.Equal(["1", "2"], main.Colonization.MarketSearchWorkspace!.ProjectIds);
+            tags[1].IsChecked = false;
+            Assert.True(main.Colonization.CanSearchMarkets);
+            Assert.Equal("1", Assert.Single(main.Colonization.MarketSearchWorkspace.ProjectIds));
             Assert.False(main.Colonization.HasUnsavedProjectVisibility);
             Assert.All(main.Colonization.Projects, row => Assert.True(row.IsShown));
             tags[0].IsChecked = false;
@@ -465,6 +467,8 @@ public sealed partial class ColonizationShoppingPresentationTests
 
     private sealed class RavenHandler : HttpMessageHandler
     {
+        public string SystemMapJson { get; init; } = "{\"systems\":[]}";
+        public int SystemCatalogReads { get; private set; }
         public ConcurrentBag<string> MarketSources { get; } = [];
         public IReadOnlyList<ColonizationFleetCarrier> LinkedCarriers { get; init; } = [];
         public ColonizationSystemRecord? SystemRecord { get; init; }
@@ -489,8 +493,13 @@ public sealed partial class ColonizationShoppingPresentationTests
                 );
             }
             string path = request.RequestUri.AbsolutePath;
+            if (path.EndsWith("/map/architect", StringComparison.Ordinal))
+            {
+                SystemCatalogReads++;
+            }
             string json = path switch
             {
+                _ when path.EndsWith("/map/architect", StringComparison.Ordinal) => SystemMapJson,
                 _ when AdditionalSystems.TryGetValue(path, out ColonizationSystemRecord? system) =>
                     JsonSerializer.Serialize(system),
                 _ when (

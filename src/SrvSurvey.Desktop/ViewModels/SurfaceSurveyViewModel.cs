@@ -138,6 +138,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     public SystemSurfaceBodySnapshot? CurrentSurface => surface;
 
+    public EliteStatus? MotionStatus => survey.CurrentStatus;
+
     public bool AdjustRadarScale(bool zoomIn)
     {
         const double delta = 1.25;
@@ -960,6 +962,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     private void RaisePresentationProperties()
     {
+        OnPropertyChanged(nameof(MotionStatus));
         OnPropertyChanged(nameof(BodyName));
         OnPropertyChanged(nameof(HeadingText));
         OnPropertyChanged(nameof(HistoryText));

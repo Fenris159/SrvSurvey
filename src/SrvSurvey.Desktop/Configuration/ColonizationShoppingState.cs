@@ -24,6 +24,9 @@ public sealed record ColonizationShoppingState
     public IReadOnlyList<string> ExpandedMarkets { get; init; } = [];
     public IReadOnlyList<string> SearchedCommodities { get; init; } = [];
     public IReadOnlyList<ColonizationWishListItem> WishList { get; init; } = [];
+    public bool IsWishListLocked { get; init; }
+    public IReadOnlyList<ColonizationMarketQuote> WishListQuotes { get; init; } = [];
+    public IReadOnlyList<string> AppliedPurchaseIds { get; init; } = [];
     public IReadOnlyList<ColonizationMarketQuote> Quotes { get; init; } = [];
     public string Warnings { get; init; } = string.Empty;
     public DateTimeOffset? CompletedAt { get; init; }
@@ -32,6 +35,9 @@ public sealed record ColonizationShoppingState
 
     // Older snapshots predate the enabled-by-default carrier difference preference.
     internal bool EffectiveUseCarrierDifference => !HasCarrierDifferencePreference || UseCarrierDifference;
+
+    internal IReadOnlyList<ColonizationMarketQuote> PlanningQuotes =>
+        ColonizationShopping.Merge(Quotes.Concat(WishListQuotes));
 
     internal bool IsValid =>
         SelectedCarrierMarketId >= 0
@@ -47,15 +53,20 @@ public sealed record ColonizationShoppingState
         && ExpandedMarkets is not null
         && SearchedCommodities is not null
         && WishList is not null
+        && AppliedPurchaseIds is not null
+        && AppliedPurchaseIds.All(id => !string.IsNullOrWhiteSpace(id))
         && Quotes is not null
-        && Quotes.All(quote =>
-            quote is not null
-            && !string.IsNullOrWhiteSpace(quote.System)
-            && !string.IsNullOrWhiteSpace(quote.Station)
-            && !string.IsNullOrWhiteSpace(quote.Commodity)
-            && quote.StationType is not null
-            && quote.Source is not null
-        );
+        && WishListQuotes is not null
+        && Quotes
+            .Concat(WishListQuotes)
+            .All(quote =>
+                quote is not null
+                && !string.IsNullOrWhiteSpace(quote.System)
+                && !string.IsNullOrWhiteSpace(quote.Station)
+                && !string.IsNullOrWhiteSpace(quote.Commodity)
+                && quote.StationType is not null
+                && quote.Source is not null
+            );
 }
 
 internal sealed record ColonizationShoppingSession(IReadOnlyList<string> ProjectIds, ColonizationShoppingState? Search);

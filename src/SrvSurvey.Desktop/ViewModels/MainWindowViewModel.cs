@@ -2113,13 +2113,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         TimeSpan interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
+        using var changes = new JournalDirectoryChangeSignal(journalMonitor.JournalDirectories);
         try
         {
             while (!Volatile.Read(ref disposed))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
-                await Task.Delay(interval, cancellationToken);
+                await changes.WaitAsync(interval, cancellationToken);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

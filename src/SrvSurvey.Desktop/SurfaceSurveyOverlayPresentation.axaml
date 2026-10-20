@@ -47,6 +47,7 @@
                 CornerRadius="4"
                 IsVisible="{Binding SurfaceSurvey.ShouldShowRadar}">
           <controls:SurfaceSurveyRadarControl
+              MotionStatus="{Binding SurfaceSurvey.MotionStatus}"
               MinHeight="160"
               ClipToBounds="True"
               Markers="{Binding SurfaceSurvey.RadarMarkers}"
