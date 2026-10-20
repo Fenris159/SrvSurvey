@@ -42,11 +42,13 @@ public sealed class SurfaceVisualMotion
             return;
         }
 
-        eastVelocity = east / interval;
-        northVelocity = north / interval;
         double velocityChange = Math.Sqrt(
-            Math.Pow(eastVelocity - previousEastVelocity, 2) + Math.Pow(northVelocity - previousNorthVelocity, 2)
+            Math.Pow(east / interval - previousEastVelocity, 2) + Math.Pow(north / interval - previousNorthVelocity, 2)
         );
+        // Compare velocities at the previous position, then predict along the arrival direction at the current one.
+        (double reverseEast, double reverseNorth) = GetOffset(current, before, (double)next.PlanetRadius);
+        eastVelocity = -reverseEast / interval;
+        northVelocity = -reverseNorth / interval;
         bool wasMoving = Math.Abs(previousEastVelocity) + Math.Abs(previousNorthVelocity) > 1;
         predictionSeconds = wasMoving && velocityChange > Math.Max(50, speed * 0.5) ? 0 : Math.Min(1, interval);
         if (previousVisual is { } visual)

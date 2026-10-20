@@ -12,7 +12,7 @@ public sealed partial class ColonizationSystemEditorViewModel
     private readonly DelegateCommand useCurrentSystemCommand;
     private ColonizationSystemEditorContext liveContext = ColonizationSystemEditorContext.Unavailable;
     private ColonizationSystemCatalog? systemCatalog;
-    private CancellationTokenSource? catalogCancellation;
+    private Action? cancelCatalogRefresh;
     private int catalogContextVersion;
     private bool catalogDisposed;
     private bool isRefreshingSystems;
@@ -124,8 +124,10 @@ public sealed partial class ColonizationSystemEditorViewModel
     {
         string commander = context.CommanderName!;
         int version = catalogContextVersion;
-        var cancellation = new CancellationTokenSource();
-        catalogCancellation = cancellation;
+        using var cancellation = new CancellationTokenSource();
+        Action cancel = cancellation.Cancel;
+        // This request owns the source; the editor only borrows a cancellation callback.
+        cancelCatalogRefresh = cancel;
         IsRefreshingSystems = true;
         SystemsStatusMessage = "Refreshing architect systems from Raven Colonial...";
         systemCatalog = new(catalogUtcNow(), systemCatalog?.RefreshedAtUtc, systemCatalog?.Systems ?? []);
@@ -169,12 +171,11 @@ public sealed partial class ColonizationSystemEditorViewModel
         }
         finally
         {
-            if (ReferenceEquals(catalogCancellation, cancellation))
+            if (ReferenceEquals(cancelCatalogRefresh, cancel))
             {
-                catalogCancellation = null;
+                cancelCatalogRefresh = null;
                 IsRefreshingSystems = false;
             }
-            cancellation.Dispose();
         }
     }
 
@@ -196,8 +197,8 @@ public sealed partial class ColonizationSystemEditorViewModel
     private void CancelSystemCatalogRefresh()
     {
         catalogContextVersion++;
-        catalogCancellation?.Cancel();
-        catalogCancellation = null;
+        cancelCatalogRefresh?.Invoke();
+        cancelCatalogRefresh = null;
         IsRefreshingSystems = false;
     }
 

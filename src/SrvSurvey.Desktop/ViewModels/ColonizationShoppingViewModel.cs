@@ -61,6 +61,11 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         {
             if (!disposed && Set(ref isWishListLocked, value))
             {
+                if (!value)
+                {
+                    RebuildPlan(Needs.Select(need => need.Need), plan.Snapshot());
+                    FilterResults();
+                }
                 SaveWorkspace();
             }
         }

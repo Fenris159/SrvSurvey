@@ -4,11 +4,13 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Desktop.Controls;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
@@ -16,6 +18,42 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SurfaceMotionRenderingTests
 {
+    [AvaloniaFact]
+    public async Task SettlementOverlayReceivesSuccessiveLiveStatusSamplesThroughItsBinding()
+    {
+        var site = new HumanSiteViewModel();
+        var presentation = new HumanSiteOverlayPresentation
+        {
+            DataContext = new HumanSiteOverlayViewModel(
+                site,
+                OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+            ),
+        };
+        var window = new Window { Content = presentation };
+        try
+        {
+            window.Show();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            HumanSiteMapControl map = Assert.Single(presentation.GetVisualDescendants().OfType<HumanSiteMapControl>());
+            Assert.Null(map.MotionStatus);
+            EliteStatus first = Flight(0);
+            await site.ApplyUpdateAsync([], first, "ship", allowExternalData: false);
+            Assert.Same(first, map.MotionStatus);
+            EliteStatus second = Flight(0.01) with { Heading = 20 };
+            await site.ApplyUpdateAsync([], second, "ship", allowExternalData: false);
+            Assert.Same(second, map.MotionStatus);
+            site.UpdateStatus(null);
+            Assert.Null(map.MotionStatus);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void AllFourDrawingsProduceIntermediateFramesWithoutChangingAuthoritativeInputs()
     {

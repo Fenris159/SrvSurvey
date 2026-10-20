@@ -708,7 +708,6 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         UpdateNavigation();
         NotifySiteState();
-        OnPropertyChanged(nameof(MotionStatus));
     }
 
     public void SetActiveBuildProjects(bool value)
@@ -1550,6 +1549,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         RefreshProcessedTerminalOffsets();
         TemplateAuthor.UpdateContext(ActiveSite, CommanderOffset, RelativeHeading, status?.ShieldsUp == true);
+        OnPropertyChanged(nameof(MotionStatus));
         OnPropertyChanged(nameof(ActiveSite));
         OnPropertyChanged(nameof(MapProjection));
         OnPropertyChanged(nameof(HasKnownType));

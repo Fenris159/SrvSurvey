@@ -8,6 +8,32 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class ColonizationViewModelTests
 {
     [Fact]
+    public async Task UnlockingReconcilesTheWorkspaceBeforeTheNextPurchaseIsDeducted()
+    {
+        StubRavenColonialClient client = SavePurchaseList();
+        using ColonizationViewModel model = Create(client);
+        model.IsEnabled = true;
+        await model.SetCommanderAsync("Test Cmdr");
+        model.OpenShopping();
+        ColonizationShoppingViewModel shopping = model.MarketSearchWorkspace!;
+        shopping.IsWishListLocked = true;
+        client.Workspace = new([Project("one", "Port", 50)], [], null, []);
+        await model.RefreshAsync();
+        Assert.Equal(220, shopping.CaptureState().WishList.Sum(item => item.Quantity));
+
+        shopping.IsWishListLocked = false;
+
+        Assert.Equal(50, shopping.CaptureState().WishList.Sum(item => item.Quantity));
+        Assert.Equal(50, model.WishList.Stations.Sum(station => station.Tonnes));
+        var store = new ColonizationSettingsStore(Path.Combine(directory, "ui.json"));
+        Assert.Equal(50, store.LoadShopping("Test Cmdr")!.Search!.WishList.Sum(item => item.Quantity));
+        await model.SynchronizeLiveProjectsAsync([Event("MarketBuy", "\"Type\":\"steel\",\"Count\":30")], true);
+        Assert.Equal(20, Assert.Single(shopping.CaptureState().WishList).Quantity);
+        Assert.Equal("Steel: 20", Assert.Single(model.WishList.Stations).Children[0].Label);
+        Assert.Equal(20, Assert.Single(store.LoadShopping("Test Cmdr")!.Search!.WishList).Quantity);
+    }
+
+    [Fact]
     public async Task LockedShoppingListSurvivesNewProjectsAndRestartsAndStillConsumesPurchases()
     {
         StubRavenColonialClient client = SavePurchaseList();

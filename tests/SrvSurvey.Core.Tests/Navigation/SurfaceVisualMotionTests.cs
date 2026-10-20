@@ -5,6 +5,27 @@ namespace SrvSurvey.Core.Tests.Navigation;
 
 public sealed class SurfaceVisualMotionTests
 {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
+    public void PredictionContinuesAcrossEitherPoleAndKeepsMovingAfterTheNextReport(int hemisphere)
+    {
+        var motion = new SurfaceVisualMotion();
+        motion.Update(Flight(hemisphere * 89.97), TimeSpan.Zero);
+        motion.Update(Flight(hemisphere * 89.99), TimeSpan.FromSeconds(1));
+        motion.Update(Flight(hemisphere * 89.99) with { Longitude = 180 }, TimeSpan.FromSeconds(2));
+
+        SurfaceVisualPose predicted = motion.GetPose(TimeSpan.FromSeconds(3))!.Value;
+        Assert.Equal(hemisphere * 89.97, predicted.Location.Latitude, 5);
+        Assert.Equal(0, Math.Abs(predicted.Location.Longitude) - 180, 5);
+        Assert.True(motion.IsAnimating(TimeSpan.FromSeconds(2.5)));
+
+        motion.Update(Flight(hemisphere * 89.97) with { Longitude = 180 }, TimeSpan.FromSeconds(3));
+        SurfaceVisualPose continued = motion.GetPose(TimeSpan.FromSeconds(4))!.Value;
+        Assert.Equal(hemisphere * 89.95, continued.Location.Latitude, 5);
+        Assert.Equal(0, Math.Abs(continued.Location.Longitude) - 180, 5);
+    }
+
     [Fact]
     public void FlightMovesBetweenSnapshotsAndStopsAtPredictionLimit()
     {

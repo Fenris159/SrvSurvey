@@ -8,6 +8,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class ColonizationSystemEditorViewModelTests
 {
     [Fact]
+    public async Task FinishingAnObsoleteCatalogRequestDoesNotRemoveTheNewRequestsCancellation()
+    {
+        var obsolete = new TaskCompletionSource<IReadOnlyList<ColonizationArchitectSystem>>();
+        var current = new TaskCompletionSource<IReadOnlyList<ColonizationArchitectSystem>>();
+        var client = new StubClient { CatalogRead = () => obsolete.Task };
+        using ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+        Task first = editor.RefreshSystemsAsync();
+        CancellationToken firstToken = client.CatalogToken;
+        editor.UpdateContext(Context() with { CommanderName = "Other Cmdr" });
+        client.CatalogRead = () => current.Task;
+        Task second = editor.RefreshSystemsAsync();
+        CancellationToken secondToken = client.CatalogToken;
+
+        obsolete.SetResult([new("Obsolete", 47)]);
+        await first;
+
+        Assert.True(firstToken.IsCancellationRequested);
+        Assert.True(editor.IsRefreshingSystems);
+        Assert.False(secondToken.IsCancellationRequested);
+        editor.Dispose();
+        Assert.True(secondToken.IsCancellationRequested);
+        current.SetCanceled(secondToken);
+        await second;
+        Assert.False(editor.IsRefreshingSystems);
+        Assert.Empty(editor.SystemNames);
+    }
+
+    [Fact]
     public async Task CatalogSurvivesRestartRefreshesDailyAndAllowsManualRefresh()
     {
         using var folder = new CatalogTestFolder();
