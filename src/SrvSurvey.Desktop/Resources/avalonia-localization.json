@@ -2093,6 +2093,10 @@
       "translation": "Anakonda"
     },
     {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
+    },
+    {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Analysen, Vorschauen, Importe und historische Rekonstruktionen bedeuten keine Veröffentlichung im Netzwerk."
     },
@@ -29873,6 +29877,10 @@
       "translation": "Der Favorit konnte nicht aktualisiert werden: {0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "Der letzte Journalanhang konnte beim Herunterfahren nicht gelesen werden: {0}"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "Der Erstbetrittsbildschirmdetektor ist optional; Seine Verknüpfung kann den aktuellen Körperstatus überschreiben, wenn die automatische Inferenz nicht verfügbar ist."
     },
@@ -34351,6 +34359,10 @@
     {
       "source": "anaconda",
       "translation": "Anakonda"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -41013,6 +41025,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -68795,6 +68811,10 @@
       "translation": "No se pudo actualizar el favorito: {0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "El anexo final del diario no se pudo leer al cerrar: {0}"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "El detector de pantalla de primera pisada es opcional; su atajo puede anular el estado actual del cuerpo cuando la inferencia automática no está disponible."
     },
@@ -73273,6 +73293,10 @@
     {
       "source": "anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -79935,6 +79959,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -107717,6 +107745,10 @@
       "translation": "Le favori n'a pas pu être mis à jour : {0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "L'ajout final du journal n'a pas pu être lu à l'arrêt : {0}"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "Le détecteur d’écran au premier pas est facultatif ; son raccourci peut remplacer l'état actuel du corps lorsque l'inférence automatique n'est pas disponible."
     },
@@ -112195,6 +112227,10 @@
     {
       "source": "anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -118857,6 +118893,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -146639,6 +146679,10 @@
       "translation": "O favorito não pôde ser atualizado: {0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "O anexo final do diário não pôde ser lido no encerramento: {0}"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "O detector de tela do primeiro passo é opcional; seu atalho pode substituir o estado atual do corpo quando a inferência automática não estiver disponível."
     },
@@ -151117,6 +151161,10 @@
     {
       "source": "anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -157779,6 +157827,10 @@
     {
       "source": "Anaconda",
       "translation": "анаконда"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Анаконда Мк II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -185561,6 +185613,10 @@
       "translation": "Не удалось обновить избранное: {0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "Последнее добавление журнала не удалось прочитать при завершении работы: {0}."
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "Детектор экрана первого шага не является обязательным; его ярлык может переопределить текущее состояние тела, когда автоматический вывод недоступен."
     },
@@ -190039,6 +190095,10 @@
     {
       "source": "anaconda",
       "translation": "анаконда"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -196701,6 +196761,10 @@
     {
       "source": "Anaconda",
       "translation": "蟒蛇"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "蟒蛇 Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -224483,6 +224547,10 @@
       "translation": "无法更新收藏夹：{0}"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "关闭时无法读取最终日志附加：{0}"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "可选配第一脚步屏幕探测器；当自动推理不可用时，它的快捷方式可以覆盖当前的身体状态。"
     },
@@ -228961,6 +229029,10 @@
     {
       "source": "anaconda",
       "translation": "蟒蛇"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
     },
     {
       "source": "analyzed",
@@ -235623,6 +235695,10 @@
     {
       "source": "Anaconda",
       "translation": "* ANACONDA >>>!"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "* ANACONDA MK II >>>!"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -263405,6 +263481,10 @@
       "translation": "* THE FAVORITE COULD NOT BE UPDATED: {0} >>>!"
     },
     {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "* THE FINAL JOURNAL APPEND COULD NOT BE READ AT SHUTDOWN: {0} >>>!"
+    },
+    {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
       "translation": "* THE FIRST-FOOTFALL SCREEN DETECTOR IS OPTIONAL; ITS SHORTCUT CAN OVERRIDE THE CURRENT BODY STATE WHEN AUTOMATIC INFERENCE IS UNAVAILABLE. >>>!"
     },
@@ -267883,6 +267963,10 @@
     {
       "source": "anaconda",
       "translation": "* ANACONDA >>>!"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "* ANACONDAMKII >>>!"
     },
     {
       "source": "analyzed",

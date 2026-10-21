@@ -1,77 +1,82 @@
-# SrvSurvey-XP 2.1.3.0-rc.69.5
+# SrvSurvey-XP 2.1.3.0-rc.69.6
 
-RC69.5 improves surface-navigation responsiveness, expands ShoppingList planning,
-and makes Raven architect systems easier to manage. Surface maps move more
-smoothly during flight, shopping plans can stay active across searches and
-sessions, and System Editor remembers the commander's architect systems.
+RC69.6 protects fleet-carrier cargo updates when SrvSurvey or the game closes
+and fixes joined stream overlay capture. It also adds Anaconda Mk II support.
+Pending Raven Colonial updates can recover next session, and the stream copy
+now matches the live panels without painting another copy over the game.
 
 ## What's changed
 
-- **Receive surface updates sooner.** Game-file change notifications wake the
-  existing journal monitor without waiting for its next polling interval.
-  Polling remains available when notifications are missed or unavailable.
-- **Smooth map movement during flight.** The four surface overlays draw
-  intermediate positions using recent movement, with prediction limited to one
-  second. Fresh reports correct the drawing, and incompatible or stale data
-  resets prediction. SRV and on-foot positions continue using direct updates.
-- **Respond to reported facing.** Short heading corrections ease over 80 ms
-  using the shortest turn; changes greater than 90 degrees apply immediately.
-  Facing continues to use the game's reported heading.
-- **Keep survey decisions accurate.** Smoothing affects overlay drawings.
-  Distance labels, proximity decisions, recorded survey points, and stored
-  coordinates continue using the game's reported position.
-- **Spot ShoppingList selections in market results.** Commodity tags under each
-  location start with the secondary style and become highlighted when added to
-  ShoppingList. Short-supply tags retain their warning outline and use the
-  warning fill when selected.
-- **Start market planning with tracked projects.** On first opening Market
-  Search, Select Projects defaults to the focused project, or all projects
-  checked under Show when there is no focus. Planned projects are included.
-  Existing market selections remain saved independently, including clearing all
-  project tags.
-- **Choose architect systems in System Editor.** A searchable system picker
-  lists the active commander's Raven architect systems, with six rows visible
-  before scrolling. Type a name prefix to filter the list. The catalog survives
-  restarts and refreshes at most once a day automatically; **Refresh Systems**
-  updates it on demand. **Use Current** selects your live location, including
-  systems outside the catalog. A selected remote system stays selected while
-  you travel, and failed catalog refreshes retain the cached list.
-- **Exclude navigation beacons from detected build sites.** System Editor
-  ignores navigation-beacon signals and selected destinations, including
-  plain-text and compromised beacon names, so they cannot be accidentally
-  added to site changes published to Raven Colonial.
-- **Estimate ShoppingList trips for each destination.** In both the ShoppingList
-  window and overlay, each station shows estimated trips below its commodities.
-  A footer totals those station estimates using the current ship's cargo
-  capacity. Changing ships,
-  removing selections, and buying commodities update both ShoppingList views.
-  Market purchases reduce the smallest matching commodity allocation first,
-  regardless of where the purchase was made, and completed entries disappear.
-  Saved purchase tracking prevents repeated deductions when journal events
-  are replayed; project delivery progress is unchanged by shopping purchases.
-- **Keep a ShoppingList while searching again.** **Lock List** preserves its
-  quantities and station details across searches, changed project selections,
-  canceled requests, and restarts. Items remain editable and purchases still
-  reduce the list. **Clear List** explicitly empties it, including while locked.
-  Both buttons sit beside **Open ShoppingList**, and an enabled lock uses the
-  secondary highlight.
+- **Keep carrier cargo updates across interruptions.** Observed personal and
+  squadron carrier cargo changes are saved locally before network requests.
+  Closing the game or returning to its main menu retains the carrier context
+  needed to finish those updates without waiting for undocking.
+- **Finish cargo updates when SrvSurvey closes.** Shutdown reads any final
+  journal events and allows up to eight seconds to send pending carrier cargo
+  updates. Unsent work remains saved for the next session, including after an
+  unexpected SrvSurvey exit once the changes have been captured.
+- **Recover interrupted requests safely.** If an earlier cargo request may
+  have reached Raven Colonial, recovery checks the carrier state before retrying.
+  A failed local save prevents sending an update that could not be recovered.
+- **Capture joined overlays on a transparent canvas.** Fixes a joined stream
+  window that could appear blank or black in OBS. Place its source above a
+  separate Elite window source to show the game behind the panels.
+- **Keep the stream copy behind the game.** The capture window stays available
+  to OBS without drawing a second set of panels over the normal live overlays.
+- **Match live panel size in the stream.** Corrects high-DPI and mixed-DPI
+  scaling and uses the full captured image, preventing enlarged text and cropped
+  columns in the joined overlay.
+- **Identify the panels being streamed.** Streaming settings list panel names
+  alongside the count and exclude fully invisible or empty captures. The small
+  Journal activity and SCO status indicator counts when enabled; it can be
+  hidden with **Hide PlotPulse** under **Settings → Overlays → Journal activity
+  and SCO status**.
+- **Reconnect OBS after a Linux app restart.** After restarting or replacing
+  SrvSurvey, reopen the overlay's PipeWire source properties and reselect
+  **SrvSurveyWindowOne overlay** in the window picker. OBS can otherwise retain
+  a paused image from the previous process.
+- **Recognize the Anaconda Mk II.** Adds its journal identity, readable Frontier
+  fleet name, Large overlay-vehicle selection, and current-ship EDSY export
+  support. Its verified slot layout, six distinct armour identities, size-6
+  Mk II cargo rack (96 t), and compatible hangars are included in the offline catalog.
+  Fitting checks restrict the Mining Volley Repeater to its two lower large
+  hardpoints. Cargo and trip estimates use the ship's reported
+  capacity when its loadout changes.
+- **Keep shutdown cargo isolated by commander.** Final transfers can be captured
+  while ended sessions release their journal-source authorization, preventing
+  a later commander in the same folder from supplying another user's cargo.
+- **Keep covered cargo from being counted twice.** Baseline dependencies survive
+  restart, and failed cleanup saves remain pending for retry, preventing
+  transfers covered by a market snapshot from being applied again.
+- **Recover from failed baseline setup.** Failed carrier lookups no longer block
+  unsent cargo, and failed saves after a CAPI seed can retry without another seed.
+  Market baselines wait for in-flight cargo updates to finish.
+- **Preserve final journal reports.** Returning to the main menu keeps already
+  attributed journal events eligible for sharing while rejecting later companion
+  files. Resuming gameplay accepts fresh cargo again, and a missing journal drive
+  no longer makes SrvSurvey fail during shutdown.
+- **Keep captured reports moving after gameplay ends.** EDDN and EDAstro
+  retained uploads continue draining at the main menu, after Elite closes, and
+  when restoring an ended session. Revoking a shared journal source cancels
+  outstanding companion reads without suspending already-attributed reports.
 
 ## Update channel and packages
 
-RC69.5 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC69.6 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.69.5`
-- Tag: `xp2-v2.1.3.0-rc.69.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.69.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.69.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69.5-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69.5-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.69.6`
+- Tag: `xp2-v2.1.3.0-rc.69.6`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.69.6-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.69.6-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69.6-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69.6-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
-This remains a development preview. Prediction cannot reveal turns or
-acceleration that the game has not reported, and corrections can still produce
-visible position changes. Post-change live flight validation remains pending.
+This remains a development preview. Joined overlay capture and scaling were
+checked with a live Linux game and OBS session. Sending pending cargo updates
+still requires network access; saved work is retained when sending cannot
+complete.

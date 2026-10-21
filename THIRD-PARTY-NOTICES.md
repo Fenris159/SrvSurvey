@@ -5,7 +5,7 @@
 The offline module/ship snapshot in
 `src/SrvSurvey.Core/Resources/ReferenceData/edsy-modules.json` is extracted
 from [EDSY by taleden](https://github.com/taleden/EDSY), revision
-`e85bb52c0de9886075ecd08ac4271003e3dc8668`. Source hashes and attribution
+`ea787cf805f2c38f72c8d5f168fa1063341ebd9a`. Source hashes and attribution
 are included in the generated file. Elite Dangerous game logic and data
 remain the property of Frontier Developments plc. EDSY's source header
 states that its use of these data is authorized under Frontier's

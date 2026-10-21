@@ -11,9 +11,10 @@ public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRec
 
     private readonly UiSettingsDocumentStore documentStore;
 
+    /// <summary>Opens colonization settings with durable disk flushing for retained delivery and cargo writes.</summary>
     public ColonizationSettingsStore(string path)
     {
-        documentStore = new UiSettingsDocumentStore(path);
+        documentStore = new UiSettingsDocumentStore(path, flushToDisk: true);
         shoppingDocumentStore = new UiSettingsDocumentStore(path + ".shopping.json");
         planningDocumentStore = new UiSettingsDocumentStore(path + ".plans.json");
         systemCatalogDocumentStore = new UiSettingsDocumentStore(path + ".systems.json");

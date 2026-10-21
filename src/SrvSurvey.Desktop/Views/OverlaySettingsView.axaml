@@ -535,6 +535,14 @@
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
                    Text="{Binding StreamOverlay.StatusMessage}" />
+        <ItemsControl IsVisible="{Binding StreamOverlay.HasActiveOverlays}"
+                      ItemsSource="{Binding StreamOverlay.ActiveOverlayNames}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <TextBlock Classes="muted"
                    FontSize="11"
                    TextWrapping="Wrap"

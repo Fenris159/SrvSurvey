@@ -299,6 +299,7 @@ public sealed partial class ColonizationDeliveryRecovery
         ColonizationDockingSnapshot? dockBefore = constructionState.CurrentDock;
         long before = constructionState.Version;
         journalDocks.Clear();
+        cargoDockBeforeSessionEnd = null;
         contributionDepots.Clear();
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
@@ -332,6 +333,7 @@ public sealed partial class ColonizationDeliveryRecovery
         CargoInventoryState? cargoInventory = null,
         bool cargoActivity = false,
         bool preferShipCargoDiffForSquadron = true,
+        IReadOnlyList<ColonizationPendingCargoAdjustment>? capturedCargo = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -342,53 +344,29 @@ public sealed partial class ColonizationDeliveryRecovery
             return [];
         }
 
-        // When ship cargo is not current (or suppressed), squadron carriers use
-        // journal transfer adjustments. Otherwise use the full GetDiff path.
-        bool preferSquadronCargoDiff =
-            cargoInventory is not null
-            && preferShipCargoDiffForSquadron
-            && journalEvents
-                .Where(item => item.EventName is "MarketBuy" or "MarketSell" or "CargoTransfer")
-                .All(item => GetJournalDock(item)?.MarketId == constructionState.CurrentDock?.MarketId);
+        // Capture the entire consumed batch before the first await, including cargo queued behind a baseline.
+        capturedCargo ??= CaptureFleetCarrierCargo(
+            journalEvents,
+            cargoInventory,
+            cargoActivity,
+            preferShipCargoDiffForSquadron
+        );
         int version = profileVersion;
         var notices = new List<ColonizationDeliveryNotice>();
-        notices.AddRange(await RetryPendingWritesAsync(cancellationToken: cancellationToken));
+        notices.AddRange(await RetryPendingWritesAsync(capturedCargo, cancellationToken));
         if (version != profileVersion)
         {
             return [];
         }
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            notices.AddRange(
-                await TrySynchronizeLiveJournalEventAsync(
-                    journalEvent,
-                    preferSquadronCargoDiff,
-                    cargoInventory,
-                    cancellationToken: cancellationToken
-                )
-            );
+            notices.AddRange(await TrySynchronizeLiveJournalEventAsync(journalEvent, cancellationToken));
             if (version != profileVersion)
             {
                 return [];
             }
         }
-
-        if (cargoInventory is { } squadronCargoInventory && preferSquadronCargoDiff)
-        {
-            AddNotice(
-                notices,
-                await TrySynchronizeSquadronCargoDiffAsync(
-                    squadronCargoInventory,
-                    cargoActivity,
-                    cancellationToken: cancellationToken
-                )
-            );
-        }
-
-        if (cargoInventory is not null && !preferSquadronCargoDiff)
-        {
-            cargoInventory.GetDiff();
-        }
+        notices.AddRange(await SendCapturedCargoAsync(capturedCargo, cancellationToken));
 
         return notices;
     }
@@ -396,6 +374,7 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Tracks one event's dock, squadron carrier, carrier identity, and current body.</summary>
     private void ApplyJournalEvent(JournalEventEnvelope journalEvent, string? owner)
     {
+        CaptureCargoSessionEndDock(journalEvent);
         constructionState.Apply(journalEvent);
         journalDocks[journalEvent] = constructionState.CurrentDock;
         if (string.Equals(owner, commanderName, StringComparison.OrdinalIgnoreCase))
@@ -421,8 +400,6 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Routes one live event and converts expected remote failures into recoverable notices.</summary>
     private async Task<IReadOnlyList<ColonizationDeliveryNotice>> TrySynchronizeLiveJournalEventAsync(
         JournalEventEnvelope journalEvent,
-        bool preferShipCargoDiffForSquadron,
-        CargoInventoryState? cargoInventory,
         CancellationToken cancellationToken = default
     )
     {
@@ -445,14 +422,6 @@ public sealed partial class ColonizationDeliveryRecovery
                     await SynchronizeBeaconDeploymentAsync(cancellationToken: cancellationToken)
                 ),
                 "DockingGranted" => RequestDockingRefresh(journalEvent),
-                "MarketBuy" or "MarketSell" or "CargoTransfer" => Notices(
-                    await SynchronizeFleetCarrierCargoAdjustmentAsync(
-                        journalEvent,
-                        preferShipCargoDiffForSquadron,
-                        cargoInventory,
-                        cancellationToken: cancellationToken
-                    )
-                ),
                 _ => [],
             };
         }

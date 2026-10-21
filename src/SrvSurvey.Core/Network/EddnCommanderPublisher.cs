@@ -13,6 +13,7 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
     private readonly string directory;
     private bool enabled;
     private bool suspended;
+    private bool companionDataAllowed = true;
     private bool disposed;
 
     /// <summary>Restores account queues with shared consent scoped to this settings profile and a legacy drain-only queue.</summary>
@@ -88,6 +89,7 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
         {
             publisher = create(Path.Combine(directory, account, "outbox.json"), Path.Combine(directory, "consent"));
             publisher.SetSuspended(suspended);
+            publisher.SetCompanionDataAllowed(companionDataAllowed);
             publisher.SetEnabled(enabled);
             publishers.Add(account, publisher);
         }
@@ -126,6 +128,23 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
             foreach (EddnPublisher publisher in publishers.Values)
             {
                 publisher.SetSuspended(suspended);
+            }
+        }
+    }
+
+    /// <summary>Revokes companion reads across loaded accounts while their attributed outboxes continue draining.</summary>
+    public void SetCompanionDataAllowed(bool allowed)
+    {
+        lock (sync)
+        {
+            if (disposed)
+            {
+                return;
+            }
+            companionDataAllowed = allowed;
+            foreach (EddnPublisher publisher in publishers.Values)
+            {
+                publisher.SetCompanionDataAllowed(allowed);
             }
         }
     }

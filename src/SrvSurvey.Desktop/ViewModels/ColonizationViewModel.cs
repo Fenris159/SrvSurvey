@@ -703,6 +703,45 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         }
     }
 
+    /// <summary>Captures live carrier movements before optional workspace awaits without adopting another profile.</summary>
+    internal IReadOnlyList<ColonizationPendingCargoAdjustment>? CaptureLiveCarrierCargo(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? journalCommander,
+        string? journalFrontierId,
+        bool journalIsOdyssey,
+        CargoInventoryState? cargoInventory,
+        bool cargoActivity,
+        bool preferShipCargoDiffForSquadron
+    )
+    {
+        if (
+            !string.Equals(CommanderName, journalCommander, StringComparison.OrdinalIgnoreCase)
+            || recovery.FrontierId != journalFrontierId
+            || recovery.IsOdyssey != journalIsOdyssey
+        )
+        {
+            return null;
+        }
+        return recovery.CaptureFleetCarrierCargo(
+            journalEvents,
+            cargoInventory,
+            cargoActivity,
+            preferShipCargoDiffForSquadron
+        );
+    }
+
+    /// <summary>Attempts the durable carrier outbox with the shutdown deadline and presents any retained-write notice.</summary>
+    internal async Task FlushFleetCarrierCargoAsync(CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ColonizationDeliveryNotice> notices = await recovery.FlushFleetCarrierCargoAsync(
+            cancellationToken
+        );
+        if (notices.Count > 0)
+        {
+            StatusMessage = ColonizationDeliveryMessages.Describe(notices);
+        }
+    }
+
     /// <summary>Synchronizes journal events using their event-time dock and retries retained writes during idle polls.</summary>
     public async Task SynchronizeLiveProjectsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
@@ -710,6 +749,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         CargoInventoryState? cargoInventory = null,
         bool cargoActivity = false,
         bool preferShipCargoDiffForSquadron = true,
+        IReadOnlyList<ColonizationPendingCargoAdjustment>? capturedCargo = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -723,6 +763,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             cargoInventory,
             cargoActivity,
             preferShipCargoDiffForSquadron,
+            capturedCargo,
             cancellationToken
         );
         if (notices.Count > 0)

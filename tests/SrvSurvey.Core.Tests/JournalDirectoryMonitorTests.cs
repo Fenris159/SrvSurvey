@@ -15,6 +15,42 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
 
     /// <summary>Checks separate commander monitors stay on their Steam or Epic source and never replay alias history.</summary>
     [Fact]
+    public async Task CancellationAfterJournalConsumptionReturnsTheBatchForDurableCapture()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string journal = Path.Combine(temporaryDirectory, "Journal.2026-10-20T120000.01.log");
+        await File.WriteAllTextAsync(journal, "{\"event\":\"Commander\",\"Name\":\"Test\",\"FID\":\"F123\"}\n");
+        using var cancellation = new CancellationTokenSource();
+        bool stopDuringCompanions = false;
+        var monitor = new JournalDirectoryMonitor(
+            temporaryDirectory,
+            "F123",
+            _ =>
+            {
+                if (stopDuringCompanions)
+                {
+                    cancellation.Cancel();
+                }
+                return default;
+            }
+        );
+        await monitor.PollAsync();
+        await File.AppendAllTextAsync(
+            journal,
+            "{\"event\":\"MarketBuy\",\"MarketID\":42,\"Type\":\"steel\",\"Count\":5}\n"
+        );
+        stopDuringCompanions = true;
+
+        JournalMonitorUpdate consumed = await monitor.PollAsync(cancellation.Token);
+
+        Assert.True(cancellation.IsCancellationRequested);
+        Assert.Equal("MarketBuy", Assert.Single(consumed.JournalEvents).EventName);
+        Assert.False(consumed.IsBootstrapRead);
+        Assert.Empty((await monitor.PollAsync()).JournalEvents);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => monitor.PollAsync(cancellation.Token));
+    }
+
+    [Fact]
     public async Task CommanderInstancesKeepDistinctPhysicalSourcesWithoutReplayingApiEvents()
     {
         if (!OperatingSystem.IsLinux())

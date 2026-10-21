@@ -918,8 +918,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(() => CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged);
             gameWindowOwnership.Transfer();
             SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
-            this.eddnPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
-            this.edAstroPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
+            this.eddnPublisher.SetSuspended(IsDiagnosticReplay);
+            this.edAstroPublisher.SetSuspended(IsDiagnosticReplay);
+            this.eddnPublisher.SetCompanionDataAllowed(
+                !CommanderInstances.HasMultipleGameWindows && !IsDiagnosticReplay
+            );
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths,
@@ -4554,6 +4557,40 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Captures the final journal append and gives retained cargo a bounded shutdown attempt.</summary>
+    private async Task DrainCarrierCargoAtShutdownAsync()
+    {
+        if (journalMonitor is null || IsDiagnosticReplay)
+        {
+            return;
+        }
+        // Producers and consumed projections have stopped. Capture the last append with no canceled monitor token.
+        await journalUpdateGate.WaitAsync(CancellationToken.None);
+        try
+        {
+            try
+            {
+                JournalMonitorUpdate update = await journalMonitor.PollAsync(CancellationToken.None);
+                await journalProjections.CaptureCargoAsync(update);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                applicationLogService?.Append(
+                    "The final journal append could not be read at shutdown: " + exception.Message
+                );
+            }
+            finally
+            {
+                using var cargoShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                await Colonization.FlushFleetCarrierCargoAsync(cargoShutdown.Token);
+            }
+        }
+        finally
+        {
+            journalUpdateGate.Release();
+        }
+    }
+
     /// <summary>Drains journal work, saves workspace continuity, backs up the profile and releases owned services.</summary>
     public async ValueTask DisposeAsync()
     {
@@ -4602,6 +4639,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             }
         }
 
+        await TryDisposeAsync(() => new ValueTask(DrainCarrierCargoAtShutdownAsync()));
         TryDispose(SaveWorkspaceContinuity);
         await TryDisposeAsync(ActiveUsers.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
@@ -4723,8 +4761,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
         SetSharedCargoSuppressed(hasMultipleGameWindows);
         bool ambiguous = !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount);
-        eddnPublisher.SetSuspended(ambiguous);
-        edAstroPublisher.SetSuspended(ambiguous);
+        eddnPublisher.SetCompanionDataAllowed(!ambiguous && !IsDiagnosticReplay);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 

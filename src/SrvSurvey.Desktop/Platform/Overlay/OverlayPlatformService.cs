@@ -124,6 +124,7 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
         );
     }
 
+    /// <summary>Applies input and stacking policy while keeping the joined capture surface behind gameplay overlays.</summary>
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -151,7 +152,10 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
             );
         }
 
-        if (!SetWindowPos(handle, nint.Zero, 0, 0, 0, 0, NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
+        bool captureWindow = window is StreamOverlayWindow;
+        nint insertAfter = captureWindow ? (nint)1 : nint.Zero; // HWND_BOTTOM keeps the capture behind gameplay.
+        uint positionFlags = NoSize | NoMove | DoNotActivate | FrameChanged | (captureWindow ? 0 : NoZOrder);
+        if (!SetWindowPos(handle, insertAfter, 0, 0, 0, 0, positionFlags))
         {
             error = Marshal.GetLastPInvokeError();
             _ = SetWindowLongPtr(handle, ExtendedWindowStyle, style);

@@ -9,6 +9,7 @@ public sealed class StreamOverlayViewModel : INotifyPropertyChanged
     private readonly StreamOverlaySettingsStore settingsStore;
     private bool enabled;
     private string statusMessage;
+    private string[] activeOverlayNames = [];
 
     public StreamOverlayViewModel(StreamOverlaySettingsStore settingsStore)
     {
@@ -33,6 +34,10 @@ public sealed class StreamOverlayViewModel : INotifyPropertyChanged
 
             settingsStore.SaveEnabled(value);
             enabled = value;
+            if (!value)
+            {
+                ActiveOverlayNames = [];
+            }
             OnPropertyChanged();
             StatusMessage = value
                 ? "Waiting for the Elite window before composing overlays."
@@ -54,6 +59,24 @@ public sealed class StreamOverlayViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    /// <summary>Names only the panels whose pixels are present in the current joined capture.</summary>
+    public IReadOnlyList<string> ActiveOverlayNames
+    {
+        get => activeOverlayNames;
+        internal set
+        {
+            if (activeOverlayNames.SequenceEqual(value, StringComparer.Ordinal))
+            {
+                return;
+            }
+            activeOverlayNames = value.ToArray();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasActiveOverlays));
+        }
+    }
+
+    public bool HasActiveOverlays => activeOverlayNames.Length > 0;
 
     public void Toggle()
     {

@@ -12,7 +12,7 @@ Firegroups retains its stable PlotMiningFiregroups identity, shortcut and comman
 
 ## Catalog sources
 
-Catalog verified 2026-09-07: 48 ship types plus Nomad, Scarab SRV, Scorpion, Rhino, Fighters, On foot and Other / unknown. Journal symbols come from [EDCD FDevIDs shipyard.csv](https://github.com/EDCD/FDevIDs/blob/master/shipyard.csv); ship sizes and display names come from [EDCD coriolis-data ship definitions](https://github.com/EDCD/coriolis-data/tree/master/ships). The newer Lynx Highliner is Medium per [Frontier's official update announcement](https://steamcommunity.com/app/359320/announcements/). No runtime download is required; unknown future types use the explicit fallback entry until the catalog is updated.
+Catalog verified 2026-10-20: 49 ship types plus Nomad, Scarab SRV, Scorpion, Rhino, Fighters, On foot and Other / unknown. Journal symbols come from [EDCD FDevIDs shipyard.csv](https://github.com/EDCD/FDevIDs/blob/master/shipyard.csv); ship sizes and display names come from [EDCD coriolis-data ship definitions](https://github.com/EDCD/coriolis-data/tree/master/ships). The newer Lynx Highliner is Medium per [Frontier's official update announcement](https://steamcommunity.com/app/359320/announcements/). The Anaconda Mk II is Large per the pinned [EDSY reference data](research/anaconda-mkii-reference-data-2026-10-20.md). No runtime download is required; unknown future types use the explicit fallback entry until the catalog is updated.
 
 ## Validation
 

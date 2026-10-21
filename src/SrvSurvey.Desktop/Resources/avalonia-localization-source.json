@@ -4188,6 +4188,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Anaconda Mk II",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
     "Text": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56179,7 +56187,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "Supported Live journal events can update EDSM flight history, location, credits, ships and loadouts, cargo, materials, backpack and locker inventory, missions, engineering, community goals, statistics, social status, and discoveries.",
@@ -59918,6 +59926,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The final journal append could not be read at shutdown: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -68885,6 +68901,14 @@
   },
   {
     "Text": "anaconda",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "anacondamkii",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

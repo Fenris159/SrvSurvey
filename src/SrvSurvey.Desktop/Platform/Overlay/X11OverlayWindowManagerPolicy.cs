@@ -8,9 +8,17 @@ internal static class X11OverlayWindowManagerPolicy
     internal const string UtilityWindowAtomName = "_NET_WM_WINDOW_TYPE_UTILITY";
     internal const string NormalWindowAtomName = "_NET_WM_WINDOW_TYPE_NORMAL";
 
-    /// <summary>Uses a utility type in both management modes, with normal fallback for other window managers.</summary>
-    internal static nuint[] CreateWindowTypes(nuint utilityWindowAtom, nuint normalWindowAtom)
+    /// <summary>Uses utility classification for gameplay panels and normal classification for the background capture.</summary>
+    internal static nuint[] CreateWindowTypes(
+        nuint utilityWindowAtom,
+        nuint normalWindowAtom,
+        bool captureWindow = false
+    )
     {
+        if (captureWindow)
+        {
+            return normalWindowAtom == 0 ? [] : [normalWindowAtom];
+        }
         return utilityWindowAtom == 0 || normalWindowAtom == 0 ? [] : [utilityWindowAtom, normalWindowAtom];
     }
 }

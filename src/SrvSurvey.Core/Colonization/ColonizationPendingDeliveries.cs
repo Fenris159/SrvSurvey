@@ -32,7 +32,9 @@ public sealed record ColonizationPendingCargoAdjustment(
     Dictionary<string, int>? Before,
     bool Attempted = true,
     bool OutcomeUnknown = true,
-    DateTimeOffset? ObservedAt = null
+    DateTimeOffset? ObservedAt = null,
+    string? SourceEventName = null,
+    bool AwaitingBaseline = false
 );
 
 /// <summary>A construction market whose Raven site row was already repaired, so later docks skip the lookup.</summary>

@@ -151,6 +151,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(fileName, profile.Data!.BoxelSearch.SavedSearchFileName);
     }
 
+    /// <summary>Persistence stays unavailable until failure assertions finish, then the scheduled retry restores health.</summary>
     [Fact]
     public async Task FailedProfilePersistenceRetriesAndRestoresHealth()
     {
@@ -175,6 +176,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         );
         Assert.Equal(BoxelSearchOutcomeKind.AppliedNotPersisted, outcome.Kind);
         Assert.Contains(BoxelSearchHealthSubsystem.ProfilePersistence, session.Current.Health.Issues.Keys);
+        profiles.AllowSaves();
         await WaitUntilAsync(() => profiles.Snapshots.Length == 1 && session.Current.Health.IsHealthy);
         Assert.True(profiles.Snapshots[0].Active);
     }
@@ -594,10 +596,14 @@ public sealed class BoxelSearchSessionTests : IDisposable
     private sealed class FlakyProfileStore : IBoxelSearchProfileStore
     {
         private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
-        private int failuresRemaining = 2;
+        private int savesAllowed;
+
+        /// <summary>Releases the deterministic persistence failure only after the test has observed it.</summary>
+        public void AllowSaves() => Volatile.Write(ref savesAllowed, 1);
 
         public BoxelSearchSnapshot[] Snapshots => snapshots.ToArray();
 
+        /// <summary>Rejects saves until the test permits recovery, then delegates to the real profile store.</summary>
         public Task SaveBoxelSearchAsync(
             string frontierId,
             string? commanderName,
@@ -607,7 +613,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (Interlocked.Decrement(ref failuresRemaining) >= 0)
+            if (Volatile.Read(ref savesAllowed) == 0)
             {
                 throw new IOException("locked");
             }

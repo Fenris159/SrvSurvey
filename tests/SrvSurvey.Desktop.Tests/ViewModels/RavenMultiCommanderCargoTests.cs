@@ -9,6 +9,41 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class RavenMultiCommanderCargoTests
 {
+    /// <summary>An unavailable carrier-cargo profile does not disable separately attributable construction contributions.</summary>
+    [Fact]
+    public async Task MissingCargoProfileDoesNotSuppressAttributedConstructionContributions()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-raven-no-profile-" + Guid.NewGuid().ToString("N"));
+        var paths = new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []
+        );
+        using var handler = new RavenHandler();
+        using var network = new HttpClient(handler);
+        try
+        {
+            string folder = await CreateJournalAsync(root, "first", "F1", "First", 10);
+            using MainWindowViewModel model = Create(folder, "F1", paths, network);
+            await model.RefreshAsync();
+            model.Colonization.SetCommanderProfile(null, true, null);
+            await DeliverAsync(folder, "F1", 3, 7);
+
+            await model.RefreshAsync();
+
+            Assert.Equal(("First", 3), Assert.Single(handler.Deliveries));
+            Assert.Empty(handler.Ships);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     /// <summary>Two live clients report only the cargo and credentials belonging to their bound commander folder.</summary>
     [Theory]
     [InlineData(false)]
@@ -93,6 +128,67 @@ public sealed class RavenMultiCommanderCargoTests
             await first.RefreshAsync();
             await second.RefreshAsync();
             Assert.Equal(2, handler.Deliveries.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    /// <summary>Ended sessions release their source lease before another client writes cargo into the same physical folder.</summary>
+    [Theory]
+    [InlineData("Shutdown")]
+    [InlineData("Music")]
+    public async Task ShutdownReleasesSourceBeforeAnotherCommanderReusesItsFolder(string endEvent)
+    {
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-raven-shutdown-" + Guid.NewGuid().ToString("N"));
+        var paths = new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []
+        );
+        using var handler = new RavenHandler();
+        using var network = new HttpClient(handler);
+        try
+        {
+            string firstFolder = await CreateJournalAsync(root, "first", "F1", "First", 10);
+            string secondFolder = await CreateJournalAsync(root, "second", "F2", "Second", 30);
+            var profiles = new CommanderProfileStore(paths.DataDirectory);
+            await profiles.SaveRavenColonialApiKeyAsync("F1", "First", true, "key-first");
+            await profiles.SaveRavenColonialApiKeyAsync("F2", "Second", true, "key-second");
+            using MainWindowViewModel first = Create(firstFolder, "F1", paths, network);
+            using MainWindowViewModel second = Create(secondFolder, "F2", paths, network);
+            await first.RefreshAsync();
+            await second.RefreshAsync();
+            await WriteCargoAsync(firstFolder, 11, 3);
+            await first.RefreshAsync();
+            Assert.Contains(
+                handler.Ships,
+                entry => entry.Key == "key-first" && entry.Ship.Cargo.GetValueOrDefault("steel") == 11
+            );
+            await File.AppendAllTextAsync(
+                Path.Combine(firstFolder, "Journal.F1.log"),
+                (
+                    endEvent == "Music"
+                        ? """{"timestamp":"2026-10-14T12:00:04Z","event":"Music","MusicTrack":"MainMenu"}"""
+                        : """{"timestamp":"2026-10-14T12:00:04Z","event":"Shutdown"}"""
+                ) + "\n"
+            );
+            await first.RefreshAsync();
+            handler.Ships.Clear();
+
+            await CreateJournalAsync(root, "first", "F3", "Foreign", 90);
+            await WriteCargoAsync(firstFolder, 91, 6);
+            await first.RefreshAsync();
+            await WriteCargoAsync(secondFolder, 31, 6);
+            await second.RefreshAsync();
+
+            Assert.True(first.Colonization.SharedCargoSuppressed);
+            Assert.DoesNotContain(handler.Ships, entry => entry.Key == "key-first");
         }
         finally
         {

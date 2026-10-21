@@ -26,6 +26,12 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Retries retained work on idle polls while protecting ownership and preventing overlapping recovery passes.</summary>
     public async Task<IReadOnlyList<ColonizationDeliveryNotice>> RetryPendingWritesAsync(
         CancellationToken cancellationToken = default
+    ) => await RetryPendingWritesAsync([], cancellationToken);
+
+    /// <summary>Retries retained work while excluding newly captured cargo and preserving commander ownership across awaits.</summary>
+    private async Task<IReadOnlyList<ColonizationDeliveryNotice>> RetryPendingWritesAsync(
+        IReadOnlyList<ColonizationPendingCargoAdjustment> capturedCargo,
+        CancellationToken cancellationToken
     )
     {
         if (!isEnabled || commanderName is null || retryingWrites || utcNow() < nextWriteRetry)
@@ -42,6 +48,7 @@ public sealed partial class ColonizationDeliveryRecovery
             IReadOnlyList<ColonizationDeliveryNotice> cargoNotices = await RetryCargoAdjustmentsAsync(
                 owner,
                 version,
+                capturedCargo,
                 cancellationToken
             );
             if (version != profileVersion)
@@ -154,6 +161,7 @@ public sealed partial class ColonizationDeliveryRecovery
     private async Task<IReadOnlyList<ColonizationDeliveryNotice>> RetryCargoAdjustmentsAsync(
         string owner,
         int version,
+        IReadOnlyList<ColonizationPendingCargoAdjustment> capturedCargo,
         CancellationToken cancellationToken
     )
     {
@@ -165,8 +173,19 @@ public sealed partial class ColonizationDeliveryRecovery
                 .ToArray()
         )
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            if (pending.Delta.Count == 0)
+            {
+                SavePendingCargoAdjustments();
+                continue;
+            }
             if (
                 apiKey is null
+                || !FleetCarrierCargoSyncEnabled
+                || capturedCargo.Contains(pending)
                 || blocked.Contains(pending.MarketId)
                 || IsCargoBaselinePending(pending.MarketId)
                 || cargoWritesInFlight.Contains((owner, pending.MarketId))
@@ -199,12 +218,27 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken
     )
     {
+        if (pending.AwaitingBaseline)
+        {
+            // A cached dock baseline cannot release a dependency retained across restart.
+            if (!pendingCargoBaselineReleases.Contains(pending))
+            {
+                return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingUncertain);
+            }
+            if (!ReleasePendingCargoBaseline(pending))
+            {
+                return new(ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved);
+            }
+            pending = pending with { AwaitingBaseline = false };
+        }
         cargoWritesInFlight.Add((pending.Owner, pending.MarketId));
         try
         {
             ColonizationFleetCarrier? remote = await client.GetFleetCarrierAsync(pending.MarketId, cancellationToken);
             if (
                 version != profileVersion
+                || !isEnabled
+                || !FleetCarrierCargoSyncEnabled
                 || !failedCargoAdjustments.Contains(pending)
                 || IsCargoBaselinePending(pending.MarketId)
             )
@@ -227,25 +261,14 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 return new(reason);
             }
-            await ReplayCargoAdjustmentAsync(pending, remote, before, applied, version, cancellationToken);
-            return null;
+            return await ReplayCargoAdjustmentAsync(pending, remote, before, applied, version, cancellationToken)
+                ? null
+                : new(ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved);
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
+            when (exception is HttpRequestException or InvalidDataException or OperationCanceledException)
         {
-            int index = failedCargoAdjustments.FindIndex(item =>
-                item.Owner == pending.Owner
-                && item.MarketId == pending.MarketId
-                && ReferenceEquals(item.Delta, pending.Delta)
-            );
-            if (index >= 0)
-            {
-                failedCargoAdjustments[index] = failedCargoAdjustments[index] with
-                {
-                    OutcomeUnknown = !IsDefiniteRejection(exception),
-                };
-                SavePendingCargoAdjustments();
-            }
+            RetainFailedCargoAdjustment(pending, exception);
             return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingFailed, Detail: exception.Message);
         }
         finally
@@ -255,7 +278,7 @@ public sealed partial class ColonizationDeliveryRecovery
     }
 
     /// <summary>Marks a reconcilable write as attempted, sends it unless already applied, and installs Raven's result.</summary>
-    private async Task ReplayCargoAdjustmentAsync(
+    private async Task<bool> ReplayCargoAdjustmentAsync(
         ColonizationPendingCargoAdjustment pending,
         ColonizationFleetCarrier remote,
         Dictionary<string, int> before,
@@ -264,6 +287,7 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken
     )
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ColonizationPendingCargoAdjustment attempted = pending with
         {
             Attempted = true,
@@ -273,7 +297,11 @@ public sealed partial class ColonizationDeliveryRecovery
                 : new Dictionary<string, int>(remote.Cargo, StringComparer.OrdinalIgnoreCase),
         };
         failedCargoAdjustments[failedCargoAdjustments.IndexOf(pending)] = attempted;
-        SavePendingCargoAdjustments();
+        if (!SavePendingCargoAdjustments())
+        {
+            failedCargoAdjustments[failedCargoAdjustments.IndexOf(attempted)] = pending;
+            return false;
+        }
         IReadOnlyDictionary<string, int> updated = applied
             ? remote.Cargo
             : await client.AdjustFleetCarrierCargoAsync(pending.MarketId, pending.Delta, apiKey!, cancellationToken);
@@ -283,6 +311,7 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             ReplaceLocalFleetCarrier(remote with { Cargo = CopyCargo(updated) });
         }
+        return true;
     }
 
     /// <summary>Rejects concurrent or uncertain relative-write replay until a fresh market supplies an authoritative count.</summary>
@@ -347,7 +376,7 @@ public sealed partial class ColonizationDeliveryRecovery
                 : null;
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
+            when (exception is HttpRequestException or InvalidDataException or OperationCanceledException)
         {
             return new(
                 pendingContributions.Any(item =>
@@ -361,17 +390,22 @@ public sealed partial class ColonizationDeliveryRecovery
     }
 
     /// <summary>Preserves ordered relative writes across restart without persisting credentials.</summary>
-    private void SavePendingCargoAdjustments()
+    private bool SavePendingCargoAdjustments()
     {
         try
         {
-            store.SavePendingCargoAdjustments(failedCargoAdjustments);
+            // Keep retired entries in memory until their removal has been committed to disk.
+            store.SavePendingCargoAdjustments(failedCargoAdjustments.Where(item => item.Delta.Count > 0).ToArray());
+            failedCargoAdjustments.RemoveAll(item => item.Delta.Count == 0);
+            pendingCargoBaselineReleases.RemoveWhere(item => item.Delta.Count == 0);
+            return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             observer.FleetCarrierStatusChanged(
                 new(ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved, Detail: exception.Message)
             );
+            return false;
         }
     }
 
