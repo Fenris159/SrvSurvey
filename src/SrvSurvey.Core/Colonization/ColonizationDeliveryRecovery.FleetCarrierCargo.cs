@@ -21,9 +21,7 @@ public sealed partial class ColonizationDeliveryRecovery
 
     private readonly HashSet<long> cargoBaselineReady = [];
 
-    private readonly Dictionary<long, List<PendingCarrierCargoDelta>> pendingCargoDeltas = [];
-
-    private sealed record PendingCarrierCargoDelta(Dictionary<string, int> Delta, DateTimeOffset? RecordedAt);
+    private readonly Dictionary<long, List<ColonizationPendingCargoAdjustment>> pendingCargoDeltas = [];
 
     private bool fleetCarrierSyncBusy;
     private int capiCargoSeedGeneration;
@@ -122,7 +120,7 @@ public sealed partial class ColonizationDeliveryRecovery
             when (exception
                     is HttpRequestException
                         or InvalidDataException
-                        or TaskCanceledException
+                        or OperationCanceledException
                         or ArgumentException
             )
         {
@@ -247,7 +245,7 @@ public sealed partial class ColonizationDeliveryRecovery
             when (exception
                     is HttpRequestException
                         or InvalidDataException
-                        or TaskCanceledException
+                        or OperationCanceledException
                         or ArgumentException
             )
         {
@@ -274,188 +272,23 @@ public sealed partial class ColonizationDeliveryRecovery
         cargoInventory?.GetDiff();
     }
 
-    /// <summary>Converts expected squadron cargo synchronization failures into recoverable notices.</summary>
-    private async Task<ColonizationDeliveryNotice?> TrySynchronizeSquadronCargoDiffAsync(
-        CargoInventoryState cargoInventory,
-        bool cargoActivity,
-        CancellationToken cancellationToken = default
-    )
-    {
-        try
-        {
-            return await SynchronizeSquadronFleetCarrierCargoDiffAsync(
-                cargoInventory,
-                cargoActivity,
-                cancellationToken: cancellationToken
-            );
-        }
-        catch (Exception exception)
-            when (exception
-                    is HttpRequestException
-                        or InvalidDataException
-                        or TaskCanceledException
-                        or ArgumentException
-            )
-        {
-            return new(ColonizationDeliveryNoticeKind.SquadronCargoDiffSkipped, Detail: exception.Message);
-        }
-    }
-
-    /// <summary>
-    /// After ship cargo is updated, compute the squadron FC cargo delta from the frozen
-    /// before-snapshot (or the last pre-replace inventory) and send it to Raven Colonial.
-    /// </summary>
-    private async Task<ColonizationDeliveryNotice?> SynchronizeSquadronFleetCarrierCargoDiffAsync(
-        CargoInventoryState cargo,
-        bool cargoActivity,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (!FleetCarrierCargoSyncEnabled || apiKey is null || constructionState.CurrentDock is not { } dock)
-        {
-            cargo.GetDiff();
-
-            return null;
-        }
-
-        if (!ShouldSendSquadronCargoDiff(cargo, cargoActivity, dock))
-        {
-            return null;
-        }
-
-        // Compute diff while inventory is stable; network I/O stays outside GetDiff's lock.
-        Dictionary<string, int> shipDiff = cargo.GetDiff(excludeMarketChanges: true);
-        if (shipDiff.Count == 0)
-        {
-            return null;
-        }
-
-        IReadOnlyDictionary<string, int> adjustments =
-            ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
-
-        // This aggregate difference has no single originating event; do not date it using the local clock.
-        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments, null))
-        {
-            return new(ColonizationDeliveryNoticeKind.SquadronCargoQueued, Count: adjustments.Count);
-        }
-
-        return await ApplyFleetCarrierCargoAdjustmentAsync(
-            dock.MarketId,
-            adjustments,
-            "squadron cargo diff",
-            true,
-            cargo,
-            null,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <summary>Discards movement outside the linked squadron dock; active polls consume each difference once.</summary>
-    private bool ShouldSendSquadronCargoDiff(
-        CargoInventoryState cargo,
-        bool cargoActivity,
-        ColonizationDockingSnapshot dock
-    )
-    {
-        if (!IsLinkedSquadronFleetCarrier(dock))
-        {
-            cargo.GetDiff();
-            return false;
-        }
-        return cargoActivity || cargo.HasPreservedSnapshot;
-    }
-
-    /// <summary>Attributes a carrier transaction to its captured dock and queues it behind a pending baseline.</summary>
-    private async Task<ColonizationDeliveryNotice?> SynchronizeFleetCarrierCargoAdjustmentAsync(
-        JournalEventEnvelope journalEvent,
-        bool preferShipCargoDiffForSquadron,
-        CargoInventoryState? cargoInventory = null,
-        CancellationToken cancellationToken = default
+    private async Task<ColonizationDeliveryNotice?> ApplyPendingFleetCarrierCargoAdjustmentAsync(
+        ColonizationPendingCargoAdjustment pending,
+        string sourceEventName,
+        CancellationToken cancellationToken
     )
     {
         if (
-            !FleetCarrierCargoSyncEnabled
-            || apiKey is null
-            || GetJournalDock(journalEvent) is not { } dock
-            || !IsLinkedFleetCarrier(dock.MarketId)
+            !isEnabled
+            || !FleetCarrierCargoSyncEnabled
+            || pending.Owner != RecoveryOwner
+            || apiKey is not { } adjustApiKey
+            || pending.Delta.Count == 0
         )
         {
             return null;
         }
-
-        IReadOnlyDictionary<string, int> adjustments =
-            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
-                journalEvent,
-                dock,
-                inMainShip,
-                preferShipCargoDiffForSquadron
-            );
-        if (adjustments.Count == 0)
-        {
-            return null;
-        }
-
-        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments, journalEvent.Timestamp))
-        {
-            return new(ColonizationDeliveryNoticeKind.CarrierCargoQueued, Count: adjustments.Count);
-        }
-
-        return await ApplyFleetCarrierCargoAdjustmentAsync(
-            dock.MarketId,
-            adjustments,
-            journalEvent.EventName,
-            preferShipCargoDiffForSquadron,
-            cargoInventory,
-            journalEvent.Timestamp,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <summary>Retains relative cargo updates until acknowledged and prevents later updates overtaking uncertain writes.</summary>
-    private async Task<ColonizationDeliveryNotice?> ApplyFleetCarrierCargoAdjustmentAsync(
-        long marketId,
-        IReadOnlyDictionary<string, int> adjustments,
-        string sourceEventName,
-        bool preferShipCargoDiffForSquadron,
-        CargoInventoryState? cargoInventory,
-        DateTimeOffset? recordedAt,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (apiKey is null || adjustments.Count == 0)
-        {
-            return null;
-        }
-        var pending = new ColonizationPendingCargoAdjustment(
-            RecoveryOwner,
-            marketId,
-            new Dictionary<string, int>(adjustments, StringComparer.OrdinalIgnoreCase),
-            recordedAt,
-            null,
-            ObservedAt: utcNow()
-        );
-        failedCargoAdjustments.Add(pending);
-        return await ApplyPendingFleetCarrierCargoAdjustmentAsync(
-            pending,
-            sourceEventName,
-            preferShipCargoDiffForSquadron,
-            cargoInventory,
-            cancellationToken
-        );
-    }
-
-    private async Task<ColonizationDeliveryNotice?> ApplyPendingFleetCarrierCargoAdjustmentAsync(
-        ColonizationPendingCargoAdjustment pending,
-        string sourceEventName,
-        bool preferShipCargoDiffForSquadron,
-        CargoInventoryState? cargoInventory,
-        CancellationToken cancellationToken
-    )
-    {
-        if (apiKey is not { } adjustApiKey || pending.Delta.Count == 0)
-        {
-            return null;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
         int version = profileVersion;
         long marketId = pending.MarketId;
         IReadOnlyDictionary<string, int> adjustments = pending.Delta;
@@ -470,12 +303,18 @@ public sealed partial class ColonizationDeliveryRecovery
         pending = pending with
         {
             Attempted = !blocked,
+            OutcomeUnknown = !blocked,
             Before = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == marketId) is { } carrier
                 ? CopyCargo(carrier.Cargo)
                 : null,
         };
+        ColonizationPendingCargoAdjustment unattempted = failedCargoAdjustments[pendingIndex];
         failedCargoAdjustments[pendingIndex] = pending;
-        SavePendingCargoAdjustments();
+        if (!SavePendingCargoAdjustments())
+        {
+            failedCargoAdjustments[pendingIndex] = unattempted;
+            return new(ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved);
+        }
         if (blocked)
         {
             return new(ColonizationDeliveryNoticeKind.CarrierCargoQueuedBehindUnconfirmed);
@@ -496,11 +335,11 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 return null;
             }
-            ApplyAcknowledgedCargoAdjustment(marketId, updatedCargo, preferShipCargoDiffForSquadron, cargoInventory);
+            ApplyAcknowledgedCargoAdjustment(marketId, updatedCargo);
             return new(ColonizationDeliveryNoticeKind.CarrierCargoAdjusted, sourceEventName, Count: adjustments.Count);
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
+            when (exception is HttpRequestException or OperationCanceledException or InvalidDataException)
         {
             RetainFailedCargoAdjustment(pending, exception);
             throw;
@@ -515,23 +354,9 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
-    /// <summary>Installs acknowledged cargo and drops a transfer capture when journal fallback handled the movement.</summary>
-    private void ApplyAcknowledgedCargoAdjustment(
-        long marketId,
-        IReadOnlyDictionary<string, int> updatedCargo,
-        bool preferShipCargoDiffForSquadron,
-        CargoInventoryState? cargoInventory
-    )
+    /// <summary>Installs the acknowledged carrier manifest after the captured movement has been consumed.</summary>
+    private void ApplyAcknowledgedCargoAdjustment(long marketId, IReadOnlyDictionary<string, int> updatedCargo)
     {
-        if (
-            !preferShipCargoDiffForSquadron
-            && constructionState.CurrentDock is { } dock
-            && dock.MarketId == marketId
-            && IsLinkedSquadronFleetCarrier(dock)
-        )
-        {
-            cargoInventory?.ClearPreservedSnapshot();
-        }
         ColonizationFleetCarrier? localCarrier = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == marketId);
         if (localCarrier is not null)
         {
@@ -717,7 +542,7 @@ public sealed partial class ColonizationDeliveryRecovery
             when (exception
                     is HttpRequestException
                         or InvalidDataException
-                        or TaskCanceledException
+                        or OperationCanceledException
                         or ArgumentException
             )
         {
@@ -952,7 +777,7 @@ public sealed partial class ColonizationDeliveryRecovery
             when (exception
                     is HttpRequestException
                         or InvalidDataException
-                        or TaskCanceledException
+                        or OperationCanceledException
                         or ArgumentException
             )
         {
@@ -984,26 +809,6 @@ public sealed partial class ColonizationDeliveryRecovery
         return cargoBaselinePendingDepth.GetValueOrDefault(marketId) > 0;
     }
 
-    /// <summary>Preserves each queued transaction’s journal time so market coverage can retire only included commodities.</summary>
-    private bool TryQueuePendingCargoDelta(
-        long marketId,
-        IReadOnlyDictionary<string, int> delta,
-        DateTimeOffset? recordedAt
-    )
-    {
-        if (!IsCargoBaselinePending(marketId) || delta.Count == 0)
-        {
-            return false;
-        }
-        if (!pendingCargoDeltas.TryGetValue(marketId, out List<PendingCarrierCargoDelta>? pending))
-        {
-            pending = [];
-            pendingCargoDeltas[marketId] = pending;
-        }
-        pending.Add(new(new Dictionary<string, int>(delta, StringComparer.OrdinalIgnoreCase), recordedAt));
-        return true;
-    }
-
     /// <summary>Completes the outermost baseline and preserves failed queued transactions for later reconciliation.</summary>
     private async Task CompleteCargoBaselineAsync(long marketId, CancellationToken cancellationToken = default)
     {
@@ -1020,26 +825,15 @@ public sealed partial class ColonizationDeliveryRecovery
         }
         cargoBaselinePendingDepth.Remove(marketId);
         cargoBaselineReady.Add(marketId);
-        if (!pendingCargoDeltas.Remove(marketId, out List<PendingCarrierCargoDelta>? pending) || apiKey is null)
+        if (
+            !pendingCargoDeltas.Remove(marketId, out List<ColonizationPendingCargoAdjustment>? pending)
+            || apiKey is null
+        )
         {
             return;
         }
         int version = profileVersion;
-        string owner = RecoveryOwner;
-        ColonizationPendingCargoAdjustment[] retained = pending
-            .Select(item => new ColonizationPendingCargoAdjustment(
-                owner,
-                marketId,
-                item.Delta,
-                item.RecordedAt,
-                null,
-                Attempted: false,
-                OutcomeUnknown: false,
-                ObservedAt: utcNow()
-            ))
-            .ToArray();
-        failedCargoAdjustments.AddRange(retained);
-        SavePendingCargoAdjustments();
+        ColonizationPendingCargoAdjustment[] retained = pending.ToArray();
         foreach (ColonizationPendingCargoAdjustment item in retained)
         {
             if (version != profileVersion)
@@ -1058,16 +852,10 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         try
         {
-            await ApplyPendingFleetCarrierCargoAdjustmentAsync(
-                pending,
-                "queued dock baseline",
-                true,
-                null,
-                cancellationToken
-            );
+            await ApplyPendingFleetCarrierCargoAdjustmentAsync(pending, "queued dock baseline", cancellationToken);
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
+            when (exception is HttpRequestException or OperationCanceledException or InvalidDataException)
         {
             if (version == profileVersion)
             {
@@ -1085,18 +873,6 @@ public sealed partial class ColonizationDeliveryRecovery
             .Items.Where(item => item.Producer || !item.Consumer)
             .Select(item => item.Commodity)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (pendingCargoDeltas.TryGetValue(market.MarketId, out List<PendingCarrierCargoDelta>? queued))
-        {
-            foreach (
-                PendingCarrierCargoDelta pending in queued.Where(item =>
-                    item.RecordedAt is { } recordedAt && recordedAt <= market.Timestamp
-                )
-            )
-            {
-                RemoveCoveredCargo(pending.Delta, covered);
-            }
-            queued.RemoveAll(item => item.Delta.Count == 0);
-        }
         string owner = RecoveryOwner;
         foreach (
             ColonizationPendingCargoAdjustment pending in failedCargoAdjustments

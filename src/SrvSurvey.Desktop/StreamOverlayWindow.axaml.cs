@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -23,7 +25,7 @@ public sealed partial class StreamOverlayWindow : Window
         {
             var image = new Image
             {
-                Source = renderedFrame.Bitmap,
+                Source = new PixelImage(renderedFrame.Bitmap),
                 Width = renderedFrame.Projection.Width,
                 Height = renderedFrame.Projection.Height,
                 Opacity = renderedFrame.Opacity,
@@ -43,6 +45,15 @@ public sealed partial class StreamOverlayWindow : Window
     {
         ReplaceFrames([]);
         base.OnClosed(e);
+    }
+
+    /// <summary>Samples the complete raster in pixels; its capture DPI has already been applied while rendering it.</summary>
+    private sealed class PixelImage(RenderTargetBitmap bitmap) : IImage
+    {
+        public Size Size => new(bitmap.PixelSize.Width, bitmap.PixelSize.Height);
+
+        public void Draw(DrawingContext context, Rect sourceRect, Rect destRect) =>
+            context.DrawImage(bitmap, sourceRect, destRect);
     }
 }
 

@@ -333,6 +333,10 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XRaiseWindow(nint display, nuint window);
 
+    /// <summary>Lowers a capture window without unmapping it or changing keyboard focus.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XLowerWindow(nint display, nuint window);
+
     /// <summary>Hides the native window without destroying its saved attributes.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XUnmapWindow(nint display, nuint window);

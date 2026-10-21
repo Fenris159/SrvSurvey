@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -18,6 +19,10 @@ internal sealed class JournalProjectionTick(JournalProjectionContext context)
     public string? PreviousFrontierId { get; set; }
 
     public string? PreviousCommanderName { get; set; }
+
+    public bool CommanderChanged { get; set; }
+
+    public IReadOnlyList<ColonizationPendingCargoAdjustment>? CapturedCarrierCargo { get; set; }
 
     public bool AllowSharedCargo { get; set; }
 

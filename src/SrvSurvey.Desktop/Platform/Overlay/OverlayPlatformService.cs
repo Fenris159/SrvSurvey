@@ -151,7 +151,10 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
             );
         }
 
-        if (!SetWindowPos(handle, nint.Zero, 0, 0, 0, 0, NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
+        bool captureWindow = window is StreamOverlayWindow;
+        nint insertAfter = captureWindow ? (nint)1 : nint.Zero; // HWND_BOTTOM keeps the capture behind gameplay.
+        uint positionFlags = NoSize | NoMove | DoNotActivate | FrameChanged | (captureWindow ? 0 : NoZOrder);
+        if (!SetWindowPos(handle, insertAfter, 0, 0, 0, 0, positionFlags))
         {
             error = Marshal.GetLastPInvokeError();
             _ = SetWindowLongPtr(handle, ExtendedWindowStyle, style);

@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Journal;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 /// <summary>Owns journal workspace fan-out, ordering, bootstrap/live policy and per-tick handoffs.</summary>
@@ -11,12 +13,22 @@ internal sealed class JournalProjection(IJournalProjectionAdapter adapter)
         JournalProjectionOperation.IdleHousekeeping,
     ];
 
+    // These synchronous reducers durably capture carrier movements before any optional asynchronous workspace.
+    private static readonly JournalProjectionOperation[] CaptureOperations =
+    [
+        JournalProjectionOperation.SessionBaseline,
+        JournalProjectionOperation.SessionState,
+        JournalProjectionOperation.CommanderIdentity,
+        JournalProjectionOperation.CargoInventory,
+        JournalProjectionOperation.StatusConsumers,
+        JournalProjectionOperation.ColonizationContext,
+        JournalProjectionOperation.ColonizationCargoCapture,
+    ];
+
     private static readonly JournalProjectionOperation[] SessionOperations =
     [
         JournalProjectionOperation.Timeline,
-        JournalProjectionOperation.SessionBaseline,
         JournalProjectionOperation.JournalInspector,
-        JournalProjectionOperation.SessionState,
         JournalProjectionOperation.Firegroups,
         JournalProjectionOperation.BoardedVehicle,
         JournalProjectionOperation.MusicTrack,
@@ -25,13 +37,11 @@ internal sealed class JournalProjection(IJournalProjectionAdapter adapter)
 
     private static readonly JournalProjectionOperation[] CargoAndStatusOperations =
     [
-        JournalProjectionOperation.CargoInventory,
         JournalProjectionOperation.MiningWorkspace,
         JournalProjectionOperation.ShipLocker,
         JournalProjectionOperation.FrontierInventory,
         JournalProjectionOperation.DockToDock,
         JournalProjectionOperation.DesktopBehavior,
-        JournalProjectionOperation.StatusConsumers,
         JournalProjectionOperation.GroundTargetEvents,
         JournalProjectionOperation.GreenGasGiant,
         JournalProjectionOperation.FrontierJournal,
@@ -42,7 +52,6 @@ internal sealed class JournalProjection(IJournalProjectionAdapter adapter)
     private static readonly JournalProjectionOperation[] CommanderContextOperations =
     [
         JournalProjectionOperation.CommanderCodex,
-        JournalProjectionOperation.ColonizationContext,
         JournalProjectionOperation.SearchContext,
         JournalProjectionOperation.MiningSystem,
         JournalProjectionOperation.MineMapSystem,
@@ -150,11 +159,19 @@ internal sealed class JournalProjection(IJournalProjectionAdapter adapter)
             return;
         }
 
+        await ApplyStageAsync(CaptureOperations, context, tick);
         foreach (JournalProjectionOperation[] stage in FullStages)
         {
             await ApplyStageAsync(stage, context, tick);
         }
         context.CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    /// <summary>Consumes the last local poll at shutdown without running workspace awaits or live commands.</summary>
+    internal async Task CaptureCargoAsync(JournalMonitorUpdate update)
+    {
+        var context = new JournalProjectionContext(update, false, CancellationToken.None);
+        await ApplyStageAsync(CaptureOperations, context, new JournalProjectionTick(context));
     }
 
     private async Task ApplyStageAsync(
@@ -249,6 +266,8 @@ internal enum JournalProjectionOperation
     MusicTrack,
     CommanderChange,
     CargoInventory,
+    CommanderIdentity,
+    ColonizationCargoCapture,
     MiningWorkspace,
     ShipLocker,
     FrontierInventory,

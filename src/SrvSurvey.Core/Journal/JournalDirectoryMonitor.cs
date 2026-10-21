@@ -122,7 +122,10 @@ public sealed class JournalDirectoryMonitor
         JournalMonitorUpdate update;
         try
         {
-            update = await PollLockedAsync(cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            // Once journal bytes are consumed, return the complete batch even if its caller is stopping.
+            // The projection must be able to persist those observations before honoring cancellation.
+            update = await PollLockedAsync(CancellationToken.None).ConfigureAwait(false);
         }
         finally
         {

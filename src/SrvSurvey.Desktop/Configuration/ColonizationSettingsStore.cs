@@ -13,7 +13,7 @@ public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRec
 
     public ColonizationSettingsStore(string path)
     {
-        documentStore = new UiSettingsDocumentStore(path);
+        documentStore = new UiSettingsDocumentStore(path, flushToDisk: true);
         shoppingDocumentStore = new UiSettingsDocumentStore(path + ".shopping.json");
         planningDocumentStore = new UiSettingsDocumentStore(path + ".plans.json");
         systemCatalogDocumentStore = new UiSettingsDocumentStore(path + ".systems.json");

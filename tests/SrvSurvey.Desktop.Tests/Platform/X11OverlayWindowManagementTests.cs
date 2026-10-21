@@ -49,6 +49,12 @@ public sealed partial class X11OverlayWindowManagementTests
             Assert.False(X11OverlayWindowManagement.TryEnable(X11Native.OverlayWindowOperations, display, managed));
             _ = X11Native.XGetInputFocus(display, out nuint initialFocus, out _);
             Assert.Equal(managed, TopWindow(display, root));
+            _ = X11Native.XRaiseWindow(display, live);
+            X11OverlayPlatformService.LowerCaptureWindow(display, live);
+            Assert.Equal(managed, TopWindow(display, root));
+            Assert.Equal(2, ReadAttributes(display, live).MapState);
+            _ = X11Native.XGetInputFocus(display, out nuint captureFocus, out _);
+            Assert.Equal(initialFocus, captureFocus);
             X11OverlayWindowManagement.Raise(X11Native.OverlayWindowOperations, display, managed);
             X11OverlayWindowManagement.Raise(X11Native.OverlayWindowOperations, display, live);
             Assert.Equal(live, TopWindow(display, root));

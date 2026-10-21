@@ -171,7 +171,7 @@ internal sealed class X11OverlayPlatformService
         {
             if (handle != nint.Zero && TryGetDisplay(out nint currentDisplay))
             {
-                if (!ApplyWindowType(currentDisplay, handle))
+                if (!ApplyWindowType(currentDisplay, handle, window is StreamOverlayWindow))
                 {
                     Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
                 }
@@ -263,7 +263,7 @@ internal sealed class X11OverlayPlatformService
                     );
                 }
 
-                bool stackingApplied = ApplyWindowType(currentDisplay, handle);
+                bool stackingApplied = ApplyWindowType(currentDisplay, handle, window is StreamOverlayWindow);
                 if (interactive)
                 {
                     X11Native.XShapeCombineMask(
@@ -291,6 +291,10 @@ internal sealed class X11OverlayPlatformService
                     );
                 }
 
+                if (window is StreamOverlayWindow)
+                {
+                    LowerCaptureWindow(currentDisplay, windowHandle);
+                }
                 _ = X11Native.XFlush(currentDisplay);
                 if (interactive)
                 {
@@ -947,10 +951,41 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
-    /// <summary>Publishes utility first, with normal fallback, without changing the window's management mode.</summary>
-    private bool ApplyWindowType(nint currentDisplay, nint handle)
+    /// <summary>Keeps the mapped capture drawable behind application windows without hiding its pixels from OBS.</summary>
+    internal static void LowerCaptureWindow(nint currentDisplay, nuint handle)
     {
-        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(utilityWindowAtom, normalWindowAtom);
+        var request = new X11Native.XClientMessageEvent
+        {
+            Type = ClientMessage,
+            Display = currentDisplay,
+            Window = handle,
+            MessageType = X11Native.XInternAtom(currentDisplay, "_NET_WM_STATE", onlyIfExists: 0),
+            Format = 32,
+            Data = new X11Native.XClientMessageData
+            {
+                L0 = 1,
+                L1 = unchecked((nint)X11Native.XInternAtom(currentDisplay, "_NET_WM_STATE_BELOW", onlyIfExists: 0)),
+                L3 = 1,
+            },
+        };
+        _ = X11Native.XSendEvent(
+            currentDisplay,
+            X11Native.XDefaultRootWindow(currentDisplay),
+            propagate: 0,
+            SubstructureNotifyMask | SubstructureRedirectMask,
+            ref request
+        );
+        _ = X11Native.XLowerWindow(currentDisplay, handle);
+    }
+
+    /// <summary>Publishes gameplay panels as utilities and the background capture as a normal application window.</summary>
+    private bool ApplyWindowType(nint currentDisplay, nint handle, bool captureWindow = false)
+    {
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+            utilityWindowAtom,
+            normalWindowAtom,
+            captureWindow
+        );
         if (windowTypes.Length == 0)
         {
             return false;

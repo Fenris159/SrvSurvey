@@ -100,8 +100,33 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 dependencies.GroundTarget.UpdateMusicTrack(state.Session.MusicTrack);
             }
         );
-        operations[JournalProjectionOperation.CommanderChange] = (context, tick) =>
-            ApplyCommanderChangeIfNeededAsync(context.Update, tick.PreviousFrontierId, tick.PreviousCommanderName);
+        operations[JournalProjectionOperation.CommanderIdentity] = Sync(
+            (context, tick) =>
+                tick.CommanderChanged = ApplyCommanderIdentity(
+                    context.Update,
+                    tick.PreviousFrontierId,
+                    tick.PreviousCommanderName
+                )
+        );
+        operations[JournalProjectionOperation.CommanderChange] = (_, tick) =>
+            ApplyCommanderChangeIfNeededAsync(tick.CommanderChanged);
+        operations[JournalProjectionOperation.ColonizationCargoCapture] = Sync(
+            (context, tick) =>
+            {
+                if (context.IsLive && !dependencies.IsDiagnosticReplay())
+                {
+                    tick.CapturedCarrierCargo = dependencies.Colonization.CaptureLiveCarrierCargo(
+                        context.JournalEvents,
+                        state.Session.CommanderName,
+                        state.Session.FrontierId,
+                        state.Session.IsLegacy != true,
+                        tick.AllowRavenCargo ? state.ProviderCargoInventory : null,
+                        tick.RavenCargoChanged || context.Update.Cargo is not null,
+                        !state.AwaitFreshProviderCargoSnapshot
+                    );
+                }
+            }
+        );
     }
 
     /// <summary>Keeps shared UI cargo and independently attributed provider cargo in separate projections.</summary>
@@ -548,7 +573,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         {
             state.Exobiology.UpdateStatus(status);
             dependencies.GroundTarget.UpdateStatus(status);
-            dependencies.Colonization.UpdateStatus(status);
+            // Main-menu status can clear the vehicle flags after the final ship transfer was recorded.
+            if (!state.Session.IsAtMainMenu && !state.Session.IsShutdown)
+            {
+                dependencies.Colonization.UpdateStatus(status);
+            }
         }
     }
 
@@ -581,13 +610,26 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 )
             );
         bool isCurrentCargoInventoryAvailable = !state.AwaitFreshProviderCargoSnapshot;
+        if (context.IsLive && !dependencies.IsDiagnosticReplay() && tick.CapturedCarrierCargo is null)
+        {
+            tick.CapturedCarrierCargo = dependencies.Colonization.CaptureLiveCarrierCargo(
+                update.JournalEvents,
+                state.Session.CommanderName,
+                state.Session.FrontierId,
+                state.Session.IsLegacy != true,
+                tick.AllowRavenCargo ? state.ProviderCargoInventory : null,
+                cargoActivity,
+                isCurrentCargoInventoryAvailable
+            );
+        }
         await dependencies.Colonization.SynchronizeLiveProjectsAsync(
             update.JournalEvents,
-            allowPublishing: tick.AllowLiveEffects,
+            allowPublishing: tick.AllowLiveEffects && tick.CapturedCarrierCargo is not null,
             cargoInventory: tick.AllowRavenCargo ? state.ProviderCargoInventory : null,
             preferShipCargoDiffForSquadron: isCurrentCargoInventoryAvailable,
             cargoActivity: cargoActivity,
-            cancellationToken: tick.WorkCancellationToken
+            cancellationToken: tick.WorkCancellationToken,
+            capturedCargo: tick.CapturedCarrierCargo
         );
     }
 
@@ -863,7 +905,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
-    private async Task ApplyCommanderChangeIfNeededAsync(
+    private bool ApplyCommanderIdentity(
         JournalMonitorUpdate update,
         string? previousFrontierId,
         string? previousCommanderName
@@ -874,7 +916,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             || !string.Equals(previousCommanderName, state.Session.CommanderName, StringComparison.OrdinalIgnoreCase);
         if (!commanderChanged)
         {
-            return;
+            return false;
         }
 
         state.AwaitFreshCargoSnapshot = true;
@@ -887,6 +929,15 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         state.CargoInventory.Reset(null);
         state.LatestCargo = null;
         state.LatestShipLocker = null;
+        return true;
+    }
+
+    private async Task ApplyCommanderChangeIfNeededAsync(bool commanderChanged)
+    {
+        if (!commanderChanged)
+        {
+            return;
+        }
         await dependencies.FrontierProfile.SetCommanderContextAsync(
             state.Session.FrontierId,
             state.Session.CommanderName,
@@ -1027,7 +1078,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             state.ProviderCargoJournalPath = update.JournalPath;
         }
         bool bound = dependencies.JournalSources.Bind(
-            state.Session.IsShutdown || update.IsAwaitingCommanderIdentity ? null : update.JournalPath,
+            update.IsAwaitingCommanderIdentity ? null : update.JournalPath,
             state.Session.FrontierId
         );
         bool allowed =
