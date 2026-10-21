@@ -103,7 +103,18 @@ public sealed class DesktopRuntimeTests
                     },
                 ],
             };
-            overlay.Apply(plan, new EliteStatus { Flags = StatusFlags.InMainShip });
+            var shipStatus = new EliteStatus { Flags = StatusFlags.InMainShip };
+            var journal = new JournalSessionState();
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    """{"event":"LoadGame","Ship":"python"}""",
+                    out JournalEventEnvelope? loadGame,
+                    out _
+                )
+            );
+            journal.Apply(loadGame!);
+            main.OverlayExceptions.UpdateBoardedVehicle(journal, shipStatus);
+            overlay.Apply(plan, shipStatus);
             using var host = new HostedOverlayTestHarness(OverlayWindowRegistry.Shared);
             using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
             typeof(DesktopRuntime)
@@ -406,7 +417,8 @@ public sealed class DesktopRuntimeTests
             Assert.DoesNotContain("Desktop runtime shutdown failed", applicationLog.Text, StringComparison.Ordinal);
             Assert.Null(desktop.MainWindow);
             Assert.Empty(OverlayWindowRegistry.Shared.Snapshot());
-            Assert.True(OverlayWindowRegistry.Shared.ShouldPresent("PlotBuildCommodities"));
+            // Vehicle exceptions can still hide an unknown vessel; runtime suppression must be cleared.
+            Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotBuildCommodities"));
         }
         finally
         {

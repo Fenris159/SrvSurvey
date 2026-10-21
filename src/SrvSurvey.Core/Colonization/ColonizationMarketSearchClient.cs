@@ -33,26 +33,46 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
         {
             return new ColonizationMarketSearchResult([], []);
         }
-        Task<ProviderSearchResult> spanshSearch = RunProviderAsync(
-            "Spansh",
-            result => SearchSpanshAsync(query, result, cancellationToken),
-            cancellationToken
-        );
-        Task<ProviderSearchResult> ardentSearch = RunProviderAsync(
-            "Ardent",
-            result => SearchArdentAsync(query, result, cancellationToken),
-            cancellationToken
-        );
-        ProviderSearchResult[] results = await Task.WhenAll(spanshSearch, ardentSearch).ConfigureAwait(false);
+        var searches = new List<Task<ProviderSearchResult>>();
+        if (query.UseSpansh)
+        {
+            searches.Add(
+                RunProviderAsync(
+                    "Spansh",
+                    result => SearchSpanshAsync(query, result, cancellationToken),
+                    cancellationToken
+                )
+            );
+        }
+        if (query.UseArdent)
+        {
+            searches.Add(
+                RunProviderAsync(
+                    "Ardent",
+                    result => SearchArdentAsync(query, result, cancellationToken),
+                    cancellationToken
+                )
+            );
+        }
+        ProviderSearchResult[] results = await Task.WhenAll(searches).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         if (!results.Any(result => result.IsComplete || result.Quotes.Count > 0))
         {
-            throw new HttpRequestException("Neither market provider returned usable data. Try refreshing again.");
+            throw new HttpRequestException(
+                "The selected market data sources returned no usable data. Try refreshing again."
+            );
         }
-        return new ColonizationMarketSearchResult(
-            ColonizationShopping.Merge(results.SelectMany(result => result.Quotes)),
-            results.SelectMany(result => result.Warnings).ToArray()
+        IReadOnlyList<ColonizationMarketQuote> quotes = ColonizationShopping.Merge(
+            results.SelectMany(result => result.Quotes)
         );
+        var warnings = results.SelectMany(result => result.Warnings).ToList();
+        if (quotes.Any(quote => quote.UpdatedAt < DateTimeOffset.UtcNow.AddDays(-query.MaximumAgeDays)))
+        {
+            warnings.Add(
+                $"Local markets include outdated stock older than {query.MaximumAgeDays} days. These are estimates; verify stock before travelling."
+            );
+        }
+        return new ColonizationMarketSearchResult(quotes, warnings);
     }
 
     private static async Task<ProviderSearchResult> RunProviderAsync(
@@ -105,18 +125,21 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
     {
         var needs = query.Needs.ToDictionary(need => need.Commodity, StringComparer.Ordinal);
         string system = Uri.EscapeDataString(query.ReferenceSystem.Trim());
+        int localAge = query.IncludeOutdatedLocalMarkets ? 365 : query.MaximumAgeDays;
+        string localRoute = query.LocalOnly
+            ? $"system/name/{system}/commodities"
+            : $"system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo={localAge}";
         using (
             JsonDocument local = await ardent
-                .GetAsync(
-                    $"system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo={query.MaximumAgeDays}",
-                    ArdentApi.MaximumResponseBytes,
-                    "Colonization local markets",
-                    cancellationToken
-                )
+                .GetAsync(localRoute, ArdentApi.MaximumResponseBytes, "Colonization local markets", cancellationToken)
                 .ConfigureAwait(false)
         )
         {
             ReadArdent(local, query, needs, result.Quotes, localSystem: true);
+        }
+        if (query.LocalOnly)
+        {
+            return;
         }
         // Keep a small request window: independent commodities can overlap without flooding Ardent.
         var sync = new Lock();
@@ -202,7 +225,7 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
             .ToArray();
         var filters = new Dictionary<string, object>
         {
-            ["distance"] = new { min = 0, max = query.Radius },
+            ["distance"] = new { min = 0, max = query.LocalOnly ? 1 : query.Radius },
             ["marketplace"] = new[]
             {
                 new
@@ -215,39 +238,66 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
         // A single OR search returns each station once, including all its matching commodities.
         // Page sequentially to avoid flooding the provider when many build commodities are selected.
         string searchReference = string.Empty;
-        for (int page = 0; page * SpanshPageSize < SpanshRoutes.SearchResultLimit; page++)
+        int pageSize = SpanshPageSize;
+        int offset = 0;
+        while (offset < SpanshRoutes.SearchResultLimit)
         {
-            using JsonDocument document =
-                page > 0 && searchReference.Length > 0
-                    ? await spansh
-                        .RecallAsync(SpanshRoutes.Stations, searchReference, page, cancellationToken)
-                        .ConfigureAwait(false)
-                    : await spansh
-                        .SearchAsync(
-                            new SpanshSearchRequest(SpanshRoutes.Stations, query.ReferenceSystem, filters, page)
-                            {
-                                PageSize = SpanshPageSize,
-                            },
-                            cancellationToken
-                        )
-                        .ConfigureAwait(false);
-            if (page == 0)
+            try
             {
-                searchReference = MiningJson.Text(document.RootElement, "search_reference");
+                using JsonDocument document = await ReadSpanshPageAsync(
+                        query,
+                        filters,
+                        searchReference,
+                        offset / pageSize,
+                        pageSize,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                if (searchReference.Length == 0)
+                {
+                    searchReference = MiningJson.Text(document.RootElement, "search_reference");
+                }
+                JsonElement rows = SpanshRows(document);
+                foreach (JsonElement station in rows.EnumerateArray())
+                {
+                    ReadSpansh(station, query, result.Quotes);
+                }
+                offset += rows.GetArrayLength();
+                long total = Integer(document.RootElement, "count");
+                if (rows.GetArrayLength() < pageSize || (total > 0 && offset >= total))
+                {
+                    return;
+                }
             }
-            JsonElement rows = SpanshRows(document);
-            foreach (JsonElement station in rows.EnumerateArray())
+            catch (InvalidDataException) when (pageSize > SpanshRoutes.PageSize(SpanshRoutes.Stations))
             {
-                ReadSpansh(station, query, result.Quotes);
-            }
-            long total = Integer(document.RootElement, "count");
-            if (rows.GetArrayLength() < SpanshPageSize || (total > 0 && (page + 1) * SpanshPageSize >= total))
-            {
-                return;
+                // Large station outfitting inventories can exceed the bounded response size.
+                // Restart only the rejected page at a smaller size, keeping earlier quotes.
+                pageSize = Math.Max(SpanshRoutes.PageSize(SpanshRoutes.Stations), pageSize / 2);
+                offset -= offset % pageSize;
+                searchReference = string.Empty;
             }
         }
         result.LimitReached = true;
     }
+
+    private Task<JsonDocument> ReadSpanshPageAsync(
+        ColonizationMarketQuery query,
+        Dictionary<string, object> filters,
+        string searchReference,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken
+    ) =>
+        searchReference.Length > 0
+            ? spansh.RecallAsync(SpanshRoutes.Stations, searchReference, page, cancellationToken)
+            : spansh.SearchAsync(
+                new SpanshSearchRequest(SpanshRoutes.Stations, query.ReferenceSystem, filters, page)
+                {
+                    PageSize = pageSize,
+                },
+                cancellationToken
+            );
 
     private static JsonElement SpanshRows(JsonDocument document)
     {
@@ -323,7 +373,17 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
             && quote.Station.Length > 0
             && quote.Distance >= 0
             && quote.Distance <= query.Radius
-            && quote.UpdatedAt >= now.AddDays(-query.MaximumAgeDays)
+            && (
+                !query.LocalOnly
+                || string.Equals(quote.System, query.ReferenceSystem.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
+            && quote.UpdatedAt > DateTimeOffset.MinValue
+            && (
+                query.LocalOnly
+                || quote.UpdatedAt >= now.AddDays(-query.MaximumAgeDays)
+                || query.IncludeOutdatedLocalMarkets
+                    && string.Equals(quote.System, query.ReferenceSystem.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
             && quote.UpdatedAt <= now.AddMinutes(5)
         )
         {

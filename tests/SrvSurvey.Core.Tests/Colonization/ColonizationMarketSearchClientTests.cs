@@ -12,6 +12,220 @@ public sealed class ColonizationMarketSearchClientTests
     private static readonly string[] CombinedCommodities = ["Steel", "Water"];
 
     [Theory]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task RequestsOnlySelectedMarketProviders(bool useSpansh, bool useArdent, bool localOnly)
+    {
+        var hosts = new ConcurrentBag<string>();
+        using var http = new HttpClient(
+            new Handler(
+                (request, _) =>
+                {
+                    string host = request.RequestUri!.Host;
+                    hosts.Add(host);
+                    if (host == "spansh.co.uk")
+                    {
+                        Assert.True(useSpansh);
+                        return Task.FromResult(SpanshResponse([Spansh(1, "Steel", 100)], 1));
+                    }
+                    Assert.True(useArdent);
+                    return Task.FromResult(Json(new JsonArray(Ardent(2, "steel", 100))));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(
+            Query() with
+            {
+                UseSpansh = useSpansh,
+                UseArdent = useArdent,
+                LocalOnly = localOnly,
+            }
+        );
+        Assert.Equal(useSpansh, hosts.Contains("spansh.co.uk"));
+        Assert.Equal(useArdent, hosts.Contains("api.ardent-insight.com"));
+        Assert.Equal((useSpansh ? 1 : 0) + (useArdent ? 1 : 0), result.Quotes.Count);
+        Assert.Empty(result.Warnings);
+    }
+
+    [Fact]
+    public async Task RejectsNoDataSourcesBeforeMakingRequests()
+    {
+        using var http = new HttpClient(
+            new Handler((_, _) => throw new InvalidOperationException("No request expected."))
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            client.SearchAsync(Query() with { UseSpansh = false, UseArdent = false })
+        );
+    }
+
+    [Fact]
+    public async Task OversizedSpanshPageRetriesInSmallerBatchesWithoutDiscardingEarlierResults()
+    {
+        int posts = 0;
+        int recalls = 0;
+        using var http = new HttpClient(
+            new Handler(
+                async (request, token) =>
+                {
+                    if (request.RequestUri!.Host != "spansh.co.uk")
+                    {
+                        return Json(new JsonArray());
+                    }
+                    if (request.Method == HttpMethod.Post)
+                    {
+                        posts++;
+                        using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+                        int size = body.RootElement.GetProperty("size").GetInt32();
+                        int page = body.RootElement.GetProperty("page").GetInt32();
+                        if (posts == 1)
+                        {
+                            Assert.Equal(100, size);
+                            return Json(
+                                new JsonObject
+                                {
+                                    ["count"] = 101,
+                                    ["search_reference"] = "7b9067a9-6ff1-4fa9-bb35-5767867365a0",
+                                    ["results"] = new JsonArray(
+                                        Enumerable
+                                            .Range(1, 100)
+                                            .Select(id => (JsonNode)Spansh(id, "Steel", 100))
+                                            .ToArray()
+                                    ),
+                                }
+                            );
+                        }
+                        Assert.Equal(50, size);
+                        Assert.Equal(2, page);
+                        return SpanshResponse([Spansh(101, "Steel", 100)], 101);
+                    }
+                    recalls++;
+                    HttpResponseMessage oversized = SpanshResponse([], 101);
+                    oversized.Content.Headers.ContentLength = 8 * 1024 * 1024 + 1;
+                    return oversized;
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(Query());
+        Assert.Equal(101, result.Quotes.Count);
+        Assert.Empty(result.Warnings);
+        Assert.Equal(2, posts);
+        Assert.Equal(1, recalls);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task OutdatedLocalMarketsAreExplicitEstimatesAndLocalExclusionIgnoresAge(bool include, bool localOnly)
+    {
+        using var http = new HttpClient(
+            new Handler(
+                (request, _) =>
+                {
+                    if (request.Method != HttpMethod.Post)
+                    {
+                        return Task.FromResult(Json(new JsonArray()));
+                    }
+                    JsonObject local = Spansh(1, "Steel", 200);
+                    local["distance"] = 0;
+                    local["market_updated_at"] = DateTimeOffset.UtcNow.AddDays(-103).ToString("O");
+                    JsonObject nearby = Spansh(2, "Steel", 200);
+                    nearby["system_name"] = "Nearby";
+                    nearby["market_updated_at"] = DateTimeOffset.UtcNow.AddDays(-103).ToString("O");
+                    return Task.FromResult(SpanshResponse([local, nearby], 2));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(
+            Query() with
+            {
+                MaximumAgeDays = 3,
+                IncludeOutdatedLocalMarkets = include,
+                LocalOnly = localOnly,
+            }
+        );
+        if (include || localOnly)
+        {
+            Assert.Equal(1, Assert.Single(result.Quotes).MarketId);
+            Assert.Contains(
+                result.Warnings,
+                warning => warning.Contains("outdated", StringComparison.OrdinalIgnoreCase)
+            );
+        }
+        else
+        {
+            Assert.Empty(result.Quotes);
+        }
+    }
+
+    [Fact]
+    public async Task LocalOnlyQueriesBothProvidersWithoutNearbyCommodityRequestsOrNeighboringSystemStock()
+    {
+        int ardentRequests = 0;
+        int spanshRequests = 0;
+        using var http = new HttpClient(
+            new Handler(
+                async (request, token) =>
+                {
+                    if (request.Method == HttpMethod.Post)
+                    {
+                        spanshRequests++;
+                        using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+                        Assert.Equal(
+                            1,
+                            body.RootElement.GetProperty("filters")
+                                .GetProperty("distance")
+                                .GetProperty("max")
+                                .GetInt32()
+                        );
+                        JsonObject local = Spansh(1, "Steel", 100);
+                        local["distance"] = 0;
+                        local["market_updated_at"] = DateTimeOffset.UtcNow.AddDays(-401).ToString("O");
+                        JsonObject neighbor = Spansh(2, "Steel", 1000);
+                        neighbor["system_name"] = "Neighbor";
+                        neighbor["distance"] = 0.1;
+                        return SpanshResponse([local, neighbor], 2);
+                    }
+                    ardentRequests++;
+                    Assert.EndsWith("/system/name/Sol/commodities", request.RequestUri!.AbsolutePath);
+                    Assert.Empty(request.RequestUri.Query);
+                    JsonObject nearby = Ardent(3, "steel", 1000);
+                    nearby["systemName"] = "Neighbor";
+                    JsonObject localArdent = Ardent(1, "steel", 100);
+                    localArdent["systemName"] = "sOL";
+                    localArdent["updatedAt"] = DateTimeOffset.UtcNow.AddDays(-400).ToString("O");
+                    return Json(new JsonArray(localArdent, nearby));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(
+            Query() with
+            {
+                ReferenceSystem = " Sol ",
+                MaximumAgeDays = 3,
+                LocalOnly = true,
+            }
+        );
+        Assert.Equal(1, spanshRequests);
+        Assert.Equal(1, ardentRequests);
+        ColonizationMarketQuote quote = Assert.Single(result.Quotes);
+        Assert.Equal(1, quote.MarketId);
+        Assert.Equal(100, quote.Stock);
+        Assert.Equal(0, quote.Distance);
+        Assert.Contains("outdated", Assert.Single(result.Warnings));
+    }
+
+    [Theory]
     [InlineData(null, false)]
     [InlineData("null", false)]
     [InlineData("\"unknown\"", false)]

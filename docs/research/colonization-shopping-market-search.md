@@ -6,6 +6,13 @@ Researched 2026-10-16 against RavenColonialWeb commit
 Spansh/Ardent responses. This records provider contracts and UI behavior for an
 independent C# implementation; no upstream implementation was copied.
 
+The desktop market criteria expose Spansh and Ardent data-source checkboxes after
+Arrival. Both are enabled by default, and choices persist with the workspace.
+Only selected providers are requested for ordinary searches and local commodity
+exclusion checks; at least one source is required to start a search.
+Local commodity exclusion counts surface-port stock even when Exclude surface
+ports hides those stations from search results. It also ignores market age.
+
 ## Raven Colonial behavior to preserve
 
 - `WhereToBuy` is an approximately 800px side panel with editable reference
@@ -113,6 +120,12 @@ both. `minVolume` defaults to 1; `maxPrice` is optional. Nearby queries exclude
 the reference system. Add one
 `/system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo=30&fleetCarriers=false`
 request for origin-system stock and filter it to wanted commodities.
+The **Exclude Local Commodities** check instead uses
+`/system/name/{system}/commodities`, which returns recorded system market data
+without the exports route's age cutoff. Filter positive stock and purchase prices
+locally; market age must not prevent excluding a fully covered need. The normal
+nearby search retains its market-age setting.
+[System commodities routes](https://github.com/iaincollins/ardent-api/blob/main/router/api/systems/commodities.js).
 [Nearby route](https://github.com/iaincollins/ardent-api/blob/8531e4cea1043c02465adc2430d980035ed8d43c/router/api/systems/commodity.js#L132),
 [same-system route](https://github.com/iaincollins/ardent-api/blob/8531e4cea1043c02465adc2430d980035ed8d43c/router/api/systems/commodities.js#L100).
 

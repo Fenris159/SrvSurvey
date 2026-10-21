@@ -38,8 +38,12 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private bool excludeSurface;
     private bool requireFullSupply;
     private bool showShortSupply = true;
+    private bool includeOutdatedLocalMarkets = true;
+    private bool useSpansh = true;
+    private bool useArdent = true;
     private bool isWishListLocked;
     private bool disposed;
+    private int ownedSearchDisposed;
     private bool updatingCommoditySelection;
     private int searchVersion;
     private bool showSearchCriteria = true;
@@ -228,6 +232,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         ownsSearch = search is null || ownsProvidedSearch;
         referenceSystem = currentSystem() ?? string.Empty;
         ColonizationProject[] selected = projects.ToArray();
+        UpdateProjectSystems(selected);
         ProjectIds = selected.Select(project => project.BuildId).ToArray();
         ProjectSummary = string.Join(", ", selected.Select(project => project.BuildName));
         IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
@@ -262,8 +267,9 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
 
     public double ResultTableMinimumHeight => 33 * Math.Min(20, Results.Count) + 1;
     public bool IsBusy { get; private set; }
-    public bool CanSearch => !disposed && !IsBusy && (Needs.Count > 0 || refreshProjects is not null);
-    public string Status { get; private set; } = "Choose a reference system and search Spansh and Ardent.";
+    public bool CanSearch =>
+        !disposed && !IsBusy && (UseSpansh || UseArdent) && (Needs.Count > 0 || refreshProjects is not null);
+    public string Status { get; private set; } = "Choose a reference system and search market data.";
     public string Warnings { get; private set; } = string.Empty;
     public string ResultSummary =>
         $"{Results.Count:N0} markets · {Results.Select(row => row.System).Distinct(StringComparer.OrdinalIgnoreCase).Count():N0} systems";
@@ -280,6 +286,48 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             if (Set(ref showShortSupply, value))
             {
                 FilterResults();
+            }
+        }
+    }
+
+    /// <summary>Allows clearly marked old market estimates in the reference system.</summary>
+    public bool IncludeOutdatedLocalMarkets
+    {
+        get => includeOutdatedLocalMarkets;
+        set
+        {
+            if (Set(ref includeOutdatedLocalMarkets, value))
+            {
+                InvalidateSearch();
+                SaveWorkspace();
+            }
+        }
+    }
+
+    private int MarketAgeDays => int.TryParse(MaximumAgeText, out int days) && days is >= 1 and <= 30 ? days : 7;
+
+    public bool UseSpansh
+    {
+        get => useSpansh;
+        set
+        {
+            if (Set(ref useSpansh, value))
+            {
+                InvalidateSearch();
+                SaveWorkspace();
+            }
+        }
+    }
+
+    public bool UseArdent
+    {
+        get => useArdent;
+        set
+        {
+            if (Set(ref useArdent, value))
+            {
+                InvalidateSearch();
+                SaveWorkspace();
             }
         }
     }
@@ -412,7 +460,12 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         FilterResults();
         SaveWorkspace();
         int version = searchVersion;
-        var query = new ColonizationMarketQuery(ReferenceSystem.Trim(), radius, [], maximumAge);
+        var query = new ColonizationMarketQuery(ReferenceSystem.Trim(), radius, [], maximumAge)
+        {
+            IncludeOutdatedLocalMarkets = IncludeOutdatedLocalMarkets,
+            UseSpansh = UseSpansh,
+            UseArdent = UseArdent,
+        };
         try
         {
             if (!await RefreshNeedsForSearchAsync(version))
@@ -420,7 +473,18 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
                 return;
             }
             query = query with { Needs = Needs.Select(need => need.Need).ToArray() };
-            Status = "Searching Spansh and Ardent… This can take a long time.";
+            IReadOnlyList<string> localWarnings = [];
+            if (ExcludeLocalCommodities)
+            {
+                ColonizationMarketSearchResult local = await SearchLocalMarketsAsync(maximumAge);
+                if (disposed || version != searchVersion)
+                {
+                    return;
+                }
+                localMarketQuotes = local.Quotes;
+                localWarnings = local.Warnings;
+            }
+            Status = "Searching selected market data sources… This can take a long time.";
             Changed(nameof(Status));
             ColonizationMarketSearchResult result = await search.SearchAsync(query, lifetime.Token);
             if (disposed || version != searchVersion)
@@ -428,7 +492,13 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
                 return;
             }
 
-            CompleteSearch(query, result);
+            CompleteSearch(
+                query,
+                result with
+                {
+                    Warnings = localWarnings.Concat(result.Warnings).Distinct().ToArray(),
+                }
+            );
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
         {
@@ -447,12 +517,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         }
         finally
         {
-            IsBusy = false;
-            NotifySearch();
-            if (disposed)
-            {
-                DisposeOwnedSearch();
-            }
+            FinishSearch();
         }
     }
 
@@ -470,7 +535,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private async Task<bool> RefreshNeedsForSearchAsync(int version)
     {
         Status = refreshProjects is null
-            ? "Searching Spansh and Ardent… This can take a long time."
+            ? "Searching selected market data sources… This can take a long time."
             : "Refreshing project needs from Raven Colonial…";
         NotifySearch();
         if (refreshProjects is not null)
@@ -536,11 +601,19 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             ExcludeSurface = ExcludeSurface,
             RequireFullSupply = RequireFullSupply,
             ShowShortSupply = ShowShortSupply,
+            ExcludeLocalCommodities = ExcludeLocalCommodities,
+            IncludeOutdatedLocalMarkets = IncludeOutdatedLocalMarkets,
+            UseSpansh = UseSpansh,
+            UseArdent = UseArdent,
+            LocalMarketQuotes = localMarketQuotes,
             UseCarrierDifference = UseCarrierDifference,
             HasCarrierDifferencePreference = true,
             SelectedCarrierMarketId = selectedCarrierMarketId,
             ShowSearchCriteria = ShowSearchCriteria,
-            ExcludedCommodities = Needs.Where(need => !need.IsSelected).Select(need => need.Need.Commodity).ToArray(),
+            ExcludedCommodities = Needs
+                .Where(need => !need.IsManuallySelected)
+                .Select(need => need.Need.Commodity)
+                .ToArray(),
             ExpandedMarkets = expandedMarkets.ToArray(),
             SearchedCommodities = searchedCommodities,
             Quotes = quotes,
@@ -569,6 +642,11 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         excludeSurface = state.ExcludeSurface;
         requireFullSupply = state.RequireFullSupply;
         showShortSupply = state.ShowShortSupply;
+        excludeLocalCommodities = state.ExcludeLocalCommodities;
+        includeOutdatedLocalMarkets = state.IncludeOutdatedLocalMarkets;
+        useSpansh = state.UseSpansh;
+        useArdent = state.UseArdent;
+        localMarketQuotes = state.LocalMarketQuotes;
         useCarrierDifference = state.EffectiveUseCarrierDifference;
         selectedCarrierMarketId = state.SelectedCarrierMarketId;
         showSearchCriteria = state.ShowSearchCriteria;
@@ -625,12 +703,13 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         {
             SetCarriers(carriers);
         }
-        string[] excluded = Needs.Where(need => !need.IsSelected).Select(need => need.Need.Commodity).ToArray();
+        string[] excluded = Needs.Where(need => !need.IsManuallySelected).Select(need => need.Need.Commodity).ToArray();
         foreach (ShoppingNeedViewModel need in Needs)
         {
             need.PropertyChanged -= OnNeedChanged;
         }
         ColonizationProject[] selected = projects.ToArray();
+        UpdateProjectSystems(selected);
         IReadOnlyList<ColonizationShoppingNeed> aggregate = ColonizationShopping.Aggregate(selected);
         RebuildPlan(aggregate, plan.Snapshot());
         Needs = aggregate
@@ -709,41 +788,28 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private void FilterResults()
     {
         UpdateRemainingNeeds();
+        ApplyLocalCommodityExclusions();
         ColonizationShoppingNeed[] active = Needs
             .Where(need => need.IsSelected)
             .Select(need => need.Need with { Required = need.Remaining })
             .ToArray();
-        int pad = MinimumPad switch
-        {
-            "Large" => 3,
-            "Medium" => 2,
-            "Small" => 1,
-            _ => 0,
-        };
-        bool validArrival =
-            double.TryParse(MaximumArrivalText, NumberStyles.Number, CultureInfo.CurrentCulture, out double arrival)
-            && double.IsFinite(arrival)
-            && arrival >= 0;
         IReadOnlyList<ColonizationWishListItem> wishList = plan.Snapshot();
-        IEnumerable<ShoppingMarketRowViewModel> rows = ColonizationShopping
-            .Merge(quotes)
-            .Where(quote =>
-                quote.PadSize >= pad
-                && (!ExcludeCarriers || !quote.StationType.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
-                && (!ExcludeSurface || !IsSurface(quote.StationType))
-                && validArrival
-                && (arrival == 0 || quote.Arrival <= arrival)
-            )
+        IEnumerable<ShoppingMarketRowViewModel> rows = FilterMarketQuotes(ColonizationShopping.Merge(quotes))
             .GroupBy(ColonizationShopping.MarketKey)
-            .Select(group => new ShoppingMarketRowViewModel(
-                group.ToArray(),
-                active,
-                expandedMarkets.Contains(group.Key),
-                OnExpansionChanged,
-                OnWishListChanged,
-                ShowShortSupply,
-                wishList
-            ))
+            .Select(group =>
+            {
+                var row = new ShoppingMarketRowViewModel(
+                    group.ToArray(),
+                    active,
+                    expandedMarkets.Contains(group.Key),
+                    OnExpansionChanged,
+                    OnWishListChanged,
+                    ShowShortSupply,
+                    wishList
+                );
+                row.ApplyMarketAge(MarketAgeDays);
+                return row;
+            })
             .Where(row => row.Matches > 0 && (!RequireFullSupply || row.CanFulfillAll));
         IEnumerable<ShoppingMarketRowViewModel> ordered = Sort switch
         {
@@ -765,6 +831,42 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Changed(nameof(ResultSummary));
     }
 
+    private IEnumerable<ColonizationMarketQuote> FilterMarketQuotes(
+        IEnumerable<ColonizationMarketQuote> source,
+        bool forLocalExclusion = false
+    )
+    {
+        int pad = MinimumPad switch
+        {
+            "Large" => 3,
+            "Medium" => 2,
+            "Small" => 1,
+            _ => 0,
+        };
+        bool validArrival =
+            double.TryParse(MaximumArrivalText, NumberStyles.Number, CultureInfo.CurrentCulture, out double arrival)
+            && double.IsFinite(arrival)
+            && arrival >= 0;
+        DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddDays(-MarketAgeDays);
+        return source.Where(quote =>
+            quote.PadSize >= pad
+            && (
+                UseSpansh && string.Equals(quote.Source, "Spansh", StringComparison.OrdinalIgnoreCase)
+                || UseArdent && string.Equals(quote.Source, "Ardent", StringComparison.OrdinalIgnoreCase)
+            )
+            && (!ExcludeCarriers || !quote.StationType.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
+            && (forLocalExclusion || !ExcludeSurface || !IsSurface(quote.StationType))
+            && validArrival
+            && (arrival == 0 || quote.Arrival <= arrival)
+            && (
+                forLocalExclusion
+                || IncludeOutdatedLocalMarkets
+                || !string.Equals(quote.System, ResultsReferenceSystem, StringComparison.OrdinalIgnoreCase)
+                || quote.UpdatedAt >= cutoff
+            )
+        );
+    }
+
     private static bool IsSurface(string type) =>
         type.Contains("Planetary", StringComparison.OrdinalIgnoreCase)
         || type.Contains("Settlement", StringComparison.OrdinalIgnoreCase)
@@ -778,6 +880,8 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Changed(nameof(ResultsReferenceSystem));
         Changed(nameof(IsBusy));
         Changed(nameof(CanSearch));
+        Changed(nameof(CanExcludeLocalCommodities));
+        Changed(nameof(ExcludeLocalCommodities));
         Changed(nameof(Status));
         Changed(nameof(Warnings));
     }
@@ -806,7 +910,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
 
     private void DisposeOwnedSearch()
     {
-        if (ownsSearch && search is IDisposable disposable)
+        if (ownsSearch && search is IDisposable disposable && Interlocked.Exchange(ref ownedSearchDisposed, 1) == 0)
         {
             disposable.Dispose();
         }

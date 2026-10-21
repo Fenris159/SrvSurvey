@@ -19,6 +19,11 @@ public sealed record ColonizationShoppingState
     public bool HasCarrierDifferencePreference { get; init; }
     public long SelectedCarrierMarketId { get; init; }
     public bool ShowShortSupply { get; init; } = true;
+    public bool ExcludeLocalCommodities { get; init; }
+    public bool IncludeOutdatedLocalMarkets { get; init; } = true;
+    public bool UseSpansh { get; init; } = true;
+    public bool UseArdent { get; init; } = true;
+    public IReadOnlyList<ColonizationMarketQuote> LocalMarketQuotes { get; init; } = [];
     public bool ShowSearchCriteria { get; init; } = true;
     public IReadOnlyList<string> ExcludedCommodities { get; init; } = [];
     public IReadOnlyList<string> ExpandedMarkets { get; init; } = [];
@@ -57,8 +62,10 @@ public sealed record ColonizationShoppingState
         && AppliedPurchaseIds.All(id => !string.IsNullOrWhiteSpace(id))
         && Quotes is not null
         && WishListQuotes is not null
+        && LocalMarketQuotes is not null
         && Quotes
             .Concat(WishListQuotes)
+            .Concat(LocalMarketQuotes)
             .All(quote =>
                 quote is not null
                 && !string.IsNullOrWhiteSpace(quote.System)

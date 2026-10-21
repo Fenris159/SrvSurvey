@@ -106,7 +106,9 @@
           <StackPanel Orientation="Horizontal" Spacing="6">
             <TextBlock x:Name="AutoRefreshSpinner" Classes="auto-refresh-spinner"
                        Text="⟳" FontSize="16" RenderTransformOrigin="50%,50%"
-                       IsVisible="{Binding Colonization.IsAutoRefreshEnabled}" />
+                       IsVisible="{Binding Colonization.IsAutoRefreshEnabled}">
+              <TextBlock.RenderTransform><RotateTransform /></TextBlock.RenderTransform>
+            </TextBlock>
             <TextBlock Text="Auto Refresh" VerticalAlignment="Center" />
           </StackPanel>
         </ToggleButton>

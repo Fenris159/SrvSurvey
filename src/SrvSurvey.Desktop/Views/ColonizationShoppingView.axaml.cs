@@ -34,6 +34,9 @@ public sealed partial class ColonizationShoppingView : UserControl
     private void SelectNoNeeds_Click(object? sender, RoutedEventArgs args) =>
         ViewModel.SetAllCommoditiesSelected(false);
 
+    private async void ExcludeLocalCommodities_Click(object? sender, RoutedEventArgs args) =>
+        await ViewModel.ToggleLocalCommoditiesAsync();
+
     private void Sort_Click(object? sender, RoutedEventArgs args)
     {
         if (sender is Button { Tag: string column })

@@ -81,7 +81,8 @@ public sealed partial class ColonizationWishListViewModelTests
             .AvailableSupplies.Single(supply => supply.Need.Commodity == "steel");
         Assert.True(chosen.IsWishListed);
         Assert.Equal($"Steel: {stock}", chosen.TableLabel);
-        Assert.Contains($"Still need {100 - stock}", chosen.Detail);
+        Assert.Contains($"Still to plan: {100 - stock}", chosen.Detail);
+        Assert.Contains($"On ShoppingList here: {stock}", chosen.Detail);
         Assert.Equal(stock, Assert.Single(model.CaptureState().WishList).Quantity);
         chosen.ToggleWishListCommand.Execute(null);
         Assert.Empty(model.CaptureState().WishList);
