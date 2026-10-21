@@ -38,6 +38,9 @@ public interface IEddnPublisher
     void SetEnabled(bool enabled);
 
     void SetSuspended(bool suspended);
+
+    /// <summary>Invalidates outstanding companion reads independently of delivery of immutable retained reports.</summary>
+    void SetCompanionDataAllowed(bool allowed);
 }
 
 /// <summary>
@@ -58,6 +61,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     private EddnSessionKey? sessionKey;
     private bool sharingEnabled;
     private bool publishingSuspended;
+    private bool companionDataAllowed = true;
     private bool acceptingWrites = true;
     private bool disposed;
     private int disposeStarted;
@@ -178,6 +182,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
 
             SetEnabled(request.Enabled);
+            SetCompanionDataAllowed(request.AllowSharedData);
             EddnSessionPublisher? currentSession = ReplaceSessionIfNeeded(request);
             if (currentSession is null)
             {
@@ -186,6 +191,25 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
             EddnPublicationResult result = currentSession.Apply(request, cancellationToken);
             return FinishCapturedWritesAsync(result, cancellationToken);
+        }
+    }
+
+    /// <summary>Serializes companion authorization with session replacement without suspending the durable transport.</summary>
+    public void SetCompanionDataAllowed(bool allowed)
+    {
+        lock (applySync)
+        {
+            EddnSessionPublisher? current;
+            lock (sync)
+            {
+                if (disposed)
+                {
+                    return;
+                }
+                companionDataAllowed = allowed;
+                current = session;
+            }
+            current?.SetCompanionDataAllowed(allowed);
         }
     }
 
@@ -369,6 +393,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             replacement.SetEnabled(sharingEnabled);
             replacement.SetSuspended(publishingSuspended);
         }
+        // Session replacement and companion authorization are serialized by applySync.
+        replacement.SetCompanionDataAllowed(companionDataAllowed);
 
         return replacement;
     }

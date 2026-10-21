@@ -1336,13 +1336,14 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         dependencies.CommanderInstances.RefreshGameWindowCount();
         bool verifiedSource = CanShareCompanionSnapshots(update);
         bool journalSource = verifiedSource || attributedJournal;
-        bool canPublish = !dependencies.IsDiagnosticReplay() && !update.IsBootstrapRead && journalSource;
+        bool canDeliver = !dependencies.IsDiagnosticReplay();
+        bool canPublish = canDeliver && !update.IsBootstrapRead && journalSource;
         bool canShareData = verifiedSource;
         EliteStatus? providerStatus = canShareData ? GetProviderStatus() : null;
         CargoSnapshot? providerCargo = GetProviderCargo(allowSharedCargo);
         try
         {
-            dependencies.eddnPublisher.SetSuspended(!journalSource);
+            dependencies.eddnPublisher.SetSuspended(!canDeliver);
             EddnPublicationResult eddnResult = await dependencies.eddnPublisher.ApplyAsync(
                 new EddnApplyRequest
                 {
@@ -1375,7 +1376,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
         try
         {
-            dependencies.edAstroPublisher.SetSuspended(!journalSource);
+            dependencies.edAstroPublisher.SetSuspended(!canDeliver);
             dependencies.edAstroPublisher.Apply(
                 new EdAstroApplyRequest(
                     update.JournalEvents,

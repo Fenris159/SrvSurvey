@@ -918,8 +918,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(() => CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged);
             gameWindowOwnership.Transfer();
             SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
-            this.eddnPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
-            this.edAstroPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
+            this.eddnPublisher.SetSuspended(IsDiagnosticReplay);
+            this.edAstroPublisher.SetSuspended(IsDiagnosticReplay);
+            this.eddnPublisher.SetCompanionDataAllowed(
+                !CommanderInstances.HasMultipleGameWindows && !IsDiagnosticReplay
+            );
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths,
@@ -4758,8 +4761,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
         SetSharedCargoSuppressed(hasMultipleGameWindows);
         bool ambiguous = !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount);
-        eddnPublisher.SetSuspended(ambiguous);
-        edAstroPublisher.SetSuspended(ambiguous);
+        eddnPublisher.SetCompanionDataAllowed(!ambiguous && !IsDiagnosticReplay);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 

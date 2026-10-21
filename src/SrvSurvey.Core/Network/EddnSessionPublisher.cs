@@ -60,6 +60,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private bool isCrewMember;
     private bool sharingEnabled;
     private bool publishingSuspended;
+    private bool companionDataAllowed = true;
     private int disposeStarted;
     private bool accepting = true;
     private bool disposed;
@@ -148,6 +149,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     internal EddnPublicationResult Apply(EddnApplyRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
+        SetCompanionDataAllowed(request.AllowSharedData);
         var published = new List<EddnPublishedEvent>();
         var warnings = new List<string>();
 
@@ -205,6 +207,27 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
 
         return new EddnPublicationResult(published, warnings);
+    }
+
+    /// <summary>Revokes pending companion reads without pausing delivery of captured reports or clearing journal context.</summary>
+    internal void SetCompanionDataAllowed(bool allowed)
+    {
+        lock (enqueueSync)
+        {
+            lock (sync)
+            {
+                if (disposed || companionDataAllowed == allowed)
+                {
+                    return;
+                }
+                companionDataAllowed = allowed;
+                sessionGeneration++;
+            }
+        }
+        if (!allowed)
+        {
+            ResetCompanionActivity();
+        }
     }
 
     internal async Task WaitForCompanionReadsAsync(CancellationToken cancellationToken = default)

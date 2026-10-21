@@ -55,6 +55,10 @@ now matches the live panels without painting another copy over the game.
   attributed journal events eligible for sharing while rejecting later companion
   files. Resuming gameplay accepts fresh cargo again, and a missing journal drive
   no longer makes SrvSurvey fail during shutdown.
+- **Keep captured reports moving after gameplay ends.** EDDN and EDAstro
+  retained uploads continue draining at the main menu, after Elite closes, and
+  when restoring an ended session. Revoking a shared journal source cancels
+  outstanding companion reads without suspending already-attributed reports.
 
 ## Update channel and packages
 

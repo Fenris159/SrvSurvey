@@ -177,6 +177,17 @@ public sealed class MultiCommanderJournalUploadTests
                 Assert.False(firstSender.Handler.Posts.IsEmpty);
                 Assert.False(secondSender.Handler.Posts.IsEmpty);
             }
+            if (provider is "EDDN" or "EDAstro")
+            {
+                await File.AppendAllTextAsync(
+                    Path.Combine(firstFolder, "Journal.F1.log"),
+                    """{"timestamp":"2026-10-14T12:00:07Z","event":"Music","MusicTrack":"MainMenu"}""" + "\n"
+                );
+                await File.AppendAllTextAsync(
+                    Path.Combine(secondFolder, "Journal.F2.log"),
+                    """{"timestamp":"2026-10-14T12:00:07Z","event":"Shutdown"}""" + "\n"
+                );
+            }
             using var recoveredFirst = new Sender(provider, root);
             using var recoveredSecond = new Sender(provider, root);
             recoveredFirst.Advance(TimeSpan.FromHours(4));

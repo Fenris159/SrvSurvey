@@ -4412,7 +4412,8 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.True(viewModel.Colonization.SharedCargoSuppressed);
-            Assert.True(eddnPublisher.SuspensionStates[^1]);
+            Assert.False(eddnPublisher.CompanionStates[^1]);
+            Assert.False(eddnPublisher.SuspensionStates[^1]);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -4421,12 +4422,14 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.False(viewModel.Colonization.SharedCargoSuppressed);
             Assert.False(eddnPublisher.SuspensionStates[^1]);
+            Assert.True(eddnPublisher.CompanionStates[^1]);
 
             switcher.AvailableWindowCount = 2;
             viewModel.CommanderInstances.RefreshGameWindowCount();
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
-            Assert.True(eddnPublisher.SuspensionStates[^1]);
+            Assert.False(eddnPublisher.CompanionStates[^1]);
+            Assert.False(eddnPublisher.SuspensionStates[^1]);
             Assert.Contains("cannot be attributed safely", viewModel.DockToDock.StatusMessage);
             Assert.Contains("cannot be attributed safely", viewModel.Colonization.ShipCargoPublishingStatus);
         }
@@ -4549,6 +4552,71 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
             Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
             Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    /// <summary>Ending gameplay revokes companion ingestion while idle polls leave captured EDDN and EDAstro delivery active.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EndedSessionIdlePollKeepsAttributedOutboxesActive(bool shutdown)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-ended-outbox-{Guid.NewGuid():N}");
+        using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        bool stopOnIdle = false;
+        var eddn = new RecordingEddnPublisher(() =>
+        {
+            if (stopOnIdle)
+            {
+                stop.Cancel();
+            }
+        });
+        var astro = new RecordingEdAstroPublisher();
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            string journal = Path.Combine(journals, "Journal.ended.log");
+            await File.WriteAllTextAsync(
+                journal,
+                """
+                {"event":"Fileheader","Odyssey":true,"gameversion":"4.1","build":"r1"}
+                {"event":"Commander","Name":"Test Cmdr","FID":"F123"}
+                {"event":"LoadGame","Commander":"Test Cmdr","FID":"F123","Odyssey":true}
+                """ + "\n"
+            );
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(eddn).WithEdAstroPublisher(astro)
+            );
+            await model.RefreshAsync();
+            await File.AppendAllTextAsync(
+                journal,
+                (shutdown ? """{"event":"Shutdown"}""" : """{"event":"Music","MusicTrack":"MainMenu"}""") + "\n"
+            );
+            await model.RefreshAsync();
+            await Task.Delay(TimeSpan.FromSeconds(5.1), stop.Token);
+            stopOnIdle = true;
+
+            await model.MonitorAsync(TimeSpan.FromMilliseconds(5), stop.Token);
+
+            Assert.Empty(eddn.Calls[^1].Events);
+            Assert.False(eddn.Calls[^1].AllowSharedData);
+            Assert.False(eddn.SuspensionStates[^1]);
+            Assert.False(astro.SuspensionStates[^1]);
         }
         finally
         {
@@ -5170,6 +5238,7 @@ public sealed class MainWindowViewModelTests
 
     private sealed class RecordingEdAstroPublisher : IEdAstroPublisher
     {
+        internal List<bool> SuspensionStates { get; } = [];
         internal bool Enabled { get; private set; }
         internal List<EdAstroApplyRequest> Calls { get; } = [];
 
@@ -5180,7 +5249,7 @@ public sealed class MainWindowViewModelTests
         public void SetEnabled(bool enabled) => Enabled = enabled;
 
         /// <summary>Provides set suspended for the isolated test fixture.</summary>
-        public void SetSuspended(bool suspended) { }
+        public void SetSuspended(bool suspended) => SuspensionStates.Add(suspended);
 
         /// <summary>Releases the isolated test resources after assertions complete.</summary>
         public void Dispose() { }
@@ -5191,6 +5260,10 @@ public sealed class MainWindowViewModelTests
         public List<EddnCall> Calls { get; } = [];
 
         public List<bool> SuspensionStates { get; } = [];
+        public List<bool> CompanionStates { get; } = [];
+
+        /// <summary>Records source revocation independently of transport suspension.</summary>
+        public void SetCompanionDataAllowed(bool allowed) => CompanionStates.Add(allowed);
 
         public Task<EddnPublicationResult> ApplyAsync(
             EddnApplyRequest request,
