@@ -129,13 +129,25 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
             query.LocalOnly || query.IncludeOutdatedLocalMarkets
                 ? $"system/name/{system}/commodities"
                 : $"system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo={query.MaximumAgeDays}";
-        using (
-            JsonDocument local = await ardent
-                .GetAsync(localRoute, ArdentApi.MaximumResponseBytes, "Colonization local markets", cancellationToken)
-                .ConfigureAwait(false)
-        )
+        try
         {
+            using JsonDocument local = await ardent
+                .GetAsync(localRoute, ArdentApi.MaximumResponseBytes, "Colonization local markets", cancellationToken)
+                .ConfigureAwait(false);
             ReadArdent(local, query, needs, result.Quotes, localSystem: true);
+        }
+        catch (Exception exception)
+            when (!query.LocalOnly
+                && !cancellationToken.IsCancellationRequested
+                && exception
+                    is HttpRequestException
+                        or IOException
+                        or JsonException
+                        or InvalidDataException
+                        or OperationCanceledException
+            )
+        {
+            result.Warnings.Add("Ardent local market data was unavailable; nearby results were still loaded.");
         }
         if (query.LocalOnly)
         {

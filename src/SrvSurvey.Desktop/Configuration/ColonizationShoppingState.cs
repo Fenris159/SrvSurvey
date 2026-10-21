@@ -55,6 +55,7 @@ public sealed record ColonizationShoppingState
         && Sort is not null
         && Warnings is not null
         && WarningEntries is not null
+        && WarningEntries.All(warning => !string.IsNullOrWhiteSpace(warning))
         && CompletedSystem is not null
         && ExcludedCommodities is not null
         && ExpandedMarkets is not null

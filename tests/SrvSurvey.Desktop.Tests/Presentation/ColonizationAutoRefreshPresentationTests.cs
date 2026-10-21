@@ -66,7 +66,12 @@ public sealed partial class ColonizationShoppingPresentationTests
                     )
             );
             // The spinner must own the transform targeted by its animation, including after restyling.
-            Assert.IsType<RotateTransform>(spinner.RenderTransform);
+            RotateTransform rotation = Assert.IsType<RotateTransform>(spinner.RenderTransform);
+            double initialAngle = rotation.Angle;
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(15);
+            using WriteableBitmap? rotated = window.CaptureRenderedFrame();
+            Assert.NotNull(rotated);
+            Assert.NotEqual(initialAngle, rotation.Angle);
             active.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-auto-refresh-preview.png"),
                 PngBitmapEncoderOptions.Default

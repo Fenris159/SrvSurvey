@@ -600,6 +600,63 @@ public sealed class ColonizationMarketSearchClientTests
     }
 
     [Theory]
+    [InlineData("http", false)]
+    [InlineData("io", false)]
+    [InlineData("json", false)]
+    [InlineData("oversized", false)]
+    [InlineData("timeout", false)]
+    [InlineData("http", true)]
+    public async Task LocalArdentFailuresDoNotBlockNearbySearchesButRemainFatalForLocalOnlyChecks(
+        string failure,
+        bool localOnly
+    )
+    {
+        int nearbyRequests = 0;
+        using var http = new HttpClient(
+            new Handler(
+                (request, _) =>
+                {
+                    if (!request.RequestUri!.AbsolutePath.Contains("/nearby/", StringComparison.Ordinal))
+                    {
+                        Exception error = failure switch
+                        {
+                            "http" => new HttpRequestException("Offline"),
+                            "io" => new IOException("Disconnected"),
+                            "json" => new JsonException("Invalid JSON"),
+                            "oversized" => new InvalidDataException("Response exceeded its limit"),
+                            _ => new OperationCanceledException("Request timeout"),
+                        };
+                        return Task.FromException<HttpResponseMessage>(error);
+                    }
+                    nearbyRequests++;
+                    JsonObject nearby = Ardent(2, "steel", 100);
+                    nearby["systemName"] = "Nearby";
+                    return Task.FromResult(Json(new JsonArray(nearby)));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketQuery query = Query() with
+        {
+            UseSpansh = false,
+            IncludeOutdatedLocalMarkets = true,
+            LocalOnly = localOnly,
+        };
+        if (localOnly)
+        {
+            await Assert.ThrowsAsync<HttpRequestException>(() => client.SearchAsync(query));
+            Assert.Equal(0, nearbyRequests);
+        }
+        else
+        {
+            ColonizationMarketSearchResult result = await client.SearchAsync(query);
+            Assert.Equal("Nearby", Assert.Single(result.Quotes).System);
+            Assert.Equal(1, nearbyRequests);
+            Assert.Contains("local market data was unavailable", Assert.Single(result.Warnings));
+        }
+    }
+
+    [Theory]
     [InlineData("Spansh")]
     [InlineData("Ardent")]
     public async Task RetainsOtherProviderResultsAndReportsFailure(string failingSource)

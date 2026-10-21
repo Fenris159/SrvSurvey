@@ -191,10 +191,6 @@ public sealed partial class ColonizationShoppingPresentationTests
                     .OfType<TextBlock>()
                     .Where(block => !string.IsNullOrEmpty(block.Text))
                     .ToArray();
-                foreach (TextBlock text in texts)
-                {
-                    LocalizationBehavior.SetEnabled(text, true);
-                }
                 string[] lines = detail.Split('\n');
                 string[] translated = lines.Select(LocalizationCatalog.Translate).ToArray();
                 Assert.Equal(translated, texts.SelectMany(text => text.Text!.Split('\n')));

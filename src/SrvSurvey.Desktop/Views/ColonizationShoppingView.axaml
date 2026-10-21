@@ -3,6 +3,7 @@
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         xmlns:views="using:SrvSurvey.Desktop.Views"
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+        xmlns:localization="using:SrvSurvey.Desktop.Localization"
         x:Class="SrvSurvey.Desktop.Views.ColonizationShoppingView"
         x:DataType="vm:ColonizationShoppingViewModel"
         >
@@ -285,9 +286,9 @@
                           <Button Classes="supply-button" Classes.short-supply="{Binding !IsEnough}" Classes.wished="{Binding IsWishListed}" Command="{Binding ToggleWishListCommand}">
                             <ToolTip.Tip>
                               <StackPanel Spacing="2">
-                                <TextBlock Text="{Binding PlanningDetail}" />
-                                <TextBlock Text="{Binding AllocationDetail}" />
-                                <TextBlock Text="{Binding StockDetail}" />
+                                <TextBlock Text="{Binding PlanningDetail}" localization:LocalizationBehavior.Enabled="True" />
+                                <TextBlock Text="{Binding AllocationDetail}" localization:LocalizationBehavior.Enabled="True" />
+                                <TextBlock Text="{Binding StockDetail}" localization:LocalizationBehavior.Enabled="True" />
                               </StackPanel>
                             </ToolTip.Tip>
                             <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />

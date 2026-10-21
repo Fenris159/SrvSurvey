@@ -574,6 +574,13 @@ public sealed partial class ColonizationViewModelTests
             WriteShopping(invalidState);
             Assert.Null(store.LoadShopping("Test"));
         }
+        foreach (string? warning in new string?[] { null, "", " " })
+        {
+            JsonObject invalidState = validState.DeepClone().AsObject();
+            invalidState["WarningEntries"] = new JsonArray(JsonValue.Create(warning));
+            WriteShopping(invalidState);
+            Assert.Null(store.LoadShopping("Test"));
+        }
         validState["Quotes"] = new JsonArray((JsonNode?)null);
         WriteShopping(validState);
         Assert.Null(store.LoadShopping("Test"));
