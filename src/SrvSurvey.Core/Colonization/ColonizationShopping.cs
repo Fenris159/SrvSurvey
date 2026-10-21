@@ -9,6 +9,15 @@ public sealed record ColonizationMarketQuery(
     int MaximumAgeDays = 7
 )
 {
+    /// <summary>Checks stock in the named project system regardless of market age, without nearby requests.</summary>
+    public bool LocalOnly { get; init; }
+
+    /// <summary>Allows dated local quotes to be shown as estimates without relaxing the nearby market age limit.</summary>
+    public bool IncludeOutdatedLocalMarkets { get; init; }
+
+    public bool UseSpansh { get; init; } = true;
+    public bool UseArdent { get; init; } = true;
+
     public void Validate()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ReferenceSystem);
@@ -17,6 +26,10 @@ public sealed record ColonizationMarketQuery(
         ArgumentOutOfRangeException.ThrowIfLessThan(MaximumAgeDays, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(MaximumAgeDays, 30);
         ArgumentNullException.ThrowIfNull(Needs);
+        if (!UseSpansh && !UseArdent)
+        {
+            throw new ArgumentException("Select at least one market data source.");
+        }
     }
 }
 

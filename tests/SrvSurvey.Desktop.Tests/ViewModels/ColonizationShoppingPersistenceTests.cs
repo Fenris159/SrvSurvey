@@ -559,6 +559,7 @@ public sealed partial class ColonizationViewModelTests
                 "MinimumPad",
                 "Sort",
                 "Warnings",
+                "WarningEntries",
                 "CompletedSystem",
                 "ExcludedCommodities",
                 "ExpandedMarkets",
@@ -570,6 +571,13 @@ public sealed partial class ColonizationViewModelTests
         {
             JsonObject invalidState = validState.DeepClone().AsObject();
             invalidState[property] = null;
+            WriteShopping(invalidState);
+            Assert.Null(store.LoadShopping("Test"));
+        }
+        foreach (string? warning in new string?[] { null, "", " " })
+        {
+            JsonObject invalidState = validState.DeepClone().AsObject();
+            invalidState["WarningEntries"] = new JsonArray(JsonValue.Create(warning));
             WriteShopping(invalidState);
             Assert.Null(store.LoadShopping("Test"));
         }

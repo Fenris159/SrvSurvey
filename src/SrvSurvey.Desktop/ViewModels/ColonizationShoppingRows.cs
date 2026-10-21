@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ShoppingNeedViewModel : WorkspaceObservable
 {
     private bool isSelected = true;
+    private bool isLocallyExcluded;
     private long remaining;
 
     public ShoppingNeedViewModel(ColonizationShoppingNeed need)
@@ -18,8 +19,28 @@ public sealed class ShoppingNeedViewModel : WorkspaceObservable
     public string Label => $"{Need.DisplayName}: {Remaining:N0}";
     public bool IsSelected
     {
-        get => isSelected;
+        get => isSelected && !IsLocallyExcluded;
         set => Set(ref isSelected, value);
+    }
+
+    internal bool IsManuallySelected => isSelected;
+
+    /// <summary>Whether the active local-stock filter covers this need.</summary>
+    public bool IsLocallyExcluded => isLocallyExcluded;
+
+    /// <summary>Explains why a locally covered commodity is unavailable as a search filter.</summary>
+    public string SelectionHint =>
+        IsLocallyExcluded
+            ? "Covered by local market stock. Turn off Exclude Local Commodities to select it."
+            : "Toggle this commodity in market results";
+
+    internal void SetLocallyExcluded(bool value)
+    {
+        if (Set(ref isLocallyExcluded, value, nameof(IsLocallyExcluded)))
+        {
+            Changed(nameof(IsSelected));
+            Changed(nameof(SelectionHint));
+        }
     }
 
     internal void SetRemaining(long value)
@@ -36,6 +57,7 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
     private bool isExpanded;
     private readonly Action<string, bool>? expansionChanged;
     private readonly string key;
+    private readonly DateTimeOffset oldestObservation;
     public bool IsExpanded
     {
         get => isExpanded;
@@ -71,6 +93,8 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
         key = ColonizationShopping.MarketKey(quotes[0]);
         ToggleExpandedCommand = new WorkspaceCommand(() => IsExpanded = !IsExpanded);
         ColonizationMarketQuote station = quotes.OrderByDescending(quote => quote.UpdatedAt).First();
+        oldestObservation = quotes.Min(quote => quote.UpdatedAt);
+        ApplyMarketAge(7);
         Station = station.Station;
         System = station.System;
         StationType = station.StationType;
@@ -128,6 +152,21 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
     public string Station { get; }
     public string System { get; }
     public string StationType { get; }
+
+    /// <summary>Identifies station rows containing stock estimates older than the selected market age.</summary>
+    public bool IsOutdated { get; private set; }
+
+    /// <summary>Shows the observation date so old local stock cannot be mistaken for current availability.</summary>
+    public string OutdatedMarketWarning { get; private set; } = string.Empty;
+
+    internal void ApplyMarketAge(int maximumAgeDays)
+    {
+        IsOutdated = oldestObservation < DateTimeOffset.UtcNow.AddDays(-maximumAgeDays);
+        OutdatedMarketWarning = IsOutdated
+            ? $"Outdated market data from {oldestObservation:yyyy-MM-dd}. Verify stock before travelling."
+            : string.Empty;
+    }
+
     public string Pad { get; }
     public double Distance { get; }
     public double Arrival { get; }
@@ -169,8 +208,10 @@ public sealed class ShoppingSupplyViewModel : WorkspaceObservable
     public string Label => $"{Need.DisplayName}: {Stock:N0} / {Need.Required:N0}";
     public string TableLabel =>
         $"{Need.DisplayName}: {(IsWishListed ? allocatedQuantity : Math.Min(Stock, Need.Required)):N0}";
+    public string PlanningDetail => $"Still to plan: {Math.Max(0, Need.Required - allocatedQuantity):N0}";
+    public string AllocationDetail => $"On ShoppingList here: {allocatedQuantity:N0}";
+    public string StockDetail =>
+        Quote is null ? "No supply reported" : $"Location Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
     public string Detail =>
-        Quote is null
-            ? "No supply reported"
-            : $"Still need {Math.Max(0, Need.Required - allocatedQuantity):N0} · Location Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
+        Quote is null ? StockDetail : string.Join('\n', PlanningDetail, AllocationDetail, StockDetail);
 }

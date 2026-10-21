@@ -3,6 +3,7 @@
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         xmlns:views="using:SrvSurvey.Desktop.Views"
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+        xmlns:localization="using:SrvSurvey.Desktop.Localization"
         x:Class="SrvSurvey.Desktop.Views.ColonizationShoppingView"
         x:DataType="vm:ColonizationShoppingViewModel"
         >
@@ -132,13 +133,17 @@
       <WrapPanel>
         <Button x:Name="CopyShoppingNeeds" Content="Copy needs" behaviors:ClipboardCopyBehavior.Text="{Binding NeedsText}" ToolTip.Tip="Copy comma separated needs" Margin="0,0,8,4" />
         <Button x:Name="SelectAllShoppingNeeds" Content="Select All" Click="SelectAllNeeds_Click" Margin="0,0,8,4" />
-        <Button x:Name="SelectNoShoppingNeeds" Content="Select None" Click="SelectNoNeeds_Click" Margin="0,0,0,4" />
+        <Button x:Name="SelectNoShoppingNeeds" Content="Select None" Click="SelectNoNeeds_Click" Margin="0,0,8,4" />
+        <ToggleButton x:Name="ExcludeLocalCommodities" Classes="list-lock" Content="Exclude Local Commodities"
+                      IsChecked="{Binding ExcludeLocalCommodities, Mode=OneWay}" IsEnabled="{Binding CanExcludeLocalCommodities}"
+                      Click="ExcludeLocalCommodities_Click" Margin="0,0,0,4"
+                      ToolTip.Tip="Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections." />
       </WrapPanel>
       <ItemsControl x:Name="ShoppingNeeds" ItemsSource="{Binding VisibleNeeds}">
         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:ShoppingNeedViewModel">
-            <ToggleButton Classes="commodity colonization-tag" Content="{Binding Label}" IsChecked="{Binding IsSelected, Mode=TwoWay}" ToolTip.Tip="Toggle this commodity in market results" />
+            <ToggleButton Classes="commodity colonization-tag" Content="{Binding Label}" IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding !IsLocallyExcluded}" ToolTip.Tip="{Binding SelectionHint}" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
@@ -182,10 +187,19 @@
             <TextBlock FontSize="12" Text="Arrival ls (0 = any)" />
             <TextBox Text="{Binding MaximumArrivalText, Mode=TwoWay}" />
           </StackPanel>
+          <StackPanel x:Name="MarketDataSources" Spacing="2" Margin="0,0,8,4">
+            <TextBlock FontSize="12" Text="Data Source:" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <CheckBox x:Name="UseSpanshMarkets" Content="Spansh" IsChecked="{Binding UseSpansh, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}" />
+              <CheckBox x:Name="UseArdentMarkets" Content="Ardent" IsChecked="{Binding UseArdent, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}" />
+            </StackPanel>
+          </StackPanel>
         </WrapPanel>
         <WrapPanel>
           <CheckBox Content="Exclude Fleet Carriers" IsChecked="{Binding ExcludeCarriers, Mode=TwoWay}" Margin="0,0,12,0" />
           <CheckBox Content="Exclude surface ports" IsChecked="{Binding ExcludeSurface, Mode=TwoWay}" Margin="0,0,12,0" />
+          <CheckBox x:Name="IncludeOutdatedLocalMarkets" Content="Include outdated local markets" IsChecked="{Binding IncludeOutdatedLocalMarkets, Mode=TwoWay}" Margin="0,0,12,0"
+                    ToolTip.Tip="Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age." />
           <CheckBox Content="Can fulfill all selected needs" IsChecked="{Binding RequireFullSupply, Mode=TwoWay}" />
         </WrapPanel>
       </StackPanel>
@@ -253,6 +267,7 @@
                       <Button Classes="table-link" Command="{Binding ToggleWishListCommand}" ToolTip.Tip="Toggle all offered commodities in the ShoppingList">
                         <TextBlock FontSize="12" Text="{Binding Station}" MaxWidth="250" TextTrimming="CharacterEllipsis" />
                       </Button>
+                      <TextBlock Text="Outdated" IsVisible="{Binding IsOutdated}" Foreground="{DynamicResource RavenWarningBrush}" FontSize="11" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip.Tip="{Binding OutdatedMarketWarning}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1" FontSize="11" Text="{Binding Pad}" VerticalAlignment="Center" ToolTip.Tip="{Binding StationType}" />
                     <TextBlock Grid.Column="2" FontSize="12" Text="{Binding Matches}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -268,7 +283,14 @@
                       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ShoppingSupplyViewModel">
-                          <Button Classes="supply-button" Classes.short-supply="{Binding !IsEnough}" Classes.wished="{Binding IsWishListed}" ToolTip.Tip="{Binding Detail}" Command="{Binding ToggleWishListCommand}">
+                          <Button Classes="supply-button" Classes.short-supply="{Binding !IsEnough}" Classes.wished="{Binding IsWishListed}" Command="{Binding ToggleWishListCommand}">
+                            <ToolTip.Tip>
+                              <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding PlanningDetail}" localization:LocalizationBehavior.Enabled="True" />
+                                <TextBlock Text="{Binding AllocationDetail}" localization:LocalizationBehavior.Enabled="True" />
+                                <TextBlock Text="{Binding StockDetail}" localization:LocalizationBehavior.Enabled="True" />
+                              </StackPanel>
+                            </ToolTip.Tip>
                             <TextBlock Classes="supply" Classes.enough="{Binding IsEnough}" Text="{Binding TableLabel}" />
                           </Button>
                         </DataTemplate>

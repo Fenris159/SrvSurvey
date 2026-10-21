@@ -4887,9 +4887,10 @@
     "Text": "Ardent",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Ardent catalog prices. Market prices may vary by station.",
@@ -10330,6 +10331,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10416,6 +10425,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Checking markets in the selected projects\u2019 systems\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.LocalMarkets.cs"
   },
   {
     "Text": "Checking sell systems {0}/{1}\u2026",
@@ -10827,7 +10844,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
-    "Text": "Choose a reference system and search Spansh and Ardent.",
+    "Text": "Choose a reference system and search market data.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -15024,6 +15041,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
+    "Text": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
+  },
+  {
     "Text": "Crash packages are staged for review and do not silently upload user data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15913,6 +15938,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Data Source:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Data folder: {0}",
@@ -20057,6 +20090,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
+    "Text": "Exclude Local Commodities",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Exclude Secondary Stars",
     "IsFormat": false,
     "SourceKinds": [
@@ -20079,6 +20120,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.LocalMarkets.cs"
   },
   {
     "Text": "Exec",
@@ -27782,6 +27831,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
+    "Text": "Include outdated local markets",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
     "Text": "Incomplete",
     "IsFormat": false,
     "SourceKinds": [
@@ -30991,6 +31048,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
+    "Text": "Local market check failed. Commodity selections were kept; try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.LocalMarkets.cs"
+  },
+  {
     "Text": "Local profile initialization failed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31054,6 +31119,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "Location Stock {0} \u00B7 {1} CR/t \u00B7 {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
   },
   {
     "Text": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -37161,6 +37234,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "On ShoppingList here: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
+  },
+  {
     "Text": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings \u003E Application. Select the display containing Elite.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38547,6 +38628,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Outdated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Outdated market data from {0}. Verify stock before travelling.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
   },
   {
     "Text": "Outfitting",
@@ -50609,14 +50706,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
-    "Text": "Searching Spansh and Ardent\u2026 This can take a long time.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
-  },
-  {
     "Text": "Searching Spansh {0}\u2026",
     "IsFormat": true,
     "SourceKinds": [
@@ -50655,6 +50744,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Searching selected market data sources\u2026 This can take a long time.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
   },
   {
     "Text": "Searching\u2026",
@@ -52783,6 +52880,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
     "Text": "Show only during a mining session",
@@ -55894,7 +55999,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Still need {0} \u00B7 Location Stock {1} \u00B7 {2} CR/t \u00B7 {3}",
+    "Text": "Still to plan: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -63310,9 +63415,9 @@
     "Text": "Toggle this commodity in market results",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
   },
   {
     "Text": "Toggle {0} 2x to confirm.",

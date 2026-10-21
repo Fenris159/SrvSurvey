@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
@@ -22,6 +23,9 @@ public sealed partial class ColonizationShoppingPresentationTests
         );
         main.Colonization.IsEnabled = true;
         await main.Colonization.SetCommanderAsync("Example Cmdr");
+        ILogSink? previousSink = Logger.Sink;
+        var animationLog = new AnimationLogSink();
+        Logger.Sink = animationLog;
         var view = new Views.ColonizationView { DataContext = main };
         var window = new Window
         {
@@ -61,9 +65,13 @@ public sealed partial class ColonizationShoppingPresentationTests
                         Assert.IsType<ISolidColorBrush>(label.Foreground, exactMatch: false).Color
                     )
             );
-            // Avalonia supplies a default TransformGroup for transform keyframes.
-            TransformGroup transforms = Assert.IsType<TransformGroup>(spinner.RenderTransform);
-            Assert.Single(transforms.Children.OfType<RotateTransform>());
+            // The spinner must own the transform targeted by its animation, including after restyling.
+            RotateTransform rotation = Assert.IsType<RotateTransform>(spinner.RenderTransform);
+            double initialAngle = rotation.Angle;
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(15);
+            using WriteableBitmap? rotated = window.CaptureRenderedFrame();
+            Assert.NotNull(rotated);
+            Assert.NotEqual(initialAngle, rotation.Angle);
             active.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-auto-refresh-preview.png"),
                 PngBitmapEncoderOptions.Default
@@ -73,10 +81,42 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.False(spinner.IsVisible);
             main.Colonization.IsEnabled = false;
             Assert.False(toggle.IsEnabled);
+            Assert.Empty(animationLog.Messages);
         }
         finally
         {
             window.Close();
+            Logger.Sink = previousSink;
+        }
+    }
+
+    private sealed class AnimationLogSink : ILogSink
+    {
+        public List<string> Messages { get; } = [];
+
+        public bool IsEnabled(LogEventLevel level, string area) =>
+            level >= LogEventLevel.Warning && area == "Animations";
+
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate);
+            }
+        }
+
+        public void Log(
+            LogEventLevel level,
+            string area,
+            object? source,
+            string messageTemplate,
+            params object?[] propertyValues
+        )
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate + " " + string.Join(" ", propertyValues));
+            }
         }
     }
 }

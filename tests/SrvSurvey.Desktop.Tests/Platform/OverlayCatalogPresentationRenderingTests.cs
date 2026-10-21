@@ -514,7 +514,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
         );
         try
         {
-            OverlayThemeResources.Apply(window, layout, "PlotBuildCommodities");
+            OverlayThemeResources.Apply(window, layout, "PlotBuildCommodities", new OverlayWindowRegistry());
             window.Show();
             WriteableBitmap? frame = window.CaptureRenderedFrame();
 

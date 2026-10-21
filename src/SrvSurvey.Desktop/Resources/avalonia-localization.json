@@ -5153,6 +5153,10 @@
       "translation": "Suchen Sie nach Updates"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "Überprüfen Sie die Projektsysteme auf ausreichend lokale Bestände, um den verbleibenden Bedarf zu decken, einschließlich Überwasserhäfen und unabhängig vom Marktalter. Deaktivieren Sie diese Option, um die Warenauswahl wiederherzustellen."
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "Überprüfen Sie die im Status angezeigten genehmigten Schlüssel. Anwendungsschlüsselcodefelder erfordern Bindungen, aber Änderungen in den Desktop-Einstellungen schreiben diese Felder nicht neu."
     },
@@ -5195,6 +5199,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "Überprüfen Sie die Marktpreise für {0}…"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "Überprüfung der Märkte in den Systemen der ausgewählten Projekte…"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -5401,8 +5409,8 @@
       "translation": "Wählen Sie ein Bezugssystem und ein Oberflächenmaterial."
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "Wählen Sie ein Referenzsystem und suchen Sie Spansh und Ardent."
+      "source": "Choose a reference system and search market data.",
+      "translation": "Wählen Sie ein Referenzsystem und suchen Sie nach Marktdaten."
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -7493,6 +7501,10 @@
       "translation": "Abgedeckte Flottenträgergruppen fallen automatisch zusammen."
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "Gedeckt durch lokale Marktbestände. Deaktivieren Sie „Lokale Waren ausschließen“, um es auszuwählen."
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "Absturzpakete werden zur Überprüfung bereitgestellt und laden keine Benutzerdaten stillschweigend hoch."
     },
@@ -7935,6 +7947,10 @@
     {
       "source": "Data & migration",
       "translation": "Daten & Migration"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "Datenquelle:"
     },
     {
       "source": "Data folder: {0}",
@@ -10001,6 +10017,10 @@
       "translation": "Flottentransportunternehmen ausschließen"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "Lokale Rohstoffe ausschließen"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "Sekundärsterne ausschließen"
     },
@@ -10011,6 +10031,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "Oberflächenhäfen ausschließen"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "Ausgenommen sind {0} Waren, die von lokalen Märkten abgedeckt werden. Deaktivieren Sie „Lokale Waren ausschließen“, um die Auswahl wiederherzustellen."
     },
     {
       "source": "Exec",
@@ -13849,6 +13873,10 @@
       "translation": "Beziehen Sie ältere POIs ein"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "Beziehen Sie veraltete lokale Märkte ein"
+    },
+    {
       "source": "Incomplete",
       "translation": "Unvollständig"
     },
@@ -15449,6 +15477,10 @@
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "Die Überprüfung des lokalen Marktes ist fehlgeschlagen. Die Auswahl der Rohstoffe wurde beibehalten; versuchen Sie es erneut."
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "Die Initialisierung des lokalen Profils ist fehlgeschlagen: {0}"
     },
@@ -15479,6 +15511,10 @@
     {
       "source": "Location",
       "translation": "Standort"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Standortbestand {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -18521,6 +18557,10 @@
       "translation": "Wählen Sie bei GNOME-Versionen, die die Anwendungsseite von SrvSurvey öffnen, die Zeile „Globale Verknüpfungen“ aus. Andere unterstützte Desktops zeigen möglicherweise ihren eigenen Verknüpfungsdialog an."
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Auf ShoppingList hier: {0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "Aktivieren Sie auf Wayland auch die Wayland-Bildschirmaufnahme und die Surface Mining Rhino-Rig-Verfolgung unter Einstellungen > Anwendung. Wählen Sie die Anzeige mit Elite aus."
     },
@@ -19211,6 +19251,14 @@
     {
       "source": "Outbreak",
       "translation": "Ausbruch"
+    },
+    {
+      "source": "Outdated",
+      "translation": "Veraltet"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "Veraltete Marktdaten von {0}. Überprüfen Sie den Lagerbestand vor der Reise."
     },
     {
       "source": "Outfitting",
@@ -25229,10 +25277,6 @@
       "translation": "Suche, BoxelSearch oder Route aktiv"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "Suche Spansh und Ardent… Dies kann lange dauern."
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "Suche Spansh {0}…"
     },
@@ -25251,6 +25295,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "Suche nach veröffentlichten Codex-Standorten…"
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "Suche nach ausgewählten Marktdatenquellen… Dies kann lange dauern."
     },
     {
       "source": "Searching…",
@@ -26311,6 +26359,10 @@
     {
       "source": "Show notes",
       "translation": "Notizen anzeigen"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Zeigen Sie ältere Marktschätzungen im Referenzsystem mit der Warnung „Veraltet“ an. „Lokale Waren ausschließen“ ignoriert immer das Marktalter."
     },
     {
       "source": "Show only during a mining session",
@@ -27865,8 +27917,8 @@
       "translation": "Stellare Funktionen | 6,9 / 10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "Benötigt wird noch {0} · Lagerbestand {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "Noch in Planung: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -44087,6 +44139,10 @@
       "translation": "Buscar actualizaciones"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "Verificar que los sistemas del proyecto tengan suficiente stock local para cubrir las necesidades restantes, incluidos los puertos de superficie e independientemente de la antigüedad del mercado. Desactívelo para restaurar las selecciones de productos básicos."
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "Verifique las claves aprobadas que se muestran en el estado. Los campos de código clave de la aplicación solicitan enlaces, pero los cambios realizados en la configuración del escritorio no reescriben esos campos."
     },
@@ -44129,6 +44185,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "Consultando precios de mercado para {0}…"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "Comprobando mercados en los sistemas de los proyectos seleccionados…"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -44335,8 +44395,8 @@
       "translation": "Elija un sistema de referencia y un material de superficie."
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "Elija un sistema de referencia y busque Spansh y Ardent."
+      "source": "Choose a reference system and search market data.",
+      "translation": "Elija un sistema de referencia y busque datos del mercado."
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -46427,6 +46487,10 @@
       "translation": "Los grupos de transportistas de flota cubiertos colapsan automáticamente."
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "Cubierto por acciones del mercado local. Desactive Excluir productos locales para seleccionarlo."
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "Los paquetes de fallas se preparan para su revisión y no cargan datos de usuario de manera silenciosa."
     },
@@ -46869,6 +46933,10 @@
     {
       "source": "Data & migration",
       "translation": "Datos y migración"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "Fuente de datos:"
     },
     {
       "source": "Data folder: {0}",
@@ -48935,6 +49003,10 @@
       "translation": "Excluir transportistas de flota"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "Excluir productos locales"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "Excluir estrellas secundarias"
     },
@@ -48945,6 +49017,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "Excluir puertos de superficie"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "Se excluyen los productos básicos {0} cubiertos por los mercados locales. Desactive Excluir productos locales para restaurar las selecciones."
     },
     {
       "source": "Exec",
@@ -52783,6 +52859,10 @@
       "translation": "Incluir puntos de interés heredados"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "Incluir mercados locales obsoletos"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incompleto"
     },
@@ -54383,6 +54463,10 @@
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "La verificación del mercado local falló. Se mantuvieron las selecciones de productos básicos; intentar otra vez."
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "Error al inicializar el perfil local: {0}"
     },
@@ -54413,6 +54497,10 @@
     {
       "source": "Location",
       "translation": "Ubicación"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Ubicación Stock {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -57455,6 +57543,10 @@
       "translation": "En las versiones de GNOME que abren la página de Aplicaciones SrvSurvey, elija su fila de Accesos directos globales. Otros escritorios compatibles pueden mostrar su propio cuadro de diálogo de acceso directo."
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "En ShoppingList aquí: {0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "En Wayland, habilite también la captura de pantalla de Wayland y el seguimiento del equipo Surface Mining Rhino en Configuración > Aplicación. Seleccione la pantalla que contiene Elite."
     },
@@ -58145,6 +58237,14 @@
     {
       "source": "Outbreak",
       "translation": "Brote"
+    },
+    {
+      "source": "Outdated",
+      "translation": "Anticuado"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "Datos de mercado desactualizados de {0}. Verificar stock antes de viajar."
     },
     {
       "source": "Outfitting",
@@ -64163,10 +64263,6 @@
       "translation": "Búsqueda, BoxelSearch o Ruta activa"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "Buscando Spansh y Ardent… Esto puede llevar mucho tiempo."
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "Buscando Spansh {0}…"
     },
@@ -64185,6 +64281,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "Buscando ubicaciones del Codex publicadas..."
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "Buscar fuentes de datos de mercado seleccionadas... Esto puede llevar mucho tiempo."
     },
     {
       "source": "Searching…",
@@ -65245,6 +65345,10 @@
     {
       "source": "Show notes",
       "translation": "Mostrar notas"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Muestra estimaciones de mercado más antiguas en el sistema de referencia con una advertencia desactualizada. Excluir productos locales siempre ignora la antigüedad del mercado."
     },
     {
       "source": "Show only during a mining session",
@@ -66799,8 +66903,8 @@
       "translation": "Características estelares | 6.9 / 10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "Todavía necesito {0} · Ubicación Stock {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "Aún por planificar: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -83021,6 +83125,10 @@
       "translation": "Vérifier les mises à jour"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "Vérifiez les systèmes du projet pour disposer d'un stock local suffisant pour couvrir les besoins restants, y compris les ports de surface et quel que soit l'âge du marché. Désactivez-la pour restaurer les sélections de produits."
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "Vérifiez les clés approuvées affichées dans l'état. Les champs de code clé d'application demandent des liaisons, mais les modifications apportées aux paramètres du bureau ne réécrivent pas ces champs."
     },
@@ -83063,6 +83171,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "Vérification des prix du marché pour {0}…"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "Vérification des marchés dans les systèmes des projets sélectionnés…"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -83269,8 +83381,8 @@
       "translation": "Choisissez un système de référence et un matériau de surface."
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "Choisissez un système de référence et recherchez Spansh et Ardent."
+      "source": "Choose a reference system and search market data.",
+      "translation": "Choisissez un système de référence et recherchez des données de marché."
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -85361,6 +85473,10 @@
       "translation": "Les groupes de Fleet Carrier couverts s’effondrent automatiquement."
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "Couvert par les stocks du marché local. Désactivez Exclure les produits locaux pour le sélectionner."
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "Les packages de crash sont préparés pour examen et ne téléchargent pas silencieusement les données utilisateur."
     },
@@ -85803,6 +85919,10 @@
     {
       "source": "Data & migration",
       "translation": "Données et migrations"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "Source de données :"
     },
     {
       "source": "Data folder: {0}",
@@ -87869,6 +87989,10 @@
       "translation": "Exclure les transporteurs de flotte"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "Exclure les produits locaux"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "Exclure les étoiles secondaires"
     },
@@ -87879,6 +88003,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "Exclure les ports de surface"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "Produits {0} exclus couverts par les marchés locaux. Désactivez Exclure les produits locaux pour restaurer les sélections."
     },
     {
       "source": "Exec",
@@ -91717,6 +91845,10 @@
       "translation": "Inclure les POI hérités"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "Inclure les marchés locaux obsolètes"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incomplet"
     },
@@ -93317,6 +93449,10 @@
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "La vérification du marché local a échoué. Les sélections de produits ont été conservées ; essayer à nouveau."
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "Échec de l'initialisation du profil local : {0}"
     },
@@ -93347,6 +93483,10 @@
     {
       "source": "Location",
       "translation": "Emplacement"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Emplacement Stock {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -96389,6 +96529,10 @@
       "translation": "Sur les versions GNOME qui ouvrent la page Applications SrvSurvey, choisissez sa ligne Raccourcis globaux. D'autres bureaux pris en charge peuvent afficher leur propre boîte de dialogue de raccourci."
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Sur la liste d'achats ici : {0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "Sur Wayland, activez également la capture d'écran Wayland et le suivi des plates-formes Surface Mining Rhino dans Paramètres > Application. Sélectionnez l'affichage contenant Elite."
     },
@@ -97079,6 +97223,14 @@
     {
       "source": "Outbreak",
       "translation": "Épidémie"
+    },
+    {
+      "source": "Outdated",
+      "translation": "Dépassé"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "Données de marché obsolètes de {0}. Vérifiez le stock avant de voyager."
     },
     {
       "source": "Outfitting",
@@ -103097,10 +103249,6 @@
       "translation": "Recherche, BoxelSearch ou Itinéraire actif"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "Recherche Spansh et Ardent… Cela peut prendre beaucoup de temps."
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "Recherche Spansh {0}…"
     },
@@ -103119,6 +103267,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "Recherche d'emplacements Codex publiés…"
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "Recherche de sources de données de marché sélectionnées… Cela peut prendre beaucoup de temps."
     },
     {
       "source": "Searching…",
@@ -104179,6 +104331,10 @@
     {
       "source": "Show notes",
       "translation": "Afficher les notes"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Afficher les anciennes estimations du marché dans le système de référence avec un avertissement obsolète. Exclure les produits locaux ignore toujours l’âge du marché."
     },
     {
       "source": "Show only during a mining session",
@@ -105733,8 +105889,8 @@
       "translation": "Caractéristiques stellaires | 6,9 / 10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "Encore besoin de {0} · Localisation Stock {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "Reste à planifier : {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -121955,6 +122111,10 @@
       "translation": "Verifique se há atualizações"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "Verifique os sistemas do projecto quanto a stocks locais suficientes para cobrir as necessidades restantes, incluindo portos de superfície e independentemente da idade do mercado. Desligue para restaurar as seleções de mercadorias."
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "Verifique as chaves aprovadas mostradas no status. Os campos de código-chave do aplicativo solicitam vinculações, mas as alterações feitas nas configurações da área de trabalho não reescrevem esses campos."
     },
@@ -121997,6 +122157,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "Verificando preços de mercado para {0}…"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "Verificando mercados nos sistemas dos projetos selecionados…"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -122203,8 +122367,8 @@
       "translation": "Escolha um sistema de referência e um material de superfície."
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "Escolha um sistema de referência e pesquise Spansh e Ardent."
+      "source": "Choose a reference system and search market data.",
+      "translation": "Escolha um sistema de referência e pesquise dados de mercado."
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -124295,6 +124459,10 @@
       "translation": "Os grupos de transportadoras de frota cobertas são automaticamente reduzidos."
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "Coberto por ações do mercado local. Desative Excluir mercadorias locais para selecioná-lo."
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "Os pacotes de falhas são preparados para revisão e não carregam silenciosamente os dados do usuário."
     },
@@ -124737,6 +124905,10 @@
     {
       "source": "Data & migration",
       "translation": "Dados e migração"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "Fonte de dados:"
     },
     {
       "source": "Data folder: {0}",
@@ -126803,6 +126975,10 @@
       "translation": "Excluir transportadoras de frota"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "Excluir mercadorias locais"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "Excluir estrelas secundárias"
     },
@@ -126813,6 +126989,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "Excluir portas de superfície"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "Commodities {0} excluídas cobertas pelos mercados locais. Desative Excluir mercadorias locais para restaurar as seleções."
     },
     {
       "source": "Exec",
@@ -130651,6 +130831,10 @@
       "translation": "Incluir POIs legados"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "Incluir mercados locais desatualizados"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incompleto"
     },
@@ -132251,6 +132435,10 @@
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "A verificação do mercado local falhou. As seleções de commodities foram mantidas; tente novamente."
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "Falha na inicialização do perfil local: {0}"
     },
@@ -132281,6 +132469,10 @@
     {
       "source": "Location",
       "translation": "Localização"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Estoque de localização {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -135323,6 +135515,10 @@
       "translation": "Nas versões do GNOME que abrem a página Aplicativos SrvSurvey, escolha sua linha Atalhos Globais. Outros desktops suportados podem mostrar sua própria caixa de diálogo de atalho."
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Na ShoppingList aqui: {0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "No Wayland, ative também a captura de tela do Wayland e o rastreamento da plataforma Surface Mining Rhino em Configurações> Aplicativo. Selecione o display que contém Elite."
     },
@@ -136013,6 +136209,14 @@
     {
       "source": "Outbreak",
       "translation": "Surto"
+    },
+    {
+      "source": "Outdated",
+      "translation": "Desatualizado"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "Dados de mercado desatualizados de {0}. Verifique o estoque antes de viajar."
     },
     {
       "source": "Outfitting",
@@ -142031,10 +142235,6 @@
       "translation": "Pesquisa, BoxelSearch ou Rota ativa"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "Pesquisando Spansh e Ardente… Isso pode levar muito tempo."
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "Procurando Spansh {0}…"
     },
@@ -142053,6 +142253,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "Pesquisando locais do Codex publicados…"
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "Pesquisando fontes de dados de mercado selecionadas… Isso pode levar muito tempo."
     },
     {
       "source": "Searching…",
@@ -143113,6 +143317,10 @@
     {
       "source": "Show notes",
       "translation": "Mostrar notas"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Mostre estimativas de mercado mais antigas no sistema de referência com um aviso desatualizado. Excluir commodities locais sempre ignora a idade do mercado."
     },
     {
       "source": "Show only during a mining session",
@@ -144667,8 +144875,8 @@
       "translation": "Recursos estelares | 6,9/10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "Ainda precisa de {0} · Estoque de localização {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "Ainda a planejar: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -160889,6 +161097,10 @@
       "translation": "Проверьте наличие обновлений"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "Проверьте системы проектов на наличие достаточного количества местных запасов для покрытия оставшихся потребностей, включая наземные порты, независимо от возраста рынка. Выключите, чтобы восстановить выбор товаров."
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "Проверьте утвержденные ключи, указанные в статусе. Поля кода ключа приложения запрашивают привязки, но изменения, внесенные в настройки рабочего стола, не перезаписывают эти поля."
     },
@@ -160931,6 +161143,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "Проверка рыночных цен на {0}…"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "Проверка рынков в системах выбранных проектов…"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -161137,8 +161353,8 @@
       "translation": "Выберите систему отсчета и материал поверхности."
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "Выберите систему отсчета и выполните поиск Spansh и Ardent."
+      "source": "Choose a reference system and search market data.",
+      "translation": "Выберите справочную систему и найдите рыночные данные."
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -163229,6 +163445,10 @@
       "translation": "Группы крытых авианосцев автоматически сворачиваются."
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "Покрывается акциями местного рынка. Отключите параметр «Исключить местные товары», чтобы выбрать его."
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "Аварийные пакеты отправляются на проверку и не загружают пользовательские данные автоматически."
     },
@@ -163671,6 +163891,10 @@
     {
       "source": "Data & migration",
       "translation": "Данные и миграция"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "Источник данных:"
     },
     {
       "source": "Data folder: {0}",
@@ -165737,6 +165961,10 @@
       "translation": "Исключить авианосцы"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "Исключить местные товары"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "Исключить второстепенные звезды"
     },
@@ -165747,6 +165975,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "Исключить наземные порты"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "Исключены товары {0}, представленные на местных рынках. Отключите параметр «Исключить местные товары», чтобы восстановить выбор."
     },
     {
       "source": "Exec",
@@ -169585,6 +169817,10 @@
       "translation": "Включить устаревшие POI"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "Включить устаревшие местные рынки"
+    },
+    {
       "source": "Incomplete",
       "translation": "Неполный"
     },
@@ -171185,6 +171421,10 @@
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "Проверка местного рынка не удалась. Выбор товаров был сохранен; Попробуйте еще раз."
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "Не удалось инициализировать локальный профиль: {0}."
     },
@@ -171215,6 +171455,10 @@
     {
       "source": "Location",
       "translation": "Расположение"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Местоположение Склад {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -174257,6 +174501,10 @@
       "translation": "В версиях GNOME, которые открывают страницу «Приложения» SrvSurvey, выберите строку «Глобальные ярлыки». На других поддерживаемых рабочих столах может отображаться собственное диалоговое окно с ярлыками."
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "В списке покупок здесь: {0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "В Wayland также включите захват экрана Wayland и отслеживание буровых установок Surface Mining Rhino в меню «Настройки» > «Приложение». Выберите дисплей, содержащий Elite."
     },
@@ -174947,6 +175195,14 @@
     {
       "source": "Outbreak",
       "translation": "Вспышка"
+    },
+    {
+      "source": "Outdated",
+      "translation": "Устаревший"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "Устаревшие рыночные данные от {0}. Перед поездкой проверьте наличие на складе."
     },
     {
       "source": "Outfitting",
@@ -180965,10 +181221,6 @@
       "translation": "Активен поиск, BoxelSearch или маршрут."
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "Поиск Spansh и Ardent… Это может занять много времени."
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "Поиск Spansh {0}…"
     },
@@ -180987,6 +181239,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "Поиск опубликованных местоположений Кодекса…"
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "Поиск выбранных источников рыночных данных… Это может занять много времени."
     },
     {
       "source": "Searching…",
@@ -182047,6 +182303,10 @@
     {
       "source": "Show notes",
       "translation": "Показать заметки"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Показывать более старые рыночные оценки в базовой системе с предупреждением «Устарело». Параметр «Исключить местные товары» всегда игнорирует возраст рынка."
     },
     {
       "source": "Show only during a mining session",
@@ -183601,8 +183861,8 @@
       "translation": "Звездные возможности | 6,9 / 10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "Все еще нужен {0} · Местоположение Запас {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "Еще в планах: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -199823,6 +200083,10 @@
       "translation": "检查更新"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "检查项目系统是否有足够的当地库存来满足剩余需求，包括地面港口，无论市场年龄如何。关闭即可恢复商品选择。"
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "检查状态中显示的已批准密钥。应用程序键代码字段请求绑定，但在桌面设置中所做的更改不会重写这些字段。"
     },
@@ -199865,6 +200129,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "检查 {0} 的市场价格..."
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "检查所选项目系统中的市场……"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -200071,8 +200339,8 @@
       "translation": "选择参考系统和表面材料。"
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "选择参考系统并搜索 Spansh 和 Ardent。"
+      "source": "Choose a reference system and search market data.",
+      "translation": "选择参考系统并搜索市场数据。"
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -202163,6 +202431,10 @@
       "translation": "被掩护的舰队航母群会自动崩溃。"
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "由当地市场库存覆盖。关闭“排除本地商品”以将其选中。"
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "崩溃包会被暂存以供审核，并且不会默默上传用户数据。"
     },
@@ -202605,6 +202877,10 @@
     {
       "source": "Data & migration",
       "translation": "数据与迁移"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "数据来源："
     },
     {
       "source": "Data folder: {0}",
@@ -204671,6 +204947,10 @@
       "translation": "排除舰队航母"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "排除本地商品"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "排除次要恒星"
     },
@@ -204681,6 +204961,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "排除表面端口"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "排除本地市场涵盖的{0}商品。关闭排除本地商品以恢复选择。"
     },
     {
       "source": "Exec",
@@ -208519,6 +208803,10 @@
       "translation": "包括旧 POI"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "包括过时的本地市场"
+    },
+    {
       "source": "Incomplete",
       "translation": "不完整"
     },
@@ -210119,6 +210407,10 @@
       "translation": "无法保存本地焦点首选项：{0}"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "当地市场检查失败。保留商品选择；再试一次。"
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "本地配置文件初始化失败：{0}"
     },
@@ -210149,6 +210441,10 @@
     {
       "source": "Location",
       "translation": "地点"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "地点库存 {0} · {1} CR/t · {2}"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -213191,6 +213487,10 @@
       "translation": "在打开 SrvSurvey 的应用程序页面的 GNOME 版本上，选择其全局快捷方式行。其他支持的桌面可能会显示自己的快捷方式对话框。"
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "在此处的购物清单上：{0}"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "在 Wayland 上，还可以在“设置”>“应用程序”中启用 Wayland 屏幕捕获和 Surface Mining Rhino 钻机跟踪。选择包含 Elite 的显示。"
     },
@@ -213881,6 +214181,14 @@
     {
       "source": "Outbreak",
       "translation": "暴发"
+    },
+    {
+      "source": "Outdated",
+      "translation": "过时的"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "来自 {0} 的过时市场数据。旅行前核实库存。"
     },
     {
       "source": "Outfitting",
@@ -219899,10 +220207,6 @@
       "translation": "搜索、BoxelSearch 或路由处于活动状态"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "搜索 Spansh 和 Ardent...这可能需要很长时间。"
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "正在搜索 Spansh {0}…"
     },
@@ -219921,6 +220225,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "搜索已发布的法典位置..."
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "搜索选定的市场数据源……这可能需要很长时间。"
     },
     {
       "source": "Searching…",
@@ -220981,6 +221289,10 @@
     {
       "source": "Show notes",
       "translation": "显示注释"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "在参考系统中显示较旧的市场估计，并带有“过时”警告。排除本地商品总是忽略市场年龄。"
     },
     {
       "source": "Show only during a mining session",
@@ -222535,8 +222847,8 @@
       "translation": "恒星特征| 6.9 / 10"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "仍需要 {0} · 位置库存 {1} · {2} CR/t · {3}"
+      "source": "Still to plan: {0}",
+      "translation": "尚待计划：{0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -238757,6 +239069,10 @@
       "translation": "* CHECK FOR UPDATES >>>!"
     },
     {
+      "source": "Check project systems for enough local stock to cover remaining needs, including surface ports and regardless of market age. Turn off to restore commodity selections.",
+      "translation": "* CHECK PROJECT SYSTEMS FOR ENOUGH LOCAL STOCK TO COVER REMAINING NEEDS, INCLUDING SURFACE PORTS AND REGARDLESS OF MARKET AGE. TURN OFF TO RESTORE COMMODITY SELECTIONS. >>>!"
+    },
+    {
       "source": "Check the approved keys shown in the status. Application key-code fields request bindings, but changes made in desktop settings do not rewrite those fields.",
       "translation": "* CHECK THE APPROVED KEYS SHOWN IN THE STATUS. APPLICATION KEY-CODE FIELDS REQUEST BINDINGS, BUT CHANGES MADE IN DESKTOP SETTINGS DO NOT REWRITE THOSE FIELDS. >>>!"
     },
@@ -238799,6 +239115,10 @@
     {
       "source": "Checking market prices for {0}…",
       "translation": "* CHECKING MARKET PRICES FOR {0}… >>>!"
+    },
+    {
+      "source": "Checking markets in the selected projects’ systems…",
+      "translation": "* CHECKING MARKETS IN THE SELECTED PROJECTS’ SYSTEMS… >>>!"
     },
     {
       "source": "Checking sell systems {0}/{1}…",
@@ -239005,8 +239325,8 @@
       "translation": "* CHOOSE A REFERENCE SYSTEM AND A SURFACE MATERIAL. >>>!"
     },
     {
-      "source": "Choose a reference system and search Spansh and Ardent.",
-      "translation": "* CHOOSE A REFERENCE SYSTEM AND SEARCH SPANSH AND ARDENT. >>>!"
+      "source": "Choose a reference system and search market data.",
+      "translation": "* CHOOSE A REFERENCE SYSTEM AND SEARCH MARKET DATA. >>>!"
     },
     {
       "source": "Choose a reference system or enable galaxy-wide search.",
@@ -241097,6 +241417,10 @@
       "translation": "* COVERED FLEET CARRIER GROUPS COLLAPSE AUTOMATICALLY. >>>!"
     },
     {
+      "source": "Covered by local market stock. Turn off Exclude Local Commodities to select it.",
+      "translation": "* COVERED BY LOCAL MARKET STOCK. TURN OFF EXCLUDE LOCAL COMMODITIES TO SELECT IT. >>>!"
+    },
+    {
       "source": "Crash packages are staged for review and do not silently upload user data.",
       "translation": "* CRASH PACKAGES ARE STAGED FOR REVIEW AND DO NOT SILENTLY UPLOAD USER DATA. >>>!"
     },
@@ -241539,6 +241863,10 @@
     {
       "source": "Data & migration",
       "translation": "* DATA & MIGRATION >>>!"
+    },
+    {
+      "source": "Data Source:",
+      "translation": "* DATA SOURCE: >>>!"
     },
     {
       "source": "Data folder: {0}",
@@ -243605,6 +243933,10 @@
       "translation": "* EXCLUDE FLEET CARRIERS >>>!"
     },
     {
+      "source": "Exclude Local Commodities",
+      "translation": "* EXCLUDE LOCAL COMMODITIES >>>!"
+    },
+    {
       "source": "Exclude Secondary Stars",
       "translation": "* EXCLUDE SECONDARY STARS >>>!"
     },
@@ -243615,6 +243947,10 @@
     {
       "source": "Exclude surface ports",
       "translation": "* EXCLUDE SURFACE PORTS >>>!"
+    },
+    {
+      "source": "Excluded {0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.",
+      "translation": "* EXCLUDED {0} COMMODITIES COVERED BY LOCAL MARKETS. TURN OFF EXCLUDE LOCAL COMMODITIES TO RESTORE SELECTIONS. >>>!"
     },
     {
       "source": "Exec",
@@ -247453,6 +247789,10 @@
       "translation": "* INCLUDE LEGACY POIS >>>!"
     },
     {
+      "source": "Include outdated local markets",
+      "translation": "* INCLUDE OUTDATED LOCAL MARKETS >>>!"
+    },
+    {
       "source": "Incomplete",
       "translation": "* INCOMPLETE >>>!"
     },
@@ -249053,6 +249393,10 @@
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "Local market check failed. Commodity selections were kept; try again.",
+      "translation": "* LOCAL MARKET CHECK FAILED. COMMODITY SELECTIONS WERE KEPT; TRY AGAIN. >>>!"
+    },
+    {
       "source": "Local profile initialization failed: {0}",
       "translation": "* LOCAL PROFILE INITIALIZATION FAILED: {0} >>>!"
     },
@@ -249083,6 +249427,10 @@
     {
       "source": "Location",
       "translation": "* LOCATION >>>!"
+    },
+    {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "* LOCATION STOCK {0} · {1} CR/T · {2} >>>!"
     },
     {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
@@ -252125,6 +252473,10 @@
       "translation": "* ON GNOME VERSIONS THAT OPEN SRVSURVEY’S APPLICATIONS PAGE, CHOOSE ITS GLOBAL SHORTCUTS ROW. OTHER SUPPORTED DESKTOPS MAY SHOW THEIR OWN SHORTCUT DIALOG. >>>!"
     },
     {
+      "source": "On ShoppingList here: {0}",
+      "translation": "* ON SHOPPINGLIST HERE: {0} >>>!"
+    },
+    {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "* ON WAYLAND, ALSO ENABLE WAYLAND SCREEN CAPTURE AND SURFACE MINING RHINO RIG TRACKING IN SETTINGS > APPLICATION. SELECT THE DISPLAY CONTAINING ELITE. >>>!"
     },
@@ -252815,6 +253167,14 @@
     {
       "source": "Outbreak",
       "translation": "* OUTBREAK >>>!"
+    },
+    {
+      "source": "Outdated",
+      "translation": "* OUTDATED >>>!"
+    },
+    {
+      "source": "Outdated market data from {0}. Verify stock before travelling.",
+      "translation": "* OUTDATED MARKET DATA FROM {0}. VERIFY STOCK BEFORE TRAVELLING. >>>!"
     },
     {
       "source": "Outfitting",
@@ -258833,10 +259193,6 @@
       "translation": "* SEARCH, BOXELSEARCH, OR ROUTE ACTIVE >>>!"
     },
     {
-      "source": "Searching Spansh and Ardent… This can take a long time.",
-      "translation": "* SEARCHING SPANSH AND ARDENT… THIS CAN TAKE A LONG TIME. >>>!"
-    },
-    {
       "source": "Searching Spansh {0}…",
       "translation": "* SEARCHING SPANSH {0}… >>>!"
     },
@@ -258855,6 +259211,10 @@
     {
       "source": "Searching published Codex locations…",
       "translation": "* SEARCHING PUBLISHED CODEX LOCATIONS… >>>!"
+    },
+    {
+      "source": "Searching selected market data sources… This can take a long time.",
+      "translation": "* SEARCHING SELECTED MARKET DATA SOURCES… THIS CAN TAKE A LONG TIME. >>>!"
     },
     {
       "source": "Searching…",
@@ -259915,6 +260275,10 @@
     {
       "source": "Show notes",
       "translation": "* SHOW NOTES >>>!"
+    },
+    {
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "* SHOW OLDER MARKET ESTIMATES IN THE REFERENCE SYSTEM WITH AN OUTDATED WARNING. EXCLUDE LOCAL COMMODITIES ALWAYS IGNORES MARKET AGE. >>>!"
     },
     {
       "source": "Show only during a mining session",
@@ -261469,8 +261833,8 @@
       "translation": "* STELLAR FEATURES | 6.9 / 10 >>>!"
     },
     {
-      "source": "Still need {0} · Location Stock {1} · {2} CR/t · {3}",
-      "translation": "* STILL NEED {0} · LOCATION STOCK {1} · {2} CR/T · {3} >>>!"
+      "source": "Still to plan: {0}",
+      "translation": "* STILL TO PLAN: {0} >>>!"
     },
     {
       "source": "Stock {0} · Demand {1}",

@@ -114,6 +114,62 @@ public sealed class OverlayExceptionsTests
     }
 
     [AvaloniaFact]
+    public void ColonizationDefaultsDisableVehiclesAndPreserveSavedOverrides()
+    {
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        var cargoWindow = new Window();
+        var shoppingWindow = new Window();
+        try
+        {
+            var store = new OverlayVehicleSettingsStore(path);
+            var registry = new OverlayWindowRegistry();
+            var model = new OverlayExceptionsViewModel(store, registry);
+            OverlayExceptionCategoryViewModel colonization = model.ForCategory(OverlaySettingsCategory.Colonization);
+            Assert.All(
+                colonization.Groups.Where(g => g.Name != "Vessel / Vehicle").SelectMany(g => g.Entries),
+                entry => Assert.True(entry.IsAllowed)
+            );
+            Assert.All(
+                colonization.Groups.Single(g => g.Name == "Vessel / Vehicle").Entries,
+                entry => Assert.False(entry.IsAllowed)
+            );
+
+            registry.Register(cargoWindow, "PlotBuildCommodities");
+            registry.Register(shoppingWindow, "PlotColonizationWishList");
+            registry.SetPresentationVisual(cargoWindow, new Border());
+            registry.SetPresentationVisual(shoppingWindow, new Border());
+            JournalSessionState journal = Journal("python");
+            var docked = new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.Docked };
+            model.UpdateBoardedVehicle(journal, docked);
+            Assert.True(registry.ShouldPresent(cargoWindow));
+            Assert.True(registry.ShouldPresent(shoppingWindow));
+
+            model.UpdateBoardedVehicle(journal, docked with { Flags2 = StatusFlags2.OnFoot });
+            Assert.False(registry.ShouldPresent(cargoWindow));
+            Assert.False(registry.ShouldPresent(shoppingWindow));
+            Assert.True(registry.IsUserVisible("PlotBuildCommodities"));
+            Assert.True(registry.IsUserVisible("PlotColonizationWishList"));
+            model.UpdateBoardedVehicle(journal, docked);
+            Assert.True(registry.ShouldPresent(cargoWindow));
+            Assert.True(registry.ShouldPresent(shoppingWindow));
+
+            colonization.Entries.Single(entry => entry.Definition.Id == "on-foot").IsAllowed = true;
+            colonization.Entries.Single(entry => entry.Definition.Id == "python").IsAllowed = false;
+            var restarted = new OverlayExceptionsViewModel(store, registry);
+            restarted.UpdateBoardedVehicle(journal, docked with { Flags2 = StatusFlags2.OnFoot });
+            Assert.True(registry.ShouldPresent(cargoWindow));
+            Assert.True(registry.ShouldPresent(shoppingWindow));
+            Assert.False(restarted.ForCategory(OverlaySettingsCategory.Colonization).Allows("python"));
+        }
+        finally
+        {
+            cargoWindow.Close();
+            shoppingWindow.Close();
+            File.Delete(path);
+        }
+    }
+
+    [AvaloniaFact]
     public void CategoryExceptionsPersistAndHideLivePresentationsWithoutLosingIntentOrUserToggle()
     {
         string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
@@ -125,7 +181,12 @@ public sealed class OverlayExceptionsTests
             var settings = new OverlayVehicleSettingsStore(path);
             var model = new OverlayExceptionsViewModel(settings, registry);
             OverlayExceptionCategoryViewModel exploration = model.ForCategory(OverlaySettingsCategory.Exploration);
-            Assert.All(model.Categories.SelectMany(c => c.Entries), e => Assert.True(e.IsAllowed));
+            Assert.All(
+                model
+                    .Categories.Where(c => c.Category != OverlaySettingsCategory.Colonization)
+                    .SelectMany(c => c.Entries),
+                e => Assert.True(e.IsAllowed)
+            );
             model.UpdateBoardedVehicle(Journal("python"), new EliteStatus { Flags = StatusFlags.InMainShip });
             registry.Register(window, "PlotBodyInfo");
             registry.SetPresentationVisual(window, new Border());

@@ -1934,14 +1934,21 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 
     public string CarrierCoverageText { get; private set; } = "0.00%";
 
-    internal void UpdateCarrierCoverage(double percent)
+    public double CarrierCoveragePercent { get; private set; }
+
+    public double ProgressSortValue => Project.IsPlanned || Project.IsFleetCarrierLoading ? 0 : Project.Progress ?? 0;
+
+    internal bool UpdateCarrierCoverage(double percent)
     {
+        bool coverageChanged = Math.Abs(CarrierCoveragePercent - percent) > 1e-12;
+        CarrierCoveragePercent = percent;
         string text = percent.ToString("0.00", CultureInfo.InvariantCulture) + "%";
         if (CarrierCoverageText != text)
         {
             CarrierCoverageText = text;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CarrierCoverageText)));
         }
+        return coverageChanged;
     }
 
     public string ProgressText

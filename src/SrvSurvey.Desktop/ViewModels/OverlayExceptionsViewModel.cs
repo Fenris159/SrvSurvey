@@ -94,7 +94,13 @@ public sealed class OverlayExceptionCategoryViewModel : WorkspaceObservable
             .GroupBy(v => v.Group)
             .Select(group => new OverlayExceptionGroupViewModel(
                 group.Key,
-                group.Select(v => new OverlayExceptionEntryViewModel(v, saved?.Contains(v.Id) ?? true, Save)).ToArray()
+                group
+                    .Select(v => new OverlayExceptionEntryViewModel(
+                        v,
+                        saved?.Contains(v.Id) ?? OverlayVehicleCatalog.IsAllowedByDefault(category, v),
+                        Save
+                    ))
+                    .ToArray()
             ))
             .ToArray();
         CheckAllCommand = new WorkspaceCommand(() => SetAll(true));

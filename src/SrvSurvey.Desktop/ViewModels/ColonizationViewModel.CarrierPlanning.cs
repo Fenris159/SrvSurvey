@@ -83,11 +83,19 @@ public sealed partial class ColonizationViewModel
 
     private void UpdateProjectCarrierCoverage()
     {
+        bool changed = false;
         foreach (ColonizationProjectRowViewModel row in Projects)
         {
-            row.UpdateCarrierCoverage(
+            changed |= row.UpdateCarrierCoverage(
                 ColonizationShopping.CarrierCoveragePercent(row.Project, LinkedFleetCarriers, planningCarrierMarketId)
             );
+        }
+        if (
+            changed
+            && projectSorter.Indicator(nameof(ColonizationProjectRowViewModel.CarrierCoveragePercent)).Length > 0
+        )
+        {
+            ApplyProjectFilters();
         }
     }
 

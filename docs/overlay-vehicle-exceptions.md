@@ -4,7 +4,7 @@ Requested behavior: rename Mining firegroups to Firegroups, move it to Status & 
 
 ## Behavior
 
-All entries default to allowed. Filters use the current Status.json boarded flags and the shared JournalSessionState ship/SRV identity. On foot never falls back to a parked ship; fighters have one catch-all entry. Other / unknown lets users control unrecognized types or missing boarded information. Taxi and multicrew passenger contexts also use this entry because the journal can retain the player’s owned ship rather than identifying the vessel they are riding in; piloted fighters still use Fighters. Category settings persist in the existing UI settings document under OverlayVehicleAllowLists. An empty saved array disallows every entry, while an absent category preserves existing behavior.
+Colonization defaults to allowing Small, Medium and Large ships, with every entry in Vessel / Vehicle unchecked: Nomad, SRVs, Rhino, Fighters, On foot and Other / unknown. Other categories default to allowing all their entries. Saved selections take precedence over these defaults. Filters use the current Status.json boarded flags and the shared JournalSessionState ship/SRV identity. On foot never falls back to a parked ship; fighters have one catch-all entry. Other / unknown lets users control unrecognized types or missing boarded information. Taxi and multicrew passenger contexts also use this entry because the journal can retain the player’s owned ship rather than identifying the vessel they are riding in; piloted fighters still use Fighters. Category settings persist in the existing UI settings document under OverlayVehicleAllowLists. An empty saved array disallows every entry, while an absent category uses its defaults.
 
 The shared registry applies a distinct VehicleExcluded presentation reason, preserving domain intent and user visibility toggles. This affects separate/combined windows and the registry render sources used for stream/VR. Offline position previews do not use that runtime gate. A panel shared by multiple settings categories must be allowed by each. Global settings control the panels assigned to Global (Status & utilities); the Flight warning retains its existing Exploration settings ownership.
 
@@ -16,7 +16,7 @@ Catalog verified 2026-10-20: 49 ship types plus Nomad, Scarab SRV, Scorpion, Rhi
 
 ## Validation
 
-The complete Desktop suite passed: **2,003 passed, 0 failed, 0 skipped**. Subsequent focused checks cover the final guidance updates and four additional taxi/multicrew cases; all 14 vehicle-exception checks pass. Focused tests cover boarded vehicle versus mothership selection, on-foot/fighter precedence, recent ship symbols, persistence, all/none selection, category isolation, registry visibility restoration and compact vertical presentation. Headless dialog and overlay rendering supplement source checks; live gameplay remains a user validation step.
+All 18 focused vehicle-exception checks pass. They cover boarded vehicle versus mothership selection, on-foot/fighter precedence, recent ship symbols, persistence, all/none selection, category isolation, registry visibility restoration and compact vertical presentation. The Colonization regression verifies unchecked Vessel / Vehicle defaults, both panels hiding on foot despite retained Docked flags, restoration when boarding, and saved overrides surviving restart. Headless dialog and overlay rendering supplement source checks; live gameplay remains a user validation step.
 
 ## Standards review
 

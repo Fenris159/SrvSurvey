@@ -73,6 +73,9 @@ public static class OverlayVehicleCatalog
         new(UnknownKey, "Other / unknown", VehicleGroup),
     ];
 
+    public static bool IsAllowedByDefault(OverlaySettingsCategory category, OverlayVehicleDefinition vehicle) =>
+        category != OverlaySettingsCategory.Colonization || vehicle.Group != VehicleGroup;
+
     public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(OverlaySettingsCategory category) =>
         category == OverlaySettingsCategory.MineMap
             ? All.Where(vehicle =>
