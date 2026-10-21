@@ -52,6 +52,7 @@ public sealed class OverlayExceptionsTests
         Assert.Equal("fighters", OverlayVehicleCatalog.Resolve(journal, status with { Flags = StatusFlags.InFighter }));
     }
 
+    /// <summary>Journal ship symbols resolve case-insensitively to the expected overlay size category.</summary>
     [Theory]
     [InlineData("MediumTransport01", "Medium")]
     [InlineData("SmallCombat01_NX", "Small")]

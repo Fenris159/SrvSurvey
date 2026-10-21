@@ -28,6 +28,7 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken = default
     ) => await RetryPendingWritesAsync([], cancellationToken);
 
+    /// <summary>Retries retained work while excluding newly captured cargo and preserving commander ownership across awaits.</summary>
     private async Task<IReadOnlyList<ColonizationDeliveryNotice>> RetryPendingWritesAsync(
         IReadOnlyList<ColonizationPendingCargoAdjustment> capturedCargo,
         CancellationToken cancellationToken

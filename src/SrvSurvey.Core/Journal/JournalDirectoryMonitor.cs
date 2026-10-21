@@ -116,6 +116,7 @@ public sealed class JournalDirectoryMonitor
 
     public IReadOnlyList<string> JournalDirectories => Array.AsReadOnly(journalDirectories);
 
+    /// <summary>Serializes journal and companion reads so consumed cursors and emitted batches cannot race.</summary>
     public async Task<JournalMonitorUpdate> PollAsync(CancellationToken cancellationToken = default)
     {
         await pollLock.WaitAsync(cancellationToken).ConfigureAwait(false);

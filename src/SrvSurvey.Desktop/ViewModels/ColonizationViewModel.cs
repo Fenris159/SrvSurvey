@@ -730,6 +730,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         );
     }
 
+    /// <summary>Attempts the durable carrier outbox with the shutdown deadline and presents any retained-write notice.</summary>
     internal async Task FlushFleetCarrierCargoAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<ColonizationDeliveryNotice> notices = await recovery.FlushFleetCarrierCargoAsync(

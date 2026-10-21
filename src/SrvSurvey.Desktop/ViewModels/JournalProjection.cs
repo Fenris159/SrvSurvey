@@ -148,6 +148,7 @@ internal sealed class JournalProjection(IJournalProjectionAdapter adapter)
         ShellOperations,
     ];
 
+    /// <summary>Projects a consumed journal batch in dependency order and drains persistence after cancellation.</summary>
     internal async Task ApplyAsync(JournalProjectionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

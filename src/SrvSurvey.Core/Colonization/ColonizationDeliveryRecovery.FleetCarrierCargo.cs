@@ -279,6 +279,7 @@ public sealed partial class ColonizationDeliveryRecovery
         cargoInventory?.GetDiff();
     }
 
+    /// <summary>Persists the attempted state before sending a relative change and retains uncertain outcomes for recovery.</summary>
     private async Task<ColonizationDeliveryNotice?> ApplyPendingFleetCarrierCargoAdjustmentAsync(
         ColonizationPendingCargoAdjustment pending,
         string sourceEventName,
@@ -828,6 +829,7 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
+    /// <summary>Saves replacement dependencies before a baseline starts and rejects overlap with an in-flight relative write.</summary>
     private bool BeginCargoBaselinePending(
         long marketId,
         bool replacesCargo = true,
@@ -886,6 +888,7 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
+    /// <summary>Reports whether any nested baseline still owns this carrier queue.</summary>
     private bool IsCargoBaselinePending(long marketId)
     {
         return cargoBaselinePendingDepth.GetValueOrDefault(marketId) > 0;
@@ -927,6 +930,7 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
+    /// <summary>Persists release of a completed baseline dependency before replaying its retained transaction.</summary>
     private async Task ReplayQueuedCargoDeltaAsync(
         ColonizationPendingCargoAdjustment pending,
         int version,
@@ -1022,6 +1026,7 @@ public sealed partial class ColonizationDeliveryRecovery
         cargoBaselineReady.Remove(marketId);
     }
 
+    /// <summary>Invalidates baseline queues and readiness when their owning commander profile changes.</summary>
     private void ClearAllCargoBaselines()
     {
         if (cargoBaselinePendingDepth.Count > 0 || fleetCarrierSyncBusy || cargoWritesInFlight.Count > 0)

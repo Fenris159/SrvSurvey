@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class StreamOverlayCoordinatorTests
 {
+    /// <summary>The joined stream canvas uses background capture policy rather than gameplay overlay stacking.</summary>
     [AvaloniaFact]
     public void CaptureWindowDoesNotJoinTheAlwaysOnTopGameplayPanels()
     {
@@ -22,6 +23,7 @@ public sealed class StreamOverlayCoordinatorTests
         Assert.False(capture.ShowActivated);
     }
 
+    /// <summary>Capture raster dimensions preserve physical panel size across differing window and monitor scales.</summary>
     [AvaloniaTheory]
     [InlineData(1, 2)]
     [InlineData(2, 1.5)]
@@ -81,6 +83,7 @@ public sealed class StreamOverlayCoordinatorTests
         }
     }
 
+    /// <summary>Transparent pixels and zero window opacity both exclude a panel from the live capture count.</summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -127,6 +130,7 @@ public sealed class StreamOverlayCoordinatorTests
         }
     }
 
+    /// <summary>The status names identify every visible source, including the small journal indicator.</summary>
     [AvaloniaFact]
     public void ListsTheJournalIndicatorAlongsideTheGameplayPanelItActuallyCaptures()
     {
@@ -170,6 +174,7 @@ public sealed class StreamOverlayCoordinatorTests
         }
     }
 
+    /// <summary>The capture retains source alpha and follows live panel changes without applying opacity twice.</summary>
     [AvaloniaFact]
     public void NativePanelPixelsKeepTheirOpacityAndUpdateInsideTheJoinedCapture()
     {
@@ -299,6 +304,7 @@ public sealed class StreamOverlayCoordinatorTests
         Assert.True(Assert.Single(context.Harness.PreparedWindows).IsVisible);
     }
 
+    /// <summary>Losing Elite focus preserves the existing OBS capture window and its resources.</summary>
     [AvaloniaFact]
     public void FocusLossKeepsTheSameCaptureWindowAvailableToObs()
     {
@@ -326,6 +332,7 @@ public sealed class StreamOverlayCoordinatorTests
         Assert.False(original.Topmost);
     }
 
+    /// <summary>Temporary game visibility changes retain capture identity until the native game window actually disappears.</summary>
     [AvaloniaFact]
     public void CaptureRemainsDiscoverableWithHiddenEliteAndValidBoundsUntilTheGameWindowIsGone()
     {

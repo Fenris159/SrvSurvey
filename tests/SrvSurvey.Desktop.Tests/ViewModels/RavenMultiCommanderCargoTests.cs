@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class RavenMultiCommanderCargoTests
 {
+    /// <summary>An unavailable carrier-cargo profile does not disable separately attributable construction contributions.</summary>
     [Fact]
     public async Task MissingCargoProfileDoesNotSuppressAttributedConstructionContributions()
     {
@@ -137,6 +138,7 @@ public sealed class RavenMultiCommanderCargoTests
         }
     }
 
+    /// <summary>Ended sessions release their source lease before another client writes cargo into the same physical folder.</summary>
     [Theory]
     [InlineData("Shutdown")]
     [InlineData("Music")]

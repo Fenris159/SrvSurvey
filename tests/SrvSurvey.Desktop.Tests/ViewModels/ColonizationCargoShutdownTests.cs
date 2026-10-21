@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationViewModelTests
 {
+    /// <summary>A discarded workspace recovers its personal or squadron cargo from the durable outbox.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -56,6 +57,7 @@ public sealed partial class ColonizationViewModelTests
         );
     }
 
+    /// <summary>Early capture rejects a mismatched commander, Frontier identity, or galaxy without persisting cargo.</summary>
     [Theory]
     [InlineData("Someone Else", "F123", true)]
     [InlineData("Test Cmdr", "F456", true)]

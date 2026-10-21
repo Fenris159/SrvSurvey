@@ -105,6 +105,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
+    /// <summary>Reconciles capture-window lifetime with the enabled setting and current game-window eligibility.</summary>
     private void SynchronizeIntent()
     {
         if (disposed)
@@ -175,6 +176,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
     }
 
+    /// <summary>Sizes the capture canvas in logical units and returns the game's physical screen origin.</summary>
     private PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
     {
         PixelRect gameBounds = captureBounds;
@@ -263,6 +265,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
+    /// <summary>Scans BGRA alpha bytes by row, excluding fully transparent panels from the streamed count.</summary>
     private static bool HasVisiblePixels(RenderTargetBitmap bitmap)
     {
         using var pixels = new WriteableBitmap(bitmap.PixelSize, bitmap.Dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);

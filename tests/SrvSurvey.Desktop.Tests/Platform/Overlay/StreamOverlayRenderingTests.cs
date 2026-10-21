@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class StreamOverlayRenderingTests
 {
+    /// <summary>The projected panel paints at its destination while the unused capture canvas retains zero alpha.</summary>
     [AvaloniaFact]
     public void CaptureWindowDrawsPanelPixelsAndLeavesTheRestTransparent()
     {

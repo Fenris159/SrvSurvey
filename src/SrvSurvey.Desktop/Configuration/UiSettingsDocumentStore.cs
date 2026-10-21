@@ -12,6 +12,7 @@ public sealed class UiSettingsDocumentStore
     private readonly object fileLock;
     private readonly bool flushToDisk;
 
+    /// <summary>Configures atomic settings updates with optional disk flushing for recovery-critical data.</summary>
     public UiSettingsDocumentStore(string path, bool flushToDisk = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -58,6 +59,7 @@ public sealed class UiSettingsDocumentStore
         }
     }
 
+    /// <summary>Replaces the settings document atomically and flushes it to disk when durability is requested.</summary>
     private void WriteObject(JsonObject root)
     {
         string directory =

@@ -4,6 +4,7 @@ namespace SrvSurvey.Core.Tests.Frontier;
 
 public sealed class FrontierCapiSnapshotParserTests
 {
+    /// <summary>CAPI parsing resolves the new ship identity in both the active ship and stored fleet.</summary>
     [Fact]
     public void RecognizesAnacondaMkIIInTheCurrentShipAndFleet()
     {

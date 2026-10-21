@@ -15,6 +15,7 @@ public sealed partial class StreamOverlayWindow : Window
         InitializeComponent();
     }
 
+    /// <summary>Transfers new raster ownership to the capture canvas and disposes the superseded frames.</summary>
     public void ReplaceFrames(IReadOnlyList<StreamOverlayRenderedFrame> renderedFrames)
     {
         ArgumentNullException.ThrowIfNull(renderedFrames);
@@ -52,6 +53,7 @@ public sealed partial class StreamOverlayWindow : Window
     {
         public Size Size => new(bitmap.PixelSize.Width, bitmap.PixelSize.Height);
 
+        /// <summary>Draws the complete captured raster into its projected destination without applying DPI twice.</summary>
         public void Draw(DrawingContext context, Rect sourceRect, Rect destRect) =>
             context.DrawImage(bitmap, sourceRect, destRect);
     }

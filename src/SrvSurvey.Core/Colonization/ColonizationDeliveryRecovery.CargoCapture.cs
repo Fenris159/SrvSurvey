@@ -6,6 +6,7 @@ public sealed partial class ColonizationDeliveryRecovery
 {
     private ColonizationDockingSnapshot? cargoDockBeforeSessionEnd;
 
+    /// <summary>Retains the last carrier dock through session end and clears it when gameplay context changes.</summary>
     private void CaptureCargoSessionEndDock(JournalEventEnvelope journalEvent)
     {
         if (
@@ -106,9 +107,11 @@ public sealed partial class ColonizationDeliveryRecovery
         return captured;
     }
 
+    /// <summary>Identifies journal transactions that can change a linked carrier manifest.</summary>
     private static bool IsCarrierCargoEvent(JournalEventEnvelope journalEvent) =>
         journalEvent.EventName is "MarketBuy" or "MarketSell" or "CargoTransfer";
 
+    /// <summary>Retains one owned cargo change before sending and queues it behind any pending baseline.</summary>
     private void CaptureCargoDelta(
         List<ColonizationPendingCargoAdjustment> captured,
         long marketId,
@@ -146,6 +149,7 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
+    /// <summary>Sends the retained batch in order while respecting baseline dependencies, ownership, and cancellation.</summary>
     private async Task<IReadOnlyList<ColonizationDeliveryNotice>> SendCapturedCargoAsync(
         IReadOnlyList<ColonizationPendingCargoAdjustment> captured,
         CancellationToken cancellationToken

@@ -30,6 +30,7 @@ public sealed class ShipModuleCatalogTests
         Assert.Equal("Large Planetary Vehicle Hangar", Catalog.FindModule("Int_LargeBuggyBay_Size2_Class3_Free")!.Name);
     }
 
+    /// <summary>The catalog preserves separate armour identities, dedicated cargo storage, and the verified Mk II slot layout.</summary>
     [Fact]
     public void AnacondaMkIIHasDistinctArmourAndItsActualSlotLayout()
     {

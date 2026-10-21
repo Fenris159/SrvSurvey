@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MainWindowJournalSerializationTests
 {
+    /// <summary>Application and game shutdown retain the final personal or squadron movement without needing undocking.</summary>
     [Theory]
     [InlineData(false, false, false, false)]
     [InlineData(true, false, false, false)]
@@ -87,6 +88,7 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    /// <summary>Final capture rejects companion cargo newer than the first end marker, including across separate polls.</summary>
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(true, false, false)]
@@ -157,6 +159,7 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    /// <summary>A resumed session accepts its current inventory even when the batch also contains an earlier MainMenu event.</summary>
     [Fact]
     public async Task ResumedSessionAcceptsFreshCompanionCargoInTheSamePoll()
     {
@@ -203,6 +206,7 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    /// <summary>Losing the journal drive does not throw during disposal or prevent the retained cargo drain.</summary>
     [Fact]
     public async Task MissingJournalFolderAtShutdownStillFlushesRetainedCargo()
     {
@@ -241,6 +245,7 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    /// <summary>Canceling an earlier recovery keeps newly consumed cargo durable for the final shutdown attempt.</summary>
     [Fact]
     public async Task CancellationDuringRecoveryRetainsTheNewBatchAndShutdownFinishesIt()
     {
@@ -308,6 +313,7 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    /// <summary>Creates a commander-scoped carrier session and explicit sync consent using isolated journal and settings files.</summary>
     private static async Task<(string Journal, AppDataPaths Paths)> PrepareCargoShutdownSessionAsync(
         string root,
         bool squadron

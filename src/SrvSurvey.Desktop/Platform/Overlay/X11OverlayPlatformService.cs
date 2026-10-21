@@ -226,6 +226,7 @@ internal sealed class X11OverlayPlatformService
         );
     }
 
+    /// <summary>Applies input and stacking policy while keeping the joined capture surface behind gameplay overlays.</summary>
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);

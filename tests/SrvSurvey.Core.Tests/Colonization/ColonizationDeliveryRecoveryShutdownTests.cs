@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    /// <summary>Covered steel stays retired after a failed save; uncovered water survives same-process or restart recovery.</summary>
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(true, false, false)]
@@ -77,6 +78,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>A server lookup creates no replacement dependency, so personal and squadron cargo can recover without a market.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -112,6 +114,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         }
     }
 
+    /// <summary>A failed or missing carrier lookup releases only dependencies introduced before any replacement was sent.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -140,6 +143,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>A market baseline cannot overlap a pending PATCH or lose its definite rejection and retry eligibility.</summary>
     [Fact]
     public async Task MarketBaselineWaitsForAnInFlightCargoWriteToFinish()
     {
@@ -175,6 +179,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>An acknowledged CAPI baseline keeps release evidence until a failed dependency save can be retried.</summary>
     [Fact]
     public async Task SuccessfulCapiSeedRetainsQueuedReleaseEligibilityAcrossSaveFailure()
     {
@@ -199,6 +204,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>An absolute replacement is withheld if its recovery dependencies cannot be saved.</summary>
     [Fact]
     public async Task BaselineWaitsUntilItsDependencyCanBeSaved()
     {
@@ -217,6 +223,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Equal(-5, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
     }
 
+    /// <summary>Cargo received during a held baseline is saved as unsent before the baseline request completes.</summary>
     [Fact]
     public async Task CargoWaitingForABaselineIsDurableBeforeThatBaselineFinishes()
     {
@@ -250,6 +257,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         }
     }
 
+    /// <summary>Later transactions are already durable while the first request in a consumed batch is awaiting acknowledgement.</summary>
     [Fact]
     public async Task EntireCargoBatchIsDurableBeforeTheFirstHttpRequestCompletes()
     {
@@ -280,6 +288,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         }
     }
 
+    /// <summary>Personal and squadron changes recover from disk without an undock event or a restored live dock.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -315,6 +324,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>MainMenu and Shutdown preserve the ship-inventory difference instead of substituting the shared bank count.</summary>
     [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -350,6 +360,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>Unavailable storage blocks HTTP writes while retaining enough in-memory state to retry safely.</summary>
     [Fact]
     public async Task CargoIsNotSentWithoutADurableRecordAndCanRecoverWhenStorageReturns()
     {
@@ -368,6 +379,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>A shutdown retry retains an ambiguous request instead of applying a relative change twice.</summary>
     [Fact]
     public async Task ShutdownFlushDoesNotGuessAnUncertainHttpOutcome()
     {
@@ -384,6 +396,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Single(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>The shutdown outbox respects consent, carrier-sync preferences, and the owning commander.</summary>
     [Fact]
     public async Task ShutdownFlushDoesNotSendDisabledOrAnotherCommandersCargo()
     {
@@ -402,6 +415,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Single(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>Failure to save the first attempted write also holds later transactions for that carrier.</summary>
     [Fact]
     public async Task ShutdownFlushWaitsForDurableAttemptStorageBeforeSendingAnyDependentCargo()
     {
@@ -422,6 +436,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>Canceling a blocked shutdown request leaves its durable cargo record available next session.</summary>
     [Fact]
     public async Task CancelingTheShutdownDrainKeepsUnsentCargoRecoverable()
     {

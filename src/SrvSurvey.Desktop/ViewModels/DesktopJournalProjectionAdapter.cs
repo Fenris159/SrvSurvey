@@ -73,6 +73,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ApplyIdleHousekeepingAsync(context.Update);
     }
 
+    /// <summary>Binds session reducers and early cargo capture before optional asynchronous workspace operations.</summary>
     private void BindSession()
     {
         operations[JournalProjectionOperation.Timeline] = (context, tick) =>
@@ -523,6 +524,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         );
     }
 
+    /// <summary>Binds monitor status, attributed journal publication, and the final shutdown request.</summary>
     private void BindShell()
     {
         operations[JournalProjectionOperation.MonitorStatus] = Sync(
@@ -608,6 +610,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Updates status consumers without replacing final ship context with main-menu vehicle flags.</summary>
     private void ApplyStatusToStatusConsumers(EliteStatus? status)
     {
         if (status is not null)
@@ -946,6 +949,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
     }
 
+    /// <summary>Resets companion cargo attribution when the journal identity changes and reports commander transitions.</summary>
     private bool ApplyCommanderIdentity(
         JournalMonitorUpdate update,
         string? previousFrontierId,
@@ -973,6 +977,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         return true;
     }
 
+    /// <summary>Loads Frontier profile context for the new commander after a journal identity transition.</summary>
     private async Task ApplyCommanderChangeIfNeededAsync(bool commanderChanged)
     {
         if (!commanderChanged)

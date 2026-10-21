@@ -151,6 +151,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         Assert.Equal(fileName, profile.Data!.BoxelSearch.SavedSearchFileName);
     }
 
+    /// <summary>Persistence stays unavailable until failure assertions finish, then the scheduled retry restores health.</summary>
     [Fact]
     public async Task FailedProfilePersistenceRetriesAndRestoresHealth()
     {
@@ -597,10 +598,12 @@ public sealed class BoxelSearchSessionTests : IDisposable
         private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
         private int savesAllowed;
 
+        /// <summary>Releases the deterministic persistence failure only after the test has observed it.</summary>
         public void AllowSaves() => Volatile.Write(ref savesAllowed, 1);
 
         public BoxelSearchSnapshot[] Snapshots => snapshots.ToArray();
 
+        /// <summary>Rejects saves until the test permits recovery, then delegates to the real profile store.</summary>
         public Task SaveBoxelSearchAsync(
             string frontierId,
             string? commanderName,
