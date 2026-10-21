@@ -63,8 +63,14 @@ internal sealed class WorkspaceParameterCommand(Action<object?> execute) : IComm
 
 internal sealed class WorkspaceTableSorter
 {
-    private string propertyName = string.Empty;
+    private string propertyName;
     private bool descending;
+
+    public WorkspaceTableSorter(string propertyName = "", bool descending = false)
+    {
+        this.propertyName = propertyName;
+        this.descending = descending;
+    }
 
     public void Toggle(object? parameter)
     {

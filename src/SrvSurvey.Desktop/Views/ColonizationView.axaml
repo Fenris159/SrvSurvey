@@ -64,9 +64,16 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="MinWidth" Value="0" />
     </Style>
-    <Style Selector="Grid.colonization-project-headers > TextBlock">
+    <Style Selector="Grid.colonization-project-headers TextBlock">
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    </Style>
+    <Style Selector="Button.project-sort">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
     </Style>
     <Style Selector="ListBox#SystemSites ListBoxItem">
       <Setter Property="Padding" Value="0" />
@@ -413,13 +420,43 @@
                         <ColumnDefinition Width="1.4*" />
                         <ColumnDefinition Width="116" />
                       </Grid.ColumnDefinitions>
-                      <TextBlock Text="SHOW" HorizontalAlignment="Center" />
-                      <TextBlock Grid.Column="1" Text="PROJECT" />
-                      <TextBlock Grid.Column="2" Text="LOADED" />
-                      <TextBlock Grid.Column="3" Text="PROGRESS" />
-                      <TextBlock Grid.Column="4" Text="TYPE" />
-                      <TextBlock Grid.Column="5" Text="SYSTEM" />
-                      <TextBlock Grid.Column="6" Text="FOCUS" HorizontalAlignment="Center" />
+                      <TextBlock Text="SHOW" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      <Button x:Name="ProjectSortProject" Grid.Column="1" Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="BuildName">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="PROJECT" />
+                          <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=BuildName}" />
+                        </StackPanel>
+                      </Button>
+                      <Button x:Name="ProjectSortLoaded" Grid.Column="2" Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="CarrierCoveragePercent">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="LOADED" />
+                          <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=CarrierCoveragePercent}" />
+                        </StackPanel>
+                      </Button>
+                      <Button x:Name="ProjectSortProgress" Grid.Column="3" Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="ProgressSortValue">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="PROGRESS" />
+                          <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ProgressSortValue}" />
+                        </StackPanel>
+                      </Button>
+                      <Button x:Name="ProjectSortType" Grid.Column="4" Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="TypeDescription">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="TYPE" />
+                          <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=TypeDescription}" />
+                        </StackPanel>
+                      </Button>
+                      <Button x:Name="ProjectSortSystem" Grid.Column="5" Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="SystemName">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="SYSTEM" />
+                          <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SystemName}" />
+                        </StackPanel>
+                      </Button>
+                      <TextBlock Grid.Column="6" Text="FOCUS" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>
 
                     <ItemsControl ItemsSource="{Binding Colonization.VisibleProjects}">

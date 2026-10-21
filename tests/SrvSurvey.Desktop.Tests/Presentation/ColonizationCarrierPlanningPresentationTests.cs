@@ -13,7 +13,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed partial class ColonizationShoppingPresentationTests
 {
-    /// <summary>Keeps each heading aligned with its values and separates Show from Shop as the window resizes.</summary>
+    /// <summary>Keeps sortable headings aligned with their values as the window resizes.</summary>
     [AvaloniaTheory]
     [InlineData(820)]
     [InlineData(1180)]
@@ -74,11 +74,13 @@ public sealed partial class ColonizationShoppingPresentationTests
                 grid => grid.Classes.Contains("colonization-project-columns")
             );
             Assert.Equal(headers.Bounds.Width, row.Bounds.Width, precision: 1);
-            foreach (TextBlock header in headers.Children.OfType<TextBlock>())
+            Assert.Equal(7, headers.Children.Count);
+            foreach (Control header in headers.Children)
             {
                 int column = Grid.GetColumn(header);
                 Control cell = Assert.Single(row.Children, child => Grid.GetColumn(child) == column);
-                double headerX = header.TranslatePoint(default, table)!.Value.X;
+                TextBlock label = header as TextBlock ?? header.GetVisualDescendants().OfType<TextBlock>().First();
+                double headerX = label.TranslatePoint(default, table)!.Value.X;
                 double cellX = cell.TranslatePoint(default, table)!.Value.X;
                 if (column is 0 or 6)
                 {
@@ -289,11 +291,9 @@ public sealed partial class ColonizationShoppingPresentationTests
             selector.SelectedItem = main.Colonization.PlanningCarrierOptions[1];
             Assert.Equal(43, main.Colonization.SelectedPlanningCarrier.MarketId);
             Assert.Equal("22.73%", main.Colonization.Projects[0].CarrierCoverageText);
-            TextBlock label = Assert.Single(
-                view.GetVisualDescendants().OfType<TextBlock>(),
-                text => text.Text == "LOADED"
-            );
-            Assert.Equal(2, Grid.GetColumn(label));
+            Button heading = view.FindControl<Button>("ProjectSortLoaded")!;
+            Assert.Contains(heading.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "LOADED");
+            Assert.Equal(2, Grid.GetColumn(heading));
             Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "22.73%");
             using ColonizationCarrierManifestViewModel editor = main.Colonization.CreateCarrierManifest();
             await editor.InitializeAsync();

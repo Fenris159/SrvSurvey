@@ -1,12 +1,18 @@
 # SrvSurvey-XP 2.1.3.0-rc.69.7
 
 RC69.7 improves Colonization market searches with local-stock exclusions,
-selectable data sources, and clearer ShoppingList information. Colonization
-overlays now default to hiding outside recognized ships through their existing
-vessel and vehicle exceptions.
+selectable data sources, clearer ShoppingList information, and sortable build
+project columns. Colonization overlays now default to hiding outside recognized
+ships through their existing vessel and vehicle exceptions.
 
 ## What's changed
 
+- **Sort build projects.** Click **Project**, **Loaded**, **Progress**, **Type**,
+  or **System** to sort the table; click again to reverse it. An arrow marks the
+  active column and direction. Projects start with progress descending so the
+  most complete builds appear first. Loaded and Progress sort by their numeric
+  percentages, while Type and System keep matching entries together. Your sort
+  stays active through filters, project refreshes, and carrier coverage changes.
 - **Exclude commodities available locally.** The new **Exclude Local Commodities**
   button after **Select None** checks markets in the selected projects' systems
   and deselects commodities whose remaining needs are covered by recorded local
