@@ -5,6 +5,131 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, true)]
+    public async Task FailedBaselineRetirementCannotReplayCoveredUnsentCargo(
+        bool restart,
+        bool preExisting,
+        bool partial
+    )
+    {
+        var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var entered = new ManualResetEventSlim(false);
+        RecordingRavenClient client = CarrierClient(75);
+        client.GateGetFleetCarrier = gate;
+        client.EnteredGetFleetCarrier = entered;
+        client.ReplaceCargo = cargo =>
+        {
+            store.SaveFailure = new IOException("retirement storage unavailable");
+            return Task.FromResult(cargo);
+        };
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        recovery.ApplyJournalEvents([CarrierDock()], null);
+        recovery.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+        MarketSnapshot market = LinkedCarrierMarket(80);
+        string water = partial ? ",{\"Type\":\"Water\",\"Count\":3,\"Direction\":\"tocarrier\"}" : string.Empty;
+        JournalEventEnvelope transfer = Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"Steel\",\"Count\":4,\"Direction\":\"tocarrier\"}" + water + "]"
+        ) with
+        {
+            Timestamp = market.Timestamp.AddSeconds(-1),
+        };
+        if (preExisting)
+        {
+            recovery.CaptureFleetCarrierCargo([transfer]);
+        }
+        Task baseline = UpdateMarketAsync(recovery, market);
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        if (!preExisting)
+        {
+            await recovery.SynchronizeLiveEventsAsync([transfer], true);
+        }
+        Assert.Single(store.LoadPendingCargoAdjustments());
+        gate.SetResult(true);
+        await baseline;
+        Assert.Equal(80, client.LastReplacement?["steel"]);
+        store.SaveFailure = null;
+        RecordingRavenClient recoveredClient = restart ? CarrierClient(80) : client;
+        ColonizationDeliveryRecovery recovered = restart ? Create(recoveredClient, "key", carrierSync: true) : recovery;
+
+        await recovered.FlushFleetCarrierCargoAsync();
+
+        if (restart)
+        {
+            Assert.Empty(recoveredClient.FleetCarrierAdjustments);
+            await ApplyAndSynchronizeAsync(recovered, CarrierDock());
+            await recovered.FlushFleetCarrierCargoAsync();
+            Assert.Empty(recoveredClient.FleetCarrierAdjustments);
+            await UpdateMarketAsync(recovered, market);
+            await recovered.FlushFleetCarrierCargoAsync();
+        }
+        Assert.Equal(0, recoveredClient.FleetCarrierAdjustments.Sum(call => call.Changes.GetValueOrDefault("steel")));
+        Assert.Equal(
+            partial ? 3 : 0,
+            recoveredClient.FleetCarrierAdjustments.Sum(call => call.Changes.GetValueOrDefault("water"))
+        );
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReadOnlyDockBaselineDoesNotRequireAMarketToRecoverUnsentCargo(bool squadron)
+    {
+        var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var entered = new ManualResetEventSlim(false);
+        RecordingRavenClient client = CarrierClient(75);
+        client.Workspace = client.Workspace with { FleetCarriers = [Carrier(0) with { Cargo = [] }] };
+        client.GateGetFleetCarrier = gate;
+        client.EnteredGetFleetCarrier = entered;
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        Task baseline = ApplyAndSynchronizeAsync(recovery, CarrierDock(squadron));
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+            recovery.CaptureFleetCarrierCargo([SteelBuy]);
+            Assert.False(Assert.Single(store.LoadPendingCargoAdjustments()).AwaitingBaseline);
+            recovery.SetProfile("F456", true, "other-key");
+            RecordingRavenClient restartedClient = CarrierClient(75);
+            ColonizationDeliveryRecovery restarted = Create(restartedClient, "key", carrierSync: true);
+
+            await restarted.FlushFleetCarrierCargoAsync();
+
+            Assert.Equal(-5, Assert.Single(restartedClient.FleetCarrierAdjustments).Changes["steel"]);
+            Assert.Empty(store.LoadPendingCargoAdjustments());
+        }
+        finally
+        {
+            recovery.SetProfile("F456", true, "other-key");
+            gate.TrySetResult(true);
+            await baseline;
+        }
+    }
+
+    [Fact]
+    public async Task BaselineWaitsUntilItsDependencyCanBeSaved()
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        recovery.ApplyJournalEvents([CarrierDock()], null);
+        recovery.CaptureFleetCarrierCargo([SteelBuy]);
+        store.SaveFailure = new IOException("baseline dependency storage unavailable");
+
+        await UpdateMarketAsync(recovery, LinkedCarrierMarket(80));
+
+        Assert.Equal(0, client.ReplaceCargoCount);
+        Assert.False(Assert.Single(store.LoadPendingCargoAdjustments()).AwaitingBaseline);
+        store.SaveFailure = null;
+        await recovery.FlushFleetCarrierCargoAsync();
+        Assert.Equal(-5, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
+    }
+
     [Fact]
     public async Task CargoWaitingForABaselineIsDurableBeforeThatBaselineFinishes()
     {

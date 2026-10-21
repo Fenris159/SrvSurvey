@@ -2093,6 +2093,10 @@
       "translation": "Anakonda"
     },
     {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
+    },
+    {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Analysen, Vorschauen, Importe und historische Rekonstruktionen bedeuten keine Veröffentlichung im Netzwerk."
     },
@@ -26601,6 +26605,10 @@
       "translation": "Zeigt Turmbestückungen und zerstörbare Panels an und behält das ursprüngliche Komponentenübersichtsformat bei. Der automatische Zoom wird innerhalb von 30 m Entfernung zu einem aktiven Obelisken aktiviert."
     },
     {
+      "source": "Shutdown",
+      "translation": "Abschalten"
+    },
+    {
       "source": "Side",
       "translation": "Seite"
     },
@@ -34353,6 +34361,10 @@
       "translation": "Anakonda"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "analysiert"
     },
@@ -41013,6 +41025,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -65523,6 +65539,10 @@
       "translation": "Muestra equipamientos de torres y paneles destructibles y conserva el formato de estudio de componentes original. El zoom automático se activa dentro de los 30 m de un obelisco activo."
     },
     {
+      "source": "Shutdown",
+      "translation": "Cerrar"
+    },
+    {
       "source": "Side",
       "translation": "Lado"
     },
@@ -73275,6 +73295,10 @@
       "translation": "anaconda"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "analizado"
     },
@@ -79935,6 +79959,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -104445,6 +104473,10 @@
       "translation": "Affiche les chargements de la tour et les panneaux destructibles et préserve le format d'enquête des composants d'origine. Le zoom automatique s'enclenche à moins de 30 m d'un obélisque actif."
     },
     {
+      "source": "Shutdown",
+      "translation": "Fermer"
+    },
+    {
       "source": "Side",
       "translation": "Côté"
     },
@@ -112197,6 +112229,10 @@
       "translation": "anaconda"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "analysé"
     },
@@ -118857,6 +118893,10 @@
     {
       "source": "Anaconda",
       "translation": "anaconda"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Anaconda Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -143367,6 +143407,10 @@
       "translation": "Mostra carregamentos de torres e painéis destrutíveis e preserva o formato original do levantamento dos componentes. O zoom automático é ativado a 30 m de um obelisco ativo."
     },
     {
+      "source": "Shutdown",
+      "translation": "Desligar"
+    },
+    {
       "source": "Side",
       "translation": "Lado"
     },
@@ -151119,6 +151163,10 @@
       "translation": "anaconda"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "analisado"
     },
@@ -157779,6 +157827,10 @@
     {
       "source": "Anaconda",
       "translation": "анаконда"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "Анаконда Мк II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -182289,6 +182341,10 @@
       "translation": "Показывает комплектацию башни и разрушаемые панели, сохраняя исходный формат обзора компонентов. Автоматическое масштабирование включается в радиусе 30 м от активного обелиска."
     },
     {
+      "source": "Shutdown",
+      "translation": "Завершение работы"
+    },
+    {
       "source": "Side",
       "translation": "Сторона"
     },
@@ -190041,6 +190097,10 @@
       "translation": "анаконда"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "проанализировано"
     },
@@ -196701,6 +196761,10 @@
     {
       "source": "Anaconda",
       "translation": "蟒蛇"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "蟒蛇 Mk II"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -221211,6 +221275,10 @@
       "translation": "显示塔装载和可破坏面板并保留原始组件测量格式。自动变焦可在活动方尖碑 30 m 范围内进行。"
     },
     {
+      "source": "Shutdown",
+      "translation": "关闭"
+    },
+    {
       "source": "Side",
       "translation": "侧面"
     },
@@ -228963,6 +229031,10 @@
       "translation": "蟒蛇"
     },
     {
+      "source": "anacondamkii",
+      "translation": "anacondamkii"
+    },
+    {
       "source": "analyzed",
       "translation": "分析过的"
     },
@@ -235623,6 +235695,10 @@
     {
       "source": "Anaconda",
       "translation": "* ANACONDA >>>!"
+    },
+    {
+      "source": "Anaconda Mk II",
+      "translation": "* ANACONDA MK II >>>!"
     },
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
@@ -260133,6 +260209,10 @@
       "translation": "* SHOWS TOWER LOADOUTS AND DESTRUCTIBLE PANELS AND PRESERVES THE ORIGINAL COMPONENT SURVEY FORMAT. AUTO-ZOOM ENGAGES WITHIN 30 M OF AN ACTIVE OBELISK. >>>!"
     },
     {
+      "source": "Shutdown",
+      "translation": "* SHUTDOWN >>>!"
+    },
+    {
       "source": "Side",
       "translation": "* SIDE >>>!"
     },
@@ -267883,6 +267963,10 @@
     {
       "source": "anaconda",
       "translation": "* ANACONDA >>>!"
+    },
+    {
+      "source": "anacondamkii",
+      "translation": "* ANACONDAMKII >>>!"
     },
     {
       "source": "analyzed",

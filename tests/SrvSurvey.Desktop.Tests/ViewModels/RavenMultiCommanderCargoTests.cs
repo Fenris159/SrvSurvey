@@ -103,6 +103,62 @@ public sealed class RavenMultiCommanderCargoTests
         }
     }
 
+    [Theory]
+    [InlineData("Shutdown")]
+    [InlineData("Music")]
+    public async Task ShutdownReleasesSourceBeforeAnotherCommanderReusesItsFolder(string endEvent)
+    {
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-raven-shutdown-" + Guid.NewGuid().ToString("N"));
+        var paths = new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []
+        );
+        using var handler = new RavenHandler();
+        using var network = new HttpClient(handler);
+        try
+        {
+            string firstFolder = await CreateJournalAsync(root, "first", "F1", "First", 10);
+            string secondFolder = await CreateJournalAsync(root, "second", "F2", "Second", 30);
+            var profiles = new CommanderProfileStore(paths.DataDirectory);
+            await profiles.SaveRavenColonialApiKeyAsync("F1", "First", true, "key-first");
+            await profiles.SaveRavenColonialApiKeyAsync("F2", "Second", true, "key-second");
+            using MainWindowViewModel first = Create(firstFolder, "F1", paths, network);
+            using MainWindowViewModel second = Create(secondFolder, "F2", paths, network);
+            await first.RefreshAsync();
+            await second.RefreshAsync();
+            await WriteCargoAsync(firstFolder, 11, 3);
+            await first.RefreshAsync();
+            Assert.Contains(
+                handler.Ships,
+                entry => entry.Key == "key-first" && entry.Ship.Cargo.GetValueOrDefault("steel") == 11
+            );
+            await File.AppendAllTextAsync(
+                Path.Combine(firstFolder, "Journal.F1.log"),
+                $$"""{"timestamp":"2026-10-14T12:00:04Z","event":"{{endEvent}}","MusicTrack":"MainMenu"}""" + "\n"
+            );
+            await first.RefreshAsync();
+            handler.Ships.Clear();
+
+            await CreateJournalAsync(root, "first", "F3", "Foreign", 90);
+            await WriteCargoAsync(firstFolder, 91, 6);
+            await first.RefreshAsync();
+            await WriteCargoAsync(secondFolder, 31, 6);
+            await second.RefreshAsync();
+
+            Assert.True(first.Colonization.SharedCargoSuppressed);
+            Assert.DoesNotContain(handler.Ships, entry => entry.Key == "key-first");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     /// <summary>Creates a pinned offline application instance with a simulated two-game desktop.</summary>
     private static MainWindowViewModel Create(string folder, string fid, AppDataPaths paths, HttpClient network)
     {

@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 
-const revision = 'e85bb52c0de9886075ecd08ac4271003e3dc8668';
+const revision = 'ea787cf805f2c38f72c8d5f168fa1063341ebd9a';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const localSource = process.argv[2];
 async function source(name) {
@@ -20,8 +20,8 @@ const scriptSource = await source('edsy.js');
 const digest = source => createHash('sha256').update(source).digest('hex');
 const databaseHash = digest(databaseSource);
 const scriptHash = digest(scriptSource);
-if (databaseHash !== 'de78ba5280ee9f01c0b1b3ade3ca50c70ddc68a73447d0f0eee109fa08add2e8'
-    || scriptHash !== 'dabc0eb95e9c097ad61d5e93fc373bb7e063f3da4139c40708d0123b1d60047a') {
+if (databaseHash !== '071f3c63bab630b0db33e7d77061c1dcd7c0d06426c507ab52bf87e9a1c99da2'
+    || scriptHash !== '4c314ddb773bc9302169b47074c68daafcec8d2584d024e4853d2ca354086da6') {
   throw new Error(`Source hashes do not match pinned EDSY revision ${revision}`);
 }
 const context = vm.createContext({ window: {}, document: { title: 'SrvSurvey data import' } });

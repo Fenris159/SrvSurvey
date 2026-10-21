@@ -130,7 +130,8 @@ public sealed partial class ColonizationDeliveryRecovery
             Attempted: false,
             OutcomeUnknown: false,
             ObservedAt: utcNow(),
-            SourceEventName: sourceEventName
+            SourceEventName: sourceEventName,
+            AwaitingBaseline: pendingCargoReplacements.Contains(marketId)
         );
         failedCargoAdjustments.Add(pending);
         captured.Add(pending);

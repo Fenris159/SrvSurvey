@@ -53,6 +53,7 @@ public static class OverlayVehicleCatalog
         new("type6", "Type-6 Transporter", MediumGroup),
         new("type8", "Type-8 Transporter", MediumGroup),
         new("anaconda", "Anaconda", LargeGroup),
+        new("anacondamkii", "Anaconda Mk II", LargeGroup),
         new("belugaliner", "Beluga Liner", LargeGroup),
         new("explorer_nx", "Caspian Explorer", LargeGroup),
         new("federation_corvette", "Federal Corvette", LargeGroup),

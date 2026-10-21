@@ -225,16 +225,18 @@ public sealed class MainWindowViewModelTests
 
     /// <summary>Startup publishes only the current Cargo.json snapshot, honoring opt-in, ownership, and cancellation.</summary>
     [Theory]
-    [InlineData(true, 1, true, false)]
-    [InlineData(false, 1, true, false)]
-    [InlineData(true, 2, true, false)]
-    [InlineData(true, 1, false, false)]
-    [InlineData(true, 1, true, true)]
+    [InlineData(true, 1, true, false, true)]
+    [InlineData(true, 1, true, false, false)]
+    [InlineData(false, 1, true, false, true)]
+    [InlineData(true, 2, true, false, true)]
+    [InlineData(true, 1, false, false, true)]
+    [InlineData(true, 1, true, true, true)]
     public async Task BootstrapPublishesCurrentShipCargoWithoutReplayingHistoricalWrites(
         bool optedIn,
         int gameWindowCount,
         bool hasCurrentCargo,
-        bool cancelBeforeCargo
+        bool cancelBeforeCargo,
+        bool sessionStarted
     )
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-bootstrap-raven-cargo-{Guid.NewGuid():N}");
@@ -242,11 +244,15 @@ public sealed class MainWindowViewModelTests
         {
             string journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
+            string loadGame = sessionStarted
+                ? """{"timestamp":"2026-10-07T12:00:01.500Z","event":"LoadGame","Commander":"Probe","FID":"F123","Ship":"anaconda","Odyssey":true}"""
+                : string.Empty;
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-10-07T120000.01.log"),
-                """
+                $$"""
                 {"timestamp":"2026-10-07T12:00:00Z","event":"Fileheader","Odyssey":true}
                 {"timestamp":"2026-10-07T12:00:01Z","event":"Commander","Name":"Probe","FID":"F123"}
+                {{loadGame}}
                 {"timestamp":"2026-10-07T12:00:02Z","event":"Loadout","Ship":"anaconda","ShipName":"Hauler","CargoCapacity":64}
                 {"timestamp":"2026-10-07T12:00:03Z","event":"ColonisationContribution","MarketID":10,"Contributions":[{"Name":"$steel_name;","Amount":1}]}
                 {"timestamp":"2026-10-07T12:00:04Z","event":"Cargo","Vessel":"Ship","Count":1,"Inventory":[{"Name":"steel","Count":1,"Stolen":0}]}
@@ -306,7 +312,8 @@ public sealed class MainWindowViewModelTests
 
             Assert.True(viewModel.Colonization.HasStoredRavenApiKey);
             Assert.True(viewModel.Colonization.HasProjects);
-            bool shouldPublish = optedIn && gameWindowCount == 1 && hasCurrentCargo && !cancelBeforeCargo;
+            bool shouldPublish =
+                optedIn && sessionStarted && gameWindowCount == 1 && hasCurrentCargo && !cancelBeforeCargo;
             Assert.Equal(shouldPublish ? 1 : 0, handler.Ships.Count);
             if (!shouldPublish)
             {

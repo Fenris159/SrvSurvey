@@ -175,6 +175,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         );
         Assert.Equal(BoxelSearchOutcomeKind.AppliedNotPersisted, outcome.Kind);
         Assert.Contains(BoxelSearchHealthSubsystem.ProfilePersistence, session.Current.Health.Issues.Keys);
+        profiles.AllowSaves();
         await WaitUntilAsync(() => profiles.Snapshots.Length == 1 && session.Current.Health.IsHealthy);
         Assert.True(profiles.Snapshots[0].Active);
     }
@@ -594,7 +595,9 @@ public sealed class BoxelSearchSessionTests : IDisposable
     private sealed class FlakyProfileStore : IBoxelSearchProfileStore
     {
         private readonly ConcurrentQueue<BoxelSearchSnapshot> snapshots = new();
-        private int failuresRemaining = 2;
+        private int savesAllowed;
+
+        public void AllowSaves() => Volatile.Write(ref savesAllowed, 1);
 
         public BoxelSearchSnapshot[] Snapshots => snapshots.ToArray();
 
@@ -607,7 +610,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (Interlocked.Decrement(ref failuresRemaining) >= 0)
+            if (Volatile.Read(ref savesAllowed) == 0)
             {
                 throw new IOException("locked");
             }

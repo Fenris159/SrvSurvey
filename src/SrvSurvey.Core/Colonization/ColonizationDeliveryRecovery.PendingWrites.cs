@@ -176,6 +176,11 @@ public sealed partial class ColonizationDeliveryRecovery
             {
                 break;
             }
+            if (pending.Delta.Count == 0)
+            {
+                SavePendingCargoAdjustments();
+                continue;
+            }
             if (
                 apiKey is null
                 || !FleetCarrierCargoSyncEnabled
@@ -212,6 +217,19 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken
     )
     {
+        if (pending.AwaitingBaseline)
+        {
+            // A cached dock baseline cannot release a dependency retained across restart.
+            if (!pendingCargoBaselineReleases.Contains(pending))
+            {
+                return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingUncertain);
+            }
+            if (!ReleasePendingCargoBaseline(pending))
+            {
+                return new(ColonizationDeliveryNoticeKind.CarrierCargoRecoveryNotSaved);
+            }
+            pending = pending with { AwaitingBaseline = false };
+        }
         cargoWritesInFlight.Add((pending.Owner, pending.MarketId));
         try
         {
@@ -387,7 +405,10 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         try
         {
-            store.SavePendingCargoAdjustments(failedCargoAdjustments);
+            // Keep retired entries in memory until their removal has been committed to disk.
+            store.SavePendingCargoAdjustments(failedCargoAdjustments.Where(item => item.Delta.Count > 0).ToArray());
+            failedCargoAdjustments.RemoveAll(item => item.Delta.Count == 0);
+            pendingCargoBaselineReleases.RemoveWhere(item => item.Delta.Count == 0);
             return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)

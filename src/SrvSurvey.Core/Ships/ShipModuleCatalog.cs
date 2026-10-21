@@ -102,6 +102,15 @@ public sealed class ShipModuleCatalog
         {
             return ModuleFit.RestrictedSlot;
         }
+        if (
+            ship.Symbol.Equals("AnacondaMkII", StringComparison.OrdinalIgnoreCase)
+            && module.Symbol.Equals("Hpt_MiningToolV2_Fixed_Large", StringComparison.OrdinalIgnoreCase)
+            && !slot.Name.Equals("LargeHardpoint3", StringComparison.OrdinalIgnoreCase)
+            && !slot.Name.Equals("LargeHardpoint4", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return ModuleFit.RestrictedSlot;
+        }
         return CheckSpecialSlot(slot.Name, module);
     }
 

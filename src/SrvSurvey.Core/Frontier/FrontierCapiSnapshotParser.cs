@@ -217,6 +217,7 @@ public static partial class FrontierCapiSnapshotParser
         ["alliance_challenger"] = "Alliance Challenger",
         ["alliance_crusader"] = "Alliance Crusader",
         ["python_nx"] = "Python Mk II",
+        ["anacondamkii"] = "Anaconda Mk II",
     };
 
     public static FrontierAccountSnapshot Parse(string profileJson, string? carrierJson, DateTimeOffset fetchedAt)

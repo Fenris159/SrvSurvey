@@ -4188,6 +4188,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Anaconda Mk II",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
     "Text": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31713,7 +31721,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "Maintain glide toward the site.",
@@ -53361,6 +53369,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Shutdown",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
     "Text": "Side",
     "IsFormat": false,
     "SourceKinds": [
@@ -68885,6 +68901,14 @@
   },
   {
     "Text": "anaconda",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "anacondamkii",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

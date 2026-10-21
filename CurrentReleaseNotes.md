@@ -1,9 +1,9 @@
 # SrvSurvey-XP 2.1.3.0-rc.69.6
 
 RC69.6 protects fleet-carrier cargo updates when SrvSurvey or the game closes
-and fixes joined stream overlay capture. Pending Raven Colonial updates can
-recover next session, and the stream copy now matches the live panels without
-painting another copy over the game.
+and fixes joined stream overlay capture. It also adds Anaconda Mk II support.
+Pending Raven Colonial updates can recover next session, and the stream copy
+now matches the live panels without painting another copy over the game.
 
 ## What's changed
 
@@ -34,6 +34,19 @@ painting another copy over the game.
   SrvSurvey, reopen the overlay's PipeWire source properties and reselect
   **SrvSurveyWindowOne overlay** in the window picker. OBS can otherwise retain
   a paused image from the previous process.
+- **Recognize the Anaconda Mk II.** Adds its journal identity, readable Frontier
+  fleet name, Large overlay-vehicle selection, and current-ship EDSY export
+  support. Its verified slot layout, six distinct armour identities, size-6
+  Mk II cargo rack (96 t), and compatible hangars are included in the offline catalog.
+  Fitting checks restrict the Mining Volley Repeater to its two lower large
+  hardpoints. Cargo and trip estimates use the ship's reported
+  capacity when its loadout changes.
+- **Keep shutdown cargo isolated by commander.** Final transfers can be captured
+  while ended sessions release their journal-source authorization, preventing
+  a later commander in the same folder from supplying another user's cargo.
+- **Keep covered cargo from being counted twice.** Baseline dependencies survive
+  restart, and failed cleanup saves remain pending for retry, preventing
+  transfers covered by a market snapshot from being applied again.
 
 ## Update channel and packages
 

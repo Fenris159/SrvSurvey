@@ -6,9 +6,9 @@ combine those facts with actual Loadout mass, fuel capacity, and engineering
 modifiers to submit the equipped ship to Galaxy Plotter.
 
 SrvSurvey embeds a factual snapshot of EDSY revision
-[`e85bb52c`](https://github.com/taleden/EDSY/tree/e85bb52c0de9886075ecd08ac4271003e3dc8668),
-whose module database was updated on 2026-09-23. It contains 1,189 module
-records, including ship-specific armour, 48 ships with their slot layouts,
+[`ea787cf8`](https://github.com/taleden/EDSY/tree/ea787cf805f2c38f72c8d5f168fa1063341ebd9a),
+whose module database was updated on 2026-10-20. It contains 1,202 module
+records, including ship-specific armour, 49 ships with their slot layouts,
 and 25 decoded MercGear presets. Frontier symbols are retained verbatim.
 Mass and power draw are null where the source does not establish a finite
 value; unknown blueprint symbols remain null. This is a catalogue and fitting
@@ -18,10 +18,18 @@ reference, not a replacement for EDSY's statistical simulator.
 type, size, exact-size equipment, ship restrictions, mining/cargo/limpet
 slots, and the Type-11 vessel slot. Large planetary vehicle hangars are
 restricted to fighter-capable ships; Mk II Large variants are restricted to
-the Panther, Caspian and Type-11. Ordinary planetary vehicle hangars cannot
+the Panther, Caspian, Type-11 and Anaconda Mk II. Ordinary planetary vehicle hangars cannot
 use the Type-11 vessel slot. The snapshot includes ordinary, Mk II and
 free vessel hangar symbols exactly as EDSY records them. Free Large planetary
-vehicle hangar aliases are not invented.
+vehicle hangars are included under their verified upstream symbols.
+
+The Anaconda Mk II has its own ship/armour identities and slot layout, including
+its dedicated size-6 cargo slot. The size-6 Mk II cargo rack and supported hangars
+are included. The Mining Volley Repeater fits only its lower large hardpoints
+(`LargeHardpoint3` / `LargeHardpoint4`). The pinned refresh also includes the
+current Asp Scout, Type-6, Type-7, Federal Dropship and Imperial Clipper layouts
+and updated MercGear blueprint identities. See the [Anaconda Mk II source
+verification](research/anaconda-mkii-reference-data-2026-10-20.md).
 
 ## Refresh
 

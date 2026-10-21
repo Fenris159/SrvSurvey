@@ -14,9 +14,9 @@ public sealed class ShipModuleCatalogTests
     [Fact]
     public void CatalogIncludesMercenaryModulesAndShipSpecificArmourWithoutInventedBlueprintSymbols()
     {
-        Assert.Equal("e85bb52c0de9886075ecd08ac4271003e3dc8668", Catalog.SourceRevision);
-        Assert.Equal(48, Catalog.Ships.Count);
-        Assert.Equal(1189, Catalog.Modules.Count);
+        Assert.Equal("ea787cf805f2c38f72c8d5f168fa1063341ebd9a", Catalog.SourceRevision);
+        Assert.Equal(49, Catalog.Ships.Count);
+        Assert.Equal(1202, Catalog.Modules.Count);
         Assert.Equal(25, Catalog.MercenaryModules.Count);
         Assert.Equal("Type-11 Prospector", Catalog.FindShip("LAKONMINER")!.Name);
         Assert.Equal("Lightweight Alloy", Catalog.FindModule("lakonminer_armour_grade1")!.Name);
@@ -27,7 +27,30 @@ public sealed class ShipModuleCatalogTests
         );
         Assert.Contains(Catalog.MercenaryModules, module => module.Name == "Heavy Duty Module Reinforcement Package");
         Assert.Contains(Catalog.MercenaryModules, module => module.Name == "Extended Cargo Rack");
-        Assert.Null(Catalog.FindModule("Int_LargeBuggyBay_Size2_Class3_Free"));
+        Assert.Equal("Large Planetary Vehicle Hangar", Catalog.FindModule("Int_LargeBuggyBay_Size2_Class3_Free")!.Name);
+    }
+
+    [Fact]
+    public void AnacondaMkIIHasDistinctArmourAndItsActualSlotLayout()
+    {
+        ShipDefinition ship = Assert.IsType<ShipDefinition>(Catalog.FindShip("anacondamkii"));
+        Assert.Equal("Anaconda Mk II", ship.Name);
+        Assert.Equal(
+            [4, 3, 3, 3, 3, 1, 1],
+            ship.Slots.Where(slot => slot.Group == "hardpoint").Select(slot => slot.Size)
+        );
+        Assert.Equal(8, ship.Slots.Count(slot => slot.Group == "utility"));
+        Assert.Equal(6, Assert.Single(ship.Slots, slot => slot.Name == "Cargo01").Size);
+        ModuleDefinition ablative = Catalog.FindModule("AnacondaMkII_Armour_Grade1")!;
+        ModuleDefinition ordinary = Catalog.FindModule("AnacondaMkII_Armour_Grade1_Default")!;
+        Assert.Equal(129046027, ablative.FrontierId);
+        Assert.Equal(129046028, ordinary.FrontierId);
+        Assert.NotEqual(ablative.Symbol, ordinary.Symbol);
+        Assert.Equal(
+            6,
+            Catalog.Modules.Count(module => module.Symbol.StartsWith("AnacondaMkII_Armour_", StringComparison.Ordinal))
+        );
+        Assert.Equal(129051593, Catalog.FindModule("Int_LargeCargoRack_Size6_Class1")!.FrontierId);
     }
 
     /// <summary>
@@ -63,6 +86,21 @@ public sealed class ShipModuleCatalogTests
     [InlineData("unknown", "Slot01_Size2", "Int_BuggyBay_Size2_Class2", ModuleFit.UnknownShip)]
     [InlineData("SideWinder", "bad-slot", "Int_BuggyBay_Size2_Class2", ModuleFit.UnknownSlot)]
     [InlineData("SideWinder", "Slot01_Size2", "unknown-module", ModuleFit.UnknownModule)]
+    [InlineData("AnacondaMkII", "HugeHardpoint1", "Hpt_MiningToolV2_Fixed_Large", ModuleFit.RestrictedSlot)]
+    [InlineData("AnacondaMkII", "LargeHardpoint1", "Hpt_MiningToolV2_Fixed_Large", ModuleFit.RestrictedSlot)]
+    [InlineData("AnacondaMkII", "LargeHardpoint2", "Hpt_MiningToolV2_Fixed_Large", ModuleFit.RestrictedSlot)]
+    [InlineData("AnacondaMkII", "LargeHardpoint3", "Hpt_MiningToolV2_Fixed_Large", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "LargeHardpoint4", "Hpt_MiningToolV2_Fixed_Large", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "Cargo01", "Int_LargeCargoRack_Size6_Class1", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "Slot04_Size6", "Int_LargeCargoRack_Size6_Class1", ModuleFit.UnknownSlot)]
+    [InlineData("AnacondaMkII", "Slot01_Size8", "Int_LargeCargoRack_Size6_Class1", ModuleFit.RestrictedSlot)]
+    [InlineData("Anaconda", "Slot01_Size7", "Int_LargeCargoRack_Size6_Class1", ModuleFit.RestrictedShip)]
+    [InlineData("AnacondaMkII", "Slot11_Size1", "Int_MkIILargeBuggyBay_Size2_Class3", ModuleFit.TooLarge)]
+    [InlineData("AnacondaMkII", "Slot01_Size8", "Int_MkIILargeBuggyBay_Size2_Class3", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "Slot01_Size8", "Int_FighterBayMk2_Size5_Class1", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "Armour", "Anaconda_Armour_Grade1", ModuleFit.RestrictedShip)]
+    [InlineData("AnacondaMkII", "Armour", "AnacondaMkII_Armour_Grade1", ModuleFit.Allowed)]
+    [InlineData("AnacondaMkII", "Armour", "AnacondaMkII_Armour_Grade1_Default", ModuleFit.Allowed)]
     public void HangarAndGeneralFittingRulesMatchTheSource(
         string ship,
         string slot,

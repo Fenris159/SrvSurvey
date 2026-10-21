@@ -87,6 +87,56 @@ public sealed partial class MainWindowJournalSerializationTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FinalCargoCaptureAcceptsOnlyCompanionSnapshotsBeforeSessionEnd(bool laterForeignSnapshot)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-cargo-final-source-{Guid.NewGuid():N}");
+        using var handler = new CargoRecoveryHandler();
+        using var network = new HttpClient(handler);
+        MainWindowViewModel? viewModel = null;
+        try
+        {
+            (string journal, AppDataPaths paths) = await PrepareCargoShutdownSessionAsync(root, true);
+            viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.GetDirectoryName(journal)!,
+                builder => builder.WithAppDataPaths(paths).WithExternalNetworkClient(network)
+            );
+            await viewModel.RefreshAsync();
+            await File.AppendAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-10-08T12:00:05Z","event":"CargoTransfer","Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]}
+                {"timestamp":"2026-10-08T12:00:07Z","event":"Shutdown"}
+                """ + "\n"
+            );
+            int count = laterForeignSnapshot ? 90 : 35;
+            int second = laterForeignSnapshot ? 8 : 6;
+            await File.WriteAllTextAsync(
+                Path.Combine(Path.GetDirectoryName(journal)!, "Cargo.json"),
+                $$"""{"timestamp":"2026-10-08T12:00:0{{second}}Z","event":"Cargo","Vessel":"Ship","Count":{{count}},"Inventory":[{"Name":"steel","Count":{{count}}}]}"""
+            );
+
+            await viewModel.RefreshAsync();
+            await viewModel.DisposeAsync();
+
+            Assert.Equal(laterForeignSnapshot ? 10 : 15, Assert.Single(handler.Adjustments).Cargo["steel"]);
+            Assert.Empty(new ColonizationSettingsStore(paths.UiSettingsPath).LoadPendingCargoAdjustments());
+        }
+        finally
+        {
+            if (viewModel is not null)
+            {
+                await viewModel.DisposeAsync();
+            }
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task CancellationDuringRecoveryRetainsTheNewBatchAndShutdownFinishesIt()
     {

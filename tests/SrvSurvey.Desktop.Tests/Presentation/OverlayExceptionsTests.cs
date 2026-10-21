@@ -57,6 +57,7 @@ public sealed class OverlayExceptionsTests
     [InlineData("SmallCombat01_NX", "Small")]
     [InlineData("Explorer_NX", "Large")]
     [InlineData("PantherMkII", "Large")]
+    [InlineData("AnacondaMkII", "Large")]
     public void RecentShipSymbolsResolveToTheirSizeGroups(string symbol, string group)
     {
         string id = OverlayVehicleCatalog.Resolve(Journal(symbol), new EliteStatus { Flags = StatusFlags.InMainShip });

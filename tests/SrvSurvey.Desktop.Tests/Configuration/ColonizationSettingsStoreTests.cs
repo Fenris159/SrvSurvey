@@ -285,16 +285,19 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             42,
             new() { ["steel"] = -5 },
             DateTimeOffset.UtcNow,
-            null
+            null,
+            AwaitingBaseline: true
         );
-        ColonizationPendingCargoAdjustment second = first with { MarketId = 43 };
+        ColonizationPendingCargoAdjustment second = first with { MarketId = 43, AwaitingBaseline = false };
         string path = WritePendingEntries("PendingCargoAdjustments", first, invalid, second);
         var store = new ColonizationSettingsStore(path);
 
         IReadOnlyList<ColonizationPendingCargoAdjustment> loaded = store.LoadPendingCargoAdjustments();
         Assert.Equal([42L, 43L], loaded.Select(item => item.MarketId));
+        Assert.Equal([true, false], loaded.Select(item => item.AwaitingBaseline));
         store.SavePendingCargoAdjustments(loaded);
         Assert.Equal([42L, 43L], store.LoadPendingCargoAdjustments().Select(item => item.MarketId));
+        Assert.Equal([true, false], store.LoadPendingCargoAdjustments().Select(item => item.AwaitingBaseline));
     }
 
     /// <summary>Writes valid recovery entries on either side of deliberately malformed persisted data.</summary>

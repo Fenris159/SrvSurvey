@@ -5,6 +5,15 @@ namespace SrvSurvey.Core.Tests.Frontier;
 public sealed class FrontierCapiSnapshotParserTests
 {
     [Fact]
+    public void RecognizesAnacondaMkIIInTheCurrentShipAndFleet()
+    {
+        string profile = ProfileJson.Replace("cobramkiii", "anacondamkii", StringComparison.Ordinal);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(profile, null, DateTimeOffset.UnixEpoch);
+        Assert.Equal("Anaconda Mk II", snapshot.CurrentShip!.Type);
+        Assert.Contains(snapshot.Ships, ship => ship.Type == "Anaconda Mk II");
+    }
+
+    [Fact]
     public void ParsesCommanderFleetRanksAndCarrierDetails()
     {
         var fetchedAt = DateTimeOffset.Parse(
