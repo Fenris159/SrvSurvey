@@ -46,7 +46,7 @@ public sealed partial class ColonizationShoppingViewModel
             }
             localMarketQuotes = result.Quotes;
             excludeLocalCommodities = true;
-            Warnings = string.Join(" ", result.Warnings.Prepend(Warnings).Where(text => text.Length > 0).Distinct());
+            AddWarnings(result.Warnings);
             FilterResults();
             Status =
                 $"Excluded {Needs.Count(need => need.IsLocallyExcluded):N0} commodities covered by local markets. Turn off Exclude Local Commodities to restore selections.";
@@ -120,6 +120,7 @@ public sealed partial class ColonizationShoppingViewModel
     private void ApplyLocalCommodityExclusions()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
+        var allocated = plan.Snapshot().ToDictionary(item => item.Key(), item => item.Quantity);
         var stock = FilterMarketQuotes(ColonizationShopping.Merge(localMarketQuotes), forLocalExclusion: true)
             .Where(quote =>
                 quote.Price > 0
@@ -128,7 +129,18 @@ public sealed partial class ColonizationShoppingViewModel
                 && quote.UpdatedAt <= now.AddMinutes(5)
             )
             .GroupBy(quote => quote.Commodity, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.Sum(quote => quote.Stock), StringComparer.Ordinal);
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                    group.Sum(quote =>
+                        Math.Max(
+                            0,
+                            quote.Stock
+                                - allocated.GetValueOrDefault((ColonizationShopping.MarketKey(quote), quote.Commodity))
+                        )
+                    ),
+                StringComparer.Ordinal
+            );
         updatingCommoditySelection = true;
         try
         {

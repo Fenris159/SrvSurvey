@@ -7,6 +7,95 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class ColonizationLocalMarketTests
 {
     [Theory]
+    [InlineData(50, false)]
+    [InlineData(60, false)]
+    [InlineData(100, true)]
+    public async Task LocalStockCannotCoverBothAnExistingAllocationAndTheRemainingNeed(long localStock, bool covered)
+    {
+        var search = new LocalSearch(
+            (query, _) =>
+                Task.FromResult(
+                    new ColonizationMarketSearchResult([Quote(1, "steel", query.LocalOnly ? localStock : 60)], [])
+                )
+        );
+        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        await model.SearchAsync();
+        model.Results.Single().AvailableSupplies.Single().ToggleWishListCommand.Execute(null);
+        Assert.Equal(40, Need(model, "steel").Remaining);
+        await model.ToggleLocalCommoditiesAsync();
+        Assert.Equal(covered, Need(model, "steel").IsLocallyExcluded);
+        Assert.Equal(60, Assert.Single(model.CaptureState().WishList).Quantity);
+    }
+
+    [Fact]
+    public async Task AcceptedLocalRefreshUpdatesAndSavesExclusionsEvenWhenTheNearbySearchFails()
+    {
+        long localStock = 100;
+        bool fail = false;
+        ColonizationShoppingState? saved = null;
+        var search = new LocalSearch(
+            (query, _) =>
+            {
+                if (!query.LocalOnly && fail)
+                {
+                    throw new HttpRequestException("Offline");
+                }
+                return Task.FromResult(
+                    new ColonizationMarketSearchResult([Quote(1, "steel", query.LocalOnly ? localStock : 500)], [])
+                );
+            }
+        );
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            search,
+            saveState: state => saved = state
+        );
+        await model.SearchAsync();
+        await model.ToggleLocalCommoditiesAsync();
+        Assert.True(Need(model, "steel").IsLocallyExcluded);
+        localStock = 40;
+        fail = true;
+        await model.SearchAsync();
+        Assert.Contains("Refresh failed", model.Status);
+        Assert.True(Need(model, "steel").IsSelected);
+        Assert.Single(model.Results);
+        Assert.Equal(40, Assert.Single(saved!.LocalMarketQuotes).Stock);
+        using var restored = new ColonizationShoppingViewModel(Projects(), () => "Sol", search, restoredState: saved);
+        Assert.True(Need(restored, "steel").IsSelected);
+    }
+
+    [Fact]
+    public async Task RepeatedLocalChecksDeduplicateIndividualWarningsAcrossSessions()
+    {
+        var search = new LocalSearch(
+            (query, _) =>
+                Task.FromResult(
+                    new ColonizationMarketSearchResult(
+                        [Quote(1, "steel", 40)],
+                        query.LocalOnly ? ["Local provider incomplete."] : ["Nearby provider incomplete."]
+                    )
+                )
+        );
+        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        await model.SearchAsync();
+        for (int index = 0; index < 3; index++)
+        {
+            await model.ToggleLocalCommoditiesAsync();
+            await model.ToggleLocalCommoditiesAsync();
+        }
+        Assert.Equal("Nearby provider incomplete. Local provider incomplete.", model.Warnings);
+        using var restored = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            search,
+            restoredState: model.CaptureState()
+        );
+        await restored.ToggleLocalCommoditiesAsync();
+        Assert.Equal(model.Warnings, restored.Warnings);
+    }
+
+    [Theory]
     [InlineData(99, false)]
     [InlineData(100, true)]
     [InlineData(125, true)]

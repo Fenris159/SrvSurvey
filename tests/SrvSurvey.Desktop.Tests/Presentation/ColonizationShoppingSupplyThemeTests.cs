@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -154,21 +155,24 @@ public sealed partial class ColonizationShoppingPresentationTests
     }
 
     [AvaloniaTheory]
-    [InlineData("blue-light")]
-    [InlineData("blue-dark")]
-    [InlineData("orange-dark")]
-    [InlineData("green-light")]
-    [InlineData("green-dark")]
-    [InlineData("monochrome-dark")]
-    public async Task MarketSupplyTooltipsUseTheirOwnThemeTextColor(string themeKey)
+    [InlineData("blue-light", "en")]
+    [InlineData("blue-dark", "en")]
+    [InlineData("orange-dark", "en")]
+    [InlineData("green-light", "en")]
+    [InlineData("green-dark", "en")]
+    [InlineData("monochrome-dark", "en")]
+    [InlineData("monochrome-dark", "de")]
+    public async Task MarketSupplyTooltipsUseTheirOwnThemeTextColor(string themeKey, string language)
     {
         using ColonizationShoppingViewModel model = SupplyThemeModel();
         await model.SearchAsync();
         RavenThemeDefinition theme = RavenThemeCatalog.Get(themeKey);
         var window = new ColonizationShoppingTestWindow(model) { Width = 1000 };
         ApplySupplyTheme(window, theme);
+        string previousLanguage = LocalizationCatalog.CurrentLanguage;
         try
         {
+            LocalizationCatalog.Initialize(language);
             window.Show();
             foreach (string commodity in new[] { "steel", "water" })
             {
@@ -182,12 +186,27 @@ public sealed partial class ColonizationShoppingPresentationTests
                 Assert.NotNull(tooltipFrame);
                 ToolTip tooltip = Assert.Single(window.GetVisualDescendants().OfType<ToolTip>());
                 string detail = Assert.IsType<ShoppingSupplyViewModel>(tag.DataContext).Detail;
-                TextBlock text = Assert.Single(
-                    tooltip.GetVisualDescendants().OfType<TextBlock>(),
-                    block => block.Text == detail
-                );
+                TextBlock[] texts = tooltip
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Where(block => !string.IsNullOrEmpty(block.Text))
+                    .ToArray();
+                foreach (TextBlock text in texts)
+                {
+                    LocalizationBehavior.SetEnabled(text, true);
+                }
+                string[] lines = detail.Split('\n');
+                string[] translated = lines.Select(LocalizationCatalog.Translate).ToArray();
+                Assert.Equal(translated, texts.SelectMany(text => text.Text!.Split('\n')));
+                if (language != "en")
+                {
+                    Assert.All(lines, line => Assert.NotEqual(line, LocalizationCatalog.Translate(line)));
+                }
                 Assert.Equal(Color.Parse(theme.HighestSurfaceColor), SupplyBrushColor(tooltip.Background));
-                Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(text.Foreground));
+                Assert.All(
+                    texts,
+                    text => Assert.Equal(Color.Parse(theme.TextColor), SupplyBrushColor(text.Foreground))
+                );
                 if (themeKey == "monochrome-dark" && commodity == "steel")
                 {
                     tooltipFrame.Save(
@@ -201,6 +220,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         finally
         {
             window.Close();
+            LocalizationCatalog.Initialize(previousLanguage);
         }
     }
 

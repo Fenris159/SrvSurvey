@@ -51,6 +51,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private ColonizationShoppingPlan plan;
     private IReadOnlyList<string> appliedPurchaseIds = [];
     private readonly HashSet<string> expandedMarkets = new(StringComparer.Ordinal);
+    private IReadOnlyList<string> warningEntries = [];
 
     public bool ShowSearchCriteria
     {
@@ -193,7 +194,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         expandedMarkets.Clear();
         completedAt = null;
         searchedCommodities = [];
-        Warnings = string.Empty;
+        SetWarnings([]);
         Status = "Search cleared. Choose criteria to search again.";
         ShowSearchCriteria = true;
         FilterResults();
@@ -270,7 +271,19 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     public bool CanSearch =>
         !disposed && !IsBusy && (UseSpansh || UseArdent) && (Needs.Count > 0 || refreshProjects is not null);
     public string Status { get; private set; } = "Choose a reference system and search market data.";
-    public string Warnings { get; private set; } = string.Empty;
+    public string Warnings => string.Join(" ", warningEntries);
+
+    private void SetWarnings(IEnumerable<string> warnings)
+    {
+        warningEntries = warnings
+            .Where(warning => !string.IsNullOrWhiteSpace(warning))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        Changed(nameof(Warnings));
+    }
+
+    private void AddWarnings(IEnumerable<string> warnings) => SetWarnings(warningEntries.Concat(warnings));
+
     public string ResultSummary =>
         $"{Results.Count:N0} markets · {Results.Select(row => row.System).Distinct(StringComparer.OrdinalIgnoreCase).Count():N0} systems";
     public static IReadOnlyList<string> PadOptions { get; } = ["Any", "Small", "Medium", "Large"];
@@ -483,6 +496,9 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
                 }
                 localMarketQuotes = local.Quotes;
                 localWarnings = local.Warnings;
+                AddWarnings(localWarnings);
+                FilterResults();
+                SaveWorkspace();
             }
             Status = "Searching selected market data sources… This can take a long time.";
             Changed(nameof(Status));
@@ -564,7 +580,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         completedSystem = query.ReferenceSystem;
         completedRadius = query.Radius;
         searchedCommodities = query.Needs.Select(need => need.Commodity).ToArray();
-        Warnings = string.Join(" ", result.Warnings);
+        SetWarnings(result.Warnings);
         WarnAboutUnsearchedNeeds();
         Status = CompletedStatus();
         expandedMarkets.Clear();
@@ -622,6 +638,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             WishListQuotes = plan.SnapshotQuotes(),
             AppliedPurchaseIds = appliedPurchaseIds,
             Warnings = Warnings,
+            WarningEntries = warningEntries,
             CompletedAt = completedAt,
             CompletedSystem = completedSystem,
             CompletedRadius = completedRadius,
@@ -651,9 +668,13 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         selectedCarrierMarketId = state.SelectedCarrierMarketId;
         showSearchCriteria = state.ShowSearchCriteria;
         quotes = state.Quotes;
-        Warnings = LegacySpanshWarnings()
-            .Replace(state.Warnings, "Previous Spansh results were truncated. Refresh to load more markets. ")
-            .Trim();
+        SetWarnings(
+            (state.WarningEntries.Count > 0 ? state.WarningEntries : [state.Warnings]).Select(warning =>
+                LegacySpanshWarnings()
+                    .Replace(warning, "Previous Spansh results were truncated. Refresh to load more markets. ")
+                    .Trim()
+            )
+        );
         completedAt = state.CompletedAt;
         completedSystem = state.CompletedSystem;
         completedRadius = state.CompletedRadius;
@@ -685,7 +706,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             && !Warnings.Contains("newly required commodities", StringComparison.Ordinal)
         )
         {
-            Warnings += " Project needs changed. Refresh to search for newly required commodities.";
+            AddWarnings(["Project needs changed. Refresh to search for newly required commodities."]);
         }
     }
 
@@ -742,8 +763,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            Warnings += " The search could not be saved to disk.";
-            Changed(nameof(Warnings));
+            AddWarnings(["The search could not be saved to disk."]);
         }
     }
 

@@ -34,6 +34,7 @@ public sealed record ColonizationShoppingState
     public IReadOnlyList<string> AppliedPurchaseIds { get; init; } = [];
     public IReadOnlyList<ColonizationMarketQuote> Quotes { get; init; } = [];
     public string Warnings { get; init; } = string.Empty;
+    public IReadOnlyList<string> WarningEntries { get; init; } = [];
     public DateTimeOffset? CompletedAt { get; init; }
     public string CompletedSystem { get; init; } = string.Empty;
     public int CompletedRadius { get; init; }
@@ -53,6 +54,7 @@ public sealed record ColonizationShoppingState
         && MinimumPad is not null
         && Sort is not null
         && Warnings is not null
+        && WarningEntries is not null
         && CompletedSystem is not null
         && ExcludedCommodities is not null
         && ExpandedMarkets is not null

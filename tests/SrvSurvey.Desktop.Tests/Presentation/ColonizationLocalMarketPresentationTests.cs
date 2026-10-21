@@ -31,7 +31,7 @@ public sealed partial class ColonizationShoppingPresentationTests
                 window.GetVisualDescendants().OfType<TextBlock>(),
                 block => block.Text == "Arrival ls (0 = any)"
             );
-            Control arrivalField = Assert.IsAssignableFrom<Control>(arrival.Parent);
+            Control arrivalField = Assert.IsType<Control>(arrival.Parent, exactMatch: false);
             Assert.Same(arrivalField.Parent, sources.Parent);
             Assert.Equal(arrivalField.Bounds.Y, sources.Bounds.Y);
             Assert.True(sources.Bounds.X >= arrivalField.Bounds.Right);

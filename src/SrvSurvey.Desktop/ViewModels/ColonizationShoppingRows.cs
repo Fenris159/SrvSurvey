@@ -208,8 +208,10 @@ public sealed class ShoppingSupplyViewModel : WorkspaceObservable
     public string Label => $"{Need.DisplayName}: {Stock:N0} / {Need.Required:N0}";
     public string TableLabel =>
         $"{Need.DisplayName}: {(IsWishListed ? allocatedQuantity : Math.Min(Stock, Need.Required)):N0}";
+    public string PlanningDetail => $"Still to plan: {Math.Max(0, Need.Required - allocatedQuantity):N0}";
+    public string AllocationDetail => $"On ShoppingList here: {allocatedQuantity:N0}";
+    public string StockDetail =>
+        Quote is null ? "No supply reported" : $"Location Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
     public string Detail =>
-        Quote is null
-            ? "No supply reported"
-            : $"Still to plan: {Math.Max(0, Need.Required - allocatedQuantity):N0}\nOn ShoppingList here: {allocatedQuantity:N0}\nLocation Stock {Stock:N0} · {Quote.Price:N0} CR/t · {Quote.Source}";
+        Quote is null ? StockDetail : string.Join('\n', PlanningDetail, AllocationDetail, StockDetail);
 }

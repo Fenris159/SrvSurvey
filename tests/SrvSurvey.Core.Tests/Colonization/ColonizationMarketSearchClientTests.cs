@@ -168,6 +168,45 @@ public sealed class ColonizationMarketSearchClientTests
     }
 
     [Fact]
+    public async Task ArdentOutdatedLocalResultsHaveNoExtraAgeCutoffWhileNearbyResultsRemainAgeLimited()
+    {
+        using var http = new HttpClient(
+            new Handler(
+                (request, _) =>
+                {
+                    string path = request.RequestUri!.AbsolutePath;
+                    if (path.Contains("/system/name/Sol/commodities", StringComparison.Ordinal))
+                    {
+                        JsonObject oldLocal = Ardent(1, "steel", 100);
+                        oldLocal["updatedAt"] = DateTimeOffset.UtcNow.AddDays(-400).ToString("O");
+                        return Task.FromResult(
+                            Json(path.EndsWith("/exports", StringComparison.Ordinal) ? [] : new JsonArray(oldLocal))
+                        );
+                    }
+                    Assert.Contains("maxDaysAgo=3", request.RequestUri.Query);
+                    JsonObject oldNearby = Ardent(2, "steel", 500);
+                    oldNearby["systemName"] = "Nearby";
+                    oldNearby["updatedAt"] = DateTimeOffset.UtcNow.AddDays(-400).ToString("O");
+                    return Task.FromResult(Json(new JsonArray(oldNearby)));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+        ColonizationMarketSearchResult result = await client.SearchAsync(
+            Query() with
+            {
+                UseSpansh = false,
+                IncludeOutdatedLocalMarkets = true,
+                MaximumAgeDays = 3,
+            }
+        );
+        ColonizationMarketQuote quote = Assert.Single(result.Quotes);
+        Assert.Equal(1, quote.MarketId);
+        Assert.Equal(0, quote.Distance);
+        Assert.Contains("outdated", Assert.Single(result.Warnings));
+    }
+
+    [Fact]
     public async Task LocalOnlyQueriesBothProvidersWithoutNearbyCommodityRequestsOrNeighboringSystemStock()
     {
         int ardentRequests = 0;

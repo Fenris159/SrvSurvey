@@ -559,6 +559,7 @@ public sealed partial class ColonizationViewModelTests
                 "MinimumPad",
                 "Sort",
                 "Warnings",
+                "WarningEntries",
                 "CompletedSystem",
                 "ExcludedCommodities",
                 "ExpandedMarkets",

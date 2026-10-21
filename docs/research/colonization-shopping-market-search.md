@@ -12,6 +12,12 @@ Only selected providers are requested for ordinary searches and local commodity
 exclusion checks; at least one source is required to start a search.
 Local commodity exclusion counts surface-port stock even when Exclude surface
 ports hides those stations from search results. It also ignores market age.
+Coverage subtracts ShoppingList allocations at each matching market and
+commodity before comparing stock with unplanned needs. Accepted local snapshots
+update exclusions immediately, even when the subsequent nearby search fails.
+Warning entries remain separate in saved state and are deduplicated before
+formatting the display text. Supply tooltips use separate translated lines for
+unplanned need, station allocation, and market stock.
 
 ## Raven Colonial behavior to preserve
 
@@ -124,7 +130,9 @@ The **Exclude Local Commodities** check instead uses
 `/system/name/{system}/commodities`, which returns recorded system market data
 without the exports route's age cutoff. Filter positive stock and purchase prices
 locally; market age must not prevent excluding a fully covered need. The normal
-nearby search retains its market-age setting.
+nearby search retains its market-age setting. Enabling outdated local results
+also uses the unfiltered system route, so Ardent does not introduce an extra
+one-year cutoff compared with Spansh.
 [System commodities routes](https://github.com/iaincollins/ardent-api/blob/main/router/api/systems/commodities.js).
 [Nearby route](https://github.com/iaincollins/ardent-api/blob/8531e4cea1043c02465adc2430d980035ed8d43c/router/api/systems/commodity.js#L132),
 [same-system route](https://github.com/iaincollins/ardent-api/blob/8531e4cea1043c02465adc2430d980035ed8d43c/router/api/systems/commodities.js#L100).

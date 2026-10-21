@@ -31121,6 +31121,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Location Stock {0} \u00B7 {1} CR/t \u00B7 {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
+  },
+  {
     "Text": "Location and body follow the newest location, approach, touchdown, and departure events.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37224,6 +37232,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "On ShoppingList here: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
   },
   {
     "Text": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings \u003E Application. Select the display containing Elite.",
@@ -55983,7 +55999,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} \u00B7 {3} CR/t \u00B7 {4}",
+    "Text": "Still to plan: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

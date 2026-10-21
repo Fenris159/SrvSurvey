@@ -15513,6 +15513,10 @@
       "translation": "Standort"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Standortbestand {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "Standort und Körper folgen den neuesten Standort-, Anflug-, Landungs- und Abflugereignissen."
     },
@@ -18551,6 +18555,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "Wählen Sie bei GNOME-Versionen, die die Anwendungsseite von SrvSurvey öffnen, die Zeile „Globale Verknüpfungen“ aus. Andere unterstützte Desktops zeigen möglicherweise ihren eigenen Verknüpfungsdialog an."
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Auf ShoppingList hier: {0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -27909,8 +27917,8 @@
       "translation": "Stellare Funktionen | 6,9 / 10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "Noch in Planung: {0} Auf ShoppingList hier: {1} Standort Lagerbestand {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "Noch in Planung: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -54491,6 +54499,10 @@
       "translation": "Ubicación"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Ubicación Stock {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "La ubicación y el cuerpo siguen los eventos más recientes de ubicación, aproximación, aterrizaje y salida."
     },
@@ -57529,6 +57541,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "En las versiones de GNOME que abren la página de Aplicaciones SrvSurvey, elija su fila de Accesos directos globales. Otros escritorios compatibles pueden mostrar su propio cuadro de diálogo de acceso directo."
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "En ShoppingList aquí: {0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -66887,8 +66903,8 @@
       "translation": "Características estelares | 6.9 / 10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "Aún por planificar: {0} En ShoppingList aquí: {1} Ubicación Stock {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "Aún por planificar: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -93469,6 +93485,10 @@
       "translation": "Emplacement"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Emplacement Stock {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "L'emplacement et le corps suivent les événements d'emplacement, d'approche, d'atterrissage et de départ les plus récents."
     },
@@ -96507,6 +96527,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "Sur les versions GNOME qui ouvrent la page Applications SrvSurvey, choisissez sa ligne Raccourcis globaux. D'autres bureaux pris en charge peuvent afficher leur propre boîte de dialogue de raccourci."
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Sur la liste d'achats ici : {0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -105865,8 +105889,8 @@
       "translation": "Caractéristiques stellaires | 6,9 / 10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "Reste à planifier : {0} Sur ShoppingList ici : {1} Localisation Stock {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "Reste à planifier : {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -132447,6 +132471,10 @@
       "translation": "Localização"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Estoque de localização {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "A localização e o corpo seguem os mais recentes eventos de localização, aproximação, pouso e partida."
     },
@@ -135485,6 +135513,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "Nas versões do GNOME que abrem a página Aplicativos SrvSurvey, escolha sua linha Atalhos Globais. Outros desktops suportados podem mostrar sua própria caixa de diálogo de atalho."
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "Na ShoppingList aqui: {0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -144843,8 +144875,8 @@
       "translation": "Recursos estelares | 6,9/10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "Ainda a planejar: {0} Na ShoppingList aqui: {1} Localização Estoque {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "Ainda a planejar: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -171425,6 +171457,10 @@
       "translation": "Расположение"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "Местоположение Склад {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "Местоположение и тело соответствуют последним событиям местоположения, захода на посадку, приземления и вылета."
     },
@@ -174463,6 +174499,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "В версиях GNOME, которые открывают страницу «Приложения» SrvSurvey, выберите строку «Глобальные ярлыки». На других поддерживаемых рабочих столах может отображаться собственное диалоговое окно с ярлыками."
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "В списке покупок здесь: {0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -183821,8 +183861,8 @@
       "translation": "Звездные возможности | 6,9 / 10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "Еще в планах: {0} В списке покупок здесь: {1} Местоположение Наличие на складе {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "Еще в планах: {0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -210403,6 +210443,10 @@
       "translation": "地点"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "地点库存 {0} · {1} CR/t · {2}"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "位置和机身遵循最新的位置、进近、着陆和离开事件。"
     },
@@ -213441,6 +213485,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "在打开 SrvSurvey 的应用程序页面的 GNOME 版本上，选择其全局快捷方式行。其他支持的桌面可能会显示自己的快捷方式对话框。"
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "在此处的购物清单上：{0}"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -222799,8 +222847,8 @@
       "translation": "恒星特征| 6.9 / 10"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "仍在计划中：{0} 此处的购物清单：{1} 位置库存 {2} · {3} CR/t · {4}"
+      "source": "Still to plan: {0}",
+      "translation": "尚待计划：{0}"
     },
     {
       "source": "Stock {0} · Demand {1}",
@@ -249381,6 +249429,10 @@
       "translation": "* LOCATION >>>!"
     },
     {
+      "source": "Location Stock {0} · {1} CR/t · {2}",
+      "translation": "* LOCATION STOCK {0} · {1} CR/T · {2} >>>!"
+    },
+    {
       "source": "Location and body follow the newest location, approach, touchdown, and departure events.",
       "translation": "* LOCATION AND BODY FOLLOW THE NEWEST LOCATION, APPROACH, TOUCHDOWN, AND DEPARTURE EVENTS. >>>!"
     },
@@ -252419,6 +252471,10 @@
     {
       "source": "On GNOME versions that open SrvSurvey’s Applications page, choose its Global Shortcuts row. Other supported desktops may show their own shortcut dialog.",
       "translation": "* ON GNOME VERSIONS THAT OPEN SRVSURVEY’S APPLICATIONS PAGE, CHOOSE ITS GLOBAL SHORTCUTS ROW. OTHER SUPPORTED DESKTOPS MAY SHOW THEIR OWN SHORTCUT DIALOG. >>>!"
+    },
+    {
+      "source": "On ShoppingList here: {0}",
+      "translation": "* ON SHOPPINGLIST HERE: {0} >>>!"
     },
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
@@ -261777,8 +261833,8 @@
       "translation": "* STELLAR FEATURES | 6.9 / 10 >>>!"
     },
     {
-      "source": "Still to plan: {0} On ShoppingList here: {1} Location Stock {2} · {3} CR/t · {4}",
-      "translation": "* STILL TO PLAN: {0} ON SHOPPINGLIST HERE: {1} LOCATION STOCK {2} · {3} CR/T · {4} >>>!"
+      "source": "Still to plan: {0}",
+      "translation": "* STILL TO PLAN: {0} >>>!"
     },
     {
       "source": "Stock {0} · Demand {1}",

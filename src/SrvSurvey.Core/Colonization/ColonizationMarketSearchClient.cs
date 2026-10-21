@@ -125,10 +125,10 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
     {
         var needs = query.Needs.ToDictionary(need => need.Commodity, StringComparer.Ordinal);
         string system = Uri.EscapeDataString(query.ReferenceSystem.Trim());
-        int localAge = query.IncludeOutdatedLocalMarkets ? 365 : query.MaximumAgeDays;
-        string localRoute = query.LocalOnly
-            ? $"system/name/{system}/commodities"
-            : $"system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo={localAge}";
+        string localRoute =
+            query.LocalOnly || query.IncludeOutdatedLocalMarkets
+                ? $"system/name/{system}/commodities"
+                : $"system/name/{system}/commodities/exports?minVolume=1&maxDaysAgo={query.MaximumAgeDays}";
         using (
             JsonDocument local = await ardent
                 .GetAsync(localRoute, ArdentApi.MaximumResponseBytes, "Colonization local markets", cancellationToken)
