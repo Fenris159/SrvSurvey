@@ -9,6 +9,40 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class RavenMultiCommanderCargoTests
 {
+    [Fact]
+    public async Task MissingCargoProfileDoesNotSuppressAttributedConstructionContributions()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-raven-no-profile-" + Guid.NewGuid().ToString("N"));
+        var paths = new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []
+        );
+        using var handler = new RavenHandler();
+        using var network = new HttpClient(handler);
+        try
+        {
+            string folder = await CreateJournalAsync(root, "first", "F1", "First", 10);
+            using MainWindowViewModel model = Create(folder, "F1", paths, network);
+            await model.RefreshAsync();
+            model.Colonization.SetCommanderProfile(null, true, null);
+            await DeliverAsync(folder, "F1", 3, 7);
+
+            await model.RefreshAsync();
+
+            Assert.Equal(("First", 3), Assert.Single(handler.Deliveries));
+            Assert.Empty(handler.Ships);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     /// <summary>Two live clients report only the cargo and credentials belonging to their bound commander folder.</summary>
     [Theory]
     [InlineData(false)]
@@ -136,7 +170,11 @@ public sealed class RavenMultiCommanderCargoTests
             );
             await File.AppendAllTextAsync(
                 Path.Combine(firstFolder, "Journal.F1.log"),
-                $$"""{"timestamp":"2026-10-14T12:00:04Z","event":"{{endEvent}}","MusicTrack":"MainMenu"}""" + "\n"
+                (
+                    endEvent == "Music"
+                        ? """{"timestamp":"2026-10-14T12:00:04Z","event":"Music","MusicTrack":"MainMenu"}"""
+                        : """{"timestamp":"2026-10-14T12:00:04Z","event":"Shutdown"}"""
+                ) + "\n"
             );
             await first.RefreshAsync();
             handler.Ships.Clear();

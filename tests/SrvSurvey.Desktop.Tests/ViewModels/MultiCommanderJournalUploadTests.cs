@@ -20,17 +20,23 @@ public sealed class MultiCommanderJournalUploadTests
 {
     /// <summary>Verified folders enable each provider without crossing account credentials, payloads, or companion snapshots.</summary>
     [Theory]
-    [InlineData("EDSM", false)]
-    [InlineData("EDAstro", false)]
-    [InlineData("EDDN", false)]
-    [InlineData("VoxStellar", false)]
-    [InlineData("Inara", false)]
-    [InlineData("EDSM", true)]
-    [InlineData("EDAstro", true)]
-    [InlineData("EDDN", true)]
-    [InlineData("VoxStellar", true)]
-    [InlineData("Inara", true)]
-    public async Task InterleavedCommandersUseOnlyTheirOwnJournalAndCompanions(string provider, bool sharedFolder)
+    [InlineData("EDSM", false, false)]
+    [InlineData("EDAstro", false, false)]
+    [InlineData("EDDN", false, false)]
+    [InlineData("VoxStellar", false, false)]
+    [InlineData("Inara", false, false)]
+    [InlineData("EDSM", true, false)]
+    [InlineData("EDAstro", true, false)]
+    [InlineData("EDDN", true, false)]
+    [InlineData("VoxStellar", true, false)]
+    [InlineData("Inara", true, false)]
+    [InlineData("EDSM", false, true)]
+    [InlineData("EDAstro", false, true)]
+    public async Task InterleavedCommandersUseOnlyTheirOwnJournalAndCompanions(
+        string provider,
+        bool sharedFolder,
+        bool endSession
+    )
     {
         string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-multi-upload-" + Guid.NewGuid().ToString("N"));
         var paths = new AppDataPaths(
@@ -51,10 +57,26 @@ public sealed class MultiCommanderJournalUploadTests
             await first.RefreshAsync();
             await second.RefreshAsync();
             await first.RefreshAsync();
+            if (endSession)
+            {
+                // Publish the peer's activity while both clients still own verified source leases.
+                await AppendActivityAsync(secondFolder, "F2", "Second", 202, 98765);
+                await second.RefreshAsync();
+            }
             await AppendActivityAsync(firstFolder, "F1", "First", 101, 12345);
+            if (endSession)
+            {
+                await File.AppendAllTextAsync(
+                    Path.Combine(firstFolder, "Journal.F1.log"),
+                    """{"timestamp":"2026-10-14T12:00:07Z","event":"Music","MusicTrack":"MainMenu"}""" + "\n"
+                );
+            }
             await first.RefreshAsync();
-            await AppendActivityAsync(secondFolder, "F2", "Second", 202, 98765);
-            await second.RefreshAsync();
+            if (!endSession)
+            {
+                await AppendActivityAsync(secondFolder, "F2", "Second", 202, 98765);
+                await second.RefreshAsync();
+            }
             await firstSender.FlushAsync(provider == "VoxStellar" && !sharedFolder);
             await secondSender.FlushAsync(provider == "VoxStellar" && !sharedFolder);
             bool journalAllowed = !sharedFolder || provider == "Inara";

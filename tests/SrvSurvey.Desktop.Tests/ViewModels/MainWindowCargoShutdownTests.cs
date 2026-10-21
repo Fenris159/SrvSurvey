@@ -88,9 +88,15 @@ public sealed partial class MainWindowJournalSerializationTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FinalCargoCaptureAcceptsOnlyCompanionSnapshotsBeforeSessionEnd(bool laterForeignSnapshot)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public async Task FinalCargoCaptureAcceptsOnlyCompanionSnapshotsBeforeSessionEnd(
+        bool laterForeignSnapshot,
+        bool mainMenuFirst,
+        bool separatePolls
+    )
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-cargo-final-source-{Guid.NewGuid():N}");
         using var handler = new CargoRecoveryHandler();
@@ -104,13 +110,27 @@ public sealed partial class MainWindowJournalSerializationTests
                 builder => builder.WithAppDataPaths(paths).WithExternalNetworkClient(network)
             );
             await viewModel.RefreshAsync();
+            string ending = mainMenuFirst
+                ? """{"timestamp":"2026-10-08T12:00:07Z","event":"Music","MusicTrack":"MainMenu"}"""
+                : """{"timestamp":"2026-10-08T12:00:07Z","event":"Shutdown"}""";
             await File.AppendAllTextAsync(
                 journal,
-                """
-                {"timestamp":"2026-10-08T12:00:05Z","event":"CargoTransfer","Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]}
-                {"timestamp":"2026-10-08T12:00:07Z","event":"Shutdown"}
-                """ + "\n"
+                """{"timestamp":"2026-10-08T12:00:05Z","event":"CargoTransfer","Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]}"""
+                    + "\n"
+                    + ending
+                    + "\n"
             );
+            if (separatePolls)
+            {
+                await viewModel.RefreshAsync();
+            }
+            if (mainMenuFirst)
+            {
+                await File.AppendAllTextAsync(
+                    journal,
+                    """{"timestamp":"2026-10-08T12:00:10Z","event":"Shutdown"}""" + "\n"
+                );
+            }
             int count = laterForeignSnapshot ? 90 : 35;
             int second = laterForeignSnapshot ? 8 : 6;
             await File.WriteAllTextAsync(
@@ -129,6 +149,90 @@ public sealed partial class MainWindowJournalSerializationTests
             if (viewModel is not null)
             {
                 await viewModel.DisposeAsync();
+            }
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ResumedSessionAcceptsFreshCompanionCargoInTheSamePoll()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-cargo-resume-{Guid.NewGuid():N}");
+        using var handler = new CargoRecoveryHandler();
+        using var network = new HttpClient(handler);
+        MainWindowViewModel? model = null;
+        try
+        {
+            (string journal, AppDataPaths paths) = await PrepareCargoShutdownSessionAsync(root, true);
+            model = MainWindowViewModelTestBuilder.Create(
+                Path.GetDirectoryName(journal)!,
+                builder => builder.WithAppDataPaths(paths).WithExternalNetworkClient(network)
+            );
+            await model.RefreshAsync();
+            await File.AppendAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-10-08T12:00:05Z","event":"Music","MusicTrack":"MainMenu"}
+                {"timestamp":"2026-10-08T12:00:06Z","event":"LoadGame","Commander":"Drew","FID":"F123","Ship":"CobraMkIII"}
+                {"timestamp":"2026-10-08T12:00:07Z","event":"Location","Docked":true,"MarketID":42,"SystemAddress":20,"StarSystem":"Test","StationName":"ABC-123","StationType":"FleetCarrier","StationServices":["commodities","squadronBank"]}
+                {"timestamp":"2026-10-08T12:00:08Z","event":"CargoTransfer","Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]}
+                """ + "\n"
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(Path.GetDirectoryName(journal)!, "Cargo.json"),
+                """{"timestamp":"2026-10-08T12:00:09Z","event":"Cargo","Vessel":"Ship","Count":35,"Inventory":[{"Name":"steel","Count":35}]}"""
+            );
+
+            await model.RefreshAsync();
+
+            Assert.Equal(15, Assert.Single(handler.Adjustments).Cargo["steel"]);
+        }
+        finally
+        {
+            if (model is not null)
+            {
+                await model.DisposeAsync();
+            }
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MissingJournalFolderAtShutdownStillFlushesRetainedCargo()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-cargo-missing-{Guid.NewGuid():N}");
+        using var handler = new CargoRecoveryHandler();
+        using var network = new HttpClient(handler);
+        MainWindowViewModel? model = null;
+        try
+        {
+            (string journal, AppDataPaths paths) = await PrepareCargoShutdownSessionAsync(root, false);
+            new ColonizationSettingsStore(paths.UiSettingsPath).SavePendingCargoAdjustments([
+                new("Drew|F123|True", 42, new() { ["steel"] = 4 }, null, null, Attempted: false, OutcomeUnknown: false),
+            ]);
+            model = MainWindowViewModelTestBuilder.Create(
+                Path.GetDirectoryName(journal)!,
+                builder => builder.WithAppDataPaths(paths).WithExternalNetworkClient(network)
+            );
+            await model.RefreshAsync();
+            Directory.Delete(Path.GetDirectoryName(journal)!, true);
+
+            await model.DisposeAsync();
+
+            Assert.Equal(4, Assert.Single(handler.Adjustments).Cargo["steel"]);
+            Assert.Empty(new ColonizationSettingsStore(paths.UiSettingsPath).LoadPendingCargoAdjustments());
+        }
+        finally
+        {
+            if (model is not null)
+            {
+                await model.DisposeAsync();
             }
             if (Directory.Exists(root))
             {

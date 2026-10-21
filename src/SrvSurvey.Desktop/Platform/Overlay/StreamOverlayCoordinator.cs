@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -267,17 +268,27 @@ public sealed class StreamOverlayCoordinator : IDisposable
         using var pixels = new WriteableBitmap(bitmap.PixelSize, bitmap.Dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);
         using ILockedFramebuffer buffer = pixels.Lock();
         bitmap.CopyPixels(buffer);
-        for (int y = 0; y < buffer.Size.Height; y++)
+        int rowLength = checked(buffer.Size.Width * 4);
+        byte[] row = ArrayPool<byte>.Shared.Rent(rowLength);
+        try
         {
-            int row = y * buffer.RowBytes;
-            for (int x = 0; x < buffer.Size.Width; x++)
+            for (int y = 0; y < buffer.Size.Height; y++)
             {
-                if (Marshal.ReadByte(buffer.Address, row + (x * 4) + 3) != 0)
+                Marshal.Copy(buffer.Address + (y * buffer.RowBytes), row, 0, rowLength);
+                ReadOnlySpan<byte> bytes = row.AsSpan(0, rowLength);
+                for (int alpha = 3; alpha < bytes.Length; alpha += 4)
                 {
-                    return true;
+                    if (bytes[alpha] != 0)
+                    {
+                        return true;
+                    }
                 }
             }
+            return false;
         }
-        return false;
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(row);
+        }
     }
 }

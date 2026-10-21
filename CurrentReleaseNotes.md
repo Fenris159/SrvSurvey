@@ -29,7 +29,8 @@ now matches the live panels without painting another copy over the game.
 - **Identify the panels being streamed.** Streaming settings list panel names
   alongside the count and exclude fully invisible or empty captures. The small
   Journal activity and SCO status indicator counts when enabled; it can be
-  disabled in Global overlay settings.
+  hidden with **Hide PlotPulse** under **Settings → Overlays → Journal activity
+  and SCO status**.
 - **Reconnect OBS after a Linux app restart.** After restarting or replacing
   SrvSurvey, reopen the overlay's PipeWire source properties and reselect
   **SrvSurveyWindowOne overlay** in the window picker. OBS can otherwise retain
@@ -47,6 +48,13 @@ now matches the live panels without painting another copy over the game.
 - **Keep covered cargo from being counted twice.** Baseline dependencies survive
   restart, and failed cleanup saves remain pending for retry, preventing
   transfers covered by a market snapshot from being applied again.
+- **Recover from failed baseline setup.** Failed carrier lookups no longer block
+  unsent cargo, and failed saves after a CAPI seed can retry without another seed.
+  Market baselines wait for in-flight cargo updates to finish.
+- **Preserve final journal reports.** Returning to the main menu keeps already
+  attributed journal events eligible for sharing while rejecting later companion
+  files. Resuming gameplay accepts fresh cargo again, and a missing journal drive
+  no longer makes SrvSurvey fail during shutdown.
 
 ## Update channel and packages
 

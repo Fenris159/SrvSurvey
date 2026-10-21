@@ -21,6 +21,8 @@ internal sealed class JournalProjectionState
     internal bool AwaitFreshProviderCargoSnapshot { get; set; } = true;
     internal string? ProviderCargoFrontierId { get; set; }
     internal string? ProviderCargoJournalPath { get; set; }
+    internal bool ProviderCargoSessionEnded { get; set; }
+    internal DateTimeOffset? ProviderCargoSessionEndedAt { get; set; }
 
     internal EliteStatus? LatestStatus { get; set; }
 

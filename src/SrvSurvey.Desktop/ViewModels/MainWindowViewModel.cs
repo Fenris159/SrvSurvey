@@ -4570,6 +4570,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 JournalMonitorUpdate update = await journalMonitor.PollAsync(CancellationToken.None);
                 await journalProjections.CaptureCargoAsync(update);
             }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                applicationLogService?.Append(
+                    "The final journal append could not be read at shutdown: " + exception.Message
+                );
+            }
             finally
             {
                 using var cargoShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(8));

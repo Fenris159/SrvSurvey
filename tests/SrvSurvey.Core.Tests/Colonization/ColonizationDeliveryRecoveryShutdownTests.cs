@@ -112,6 +112,93 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedBaselineLookupDoesNotStrandPreviouslyUnsentCargo(bool missingCarrier)
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        recovery.ApplyJournalEvents([CarrierDock()], null);
+        recovery.CaptureFleetCarrierCargo([SteelBuy]);
+        if (missingCarrier)
+        {
+            client.FleetCarrierResponse = null;
+        }
+        else
+        {
+            client.GateGetFleetCarrier = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            client.GateGetFleetCarrier.SetException(new HttpRequestException("lookup unavailable"));
+        }
+
+        await UpdateMarketAsync(recovery, LinkedCarrierMarket(80));
+        client.GateGetFleetCarrier = null;
+        client.FleetCarrierResponse = Carrier(75);
+        await recovery.FlushFleetCarrierCargoAsync();
+
+        Assert.Equal(-5, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Fact]
+    public async Task MarketBaselineWaitsForAnInFlightCargoWriteToFinish()
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        var response = new TaskCompletionSource<IReadOnlyDictionary<string, int>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        client.AdjustmentResponseTask = response.Task;
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        recovery.ApplyJournalEvents([CarrierDock()], null);
+        Task sending = recovery.SynchronizeLiveEventsAsync(
+            [SteelBuy with { Timestamp = LinkedCarrierMarket(75).Timestamp.AddSeconds(1) }],
+            true
+        );
+        int reads = client.GetFleetCarrierCount;
+        try
+        {
+            await UpdateMarketAsync(recovery, LinkedCarrierMarket(75));
+            Assert.Equal(reads, client.GetFleetCarrierCount);
+        }
+        finally
+        {
+            response.TrySetException(
+                new RavenColonialServiceException(System.Net.HttpStatusCode.TooManyRequests, "cargo", "rate limited")
+            );
+            await sending;
+        }
+        Assert.False(Assert.Single(store.LoadPendingCargoAdjustments()).OutcomeUnknown);
+        client.AdjustmentResponseTask = null;
+        await recovery.FlushFleetCarrierCargoAsync();
+
+        Assert.Equal(2, client.FleetCarrierAdjustments.Count);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
+    [Fact]
+    public async Task SuccessfulCapiSeedRetainsQueuedReleaseEligibilityAcrossSaveFailure()
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        var response = new TaskCompletionSource<IReadOnlyDictionary<string, int>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        client.ReplaceCargo = _ => response.Task;
+        ColonizationDeliveryRecovery recovery = Create(client, "key", carrierSync: true);
+        Task seeding = recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(false, 80));
+        recovery.ApplyJournalEvents([CarrierDock()], null);
+        await recovery.SynchronizeLiveEventsAsync([SteelBuy], true);
+        Assert.True(Assert.Single(store.LoadPendingCargoAdjustments()).AwaitingBaseline);
+        store.SaveFailure = new IOException("release storage unavailable");
+        response.SetResult(new Dictionary<string, int> { ["steel"] = 80 });
+        await seeding;
+        store.SaveFailure = null;
+
+        await recovery.FlushFleetCarrierCargoAsync();
+
+        Assert.Equal(-5, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+    }
+
     [Fact]
     public async Task BaselineWaitsUntilItsDependencyCanBeSaved()
     {

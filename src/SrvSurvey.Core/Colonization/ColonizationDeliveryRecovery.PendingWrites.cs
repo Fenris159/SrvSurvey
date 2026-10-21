@@ -267,19 +267,7 @@ public sealed partial class ColonizationDeliveryRecovery
         catch (Exception exception)
             when (exception is HttpRequestException or InvalidDataException or OperationCanceledException)
         {
-            int index = failedCargoAdjustments.FindIndex(item =>
-                item.Owner == pending.Owner
-                && item.MarketId == pending.MarketId
-                && ReferenceEquals(item.Delta, pending.Delta)
-            );
-            if (index >= 0)
-            {
-                failedCargoAdjustments[index] = failedCargoAdjustments[index] with
-                {
-                    OutcomeUnknown = !IsDefiniteRejection(exception),
-                };
-                SavePendingCargoAdjustments();
-            }
+            RetainFailedCargoAdjustment(pending, exception);
             return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingFailed, Detail: exception.Message);
         }
         finally

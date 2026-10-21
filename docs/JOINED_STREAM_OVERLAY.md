@@ -50,5 +50,6 @@ its old size, until the source is selected again.
 
 The streaming settings list the names of the composited panels below the count.
 The small **Journal activity and SCO status** indicator is a live panel too, even
-when its journal activity bar is empty. Disable that panel in Global overlay
-settings if it should not appear. Fully invisible or empty frames do not count.
+when its journal activity bar is empty. To hide it, open **Settings → Overlays → Journal activity and SCO status**
+and enable **Hide PlotPulse**. Its switch under **Panel availability and shortcuts**
+also controls whether it appears. Fully invisible or empty frames do not count.

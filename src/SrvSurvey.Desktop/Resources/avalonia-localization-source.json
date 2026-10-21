@@ -31721,7 +31721,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
     "Text": "Maintain glide toward the site.",
@@ -53369,14 +53369,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Shutdown",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
-  },
-  {
     "Text": "Side",
     "IsFormat": false,
     "SourceKinds": [
@@ -56195,7 +56187,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "Supported Live journal events can update EDSM flight history, location, credits, ships and loadouts, cargo, materials, backpack and locker inventory, missions, engineering, community goals, statistics, social status, and discoveries.",
@@ -59934,6 +59926,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "The final journal append could not be read at shutdown: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",

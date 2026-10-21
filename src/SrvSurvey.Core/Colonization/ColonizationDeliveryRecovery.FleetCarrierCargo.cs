@@ -374,10 +374,17 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Records failure only while the adjustment remains pending, preserving the original transport exception.</summary>
     private void RetainFailedCargoAdjustment(ColonizationPendingCargoAdjustment pending, Exception exception)
     {
-        int index = failedCargoAdjustments.IndexOf(pending);
+        int index = failedCargoAdjustments.FindIndex(item =>
+            item.Owner == pending.Owner
+            && item.MarketId == pending.MarketId
+            && ReferenceEquals(item.Delta, pending.Delta)
+        );
         if (index >= 0)
         {
-            failedCargoAdjustments[index] = pending with { OutcomeUnknown = !IsDefiniteRejection(exception) };
+            failedCargoAdjustments[index] = failedCargoAdjustments[index] with
+            {
+                OutcomeUnknown = !IsDefiniteRejection(exception),
+            };
             SavePendingCargoAdjustments();
         }
         nextWriteRetry = utcNow().Add(WriteRetryDelay);
@@ -648,10 +655,12 @@ public sealed partial class ColonizationDeliveryRecovery
         int version
     )
     {
-        if (!BeginCargoBaselinePending(market.MarketId))
+        var introducedDependencies = new List<ColonizationPendingCargoAdjustment>();
+        if (!BeginCargoBaselinePending(market.MarketId, introducedDependencies: introducedDependencies))
         {
             return;
         }
+        bool replacementStarted = false;
         try
         {
             ColonizationFleetCarrier? serverCarrier = await client.GetFleetCarrierAsync(
@@ -695,6 +704,7 @@ public sealed partial class ColonizationDeliveryRecovery
                     Count: replacements.Count
                 )
             );
+            replacementStarted = true;
             IReadOnlyDictionary<string, int> updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
                 market.MarketId,
                 replacements,
@@ -725,6 +735,10 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             if (version == profileVersion)
             {
+                if (!replacementStarted)
+                {
+                    ReleaseUnusedCargoBaselineDependencies(introducedDependencies);
+                }
                 observer.PendingFleetCarrierCargoChanged(null);
                 await CompleteCargoBaselineAsync(market.MarketId, CancellationToken.None);
             }
@@ -814,8 +828,17 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
-    private bool BeginCargoBaselinePending(long marketId, bool replacesCargo = true)
+    private bool BeginCargoBaselinePending(
+        long marketId,
+        bool replacesCargo = true,
+        List<ColonizationPendingCargoAdjustment>? introducedDependencies = null
+    )
     {
+        // An absolute baseline must not alter a relative write that can still commit.
+        if (cargoWritesInFlight.Contains((RecoveryOwner, marketId)))
+        {
+            return false;
+        }
         var changed = new Dictionary<int, ColonizationPendingCargoAdjustment>();
         for (int index = 0; index < failedCargoAdjustments.Count; index++)
         {
@@ -828,7 +851,9 @@ public sealed partial class ColonizationDeliveryRecovery
             )
             {
                 changed[index] = pending;
-                failedCargoAdjustments[index] = pending with { AwaitingBaseline = true };
+                ColonizationPendingCargoAdjustment dependent = pending with { AwaitingBaseline = true };
+                failedCargoAdjustments[index] = dependent;
+                introducedDependencies?.Add(dependent);
             }
         }
         if (changed.Count > 0 && !SavePendingCargoAdjustments())
@@ -846,6 +871,19 @@ public sealed partial class ColonizationDeliveryRecovery
         cargoBaselinePendingDepth[marketId] = cargoBaselinePendingDepth.GetValueOrDefault(marketId) + 1;
         cargoBaselineReady.Remove(marketId);
         return true;
+    }
+
+    /// <summary>A lookup that never sent a replacement cannot make previously unsent cargo uncertain.</summary>
+    private void ReleaseUnusedCargoBaselineDependencies(IEnumerable<ColonizationPendingCargoAdjustment> introduced)
+    {
+        foreach (ColonizationPendingCargoAdjustment pending in introduced)
+        {
+            if (failedCargoAdjustments.Contains(pending) && pending.Delta.Count > 0)
+            {
+                pendingCargoBaselineReleases.Add(pending);
+                ReleasePendingCargoBaseline(pending);
+            }
+        }
     }
 
     private bool IsCargoBaselinePending(long marketId)
@@ -899,6 +937,8 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             if (pending.AwaitingBaseline)
             {
+                // Keep acknowledgement evidence if persisting the release fails after the queue is drained.
+                pendingCargoBaselineReleases.Add(pending);
                 if (!ReleasePendingCargoBaseline(pending))
                 {
                     return;

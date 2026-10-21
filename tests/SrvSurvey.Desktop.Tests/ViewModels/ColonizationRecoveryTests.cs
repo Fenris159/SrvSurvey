@@ -621,7 +621,7 @@ public sealed partial class ColonizationViewModelTests
         Assert.Null(recordedAt);
     }
 
-    /// <summary>Preserves the transport error when a market baseline removes an in-flight pending adjustment before it fails.</summary>
+    /// <summary>A baseline waits for an in-flight write, preserving its transport error and allowing later reconciliation.</summary>
     [Fact]
     public async Task LateCargoFailureDoesNotReplaceTransportError()
     {
@@ -636,13 +636,18 @@ public sealed partial class ColonizationViewModelTests
         );
         Assert.Single(client.FleetCarrierAdjustments);
         await vm.UpdateMarketAsync(LinkedCarrierMarket(95) with { Timestamp = recoveryTime.AddSeconds(1) });
-        Assert.Empty(
+        Assert.Single(
             new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).LoadPendingCargoAdjustments()
         );
+        Assert.Equal(0, client.ReplaceCargoCount);
         gate.SetException(new HttpRequestException("original transport failure"));
         await update;
         Assert.Contains("original transport failure", vm.StatusMessage);
         Assert.DoesNotContain("index", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        await vm.UpdateMarketAsync(LinkedCarrierMarket(95) with { Timestamp = recoveryTime.AddSeconds(2) });
+        Assert.Empty(
+            new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).LoadPendingCargoAdjustments()
+        );
     }
 
     /// <summary>Creates an enabled profile with a controllable retry clock.</summary>

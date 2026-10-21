@@ -26605,10 +26605,6 @@
       "translation": "Zeigt Turmbestückungen und zerstörbare Panels an und behält das ursprüngliche Komponentenübersichtsformat bei. Der automatische Zoom wird innerhalb von 30 m Entfernung zu einem aktiven Obelisken aktiviert."
     },
     {
-      "source": "Shutdown",
-      "translation": "Abschalten"
-    },
-    {
       "source": "Side",
       "translation": "Seite"
     },
@@ -29879,6 +29875,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "Der Favorit konnte nicht aktualisiert werden: {0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "Der letzte Journalanhang konnte beim Herunterfahren nicht gelesen werden: {0}"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -65539,10 +65539,6 @@
       "translation": "Muestra equipamientos de torres y paneles destructibles y conserva el formato de estudio de componentes original. El zoom automático se activa dentro de los 30 m de un obelisco activo."
     },
     {
-      "source": "Shutdown",
-      "translation": "Cerrar"
-    },
-    {
       "source": "Side",
       "translation": "Lado"
     },
@@ -68813,6 +68809,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "No se pudo actualizar el favorito: {0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "El anexo final del diario no se pudo leer al cerrar: {0}"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -104473,10 +104473,6 @@
       "translation": "Affiche les chargements de la tour et les panneaux destructibles et préserve le format d'enquête des composants d'origine. Le zoom automatique s'enclenche à moins de 30 m d'un obélisque actif."
     },
     {
-      "source": "Shutdown",
-      "translation": "Fermer"
-    },
-    {
       "source": "Side",
       "translation": "Côté"
     },
@@ -107747,6 +107743,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "Le favori n'a pas pu être mis à jour : {0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "L'ajout final du journal n'a pas pu être lu à l'arrêt : {0}"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -143407,10 +143407,6 @@
       "translation": "Mostra carregamentos de torres e painéis destrutíveis e preserva o formato original do levantamento dos componentes. O zoom automático é ativado a 30 m de um obelisco ativo."
     },
     {
-      "source": "Shutdown",
-      "translation": "Desligar"
-    },
-    {
       "source": "Side",
       "translation": "Lado"
     },
@@ -146681,6 +146677,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "O favorito não pôde ser atualizado: {0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "O anexo final do diário não pôde ser lido no encerramento: {0}"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -182341,10 +182341,6 @@
       "translation": "Показывает комплектацию башни и разрушаемые панели, сохраняя исходный формат обзора компонентов. Автоматическое масштабирование включается в радиусе 30 м от активного обелиска."
     },
     {
-      "source": "Shutdown",
-      "translation": "Завершение работы"
-    },
-    {
       "source": "Side",
       "translation": "Сторона"
     },
@@ -185615,6 +185611,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "Не удалось обновить избранное: {0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "Последнее добавление журнала не удалось прочитать при завершении работы: {0}."
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -221275,10 +221275,6 @@
       "translation": "显示塔装载和可破坏面板并保留原始组件测量格式。自动变焦可在活动方尖碑 30 m 范围内进行。"
     },
     {
-      "source": "Shutdown",
-      "translation": "关闭"
-    },
-    {
       "source": "Side",
       "translation": "侧面"
     },
@@ -224549,6 +224545,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "无法更新收藏夹：{0}"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "关闭时无法读取最终日志附加：{0}"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -260209,10 +260209,6 @@
       "translation": "* SHOWS TOWER LOADOUTS AND DESTRUCTIBLE PANELS AND PRESERVES THE ORIGINAL COMPONENT SURVEY FORMAT. AUTO-ZOOM ENGAGES WITHIN 30 M OF AN ACTIVE OBELISK. >>>!"
     },
     {
-      "source": "Shutdown",
-      "translation": "* SHUTDOWN >>>!"
-    },
-    {
       "source": "Side",
       "translation": "* SIDE >>>!"
     },
@@ -263483,6 +263479,10 @@
     {
       "source": "The favorite could not be updated: {0}",
       "translation": "* THE FAVORITE COULD NOT BE UPDATED: {0} >>>!"
+    },
+    {
+      "source": "The final journal append could not be read at shutdown: {0}",
+      "translation": "* THE FINAL JOURNAL APPEND COULD NOT BE READ AT SHUTDOWN: {0} >>>!"
     },
     {
       "source": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
