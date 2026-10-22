@@ -79,6 +79,68 @@ XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
 
+## Release dependency caches
+
+Linux release builds cache NuGet's downloaded packages with OS and architecture
+keys. Project/tool manifests and SDK
+configuration invalidate the key; a partial match can still supply unchanged
+packages. `dotnet tool restore` and `dotnet restore` continue to run on fresh
+runners to recreate project assets. No build output or embedded application
+credentials are cached.
+
+Windows release and SonarQube jobs keep NuGet's parallel network restore. On
+GitHub, saving the expanded Windows package cache took 133 seconds; restoring
+it took 39 seconds plus 9 seconds for project restore, compared with about
+33 seconds for an uncached project restore. Excluding that cache avoids making
+Windows setup slower and avoids transferring a 1 GB cache archive each run.
+
+Ubuntu setup installs only missing required packages, without recommendations.
+It caches `.deb` archives separately for Ubuntu 24.04/26.04 and the build/runtime
+package sets. Runner image changes and a weekly key refresh permit updated
+archives to be saved; APT always refreshes signed indexes and selects packages
+from those current indexes. Installed OS directories and package databases are
+never restored from a cache. An already provisioned runner skips APT entirely.
+Index/archive downloads prefer Ubuntu's official HTTPS archive with a bounded
+Azure mirror fallback. Only downloads are timed out, never an active package
+installation. These helpers are intended for disposable Ubuntu x64 CI runners.
+
+The pinned AppImage tools have a separate cache invalidated by their download
+script. Every use verifies SHA-256 checksums, including cache hits. Missing or
+corrupt entries are downloaded to temporary files and promoted only after
+verification. Packages are already compressed, so artifact upload uses
+`compression-level: 0` to avoid compressing them a second time. Builds, tests,
+Sonar checks, journal scenarios, native OpenXR tests, SBOM generation, metadata
+checks, and both Ubuntu runtime checks remain required.
+
+Packaging and metadata jobs check out only the workflow's source commit. Linux
+PR validation and Sonar analysis retain full history for merge-base checks and
+analysis. Every release job uses that same commit. Choose a manual release's
+branch or tag with GitHub's **Run workflow** selector or `gh workflow run --ref`.
+The legacy `source_ref` input is an optional compatibility check and must match
+the selected branch/tag or its commit SHA. A conflicting revision is rejected
+before checkout, so manual dispatch cannot execute an arbitrary source revision
+using another branch's cache permissions.
+
+Exercise cache reuse, corruption recovery, failed downloads, mirror fallback,
+and installation failures without changing the host:
+
+```console
+python3 -m unittest discover -s tests/scripts -v
+```
+
+Caches are an optimization; an eviction or dependency change can still require
+a fresh download. Compare step timings on the next cold and warm GitHub runs
+before attributing a total release-time improvement to these changes. In the
+RC70 baseline run (`39795098591`), installing AppImage validation tools took
+601 seconds, including 594 seconds to download 26.2 MB. That is the primary
+regression this setup addresses; compiler and test execution still take time.
+
+Local validation in fresh Ubuntu 24.04 containers took 77.0 seconds with empty
+package caches and 7.9 seconds with restored archives (no package downloads).
+Repeating setup in the provisioned container took 0.025 seconds. AppImage tool
+setup took 10.5 seconds cold and 0.03 seconds with verified cached tools. These
+measure setup under local network conditions, not total GitHub release times.
+
 ## RC70 release sequence
 
 RC51 remains the permanent legacy bridge and RC69.8 is the preceding release
