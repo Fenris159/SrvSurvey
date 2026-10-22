@@ -13,6 +13,39 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed partial class ColonizationShoppingPresentationTests
 {
+    /// <summary>A label with its own transform must not be initialized by another label's spinner animation.</summary>
+    [AvaloniaFact]
+    public void SpinnerAnimationDoesNotInitializeForUnrelatedTextBlocks()
+    {
+        ILogSink? previousSink = Logger.Sink;
+        var animationLog = new AnimationLogSink();
+        Logger.Sink = animationLog;
+        var view = new Views.ColonizationView();
+        var transform = new ScaleTransform(1.1, 1.1);
+        var label = new TextBlock { Text = "Unrelated label", RenderTransform = transform };
+        Assert.IsType<Grid>(view.Content).Children.Add(label);
+        var window = new Window
+        {
+            Content = view,
+            Width = 1180,
+            Height = 800,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+            Assert.Same(transform, label.RenderTransform);
+            Assert.Empty(animationLog.Messages);
+        }
+        finally
+        {
+            window.Close();
+            Logger.Sink = previousSink;
+        }
+    }
+
     [AvaloniaFact]
     public async Task AutoRefreshButtonShowsActivityAndExplainsSessionLimits()
     {

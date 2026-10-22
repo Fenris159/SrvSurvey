@@ -162,6 +162,15 @@ internal sealed class X11OverlayPlatformService
         );
     }
 
+    /// <summary>Prepares unregistered capture surfaces without enrolling them in gameplay placement or bypass policy.</summary>
+    public void PrepareWindowForShow(Window window)
+    {
+        if (window is StreamOverlayWindow)
+        {
+            PrepareOverlayWindow(window);
+        }
+    }
+
     /// <summary>Sets the overlay tool classification before Avalonia maps through its separate X11 connection.</summary>
     public void PrepareOverlayWindow(Window window)
     {
@@ -174,6 +183,10 @@ internal sealed class X11OverlayPlatformService
                 if (!ApplyWindowType(currentDisplay, handle, window is StreamOverlayWindow))
                 {
                     Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
+                }
+                if (window is StreamOverlayWindow)
+                {
+                    X11Native.DisableWindowInput(currentDisplay, unchecked((nuint)handle));
                 }
                 // Wait for this connection's property update before Avalonia shows the window.
                 _ = X11Native.XSync(currentDisplay, 0);

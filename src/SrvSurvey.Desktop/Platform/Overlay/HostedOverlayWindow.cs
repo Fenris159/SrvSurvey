@@ -541,6 +541,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         overlay.SizeChanged += OnWindowSizeChanged;
         overlay.Screens.Changed += OnScreensChanged;
         window = overlay;
+        platform.PrepareWindowForShow(overlay);
         overlay.Show();
     }
 

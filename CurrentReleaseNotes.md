@@ -1,12 +1,16 @@
-# SrvSurvey-XP 2.1.3.0-rc.69.7
+# SrvSurvey-XP 2.1.3.0-rc.69.8
 
-RC69.7 improves Colonization market searches with local-stock exclusions,
+RC69.8 improves Colonization market searches with local-stock exclusions,
 selectable data sources, clearer ShoppingList information, and sortable build
 project columns. Colonization overlays now default to hiding outside recognized
 ships through their existing vessel and vehicle exceptions.
 
 ## What's changed
 
+- **Find the OBS overlay on KDE Plasma.** The joined `SrvSurveyWindowOne overlay`
+  now appears in the PipeWire window picker on KDE Plasma, including CachyOS.
+  The Linux capture window rejects keyboard focus so Alt-Tab skips it during
+  gameplay.
 - **Sort build projects.** Click **Project**, **Loaded**, **Progress**, **Type**,
   or **System** to sort the table; click again to reverse it. An arrow marks the
   active column and direction. Projects start with progress descending so the
@@ -45,8 +49,9 @@ ships through their existing vessel and vehicle exceptions.
 - **Keep provider warnings concise.** Repeated local checks no longer duplicate
   warnings, including after restoring the shopping workspace. Invalid saved
   warning entries are rejected instead of breaking workspace startup.
-- **Fix the Auto Refresh animation warning.** The Colonization refresh indicator
-  now animates without repeatedly logging a missing rotation-transform warning.
+- **Fix the Auto Refresh animation warning.** The Colonization rotation
+  animation now targets only its spinner, so unrelated labels keep their own
+  transforms without logging missing `RotateTransform` warnings.
 - **Hide Colonization overlays outside ships by default.** Every entry under
   **Colonization → Overlay Exceptions → Vessel / Vehicle** starts unchecked:
   Nomad, Scarab SRV, Scorpion, Rhino, Fighters, On foot, and Other / unknown.
@@ -56,15 +61,15 @@ ships through their existing vessel and vehicle exceptions.
 
 ## Update channel and packages
 
-RC69.7 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC69.8 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.69.7`
-- Tag: `xp2-v2.1.3.0-rc.69.7`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.69.7-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.69.7-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69.7-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69.7-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.69.8`
+- Tag: `xp2-v2.1.3.0-rc.69.8`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.69.8-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.69.8-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69.8-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69.8-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

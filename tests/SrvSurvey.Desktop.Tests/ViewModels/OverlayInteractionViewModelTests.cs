@@ -1025,6 +1025,45 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(new OverlayPanelSize(360, 210), activeLayout.GetSizeOverride("PlotJumpInfo"));
     }
 
+    /// <summary>Joined capture windows reach the native pre-show hook even when the session uses combined presentation.</summary>
+    [AvaloniaFact]
+    public void CombinedStreamCapturePreparesNativePolicyBeforeShowing()
+    {
+        var registry = new OverlayWindowRegistry();
+        var platform = new FakeOverlayPlatform();
+        var snapshot = new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true);
+        var timer = new CaptureTestTimer();
+        using var controller = new CombinedOverlayPresentationController(
+            platform,
+            new FakeGameWindowTracker(snapshot),
+            registry
+        );
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.CombinedWindow, "Capture pre-show regression"),
+            new OverlayPresentationSessionDependencies(
+                () => new OverlayPresentationSession.CombinedOverlayPlatformService(controller),
+                () => new FakeGameWindowTracker(snapshot),
+                _ => timer,
+                LegacyOverlayLayout.Empty,
+                WindowRegistry: registry
+            )
+        );
+        var model = new StreamOverlayViewModel(
+            new StreamOverlaySettingsStore(Path.Combine(temporaryDirectory, "stream.json"))
+        )
+        {
+            Enabled = true,
+        };
+        using var coordinator = new StreamOverlayCoordinator(model, session);
+        (Window capture, bool wasVisible) = Assert.Single(platform.PreShowWindows);
+        Assert.IsType<StreamOverlayWindow>(capture);
+        Assert.False(wasVisible);
+        Assert.True(capture.IsVisible);
+        Assert.Empty(registry.Snapshot());
+        timer.Pulse();
+        Assert.Single(platform.PreShowWindows);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -1042,6 +1081,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         public List<bool> InteractiveStates { get; } = [];
+
+        public List<(Window Window, bool WasVisible)> PreShowWindows { get; } = [];
+
+        public void PrepareWindowForShow(Window window) => PreShowWindows.Add((window, window.IsVisible));
 
         /// <summary>Records native classification separately from showing or bypassing the combined host.</summary>
         public List<Window> ClassifiedWindows { get; } = [];
@@ -1113,6 +1156,27 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 Interlocked.Exchange(ref callback, null)?.Invoke();
             }
         }
+    }
+
+    private sealed class CaptureTestTimer : IHostedOverlayTimer
+    {
+        private bool started;
+
+        public event EventHandler? Tick;
+
+        public void Start() => started = true;
+
+        public void Stop() => started = false;
+
+        public void Pulse()
+        {
+            if (started)
+            {
+                Tick?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public void Dispose() => Stop();
     }
 
     private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot) : IGameWindowTracker

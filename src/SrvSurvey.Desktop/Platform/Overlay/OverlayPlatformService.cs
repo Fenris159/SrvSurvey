@@ -10,6 +10,12 @@ public interface IOverlayPlatformService : IDisposable
 {
     OverlayPlatformCapabilities Capabilities { get; }
 
+    /// <summary>Applies native capture and focus policy before the window is mapped, independently of theme registration.</summary>
+    void PrepareWindowForShow(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+    }
+
     OverlayPreparationResult PreparePassiveWindow(Window window);
 
     OverlayInteractionResult SetInteractive(Window window, bool interactive);

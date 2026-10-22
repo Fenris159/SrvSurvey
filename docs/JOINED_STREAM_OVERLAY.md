@@ -43,6 +43,12 @@ explains this distinction, and its
 [PipeWire renderer](https://github.com/obsproject/obs-studio/blob/master/plugins/linux-pipewire/pipewire.c)
 blends the captured alpha channel into the scene.
 
+On Linux, the joined capture window permits a taskbar entry so KDE Plasma's
+PipeWire picker can list it. It rejects native keyboard input, which keeps it
+out of KDE's Alt-Tab switcher without excluding it from capture. Custom KDE
+window rules must not force **Skip taskbar** or **Skip switcher** for this window;
+the portal filters out windows with either setting.
+
 After restarting or replacing SrvSurvey on Linux, reopen the overlay's PipeWire
 source properties and reselect **SrvSurveyWindowOne overlay** in the portal
 window picker. OBS can retain a paused image from the previous process, including
