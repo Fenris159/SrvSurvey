@@ -410,7 +410,7 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
         if (IsEditing)
         {
             Status =
-                "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.";
+                "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.";
         }
         else if (created is not null)
         {

@@ -324,8 +324,8 @@
                                       <Grid ColumnDefinitions="*,110,110,110">
                                         <TextBlock Text="{Binding Commodity}" TextWrapping="Wrap" />
                                         <TextBlock Grid.Column="1" Text="{Binding Required, StringFormat={}{0:N0}}" HorizontalAlignment="Right" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Ready, StringFormat={}{0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenSuccessBrush}" />
-                                        <TextBlock Grid.Column="3" Text="{Binding Missing, StringFormat={}{0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenAccentBrush}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding ReadyLabel}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenSuccessBrush}" />
+                                        <TextBlock Grid.Column="3" Text="{Binding MissingLabel}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenAccentBrush}" />
                                       </Grid>
                                     </Border>
                                   </DataTemplate>

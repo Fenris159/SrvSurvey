@@ -90,7 +90,7 @@ public sealed partial class RavenColonialClient : IRavenColonialNexusReader
             Commanders = (nexus.Commanders ?? []).Where(name => !string.IsNullOrWhiteSpace(name)).ToArray(),
             FleetCarriers = (nexus.FleetCarriers ?? [])
                 .OfType<ColonizationFleetCarrier>()
-                .Where(carrier => carrier.MarketId > 0 && carrier.Cargo is not null)
+                .Where(carrier => carrier.MarketId > 0)
                 .DistinctBy(carrier => carrier.MarketId)
                 .ToArray(),
             Systems = (nexus.Systems ?? [])

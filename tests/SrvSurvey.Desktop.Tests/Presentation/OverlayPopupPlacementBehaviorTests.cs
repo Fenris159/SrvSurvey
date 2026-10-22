@@ -159,7 +159,8 @@ public sealed class OverlayPopupPlacementBehaviorTests
             AssertAttached(combo, popup);
             scroll.Offset = new Vector(0, 20);
             Render(window);
-            Assert.True(!combo.IsDropDownOpen || IsAttached(combo, popup));
+            Assert.True(combo.IsDropDownOpen);
+            AssertAttached(combo, popup);
         }
         finally
         {

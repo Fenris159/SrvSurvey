@@ -5,6 +5,48 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationNexusPlanTests
 {
     [Fact]
+    public void UnknownCarrierCargoPreservesRequirementsWithoutInventingReadiness()
+    {
+        var nexus = new ColonizationNexus
+        {
+            FleetCarriers =
+            [
+                new() { MarketId = 42, Cargo = null! },
+                new()
+                {
+                    MarketId = 43,
+                    Cargo = new() { ["steel"] = 20 },
+                },
+            ],
+            Systems =
+            [
+                new()
+                {
+                    Name = "Alpha",
+                    Total = 120,
+                    Progress = 20,
+                    Needs = new() { ["steel"] = 100 },
+                },
+            ],
+        };
+        var plan = ColonizationNexusPlan.Create(nexus);
+        Assert.Equal(100, plan.Cargo.Remaining);
+        Assert.Null(plan.Cargo.Ready);
+        Assert.Null(plan.Cargo.CoveredPercent);
+        ColonizationNexusSystemPlan system = Assert.Single(plan.Systems);
+        Assert.Equal(100, Assert.Single(system.Needs).Required);
+        Assert.Null(system.Cargo.Ready);
+        Assert.Null(Assert.Single(system.Needs).Missing);
+        Assert.Null(Assert.Single(plan.Needs).Ready);
+        var report = ColonizationProjectPreview.CreateNexusReport(nexus, "Alpha", DateTimeOffset.UnixEpoch);
+        Assert.Equal(2, report.Carriers.Count);
+        Assert.Null(report.Carriers[0].Cargo);
+        Assert.Null(report.CarrierDeficit);
+        Assert.Null(report.ReadyOnCarriers);
+        Assert.Equal(100, report.Remaining);
+    }
+
+    [Fact]
     public void EverySystemUsesAllNexusCarriersRegardlessOfAssignments()
     {
         var carrier = new ColonizationFleetCarrier

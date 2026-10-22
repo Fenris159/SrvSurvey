@@ -1,14 +1,24 @@
 namespace SrvSurvey.Core.Colonization;
 
-public sealed record ColonizationNexusNeed(string Commodity, long Required, long Ready)
+public sealed record ColonizationNexusNeed(string Commodity, long Required, long? Ready)
 {
-    public long Missing => Math.Max(0, Required - Ready);
+    public long? Missing => Ready.HasValue ? Math.Max(0, Required - Ready.Value) : null;
 }
 
-public sealed record ColonizationNexusCargo(long Total, long Delivered, long Remaining, long Ready, bool IsKnown)
+public sealed record ColonizationNexusCargo(long Total, long Delivered, long Remaining, long? Ready, bool IsKnown)
 {
     public double DeliveredPercent => Total > 0 ? Math.Clamp(Delivered * 100d / Total, 0, 100) : 0;
-    public double CoveredPercent => Total > 0 ? Math.Clamp((Delivered + (double)Ready) * 100 / Total, 0, 100) : 0;
+    public double? CoveredPercent
+    {
+        get
+        {
+            if (Ready is not { } ready)
+            {
+                return null;
+            }
+            return Total > 0 ? Math.Clamp((Delivered + (double)ready) * 100 / Total, 0, 100) : 0;
+        }
+    }
     public bool IsComplete => IsKnown && Total > 0 && Delivered >= Total;
 }
 
@@ -48,7 +58,7 @@ public sealed record ColonizationNexusPlan(
                 total,
                 delivered,
                 system.Needs is null ? total - delivered : remaining,
-                needs.Sum(need => need.Ready),
+                TotalReady(needs),
                 total > 0 && (system.Total.HasValue || system.Needs is not null)
             );
             systems.Add(new(system, cargo, needs, nexus.Hubs.Contains(system.SystemAddress)));
@@ -69,7 +79,7 @@ public sealed record ColonizationNexusPlan(
             systems.Sum(system => system.Cargo.Total),
             systems.Sum(system => system.Cargo.Delivered),
             systems.Sum(system => system.Cargo.Remaining),
-            aggregate.Sum(need => need.Ready),
+            TotalReady(aggregate),
             systems.Count > 0 && systems.All(system => system.Cargo.IsKnown)
         );
         return new(
@@ -98,6 +108,7 @@ public sealed record ColonizationNexusPlan(
         IReadOnlyList<ColonizationFleetCarrier> carriers
     )
     {
+        bool cargoKnown = carriers.All(carrier => carrier.MarketId <= 0 || carrier.Cargo is not null);
         var missing = ColonizationShopping
             .SubtractCarrierCargo(needs, carriers)
             .ToDictionary(need => need.Commodity, need => need.Required, StringComparer.Ordinal);
@@ -105,8 +116,11 @@ public sealed record ColonizationNexusPlan(
             .Select(need => new ColonizationNexusNeed(
                 need.Commodity,
                 need.Required,
-                need.Required - missing.GetValueOrDefault(need.Commodity)
+                cargoKnown ? need.Required - missing.GetValueOrDefault(need.Commodity) : null
             ))
             .ToArray();
     }
+
+    private static long? TotalReady(IReadOnlyList<ColonizationNexusNeed> needs) =>
+        needs.All(need => need.Ready.HasValue) ? needs.Sum(need => need.Ready) : null;
 }

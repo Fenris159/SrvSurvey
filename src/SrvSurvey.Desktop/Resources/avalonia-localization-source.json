@@ -54697,7 +54697,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
-    "Text": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
+    "Text": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -78389,6 +78389,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "{0} t delivered \u00B7 {1} t remaining \u00B7 Carrier cargo not reported",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "{0} t delivered \u00B7 {1} t remaining \u00B7 {2} t on Nexus carriers",
     "IsFormat": true,
     "SourceKinds": [
@@ -78403,6 +78411,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} t remaining \u00B7 Carrier cargo not reported",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "{0} t remaining \u00B7 {1} linked build projects",

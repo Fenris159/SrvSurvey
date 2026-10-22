@@ -6,6 +6,46 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationNexusViewModelTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DetailsDistinguishUnknownCarrierCargoFromKnownEmptyStock(bool known)
+    {
+        var nexus = new ColonizationNexus
+        {
+            FleetCarriers = [new() { MarketId = 42, Cargo = known ? [] : null! }],
+            Systems =
+            [
+                new()
+                {
+                    Name = "Alpha",
+                    Total = 100,
+                    Needs = new() { ["steel"] = 100 },
+                },
+            ],
+        };
+        var detail = new ColonizationNexusDetailViewModel(
+            ColonizationNexusPlan.Create(nexus),
+            ColonizationBuildCatalog.LoadEmbedded(),
+            _ => { }
+        );
+        ColonizationNexusScope scope = Assert.Single(detail.Systems);
+        ColonizationNexusNeedRow row = Assert.Single(scope.Needs);
+        Assert.Equal(known ? "0" : "Unknown", row.ReadyLabel);
+        Assert.Equal(known ? "100" : "Unknown", row.MissingLabel);
+        if (known)
+        {
+            Assert.Contains("0 t on Nexus carriers", detail.CargoSummary);
+            Assert.Contains("100 t still to load", scope.CargoSummary);
+        }
+        else
+        {
+            Assert.Contains("Carrier cargo not reported", detail.CargoSummary);
+            Assert.Contains("Carrier cargo not reported", scope.CargoSummary);
+            Assert.DoesNotContain("0 t ready", scope.CargoSummary);
+        }
+    }
+
     [Fact]
     public async Task RequiresConsentCommanderAndCredentialAndLoadsOnlyTheSelectedNexus()
     {

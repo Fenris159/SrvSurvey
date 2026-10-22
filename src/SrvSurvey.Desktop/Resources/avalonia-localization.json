@@ -27265,8 +27265,8 @@
       "translation": "Einige Canonn Abrechnungsdaten wurden ignoriert: {0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "Einige Nexus-Änderungen konnten nicht gespeichert werden. Überprüfen Sie die Einträge, Ihre Mitgliedschaft und Verbindung und wählen Sie dann „Änderungen speichern“, um es erneut zu versuchen."
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "Einige Nexus-Änderungen konnten nicht gespeichert werden und andere wurden möglicherweise bereits übernommen. Schließen Sie diesen Editor, aktualisieren Sie Nexus und öffnen Sie es erneut, bevor Sie es erneut speichern."
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -39097,12 +39097,20 @@
       "translation": "{0} t"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} t geliefert · {1} t verbleibend · Trägerfracht nicht gemeldet"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} t geliefert · {1} t verbleibend · {2} t auf Nexus-Trägern"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t verknüpfte Fracht · Kapazität von RavenColonial nicht verfügbar"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} t verbleibend · Trägerfracht nicht gemeldet"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -66823,8 +66831,8 @@
       "translation": "Se ignoraron algunos datos de liquidación de Canonn: {0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "Algunos cambios de Nexus no se pudieron guardar. Verifique las entradas, su membresía y conexión, luego elija Guardar cambios para volver a intentarlo."
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "Algunos cambios de Nexus no se pudieron guardar y es posible que otros ya se hayan aplicado. Cierra este editor, actualiza Nexus y vuelve a abrirlo antes de volver a guardar."
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -78655,12 +78663,20 @@
       "translation": "{0}t"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} t entregadas · {1} t restantes · Carga del transportista no reportada"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} t entregadas · {1} t restantes · {2} t en operadores Nexus"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de carga vinculada · capacidad no disponible de RavenColonial"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} t restantes · Carga del transportista no reportada"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -106381,8 +106397,8 @@
       "translation": "Certaines données de règlement Canonn ont été ignorées : {0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "Certaines modifications apportées au Nexus n'ont pas pu être enregistrées. Vérifiez les entrées, votre adhésion et votre connexion, puis choisissez Enregistrer les modifications pour réessayer."
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "Certaines modifications Nexus n'ont pas pu être enregistrées et d'autres peuvent déjà être appliquées. Fermez cet éditeur, actualisez Nexus et rouvrez-le avant de l'enregistrer à nouveau."
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -118213,12 +118229,20 @@
       "translation": "{0}"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} t livré · {1} t restant · Cargaison du transporteur non déclarée"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} t livré · {1} t restant · {2} t sur les transporteurs Nexus"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de fret lié · capacité indisponible auprès de RavenColonial"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} t restant · Cargaison du transporteur non déclarée"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -145939,8 +145963,8 @@
       "translation": "Alguns dados de liquidação Canonn foram ignorados: {0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "Não foi possível salvar algumas alterações do Nexus. Verifique as entradas, sua associação e conexão e escolha Salvar alterações para tentar novamente."
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "Não foi possível salvar algumas alterações do Nexus e outras já podem estar aplicadas. Feche este editor, atualize o Nexus e abra-o novamente antes de salvar novamente."
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -157771,12 +157795,20 @@
       "translation": "{0} t"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} t entregue · {1} t restante · Carga do transportador não informada"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} t entregue · {1} t restante · {2} t em operadoras Nexus"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de carga vinculada · capacidade indisponível da RavenColonial"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} t restante · Carga do transportador não informada"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -185497,8 +185529,8 @@
       "translation": "Некоторые расчетные данные Canonn были проигнорированы: {0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "Некоторые изменения Нексуса не удалось сохранить. Проверьте записи, свое членство и подключение, затем выберите «Сохранить изменения», чтобы повторить попытку."
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "Некоторые изменения Nexus не удалось сохранить, а другие, возможно, уже применены. Закройте этот редактор, обновите Nexus и снова откройте его перед повторным сохранением."
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -197329,12 +197361,20 @@
       "translation": "{0} т"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} т доставлено · {1} т осталось · Груз перевозчика не указан"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} т доставлено · {1} т осталось · {2} т на носителях Nexus"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} т связанного груза · мощность недоступна в RavenColonial"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} т осталось · Груз перевозчика не сообщается"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -225055,8 +225095,8 @@
       "translation": "一些Canonn结算数据被忽略：{0}"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "无法保存某些 Nexus 更改。检查条目、您的会员资格和连接，然后选择保存更改以重试。"
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "某些 Nexus 更改无法保存，而其他更改可能已应用。关闭此编辑器，刷新 Nexus，然后重新打开它，然后再次保存。"
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -236887,12 +236927,20 @@
       "translation": "{0} t"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "{0} t 已交付 · {1} t 剩余 · 承运商货物未报告"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "{0} t 已交付 · {1} t 剩余 · {2} t 在 Nexus 运营商上"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} 吨链接货物 · RavenColonial 无法提供容量"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "{0} t 剩余 · 未报告承运人货物"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",
@@ -264613,8 +264661,8 @@
       "translation": "* SOME CANONN SETTLEMENT DATA WAS IGNORED: {0} >>>!"
     },
     {
-      "source": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
-      "translation": "* SOME NEXUS CHANGES COULD NOT BE SAVED. CHECK THE ENTRIES, YOUR MEMBERSHIP AND CONNECTION, THEN CHOOSE SAVE CHANGES TO RETRY. >>>!"
+      "source": "Some Nexus changes could not be saved and others may already be applied. Close this editor, refresh Nexus, and reopen it before saving again.",
+      "translation": "* SOME NEXUS CHANGES COULD NOT BE SAVED AND OTHERS MAY ALREADY BE APPLIED. CLOSE THIS EDITOR, REFRESH NEXUS, AND REOPEN IT BEFORE SAVING AGAIN. >>>!"
     },
     {
       "source": "Some Nexus requirements were not reported. Totals include reported needs only.",
@@ -276445,12 +276493,20 @@
       "translation": "* {0} T >>>!"
     },
     {
+      "source": "{0} t delivered · {1} t remaining · Carrier cargo not reported",
+      "translation": "* {0} T DELIVERED · {1} T REMAINING · CARRIER CARGO NOT REPORTED >>>!"
+    },
+    {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "* {0} T DELIVERED · {1} T REMAINING · {2} T ON NEXUS CARRIERS >>>!"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "* {0} T OF LINKED CARGO · CAPACITY UNAVAILABLE FROM RAVENCOLONIAL >>>!"
+    },
+    {
+      "source": "{0} t remaining · Carrier cargo not reported",
+      "translation": "* {0} T REMAINING · CARRIER CARGO NOT REPORTED >>>!"
     },
     {
       "source": "{0} t remaining · {1} linked build projects",

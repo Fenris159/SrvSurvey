@@ -94,7 +94,9 @@ public sealed class ColonizationNexusDetailViewModel : WorkspaceObservable
     public IReadOnlyList<ColonizationNexusScope> Scopes { get; } = [];
     public ICommand OpenAllReportCommand => Scopes[0].OpenReportCommand;
     public string CargoSummary =>
-        $"{Cargo.Delivered:N0} t delivered · {Cargo.Remaining:N0} t remaining · {Cargo.Ready:N0} t on Nexus carriers";
+        Cargo.Ready.HasValue
+            ? $"{Cargo.Delivered:N0} t delivered · {Cargo.Remaining:N0} t remaining · {Cargo.Ready:N0} t on Nexus carriers"
+            : $"{Cargo.Delivered:N0} t delivered · {Cargo.Remaining:N0} t remaining · Carrier cargo not reported";
     public string ProgressLabel =>
         Cargo.Total > 0 ? $"{Cargo.DeliveredPercent:N2}% delivered" : "Requirements not reported";
 
@@ -204,7 +206,9 @@ public sealed class ColonizationNexusScope
         }
     }
     public string CargoSummary =>
-        $"{Cargo.Remaining:N0} t remaining · {Cargo.Ready:N0} t ready · {Math.Max(0, Cargo.Remaining - Cargo.Ready):N0} t still to load";
+        Cargo.Ready.HasValue
+            ? $"{Cargo.Remaining:N0} t remaining · {Cargo.Ready:N0} t ready · {Math.Max(0, Cargo.Remaining - Cargo.Ready.Value):N0} t still to load"
+            : $"{Cargo.Remaining:N0} t remaining · Carrier cargo not reported";
     public string EmptyNeedsMessage
     {
         get
@@ -220,7 +224,11 @@ public sealed class ColonizationNexusScope
     }
 }
 
-public sealed record ColonizationNexusNeedRow(string Commodity, long Required, long Ready, long Missing);
+public sealed record ColonizationNexusNeedRow(string Commodity, long Required, long? Ready, long? Missing)
+{
+    public string ReadyLabel => Ready?.ToString("N0", CultureInfo.CurrentCulture) ?? "Unknown";
+    public string MissingLabel => Missing?.ToString("N0", CultureInfo.CurrentCulture) ?? "Unknown";
+}
 
 public sealed class ColonizationNexusBuildRow
 {

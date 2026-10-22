@@ -44,7 +44,7 @@ public sealed partial class ColonizationProjectPreview
                 carrier.MarketId,
                 carrier.Name,
                 carrier.DisplayName,
-                Normalize(carrier.Cargo)
+                carrier.Cargo is null ? null : Normalize(carrier.Cargo)
             ))
             .ToArray();
         var needs = systems

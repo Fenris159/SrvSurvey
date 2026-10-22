@@ -126,6 +126,9 @@ public sealed partial class ColonizationNexusEditorViewModelTests
         );
         await model.SubmitAsync();
         Assert.Contains("could not be saved", model.Status);
+        Assert.Contains("may already be applied", model.Status);
+        Assert.Contains("Close this editor, refresh Nexus, and reopen", model.Status);
+        Assert.DoesNotContain("retry", model.Status);
         Assert.Equal("Save changes", model.SubmitLabel);
         Assert.True(model.CanEditName);
         Assert.Equal(0, api.Creates);

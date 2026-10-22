@@ -75,6 +75,20 @@ public sealed partial class RavenColonialClientTests
         Assert.Equal("build", Assert.Single(system.Builds).BuildId);
     }
 
+    [Fact]
+    public async Task NexusPreservesCarriersWithUnknownAndOmittedCargo()
+    {
+        RavenColonialClient client = Create(
+            new StubHandler(_ =>
+                Json("""{"id":"n","name":"Nexus","fcs":[{"marketId":42,"cargo":null},{"marketId":43}]}""")
+            )
+        );
+        ColonizationNexus nexus = Assert.IsType<ColonizationNexus>(await client.GetNexusAsync("n", "Test", "key"));
+        Assert.Equal([42L, 43L], nexus.FleetCarriers.Select(carrier => carrier.MarketId));
+        Assert.Null(nexus.FleetCarriers[0].Cargo);
+        Assert.Empty(nexus.FleetCarriers[1].Cargo);
+    }
+
     [Theory]
     [InlineData("{\"id\":\"n\",\"name\":\"Nexus\"}")]
     [InlineData("{\"id\":\"n\",\"name\":\"Nexus\",\"cmdrs\":null,\"fcs\":null,\"hubs\":null,\"systems\":null}")]
