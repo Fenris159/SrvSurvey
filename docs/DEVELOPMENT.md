@@ -81,12 +81,18 @@ same dependency and startup validation on Ubuntu 26.04 before publication.
 
 ## Release dependency caches
 
-Release builds and SonarQube analysis cache NuGet's downloaded packages with
-separate Windows/Linux and architecture keys. Project/tool manifests and SDK
+Linux release builds cache NuGet's downloaded packages with OS and architecture
+keys. Project/tool manifests and SDK
 configuration invalidate the key; a partial match can still supply unchanged
 packages. `dotnet tool restore` and `dotnet restore` continue to run on fresh
 runners to recreate project assets. No build output or embedded application
 credentials are cached.
+
+Windows release and SonarQube jobs keep NuGet's parallel network restore. On
+GitHub, saving the expanded Windows package cache took 133 seconds; restoring
+it took 39 seconds plus 9 seconds for project restore, compared with about
+33 seconds for an uncached project restore. Excluding that cache avoids making
+Windows setup slower and avoids transferring a 1 GB cache archive each run.
 
 Ubuntu setup installs only missing required packages, without recommendations.
 It caches `.deb` archives separately for Ubuntu 24.04/26.04 and the build/runtime

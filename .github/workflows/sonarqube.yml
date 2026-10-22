@@ -85,9 +85,6 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Cache NuGet dependencies
-        uses: ./.github/actions/cache-nuget
-
       - name: Install Java
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
