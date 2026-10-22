@@ -2,11 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
-             x:Class="SrvSurvey.Desktop.Controls.SpanshSystemListEntry"
+             x:Class="SrvSurvey.Desktop.Controls.SpanshSystemListEntry" x:Name="Root"
              x:DataType="vm:SpanshSystemListViewModel">
   <StackPanel Spacing="8">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" KeyDown="Entry_KeyDown">
-      <controls:SystemNameEntry x:Name="DestinationEntry" Text="{Binding Draft, Mode=TwoWay}" PlaceholderText="Add a destination system" />
+      <controls:SystemNameEntry x:Name="DestinationEntry" Text="{Binding Draft, Mode=TwoWay}" PlaceholderText="{Binding #Root.PlaceholderText}" />
       <Button x:Name="AddDestinationButton" Grid.Column="1" Classes="primary"
               VerticalAlignment="Top" Content="{Binding CommitLabel}" Command="{Binding CommitCommand}"
               Click="FocusEntry_Click" AutomationProperties.Name="Add or save destination" />

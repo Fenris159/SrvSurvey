@@ -942,6 +942,9 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
+      <TabItem Header="Nexus">
+        <views:ColonizationNexusView DataContext="{Binding Colonization.Nexus}" />
+      </TabItem>
       <TabItem Header="Settings">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel x:Name="ColonizationSettingsPage" Spacing="24" Margin="0,20,0,16" MaxWidth="1100" HorizontalAlignment="Stretch">

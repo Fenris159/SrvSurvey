@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -7,6 +8,17 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed partial class SpanshSystemListEntry : UserControl
 {
+    public static readonly StyledProperty<string> PlaceholderTextProperty = AvaloniaProperty.Register<
+        SpanshSystemListEntry,
+        string
+    >(nameof(PlaceholderText), "Add a destination system");
+
+    public string PlaceholderText
+    {
+        get => GetValue(PlaceholderTextProperty);
+        set => SetValue(PlaceholderTextProperty, value);
+    }
+
     /// <summary>
     /// Initializes the shared destination autocomplete and ordered-list control.
     /// </summary>

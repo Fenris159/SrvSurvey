@@ -171,7 +171,7 @@ public sealed partial class ColonizationProjectPreview
     public long? CarrierDeficit { get; }
     public long? ReadyOnCarriers => Remaining - CarrierDeficit;
     public double? Progress =>
-        MaximumRequired > 0 && Projects.All(project => project.MaximumRequired > 0)
+        MaximumRequired > 0 && (nexusRequirementsKnown ?? Projects.All(project => project.MaximumRequired > 0))
             ? 100d * Delivered / MaximumRequired
             : null;
 

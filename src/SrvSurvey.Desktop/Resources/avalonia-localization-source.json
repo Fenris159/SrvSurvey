@@ -115,9 +115,10 @@
     "Text": "\u002B Add",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SpanshSystemListViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "\u002B pending",
@@ -3106,12 +3107,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Add a destination system",
+    "Text": "Add Systems",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Add a destination system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml.cs"
+  },
+  {
+    "Text": "Add a system to view its hub details.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Add anything useful about this system...",
@@ -3152,6 +3169,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Add entries to their lists before creating the Nexus. Systems follow the order shown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Add folder",
@@ -3288,6 +3313,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Add systems in route order. Use the arrows to reorder them, or remove an incorrect entry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Add the steps or game activity that led to this error.",
@@ -3778,6 +3811,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "All reported requirements have been delivered.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "All signals analyzed with the first-footfall bonus applied.",
     "IsFormat": false,
     "SourceKinds": [
@@ -3807,7 +3848,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "All types",
@@ -5107,6 +5148,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "Assigned to:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Asteroid",
@@ -9373,6 +9422,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
   },
   {
+    "Text": "CancelNexusSystemRemoval",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml.cs"
+  },
+  {
     "Text": "Cancelling the full-area audit after the current request\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -9801,6 +9858,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Cargo needs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Cargo required: {0}{1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -9855,6 +9920,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Cargo update time not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "Cargo updated {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "Cargo updated. Delivery history unavailable.",
@@ -9954,6 +10035,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Carrier name or callsign",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Carrier name:",
     "IsFormat": false,
     "SourceKinds": [
@@ -9968,6 +10057,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Carrier search failed. Try again when Raven Colonial is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Carrier short on tritium",
@@ -11098,6 +11195,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Choose one of {0} commander profile(s) and a start date.",
@@ -12675,6 +12780,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Commander name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Commander names, Frontier IDs, credit balances, carrier finances and EDDiscovery extension fields are removed. Startup history, diagnostic replay, Legacy sessions and unattributed shared data are not submitted.",
     "IsFormat": false,
     "SourceKinds": [
@@ -12899,6 +13012,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
   },
   {
+    "Text": "Commanders",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Commands and commodity names are case insensitive. Accepted commodity names are listed in Hotspot List. A saved map loads automatically while you are inside its border and unloads after you leave. Every accepted or declined command reports its result through Status notifications.",
     "IsFormat": false,
     "SourceKinds": [
@@ -12934,9 +13055,10 @@
     "Text": "Commodity",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Commodity amount in tonnes",
@@ -14760,6 +14882,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "Could not open Raven Colonial in your browser.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
     "Text": "Could not open VoxStellar: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -15081,6 +15211,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Create Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Create a project",
     "IsFormat": false,
     "SourceKinds": [
@@ -15167,6 +15306,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Creating Nexus on Raven Colonial...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Creating a project preserves Raven\u2019s existing primary port.",
@@ -16245,6 +16392,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
+    "Text": "Delete Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Delete Nexus \u0027{0}\u0027? This cannot be undone.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.Deletion.cs"
+  },
+  {
+    "Text": "Delete Nexus?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Delete firegroup configuration",
     "IsFormat": false,
     "SourceKinds": [
@@ -16259,6 +16430,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Delete permanently",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Delete saved route",
@@ -16429,6 +16608,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
+    "Text": "Deleting Nexus on Raven Colonial...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.Deletion.cs"
+  },
+  {
     "Text": "Deletion occurs only after the PNG has been written atomically and reopened with matching dimensions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -16451,6 +16638,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
+  },
+  {
+    "Text": "Delivered",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Delivery and local storage",
@@ -18736,6 +18931,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Edit Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Edit Overlay Positions",
     "IsFormat": false,
     "SourceKinds": [
@@ -18790,6 +18994,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Edit the Nexus details, then choose Save changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Edit the first six shared bindings in Settings \u003E Input or in Surface Mining overlay settings, where they retain the Mining rig labels. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
@@ -19119,6 +19331,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Enable Colonization and configure this commander\u0027s Raven API key in Settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
   },
   {
     "Text": "Enable EDAstro sharing for live Commander sessions",
@@ -19736,6 +19956,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Enter at least 3 characters to search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Enter both latitude and longitude, or leave both blank for an unknown surface origin.",
@@ -21889,6 +22117,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22034,6 +22270,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Finding Fleet Carriers on Raven Colonial...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
     "Text": "Finding settings",
     "IsFormat": false,
     "SourceKinds": [
@@ -22048,6 +22292,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Finish Nexus setup",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
@@ -22476,6 +22728,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Fleet Carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Fleet carrier itinerary",
     "IsFormat": false,
     "SourceKinds": [
@@ -22674,6 +22934,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Follow a Nexus route, its build projects, shared cargo needs, and the commanders and carriers involved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Follow communications, objectives, settlement routes, massacre progress, and optional developer-authored quest chapters.",
@@ -26512,6 +26780,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Hub",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "Hub Details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Hull",
     "IsFormat": false,
     "SourceKinds": [
@@ -28868,6 +29152,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Keep Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Keep ShoppingList when starting or clearing market searches.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28898,6 +29190,23 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Keep at least one system in the Nexus. Use Delete Nexus to remove the final system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
+    "Text": "Keep at least one system. Use Delete Nexus to remove the final system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Keep bio overlays visible after DSS scans for:",
@@ -28962,6 +29271,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Keep system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
@@ -30472,6 +30789,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
+    "Text": "Load a commander and save a Raven API key before creating a Nexus.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Creation.cs"
+  },
+  {
     "Text": "Load a commander and save a Raven API key before editing carrier manifests.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30856,6 +31181,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Loading Nexus projects from Raven Colonial...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
     "Text": "Loading image\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -31135,6 +31468,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Location not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "Location unavailable: {0}",
@@ -34064,6 +34405,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
+    "Text": "My Nexus projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "My build projects",
     "IsFormat": false,
     "SourceKinds": [
@@ -34630,6 +34979,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemePresetCatalog.cs"
   },
   {
+    "Text": "Need (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Need is the remaining project requirement; FC is the cargo on linked carriers; Ship is the current usable ship inventory.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35078,6 +35435,110 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Nexus carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Nexus data could not be loaded. Check your connection and select Refresh Nexus to retry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
+    "Text": "Nexus deletion could not be confirmed. Close this window and refresh the Nexus list before trying again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.Deletion.cs"
+  },
+  {
+    "Text": "Nexus is now private.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Privacy.cs"
+  },
+  {
+    "Text": "Nexus is now public.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Privacy.cs"
+  },
+  {
+    "Text": "Nexus name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Nexus privacy could not be confirmed. Refresh Nexus before trying again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Privacy.cs"
+  },
+  {
+    "Text": "Nexus refresh cancelled. Select Refresh Nexus to try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
+    "Text": "Nexus refresh failed. The previous snapshot remains displayed; select Refresh Nexus to retry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
+    "Text": "Nexus saved. Refreshing your Nexus projects...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
+    "Text": "Nexus system scope",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Nexus systems updated.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
+  },
+  {
     "Text": "No",
     "IsFormat": false,
     "SourceKinds": [
@@ -35213,6 +35674,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "No Nexus projects are linked to this commander.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
   },
   {
     "Text": "No PNG screenshots were found for this system.",
@@ -35535,6 +36004,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "No carriers are linked to this Nexus.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "No child boxel statistics are recorded inside {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -35605,6 +36082,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "No commodity requirements were reported for this selection.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "No community goals were returned for this commander.",
@@ -35815,6 +36300,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "No individual build projects were reported for this selection.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "No journal events were found in {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -35973,6 +36466,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayRingAcquireSharedCluster.axaml"
+  },
+  {
+    "Text": "No matching carriers were found. Try a name or callsign.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -36464,6 +36965,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
+    "Text": "No system assignments",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "No system files required activation.",
     "IsFormat": false,
     "SourceKinds": [
@@ -36627,9 +37136,10 @@
     "Text": "None",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "None - configure manually",
@@ -36783,6 +37293,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Notes (optional)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Notes added to the draft. Use Save As... to keep them.",
@@ -37635,6 +38153,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open Nexus or select Refresh Nexus to load your projects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
     "Text": "Open Raven builds",
     "IsFormat": false,
     "SourceKinds": [
@@ -37820,6 +38346,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
+    "Text": "Open build on Raven Colonial",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Open build project report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Open categorized previews without starting Elite. Changes are saved only with \u2713.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37948,6 +38490,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
   },
   {
+    "Text": "Open remaining needs for all Nexus systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Open remaining needs for this system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Open screenshot",
     "IsFormat": false,
     "SourceKinds": [
@@ -38010,6 +38568,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Open system on Raven Colonial",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Open the FC route workspace and organize this commander\u0027s saved fleet-carrier routes.",
@@ -38507,6 +39073,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+  },
+  {
+    "Text": "Organize a shared colonization route with systems, commanders and Fleet Carriers.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Orientation",
@@ -39622,6 +40196,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
+  },
+  {
+    "Text": "Owner not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "Owner:",
@@ -41967,6 +42549,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "Private Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "Private Nexus. Click to make the entire Nexus public.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
+    "Text": "Private: members only. Public: visible by link.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "Procedural boxel searches and completion tracking",
     "IsFormat": false,
     "SourceKinds": [
@@ -42094,6 +42700,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Progress not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "Progress tracker",
@@ -42326,6 +42940,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Public Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "Public Nexus. Click to make the entire Nexus private.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
   },
   {
     "Text": "Publish cancelled; all edits remain local.",
@@ -43202,6 +43832,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
+    "Text": "REMAINING COMMODITIES",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "REQUIRED",
     "IsFormat": false,
     "SourceKinds": [
@@ -43698,6 +44336,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Raven Colonial denied access. Check this commander\u0027s Raven API key and Nexus membership.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
     "Text": "Raven Colonial did not create the project. It may already exist.",
     "IsFormat": false,
     "SourceKinds": [
@@ -43720,6 +44366,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Raven Colonial rejected creation. Check the Nexus name, your Raven API key and connection, then try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Raven Colonial returned an incomplete system identity.",
@@ -43784,6 +44438,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Raven may have created this Nexus, but its acknowledgement was lost. Close this window and refresh your Nexus projects before trying to create it again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
@@ -44850,12 +45512,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Ready (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Ready cargo uses all Nexus carriers. Each system is estimated independently; All systems counts shared stock once.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Ready for sample 1 of 3",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Ready on Nexus carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Ready on fleet carriers",
@@ -45387,6 +46073,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
+    "Text": "Refresh Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Refresh Systems",
     "IsFormat": false,
     "SourceKinds": [
@@ -45884,6 +46578,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Remaining",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Remaining / total",
     "IsFormat": false,
     "SourceKinds": [
@@ -45897,7 +46599,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Remove \u0027{0}\u0027 from this Nexus? Its build projects will remain on Raven Colonial.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
   },
   {
     "Text": "Remove API key",
@@ -45954,6 +46664,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
+  },
+  {
+    "Text": "Remove duplicate systems or commanders before creating the Nexus.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Remove from ShoppingList",
@@ -46052,6 +46770,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListOverlayPresentation.axaml"
   },
   {
+    "Text": "Remove system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Remove system from Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Remove system from Nexus?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Remove the locationless manual/imported discovery for",
     "IsFormat": false,
     "SourceKinds": [
@@ -46066,6 +46808,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Remove this system from the Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
   },
   {
     "Text": "Removed \u0027{0}\u0027 locally.",
@@ -46226,6 +46976,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Removing system from Nexus...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
   },
   {
     "Text": "Rename fleet-carrier route",
@@ -46428,6 +47186,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Reported Nexus needs, including planned facilities",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
     "Text": "Reports",
     "IsFormat": false,
     "SourceKinds": [
@@ -46514,6 +47280,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Requirements not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "Requires FSSAllBodiesFound for new local visits. Enabled earlier-visit and older-Spansh completion rules still apply.",
@@ -47999,6 +48773,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
   },
   {
+    "Text": "Route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "Route Manager",
     "IsFormat": false,
     "SourceKinds": [
@@ -48183,6 +48965,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Route stats",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Route tracking deactivated. The saved route and its progress were preserved.",
@@ -49449,6 +50239,7 @@
     "Text": "Save changes",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
@@ -49958,6 +50749,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Saving Nexus privacy...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Privacy.cs"
+  },
+  {
+    "Text": "Saving Nexus systems, commanders, carriers and preferences...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Saving a local recovery backup...",
@@ -51019,6 +51826,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Select a Nexus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Select a Nexus system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
     "Text": "Select a backup to restore.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51033,6 +51856,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "Select a card to view Hub Details. System names open Raven Colonial; play buttons show remaining needs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Select a carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Select a carrier and add it to the list.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
     "Text": "Select a commander and confirm the all-history Codex merge first.",
@@ -51097,6 +51944,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Select a loaded Nexus system before opening its report.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Reports.cs"
   },
   {
     "Text": "Select a mapped Guardian ruins or structure survey to author its master template.",
@@ -53834,12 +54689,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
+    "Text": "Some Nexus changes could not be saved. Check the entries, your membership and connection, then choose Save changes to retry.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
+    "Text": "Some Nexus requirements were not reported. Totals include reported needs only.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
+  },
+  {
     "Text": "Some bodies still need complete planet or parent-star scans.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
+  },
+  {
+    "Text": "Some systems have no reported requirements. Totals cover reported data only; no estimated build costs have been added.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "Sort (descending) for working results backwards.",
@@ -57284,6 +58163,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
   },
   {
+    "Text": "System removal could not be confirmed. Refresh Nexus before trying again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
+  },
+  {
     "Text": "System search",
     "IsFormat": false,
     "SourceKinds": [
@@ -57595,6 +58482,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Systems and builds in this report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
     "Text": "Systems could not be refreshed. Cached systems remain available: {0}",
@@ -58689,6 +59592,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
     "Text": "The OpenXR frame mailbox is unavailable: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -59145,6 +60056,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
   },
   {
+    "Text": "The active Nexus account changed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Reports.cs"
+  },
+  {
     "Text": "The active bootstrap source and the locations checked on this platform.",
     "IsFormat": false,
     "SourceKinds": [
@@ -59247,6 +60166,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
+    "Text": "The bar shows delivered cargo followed by remaining needs covered by stock on Nexus carriers. Small nonzero amounts retain a visible marker.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "The bio-status and surface overlays track the active genus, three-sample sequence, colony distance, and estimated reward.",
@@ -61113,6 +62040,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
+    "Text": "The owner is included automatically. Add any other commanders who will participate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
     "Text": "The package hash is valid. Preparing an isolated update candidate.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62866,6 +63801,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
+    "Text": "This Nexus is no longer available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Nexus.cs"
+  },
+  {
+    "Text": "This Nexus is no longer available. Refresh Nexus before trying again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
+  },
+  {
     "Text": "This POI is already bookmarked; your notes were preserved.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63257,6 +64216,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "To load (t)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
     "Text": "To move an existing marker, clear it first, drive to the new position, and press its chord again to set it there.",
@@ -65230,6 +66197,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Updated from Raven Colonial at {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
+  },
+  {
     "Text": "Updated master-template point {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -66759,6 +67734,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Visibility",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
     "Text": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
@@ -72853,6 +73836,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "nexus:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ColonizationProjectPreviewWindowCoordinator.cs"
+  },
+  {
+    "Text": "nexus:{0}:",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ColonizationProjectPreviewWindowCoordinator.cs"
+  },
+  {
+    "Text": "nexus:{0}:{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ColonizationProjectPreviewWindowCoordinator.cs"
+  },
+  {
     "Text": "nicknames",
     "IsFormat": false,
     "SourceKinds": [
@@ -75710,6 +76717,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
   },
   {
+    "Text": "{0} (owner)",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "{0} ({1}) cannot be marked empty.",
     "IsFormat": true,
     "SourceKinds": [
@@ -77270,12 +78285,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "{0} t delivered \u00B7 {1} t remaining \u00B7 {2} t on Nexus carriers",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
     "Text": "{0} t of linked cargo \u00B7 capacity unavailable from RavenColonial",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} t remaining \u00B7 {1} linked build projects",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "{0} t remaining \u00B7 {1} t ready \u00B7 {2} t still to load",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "{0} t remaining \u00B7 {1} t total",
@@ -77619,7 +78658,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "{0}% delivered \u00B7 {1} t remaining",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
   },
   {
     "Text": "{0}% of {1}",

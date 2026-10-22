@@ -4,8 +4,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Behaviors;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
@@ -118,6 +120,288 @@ public sealed class OverlayPopupPlacementBehaviorTests
     public void UnattachedTargetHasNoRootOffset()
     {
         Assert.Equal(default, OverlayPopupPlacementBehavior.GetTopLevelRootOffset(new Border()));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(30, 58)]
+    [InlineData(220, 58)]
+    [InlineData(260, 58)]
+    [InlineData(30, 0)]
+    [InlineData(260, 0)]
+    public void DropdownRemainsAttachedWhenFlippedAtWindowEdgeAndScrolled(int top, int rootOffset)
+    {
+        var combo = new ComboBox
+        {
+            Width = 240,
+            Margin = new Thickness(20, top, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            ItemsSource = new[] { "All systems", "Selected system" },
+            SelectedIndex = 1,
+        };
+        var content = new StackPanel { Height = 800 };
+        content.Children.Add(combo);
+        var scroll = new ScrollViewer { Content = content };
+        var window = new Window
+        {
+            Width = 480,
+            Height = 350,
+            RenderTransform = new TranslateTransform(0, rootOffset),
+            Content = scroll,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            Popup popup = Assert.Single(combo.GetTemplateDescendants().OfType<Popup>());
+            popup.ShouldUseOverlayLayer = true;
+            combo.IsDropDownOpen = true;
+            Render(window);
+            AssertAttached(combo, popup);
+            scroll.Offset = new Vector(0, 20);
+            Render(window);
+            Assert.True(!combo.IsDropDownOpen || IsAttached(combo, popup));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static void AssertAttached(ComboBox combo, Popup popup) =>
+        Assert.True(
+            IsAttached(combo, popup),
+            $"Dropdown detached: target={combo.PointToScreen(default)}, popup={popup.Child!.PointToScreen(default)}, height={popup.Child!.Bounds.Height}"
+        );
+
+    [AvaloniaTheory]
+    [InlineData(30, 0, true)]
+    [InlineData(260, 0, true)]
+    [InlineData(30, 400, true)]
+    [InlineData(260, 400, true)]
+    [InlineData(330, 0, true)]
+    [InlineData(330, 400, true)]
+    [InlineData(30, 400, false)]
+    [InlineData(260, 400, false)]
+    [InlineData(330, 400, false)]
+    public void ClickingDropdownKeepsItOpenWithoutJumpingAwayFromTheControl(int top, int offset, bool overlay)
+    {
+        var combo = new ComboBox
+        {
+            Width = 240,
+            MaxDropDownHeight = 120,
+            Margin = new Thickness(20, top + offset, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            ItemsSource = Enumerable.Range(0, 30).Select(index => $"Item {index}").ToArray(),
+            SelectedIndex = 25,
+        };
+        var content = new StackPanel { Height = 1200 };
+        content.Children.Add(combo);
+        var scroll = new ScrollViewer { Content = content };
+        var window = new Window
+        {
+            Content = scroll,
+            Width = 480,
+            Height = 350,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            scroll.Offset = new Vector(0, offset);
+            Render(window);
+            Popup popup = Assert.Single(combo.GetTemplateDescendants().OfType<Popup>());
+            popup.ShouldUseOverlayLayer = overlay;
+            Point origin = combo.TranslatePoint(default, window)!.Value;
+            Point click =
+                origin
+                + new Vector(
+                    combo.Bounds.Width - 15,
+                    Math.Min(combo.Bounds.Height / 2, window.ClientSize.Height - origin.Y - 2)
+                );
+            window.MouseDown(click, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseUp(click, MouseButton.Left, RawInputModifiers.None);
+            Render(window);
+            Assert.True(
+                combo.IsDropDownOpen,
+                $"Dropdown closed after click; page offset={scroll.Offset} (was {offset})."
+            );
+            Assert.InRange(scroll.Offset.Y - offset, 0, top == 330 ? combo.Bounds.Height : 0);
+            AssertAttached(combo, popup);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void KeyboardFocusRevealsTheSelectorAndMenuFocusOnlyScrollsTheMenu(bool overlay)
+    {
+        var combo = new ComboBox
+        {
+            Width = 200,
+            MaxDropDownHeight = 120,
+            ItemsSource = Enumerable.Range(0, 30).Select(index => $"Item {index}").ToArray(),
+            SelectedIndex = 29,
+        };
+        var scroll = new ScrollViewer
+        {
+            Content = new StackPanel
+            {
+                Children =
+                {
+                    new Border { Height = 400 },
+                    combo,
+                    new Border { Height = 400 },
+                },
+            },
+        };
+        var window = new Window
+        {
+            Content = scroll,
+            Width = 480,
+            Height = 350,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            Assert.True(combo.Focus(NavigationMethod.Tab));
+            Render(window);
+            Assert.True(scroll.Offset.Y > 0);
+            Vector offset = scroll.Offset;
+            Popup popup = Assert.Single(combo.GetTemplateDescendants().OfType<Popup>());
+            popup.ShouldUseOverlayLayer = overlay;
+            window.KeyPress(Key.Down, RawInputModifiers.Alt, PhysicalKey.ArrowDown, null);
+            Render(window);
+            Assert.True(combo.IsDropDownOpen);
+            Assert.Equal(offset, scroll.Offset);
+            ScrollViewer menu = Assert.Single(popup.Child!.GetVisualDescendants().OfType<ScrollViewer>());
+            Assert.True(menu.Offset.Y > 0);
+            double menuOffset = menu.Offset.Y;
+            window.KeyPress(Key.Home, RawInputModifiers.None, PhysicalKey.Home, null);
+            Render(window);
+            Assert.True(combo.ContainerFromIndex(0)!.IsFocused);
+            Assert.True(menu.Offset.Y < menuOffset);
+            Assert.Equal(offset, scroll.Offset);
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+            Render(window);
+            Assert.False(combo.IsDropDownOpen);
+            Assert.Equal(offset, scroll.Offset);
+
+            combo.IsDropDownOpen = true;
+            Render(window);
+            scroll.ScrollToHome();
+            Render(window);
+            combo.BringIntoView();
+            Render(window);
+            Assert.Equal(offset, scroll.Offset);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OpeningDropdownDuringPendingPageScrollKeepsItOpen(bool overlay)
+    {
+        var combo = new ComboBox
+        {
+            Width = 200,
+            Margin = new Thickness(0, 100, 0, 0),
+            ItemsSource = new[] { "All systems", "Selected system" },
+            SelectedIndex = 0,
+        };
+        var content = new StackPanel { Height = 800 };
+        content.Children.Add(combo);
+        var scroll = new ScrollViewer { Content = content };
+        var window = new Window
+        {
+            Content = scroll,
+            Width = 480,
+            Height = 350,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            Popup popup = Assert.Single(combo.GetTemplateDescendants().OfType<Popup>());
+            popup.ShouldUseOverlayLayer = overlay;
+            scroll.Offset = new Vector(0, 20);
+            combo.IsDropDownOpen = true;
+            Render(window);
+            Assert.True(combo.IsDropDownOpen);
+            AssertAttached(combo, popup);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ScrollingMenuOrPageKeepsTheDropdownOpenAndAttached(bool overlay)
+    {
+        var combo = new ComboBox
+        {
+            Width = 200,
+            MaxDropDownHeight = 120,
+            ItemsSource = Enumerable.Range(0, 30).Select(index => $"Item {index}").ToArray(),
+            SelectedIndex = 0,
+        };
+        var content = new StackPanel { Height = 800 };
+        content.Children.Add(combo);
+        var scroll = new ScrollViewer { Content = content };
+        var window = new Window
+        {
+            Content = scroll,
+            Width = 480,
+            Height = 350,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            Popup popup = Assert.Single(combo.GetTemplateDescendants().OfType<Popup>());
+            popup.ShouldUseOverlayLayer = overlay;
+            combo.IsDropDownOpen = true;
+            Render(window);
+            ScrollViewer menu = Assert.Single(popup.Child!.GetVisualDescendants().OfType<ScrollViewer>());
+            menu.Offset = new Vector(0, 100);
+            Render(window);
+            Assert.True(combo.IsDropDownOpen);
+            Assert.True(menu.Offset.Y > 0);
+            scroll.Offset = new Vector(0, 20);
+            Render(window);
+            Assert.True(combo.IsDropDownOpen);
+            AssertAttached(combo, popup);
+            scroll.ScrollToHome();
+            Render(window);
+            combo.IsDropDownOpen = true;
+            Render(window);
+            Assert.True(combo.IsDropDownOpen);
+            AssertAttached(combo, popup);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static bool IsAttached(ComboBox combo, Popup popup)
+    {
+        PixelPoint targetTop = combo.PointToScreen(default);
+        PixelPoint targetBottom = combo.PointToScreen(new Point(0, combo.Bounds.Height));
+        PixelPoint popupTop = popup.Child!.PointToScreen(default);
+        PixelPoint popupBottom = popup.Child!.PointToScreen(new Point(0, popup.Child!.Bounds.Height));
+        return Math.Abs(popupTop.Y - targetBottom.Y) <= 2 || Math.Abs(popupBottom.Y - targetTop.Y) <= 2;
     }
 
     private static Host Show(Vector rootTranslation, double horizontalOffset = 0, double verticalOffset = 0)

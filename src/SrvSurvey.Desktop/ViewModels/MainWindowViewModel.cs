@@ -531,11 +531,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.AddIfCreated(resolvedEddnPublisher, this.eddnPublisher as IDisposable);
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
-            this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
-            if (this.eddnPublisher is EddnCommanderPublisher commanderPublisher)
-            {
-                commanderPublisher.RestorePendingAccount(targetFrontierId ?? AppDataPaths.SettingsFrontierId);
-            }
+            InitializeEddnPublisher(targetFrontierId);
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
                 ?? new EdAstroPublisher(
@@ -1042,6 +1038,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         {
             rollback.Rollback();
             throw;
+        }
+    }
+
+    private void InitializeEddnPublisher(string? targetFrontierId)
+    {
+        eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+        if (eddnPublisher is EddnCommanderPublisher commanderPublisher)
+        {
+            commanderPublisher.RestorePendingAccount(targetFrontierId ?? AppDataPaths.SettingsFrontierId);
         }
     }
 

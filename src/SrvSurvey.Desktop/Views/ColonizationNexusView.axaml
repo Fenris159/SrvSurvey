@@ -1,0 +1,364 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:core="using:SrvSurvey.Core.Colonization"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             x:Class="SrvSurvey.Desktop.Views.ColonizationNexusView"
+             x:Name="NexusRoot"
+             x:DataType="vm:ColonizationNexusViewModel">
+  <UserControl.Resources>
+    <StreamGeometry x:Key="NexusCopyIcon">M 8,2 L 20,2 L 20,16 L 18,16 L 18,4 L 8,4 Z M 4,6 L 16,6 L 16,22 L 4,22 Z M 6,8 L 6,20 L 14,20 L 14,8 Z</StreamGeometry>
+    <StreamGeometry x:Key="NexusCraneIcon">M 2,23 H 11 M 3,23 V 13 A 3.5,3.5 0 0 1 10,13 V 23 M 3,16 H 10 M 5,12 V 14 H 8 V 12 Z M 5,10 L 13,2 A 2.5,2.5 0 0 1 17,5 L 10,12 M 8,10 L 14,4 M 16,6 L 20,14 M 18,4 L 22,13 M 19,14 L 22,13 L 23,15 L 22,17 H 20 Z M 20,17 L 18,19 V 21 M 22,17 L 24,19 V 21</StreamGeometry>
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ComboBoxItem:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.nexus-icon">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="MinWidth" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="5" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Border.nexus-system">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="Padding" Value="10,8" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Button.nexus-play">
+      <Setter Property="Width" Value="34" />
+      <Setter Property="MinWidth" Value="34" />
+      <Setter Property="Height" Value="34" />
+      <Setter Property="Padding" Value="9" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="ProgressBar">
+      <Setter Property="Height" Value="10" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Maximum" Value="100" />
+      <Setter Property="Background" Value="{DynamicResource RavenTertiaryTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.nexus-stat">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="HyperlinkButton.nexus-link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.nexus-build">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Padding" Value="0,4" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+  </UserControl.Styles>
+  <Grid KeyDown="NexusRoot_KeyDown">
+  <ScrollViewer x:Name="NexusPageScroll" HorizontalScrollBarVisibility="Disabled" IsEnabled="{Binding !IsSystemRemovalVisible}">
+    <StackPanel Margin="0,20,0,16" Spacing="18">
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="card-title" Text="My Nexus projects" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Follow a Nexus route, its build projects, shared cargo needs, and the commanders and carriers involved." />
+          <WrapPanel>
+            <Button x:Name="CreateNexus" Content="Create Nexus" Command="{Binding CreateNexusCommand}" Classes="primary" Margin="0,0,12,8" />
+            <ComboBox x:Name="NexusPicker" ItemsSource="{Binding Nexuses}" SelectedItem="{Binding SelectedNexus, Mode=TwoWay}"
+                      MaxDropDownHeight="260" MinWidth="240" MaxWidth="460" Margin="0,0,12,8"
+                      PlaceholderText="Select a Nexus" AutomationProperties.Name="Select a Nexus">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="core:ColonizationNexusSummary">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted" FontSize="11" Text="{Binding Owner}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button x:Name="EditNexus" Content="Edit Nexus" Command="{Binding EditNexusCommand}" Margin="0,0,12,8" />
+            <Button x:Name="RefreshNexus" Content="Refresh Nexus" Command="{Binding RefreshCommand}" Margin="0,0,0,8" />
+          </WrapPanel>
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+          <TextBlock x:Name="NexusStatus" Classes="muted" Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <ContentControl Content="{Binding Detail}" HorizontalContentAlignment="Stretch">
+        <ContentControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:ColonizationNexusDetailViewModel">
+            <StackPanel Spacing="18">
+              <Border Classes="card">
+                <StackPanel Spacing="12">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Classes="card-title" Text="Systems" VerticalAlignment="Center" />
+                    <Button x:Name="NexusAllNeeds" Classes="nexus-play" Command="{Binding OpenAllReportCommand}" ToolTip.Tip="Open remaining needs for all Nexus systems" AutomationProperties.Name="Open remaining needs for all Nexus systems">
+                      <PathIcon Width="13" Height="16" Data="M 1,1 L 13,8 L 1,15 Z" />
+                    </Button>
+                  </StackPanel>
+                  <TextBlock Classes="muted nexus-stat" Text="Select a card to view Hub Details. System names open Raven Colonial; play buttons show remaining needs." />
+                  <ListBox x:Name="NexusRoute" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem, Mode=TwoWay}"
+                           Background="Transparent" BorderThickness="0" Padding="0" SelectionMode="Single,AlwaysSelected"
+                           ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                           AutomationProperties.Name="Select a Nexus system">
+                    <ListBox.ItemContainerTheme>
+                      <ControlTheme TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0,0,10,10" />
+                        <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="2" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Template">
+                          <ControlTemplate>
+                            <Border Classes="nexus-selection" CornerRadius="6" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                              <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top" />
+                            </Border>
+                          </ControlTemplate>
+                        </Setter>
+                        <Style Selector="^:selected">
+                          <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+                        </Style>
+                      </ControlTheme>
+                    </ListBox.ItemContainerTheme>
+                    <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel SizeChanged="SystemsPanel_SizeChanged" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ColonizationNexusScope">
+                        <Border Classes="nexus-system">
+                          <StackPanel Spacing="7">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="5">
+                              <Button Classes="nexus-icon nexus-copy" behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}" AutomationProperties.Name="Copy system name">
+                                <PathIcon Width="15" Height="17" Data="{StaticResource NexusCopyIcon}" />
+                              </Button>
+                              <HyperlinkButton Grid.Column="1" Classes="nexus-link nexus-system-link" Tag="{Binding SystemUri}" Click="OpenRavenLink_Click" ToolTip.Tip="{Binding SystemName}">
+                                <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" Text="{Binding SystemName}" TextTrimming="CharacterEllipsis" />
+                              </HyperlinkButton>
+                              <TextBlock Grid.Column="2" Classes="eyebrow" Text="{Binding Kind}" VerticalAlignment="Center" Margin="6,0" />
+                              <Button Grid.Column="3" Classes="nexus-icon nexus-remove-system" Command="{Binding #NexusRoot.DataContext.RemoveSystemCommand}" CommandParameter="{Binding}"
+                                      IsEnabled="{Binding #NexusRoot.DataContext.CanRemoveSystems}" ToolTip.Tip="{Binding #NexusRoot.DataContext.SystemRemovalHint}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Remove system from Nexus">
+                                <Path Data="{StaticResource RavenTrashIcon}" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="1.5" Width="18" Height="18" Stretch="Uniform" />
+                              </Button>
+                              <Button Grid.Column="4" Classes="nexus-icon nexus-privacy" Command="{Binding #NexusRoot.DataContext.TogglePrivacyCommand}"
+                                      ToolTip.Tip="{Binding #NexusRoot.DataContext.PrivacyHint}" AutomationProperties.Name="{Binding #NexusRoot.DataContext.PrivacyHint}">
+                                <Grid>
+                                  <PathIcon Width="17" Height="20" IsVisible="{Binding #NexusRoot.DataContext.IsPublic}" Data="M 7,10 V 6 A 5,5 0 0 1 17,6 H 15 A 3,3 0 0 0 9,6 V 10 H 18 V 22 H 2 V 10 Z M 9,14 V 18 H 11 V 14 Z" />
+                                  <PathIcon Width="17" Height="20" IsVisible="{Binding !#NexusRoot.DataContext.IsPublic}" Data="M 5,10 V 6 A 5,5 0 0 1 15,6 V 10 H 18 V 22 H 2 V 10 Z M 7,10 H 13 V 6 A 3,3 0 0 0 7,6 Z M 9,14 V 18 H 11 V 14 Z" />
+                                </Grid>
+                              </Button>
+                              <Button Grid.Column="5" Classes="nexus-play" Command="{Binding OpenReportCommand}" ToolTip.Tip="Open remaining needs for this system" AutomationProperties.Name="Open remaining needs for this system">
+                                <PathIcon Width="13" Height="16" Data="M 1,1 L 13,8 L 1,15 Z" />
+                              </Button>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="33,0,0,0" ToolTip.Tip="{Binding CargoSummary}">
+                              <controls:ColonizationCargoProgressBar Cargo="{Binding Cargo}" Height="10" VerticalAlignment="Center"
+                                  Background="{DynamicResource RavenTertiaryTextBrush}" DeliveredBrush="{DynamicResource RavenAccentBrush}" ReadyBrush="{DynamicResource RavenSuccessBrush}" />
+                              <TextBlock Grid.Column="1" Classes="nexus-stat" Text="{Binding ProgressLabel}" VerticalAlignment="Center" />
+                            </Grid>
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+              </Border>
+              <Border x:Name="NexusHubDetails" Classes="card">
+                <StackPanel Spacing="14">
+                  <TextBlock Classes="card-title" Text="Hub Details" />
+                  <TextBlock Classes="nexus-stat" Text="{Binding Nexus.Notes}" IsVisible="{Binding HasNotes}" />
+                  <TextBlock Classes="muted nexus-stat" IsVisible="{Binding !HasSelectedSystem}" Text="Add a system to view its hub details." />
+                  <ContentControl x:Name="NexusSelectedHub" Content="{Binding SelectedSystem}" HorizontalContentAlignment="Stretch">
+                    <ContentControl.ContentTemplate>
+                      <DataTemplate x:DataType="vm:ColonizationNexusScope">
+                        <StackPanel Spacing="10">
+                          <TextBlock Classes="nexus-stat" Text="{Binding Builds.Count, StringFormat='Active projects: {0:N0}'}" />
+                          <TextBlock Classes="muted nexus-stat" IsVisible="{Binding HasNoBuilds}" Text="No individual build projects were reported for this selection." />
+                          <ItemsControl x:Name="NexusBuilds" ItemsSource="{Binding Builds}" Margin="0">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ColonizationNexusBuildRow">
+                                <Border Classes="nexus-project" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,5,0,2" Margin="0,3,0,0">
+                                  <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="5">
+                                      <Button Classes="nexus-icon nexus-build-link" Tag="{Binding BuildUri}" Click="OpenRavenLink_Click" ToolTip.Tip="Open build on Raven Colonial" AutomationProperties.Name="Open build on Raven Colonial">
+                                        <Path Width="20" Height="20" Stretch="Uniform" Data="{StaticResource NexusCraneIcon}" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="1.4" StrokeJoin="Round" StrokeLineCap="Round" />
+                                      </Button>
+                                      <WrapPanel Grid.Column="1">
+                                        <Button Classes="nexus-build nexus-project-name" Command="{Binding OpenCommand}" ToolTip.Tip="Open build project report">
+                                          <TextBlock Text="{Binding Project.BuildName}" Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        </Button>
+                                        <TextBlock Classes="muted nexus-stat" FontSize="12" Text="{Binding Type}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                      </WrapPanel>
+                                    </Grid>
+                                    <ProgressBar Value="{Binding DeliveredPercent}" Foreground="{DynamicResource RavenAccentBrush}" Margin="8,0,0,0" />
+                                    <TextBlock Classes="nexus-stat" Text="{Binding ProgressLabel}" FontSize="12" Margin="8,0,0,0" />
+                                    <TextBlock Classes="muted nexus-stat" Text="{Binding Commanders}" FontSize="12" Margin="8,0,0,0" />
+                                  </StackPanel>
+                                </Border>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                          <TextBlock Classes="nexus-stat" Text="{Binding CargoSummary}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                  </ContentControl>
+                  <TextBlock Classes="card-title" Text="Route stats" />
+                  <WrapPanel>
+                    <TextBlock Text="{Binding HubCount, StringFormat='Hubs: {0:N0}'}" Margin="0,0,24,6" />
+                    <TextBlock Text="{Binding RouteSummary}" Margin="0,0,24,6" />
+                    <TextBlock Text="{Binding RouteCompletionPercent, StringFormat='Progress: {0:N0}%'}" Margin="0,0,0,6" />
+                  </WrapPanel>
+                  <TextBlock Text="{Binding Cargo.Total, StringFormat='Total haul: {0:N0} t'}" />
+                  <controls:ColonizationCargoProgressBar x:Name="NexusTotalHaul" Cargo="{Binding Cargo}" Height="10"
+                      Background="{DynamicResource RavenTertiaryTextBrush}" DeliveredBrush="{DynamicResource RavenAccentBrush}" ReadyBrush="{DynamicResource RavenSuccessBrush}" ToolTip.Tip="{Binding CargoSummary}" />
+                  <WrapPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,20,6"><Border Width="12" Height="12" Background="{DynamicResource RavenAccentBrush}" /><TextBlock Text="Delivered" /></StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,20,6"><Border Width="12" Height="12" Background="{DynamicResource RavenSuccessBrush}" /><TextBlock Text="Ready on Nexus carriers" /></StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,0,6"><Border Width="12" Height="12" Background="{DynamicResource RavenTertiaryTextBrush}" /><TextBlock Text="Remaining" /></StackPanel>
+                  </WrapPanel>
+                  <TextBlock Classes="nexus-stat" Text="{Binding CargoSummary}" />
+                  <TextBlock Classes="muted nexus-stat" Text="The bar shows delivered cargo followed by remaining needs covered by stock on Nexus carriers. Small nonzero amounts retain a visible marker." />
+                  <TextBlock IsVisible="{Binding HasIncompleteRequirements}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap"
+                             Text="Some systems have no reported requirements. Totals cover reported data only; no estimated build costs have been added." />
+
+                  <TextBlock Classes="card-title" Text="Commanders" />
+                  <ItemsControl ItemsSource="{Binding Members}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="x:String">
+                        <Border Background="{DynamicResource RavenSecondaryFillBrush}" CornerRadius="4" Padding="10,6" Margin="0,0,8,6"><TextBlock Text="{Binding}" /></Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Classes="card-title" Text="Nexus carriers" />
+                  <TextBlock IsVisible="{Binding HasNoCarriers}" Classes="muted nexus-stat" Text="No carriers are linked to this Nexus." />
+                  <ItemsControl ItemsSource="{Binding Carriers}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ColonizationNexusCarrierRow">
+                        <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,8" Margin="0,0,0,6">
+                          <StackPanel Spacing="4">
+                            <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Name}" TextWrapping="Wrap" />
+                            <WrapPanel>
+                              <TextBlock Text="{Binding Owner}" Margin="0,0,20,4" VerticalAlignment="Center" />
+                              <StackPanel Orientation="Horizontal" IsVisible="{Binding HasLocation}" Spacing="4">
+                                <Button Classes="nexus-icon nexus-copy" behaviors:ClipboardCopyBehavior.Text="{Binding Location}" AutomationProperties.Name="Copy system name"><PathIcon Width="15" Height="17" Data="{StaticResource NexusCopyIcon}" /></Button>
+                                <HyperlinkButton Classes="nexus-link nexus-system-link" Tag="{Binding SystemUri}" Click="OpenRavenLink_Click" ToolTip.Tip="Open system on Raven Colonial"><TextBlock Text="{Binding Location}" /></HyperlinkButton>
+                              </StackPanel>
+                              <TextBlock Text="{Binding Location}" IsVisible="{Binding !HasLocation}" />
+                            </WrapPanel>
+                            <StackPanel Spacing="4">
+                              <TextBlock Classes="nexus-stat" Text="Assigned to:" />
+                              <TextBlock Classes="nexus-stat" Text="None" IsVisible="{Binding HasNoAssignments}" />
+                              <ItemsControl x:Name="NexusCarrierAssignments" ItemsSource="{Binding SystemLinks}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:ColonizationNexusSystemLink">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,2">
+                                      <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
+                                        <Button Classes="nexus-icon nexus-copy" behaviors:ClipboardCopyBehavior.Text="{Binding Name}" AutomationProperties.Name="Copy system name"><PathIcon Width="15" Height="17" Data="{StaticResource NexusCopyIcon}" /></Button>
+                                        <HyperlinkButton Classes="nexus-link nexus-system-link" Tag="{Binding SystemUri}" Click="OpenRavenLink_Click" ToolTip.Tip="Open system on Raven Colonial"><TextBlock Text="{Binding Name}" MaxWidth="320" TextTrimming="CharacterEllipsis" /></HyperlinkButton>
+                                      </StackPanel>
+                                      <ItemsControl Grid.Column="1" ItemsSource="{Binding Builds}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                          <DataTemplate x:DataType="vm:ColonizationNexusBuildRow">
+                                            <Button Classes="nexus-assigned-build" Command="{Binding OpenCommand}" ToolTip.Tip="Open build project report" Padding="8,3" Margin="0,0,8,4" CornerRadius="4"
+                                                    Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenSecondaryFillBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1">
+                                              <TextBlock Text="{Binding Project.BuildName}" MaxWidth="320" TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                          </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                      </ItemsControl>
+                                    </Grid>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </StackPanel>
+                            <TextBlock Classes="muted nexus-stat" Text="{Binding Updated}" />
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                </StackPanel>
+              </Border>
+              <Border Classes="card">
+                <StackPanel Spacing="12">
+                  <TextBlock Classes="card-title" Text="Cargo needs" />
+                  <ComboBox x:Name="NexusScopePicker" ItemsSource="{Binding Scopes}" SelectedItem="{Binding SelectedScope, Mode=TwoWay}"
+                            MaxDropDownHeight="260" HorizontalAlignment="Stretch" AutomationProperties.Name="Nexus system scope">
+                    <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:ColonizationNexusScope"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <TextBlock Classes="muted nexus-stat" Text="Ready cargo uses all Nexus carriers. Each system is estimated independently; All systems counts shared stock once." />
+                  <ContentControl Content="{Binding SelectedScope}" HorizontalContentAlignment="Stretch">
+                    <ContentControl.ContentTemplate>
+                      <DataTemplate x:DataType="vm:ColonizationNexusScope">
+                        <StackPanel Spacing="14">
+                          <TextBlock Classes="nexus-stat" Text="{Binding CargoSummary}" />
+                          <TextBlock Classes="eyebrow" Text="REMAINING COMMODITIES" />
+                          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel MinWidth="570">
+                              <Grid ColumnDefinitions="*,110,110,110" Margin="0,0,0,8">
+                                <TextBlock FontWeight="SemiBold" Text="Commodity" />
+                                <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="Need (t)" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="Ready (t)" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="3" FontWeight="SemiBold" Text="To load (t)" HorizontalAlignment="Right" />
+                              </Grid>
+                              <ItemsControl x:Name="NexusNeeds" ItemsSource="{Binding Needs}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:ColonizationNexusNeedRow">
+                                    <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                      <Grid ColumnDefinitions="*,110,110,110">
+                                        <TextBlock Text="{Binding Commodity}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Required, StringFormat={}{0:N0}}" HorizontalAlignment="Right" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Ready, StringFormat={}{0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenSuccessBrush}" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Missing, StringFormat={}{0:N0}}" HorizontalAlignment="Right" Foreground="{DynamicResource RavenAccentBrush}" />
+                                      </Grid>
+                                    </Border>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </StackPanel>
+                          </ScrollViewer>
+                          <TextBlock Classes="muted nexus-stat" Text="{Binding EmptyNeedsMessage}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                  </ContentControl>
+                </StackPanel>
+              </Border>
+
+            </StackPanel>
+          </DataTemplate>
+        </ContentControl.ContentTemplate>
+      </ContentControl>
+    </StackPanel>
+  </ScrollViewer>
+    <Border x:Name="RemoveNexusSystemPrompt" IsVisible="{Binding IsSystemRemovalVisible}" PropertyChanged="SystemRemovalPrompt_PropertyChanged" KeyboardNavigation.TabNavigation="Cycle" Background="{DynamicResource RavenModalScrimBrush}" Padding="24">
+      <Border Classes="card" MaxWidth="520" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="{DynamicResource RavenWarningBrush}" BorderThickness="2">
+        <StackPanel Spacing="16">
+          <TextBlock Classes="card-title" Text="Remove system from Nexus?" />
+          <TextBlock Text="{Binding SystemRemovalWarning}" TextWrapping="Wrap" />
+          <TextBlock Text="Keep at least one system. Use Delete Nexus to remove the final system." TextWrapping="Wrap" IsVisible="{Binding IsLastSystem}" />
+          <WrapPanel>
+            <Button x:Name="CancelNexusSystemRemoval" Content="Keep system" Command="{Binding CancelSystemRemovalCommand}" Margin="0,0,12,0" />
+            <Button x:Name="ConfirmNexusSystemRemoval" Content="Remove system" Classes="primary" Command="{Binding ConfirmSystemRemovalCommand}" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</UserControl>

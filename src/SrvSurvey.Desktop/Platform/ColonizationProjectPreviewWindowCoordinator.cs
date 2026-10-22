@@ -16,6 +16,7 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
     private bool disposed;
     internal ColonizationWishListWindow? WishListWindow { get; private set; }
     internal ColonizationCarrierManifestWindow? CarrierManifestWindow { get; private set; }
+    internal ColonizationNexusEditorWindow? NexusEditorWindow { get; private set; }
 
     /// <summary>Connects project hyperlinks to the native popout lifetime.</summary>
     public ColonizationProjectPreviewWindowCoordinator(ColonizationViewModel viewModel, Window owner)
@@ -26,11 +27,84 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         viewModel.SetCombinedReportOpener(ShowCombinedReport);
         viewModel.SetWishListOpener(ShowWishList);
         viewModel.SetCarrierManifestOpener(ShowCarrierManifest);
+        viewModel.Nexus.SetCreateOpener(() => ShowNexusEditor(false));
+        viewModel.Nexus.SetEditOpener(() => ShowNexusEditor(true));
+        viewModel.Nexus.SetReportOpener(ShowNexusReport);
+        viewModel.Nexus.ContextChanged += CloseNexusWindows;
+        viewModel.Nexus.NexusDeleted += CloseNexusReports;
         viewModel.PropertyChanged += OnContextChanged;
         owner.Closed += OnOwnerClosed;
     }
 
     internal IReadOnlyCollection<ColonizationProjectPreviewWindow> Windows => windows.Values;
+
+    private void ShowNexusEditor(bool edit)
+    {
+        if (
+            disposed || !(edit ? viewModel.Nexus.EditNexusCommand : viewModel.Nexus.CreateNexusCommand).CanExecute(null)
+        )
+        {
+            return;
+        }
+        if (
+            NexusEditorWindow is { DataContext: ColonizationNexusEditorViewModel model } previous
+            && (model.IsEditing != edit || edit && model.NexusId != viewModel.Nexus.Detail?.Nexus.Id)
+        )
+        {
+            previous.Close();
+        }
+        if (NexusEditorWindow is { } existing)
+        {
+            if (existing.WindowState == WindowState.Minimized)
+            {
+                existing.WindowState = WindowState.Normal;
+            }
+            existing.Activate();
+            return;
+        }
+        NexusEditorWindow = new ColonizationNexusEditorWindow(
+            viewModel.Nexus.CreateEditor(viewModel.LinkedFleetCarriers, edit)
+        );
+        NexusEditorWindow.Closed += OnNexusEditorClosed;
+        NexusEditorWindow.Show(owner);
+    }
+
+    private void CloseNexusWindows()
+    {
+        NexusEditorWindow?.Close();
+        CloseNexusReports(null);
+    }
+
+    private void CloseNexusReports(string? id)
+    {
+        string prefix = id is null ? "nexus:" : $"nexus:{id}:";
+        foreach (
+            ColonizationProjectPreviewWindow window in windows
+                .Where(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+                .Select(pair => pair.Value)
+                .ToArray()
+        )
+        {
+            window.Close();
+        }
+    }
+
+    private void ShowNexusReport(string id, long systemAddress)
+    {
+        if (!disposed && viewModel.IsEnabled)
+        {
+            ShowWindow($"nexus:{id}:{systemAddress}", () => viewModel.CreateNexusReport(id, systemAddress));
+        }
+    }
+
+    private void OnNexusEditorClosed(object? sender, EventArgs args)
+    {
+        if (sender is ColonizationNexusEditorWindow window)
+        {
+            window.Closed -= OnNexusEditorClosed;
+        }
+        NexusEditorWindow = null;
+    }
 
     private async void ShowCarrierManifest()
     {
@@ -148,6 +222,11 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
         viewModel.SetCombinedReportOpener(null);
         viewModel.SetWishListOpener(null);
         viewModel.SetCarrierManifestOpener(null);
+        viewModel.Nexus.SetCreateOpener(null);
+        viewModel.Nexus.SetEditOpener(null);
+        viewModel.Nexus.SetReportOpener(null);
+        viewModel.Nexus.ContextChanged -= CloseNexusWindows;
+        viewModel.Nexus.NexusDeleted -= CloseNexusReports;
         viewModel.PropertyChanged -= OnContextChanged;
         owner.Closed -= OnOwnerClosed;
         CloseAll();
@@ -189,6 +268,7 @@ public sealed class ColonizationProjectPreviewWindowCoordinator : IDisposable
     /// <summary>Uses a snapshot of windows because each Close removes its own dictionary entry.</summary>
     private void CloseAll()
     {
+        CloseNexusWindows();
         CarrierManifestWindow?.Close();
         WishListWindow?.Close();
         foreach (ColonizationProjectPreviewWindow window in windows.Values.ToArray())

@@ -20,7 +20,14 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class ColonizationShoppingPresentationTests
 {
-    private static readonly string[] workspaceTabOrder = ["Projects", "Market Search", "System Editor", "Settings"];
+    private static readonly string[] workspaceTabOrder =
+    [
+        "Projects",
+        "Market Search",
+        "System Editor",
+        "Nexus",
+        "Settings",
+    ];
 
     [AvaloniaTheory]
     [InlineData(1180)]
@@ -357,7 +364,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             await model.SetCommanderAsync(null);
             Assert.Null(model.MarketSearchWorkspace);
             model.SelectedWorkspaceTabIndex = 99;
-            Assert.Equal(3, model.SelectedWorkspaceTabIndex);
+            Assert.Equal(4, model.SelectedWorkspaceTabIndex);
         }
         finally
         {
