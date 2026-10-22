@@ -43,6 +43,26 @@ public sealed partial class X11OverlayWindowManagementTests
             X11OverlayWindowManagement.Raise(X11Native.OverlayWindowOperations, display, 0);
             X11OverlayWindowManagement.Raise(X11Native.OverlayWindowOperations, display, live);
             Assert.Equal(0, ReadAttributes(display, live).MapState);
+
+            X11Native.DisableWindowInput(display, live);
+            X11Native.XWmHints captureHints = ReadWmHints(display, live);
+            Assert.Equal((nint)1, captureHints.Flags & 1);
+            Assert.Equal(0, captureHints.Input);
+
+            var existingHints = new X11Native.XWmHints
+            {
+                Flags = (1 << 1) | (1 << 6),
+                Input = 1,
+                InitialState = 1,
+                WindowGroup = managed,
+            };
+            _ = X11Native.XSetWMHints(display, managed, ref existingHints);
+            X11Native.DisableWindowInput(display, managed);
+            X11Native.XWmHints updatedHints = ReadWmHints(display, managed);
+            Assert.Equal(existingHints.Flags | 1, updatedHints.Flags);
+            Assert.Equal(0, updatedHints.Input);
+            Assert.Equal(existingHints.InitialState, updatedHints.InitialState);
+            Assert.Equal(existingHints.WindowGroup, updatedHints.WindowGroup);
             _ = X11Native.XMapRaised(display, live);
             _ = X11Native.XMapRaised(display, managed);
             Assert.Equal(0, ReadAttributes(display, managed).OverrideRedirect);
@@ -84,6 +104,21 @@ public sealed partial class X11OverlayWindowManagementTests
                 server.Kill();
                 await server.WaitForExitAsync();
             }
+        }
+    }
+
+    /// <summary>Reads the real ICCCM hints, releasing the Xlib allocation after inspection.</summary>
+    private static X11Native.XWmHints ReadWmHints(nint display, nuint window)
+    {
+        nint hints = X11Native.XGetWMHints(display, window);
+        Assert.NotEqual(nint.Zero, hints);
+        try
+        {
+            return Marshal.PtrToStructure<X11Native.XWmHints>(hints);
+        }
+        finally
+        {
+            _ = X11Native.XFree(hints);
         }
     }
 

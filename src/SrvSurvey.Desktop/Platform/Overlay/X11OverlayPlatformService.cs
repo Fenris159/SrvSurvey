@@ -175,6 +175,10 @@ internal sealed class X11OverlayPlatformService
                 {
                     Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
                 }
+                if (window is StreamOverlayWindow)
+                {
+                    X11Native.DisableWindowInput(currentDisplay, unchecked((nuint)handle));
+                }
                 // Wait for this connection's property update before Avalonia shows the window.
                 _ = X11Native.XSync(currentDisplay, 0);
             }

@@ -11,7 +11,8 @@
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
   <UserControl.Styles>
-    <Style Selector="TextBlock.auto-refresh-spinner">
+    <!-- Name matching prevents animation initialization on unrelated labels with other transforms. -->
+    <Style Selector="TextBlock#AutoRefreshSpinner">
       <Style.Animations>
         <Animation Duration="0:0:1" IterationCount="Infinite">
           <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0" /></KeyFrame>
@@ -111,7 +112,7 @@
                       IsEnabled="{Binding Colonization.CanAutoRefresh}"
                       ToolTip.Tip="Fetches project data every 60 seconds to follow team progress. Session only: turns off when SrvSurvey closes or you change commander, and automatically stops after one hour.">
           <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock x:Name="AutoRefreshSpinner" Classes="auto-refresh-spinner"
+            <TextBlock x:Name="AutoRefreshSpinner"
                        Text="⟳" FontSize="16" RenderTransformOrigin="50%,50%"
                        IsVisible="{Binding Colonization.IsAutoRefreshEnabled}">
               <TextBlock.RenderTransform><RotateTransform /></TextBlock.RenderTransform>

@@ -13,6 +13,11 @@ public sealed partial class StreamOverlayWindow : Window
     public StreamOverlayWindow()
     {
         InitializeComponent();
+        if (OperatingSystem.IsLinux())
+        {
+            // KDE's capture picker excludes windows that skip the taskbar.
+            ShowInTaskbar = true;
+        }
     }
 
     /// <summary>Transfers new raster ownership to the capture canvas and disposes the superseded frames.</summary>
