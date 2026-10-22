@@ -71,7 +71,15 @@ public sealed class LegacyProfileImporter
             .ConfigureAwait(false);
         if (sourceInventory.Entries.Count == 0)
         {
-            throw new InvalidDataException($"The selected profile does not contain any files: {source}");
+            string details = string.Join(
+                " | ",
+                warnings.Select(warning => $"{warning.RelativePath}: {warning.Message}")
+            );
+            throw new InvalidDataException(
+                warnings.Count == 0
+                    ? $"The selected profile does not contain any files: {source}"
+                    : $"No source files could be read from {source}. {details}"
+            );
         }
         checkpoint?.Invoke(ProfileImportCheckpoint.AfterSourceScan);
 
@@ -177,6 +185,9 @@ public sealed class LegacyProfileImporter
                 )
                 .ConfigureAwait(false);
 
+            var activatedPaths = importedInventory
+                .Entries.Select(entry => entry.RelativePath)
+                .ToHashSet(StringComparer.Ordinal);
             var manifest = new ProfileImportManifest(
                 ManifestVersion,
                 timestamp,
@@ -189,13 +200,12 @@ public sealed class LegacyProfileImporter
                 destinationInventory.Entries,
                 conflicts,
                 sourceInventory
-                    .Entries.Where(entry =>
-                        !importedInventory.Entries.Any(imported => imported.RelativePath == entry.RelativePath)
-                    )
+                    .Entries.Where(entry => !activatedPaths.Contains(entry.RelativePath))
                     .Select(entry => entry.RelativePath)
                     .ToArray(),
                 warnings.ToArray(),
-                importedInventory.Entries
+                importedInventory.Entries,
+                SourceKind: importSource.Kind
             );
             await File.WriteAllTextAsync(
                     Path.Combine(backupStage, RecoveryReportFileName),
@@ -343,18 +353,49 @@ public sealed class LegacyProfileImporter
         }
     }
 
-    public static bool CanRetryRecovery(string destinationDirectory)
+    public static bool CanRetryRecovery(string destinationDirectory) =>
+        GetRecoveryReportPath(destinationDirectory) is not null;
+
+    public static string? GetRecoveryReportPath(string destinationDirectory)
     {
         try
         {
             ProfileImportManifest? manifest = JsonSerializer.Deserialize<ProfileImportManifest>(
                 File.ReadAllText(Path.Combine(destinationDirectory, ManifestFileName))
             );
-            return manifest?.Warnings?.Count > 0;
+            return
+                manifest?.Warnings?.Count > 0
+                && !string.IsNullOrWhiteSpace(manifest.BackupDirectory)
+                && Path.IsPathFullyQualified(manifest.BackupDirectory)
+                ? Path.Combine(Path.GetFullPath(manifest.BackupDirectory), RecoveryReportFileName)
+                : null;
         }
-        catch (Exception exception) when (ProfileInventory.IsRecoverable(exception) || exception is JsonException)
+        catch (Exception exception)
+            when (ProfileInventory.IsRecoverable(exception) || exception is JsonException or ArgumentException)
         {
-            return false;
+            return null;
+        }
+    }
+
+    public static async Task SaveRecoveryWarningsAsync(
+        ProfileImportResult result,
+        IReadOnlyList<ProfileImportWarning> warnings
+    )
+    {
+        ProfileImportManifest manifest = result.Manifest with { Warnings = warnings };
+        foreach (string directory in new[] { result.DestinationDirectory, result.BackupDirectory })
+        {
+            string target = Path.Combine(directory, ManifestFileName);
+            string temporary = target + $".{Guid.NewGuid():N}.tmp";
+            try
+            {
+                await WriteManifestAsync(temporary, manifest, CancellationToken.None).ConfigureAwait(false);
+                File.Move(temporary, target, overwrite: true);
+            }
+            finally
+            {
+                File.Delete(temporary);
+            }
         }
     }
 
@@ -897,7 +938,8 @@ public sealed record ProfileImportManifest(
     IReadOnlyList<ProfileImportConflict> Conflicts,
     IReadOnlyList<string>? SkippedRelativePaths = null,
     IReadOnlyList<ProfileImportWarning>? Warnings = null,
-    IReadOnlyList<ProfileInventoryEntry>? ActivatedEntries = null
+    IReadOnlyList<ProfileInventoryEntry>? ActivatedEntries = null,
+    ProfileImportSourceKind SourceKind = ProfileImportSourceKind.Legacy
 )
 {
     public IReadOnlyList<ProfileInventoryEntry> GetImportedEntries() =>

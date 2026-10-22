@@ -84,7 +84,17 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
             }
             """
         );
-        await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), """{"PlotBodyInfo":"left:960, top:540"}""");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        await File.WriteAllTextAsync(
+            destination,
+            """{"DesktopBehavior":{"ApplicationWindowPosition":{"Monitor":"bounds:0,0,2560,1440"}}}"""
+        );
+        await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), """{"PlotJumpInfo":"left:100, top:200"}""");
+        new LegacyOverlayLayoutStore(data).SaveImportedPositionReferences(new OverlayPositionReference(1920, 1080));
+        await File.WriteAllTextAsync(
+            Path.Combine(data, "plotters.json"),
+            """{"PlotJumpInfo":"left:100, top:200","PlotBodyInfo":"left:960, top:540"}"""
+        );
 
         CrossPlatformUiSettingsImportResult result = await CrossPlatformUiSettingsImporter.ImportAsync(
             source,
@@ -94,6 +104,7 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
         );
         LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(data).Load();
 
+        Assert.Equal(new OverlayPositionReference(1920, 1080), layout.Placements["PlotJumpInfo"].PositionReference);
         Assert.Equal(1, result.ReferencedOverlayCount);
         Assert.Equal(
             new PixelPoint(640, 360),

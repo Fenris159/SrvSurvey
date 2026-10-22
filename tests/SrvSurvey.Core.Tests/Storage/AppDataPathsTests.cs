@@ -44,14 +44,8 @@ public sealed class AppDataPathsTests
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-external-prefix-tests-{Guid.NewGuid():N}");
         string home = Path.Combine(root, "home");
         string external = Path.Combine(root, "external");
-        string profile = Path.Combine(
-            external,
-            userDirectory,
-            "AppData",
-            "Roaming",
-            "SrvSurvey",
-            "SrvSurvey",
-            "1.1.0.0"
+        string profile = Path.GetFullPath(
+            Path.Combine(external, userDirectory, "AppData", "Roaming", "SrvSurvey", "SrvSurvey", "1.1.0.0")
         );
         Directory.CreateDirectory(profile);
         File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
@@ -83,6 +77,73 @@ public sealed class AppDataPathsTests
         finally
         {
             Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void WineCompatibilityAliasesAppearAsOneProfile()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-alias-prefix-{Guid.NewGuid():N}");
+        string user = Path.Combine(home, ".wine", "drive_c", "users", "cmdr");
+        string roaming = Path.Combine(user, "AppData", "Roaming");
+        string profile = Path.Combine(roaming, "SrvSurvey", "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        Directory.CreateSymbolicLink(Path.Combine(user, "Application Data"), roaming);
+        try
+        {
+            var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, home, string.Empty, string.Empty);
+            Assert.Single(LegacyProfileLocator.Discover(paths.LegacyProfileCandidates));
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
+    [Fact]
+    public void UnrelatedGameDirectoriesCannotConsumeAnotherProfilesDiscoveryBudget()
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-games-prefix-{Guid.NewGuid():N}");
+        string profile = Path.Combine(
+            home,
+            "Games",
+            "SrvSurvey",
+            "drive_c",
+            "users",
+            "cmdr",
+            "AppData",
+            "Roaming",
+            "SrvSurvey",
+            "SrvSurvey",
+            "1.1.0.0"
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        for (int group = 0; group < 65; group++)
+        {
+            for (int leaf = 0; leaf < 65; leaf++)
+            {
+                Directory.CreateDirectory(
+                    Path.Combine(home, "Games", "Unrelated", $"group-{group:D2}", $"leaf-{leaf:D2}")
+                );
+            }
+        }
+        try
+        {
+            var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, home, string.Empty, string.Empty);
+            Assert.Contains(
+                LegacyProfileLocator.Discover(paths.LegacyProfileCandidates),
+                candidate => candidate.Path == profile
+            );
+        }
+        finally
+        {
+            Directory.Delete(home, true);
         }
     }
 

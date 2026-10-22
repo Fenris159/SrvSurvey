@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 
@@ -13,7 +14,7 @@ public static class ProfileJsonMerge
         var merged = (JsonObject)current.DeepClone();
         foreach (KeyValuePair<string, JsonNode?> property in incoming)
         {
-            if (property.Key == "scannedOrganics" && current.ContainsKey("scannedBioEntryIds"))
+            if (KeepCurrentClaims(current, property.Key))
             {
                 continue;
             }
@@ -41,6 +42,10 @@ public static class ProfileJsonMerge
         return merged;
     }
 
+    private static bool KeepCurrentClaims(JsonObject current, string property) =>
+        property == "scannedOrganics" && current.ContainsKey("scannedBioEntryIds")
+        || property == "explRewardsBySystem" && (current.ContainsKey("explRewards") || current.ContainsKey(property));
+
     private static void MergeCompletionSet(JsonArray known, JsonArray discoveries)
     {
         foreach (
@@ -53,20 +58,29 @@ public static class ProfileJsonMerge
         }
     }
 
-    private static JsonNode? MergeCodex(JsonNode? current, JsonObject incoming)
+    private static JsonObject MergeCodex(JsonNode? current, JsonObject incoming)
     {
-        if (current is not JsonObject firsts)
+        var firsts = new JsonObject();
+        if (current is JsonObject existing)
         {
-            return incoming.DeepClone();
+            AddCodexEntries(firsts, existing, preserveValid: false);
         }
-        foreach (KeyValuePair<string, JsonNode?> entry in incoming)
+        AddCodexEntries(firsts, incoming, preserveValid: true);
+        return firsts;
+    }
+
+    private static void AddCodexEntries(JsonObject target, JsonObject source, bool preserveValid)
+    {
+        foreach (KeyValuePair<string, JsonNode?> entry in source)
         {
-            // A discovery is atomic: retain current manual Bingo checks and metadata.
-            if (!CommanderCodexStore.TryParseFirst(firsts[entry.Key], out _))
+            string key = long.TryParse(entry.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id)
+                ? id.ToString(CultureInfo.InvariantCulture)
+                : entry.Key;
+            bool validCurrent = CommanderCodexStore.TryParseFirst(target[key], out _);
+            if (!validCurrent || !preserveValid && CommanderCodexStore.TryParseFirst(entry.Value, out _))
             {
-                firsts[entry.Key] = entry.Value?.DeepClone();
+                target[key] = entry.Value?.DeepClone();
             }
         }
-        return firsts.DeepClone();
     }
 }

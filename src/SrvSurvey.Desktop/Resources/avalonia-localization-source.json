@@ -45130,8 +45130,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
-    "Text": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-    "IsFormat": false,
+    "Text": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -59681,14 +59681,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "The current overlay settings could not be merged and were kept unchanged.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
-  },
-  {
     "Text": "The current route could not be deactivated: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -60295,14 +60287,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "The incoming overlay settings are not a JSON object.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -73533,6 +73517,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
+    "Text": "previous-destination",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
+  },
+  {
     "Text": "prior-scans",
     "IsFormat": false,
     "SourceKinds": [
@@ -73562,7 +73554,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "profile files and retained deletion history",

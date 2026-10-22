@@ -8,8 +8,14 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class CommanderSettingsProfileTests
 {
-    [Fact]
-    public async Task PublishingImportedLayoutsFillsMissingPanelsWithoutReplacingCurrentCommanderPositions()
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task PublishingImportedLayoutsFillsMissingPanelsWithoutReplacingCurrentCommanderPositions(
+        bool sharedAlreadyMatches,
+        bool commented
+    )
     {
         using var temp = new ProfileSyncTestRoot();
         AppDataPaths paths = temp.Paths with { SettingsFrontierId = "F123" };
@@ -19,10 +25,17 @@ public sealed class CommanderSettingsProfileTests
             Path.Combine(source, "plotters.json"),
             """{"PlotJumpInfo":"left:10, top:20","PlotBodyInfo":"left:30, top:40"}"""
         );
+        if (sharedAlreadyMatches)
+        {
+            Directory.CreateDirectory(paths.DataDirectory);
+            File.Copy(Path.Combine(source, "plotters.json"), Path.Combine(paths.DataDirectory, "plotters.json"));
+        }
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"),
-            """{"PlotJumpInfo":"left:100, top:200"}"""
+            commented
+                ? """{/* position */ "PlotJumpInfo":"left:100, top:200",}"""
+                : """{"PlotJumpInfo":"left:100, top:200"}"""
         );
         ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
             new ProfileImportSource(source, ProfileImportSourceKind.CrossPlatform, null),

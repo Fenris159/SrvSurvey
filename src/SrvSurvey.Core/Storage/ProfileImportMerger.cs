@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Storage;
 internal static class ProfileImportMerger
 {
     private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+    private static readonly JsonDocumentOptions DocumentOptions = new()
+    {
+        AllowTrailingCommas = true,
+        CommentHandling = JsonCommentHandling.Skip,
+    };
 
     public static async Task<ProfileInventory> BuildPayloadAsync(
         ProfileInventory incoming,
@@ -23,7 +28,7 @@ internal static class ProfileImportMerger
         var currentDirectories = current.RelativeDirectories.ToHashSet(comparer);
         foreach (
             string directory in incoming.RelativeDirectories.Where(directory =>
-                !HasFileAncestor(directory, currentFiles.Keys, comparer)
+                !HasFileAncestor(directory, currentFiles)
             )
         )
         {
@@ -34,7 +39,7 @@ internal static class ProfileImportMerger
             cancellationToken.ThrowIfCancellationRequested();
             if (
                 currentDirectories.Contains(entry.RelativePath)
-                || HasFileAncestor(entry.RelativePath, currentFiles.Keys, comparer, includeSelf: false)
+                || HasFileAncestor(entry.RelativePath, currentFiles, includeSelf: false)
             )
             {
                 warnings.Add(
@@ -101,19 +106,25 @@ internal static class ProfileImportMerger
 
     private static bool HasFileAncestor(
         string path,
-        IEnumerable<string> files,
-        StringComparer comparer,
+        Dictionary<string, ProfileInventoryEntry> files,
         bool includeSelf = true
-    ) =>
-        files.Any(file =>
-            includeSelf && comparer.Equals(file, path)
-            || path.StartsWith(
-                file + "/",
-                comparer == StringComparer.OrdinalIgnoreCase
-                    ? StringComparison.OrdinalIgnoreCase
-                    : StringComparison.Ordinal
-            )
-        );
+    )
+    {
+        if (includeSelf && files.ContainsKey(path))
+        {
+            return true;
+        }
+        int separator = path.LastIndexOf('/');
+        while (separator >= 0)
+        {
+            if (files.ContainsKey(path[..separator]))
+            {
+                return true;
+            }
+            separator = path.LastIndexOf('/', separator - 1);
+        }
+        return false;
+    }
 
     private static async Task<byte[]?> MergeFileAsync(
         string sourcePath,
@@ -132,8 +143,8 @@ internal static class ProfileImportMerger
             byte[] sourceBytes = await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false);
             byte[] currentBytes = await File.ReadAllBytesAsync(currentPath, cancellationToken).ConfigureAwait(false);
             if (
-                JsonNode.Parse(currentBytes) is not JsonObject current
-                || JsonNode.Parse(sourceBytes) is not JsonObject incoming
+                JsonNode.Parse(currentBytes, documentOptions: DocumentOptions) is not JsonObject current
+                || JsonNode.Parse(sourceBytes, documentOptions: DocumentOptions) is not JsonObject incoming
             )
             {
                 throw new InvalidDataException("Only JSON objects can be merged safely.");
@@ -147,7 +158,7 @@ internal static class ProfileImportMerger
                 ? sourceBytes
                 : JsonSerializer.SerializeToUtf8Bytes(merged, IndentedJson);
         }
-        catch (Exception exception) when (exception is JsonException or InvalidDataException)
+        catch (Exception exception) when (exception is JsonException or InvalidDataException or ArgumentException)
         {
             warnings.Add(
                 new ProfileImportWarning(

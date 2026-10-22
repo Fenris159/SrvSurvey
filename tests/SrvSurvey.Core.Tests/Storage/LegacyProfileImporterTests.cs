@@ -59,6 +59,100 @@ public sealed class LegacyProfileImporterTests : IDisposable
         );
     }
 
+    [Theory]
+    [InlineData("02310101")]
+    [InlineData("+2310101")]
+    [InlineData(" 2310101 ")]
+    public async Task NumericCodexAliasesCannotReplaceCurrentBingoMetadata(string alias)
+    {
+        string source = Path.Combine(temporaryDirectory, "alias-source");
+        string destination = Path.Combine(temporaryDirectory, "alias-destination");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "F123-codex.json"),
+            """{"codexFirsts":{"2310101":"2026-10-20T12:00:00_-1_-1"}}"""
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F123-codex.json"),
+            "{\"codexFirsts\":{\"" + alias + "\":\"2022-10-20T12:00:00_42_1\"}}"
+        );
+
+        await new LegacyProfileImporter().ImportAsync(source, destination, Path.Combine(temporaryDirectory, "backups"));
+
+        CommanderCodexData data = (await new CommanderCodexStore(destination).LoadAsync("F123", null)).Data!;
+        Assert.Equal(-1, Assert.Single(data.Firsts).Value.SystemAddress);
+    }
+
+    [Theory]
+    [InlineData("F456-codex.json", "{\"codexFirsts\":{\"2310101\":null,\"2310101\":null}}")]
+    [InlineData("F456-live.json", "{\"history\":[{\"one\":1,\"one\":2}]}")]
+    public async Task DuplicatePropertiesWarnWithoutDiscardingOtherRecoveredData(string name, string damaged)
+    {
+        string source = Path.Combine(temporaryDirectory, "duplicate-source");
+        string destination = Path.Combine(temporaryDirectory, "duplicate-destination");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(source, name), damaged);
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        Assert.True(File.Exists(Path.Combine(destination, "F123-live.json")));
+        Assert.False(File.Exists(Path.Combine(destination, name)));
+        Assert.Contains(result.Warnings, warning => warning.RelativePath == name);
+        Assert.Equal(damaged, await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", name)));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("relative-backup")]
+    [InlineData("/broken\0backup")]
+    public async Task DamagedRecoveryMetadataCannotInterruptStartup(string? backupDirectory)
+    {
+        string source = Path.Combine(temporaryDirectory, "metadata-source");
+        string destination = Path.Combine(temporaryDirectory, "metadata-destination");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+        string path = Path.Combine(destination, LegacyProfileImporter.ManifestFileName);
+        ProfileImportManifest damaged = result.Manifest with
+        {
+            BackupDirectory = backupDirectory!,
+            Warnings = [new ProfileImportWarning("settings.json", "incompatible")],
+        };
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(damaged));
+        Assert.False(LegacyProfileImporter.CanRetryRecovery(destination));
+        Assert.Null(LegacyProfileImporter.GetRecoveryReportPath(destination));
+    }
+
+    [Fact]
+    public async Task WhollyLockedProfilesReportTheInaccessibleFileInsteadOfAnEmptyProfile()
+    {
+        string source = Path.Combine(temporaryDirectory, "locked-source");
+        Directory.CreateDirectory(source);
+        string file = Path.Combine(source, "F123-live.json");
+        await File.WriteAllTextAsync(file, "{}");
+        await using var locked = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        InvalidDataException error = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new LegacyProfileImporter().ImportAsync(
+                source,
+                Path.Combine(temporaryDirectory, "destination"),
+                Path.Combine(temporaryDirectory, "backups")
+            )
+        );
+        Assert.Contains("F123-live.json", error.Message);
+        Assert.DoesNotContain("does not contain any files", error.Message);
+    }
+
     [Fact]
     public async Task PlayerMergeKeepsCurrentTotalsAndClaimsWhileAddingMissingHistory()
     {
@@ -83,7 +177,8 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Assert.Empty(player["scannedBioEntryIds"]!.AsArray());
         Assert.Null(player["scannedOrganics"]);
         Assert.Equal(200, player["explRewardsBySystem"]!["Sol"]!.GetValue<int>());
-        Assert.Equal(50, player["explRewardsBySystem"]!["Achenar"]!.GetValue<int>());
+        Assert.Null(player["explRewardsBySystem"]!["Achenar"]);
+        Assert.Single(player["explRewardsBySystem"]!.AsObject());
         Assert.Equal(2, player["decodeTheRuins"]!.AsArray().Count);
         Assert.Equal("C2", player["decodeTheRuins"]![1]!.GetValue<string>());
         Assert.Equal("older-key", player["rccApiKey"]!.GetValue<string>());

@@ -2283,11 +2283,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     )
     {
         var warnings = result.Warnings.ToList();
+        IReadOnlySet<string> importedOverlayNames = new HashSet<string>(StringComparer.Ordinal);
         await TryProfileImportStepAsync(
             "overlays",
             () =>
             {
-                CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
+                importedOverlayNames = CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
                 return Task.CompletedTask;
             },
             warnings
@@ -2305,6 +2306,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                         AppDataPaths.UiSettingsPath,
                         result.BackupDirectory,
                         AppDataPaths.OverlaySettingsDirectory,
+                        importedOverlayNames,
                         CancellationToken.None
                     );
                     settingsStatus = settings.Imported
@@ -2425,6 +2427,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ),
                 CancellationToken.None
             );
+            await LegacyProfileImporter.SaveRecoveryWarningsAsync(result, warnings);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -2532,7 +2535,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
         if (HasCompletedLegacyImport && canRetryProfileRecovery)
         {
-            return "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.";
+            return "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. "
+                + $"Full report: {LegacyProfileImporter.GetRecoveryReportPath(AppDataPaths.DataDirectory)}";
         }
 
         if (HasCompletedLegacyImport)

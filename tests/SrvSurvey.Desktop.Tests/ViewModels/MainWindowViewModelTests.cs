@@ -2114,6 +2114,13 @@ public sealed class MainWindowViewModelTests
 
             await viewModel.ImportLegacyProfileAsync();
 
+            Assert.True(LegacyProfileImporter.CanRetryRecovery(paths.DataDirectory));
+            await using MainWindowViewModel nextStart = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            Assert.Contains("warning", nextStart.ProfileStatusMessage, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(LegacyProfileImporter.RecoveryReportFileName, nextStart.ProfileStatusMessage);
             Assert.True(restarted, viewModel.ProfileStatusMessage);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.Contains("Warning", viewModel.ProfileStatusMessage, StringComparison.OrdinalIgnoreCase);

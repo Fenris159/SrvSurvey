@@ -122,22 +122,33 @@ internal static class CommanderSettingsProfile
     }
 
     /// <summary>Publishes imported layout files as a recoverable generation under source and destination leases.</summary>
-    public static void PublishImportedOverlays(AppDataPaths paths, ProfileImportResult result)
+    public static IReadOnlySet<string> PublishImportedOverlays(AppDataPaths paths, ProfileImportResult result)
     {
-        if (Path.GetFullPath(paths.DataDirectory) == Path.GetFullPath(paths.OverlaySettingsDirectory))
-        {
-            return;
-        }
-
         using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
             OverlayFiles.SelectMany(file =>
                 new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
             )
         );
-        var importedFiles = result
-            .Manifest.GetImportedEntries()
+        bool capturedSource =
+            result.Manifest.Version >= 4 && result.Manifest.SourceKind == ProfileImportSourceKind.CrossPlatform;
+        string sourceDirectory = capturedSource ? Path.Combine(result.BackupDirectory, "profile") : paths.DataDirectory;
+        var importedFiles = (capturedSource ? result.Manifest.Entries : result.Manifest.GetImportedEntries())
             .Select(entry => entry.RelativePath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        bool shared = Path.GetFullPath(paths.DataDirectory) == Path.GetFullPath(paths.OverlaySettingsDirectory);
+        string previousDirectory = shared
+            ? Path.Combine(result.BackupDirectory, "previous-destination")
+            : paths.OverlaySettingsDirectory;
+        IReadOnlySet<string> addedPanels = importedFiles.Contains("plotters.json")
+            ? FindAddedPanels(
+                Path.Combine(sourceDirectory, "plotters.json"),
+                Path.Combine(previousDirectory, "plotters.json")
+            )
+            : new HashSet<string>(StringComparer.Ordinal);
+        if (shared)
+        {
+            return addedPanels;
+        }
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
         using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
             paths.OverlaySettingsDirectory
@@ -149,27 +160,12 @@ internal static class CommanderSettingsProfile
                 continue;
             }
 
-            string source = Path.Combine(paths.DataDirectory, fileName);
+            string source = Path.Combine(sourceDirectory, fileName);
             string target = Path.Combine(paths.OverlaySettingsDirectory, fileName);
             string temporaryPath = target + $".{Guid.NewGuid():N}.tmp";
             try
             {
-                if (result.Manifest.Version >= 4 && File.Exists(target))
-                {
-                    JsonObject current =
-                        JsonNode.Parse(File.ReadAllText(target)) as JsonObject
-                        ?? throw new InvalidDataException(
-                            "The current overlay settings could not be merged and were kept unchanged."
-                        );
-                    JsonObject incoming =
-                        JsonNode.Parse(File.ReadAllText(source)) as JsonObject
-                        ?? throw new InvalidDataException("The incoming overlay settings are not a JSON object.");
-                    File.WriteAllText(temporaryPath, ProfileJsonMerge.MergeMissing(current, incoming).ToJsonString());
-                }
-                else
-                {
-                    File.Copy(source, temporaryPath);
-                }
+                StageImportedOverlay(source, target, temporaryPath, result.Manifest.Version >= 4, addedPanels);
                 File.Move(temporaryPath, target, overwrite: true);
             }
             finally
@@ -181,6 +177,44 @@ internal static class CommanderSettingsProfile
             }
         }
         transaction.Commit();
+        return addedPanels;
+    }
+
+    private static void StageImportedOverlay(
+        string source,
+        string target,
+        string staged,
+        bool merge,
+        IReadOnlySet<string> addedPanels
+    )
+    {
+        if (!merge)
+        {
+            File.Copy(source, staged);
+            return;
+        }
+        JsonObject current = File.Exists(target) ? LegacyOverlayLayoutStore.ParseObject(target) : [];
+        JsonObject incoming = LegacyOverlayLayoutStore.ParseObject(source);
+        if (Path.GetFileName(target) == "overlay-position-references.json")
+        {
+            foreach (
+                string key in incoming.Select(entry => entry.Key).Where(key => !addedPanels.Contains(key)).ToArray()
+            )
+            {
+                incoming.Remove(key);
+            }
+        }
+        File.WriteAllText(staged, ProfileJsonMerge.MergeMissing(current, incoming).ToJsonString());
+    }
+
+    private static HashSet<string> FindAddedPanels(string source, string current)
+    {
+        JsonObject incoming = LegacyOverlayLayoutStore.ParseObject(source);
+        JsonObject existing = File.Exists(current) ? LegacyOverlayLayoutStore.ParseObject(current) : [];
+        return incoming
+            .Select(entry => entry.Key)
+            .Where(key => !existing.ContainsKey(key))
+            .ToHashSet(StringComparer.Ordinal);
     }
 
     private static DateTime LatestJournalWriteTime(string directory)

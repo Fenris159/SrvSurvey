@@ -66,9 +66,11 @@ successful file copy. The fixtures use synthetic player names and keys.
 
 Imports add missing data and retain current values. Global and regional Codex
 ledgers union discoveries by entry ID. Valid current records, including manual
-Bingo checks and their location/time metadata, win duplicate IDs. An incoming
+Bingo checks and their location/time metadata, win duplicate numeric IDs, including noncanonical JSON-key aliases. An incoming
 valid record can repair an invalid current entry. Current player totals and
-scalars remain unchanged; nested maps gain missing keys. Permanent Ram Tah
+scalars remain unchanged; the unsold exploration ledger stays with its current
+total so older imports cannot resurrect sold systems. Nested history maps gain
+missing keys. Permanent Ram Tah
 completion sets gain missing entries. Current arrays and explicit null values
 are retained by default, including empty unsold-claim lists: importing older
 claims must not resurrect a sale already completed in XP. Retired
@@ -83,7 +85,8 @@ collisions retain the current file; both originals remain recoverable.
 Source scanning and capture recover readable files individually. Locked,
 inaccessible, changing, linked, or incompatible files produce path-specific
 warnings; one failure does not discard other recovered player/Codex data.
-Malformed player/Codex files are backed up but excluded from activation. Valid
+Malformed player/Codex files, including duplicate JSON properties, are backed up
+but excluded from activation. Valid
 entries in a partially malformed Codex ledger remain usable. Other unknown or
 malformed JSON files are retained without conversion when no current version
 would be replaced. A failed settings conversion still activates usable player
@@ -103,7 +106,8 @@ remain unchanged through activation. Destination write/activation errors retain
 the captured recovery backup and preserve or roll back the current profile.
 The exception and Settings message identify its location. Successfully recovered
 data is kept even when some inputs fail, and `.srv-survey-recovery.json` records
-warning details. Repeated imports are permitted and preserve progress made since
+warning details. Optional-step warnings are also persisted in the destination
+manifest so they and the report location remain visible after restart. Repeated imports are permitted and preserve progress made since
 the previous import; warning-producing imports offer a recovery retry.
 
 ## Operational limits

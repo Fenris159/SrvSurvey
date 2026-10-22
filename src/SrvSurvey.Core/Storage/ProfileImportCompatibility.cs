@@ -61,6 +61,10 @@ internal static class ProfileImportCompatibility
             {
                 throw new InvalidDataException("The player or Codex file must contain a JSON object.");
             }
+            if (player || codex)
+            {
+                ValidateUniqueProperties(document.RootElement);
+            }
             if (codex)
             {
                 return await CheckCodexAsync(
@@ -84,6 +88,29 @@ internal static class ProfileImportCompatibility
                     : "Preserved the file without conversion; its JSON could not be read. ";
             warnings.Add(new ProfileImportWarning(relativePath, disposition + exception.Message));
             return !player && !codex;
+        }
+    }
+
+    private static void ValidateUniqueProperties(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (JsonProperty property in element.EnumerateObject())
+            {
+                if (!names.Add(property.Name))
+                {
+                    throw new InvalidDataException($"Duplicate JSON property '{property.Name}'.");
+                }
+                ValidateUniqueProperties(property.Value);
+            }
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                ValidateUniqueProperties(item);
+            }
         }
     }
 

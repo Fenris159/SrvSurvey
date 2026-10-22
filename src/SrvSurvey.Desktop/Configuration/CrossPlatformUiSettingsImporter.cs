@@ -16,6 +16,7 @@ public static class CrossPlatformUiSettingsImporter
         string destinationPath,
         string backupDirectory,
         string? overlayDataDirectory = null,
+        IReadOnlySet<string>? importedOverlayNames = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -32,6 +33,7 @@ public static class CrossPlatformUiSettingsImporter
 
         byte[] importedBytes = await File.ReadAllBytesAsync(source, cancellationToken).ConfigureAwait(false);
         ValidateSettings(importedBytes);
+        byte[] sourceBytes = importedBytes;
 
         string destinationDirectory =
             Path.GetDirectoryName(destination)
@@ -71,13 +73,13 @@ public static class CrossPlatformUiSettingsImporter
             int referencedOverlayCount = 0;
             if (
                 !string.IsNullOrWhiteSpace(overlayDataDirectory)
-                && TryReadOverlayPositionReference(importedBytes, out OverlayPositionReference? reference)
+                && TryReadOverlayPositionReference(sourceBytes, out OverlayPositionReference? reference)
                 && reference is not null
             )
             {
                 referencedOverlayCount = new LegacyOverlayLayoutStore(
                     overlayDataDirectory
-                ).SaveImportedPositionReferences(reference);
+                ).SaveImportedPositionReferences(reference, importedOverlayNames);
             }
 
             await WriteCompletionSignalAsync(backupDirectory, importedBytes, cancellationToken).ConfigureAwait(false);

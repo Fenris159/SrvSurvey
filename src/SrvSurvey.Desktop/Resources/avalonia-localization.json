@@ -22497,8 +22497,8 @@
       "translation": "Overlay-Deckkraft in „{0}“ wiederhergestellt; Original unter „{1}“ aufbewahrt."
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "Die wiederhergestellten Profildaten sind verfügbar. Beim vorherigen Import wurden Warnungen gemeldet. Wählen Sie einen Profilordner, um die Wiederherstellung erneut zu versuchen."
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Die wiederhergestellten Profildaten sind verfügbar. Beim vorherigen Import wurden Warnungen gemeldet. Wählen Sie einen Profilordner, um die Wiederherstellung erneut zu versuchen. Vollständiger Bericht: {0}"
     },
     {
       "source": "Red",
@@ -29753,10 +29753,6 @@
       "translation": "Der aktuelle Obelisk-Scanstatus konnte nicht gespeichert werden: {0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "Die aktuellen Overlay-Einstellungen konnten nicht zusammengeführt werden und wurden unverändert beibehalten."
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "Die aktuelle Route konnte nicht deaktiviert werden: {0}"
     },
@@ -30059,10 +30055,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "Die In-Game-Palette ist unabhängig vom Hell/Dunkel-Thema der Anwendung."
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "Die eingehenden Overlay-Einstellungen sind kein JSON-Objekt."
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -36671,6 +36663,10 @@
     {
       "source": "preview",
       "translation": "Vorschau"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "vorheriges Ziel"
     },
     {
       "source": "prior-scans",
@@ -61535,8 +61531,8 @@
       "translation": "Opacidad de superposición recuperada en '{0}'; original conservado en '{1}'."
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "Los datos de perfil recuperados están disponibles. La importación anterior informó advertencias; elija una carpeta de perfil para volver a intentar la recuperación."
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Los datos de perfil recuperados están disponibles. La importación anterior informó advertencias; elija una carpeta de perfil para volver a intentar la recuperación. Informe completo: {0}"
     },
     {
       "source": "Red",
@@ -68791,10 +68787,6 @@
       "translation": "No se pudo guardar el estado actual del escaneo del obelisco: {0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "La configuración de superposición actual no se pudo fusionar y se mantuvo sin cambios."
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "La ruta actual no se pudo desactivar: {0}"
     },
@@ -69097,10 +69089,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "La paleta del juego es independiente del tema claro/oscuro de la aplicación."
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "La configuración de superposición entrante no es un objeto JSON."
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -75709,6 +75697,10 @@
     {
       "source": "preview",
       "translation": "avance"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "destino-anterior"
     },
     {
       "source": "prior-scans",
@@ -100573,8 +100565,8 @@
       "translation": "Opacité de superposition récupérée dans « {0} » ; original conservé à '{1}'."
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "Les données de profil récupérées sont disponibles. L'importation précédente a signalé des avertissements ; choisissez un dossier de profil pour réessayer la récupération."
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Les données de profil récupérées sont disponibles. L'importation précédente a signalé des avertissements ; choisissez un dossier de profil pour réessayer la récupération. Rapport complet : {0}"
     },
     {
       "source": "Red",
@@ -107829,10 +107821,6 @@
       "translation": "L'état actuel de l'analyse de l'obélisque n'a pas pu être enregistré : {0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "Les paramètres de superposition actuels n'ont pas pu être fusionnés et sont restés inchangés."
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "L'itinéraire actuel n'a pas pu être désactivé : {0}"
     },
@@ -108135,10 +108123,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "La palette du jeu est indépendante du thème clair/sombre de l'application."
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "Les paramètres de superposition entrants ne sont pas un objet JSON."
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -114747,6 +114731,10 @@
     {
       "source": "preview",
       "translation": "aperçu"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "destination précédente"
     },
     {
       "source": "prior-scans",
@@ -139611,8 +139599,8 @@
       "translation": "Opacidade de sobreposição recuperada em '{0}'; original retido em '{1}'."
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "Os dados do perfil recuperado estão disponíveis. A importação anterior relatou avisos; escolha uma pasta de perfil para tentar novamente a recuperação."
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Os dados do perfil recuperado estão disponíveis. A importação anterior relatou avisos; escolha uma pasta de perfil para tentar novamente a recuperação. Relatório completo: {0}"
     },
     {
       "source": "Red",
@@ -146867,10 +146855,6 @@
       "translation": "O estado atual da varredura do obelisco não pôde ser salvo: {0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "As configurações atuais de sobreposição não puderam ser mescladas e foram mantidas inalteradas."
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "A rota atual não pôde ser desativada: {0}"
     },
@@ -147173,10 +147157,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "A paleta do jogo é independente do tema claro/escuro do aplicativo."
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "As configurações de sobreposição de entrada não são um objeto JSON."
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -153785,6 +153765,10 @@
     {
       "source": "preview",
       "translation": "visualização"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "destino anterior"
     },
     {
       "source": "prior-scans",
@@ -178649,8 +178633,8 @@
       "translation": "Восстановлена ​​непрозрачность наложения в «{0}»; оригинал сохранен под номером «{1}»."
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "Восстановленные данные профиля доступны. Предыдущий импорт сообщил о предупреждениях; выберите папку профиля, чтобы повторить попытку восстановления."
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Восстановленные данные профиля доступны. Предыдущий импорт сообщил о предупреждениях; выберите папку профиля, чтобы повторить попытку восстановления. Полный отчет: {0}"
     },
     {
       "source": "Red",
@@ -185905,10 +185889,6 @@
       "translation": "Невозможно сохранить текущее состояние сканирования обелиска: {0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "Текущие настройки наложения не удалось объединить, и они остались без изменений."
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "Текущий маршрут не может быть деактивирован: {0}"
     },
@@ -186211,10 +186191,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "Внутриигровая палитра не зависит от светлой/темной темы приложения."
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "Параметры входящего наложения не являются объектом JSON."
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -192823,6 +192799,10 @@
     {
       "source": "preview",
       "translation": "предварительный просмотр"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "предыдущий пункт назначения"
     },
     {
       "source": "prior-scans",
@@ -217687,8 +217667,8 @@
       "translation": "恢复“{0}”中的覆盖不透明度；原始保留在“{1}”。"
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "恢复的配置文件数据可用。之前的导入报告了警告；选择一个配置文件文件夹以重试恢复。"
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "恢复的配置文件数据可用。之前的导入报告了警告；选择一个配置文件文件夹以重试恢复。完整报告：{0}"
     },
     {
       "source": "Red",
@@ -224943,10 +224923,6 @@
       "translation": "无法保存当前方尖碑扫描状态：{0}"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "当前的叠加设置无法合并并保持不变。"
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "无法停用当前路线：{0}"
     },
@@ -225249,10 +225225,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "游戏内调色板独立于应用程序的浅色/深色主题。"
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "传入的覆盖设置不是 JSON 对象。"
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -231861,6 +231833,10 @@
     {
       "source": "preview",
       "translation": "预览"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "先前目的地"
     },
     {
       "source": "prior-scans",
@@ -256725,8 +256701,8 @@
       "translation": "* RECOVERED OVERLAY OPACITY IN '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
     },
     {
-      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery.",
-      "translation": "* RECOVERED PROFILE DATA IS AVAILABLE. THE PREVIOUS IMPORT REPORTED WARNINGS; CHOOSE A PROFILE FOLDER TO RETRY RECOVERY. >>>!"
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "* RECOVERED PROFILE DATA IS AVAILABLE. THE PREVIOUS IMPORT REPORTED WARNINGS; CHOOSE A PROFILE FOLDER TO RETRY RECOVERY. FULL REPORT: {0} >>>!"
     },
     {
       "source": "Red",
@@ -263981,10 +263957,6 @@
       "translation": "* THE CURRENT OBELISK SCAN STATE COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "The current overlay settings could not be merged and were kept unchanged.",
-      "translation": "* THE CURRENT OVERLAY SETTINGS COULD NOT BE MERGED AND WERE KEPT UNCHANGED. >>>!"
-    },
-    {
       "source": "The current route could not be deactivated: {0}",
       "translation": "* THE CURRENT ROUTE COULD NOT BE DEACTIVATED: {0} >>>!"
     },
@@ -264287,10 +264259,6 @@
     {
       "source": "The in-game palette is independent from the application light/dark theme.",
       "translation": "* THE IN-GAME PALETTE IS INDEPENDENT FROM THE APPLICATION LIGHT/DARK THEME. >>>!"
-    },
-    {
-      "source": "The incoming overlay settings are not a JSON object.",
-      "translation": "* THE INCOMING OVERLAY SETTINGS ARE NOT A JSON OBJECT. >>>!"
     },
     {
       "source": "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
@@ -270899,6 +270867,10 @@
     {
       "source": "preview",
       "translation": "* PREVIEW >>>!"
+    },
+    {
+      "source": "previous-destination",
+      "translation": "* PREVIOUS-DESTINATION >>>!"
     },
     {
       "source": "prior-scans",

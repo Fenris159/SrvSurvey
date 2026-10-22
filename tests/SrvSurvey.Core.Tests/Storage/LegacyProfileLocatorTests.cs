@@ -41,6 +41,23 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         Assert.Equal(ProfileImportSourceKind.Legacy, result.Kind);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void XpLayoutsWithoutPlayerFilesRemainCrossPlatformSources(bool selectParent)
+    {
+        string root = Path.Combine(temporaryDirectory, "xp-layout-only");
+        string data = Path.Combine(root, "cross-platform");
+        Directory.CreateDirectory(data);
+        File.WriteAllText(Path.Combine(data, "plotters.json"), "{}");
+        string ui = Path.Combine(root, "cross-platform-ui.json");
+        File.WriteAllText(ui, "{}");
+        ProfileImportSource source = LegacyProfileLocator.ResolveManualSelectionSource(selectParent ? root : data);
+        Assert.Equal(ProfileImportSourceKind.CrossPlatform, source.Kind);
+        Assert.Equal(data, source.DataDirectory);
+        Assert.Equal(ui, source.UiSettingsPath);
+    }
+
     [Fact]
     public void DiscoverReturnsOnlyExistingProfilesWithoutChangingThem()
     {

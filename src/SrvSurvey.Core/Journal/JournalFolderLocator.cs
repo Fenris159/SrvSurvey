@@ -259,7 +259,13 @@ public static class JournalFolderLocator
         );
     }
 
-    private static void DiscoverGamePrefixJournalDirectories(string gamesRoot, Action<string> addCandidate)
+    private static void DiscoverGamePrefixJournalDirectories(string gamesRoot, Action<string> addCandidate) =>
+        DiscoverGamePrefixDirectories(
+            gamesRoot,
+            (prefix, depth) => DiscoverJournalDirectories(prefix, depth, addCandidate)
+        );
+
+    private static void DiscoverGamePrefixDirectories(string gamesRoot, Action<string, int> discover)
     {
         if (!Directory.Exists(gamesRoot))
         {
@@ -275,7 +281,7 @@ public static class JournalFolderLocator
                     FileAttributes attributes = File.GetAttributes(prefix);
                     if ((attributes & FileAttributes.ReparsePoint) == 0)
                     {
-                        DiscoverJournalDirectories(prefix, maximumDepth: 5, addCandidate);
+                        discover(prefix, 5);
                     }
                 }
                 catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -301,7 +307,10 @@ public static class JournalFolderLocator
         {
             DiscoverWineUserDirectories(root.Path, root.MaximumDepth, path => users.Add(path));
         }
-        DiscoverWineUserDirectories(Path.Combine(home, "Games"), 6, path => users.Add(path));
+        DiscoverGamePrefixDirectories(
+            Path.Combine(home, "Games"),
+            (prefix, depth) => DiscoverWineUserDirectories(prefix, depth, path => users.Add(path))
+        );
         foreach (string prefix in ReadHeroicPrefixes(home).Concat(ReadLutrisPrefixes(home)))
         {
             DiscoverWineUserDirectories(prefix, 2, path => users.Add(path));

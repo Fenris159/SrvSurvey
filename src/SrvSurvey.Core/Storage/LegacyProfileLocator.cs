@@ -20,7 +20,7 @@ public static class LegacyProfileLocator
         foreach (LegacyProfileCandidate? candidate in candidates.SelectMany(ExpandVersionCandidates))
         {
             string path = Path.GetFullPath(candidate.Path);
-            if (!seenPaths.Add(path) || !ContainsProfileData(path))
+            if (!seenPaths.Add(GetPhysicalDirectory(path)) || !ContainsProfileData(path))
             {
                 continue;
             }
@@ -122,7 +122,7 @@ public static class LegacyProfileLocator
     {
         if (
             string.Equals(Path.GetFileName(selected), CrossPlatformDirectoryName, StringComparison.OrdinalIgnoreCase)
-            && ContainsProfileData(selected)
+            && ContainsCrossPlatformData(selected)
         )
         {
             return selected;
@@ -139,7 +139,7 @@ public static class LegacyProfileLocator
                 Path.TrimEndingDirectorySeparator(Path.GetFullPath(currentDataDirectory)),
                 comparison
             );
-        return !isCurrentProfile && ContainsProfileData(nested) ? Path.GetFullPath(nested) : null;
+        return !isCurrentProfile && ContainsCrossPlatformData(nested) ? Path.GetFullPath(nested) : null;
     }
 
     private static string? FindNewestVersionProfile(string parent)
@@ -166,6 +166,38 @@ public static class LegacyProfileLocator
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return null;
+        }
+    }
+
+    private static bool ContainsCrossPlatformData(string path) =>
+        ContainsProfileData(path) || File.Exists(Path.Combine(path, "plotters.json"));
+
+    private static string GetPhysicalDirectory(string path)
+    {
+        string physical = Path.GetPathRoot(path)!;
+        try
+        {
+            foreach (
+                string segment in path[physical.Length..]
+                    .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)
+            )
+            {
+                physical = Path.Combine(physical, segment);
+                if (!Directory.Exists(physical))
+                {
+                    return path;
+                }
+                var directory = new DirectoryInfo(physical);
+                if ((directory.Attributes & FileAttributes.ReparsePoint) != 0)
+                {
+                    physical = directory.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? physical;
+                }
+            }
+            return physical;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return path;
         }
     }
 
