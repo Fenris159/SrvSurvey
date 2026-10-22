@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Storage;
@@ -12,6 +13,209 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-profile-importer-tests-{Guid.NewGuid():N}"
     );
+
+    // Synthetic values follow upstream 1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc's
+    // CommanderSettings, CommanderCodex/CodexFirst, and CommanderJourney writers.
+    [Fact]
+    public async Task UpstreamPlayerAndCodexDataRemainReadableAfterImport()
+    {
+        string root = Path.Combine(temporaryDirectory, "upstream", "SrvSurvey");
+        string source = Path.Combine(root, "SrvSurvey", "1.1.0.0");
+        string destination = Path.Combine(temporaryDirectory, "xp");
+        Directory.CreateDirectory(Path.Combine(source, "journey", "F123"));
+        const string player = """
+            {
+              "fid":"F123", "commander":"Original Commander", "isOdyssey":true,
+              "currentSystem":"Sol", "currentSystemAddress":10477373803,
+              "explRewards":1234567890, "distanceTravelled":123.5,
+              "countJumps":100, "countScans":200, "countDSS":30, "countLanded":40,
+              "explRewardsBySystem":{"Sol":1234567890},
+              "organicRewards":5000000, "lastOrganicScan":"$Codex_Ent_Aleoids_01_Name;",
+              "scanOne":{"location":{"lat":12.5,"long":-45.25},"radius":150,
+                "genus":"$Codex_Ent_Aleoids_Genus_Name;","species":"$Codex_Ent_Aleoids_01_Name;",
+                "status":"Active","entryId":2310101,"body":"Sol 1"},
+              "scannedBioEntryIds":["10477373803_1_2310101_1000000_True"],
+              "sphereLimit":{"active":true,"centerSystemName":"Sol","centerStarPos":[0,0,0],"radius":100},
+              "decodeTheRuinsMissionActive":"Active", "decodeTheRuins":["B1"],
+              "activeJourney":"2026-08-01T000000", "rccApiKey":"synthetic-raven-key"
+            }
+            """;
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), player);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F123-legacy.json"),
+            """{"fid":"F123","commander":"Original Commander","isOdyssey":false,"explRewards":42}"""
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F456-live.json"),
+            """{"fid":"F456","commander":"Second Commander","isOdyssey":true}"""
+        );
+        const string codex = """
+            {"fid":"F123","commander":"Original Commander","codexFirsts":{
+              "2310101":"2022-08-31T05:38:57_9007199254740993_11",
+              "2310206":"2023-01-01T12:00:00_-1_-1"}}
+            """;
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-codex.json"), codex);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F123-codex-18.json"),
+            codex.Replace(
+                "\"codexFirsts\"",
+                "\"region\":\"Inner Orion Spur\",\"codexFirsts\"",
+                StringComparison.Ordinal
+            )
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "journey", "F123", "2026-08-01T000000.json"),
+            """
+            {"fid":"F123","commander":"Original Commander","name":"Original journey","description":"Survey",
+             "startingJournal":"Journal.2026-08-01T000000.01.log","startTime":"2026-08-01T00:00:00Z",
+             "watermark":"2026-08-02T00:00:00Z","visitedSystems":[]}
+            """
+        );
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            LegacyProfileLocator.ResolveManualSelectionSource(root),
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+        var store = new CommanderProfileStore(destination);
+        CommanderProfileData imported = Assert.IsType<CommanderProfileData>((await store.LoadAsync("F123", true)).Data);
+        Assert.Equal("Original Commander", imported.CommanderName);
+        Assert.Equal(1234567890, imported.Exploration.EstimatedRewards);
+        Assert.Equal(123.5, imported.Exploration.DistanceTravelled);
+        Assert.Equal(100, imported.Exploration.JumpCount);
+        Assert.Equal(200, imported.Exploration.ScanCount);
+        Assert.Equal(30, imported.Exploration.DetailedSurfaceScanCount);
+        Assert.Equal(40, imported.Exploration.LandedBodyCount);
+        Assert.Equal(5000000, imported.Exobiology.OrganicRewards);
+        Assert.Equal(12.5, imported.Exobiology.ScanOne!.Location.Latitude);
+        Assert.Equal(-45.25, imported.Exobiology.ScanOne.Location.Longitude);
+        Assert.Equal("10477373803_1_2310101_1000000_True", Assert.Single(imported.Exobiology.ScannedBioEntryIds));
+        Assert.True(imported.SphereLimit.Active);
+        Assert.Equal("Active", imported.RamTah.AncientRuinsMissionStatus.ToString());
+        Assert.Equal("synthetic-raven-key", imported.RavenColonialApiKey);
+        Assert.Equal(42, (await store.LoadAsync("F123", false)).Data!.Exploration.EstimatedRewards);
+        CommanderProfileCatalogResult catalog = await new CommanderProfileCatalog(destination).LoadAsync();
+        Assert.Empty(catalog.Warnings);
+        Assert.Equal(2, catalog.Profiles.Count);
+        Assert.True(catalog.Profiles[0].HasLiveProfile);
+        Assert.True(catalog.Profiles[0].HasLegacyProfile);
+
+        var codexStore = new CommanderCodexStore(destination);
+        foreach (int region in new[] { 0, 18 })
+        {
+            CommanderCodexLoadResult ledger = await codexStore.LoadAsync("F123", null, region);
+            Assert.Empty(ledger.Warnings);
+            Assert.Equal(2, ledger.Data!.Firsts.Count);
+            Assert.Equal(9007199254740993, ledger.Data.Firsts[2310101].SystemAddress);
+            Assert.Equal(11, ledger.Data.Firsts[2310101].BodyId);
+            Assert.Equal(-1, ledger.Data.Firsts[2310206].SystemAddress);
+            Assert.Equal(-1, ledger.Data.Firsts[2310206].BodyId);
+        }
+        JourneyLoadResult journey = await new JourneyStore(destination).LoadAsync(
+            "F123",
+            imported.ActiveJourneyFileName!
+        );
+        Assert.Equal("Original journey", journey.Journey!.Name);
+        foreach (ProfileInventoryEntry entry in result.Manifest.Entries)
+        {
+            byte[] original = await File.ReadAllBytesAsync(Path.Combine(source, entry.RelativePath));
+            Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(destination, entry.RelativePath)));
+            Assert.Equal(
+                original,
+                await File.ReadAllBytesAsync(Path.Combine(result.BackupDirectory, "profile", entry.RelativePath))
+            );
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OriginalOverlayPositionsAreBackedUpWithoutReplacingXpLayouts(bool hasCurrentLayout)
+    {
+        string source = Path.Combine(temporaryDirectory, "legacy");
+        string destination = Path.Combine(temporaryDirectory, "xp");
+        Directory.CreateDirectory(Path.Combine(source, "vr"));
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(source, "plotters.json"), "original desktop positions");
+        await File.WriteAllTextAsync(Path.Combine(source, "vr", "testbuggy.json"), "original VR positions");
+        if (hasCurrentLayout)
+        {
+            Directory.CreateDirectory(Path.Combine(destination, "vr"));
+            await File.WriteAllTextAsync(Path.Combine(destination, "plotters.json"), "XP desktop positions");
+            await File.WriteAllTextAsync(Path.Combine(destination, "vr", "testbuggy.json"), "XP VR positions");
+        }
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        Assert.Single(result.Manifest.GetImportedEntries());
+        Assert.Equal(["plotters.json", "vr/testbuggy.json"], result.Manifest.SkippedRelativePaths);
+        Assert.Empty(result.Manifest.Conflicts);
+        Assert.True(File.Exists(Path.Combine(destination, "F123-live.json")));
+        if (hasCurrentLayout)
+        {
+            Assert.Equal(
+                "XP desktop positions",
+                await File.ReadAllTextAsync(Path.Combine(destination, "plotters.json"))
+            );
+            Assert.Equal(
+                "XP VR positions",
+                await File.ReadAllTextAsync(Path.Combine(destination, "vr", "testbuggy.json"))
+            );
+        }
+        else
+        {
+            Assert.False(File.Exists(Path.Combine(destination, "plotters.json")));
+            Assert.False(Directory.Exists(Path.Combine(destination, "vr")));
+        }
+        Assert.Equal(
+            "original desktop positions",
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", "plotters.json"))
+        );
+        Assert.Equal(
+            "original VR positions",
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", "vr", "testbuggy.json"))
+        );
+    }
+
+    [Fact]
+    public async Task CurrentFormatImportPreservesLayoutsAndBacksUpItsPreviousImportManifest()
+    {
+        string source = Path.Combine(temporaryDirectory, "cross-platform");
+        string destination = Path.Combine(temporaryDirectory, "xp");
+        Directory.CreateDirectory(Path.Combine(source, "vr"));
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(source, "plotters.json"), "XP positions");
+        await File.WriteAllTextAsync(Path.Combine(source, "vr", "testbuggy.json"), "XP VR positions");
+        await File.WriteAllTextAsync(
+            Path.Combine(source, LegacyProfileImporter.ManifestFileName),
+            "old import manifest"
+        );
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            new ProfileImportSource(source, ProfileImportSourceKind.CrossPlatform, null),
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        Assert.Equal(3, result.Manifest.GetImportedEntries().Count);
+        Assert.Equal([LegacyProfileImporter.ManifestFileName], result.Manifest.SkippedRelativePaths);
+        Assert.Equal("XP positions", await File.ReadAllTextAsync(Path.Combine(destination, "plotters.json")));
+        Assert.Equal("XP VR positions", await File.ReadAllTextAsync(Path.Combine(destination, "vr", "testbuggy.json")));
+        Assert.Equal(
+            "old import manifest",
+            await File.ReadAllTextAsync(
+                Path.Combine(result.BackupDirectory, "profile", LegacyProfileImporter.ManifestFileName)
+            )
+        );
+        ProfileImportManifest? manifest = JsonSerializer.Deserialize<ProfileImportManifest>(
+            await File.ReadAllTextAsync(Path.Combine(destination, LegacyProfileImporter.ManifestFileName))
+        );
+        Assert.Equal(result.Manifest.ImportedAtUtc, manifest!.ImportedAtUtc);
+    }
 
     [Fact]
     public async Task ImportedRetiredOrganicDataIsConvertedFromVerifiedCopies()
@@ -464,7 +668,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
         ProfileImportManifest? manifest = await JsonSerializer.DeserializeAsync<ProfileImportManifest>(manifestStream);
 
         Assert.NotNull(manifest);
-        Assert.Equal(2, manifest.Version);
+        Assert.Equal(3, manifest.Version);
         Assert.Equal(result.BackupDirectory, manifest.BackupDirectory);
         Assert.Equal("theme.json", Assert.Single(manifest.Entries).RelativePath);
         Assert.Empty(manifest.PreviousDestinationEntries);

@@ -134,7 +134,8 @@ internal static class CommanderSettingsProfile
             )
         );
         var importedFiles = result
-            .Manifest.Entries.Select(entry => entry.RelativePath)
+            .Manifest.GetImportedEntries()
+            .Select(entry => entry.RelativePath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
         using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(

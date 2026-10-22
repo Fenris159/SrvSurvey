@@ -884,7 +884,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(legacyProfileSourcePath))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(legacyProfileSourcePath);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    legacyProfileSourcePath,
+                    AppDataPaths.DataDirectory
+                );
             }
             profileStatusMessage = GetInitialProfileStatus();
             importLegacyProfileCommand = new AsyncCommand(ImportLegacyProfileAsync, CanImportLegacyProfile);
@@ -1356,7 +1359,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             string normalized = value?.Trim() ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(normalized) && Directory.Exists(normalized))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(normalized);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    normalized,
+                    AppDataPaths.DataDirectory
+                );
                 normalized = profileImportSource.DataDirectory;
             }
             else
@@ -2190,7 +2196,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             });
             ProfileImportSource selectedSource = profileImportSource;
             ProfileImportResult result = await profileImporter.ImportAsync(
-                LegacyProfileSourcePath,
+                selectedSource,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory,
                 progress,
@@ -2285,9 +2291,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} current-format files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} current-format files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} local-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
@@ -2297,8 +2303,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private async Task CompleteLegacyProfileImportAsync(ProfileImportResult result)
     {
-        LegacyOverlayLayoutImportMigrationResult overlayLayoutMigration =
-            LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(AppDataPaths);
         CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
         LegacyUiSettingsMigrationResult settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(
             AppDataPaths
@@ -2312,14 +2316,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} legacy files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} current-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + GetOverlayLayoutMigrationStatus(overlayLayoutMigration)
-            + " "
+            + "Legacy overlay positions were skipped; current layouts were kept. "
             + GetSettingsMigrationStatus(settingsMigration)
             + " "
             + GetOrganicMigrationStatus(organicMigration)
@@ -2378,21 +2381,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return migration.Migrated
             ? $"Translated {migration.MappedPreferenceCount:N0} legacy UI preferences."
             : "No legacy UI preference translation was required.";
-    }
-
-    private static string GetOverlayLayoutMigrationStatus(LegacyOverlayLayoutImportMigrationResult migration)
-    {
-        if (migration.Error is not null)
-        {
-            return "Legacy overlay positions were preserved, but absolute desktop "
-                + "anchors could not be converted. Reposition affected panels in "
-                + $"the overlay editor. {migration.Error}";
-        }
-
-        return migration.Migrated
-            ? $"Converted {migration.NormalizedPlacementCount:N0} absolute overlay "
-                + "placement(s) to game-window-relative anchors."
-            : "No absolute overlay placement conversion was required.";
     }
 
     private static string GetOrganicMigrationStatus(LegacyOrganicProfileMigrationResult migration)

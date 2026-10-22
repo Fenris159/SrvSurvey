@@ -5565,10 +5565,6 @@
       "translation": "Wählen Sie den Screenshot-Ordner Elite Dangerous."
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Wählen Sie den Anwendungsdatenordner SrvSurvey, seinen plattformübergreifenden Ordner oder einen Legacy-Versionsordner. UI-Einstellungen im aktuellen Format werden importiert, wenn cross-platform-ui.json neben dem ausgewählten Profil steht."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Wählen Sie die Anwendungsidentität, optimieren Sie das Erscheinungsbild des Overlays im Spiel und konfigurieren Sie das Overlay-Verhalten."
     },
@@ -5835,6 +5831,10 @@
     {
       "source": "Close all and continue",
       "translation": "Alles schließen und fortfahren"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "Schließen Sie das Original SrvSurvey vor dem Import. Wählen Sie den Anwendungsdatenordner oder einen Legacy-Versionsordner. Spieler- und Codex-Daten werden importiert; Ältere Overlay-Positionen werden übersprungen. Wählen Sie für ein XP-Profil dessen plattformübergreifenden Ordner aus; angrenzende cross-platform-ui.json Einstellungen werden ebenfalls importiert."
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -7131,14 +7131,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "Konvertierte den zurückgezogenen organischen Verlauf, ohne seine Quelle zu ändern: {0} Profil(e), {1} Körperdatei(en), {2} Scan(s) und {3} Organismus(e)."
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Die absoluten Overlay-Platzierungen {0} wurden in spielfensterrelative Anker umgewandelt."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "{0} importierte absolute Overlay-Platzierung(en) in spielfensterrelative Anker konvertiert.{1}"
     },
     {
       "source": "Cooling down",
@@ -13661,10 +13653,6 @@
       "translation": "Importierte Nur-Namen-Einstellungen werden nur angewendet, wenn genau ein Profil übereinstimmt, wodurch verhindert wird, dass Daten an den falschen Kommandanten geschrieben werden."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Die importierte Overlay-Platzierungskonvertierung wurde übersprungen: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Importierte regionale Codex-Kandidaten: {0}."
     },
@@ -13685,8 +13673,8 @@
       "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. {4} Verifizierte Backups: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. {4} {5} {6}Verifizierte Backups: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Ältere Overlay-Positionen wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -14927,10 +14915,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "Die alte organische Migration wurde übersprungen, ohne dass die Quelldaten geändert wurden: {0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Ältere Overlay-Positionen blieben erhalten, absolute Desktop-Anker konnten jedoch nicht konvertiert werden. Positionieren Sie betroffene Panels im Overlay-Editor neu. {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -17587,10 +17571,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "Es wurde kein Windows-Profil automatisch erkannt. Wählen Sie den Profilordner manuell aus. Sowohl von Windows kopierte Profile im aktuellen Format als auch ältere Profile können unter Linux importiert werden."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Es war keine absolute Konvertierung der Overlay-Platzierung erforderlich."
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -44551,10 +44531,6 @@
       "translation": "Elija la carpeta de captura de pantalla Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Elija la carpeta de datos de la aplicación SrvSurvey, su carpeta multiplataforma o una carpeta de versión heredada. La configuración de la interfaz de usuario del formato actual se importa cuando cross-platform-ui.json está al lado del perfil seleccionado."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Elija la identidad de la aplicación, ajuste la apariencia de la superposición en el juego y configure el comportamiento de la superposición."
     },
@@ -44821,6 +44797,10 @@
     {
       "source": "Close all and continue",
       "translation": "Cerrar todo y continuar"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "Cierre el original SrvSurvey antes de importar. Elija su carpeta de datos de aplicación o una carpeta de versión heredada. Se importan los datos del jugador y del Codex; se omiten las posiciones de superposición heredadas. Para un perfil XP, elija su carpeta multiplataforma; También se importan las configuraciones adyacentes cross-platform-ui.json."
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -46117,14 +46097,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "Historia orgánica retirada convertida sin cambiar su fuente: {0} perfil(es), {1} archivo(s) del cuerpo, {2} escaneo(s) y {3} organismo(s)."
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Se convirtieron las ubicaciones de superposición absoluta {0} en anclajes relativos a la ventana del juego."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Se convirtió {0} en ubicaciones de superposición absolutas importadas a anclajes relativos a la ventana del juego.{1}"
     },
     {
       "source": "Cooling down",
@@ -52647,10 +52619,6 @@
       "translation": "Las preferencias de solo nombre importadas se aplican solo cuando coincide exactamente un perfil, lo que evita que los datos se escriban en el comandante equivocado."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Se omitió la conversión de ubicación de superposición importada: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidatos del Codex regional importados: {0}."
     },
@@ -52671,8 +52639,8 @@
       "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. {4} Copias de seguridad verificadas: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. {4} {5} {6}Copias de seguridad verificadas: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron las posiciones de superposición heredadas; Se mantuvieron los diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -53913,10 +53881,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "Se omitió la migración orgánica heredada sin modificar sus datos de origen: {0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Se conservaron las posiciones de superposición heredadas, pero no se pudieron convertir los anclajes absolutos del escritorio. Reposicione los paneles afectados en el editor de superposición. {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -56573,10 +56537,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "No se detectó ningún perfil de Windows automáticamente. Elija su carpeta de perfil manualmente; Tanto los perfiles en formato actual como los heredados copiados de Windows se pueden importar en Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "No se requirió ninguna conversión absoluta de ubicación de superposición."
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -83537,10 +83497,6 @@
       "translation": "Choisissez le dossier de capture d'écran Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Choisissez le dossier de données d'application SrvSurvey, son dossier multiplateforme ou un dossier de version héritée. Les paramètres d'interface utilisateur au format actuel sont importés lorsque cross-platform-ui.json se trouve à côté du profil sélectionné."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Choisissez l'identité de l'application, ajustez l'apparence de la superposition dans le jeu et configurez le comportement de la superposition."
     },
@@ -83807,6 +83763,10 @@
     {
       "source": "Close all and continue",
       "translation": "Fermez tout et continuez"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "Fermez l'original SrvSurvey avant l'importation. Choisissez son dossier de données d'application ou un dossier de version héritée. Les données du lecteur et du Codex sont importées ; les anciennes positions de superposition sont ignorées. Pour un profil XP, choisissez son dossier multiplateforme ; les paramètres adjacents cross-platform-ui.json sont également importés."
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -85103,14 +85063,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "Conversion de l'historique organique retiré sans changer sa source : {0} profil(s), {1} fichier(s) corps, {2} analyse(s) et {3} organisme(s)."
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Conversion des emplacements de superposition absolus {0} en ancres relatives à la fenêtre de jeu."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Conversion des emplacements de superposition absolus importés {0} en ancres relatives à la fenêtre de jeu.{1}"
     },
     {
       "source": "Cooling down",
@@ -91633,10 +91585,6 @@
       "translation": "Les préférences de nom uniquement importées ne sont appliquées que lorsqu'exactement un profil correspond, empêchant ainsi les données d'être écrites sur le mauvais commandant."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "La conversion de l'emplacement de superposition importé a été ignorée : {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidats Codex régionaux importés : {0}."
     },
@@ -91657,8 +91605,8 @@
       "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. {4} Sauvegardes vérifiées : {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. {4} {5} {6}Asauvegardes vérifiées : {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les anciennes positions de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} {5}Asauvegardes vérifiées : {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -92899,10 +92847,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "La migration organique héritée a été ignorée sans modifier ses données sources : {0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Les anciennes positions de superposition ont été conservées, mais les ancres absolues du bureau n'ont pas pu être converties. Repositionnez les panneaux concernés dans l'éditeur de superposition. {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -95559,10 +95503,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "Aucun profil Windows n'a été détecté automatiquement. Choisissez son dossier de profil manuellement ; les profils au format actuel et hérité copiés à partir de Windows peuvent être importés sous Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Aucune conversion absolue de placement de superposition n’était requise."
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -122523,10 +122463,6 @@
       "translation": "Escolha a pasta de captura de tela Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Escolha a pasta de dados do aplicativo SrvSurvey, sua pasta de plataforma cruzada ou uma pasta de versão herdada. As configurações da interface do usuário no formato atual são importadas quando cross-platform-ui.json está ao lado do perfil selecionado."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Escolha a identidade do aplicativo, ajuste a aparência da sobreposição no jogo e configure o comportamento da sobreposição."
     },
@@ -122793,6 +122729,10 @@
     {
       "source": "Close all and continue",
       "translation": "Feche tudo e continue"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "Feche o original SrvSurvey antes de importar. Escolha sua pasta de dados do aplicativo ou uma pasta de versão herdada. Os dados do Player e do Codex são importados; as posições de sobreposição herdadas são ignoradas. Para um perfil XP, escolha sua pasta multiplataforma; configurações adjacentes cross-platform-ui.json também são importadas."
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -124089,14 +124029,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "Histórico orgânico retirado convertido sem alterar sua fonte: {0} perfil(es), {1} arquivo(s) de corpo, {2} varredura(s) e {3} organismo(s)."
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Colocações de sobreposição absoluta {0} convertidas em âncoras relativas à janela do jogo."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "{0} convertido(s) posicionamento(s) de sobreposição absoluta importada para âncoras relativas à janela do jogo.{1}"
     },
     {
       "source": "Cooling down",
@@ -130619,10 +130551,6 @@
       "translation": "As preferências importadas somente de nome são aplicadas somente quando exatamente um perfil corresponde, evitando que os dados sejam gravados no comandante errado."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "A conversão do canal de sobreposição importado foi ignorada: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidatos regionais do Codex importados: {0}."
     },
@@ -130643,8 +130571,8 @@
       "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. {4} Backups verificados: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. {4} {5} {6}Backups verificados: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. As posições de sobreposição herdadas foram ignoradas; os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -131885,10 +131813,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "A migração orgânica legada foi ignorada sem modificar seus dados de origem: {0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "As posições de sobreposição herdadas foram preservadas, mas as âncoras absolutas da área de trabalho não puderam ser convertidas. Reposicione os painéis afetados no editor de sobreposição. {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -134545,10 +134469,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "Nenhum perfil do Windows foi detectado automaticamente. Escolha sua pasta de perfil manualmente; tanto os perfis de formato atual quanto os legados copiados do Windows podem ser importados no Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Nenhuma conversão absoluta de posicionamento de sobreposição foi necessária."
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -161509,10 +161429,6 @@
       "translation": "Выберите папку со скриншотами Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Выберите папку данных приложения SrvSurvey, ее кроссплатформенную папку или папку устаревшей версии. Настройки пользовательского интерфейса текущего формата импортируются, когда cross-platform-ui.json находится рядом с выбранным профилем."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Выберите идентификатор приложения, настройте внешний вид наложения в игре и настройте поведение наложения."
     },
@@ -161779,6 +161695,10 @@
     {
       "source": "Close all and continue",
       "translation": "Закрыть все и продолжить"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "Закройте оригинал SrvSurvey перед импортом. Выберите папку данных приложения или папку устаревшей версии. Данные игрока и Кодекса импортируются; устаревшие позиции наложения пропускаются. Для профиля XP выберите его кроссплатформенную папку; соседние настройки cross-platform-ui.json также импортируются."
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -163075,14 +162995,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "Преобразована устаревшая органическая история без изменения ее источника: профиль(ы) {0}, файл(ы) тела {1}, скан(ы) {2} и организм(ы) {3} ."
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Абсолютное размещение наложения {0} преобразовано в привязки относительно окна игры."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Преобразован {0} импортированных абсолютных размещений наложения в привязки относительно окна игры. {1}"
     },
     {
       "source": "Cooling down",
@@ -169605,10 +169517,6 @@
       "translation": "Импортированные настройки только имени применяются только в том случае, если совпадает ровно один профиль, что предотвращает запись данных не тому командиру."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Импортированное преобразование размещения наложения пропущено: {0}."
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Импортированные региональные кандидаты Кодекса: {0}."
     },
@@ -169629,8 +169537,8 @@
       "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. {4} Проверенные резервные копии: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. {4} {5} {6}Проверенные резервные копии: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Устаревшие позиции наложения были пропущены; текущие макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -170871,10 +170779,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "Устаревшая органическая миграция была пропущена без изменения исходных данных: {0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Устаревшие позиции наложения были сохранены, но абсолютные привязки рабочего стола преобразовать невозможно. Измените положение затронутых панелей в редакторе наложений. {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -173531,10 +173435,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "Ни один профиль Windows не был обнаружен автоматически. Выберите папку его профиля вручную; Профили как текущего формата, так и устаревшие, скопированные из Windows, можно импортировать в Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Никакого абсолютного преобразования размещения наложения не требовалось."
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -200495,10 +200395,6 @@
       "translation": "选择 Elite Dangerous 屏幕截图文件夹"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "选择 SrvSurvey 应用程序数据文件夹、其跨平台文件夹或旧版本文件夹。当 cross-platform-ui.json 位于所选配置文件旁边时，将导入当前格式的 UI 设置。"
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "选择应用程序标识、调整游戏内叠加外观并配置叠加行为。"
     },
@@ -200765,6 +200661,10 @@
     {
       "source": "Close all and continue",
       "translation": "关闭全部并继续"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "导入前关闭原件 SrvSurvey。选择其应用程序数据文件夹或旧版本文件夹。导入玩家和 Codex 数据；传统的重叠位置将被跳过。对于 XP 配置文件，选择其跨平台文件夹；相邻的 cross-platform-ui.json 设置也会导入。"
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -202061,14 +201961,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "转换退役的有机历史而不更改其来源：{0}配置文件、{1}正文文件、{2}扫描和{3}有机体。"
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "将 {0} 绝对叠加位置转换为游戏窗口相对锚点。"
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "将 {0} 导入的绝对叠加位置转换为游戏窗口相对锚点。{1}"
     },
     {
       "source": "Cooling down",
@@ -208591,10 +208483,6 @@
       "translation": "仅当一个配置文件完全匹配时，才会应用导入的仅名称首选项，从而防止数据写入错误的指挥官。"
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "已跳过导入的叠加放置转换：{0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "导入的区域法典候选者：{0}。"
     },
@@ -208615,8 +208503,8 @@
       "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。 {4} 已验证的备份：{5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。 {4} {5} {6}已验证的备份：{7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。跳过旧的叠加位置；保留当前布局。 {4} {5}已验证的备份：{6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -209857,10 +209745,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "跳过旧版有机迁移而不修改其源数据：{0}"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "保留了旧的覆盖位置，但无法转换绝对桌面锚点。在叠加编辑器中重新定位受影响的面板。 {0}"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -212517,10 +212401,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "没有自动检测到 Windows 配置文件。手动选择其配置文件文件夹；从 Windows 复制的当前格式和旧版配置文件都可以导入到 Linux 上。"
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "不需要绝对的叠加放置转换。"
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
@@ -239481,10 +239361,6 @@
       "translation": "* CHOOSE THE ELITE DANGEROUS SCREENSHOT FOLDER >>>!"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "* CHOOSE THE SRVSURVEY APPLICATION-DATA FOLDER, ITS CROSS-PLATFORM FOLDER, OR A LEGACY VERSION FOLDER. CURRENT-FORMAT UI SETTINGS ARE IMPORTED WHEN CROSS-PLATFORM-UI.JSON IS BESIDE THE SELECTED PROFILE. >>>!"
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "* CHOOSE THE APPLICATION IDENTITY, TUNE IN-GAME OVERLAY APPEARANCE, AND CONFIGURE OVERLAY BEHAVIOR. >>>!"
     },
@@ -239751,6 +239627,10 @@
     {
       "source": "Close all and continue",
       "translation": "* CLOSE ALL AND CONTINUE >>>!"
+    },
+    {
+      "source": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+      "translation": "* CLOSE ORIGINAL SRVSURVEY BEFORE IMPORTING. CHOOSE ITS APPLICATION-DATA FOLDER OR A LEGACY VERSION FOLDER. PLAYER AND CODEX DATA ARE IMPORTED; LEGACY OVERLAY POSITIONS ARE SKIPPED. FOR AN XP PROFILE, CHOOSE ITS CROSS-PLATFORM FOLDER; ADJACENT CROSS-PLATFORM-UI.JSON SETTINGS ARE ALSO IMPORTED. >>>!"
     },
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -241047,14 +240927,6 @@
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
       "translation": "* CONVERTED RETIRED ORGANIC HISTORY WITHOUT CHANGING ITS SOURCE: {0} PROFILE(S), {1} BODY FILE(S), {2} SCAN(S), AND {3} ORGANISM(S). >>>!"
-    },
-    {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "* CONVERTED {0} ABSOLUTE OVERLAY PLACEMENT(S) TO GAME-WINDOW-RELATIVE ANCHORS. >>>!"
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "* CONVERTED {0} IMPORTED ABSOLUTE OVERLAY PLACEMENT(S) TO GAME-WINDOW-RELATIVE ANCHORS.{1} >>>!"
     },
     {
       "source": "Cooling down",
@@ -247577,10 +247449,6 @@
       "translation": "* IMPORTED NAME-ONLY PREFERENCES ARE APPLIED ONLY WHEN EXACTLY ONE PROFILE MATCHES, PREVENTING DATA FROM BEING WRITTEN TO THE WRONG COMMANDER. >>>!"
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "* IMPORTED OVERLAY PLACEMENT CONVERSION WAS SKIPPED: {0} >>>!"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "* IMPORTED REGIONAL CODEX CANDIDATES: {0}. >>>!"
     },
@@ -247601,8 +247469,8 @@
       "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. {4} VERIFIED BACKUPS: {5} >>>!"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. {4} {5} {6}VERIFIED BACKUPS: {7} >>>!"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. LEGACY OVERLAY POSITIONS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -248843,10 +248711,6 @@
     {
       "source": "Legacy organic migration was skipped without modifying its source data: {0}",
       "translation": "* LEGACY ORGANIC MIGRATION WAS SKIPPED WITHOUT MODIFYING ITS SOURCE DATA: {0} >>>!"
-    },
-    {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "* LEGACY OVERLAY POSITIONS WERE PRESERVED, BUT ABSOLUTE DESKTOP ANCHORS COULD NOT BE CONVERTED. REPOSITION AFFECTED PANELS IN THE OVERLAY EDITOR. {0} >>>!"
     },
     {
       "source": "Legacy overlay scales were not migrated: {0}",
@@ -251503,10 +251367,6 @@
     {
       "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
       "translation": "* NO WINDOWS PROFILE WAS DETECTED AUTOMATICALLY. CHOOSE ITS PROFILE FOLDER MANUALLY; BOTH CURRENT-FORMAT AND LEGACY PROFILES COPIED FROM WINDOWS CAN BE IMPORTED ON LINUX. >>>!"
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "* NO ABSOLUTE OVERLAY PLACEMENT CONVERSION WAS REQUIRED. >>>!"
     },
     {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",

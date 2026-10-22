@@ -52,13 +52,19 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         Assert.Equal(Path.GetFullPath(olderProfile), result[1].Path);
     }
 
-    [Fact]
-    public void DiscoverIgnoresEmptyVersionDirectories()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DiscoverIgnoresEmptyAndLogOnlyVersionDirectories(bool hasLogs)
     {
         string productRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
         string emptyProfile = Path.Combine(productRoot, "1.1.0.0");
         string populatedProfile = Path.Combine(productRoot, "1.0.0.0");
         Directory.CreateDirectory(Path.Combine(emptyProfile, "systems"));
+        if (hasLogs)
+        {
+            File.WriteAllText(Path.Combine(emptyProfile, "startup.log"), "startup");
+        }
         Directory.CreateDirectory(populatedProfile);
         File.WriteAllText(Path.Combine(populatedProfile, "settings.json"), "{}");
 
@@ -104,19 +110,92 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         Assert.Equal(Path.GetFullPath(uiSettings), result.UiSettingsPath);
     }
 
-    [Fact]
-    public void ManualSelectionRecognizesTheCrossPlatformDirectoryItself()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ManualSelectionRecognizesTheCrossPlatformDirectoryItself(bool trailingSeparator)
     {
         string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
         string currentProfile = Path.Combine(selectedRoot, "cross-platform");
         Directory.CreateDirectory(currentProfile);
         File.WriteAllText(Path.Combine(currentProfile, "F123-live.json"), "{}");
 
-        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(currentProfile);
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(
+            currentProfile + (trailingSeparator ? Path.DirectorySeparatorChar.ToString() : string.Empty)
+        );
 
         Assert.Equal(Path.GetFullPath(currentProfile), result.DataDirectory);
         Assert.Equal(ProfileImportSourceKind.CrossPlatform, result.Kind);
         Assert.Null(result.UiSettingsPath);
+    }
+
+    [Fact]
+    public void ManualSelectionDoesNotMistakeTheActiveXpProfileForTheOriginalProfile()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string currentProfile = Path.Combine(selectedRoot, "cross-platform");
+        string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(currentProfile);
+        Directory.CreateDirectory(legacyProfile);
+        File.WriteAllText(Path.Combine(currentProfile, "startup.log"), "XP is running");
+        File.WriteAllText(Path.Combine(legacyProfile, "F123-live.json"), "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(selectedRoot);
+
+        Assert.Equal(Path.GetFullPath(legacyProfile), result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.Legacy, result.Kind);
+    }
+
+    [Fact]
+    public void ManualSelectionFindsTheMicrosoftStoreMigrationBackup()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "LocalCache", "Roaming", "SrvSurvey");
+        string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey-", "1.1.0.0");
+        Directory.CreateDirectory(legacyProfile);
+        File.WriteAllText(Path.Combine(legacyProfile, "F123-codex.json"), "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(selectedRoot);
+
+        Assert.Equal(Path.GetFullPath(legacyProfile), result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.Legacy, result.Kind);
+    }
+
+    [Fact]
+    public void ManualSelectionPrefersPlayerDataOverANewerDirectoryContainingOnlyLogs()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string legacyProfile = Path.Combine(selectedRoot, "1.1.0.0");
+        string logDirectory = Path.Combine(selectedRoot, "2.0.0.0", "logs");
+        Directory.CreateDirectory(legacyProfile);
+        Directory.CreateDirectory(logDirectory);
+        File.WriteAllText(Path.Combine(legacyProfile, "F123-live.json"), "{}");
+        File.WriteAllText(Path.Combine(logDirectory, "startup.log"), "startup");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(selectedRoot);
+
+        Assert.Equal(Path.GetFullPath(legacyProfile), result.DataDirectory);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ManualSelectionSkipsTheActiveDestinationEvenWhenItContainsPlayerData(bool trailingSeparator)
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string currentProfile = Path.Combine(selectedRoot, "cross-platform");
+        string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(currentProfile);
+        Directory.CreateDirectory(legacyProfile);
+        File.WriteAllText(Path.Combine(currentProfile, "F123-live.json"), "{}");
+        File.WriteAllText(Path.Combine(legacyProfile, "F123-live.json"), "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(
+            selectedRoot,
+            currentProfile + (trailingSeparator ? Path.DirectorySeparatorChar.ToString() : string.Empty)
+        );
+
+        Assert.Equal(Path.GetFullPath(legacyProfile), result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.Legacy, result.Kind);
     }
 
     public void Dispose()

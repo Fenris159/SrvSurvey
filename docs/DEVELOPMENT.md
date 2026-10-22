@@ -148,6 +148,8 @@ automatically generated commit lists are disabled.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
   dependency on the previous implementation.
+  The [profile import audit](PROFILE_IMPORT_COMPATIBILITY.md) records the upstream
+  save formats, source-selection fixes, and exclusion of original overlay positions.
 
 ## Upstream parity baseline
 

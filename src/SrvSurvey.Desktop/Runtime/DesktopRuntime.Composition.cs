@@ -712,27 +712,6 @@ internal sealed partial class DesktopRuntime
         }
     }
 
-    private static void MigrateLegacyOverlayLayout(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
-    {
-        LegacyOverlayLayoutImportMigrationResult migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
-            appDataPaths
-        );
-        if (migration.Migrated)
-        {
-            applicationLog.Append(
-                $"Converted {migration.NormalizedPlacementCount:N0} imported "
-                    + "absolute overlay placement(s) to game-window-relative anchors."
-                    + (migration.BackupPath is null ? string.Empty : " Previous layout backup: " + migration.BackupPath)
-            );
-            return;
-        }
-
-        if (migration.Error is not null)
-        {
-            applicationLog.Append("Imported overlay placement conversion was skipped: " + migration.Error);
-        }
-    }
-
     private static void MigrateLegacyOrganicProfiles(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
         try
@@ -1057,7 +1036,6 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
         MigrateLegacyUiSettings(appDataPaths, applicationLog);
         MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
     }

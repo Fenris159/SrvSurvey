@@ -14,8 +14,10 @@ public sealed class ProfileThemeImportTests : IDisposable
         $"SrvSurvey-theme-import-parity-{Guid.NewGuid():N}"
     );
 
-    [Fact]
-    public async Task ImportPreservesOverlayThemeAndLayoutIndependentlyOfAppTheme()
+    [Theory]
+    [InlineData(ProfileImportSourceKind.Legacy)]
+    [InlineData(ProfileImportSourceKind.CrossPlatform)]
+    public async Task ImportPreservesThemeAndAppliesLayoutPolicyIndependentlyOfAppTheme(ProfileImportSourceKind kind)
     {
         string source = Path.Combine(temporaryDirectory, "legacy");
         string data = Path.Combine(temporaryDirectory, "data");
@@ -44,7 +46,11 @@ public sealed class ProfileThemeImportTests : IDisposable
             "{\"darkTheme\":false,\"plotterOpacity\":55}"
         );
         var paths = new AppDataPaths(config, data, Path.Combine(temporaryDirectory, "cache"), []);
-        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(source, data, backups);
+        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(
+            new ProfileImportSource(source, kind, null),
+            data,
+            backups
+        );
 
         LegacyUiSettingsMigrationResult migration = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
         LegacyOverlayTheme importedOverlay = new LegacyOverlayThemeStore(Path.Combine(data, "theme.json")).Load();
@@ -72,8 +78,18 @@ public sealed class ProfileThemeImportTests : IDisposable
         );
         Assert.Equal(importedOverlay, service.CurrentOverlayTheme);
         Assert.Null(importedLayout.Error);
-        Assert.Equal(2, importedLayout.Placements.Count);
-        Assert.Equal(0.75, importedLayout.GetOpacity("PlotBodyInfo"));
+        if (kind == ProfileImportSourceKind.CrossPlatform)
+        {
+            Assert.Equal(2, importedLayout.Placements.Count);
+            Assert.Equal(0.75, importedLayout.GetOpacity("PlotBodyInfo"));
+            Assert.Equal(layoutBytes, await File.ReadAllBytesAsync(Path.Combine(data, "plotters.json")));
+        }
+        else
+        {
+            Assert.Empty(importedLayout.Placements);
+            Assert.Equal(0.55, importedLayout.GetOpacity("PlotBodyInfo"));
+            Assert.False(File.Exists(Path.Combine(data, "plotters.json")));
+        }
         Assert.Equal(0.55, importedLayout.GetOpacity("FutureOverlay"));
         Assert.Equal(themeBytes, await File.ReadAllBytesAsync(Path.Combine(source, "theme.json")));
         Assert.Equal(
@@ -86,7 +102,6 @@ public sealed class ProfileThemeImportTests : IDisposable
             layoutBytes,
             await File.ReadAllBytesAsync(Path.Combine(import.BackupDirectory, "profile", "plotters.json"))
         );
-        Assert.Equal(layoutBytes, await File.ReadAllBytesAsync(Path.Combine(data, "plotters.json")));
     }
 
     public void Dispose()

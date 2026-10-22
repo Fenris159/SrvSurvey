@@ -1071,7 +1071,7 @@
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile." />
+                         Text="Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="primary"

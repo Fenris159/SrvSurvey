@@ -1697,6 +1697,8 @@ public sealed class MainWindowViewModelTests
             );
             Directory.CreateDirectory(Path.Combine(data, "logs"));
             await File.WriteAllTextAsync(Path.Combine(data, "logs", "startup.txt"), "startup log");
+            const string currentLayout = "{\"PlotBodyInfo\":\"right:60, top:80\"}";
+            await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), currentLayout);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
@@ -1706,6 +1708,8 @@ public sealed class MainWindowViewModelTests
             {
                 SettingsFrontierId = "F123",
             };
+            Directory.CreateDirectory(paths.OverlaySettingsDirectory);
+            await File.WriteAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"), currentLayout);
             var applicationLog = new ApplicationLogService(data);
             await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
@@ -1719,16 +1723,18 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.True(File.Exists(applicationLog.CurrentLogPath));
             Assert.Contains("Profile import:", await File.ReadAllTextAsync(applicationLog.CurrentLogPath));
-            Assert.Contains("Imported 2 legacy files", viewModel.ProfileStatusMessage);
+            Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
             Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Equal(currentLayout, await File.ReadAllTextAsync(Path.Combine(data, "plotters.json")));
             Assert.Equal(
-                new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 12, LegacyVerticalAnchor.Top, 16, null),
-                new LegacyOverlayLayoutStore(paths.OverlaySettingsDirectory).Load().Placements["PlotBodyInfo"]
+                currentLayout,
+                await File.ReadAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"))
             );
+            Assert.Contains("overlay positions were skipped", viewModel.ProfileStatusMessage);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
@@ -2010,6 +2016,62 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(Path.GetFullPath(legacyProfile), viewModel.LegacyProfileSourcePath);
             Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.Contains("ready for verified import", viewModel.ProfileStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task OriginalProfileSelectionSkipsTheRunningXpDestination()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-original-profile-vm-{Guid.NewGuid():N}");
+        try
+        {
+            string selectedRoot = Path.Combine(root, "SrvSurvey");
+            string source = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+            string data = Path.Combine(selectedRoot, "cross-platform");
+            Directory.CreateDirectory(source);
+            Directory.CreateDirectory(data);
+            const string player = """
+                {"fid":"F123","commander":"Original","explRewards":1000000,"organicRewards":5000000,
+                 "scannedBioEntryIds":["42_1_2310101_1000000_True"],
+                 "migratedNonSystemDataOrganics":true,"migratedScannedOrganicsInEntryId":true}
+                """;
+            const string codex = """
+                {"fid":"F123","commander":"Original","codexFirsts":{"2310101":"2022-08-31T05:38:57_669611992529_11"}}
+                """;
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), player);
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-codex.json"), codex);
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-codex-18.json"), codex);
+            await File.WriteAllTextAsync(Path.Combine(data, "F123-live.json"), "{\"fid\":\"F123\"}");
+            var paths = new AppDataPaths(selectedRoot, data, Path.Combine(root, "cache"), []);
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            viewModel.LegacyProfileSourcePath = selectedRoot;
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.Equal(source, viewModel.LegacyProfileSourcePath);
+            Assert.True(viewModel.HasCompletedLegacyImport, viewModel.ProfileStatusMessage);
+            Assert.Equal(player, await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json")));
+            CommanderProfileLoadResult imported = await new CommanderProfileStore(data).LoadAsync("F123", true);
+            Assert.Equal(1000000, imported.Data!.Exploration.EstimatedRewards);
+            Assert.Equal(5000000, imported.Data.Exobiology.OrganicRewards);
+            Assert.Equal("42_1_2310101_1000000_True", Assert.Single(imported.Data.Exobiology.ScannedBioEntryIds));
+            foreach (int region in new[] { 0, 18 })
+            {
+                CommanderCodexLoadResult ledger = await new CommanderCodexStore(data).LoadAsync("F123", null, region);
+                Assert.Empty(ledger.Warnings);
+                Assert.Equal(669611992529, ledger.Data!.Firsts[2310101].SystemAddress);
+                Assert.Equal(11, ledger.Data.Firsts[2310101].BodyId);
+            }
         }
         finally
         {

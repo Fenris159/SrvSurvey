@@ -18,7 +18,7 @@ public static class LegacyProfileLocator
         foreach (LegacyProfileCandidate? candidate in candidates.SelectMany(ExpandVersionCandidates))
         {
             string path = Path.GetFullPath(candidate.Path);
-            if (!seenPaths.Add(path) || !Directory.Exists(path))
+            if (!seenPaths.Add(path) || !ContainsProfileData(path))
             {
                 continue;
             }
@@ -49,12 +49,15 @@ public static class LegacyProfileLocator
         return ResolveManualSelectionSource(selectedPath).DataDirectory;
     }
 
-    public static ProfileImportSource ResolveManualSelectionSource(string selectedPath)
+    public static ProfileImportSource ResolveManualSelectionSource(
+        string selectedPath,
+        string? currentDataDirectory = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(selectedPath);
 
-        string selected = Path.GetFullPath(selectedPath);
-        string? crossPlatformProfile = FindCrossPlatformProfile(selected);
+        string selected = Path.TrimEndingDirectorySeparator(Path.GetFullPath(selectedPath));
+        string? crossPlatformProfile = FindCrossPlatformProfile(selected, currentDataDirectory);
         if (crossPlatformProfile is not null)
         {
             string? parent = Path.GetDirectoryName(crossPlatformProfile);
@@ -66,24 +69,39 @@ public static class LegacyProfileLocator
             );
         }
 
-        string nestedApplicationDirectory = Path.Combine(selected, ApplicationDirectoryName);
-        string versionParent = Directory.Exists(nestedApplicationDirectory) ? nestedApplicationDirectory : selected;
-        string? versionProfile = FindNewestVersionProfile(versionParent);
+        string? versionProfile = new[]
+        {
+            Path.Combine(selected, ApplicationDirectoryName),
+            Path.Combine(selected, ApplicationDirectoryName + "-"),
+            selected,
+        }
+            .Select(FindNewestVersionProfile)
+            .FirstOrDefault(path => path is not null);
         return new ProfileImportSource(versionProfile ?? selected, ProfileImportSourceKind.Legacy, null);
     }
 
-    private static string? FindCrossPlatformProfile(string selected)
+    private static string? FindCrossPlatformProfile(string selected, string? currentDataDirectory)
     {
         if (
             string.Equals(Path.GetFileName(selected), CrossPlatformDirectoryName, StringComparison.OrdinalIgnoreCase)
-            && ContainsFiles(selected)
+            && ContainsProfileData(selected)
         )
         {
             return selected;
         }
 
         string nested = Path.Combine(selected, CrossPlatformDirectoryName);
-        return ContainsFiles(nested) ? Path.GetFullPath(nested) : null;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        bool isCurrentProfile =
+            currentDataDirectory is not null
+            && string.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(nested)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(currentDataDirectory)),
+                comparison
+            );
+        return !isCurrentProfile && ContainsProfileData(nested) ? Path.GetFullPath(nested) : null;
     }
 
     private static string? FindNewestVersionProfile(string parent)
@@ -102,7 +120,7 @@ public static class LegacyProfileLocator
                     Path = path,
                     Version = Version.TryParse(Path.GetFileName(path), out Version? version) ? version : null,
                 })
-                .Where(entry => entry.Version is not null && ContainsFiles(entry.Path))
+                .Where(entry => entry.Version is not null && ContainsProfileData(entry.Path))
                 .OrderByDescending(entry => entry.Version)
                 .Select(entry => Path.GetFullPath(entry.Path))
                 .FirstOrDefault();
@@ -113,11 +131,12 @@ public static class LegacyProfileLocator
         }
     }
 
-    private static bool ContainsFiles(string path)
+    private static bool ContainsProfileData(string path)
     {
         try
         {
-            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Any();
+            return File.Exists(Path.Combine(path, "settings.json"))
+                || Directory.EnumerateFiles(path, "F*-*.json", SearchOption.TopDirectoryOnly).Any();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

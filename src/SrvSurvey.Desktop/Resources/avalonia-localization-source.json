@@ -11156,14 +11156,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
   },
   {
-    "Text": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11699,6 +11691,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
+  },
+  {
+    "Text": "Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
@@ -14302,22 +14302,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
     "Text": "Cooling down",
@@ -27407,14 +27391,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Imported overlay placement conversion was skipped: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
-  },
-  {
     "Text": "Imported regional Codex candidates: {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -27455,7 +27431,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
+    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -29950,14 +29926,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
-  },
-  {
-    "Text": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Legacy overlay scales were not migrated: {0}",
@@ -35288,14 +35256,6 @@
   },
   {
     "Text": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "No absolute overlay placement conversion was required.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -41674,7 +41634,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Previous page",
