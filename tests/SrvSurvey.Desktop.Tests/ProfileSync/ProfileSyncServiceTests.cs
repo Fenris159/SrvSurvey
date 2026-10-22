@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.ProfileSync;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.ViewModels;
 using Xunit;
@@ -9,6 +10,74 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncServiceTests
 {
+    [Fact]
+    public async Task UpdateVerificationCanReachTheDesktopWithoutWaitingForCloudDownload()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", """{"Theme":"local"}""");
+        root.Store.SavePreferences(new(Automatic: true));
+        var enteredDownload = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseDownload = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive();
+        cloud.Add(root.Store.Capture());
+        cloud.BeforeDownload = token =>
+        {
+            enteredDownload.TrySetResult();
+            return releaseDownload.Task.WaitAsync(token);
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+        Task<ProfileSyncService?> startup = App.StartProfileSyncAsync(
+            () => service,
+            _ => { },
+            ApplicationUpdateStartupMode.Confirm
+        );
+        try
+        {
+            await Task.WhenAny(startup, enteredDownload.Task).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(
+                startup.IsCompletedSuccessfully,
+                "Update health confirmation is blocked behind the cloud download."
+            );
+            Assert.Same(service, await startup);
+            Assert.False(enteredDownload.Task.IsCompleted);
+            Assert.Single(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+            Assert.True(root.Store.LoadPreferences().Automatic);
+        }
+        finally
+        {
+            releaseDownload.TrySetResult();
+            await startup.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+    }
+
+    [Fact]
+    public async Task UpdateVerificationStillAppliesAPreviouslyStagedLocalRestore()
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Write("config", "cross-platform-ui.json", """{"Theme":"restore-me"}""");
+        ProfileSnapshot saved = root.Store.Capture();
+        root.Write("config", "cross-platform-ui.json", """{"Theme":"current"}""");
+        root.Store.StageExplicitRestore(saved, false);
+        root.Store.SavePreferences(new(Automatic: true));
+        var cloud = new FakeProfileDrive
+        {
+            LinkStatusFailure = new InvalidOperationException("Cloud must not be queried during update verification."),
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+
+        ProfileSyncService? ready = await App.StartProfileSyncAsync(
+            () => service,
+            _ => { },
+            ApplicationUpdateStartupMode.Confirm
+        );
+
+        Assert.Same(service, ready);
+        Assert.Contains("restore-me", await File.ReadAllTextAsync(root.Paths.UiSettingsPath));
+        Assert.False(service.RestartRequired);
+        Assert.Single(Directory.EnumerateFiles(root.Store.StateDirectory, "live-*.lock"));
+        Assert.True(root.Store.LoadPreferences().Automatic);
+    }
+
     [Fact]
     public async Task StartupCannotReplaceCausalHistoryRecordedDuringTheCloudRead()
     {

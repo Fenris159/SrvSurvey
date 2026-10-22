@@ -71,7 +71,8 @@ public sealed partial class App : Application
                                 ),
                                 log: message => Program.ApplicationLog?.Append(message)
                             ),
-                        message => Program.ApplicationLog?.Append(message)
+                        message => Program.ApplicationLog?.Append(message),
+                        Program.UpdateStartupMode
                     )
                     .ConfigureAwait(false);
             }
@@ -92,7 +93,9 @@ public sealed partial class App : Application
                         AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
                         ProfileSyncService = profileSync,
                         DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
-                        BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
+                        BringMainWindowToFront =
+                            startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting
+                            || Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm,
                     }
                 );
             });
@@ -121,14 +124,24 @@ public sealed partial class App : Application
     /// <summary>Starts optional sync, releasing failed services so the desktop can construct its fallback.</summary>
     internal static async Task<ProfileSyncService?> StartProfileSyncAsync(
         Func<ProfileSyncService> createService,
-        Action<string> log
+        Action<string> log,
+        ApplicationUpdateStartupMode updateMode = ApplicationUpdateStartupMode.Normal
     )
     {
         ProfileSyncService? service = null;
         try
         {
             service = createService();
-            await service.StartupAsync().ConfigureAwait(false);
+            bool deferCloudSync = updateMode == ApplicationUpdateStartupMode.Confirm;
+            if (deferCloudSync)
+            {
+                log("Update startup: preparing local profile recovery without waiting for Google Drive.");
+            }
+            await service.StartupAsync(deferCloudSync: deferCloudSync).ConfigureAwait(false);
+            if (deferCloudSync)
+            {
+                log("Update startup: local profile ready; constructing the desktop.");
+            }
             return service;
         }
         catch (ProfileInitializationException exception)

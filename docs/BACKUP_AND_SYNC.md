@@ -10,6 +10,11 @@ Open **Settings → Data & migration → Backup & sync with Google Drive**. Loca
 4. If different computers changed the same value, choose which conflicting values to keep. Independent changes are combined. Arrays, such as a bookmark collection, are treated as a single value; a conflicting collection needs a choice rather than an automatic merge.
 5. Close all SrvSurvey instances before applying a restore. Multiple Commander instances share this machine's backup identity and Google authorization. A second running instance defers startup restoration so cached settings cannot overwrite restored data.
 
+The first launch used to verify an application update completes local recovery
+and staged restores, but defers automatic cloud reads until **Sync now** or the
+next normal startup. This keeps Google Drive latency outside the updater's
+startup-health check. Your automatic-sync preference is retained.
+
 Offline work remains local. A failed upload retains a local recovery snapshot and its change counters, so a later sync can retry. A forced process termination, power loss or logout that kills the process cannot guarantee a shutdown upload; use **Backup now** when needed.
 
 ## What follows you

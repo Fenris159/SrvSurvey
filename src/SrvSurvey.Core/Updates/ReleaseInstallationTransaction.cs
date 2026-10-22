@@ -514,7 +514,7 @@ public sealed class ReleaseInstallationTransaction
                         or UnauthorizedAccessException
                         or InvalidOperationException
                         or Win32Exception
-                        or TaskCanceledException
+                        or OperationCanceledException
             )
         {
             launchError = exception.Message;
@@ -579,7 +579,7 @@ public sealed class ReleaseInstallationTransaction
                         or UnauthorizedAccessException
                         or InvalidOperationException
                         or Win32Exception
-                        or TaskCanceledException
+                        or OperationCanceledException
             )
         {
             launchError = exception.Message;

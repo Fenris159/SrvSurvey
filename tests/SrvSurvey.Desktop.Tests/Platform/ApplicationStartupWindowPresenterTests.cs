@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -8,6 +10,57 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ApplicationStartupWindowPresenterTests
 {
+    [AvaloniaFact]
+    public void ReadinessWaitsForAFrameAndRunsOnceOnTheUiDispatcher()
+    {
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var window = new Window();
+        int confirmations = 0;
+        try
+        {
+            ApplicationStartupWindowPresenter.Present(
+                desktop,
+                window,
+                true,
+                () =>
+                {
+                    Assert.True(Dispatcher.UIThread.CheckAccess());
+                    Assert.True(window.IsVisible);
+                    confirmations++;
+                }
+            );
+            Assert.Equal(0, confirmations);
+
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(1, confirmations);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(1, confirmations);
+        }
+        finally
+        {
+            window.Close();
+            desktop.MainWindow = null;
+        }
+    }
+
+    [AvaloniaFact]
+    public void AWindowClosedBeforeItsFirstFrameCannotConfirmStartup()
+    {
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var window = new Window();
+        bool confirmed = false;
+        ApplicationStartupWindowPresenter.Present(desktop, window, true, () => confirmed = true);
+        window.Close();
+
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(confirmed);
+        desktop.MainWindow = null;
+    }
+
     [AvaloniaFact]
     public void ReplacementStartupRestoresAndActivatesMainWindow()
     {

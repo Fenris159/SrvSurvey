@@ -15469,6 +15469,10 @@
       "translation": "Die Initialisierung des lokalen Profils ist fehlgeschlagen: {0}"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "Die Wiederherstellung des lokalen Profils ist abgeschlossen. Die automatische Cloud-Synchronisierung wird während der Update-Überprüfung verzögert; Verwenden Sie „Jetzt synchronisieren“ oder starten Sie normal neu, um Google Drive zu überprüfen."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
     },
@@ -30617,6 +30621,14 @@
       "translation": "Der Ersetzungsprozess SrvSurvey wurde nicht gestartet."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "Der Ersetzungsprozess bestätigte nicht, dass innerhalb von {0} Sekunden ein sichtbares, reagierendes Hauptfenster angezeigt wurde. Es wurde vor dem Rollback gestoppt. Sehen Sie sich das Anwendungsprotokoll für die letzte Startphase an."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Der Ersetzungsprozess wurde mit dem Code {0} beendet, bevor das Hauptfenster den Start bestätigte. Informationen zu Startfehlern finden Sie im Anwendungsprotokoll."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "Die Wiedergabe-Overlay-Präsentation enthält ein unbekanntes Overlay."
     },
@@ -32497,6 +32509,18 @@
       "translation": "Bestätigung des Update-Ersatzzustands fehlgeschlagen: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Update-Start: Desktop initialisiert; Warten auf den ersten Frame des Hauptfensters."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Update-Start: lokales Profil bereit; Aufbau des Desktops."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Update-Start: Vorbereiten der lokalen Profilwiederherstellung, ohne auf Google Drive warten zu müssen."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "Der Update-Status wurde nicht überprüft."
     },
@@ -33241,8 +33265,8 @@
       "translation": "Verifiziertes Backup: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Verifizierter Update-Ersatz-Start mit dem Handoff-Helper."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Verifizierter Update-Ersetzungsstart: Das Hauptfenster ist sichtbar und der UI-Dispatcher antwortet."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -54483,6 +54507,10 @@
       "translation": "Error al inicializar el perfil local: {0}"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "La recuperación del perfil local está completa. La sincronización automática en la nube se difiere durante la verificación de la actualización; use Sincronizar ahora o reinicie normalmente para verificar Google Drive."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descubrimientos de anillos locales"
     },
@@ -69631,6 +69659,14 @@
       "translation": "El proceso de reemplazo SrvSurvey no se inició."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "El proceso de reemplazo no confirmó una ventana principal visible y receptiva en {0} segundos. Se detuvo antes de la reversión. Consulte el registro de la aplicación para conocer la última etapa de inicio."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "El proceso de reemplazo finalizó con el código {0} antes de que su ventana principal confirmara el inicio. Consulte el registro de la aplicación para conocer los errores de inicio."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "La presentación de superposición de repetición contiene una superposición desconocida."
     },
@@ -71511,6 +71547,18 @@
       "translation": "Error de confirmación de estado de reemplazo de actualización: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Inicio de actualización: escritorio inicializado; esperando el primer fotograma de la ventana principal."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Inicio de actualización: perfil local listo; construyendo el escritorio."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Inicio de la actualización: preparación de la recuperación del perfil local sin esperar a Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "No se ha comprobado el estado de la actualización."
     },
@@ -72255,8 +72303,8 @@
       "translation": "Copia de seguridad verificada: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Inicio de reemplazo de actualización verificado con el asistente de transferencia."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Inicio de reemplazo de actualización verificado: la ventana principal está visible y el despachador de UI está respondiendo."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -93497,6 +93545,10 @@
       "translation": "Échec de l'initialisation du profil local : {0}"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "La récupération du profil local est terminée. La synchronisation automatique du cloud est différée lors de la vérification de la mise à jour ; utilisez Sync maintenant ou redémarrez normalement pour vérifier Google Drive."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
     },
@@ -108645,6 +108697,14 @@
       "translation": "Le processus de remplacement SrvSurvey n'a pas démarré."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "Le processus de remplacement n’a pas confirmé une fenêtre principale visible et réactive dans un délai de {0} secondes. Il a été arrêté avant le retour à la version précédente. Consultez le journal de l’application pour connaître la dernière étape du démarrage."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Le processus de remplacement s'est terminé avec le code {0} avant que sa fenêtre principale ne confirme le démarrage. Consultez le journal des applications pour connaître les erreurs de démarrage."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "La présentation de superposition de rediffusion contient une superposition inconnue."
     },
@@ -110525,6 +110585,18 @@
       "translation": "Échec de la confirmation de l'état de remplacement de la mise à jour : {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Démarrage de la mise à jour : bureau initialisé ; en attendant le premier cadre de la fenêtre principale."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Démarrage de la mise à jour : profil local prêt ; construire le bureau."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Démarrage de la mise à jour : préparer la récupération du profil local sans attendre Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "L'état de la mise à jour n'a pas été vérifié."
     },
@@ -111269,8 +111341,8 @@
       "translation": "Sauvegarde vérifiée : {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Démarrage de remplacement de mise à jour vérifié avec l'assistant de transfert."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Démarrage du remplacement de la mise à jour vérifié : la fenêtre principale est visible et le répartiteur de l'interface utilisateur répond."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -132511,6 +132583,10 @@
       "translation": "Falha na inicialização do perfil local: {0}"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "A recuperação do perfil local foi concluída. A sincronização automática na nuvem é adiada durante a verificação da atualização; use Sincronizar agora ou reinicie normalmente para verificar o Google Drive."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descobertas de anéis locais"
     },
@@ -147659,6 +147735,14 @@
       "translation": "O processo de substituição SrvSurvey não foi iniciado."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "O processo de substituição não confirmou uma janela principal visível e responsiva em {0} segundos. Foi interrompido antes da reversão. Consulte o log do aplicativo para o último estágio de inicialização."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "O processo de substituição foi encerrado com o código {0} antes que sua janela principal confirmasse a inicialização. Consulte o log do aplicativo para erros de inicialização."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "A apresentação de sobreposição de reprodução contém uma sobreposição desconhecida."
     },
@@ -149539,6 +149623,18 @@
       "translation": "Falha na confirmação da integridade da substituição da atualização: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Inicialização da atualização: desktop inicializado; aguardando o primeiro quadro da janela principal."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Inicialização da atualização: perfil local pronto; construindo a área de trabalho."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Inicialização da atualização: preparando a recuperação do perfil local sem esperar pelo Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "O status da atualização não foi verificado."
     },
@@ -150283,8 +150379,8 @@
       "translation": "Backup verificado: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Inicialização de substituição de atualização verificada com o auxiliar de transferência."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Inicialização de substituição de atualização verificada: a janela principal está visível e o despachante da UI está respondendo."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -171525,6 +171621,10 @@
       "translation": "Не удалось инициализировать локальный профиль: {0}."
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "Восстановление локального профиля завершено. Автоматическая синхронизация с облаком откладывается во время проверки обновлений; используйте «Синхронизировать сейчас» или перезагрузите компьютер в обычном режиме, чтобы проверить Google Диск."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
     },
@@ -186673,6 +186773,14 @@
       "translation": "Процесс замены SrvSurvey не начался."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "Процесс замены не подтвердил наличие видимого и отзывчивого главного окна в течение {0} секунд. Он был остановлен перед откатом. См. журнал приложения для последнего этапа запуска."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Процесс замены завершился с кодом {0} до того, как его главное окно подтвердило запуск. Просмотрите журнал приложения на предмет ошибок запуска."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "Представление наложения повтора содержит неизвестное наложение."
     },
@@ -188553,6 +188661,18 @@
       "translation": "Не удалось подтвердить работоспособность замены обновления: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Запуск обновления: рабочий стол инициализирован; ожидание первого кадра главного окна."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Запуск обновления: локальный профиль готов; сборка рабочего стола."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Запуск обновления: готовим восстановление локального профиля, не дожидаясь Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "Статус обновления не проверялся."
     },
@@ -189297,8 +189417,8 @@
       "translation": "Проверенная резервная копия: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Проверенный запуск замены обновлений с помощью помощника по передаче обслуживания."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Проверенный запуск замены обновлений: видно главное окно и UI-диспетчер отвечает."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -210539,6 +210659,10 @@
       "translation": "本地配置文件初始化失败：{0}"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "本地配置文件恢复已完成。更新验证期间自动云同步被推迟；使用立即同步或正常重新启动来检查 Google 云端硬盘。"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
     },
@@ -225687,6 +225811,14 @@
       "translation": "替换 SrvSurvey 进程未启动。"
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "替换过程未在 {0} 秒内确认可见、响应的主窗口。它在回滚之前被停止。查看应用程序日志以了解最后的启动阶段。"
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "在主窗口确认启动之前，替换进程已退出，代码为 {0}。请参阅应用程序日志以了解启动错误。"
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "重播叠加演示包含未知叠加。"
     },
@@ -227567,6 +227699,18 @@
       "translation": "更新替换运行状况确认失败：{0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "更新启动：桌面初始化；等待主窗口的第一帧。"
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "更新启动：本地配置文件准备就绪；构建桌面。"
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "更新启动：准备本地配置文件恢复，无需等待 Google Drive。"
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "尚未检查更新状态。"
     },
@@ -228311,8 +228455,8 @@
       "translation": "已验证的备份：{0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "使用切换助手验证更新替换启动。"
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "已验证更新替换启动：主窗口可见并且 UI 调度程序正在响应。"
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -249553,6 +249697,10 @@
       "translation": "* LOCAL PROFILE INITIALIZATION FAILED: {0} >>>!"
     },
     {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "* LOCAL PROFILE RECOVERY IS COMPLETE. AUTOMATIC CLOUD SYNC IS DEFERRED DURING UPDATE VERIFICATION; USE SYNC NOW OR RESTART NORMALLY TO CHECK GOOGLE DRIVE. >>>!"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "* LOCAL RING DISCOVERIES >>>!"
     },
@@ -264701,6 +264849,14 @@
       "translation": "* THE REPLACEMENT SRVSURVEY PROCESS DID NOT START. >>>!"
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+      "translation": "* THE REPLACEMENT PROCESS DID NOT CONFIRM A VISIBLE, RESPONSIVE MAIN WINDOW WITHIN {0} SECONDS. IT WAS STOPPED BEFORE ROLLBACK. SEE THE APPLICATION LOG FOR THE LAST STARTUP STAGE. >>>!"
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "* THE REPLACEMENT PROCESS EXITED WITH CODE {0} BEFORE ITS MAIN WINDOW CONFIRMED STARTUP. SEE THE APPLICATION LOG FOR STARTUP ERRORS. >>>!"
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "* THE REPLAY OVERLAY PRESENTATION CONTAINS AN UNKNOWN OVERLAY. >>>!"
     },
@@ -266581,6 +266737,18 @@
       "translation": "* UPDATE REPLACEMENT HEALTH CONFIRMATION FAILED: {0} >>>!"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "* UPDATE STARTUP: DESKTOP INITIALIZED; WAITING FOR THE MAIN WINDOW'S FIRST FRAME. >>>!"
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "* UPDATE STARTUP: LOCAL PROFILE READY; CONSTRUCTING THE DESKTOP. >>>!"
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "* UPDATE STARTUP: PREPARING LOCAL PROFILE RECOVERY WITHOUT WAITING FOR GOOGLE DRIVE. >>>!"
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "* UPDATE STATUS HAS NOT BEEN CHECKED. >>>!"
     },
@@ -267325,8 +267493,8 @@
       "translation": "* VERIFIED BACKUP: {0} >>>!"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "* VERIFIED UPDATE REPLACEMENT STARTUP WITH THE HANDOFF HELPER. >>>!"
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "* VERIFIED UPDATE REPLACEMENT STARTUP: THE MAIN WINDOW IS VISIBLE AND THE UI DISPATCHER IS RESPONDING. >>>!"
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",

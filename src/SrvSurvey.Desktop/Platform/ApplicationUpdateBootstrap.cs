@@ -219,7 +219,6 @@ internal static class ApplicationUpdateBootstrap
     internal const string ConfirmArgument = "--confirm-update";
     internal const string ResultArgument = "--update-result";
     private static readonly TimeSpan ParentExitTimeout = TimeSpan.FromMinutes(2);
-    private static readonly TimeSpan HealthTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan ReplacementExitTimeout = TimeSpan.FromSeconds(15);
     private static string? pendingConfirmationPlanPath;
     private static string? pendingOutcomePlanPath;
@@ -855,32 +854,30 @@ internal static class ApplicationUpdateBootstrap
         using Process replacement =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(HealthTimeout);
+        ApplicationUpdateHealthStatus status;
         try
         {
-            while (!timeout.IsCancellationRequested)
-            {
-                if (await store.IsHealthConfirmedAsync(plan, timeout.Token).ConfigureAwait(false))
-                {
-                    return true;
-                }
-
-                if (replacement.HasExited)
-                {
-                    return false;
-                }
-
-                await Task.Delay(100, timeout.Token).ConfigureAwait(false);
-            }
+            status = await ApplicationUpdateHealthMonitor
+                .WaitAsync(
+                    () => replacement.HasExited,
+                    token => store.IsHealthConfirmedAsync(plan, token),
+                    ApplicationUpdateHealthMonitor.StartupTimeout,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch
         {
-            // Health confirmation timed out; rollback follows below.
+            await StopReplacementAsync(replacement).ConfigureAwait(false);
+            throw;
         }
-
+        if (status == ApplicationUpdateHealthStatus.Healthy)
+        {
+            return true;
+        }
+        int? exitCode = status == ApplicationUpdateHealthStatus.Exited ? replacement.ExitCode : null;
         await StopReplacementAsync(replacement).ConfigureAwait(false);
-        return false;
+        throw new IOException(ApplicationUpdateHealthMonitor.DescribeFailure(status, exitCode));
     }
 
     private static async Task StopReplacementAsync(Process replacement)

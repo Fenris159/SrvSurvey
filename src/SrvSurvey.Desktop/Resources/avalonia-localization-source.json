@@ -31032,6 +31032,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
+    "Text": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
     "Text": "Local ring discoveries",
     "IsFormat": false,
     "SourceKinds": [
@@ -61409,6 +61417,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateHealthMonitor.cs"
+  },
+  {
+    "Text": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateHealthMonitor.cs"
+  },
+  {
     "Text": "The replay overlay presentation contains an unknown overlay.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65174,6 +65198,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
+    "Text": "Update startup: desktop initialized; waiting for the main window\u0027s first frame.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Update startup: local profile ready; constructing the desktop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
+    "Text": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "Update status has not been checked.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66665,7 +66713,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Verified update replacement startup with the handoff helper.",
+    "Text": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

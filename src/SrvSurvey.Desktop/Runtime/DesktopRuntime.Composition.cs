@@ -447,7 +447,6 @@ internal sealed partial class DesktopRuntime
         linuxTerminationRegistration = RegisterLinuxTermination();
         if (diagnosticReplay is null)
         {
-            ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
             releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
                 appDataPaths,
                 applicationLog,
@@ -455,7 +454,24 @@ internal sealed partial class DesktopRuntime
             );
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
+        if (Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
+        {
+            applicationLog.Append("Update startup: desktop initialized; waiting for the main window's first frame.");
+        }
+        ApplicationStartupWindowPresenter.Present(
+            desktop,
+            mainWindow,
+            startup.BringMainWindowToFront,
+            diagnosticReplay is null
+                ? () =>
+                {
+                    if (shutdownTask is null)
+                    {
+                        ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+                    }
+                }
+                : null
+        );
     }
 
     /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
@@ -1271,7 +1287,9 @@ internal sealed partial class DesktopRuntime
                 null
             )
         );
-        applicationLog.Append("Verified update replacement startup with the handoff helper.");
+        applicationLog.Append(
+            "Verified update replacement startup: the main window is visible and the UI dispatcher is responding."
+        );
     }
 
     private IGameWindowTracker CreateRawGameWindowTracker()
