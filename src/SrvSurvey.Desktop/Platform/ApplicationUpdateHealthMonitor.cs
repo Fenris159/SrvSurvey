@@ -47,5 +47,5 @@ internal static class ApplicationUpdateHealthMonitor
     internal static string DescribeFailure(ApplicationUpdateHealthStatus status, int? exitCode) =>
         status == ApplicationUpdateHealthStatus.Exited
             ? $"The replacement process exited with code {exitCode} before its main window confirmed startup. See the application log for startup errors."
-            : $"The replacement process did not confirm a visible, responsive main window within {StartupTimeout.TotalSeconds:0} seconds. It was stopped before rollback. See the application log for the last startup stage.";
+            : $"The replacement process did not confirm a visible, responsive main window within {StartupTimeout.TotalSeconds:0} seconds. Rollback was requested. See the application log for the last startup stage.";
 }

@@ -14952,6 +14952,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Could not stop the unhealthy replacement process: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
+  },
+  {
     "Text": "Could not validate update registration for PID {0}: {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -61401,7 +61409,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
-    "Text": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
+    "Text": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

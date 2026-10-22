@@ -63,7 +63,7 @@ public sealed class ApplicationUpdateHealthMonitorTests
         string failure = ApplicationUpdateHealthMonitor.DescribeFailure(result, null);
         Assert.Contains("180 seconds", failure);
         Assert.Contains("responsive main window", failure);
-        Assert.Contains("stopped before rollback", failure);
+        Assert.Contains("Rollback was requested", failure);
     }
 
     [Fact]

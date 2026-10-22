@@ -889,30 +889,57 @@ internal static class ApplicationUpdateBootstrap
         using Process replacement =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
+        return await ConfirmReplacementHealthAsync(
+                token =>
+                    ApplicationUpdateHealthMonitor.WaitAsync(
+                        () => replacement.HasExited,
+                        healthToken => store.IsHealthConfirmedAsync(plan, healthToken),
+                        ApplicationUpdateHealthMonitor.StartupTimeout,
+                        token
+                    ),
+                () => replacement.ExitCode,
+                () => StopReplacementAsync(replacement),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    internal static async Task<bool> ConfirmReplacementHealthAsync(
+        Func<CancellationToken, Task<ApplicationUpdateHealthStatus>> waitForHealth,
+        Func<int> getExitCode,
+        Func<Task> stopReplacement,
+        CancellationToken cancellationToken
+    )
+    {
         ApplicationUpdateHealthStatus status;
         try
         {
-            status = await ApplicationUpdateHealthMonitor
-                .WaitAsync(
-                    () => replacement.HasExited,
-                    token => store.IsHealthConfirmedAsync(plan, token),
-                    ApplicationUpdateHealthMonitor.StartupTimeout,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            status = await waitForHealth(cancellationToken).ConfigureAwait(false);
         }
         catch
         {
-            await StopReplacementAsync(replacement).ConfigureAwait(false);
+            await TryStopReplacementAsync(stopReplacement).ConfigureAwait(false);
             throw;
         }
         if (status == ApplicationUpdateHealthStatus.Healthy)
         {
             return true;
         }
-        int? exitCode = status == ApplicationUpdateHealthStatus.Exited ? replacement.ExitCode : null;
-        await StopReplacementAsync(replacement).ConfigureAwait(false);
+        int? exitCode = status == ApplicationUpdateHealthStatus.Exited ? getExitCode() : null;
+        await TryStopReplacementAsync(stopReplacement).ConfigureAwait(false);
         throw new IOException(ApplicationUpdateHealthMonitor.DescribeFailure(status, exitCode));
+    }
+
+    private static async Task TryStopReplacementAsync(Func<Task> stopReplacement)
+    {
+        try
+        {
+            await stopReplacement().ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or InvalidOperationException or Win32Exception)
+        {
+            Trace.TraceWarning("Could not stop the unhealthy replacement process: {0}", exception.Message);
+        }
     }
 
     private static async Task StopReplacementAsync(Process replacement)

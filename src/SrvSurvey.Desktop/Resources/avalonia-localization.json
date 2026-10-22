@@ -7457,6 +7457,10 @@
       "translation": "Der FSS-Erfassungspuffer konnte nicht ausgewählt werden."
     },
     {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Der fehlerhafte Ersatzprozess konnte nicht beendet werden: {0}"
+    },
+    {
       "source": "Could not validate update registration for PID {0}: {1}",
       "translation": "Die Update-Registrierung für PID {0}: {1} konnte nicht validiert werden"
     },
@@ -30613,8 +30617,8 @@
       "translation": "Der Ersetzungsprozess SrvSurvey wurde nicht gestartet."
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "Der Ersetzungsprozess bestätigte nicht, dass innerhalb von {0} Sekunden ein sichtbares, reagierendes Hauptfenster angezeigt wurde. Es wurde vor dem Rollback gestoppt. Sehen Sie sich das Anwendungsprotokoll für die letzte Startphase an."
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Der Ersetzungsprozess bestätigte nicht, dass innerhalb von {0} Sekunden ein sichtbares, reagierendes Hauptfenster angezeigt wurde. Ein Rollback wurde angefordert. Sehen Sie sich das Anwendungsprotokoll für die letzte Startphase an."
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -46481,6 +46485,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "No se pudo seleccionar el búfer de captura FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "No se pudo detener el proceso de reemplazo defectuoso: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -69639,8 +69647,8 @@
       "translation": "El proceso de reemplazo SrvSurvey no se inició."
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "El proceso de reemplazo no confirmó una ventana principal visible y receptiva en {0} segundos. Se detuvo antes de la reversión. Consulte el registro de la aplicación para conocer la última etapa de inicio."
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "El proceso de reemplazo no confirmó una ventana principal visible y receptiva en {0} segundos. Se solicitó la reversión. Consulte el registro de la aplicación para conocer la última etapa de inicio."
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -85507,6 +85515,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Impossible de sélectionner le tampon de capture FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Impossible d’arrêter le processus de remplacement défaillant : {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -108665,8 +108677,8 @@
       "translation": "Le processus de remplacement SrvSurvey n'a pas démarré."
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "Le processus de remplacement n’a pas confirmé une fenêtre principale visible et réactive dans un délai de {0} secondes. Il a été arrêté avant le retour à la version précédente. Consultez le journal de l’application pour connaître la dernière étape du démarrage."
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Le processus de remplacement n’a pas confirmé une fenêtre principale visible et réactive dans un délai de {0} secondes. Le retour à la version précédente a été demandé. Consultez le journal de l’application pour connaître la dernière étape du démarrage."
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -124533,6 +124545,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Não foi possível selecionar o buffer de captura do FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Não foi possível interromper o processo de substituição com falha: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -147691,8 +147707,8 @@
       "translation": "O processo de substituição SrvSurvey não foi iniciado."
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "O processo de substituição não confirmou uma janela principal visível e responsiva em {0} segundos. Foi interrompido antes da reversão. Consulte o log do aplicativo para o último estágio de inicialização."
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "O processo de substituição não confirmou uma janela principal visível e responsiva em {0} segundos. A reversão foi solicitada. Consulte o log do aplicativo para o último estágio de inicialização."
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -163559,6 +163575,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Не удалось выбрать буфер захвата FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Не удалось остановить неисправный процесс замены: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -186717,8 +186737,8 @@
       "translation": "Процесс замены SrvSurvey не начался."
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "Процесс замены не подтвердил наличие видимого и отзывчивого главного окна в течение {0} секунд. Он был остановлен перед откатом. См. журнал приложения для последнего этапа запуска."
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Процесс замены не подтвердил наличие видимого и отзывчивого главного окна в течение {0} секунд. Запрошен откат. См. журнал приложения для последнего этапа запуска."
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -202585,6 +202605,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "无法选择 FSS 捕获缓冲区。"
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "无法停止异常的替换进程：{0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -225743,8 +225767,8 @@
       "translation": "替换 SrvSurvey 进程未启动。"
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "替换过程未在 {0} 秒内确认可见、响应的主窗口。它在回滚之前被停止。查看应用程序日志以了解最后的启动阶段。"
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "替换过程未在 {0} 秒内确认可见、响应的主窗口。已请求回滚。查看应用程序日志以了解最后的启动阶段。"
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
@@ -241611,6 +241635,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "* COULD NOT SELECT THE FSS CAPTURE BUFFER. >>>!"
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "* COULD NOT STOP THE UNHEALTHY REPLACEMENT PROCESS: {0} >>>!"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -264769,8 +264797,8 @@
       "translation": "* THE REPLACEMENT SRVSURVEY PROCESS DID NOT START. >>>!"
     },
     {
-      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. It was stopped before rollback. See the application log for the last startup stage.",
-      "translation": "* THE REPLACEMENT PROCESS DID NOT CONFIRM A VISIBLE, RESPONSIVE MAIN WINDOW WITHIN {0} SECONDS. IT WAS STOPPED BEFORE ROLLBACK. SEE THE APPLICATION LOG FOR THE LAST STARTUP STAGE. >>>!"
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "* THE REPLACEMENT PROCESS DID NOT CONFIRM A VISIBLE, RESPONSIVE MAIN WINDOW WITHIN {0} SECONDS. ROLLBACK WAS REQUESTED. SEE THE APPLICATION LOG FOR THE LAST STARTUP STAGE. >>>!"
     },
     {
       "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",

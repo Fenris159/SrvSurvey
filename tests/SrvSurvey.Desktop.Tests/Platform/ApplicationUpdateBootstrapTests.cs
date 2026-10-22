@@ -26,6 +26,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             ReleaseInstallationStatus.RolledBack,
             token =>
             {
+                Assert.NotEqual(caller.Token, token);
                 token.ThrowIfCancellationRequested();
                 if (writeFails)
                 {
@@ -39,6 +40,77 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         );
         Assert.Equal(3, code);
         Assert.True(restarted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartupErrorsSurviveReplacementCleanupFailures(bool canceled)
+    {
+        Exception startupError = canceled
+            ? new OperationCanceledException("startup canceled")
+            : new IOException("health marker unavailable");
+        int stopAttempts = 0;
+        Exception? error = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+                _ => Task.FromException<ApplicationUpdateHealthStatus>(startupError),
+                () => 0,
+                () =>
+                {
+                    stopAttempts++;
+                    return Task.FromException(new IOException("replacement did not exit"));
+                },
+                CancellationToken.None
+            )
+        );
+
+        Assert.Same(startupError, error);
+        Assert.Equal(1, stopAttempts);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnhealthyStartupDetailsSurviveReplacementCleanupFailures(bool exited)
+    {
+        ApplicationUpdateHealthStatus status = exited
+            ? ApplicationUpdateHealthStatus.Exited
+            : ApplicationUpdateHealthStatus.TimedOut;
+        IOException error = await Assert.ThrowsAsync<IOException>(() =>
+            ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+                _ => Task.FromResult(status),
+                () => 17,
+                () => Task.FromException(new IOException("replacement did not exit")),
+                CancellationToken.None
+            )
+        );
+
+        Assert.Equal(
+            ApplicationUpdateHealthMonitor.DescribeFailure(
+                status,
+                status == ApplicationUpdateHealthStatus.Exited ? 17 : null
+            ),
+            error.Message
+        );
+    }
+
+    [Fact]
+    public async Task HealthyReplacementsKeepRunning()
+    {
+        bool stopped = false;
+        bool healthy = await ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+            _ => Task.FromResult(ApplicationUpdateHealthStatus.Healthy),
+            () => 0,
+            () =>
+            {
+                stopped = true;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+
+        Assert.True(healthy);
+        Assert.False(stopped);
     }
 
     [Fact]
