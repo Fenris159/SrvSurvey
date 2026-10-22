@@ -76,11 +76,16 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         ApplicationUpdateHealthStatus status = exited
             ? ApplicationUpdateHealthStatus.Exited
             : ApplicationUpdateHealthStatus.TimedOut;
+        int stopAttempts = 0;
         IOException error = await Assert.ThrowsAsync<IOException>(() =>
             ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
                 _ => Task.FromResult(status),
                 () => 17,
-                () => Task.FromException(new IOException("replacement did not exit")),
+                () =>
+                {
+                    stopAttempts++;
+                    return Task.FromException(new IOException("replacement did not exit"));
+                },
                 CancellationToken.None
             )
         );
@@ -92,6 +97,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             ),
             error.Message
         );
+        Assert.Equal(1, stopAttempts);
     }
 
     [Fact]
