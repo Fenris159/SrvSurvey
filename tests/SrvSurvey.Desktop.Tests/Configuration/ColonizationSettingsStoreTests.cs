@@ -54,6 +54,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.False(store.LoadOverlayPreferences().UseCompactScrollingCommoditiesList);
         Assert.False(store.LoadOverlayPreferences().HideCollapsedGroups);
         Assert.False(store.LoadOverlayPreferences().HideRowBadges);
+        Assert.False(store.LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
 
         ColonizationOverlayPreferences updated = ColonizationOverlayPreferences.Default with
         {
@@ -65,6 +66,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             HideRowBadges = true,
             HighlightAlmostCoveredFleetCarrierLoads = true,
             UseCompactScrollingCommoditiesList = true,
+            SortNeedsAscendingAtCarriers = true,
         };
         store.SaveOverlayPreferences(updated);
 
@@ -98,6 +100,20 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
 
         Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideRowBadges);
+    }
+
+    /// <summary>Existing settings and malformed values retain normal market order.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"SortNeedsAscendingAtCarriers\":\"invalid\"}")]
+    [InlineData("{\"SortNeedsAscendingAtCarriers\":null}")]
+    public void CarrierNeedsSortingDefaultsOffForOlderSettings(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
     }
 
     [Fact]

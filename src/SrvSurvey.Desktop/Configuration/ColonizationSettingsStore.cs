@@ -53,6 +53,11 @@ public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRec
         {
             HideCollapsedGroups = GetBoolean(overlay, "HideCollapsedGroups", defaults.HideCollapsedGroups),
             HideRowBadges = GetBoolean(overlay, "HideRowBadges", defaults.HideRowBadges),
+            SortNeedsAscendingAtCarriers = GetBoolean(
+                overlay,
+                "SortNeedsAscendingAtCarriers",
+                defaults.SortNeedsAscendingAtCarriers
+            ),
         };
     }
 
@@ -150,6 +155,7 @@ public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRec
             overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
             overlay["HideCollapsedGroups"] = preferences.HideCollapsedGroups;
             overlay["HideRowBadges"] = preferences.HideRowBadges;
+            overlay["SortNeedsAscendingAtCarriers"] = preferences.SortNeedsAscendingAtCarriers;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
             overlay["UseCompactScrollingCommoditiesList"] = preferences.UseCompactScrollingCommoditiesList;
         });
@@ -320,6 +326,9 @@ public sealed record ColonizationOverlayPreferences(
 
     /// <summary>Hides status and assignment labels beside commodities while retaining completion checkmarks.</summary>
     public bool HideRowBadges { get; init; }
+
+    /// <summary>Shows one ascending NEED list while docked at a fleet or squadron carrier.</summary>
+    public bool SortNeedsAscendingAtCarriers { get; init; }
 
     public static ColonizationOverlayPreferences Default { get; } =
         new(

@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.70**. Its development tag
-is `xp2-v2.1.3.0-rc.70`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.70`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.70.1**. Its development tag
+is `xp2-v2.1.3.0-rc.70.1`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.70.1`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and

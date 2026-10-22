@@ -1,12 +1,20 @@
-# SrvSurvey-XP 2.1.3.0-rc.70
+# SrvSurvey-XP 2.1.3.0-rc.70.1
 
-RC70 adds a Raven Colonial Nexus workspace for managing shared colonization
-routes, linked builds, and carrier cargo. Profile imports preserve existing
+RC70.1 adds an option to sort colonization commodity needs from least to greatest
+while docked at fleet or squadron carriers.
+
+It also includes RC70's Raven Colonial Nexus workspace for managing shared
+colonization routes, linked builds, and carrier cargo. Profile imports preserve existing
 progress and recover usable data when individual files fail, with improved
 startup checks and rollback when installing an update.
 
 ## What's changed
 
+- **Load the smallest colonization needs first at carriers.** Enable
+  **Sort needs from least to greatest while docked at FCs** in Colonization
+  overlay settings for one expanded list sorted by the NEED column. The option
+  starts off and applies only while docked at a fleet or squadron carrier.
+  Stations, construction sites, and undocked flight retain normal market order.
 - **Manage Raven Colonial Nexuses in Colonization.** The new Nexus tab sits
   between System Editor and Settings. Select a hub card to see its active builds,
   progress, notes, commanders, and Fleet Carriers. System cards use up to two
@@ -63,15 +71,15 @@ startup checks and rollback when installing an update.
 
 ## Update channel and packages
 
-RC70 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC70.1 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.70`
-- Tag: `xp2-v2.1.3.0-rc.70`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.70-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.70-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.70-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.70-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.70.1`
+- Tag: `xp2-v2.1.3.0-rc.70.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.70.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.70.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.70.1-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.70.1-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 

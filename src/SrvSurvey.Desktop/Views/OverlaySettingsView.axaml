@@ -1370,6 +1370,10 @@
                       Content="Hide collapsed groups" />
             <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
                       Content="Use compact/scrolling commodities list" />
+            <CheckBox x:Name="SortNeedsAscendingAtCarriersCheckBox"
+                      IsChecked="{Binding Colonization.SortNeedsAscendingAtCarriers, Mode=TwoWay}">
+              <TextBlock Text="Sort needs from least to greatest while docked at FCs" TextWrapping="Wrap" />
+            </CheckBox>
             <CheckBox x:Name="HideCommodityRowBadgesCheckBox"
                       IsChecked="{Binding Colonization.HideCommodityRowBadges, Mode=TwoWay}"
                       Content="Hide row badges" />
