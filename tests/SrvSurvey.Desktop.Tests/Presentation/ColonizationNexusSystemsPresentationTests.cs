@@ -272,8 +272,11 @@ public sealed class ColonizationNexusSystemsPresentationTests
                 .GetTemplateDescendants()
                 .OfType<ContentPresenter>()
                 .Single(control => control.Name == "PART_ContentPresenter");
-            Assert.Equal(Color.Parse("#252525"), Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Background).Color);
-            Assert.Equal(Colors.White, Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            Assert.Equal(
+                Color.Parse("#252525"),
+                Assert.IsType<ISolidColorBrush>(presenter.Background, exactMatch: false).Color
+            );
+            Assert.Equal(Colors.White, Assert.IsType<ISolidColorBrush>(presenter.Foreground, exactMatch: false).Color);
             Point point = selected
                 .TranslatePoint(new Point(selected.Bounds.Width / 2, selected.Bounds.Height / 2), window)!
                 .Value;
@@ -281,7 +284,10 @@ public sealed class ColonizationNexusSystemsPresentationTests
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
             Assert.True(selected.IsPointerOver);
-            Assert.Equal(Color.Parse("#252525"), Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Background).Color);
+            Assert.Equal(
+                Color.Parse("#252525"),
+                Assert.IsType<ISolidColorBrush>(presenter.Background, exactMatch: false).Color
+            );
             frame.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-nexus-picker-soft-highlight.png"),
                 PngBitmapEncoderOptions.Default
@@ -339,7 +345,7 @@ public sealed class ColonizationNexusSystemsPresentationTests
             Assert.NotNull(window.CaptureRenderedFrame());
             ScrollViewer scroll = view.FindControl<ScrollViewer>("NexusPageScroll")!;
             Vector before = scroll.Offset;
-            Visual root = Assert.IsAssignableFrom<Visual>(window.GetPresentationSource()?.RootVisual);
+            Visual root = Assert.IsType<Visual>(window.GetPresentationSource()?.RootVisual, exactMatch: false);
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 Point click = scope

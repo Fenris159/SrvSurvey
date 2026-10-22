@@ -217,15 +217,16 @@ public sealed class ColonizationNexusPresentationTests
                 bar =>
                 {
                     Assert.InRange(bar.Value, 0, 100);
-                    Color background = Assert.IsAssignableFrom<ISolidColorBrush>(bar.Background).Color;
+                    Color background = Assert.IsType<ISolidColorBrush>(bar.Background, exactMatch: false).Color;
                     Assert.True(background == Colors.Transparent || background == Color.Parse("#737373"));
                 }
             );
             Assert.Equal(
                 Color.Parse("#737373"),
                 Assert
-                    .IsAssignableFrom<ISolidColorBrush>(
-                        Assert.Single(project.GetVisualDescendants().OfType<ProgressBar>()).Background
+                    .IsType<ISolidColorBrush>(
+                        Assert.Single(project.GetVisualDescendants().OfType<ProgressBar>()).Background,
+                        exactMatch: false
                     )
                     .Color
             );
@@ -259,7 +260,7 @@ public sealed class ColonizationNexusPresentationTests
             .Value;
         var hit = window.InputHitTest(point) as Visual;
         Assert.True(
-            hit?.GetVisualAncestors().OfType<ListBoxItem>().Contains(second) == true,
+            hit?.GetVisualAncestors().OfType<ListBoxItem>().Contains(second),
             $"Click {point} missed the item {second.Bounds}; hit {hit?.GetType().Name}."
         );
         window.MouseDown(point, MouseButton.Left, RawInputModifiers.LeftMouseButton);
@@ -269,8 +270,11 @@ public sealed class ColonizationNexusPresentationTests
         Assert.Same(model.Detail!.Systems[1], model.Detail.SelectedSystem);
         Assert.True(second.IsSelected);
         Assert.False(first.IsSelected);
-        Assert.Equal(Color.Parse("#E6D59A"), Assert.IsAssignableFrom<ISolidColorBrush>(second.BorderBrush).Color);
-        Assert.Equal(Colors.Transparent, Assert.IsAssignableFrom<ISolidColorBrush>(first.BorderBrush).Color);
+        Assert.Equal(
+            Color.Parse("#E6D59A"),
+            Assert.IsType<ISolidColorBrush>(second.BorderBrush, exactMatch: false).Color
+        );
+        Assert.Equal(Colors.Transparent, Assert.IsType<ISolidColorBrush>(first.BorderBrush, exactMatch: false).Color);
         Assert.DoesNotContain(
             view.GetVisualDescendants().OfType<Border>(),
             border => border.Classes.Contains("nexus-project")
