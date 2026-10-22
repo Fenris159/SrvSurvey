@@ -2227,6 +2227,66 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LayoutOnlyXpSourcesStillMergeTheirAdjacentPreferences(bool nested)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-preferences-only-{Guid.NewGuid():N}");
+        try
+        {
+            string sourceRoot = Path.Combine(root, "source");
+            string source = Path.Combine(sourceRoot, "cross-platform");
+            string layouts = nested ? Path.Combine(source, "commanders", "F123", "overlays") : source;
+            Directory.CreateDirectory(layouts);
+            await File.WriteAllTextAsync(
+                Path.Combine(layouts, "plotters.json"),
+                """{"PlotBodyInfo":"left:960, top:540"}"""
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceRoot, "cross-platform-ui.json"),
+                """{"Version":1,"Theme":"orange-dark","JumpInfo":{"AutoShow":false}}"""
+            );
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            Directory.CreateDirectory(paths.ConfigDirectory);
+            await File.WriteAllTextAsync(paths.UiSettingsPath, """{"Version":1,"Theme":"blue-dark"}""");
+            await using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            bool restarted = false;
+            model.ProfileImportCompleted += () =>
+            {
+                restarted = true;
+                return Task.CompletedTask;
+            };
+            model.LegacyProfileSourcePath = sourceRoot;
+
+            await model.ImportLegacyProfileAsync();
+
+            Assert.True(model.HasCompletedLegacyImport, model.ProfileStatusMessage);
+            Assert.True(restarted, model.ProfileStatusMessage);
+            Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Empty(Directory.EnumerateFiles(paths.DataDirectory, "plotters.json", SearchOption.AllDirectories));
+            string backup = Directory.GetDirectories(model.ProfileBackupDirectory, "profile-import-*").Single();
+            Assert.True(File.Exists(Path.Combine(backup, "incoming-cross-platform-ui.json")));
+            Assert.Contains("Overlay layouts were skipped", model.ProfileStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task CurrentWindowsProfileAndUiSettingsCanBeImportedFromApplicationDataRoot()
     {

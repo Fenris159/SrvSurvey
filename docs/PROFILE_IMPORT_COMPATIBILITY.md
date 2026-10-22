@@ -83,7 +83,9 @@ claim list. New commanders, modes, and files are added.
 Current UI preferences also win, while missing compatible preferences can be
 filled. Overlay layouts from every imported client are backed up and skipped,
 including shared layouts and commander-specific overlay directories. Importing
-UI preferences never rewrites current overlay position references. This keeps
+UI preferences never rewrites current overlay position references. An XP source
+containing only layout files can still merge its selected adjacent UI preferences
+with an empty data payload; the layout files remain excluded. This keeps
 profile import focused on player/Codex data; native backup and restore remains
 a separate workflow with its existing machine-specific restore rules.
 Unsupported file collisions retain the current file; both originals remain

@@ -145,7 +145,7 @@ public sealed class LegacyProfileImporter
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            if (importedInventory.Entries.Count == 0)
+            if (!HasCompatiblePayload(importedInventory, importSource))
             {
                 throw new InvalidDataException("No compatible files could be recovered from the selected profile.");
             }
@@ -414,6 +414,10 @@ public sealed class LegacyProfileImporter
         }
         return Directory.Exists(final) ? final : null;
     }
+
+    private static bool HasCompatiblePayload(ProfileInventory inventory, ProfileImportSource source) =>
+        inventory.Entries.Count > 0
+        || source.Kind == ProfileImportSourceKind.CrossPlatform && source.UiSettingsPath is not null;
 
     private static ProfileInventory SelectImportedFiles(ProfileInventory source)
     {
