@@ -12,6 +12,7 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
     private bool showRefuel;
     private bool synchronizing;
     private SpanshDestinationViewModel? editing;
+    private int minimumRows;
 
     /// <summary>
     /// Creates commands for adding and editing destinations through a single reusable entry.
@@ -28,6 +29,18 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
     public string Value => string.Join('\n', Rows.Select(row => row.Name));
     public string RefuelValue => string.Join('\n', Rows.Where(row => row.Refuel).Select(row => row.Name));
     public bool HasRows => Rows.Count > 0;
+    public int MinimumRows
+    {
+        get => minimumRows;
+        internal set
+        {
+            minimumRows = Math.Max(0, value);
+            Publish();
+        }
+    }
+
+    internal bool CanRemove(SpanshDestinationViewModel row) => Rows.Contains(row) && Rows.Count > MinimumRows;
+
     public bool IsEditing => editing is not null;
     public bool HasPendingEntry => IsEditing || Draft.Trim().Length > 0;
     public string CommitLabel => IsEditing ? "Save" : "+ Add";
@@ -155,6 +168,10 @@ public sealed class SpanshSystemListViewModel : WorkspaceObservable
     /// </summary>
     internal void Remove(SpanshDestinationViewModel row)
     {
+        if (!CanRemove(row))
+        {
+            return;
+        }
         if (ReferenceEquals(editing, row))
         {
             CancelEdit();
@@ -201,6 +218,7 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
     private readonly SpanshSystemListViewModel owner;
     private readonly WorkspaceCommand upCommand;
     private readonly WorkspaceCommand downCommand;
+    private readonly WorkspaceCommand removeCommand;
     private string name;
     private bool refuel;
 
@@ -212,7 +230,7 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
         this.owner = owner;
         this.name = name;
         EditCommand = new WorkspaceCommand(() => owner.Edit(this));
-        RemoveCommand = new WorkspaceCommand(() => owner.Remove(this));
+        removeCommand = new WorkspaceCommand(() => owner.Remove(this), () => owner.CanRemove(this));
         upCommand = new WorkspaceCommand(() => owner.Move(this, -1), () => owner.Rows.IndexOf(this) > 0);
         downCommand = new WorkspaceCommand(
             () => owner.Move(this, 1),
@@ -225,7 +243,7 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
         (owner.Rows.IndexOf(this) + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + ".";
     public bool ShowRefuel => owner.ShowRefuel;
     public ICommand EditCommand { get; }
-    public ICommand RemoveCommand { get; }
+    public ICommand RemoveCommand => removeCommand;
     public ICommand UpCommand => upCommand;
     public ICommand DownCommand => downCommand;
     public bool Refuel
@@ -254,5 +272,6 @@ public sealed class SpanshDestinationViewModel : WorkspaceObservable
         Changed(nameof(ShowRefuel));
         upCommand.Refresh();
         downCommand.Refresh();
+        removeCommand.Refresh();
     }
 }

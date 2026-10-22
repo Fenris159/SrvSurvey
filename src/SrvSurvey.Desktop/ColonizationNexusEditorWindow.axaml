@@ -1,0 +1,118 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:core="using:SrvSurvey.Core.Colonization"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        x:Class="SrvSurvey.Desktop.ColonizationNexusEditorWindow"
+        x:DataType="vm:ColonizationNexusEditorViewModel"
+        Title="{Binding Title}" Width="760" Height="900" MinWidth="620" MinHeight="540"
+        WindowStartupLocation="CenterOwner">
+  <Grid Margin="20" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="14">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="card-title" Text="{Binding Title}" />
+      <TextBlock Classes="muted" Text="Organize a shared colonization route with systems, commanders and Fleet Carriers." TextWrapping="Wrap" />
+    </StackPanel>
+    <ScrollViewer x:Name="NexusEditorScroll" Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="18" IsEnabled="{Binding CanEdit}">
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock FontWeight="SemiBold" Text="Nexus name" />
+            <TextBox x:Name="NewNexusName" Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditName}" />
+            <WrapPanel>
+              <TextBlock Text="Owner:" Margin="0,0,8,0" />
+              <TextBlock Text="{Binding Owner}" Foreground="{DynamicResource RavenAccentBrush}" />
+            </WrapPanel>
+            <StackPanel Spacing="5">
+              <TextBlock FontWeight="SemiBold" Text="Visibility" />
+              <ToggleSwitch x:Name="PrivateNexus" OffContent="Public" OnContent="Private" IsChecked="{Binding IsPrivate, Mode=TwoWay}"
+                            ToolTip.Tip="Private: members only. Public: visible by link." />
+            </StackPanel>
+            <TextBlock FontWeight="SemiBold" Text="Notes (optional)" />
+            <TextBox x:Name="NewNexusNotes" Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"
+                     TextWrapping="Wrap" MinHeight="70" MaxHeight="150" />
+          </StackPanel>
+        </Border>
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title" Text="Systems" />
+            <TextBlock Classes="muted" Text="Add systems in route order. Use the arrows to reorder them, or remove an incorrect entry." TextWrapping="Wrap" />
+            <controls:SpanshSystemListEntry x:Name="NexusSystems" DataContext="{Binding Systems}" PlaceholderText="Add Systems" />
+          </StackPanel>
+        </Border>
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title" Text="Commanders" />
+            <TextBlock Classes="muted" Text="The owner is included automatically. Add any other commanders who will participate." TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox x:Name="NewNexusCommander" Text="{Binding Commanders.Draft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Commander name" />
+              <Button x:Name="AddNexusCommander" Grid.Column="1" Content="+ Add" Command="{Binding Commanders.CommitCommand}" />
+            </Grid>
+            <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl x:Name="NexusCommanderRows" ItemsSource="{Binding Commanders.Rows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SpanshDestinationViewModel">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                      <Button Grid.Column="1" Content="Remove" Command="{Binding RemoveCommand}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </StackPanel>
+        </Border>
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title" Text="Fleet Carriers" />
+            <TextBlock Classes="muted" Text="Choose one of your linked carriers, or search Raven by carrier name or callsign." TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox x:Name="NexusCarrierQuery" Text="{Binding CarrierQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Carrier name or callsign" ToolTip.Tip="Enter at least 3 characters to search." />
+              <Button x:Name="FindNexusCarriers" Grid.Column="1" Content="Find carriers" IsEnabled="{Binding CanFindCarrier}" Click="FindCarriers_Click" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <ComboBox x:Name="NexusCarrierChoice" ItemsSource="{Binding CarrierOptions}" SelectedItem="{Binding SelectedCarrier, Mode=TwoWay}"
+                        HorizontalAlignment="Stretch" MaxDropDownHeight="260" PlaceholderText="Select a carrier">
+                <ComboBox.ItemTemplate><DataTemplate x:DataType="core:ColonizationNexusCarrierMatch"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate>
+              </ComboBox>
+              <Button x:Name="AddNexusCarrier" Grid.Column="1" Content="+ Add" Command="{Binding AddCarrierCommand}" />
+            </Grid>
+            <ScrollViewer MaxHeight="180" HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl x:Name="NexusCarrierRows" ItemsSource="{Binding Carriers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="core:ColonizationNexusCarrierMatch">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+                      <TextBlock Text="{Binding Label}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                      <Button Grid.Column="1" Content="Remove" Command="{Binding $parent[Window].((vm:ColonizationNexusEditorViewModel)DataContext).RemoveCarrierCommand}" CommandParameter="{Binding}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Spacing="8">
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" />
+      <TextBlock x:Name="NexusCreationStatus" Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}" />
+    </StackPanel>
+    <DockPanel Grid.Row="3" LastChildFill="False">
+      <Button x:Name="DeleteNexus" Content="Delete Nexus" IsVisible="{Binding IsEditing}" IsEnabled="{Binding CanDelete}" Click="Delete_Click" DockPanel.Dock="Left" Foreground="{DynamicResource RavenWarningBrush}" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" DockPanel.Dock="Right">
+      <Button x:Name="CancelNexusCreation" Content="{Binding CloseLabel}" Click="Cancel_Click" />
+      <Button x:Name="SubmitNexus" Classes="primary" Content="{Binding SubmitLabel}" IsEnabled="{Binding CanSubmit}" Click="Submit_Click" />
+      </StackPanel>
+    </DockPanel>
+    <Border x:Name="DeleteNexusPrompt" Grid.RowSpan="4" IsVisible="{Binding IsDeleteConfirmationVisible}" Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenWarningBrush}" BorderThickness="2" CornerRadius="10" Padding="24" VerticalAlignment="Center">
+      <StackPanel Spacing="16">
+        <TextBlock Classes="card-title" Text="Delete Nexus?" Foreground="{DynamicResource RavenWarningBrush}" />
+        <TextBlock Text="{Binding DeleteWarning}" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding DeletionStatus}" TextWrapping="Wrap" IsVisible="{Binding HasDeletionStatus}" />
+        <WrapPanel>
+          <Button x:Name="CancelNexusDeletion" Content="Keep Nexus" Click="Keep_Click" IsEnabled="{Binding !IsBusy}" Margin="0,0,12,0" />
+          <Button x:Name="ConfirmNexusDeletion" Content="Delete permanently" Classes="primary" Click="ConfirmDelete_Click" IsEnabled="{Binding CanConfirmDeletion}" />
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

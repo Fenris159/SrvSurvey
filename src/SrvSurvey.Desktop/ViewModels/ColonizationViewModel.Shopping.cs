@@ -34,7 +34,7 @@ public sealed partial class ColonizationViewModel
         get => selectedWorkspaceTabIndex;
         set
         {
-            int selected = Math.Clamp(value, 0, 3);
+            int selected = Math.Clamp(value, 0, 4);
             if (selectedWorkspaceTabIndex == selected)
             {
                 return;
@@ -45,6 +45,10 @@ public sealed partial class ColonizationViewModel
             if (selected == 2)
             {
                 SystemEditor.ActivateSystemCatalog();
+            }
+            if (selected == 3)
+            {
+                UpdateNexusContext(activate: true);
             }
         }
     }

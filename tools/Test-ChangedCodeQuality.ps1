@@ -506,13 +506,13 @@ try {
 
         $ruleSetPath = Join-Path $repositoryRoot "tools/SonarCloud.ruleset"
         & dotnet build-server shutdown *> $null
+        # Sonar warnings must fail the build, including findings outside changed lines.
         & dotnet build $Solution `
             --configuration Release `
             --no-restore `
             -t:Rebuild `
             -m:1 `
-            "-p:TreatWarningsAsErrors=false" `
-            "-p:WarningsAsErrors=" `
+            "-p:TreatWarningsAsErrors=true" `
             "-p:CodeAnalysisRuleSet=$ruleSetPath" `
             "-clp:NoSummary" *> $sonarLogPath
         if ($LASTEXITCODE -ne 0) {

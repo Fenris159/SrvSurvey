@@ -18,6 +18,7 @@ public static class JournalFolderLocator
     private const string LocalDirectoryName = ".local";
     private const string ShareDirectoryName = "share";
     private const string SteamDirectoryName = "Steam";
+    private const string SteamAppsDirectoryName = "steamapps";
     private const string FlatpakSteamApplicationId = "com.valvesoftware.Steam";
     private const string BottlesDirectoryName = "bottles";
 
@@ -143,7 +144,7 @@ public static class JournalFolderLocator
 
         string[] protonJournalSegments =
         [
-            "steamapps",
+            SteamAppsDirectoryName,
             "compatdata",
             "359320",
             "pfx",
@@ -215,7 +216,7 @@ public static class JournalFolderLocator
         foreach (string steamLibrary in GetSteamLibraryRoots(home))
         {
             DiscoverJournalDirectories(
-                Path.Combine(steamLibrary, "steamapps", "compatdata"),
+                Path.Combine(steamLibrary, SteamAppsDirectoryName, "compatdata"),
                 maximumDepth: 3,
                 AddCandidate
             );
@@ -317,7 +318,11 @@ public static class JournalFolderLocator
         }
         foreach (string library in GetSteamLibraryRoots(home))
         {
-            DiscoverWineUserDirectories(Path.Combine(library, "steamapps", "compatdata"), 3, path => users.Add(path));
+            DiscoverWineUserDirectories(
+                Path.Combine(library, SteamAppsDirectoryName, "compatdata"),
+                3,
+                path => users.Add(path)
+            );
         }
         foreach (string variable in new[] { "WINEPREFIX", "STEAM_COMPAT_DATA_PATH" })
         {
@@ -590,7 +595,7 @@ public static class JournalFolderLocator
                 yield return steamRoot;
             }
 
-            string libraryFile = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
+            string libraryFile = Path.Combine(steamRoot, SteamAppsDirectoryName, "libraryfolders.vdf");
             string text;
             try
             {

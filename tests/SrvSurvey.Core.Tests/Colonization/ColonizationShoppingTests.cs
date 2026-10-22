@@ -5,6 +5,22 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationShoppingTests
 {
     [Fact]
+    public void CarrierSubtractionUsesOnlyKnownManifestsWithoutCrashingOnUnknownCargo()
+    {
+        ColonizationShoppingNeed[] needs = [new("steel", "Steel", 100)];
+        ColonizationFleetCarrier[] carriers =
+        [
+            new() { MarketId = 42, Cargo = null! },
+            new()
+            {
+                MarketId = 43,
+                Cargo = new() { ["steel"] = 20 },
+            },
+        ];
+        Assert.Equal(80, Assert.Single(ColonizationShopping.SubtractCarrierCargo(needs, carriers)).Required);
+    }
+
+    [Fact]
     public void CarrierCoverageWeightsRemainingTonnageAndCapsSurplusPerCommodity()
     {
         ColonizationProject project = Project("one", new() { ["steel"] = 100, ["water"] = 300 });

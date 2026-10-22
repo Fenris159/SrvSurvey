@@ -40,8 +40,11 @@ public sealed partial class ColonizationProjectPreviewViewModel
         SystemOptions =
         [
             AllSystems,
-            .. reportData
-                .Select(data => data.Project.SystemName.Trim())
+            .. (
+                nexusSnapshot is null
+                    ? reportData.Select(data => data.Project.SystemName.Trim())
+                    : nexusSnapshot.Systems.Select(system => system.Name)
+            )
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .Select(name => new PreviewSystemOption(name, name.Length == 0 ? "Unknown system" : name)),
@@ -53,22 +56,42 @@ public sealed partial class ColonizationProjectPreviewViewModel
     }
 
     /// <summary>Aggregates only the chosen system's builds, retaining shared-carrier deduplication and the original fetch time.</summary>
-    private void ApplyReport()
+    private void ApplyReport(ColonizationProjectPreview? candidate = null)
     {
-        Snapshot = isCombined
-            ? ColonizationProjectPreview.CreateCombined(
-                reportData.Where(data =>
-                    selectedSystem.SystemName is null
-                    || string.Equals(
-                        data.Project.SystemName.Trim(),
-                        selectedSystem.SystemName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                ),
+        if (candidate is not null)
+        {
+            Snapshot = candidate;
+        }
+        else if (nexusSnapshot is not null)
+        {
+            Snapshot = ColonizationProjectPreview.CreateNexusReport(
+                nexusSnapshot,
+                selectedSystem.SystemName,
                 fetchedAt
-            )
-            : new ColonizationProjectPreview(reportData[0], fetchedAt);
+            );
+        }
+        else
+        {
+            Snapshot = isCombined
+                ? ColonizationProjectPreview.CreateCombined(
+                    reportData.Where(data =>
+                        selectedSystem.SystemName is null
+                        || string.Equals(
+                            data.Project.SystemName.Trim(),
+                            selectedSystem.SystemName,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    ),
+                    fetchedAt
+                )
+                : new ColonizationProjectPreview(reportData[0], fetchedAt);
+        }
         ApplySnapshot(Snapshot);
+        if (nexusSnapshot is not null && ColonizationNexusPlan.Create(nexusSnapshot).HasIncompleteRequirements)
+        {
+            Status = "Some Nexus requirements were not reported. Totals include reported needs only.";
+            return;
+        }
         Status = refreshFailed
             ? "Refresh failed. Showing the last successful snapshot."
             : (Snapshot.CarrierDeficit, Snapshot.Statistics) switch

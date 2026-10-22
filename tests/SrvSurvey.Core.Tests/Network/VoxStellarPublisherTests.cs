@@ -476,7 +476,7 @@ public sealed class VoxStellarPublisherTests
         await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
         await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
         await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(handler.Cancelled.Task.IsCompleted);
+        Assert.True(handler.RequestCancellation.IsCancellationRequested);
         Assert.Equal(1, handler.CallCount);
     }
 
@@ -512,7 +512,7 @@ public sealed class VoxStellarPublisherTests
             (await clock.NextTimerAsync()).Fire();
             await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
             await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.True(handler.Cancelled.Task.IsCompleted);
+            Assert.True(handler.RequestCancellation.IsCancellationRequested);
             Assert.Equal(2, handler.CallCount);
             Assert.Empty(logs);
             cancellationCompletion.TrySetResult();
@@ -530,7 +530,7 @@ public sealed class VoxStellarPublisherTests
         : HttpMessageHandler
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public CancellationToken RequestCancellation { get; private set; }
         public int CallCount { get; private set; }
 
         /// <inheritdoc />
@@ -544,9 +544,7 @@ public sealed class VoxStellarPublisherTests
             {
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
-            using CancellationTokenRegistration registration = cancellationToken.Register(() =>
-                Cancelled.TrySetResult()
-            );
+            RequestCancellation = cancellationToken;
             Started.TrySetResult();
             try
             {

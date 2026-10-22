@@ -96,6 +96,7 @@ public static class ColonizationShopping
         var stock = carriers
             .Where(carrier => carrier.MarketId > 0 && (selectedMarketId == 0 || carrier.MarketId == selectedMarketId))
             .DistinctBy(carrier => carrier.MarketId)
+            .Where(carrier => carrier.Cargo is not null)
             .SelectMany(carrier =>
                 carrier
                     .Cargo.GroupBy(pair => ColonizationMarketCommodities.Key(pair.Key), StringComparer.Ordinal)

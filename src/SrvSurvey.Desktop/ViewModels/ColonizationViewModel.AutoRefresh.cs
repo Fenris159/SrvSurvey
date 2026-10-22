@@ -59,11 +59,11 @@ public sealed partial class ColonizationViewModel
                     break;
                 }
                 await tick;
-                if (IsBusy)
+                if (IsBusy || SelectedWorkspaceTabIndex == 3 && Nexus.IsBusy)
                 {
                     continue;
                 }
-                Task refresh = RefreshAsync(token);
+                Task refresh = SelectedWorkspaceTabIndex == 3 ? Nexus.RefreshAsync(token) : RefreshAsync(token);
                 if (await Task.WhenAny(expiry, refresh) == expiry && ReferenceEquals(cancelAutoRefresh, cancel))
                 {
                     StopAutoRefresh();

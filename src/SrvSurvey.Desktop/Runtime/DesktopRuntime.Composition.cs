@@ -84,6 +84,24 @@ internal sealed partial class DesktopRuntime
     private bool manualOverlaySuppressed;
     private string[] originalStartupArguments = [];
 
+    private static (CommanderProfileViewModel? Profile, string? Status) CreateDiagnosticProfile(
+        DiagnosticReplayContext? replay
+    ) =>
+        replay is null
+            ? (null, null)
+            : (
+                new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                $"Diagnostic replay: {replay.Commander.Name} ({replay.Commander.FrontierId}); external effects disabled."
+            );
+
+    private bool ShouldKeepOverlaysVisible() =>
+        mainViewModel is { } current
+        && (
+            current.OverlayBehavior.KeepWhenGameLosesFocus
+            || current.OverlayInteraction.IsEditing
+            || current.OverlayInteraction.IsLiveInteractionEnabled
+        );
+
     /// <summary>Composes desktop services, settings, and capture dependencies at startup.</summary>
     private void InitializeDesktopApplication(
         Application application,
@@ -159,13 +177,7 @@ internal sealed partial class DesktopRuntime
             gameWindowTracker: CreateRawGameWindowTracker(),
             registry: null,
             overlayLayout,
-            () =>
-                mainViewModel is { } current
-                && (
-                    current.OverlayBehavior.KeepWhenGameLosesFocus
-                    || current.OverlayInteraction.IsEditing
-                    || current.OverlayInteraction.IsLiveInteractionEnabled
-                ),
+            ShouldKeepOverlaysVisible,
             diagnostic =>
                 applicationLog.Append(
                     $"Overlay host '{diagnostic.PlotterName}' "
@@ -198,6 +210,7 @@ internal sealed partial class DesktopRuntime
             )
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
+        (CommanderProfileViewModel? Profile, string? Status) replayProfile = CreateDiagnosticProfile(diagnosticReplay);
         using var mainViewModelStartup = new MainWindowViewModelStartup(
             configuredJournalDirectory,
             new MainWindowFoundationInputs
@@ -211,14 +224,9 @@ internal sealed partial class DesktopRuntime
                 CommanderPreferenceSettingsStore = commanderPreferenceStore,
                 CommanderPreferenceCommandLineOverride = commanderPreferenceResolution.IsCommandLineOverride,
                 CommanderPreferenceInitialStatus = commanderPreferenceResolution.StatusMessage,
-                FrontierProfile = diagnosticReplay is null
-                    ? null
-                    : new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                FrontierProfile = replayProfile.Profile,
                 IsDiagnosticReplay = diagnosticReplay is not null,
-                DiagnosticReplayStatus = diagnosticReplay is null
-                    ? null
-                    : $"Diagnostic replay: {diagnosticReplay.Commander.Name} "
-                        + $"({diagnosticReplay.Commander.FrontierId}); external effects disabled.",
+                DiagnosticReplayStatus = replayProfile.Status,
                 ExternalNetworkClient = externalNetworkClient,
                 ReplayViewportProvider = CaptureReplayViewport,
             },

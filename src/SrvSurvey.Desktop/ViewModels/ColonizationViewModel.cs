@@ -95,6 +95,11 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             FleetCarrierCargoSyncEnabled = settingsStore.LoadFleetCarrierCargoSyncEnabled(),
         };
         this.buildCatalog = buildCatalog ?? ColonizationBuildCatalog.LoadEmbedded();
+        Nexus = new ColonizationNexusViewModel(
+            this.client as IRavenColonialNexusReader,
+            this.buildCatalog,
+            OpenProjectPreview
+        );
         overlayPreferences = settingsStore.LoadOverlayPreferences();
         shipCargoPublishingEnabled = settingsStore.LoadShipCargoPublishingEnabled();
         statusMessage = IsEnabled
@@ -149,6 +154,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
         UpdateCommodityPlan();
+        UpdateNexusContext();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -218,6 +224,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     public ColonizationProjectEditorViewModel ProjectEditor { get; }
 
     public ColonizationSystemEditorViewModel SystemEditor { get; }
+
+    public ColonizationNexusViewModel Nexus { get; }
 
     public ColonizationCommodityOverlayViewModel CommodityOverlay { get; }
 
@@ -464,6 +472,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
                 UpdateProjectEditorContext();
                 UpdateSystemEditorContext();
+                UpdateNexusContext(activate: value);
             }
             catch (Exception exception)
                 when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
@@ -639,6 +648,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         RaiseCommandStates();
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        UpdateNexusContext();
     }
 
     /// <summary>
@@ -657,6 +667,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         StopAutoRefresh();
         CancelDockingRefresh();
         recovery.SetCommander(normalized);
+        UpdateNexusContext();
         OnPropertyChanged(nameof(CommanderName));
         OnPropertyChanged(nameof(CommanderStatus));
         RaiseCommandStates();
@@ -675,6 +686,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         if (IsEnabled)
         {
             await RefreshAsync(CancellationToken.None);
+            UpdateNexusContext(activate: true);
         }
     }
 
@@ -957,6 +969,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         CancelCurrentPlannedSystemRead();
         StopPlannedProjects();
         SystemEditor.Dispose();
+        Nexus.Dispose();
         StopAutoRefresh();
         CloseMarketSearchWorkspace();
         CancelDockingRefresh();
@@ -1057,6 +1070,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        UpdateNexusContext(activate: true);
     }
 
     /// <summary>Checks key ownership against a captured commander and rejects results from a superseded profile.</summary>
