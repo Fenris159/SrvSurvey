@@ -13,6 +13,7 @@ public sealed class LegacyProfileOptionViewModel(LegacyProfileDiscovery discover
             LegacyProfileLocationKind.MicrosoftStore => $"Microsoft Store profile ({Discovery.FileCount:N0} files)",
             LegacyProfileLocationKind.MicrosoftStoreBackup =>
                 $"Microsoft Store recovery profile ({Discovery.FileCount:N0} files)",
+            LegacyProfileLocationKind.WineOrProton => $"Wine / Proton profile ({Discovery.FileCount:N0} files)",
             _ => $"Legacy profile ({Discovery.FileCount:N0} files)",
         };
 

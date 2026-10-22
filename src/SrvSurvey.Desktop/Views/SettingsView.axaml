@@ -1071,7 +1071,7 @@
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Close original SrvSurvey before importing. Choose its application-data folder or a legacy version folder. Player and Codex data are imported; legacy overlay positions are skipped. For an XP profile, choose its cross-platform folder; adjacent cross-platform-ui.json settings are also imported." />
+                         Text="Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="primary"

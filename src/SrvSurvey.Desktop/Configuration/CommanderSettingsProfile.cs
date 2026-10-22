@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -153,7 +154,22 @@ internal static class CommanderSettingsProfile
             string temporaryPath = target + $".{Guid.NewGuid():N}.tmp";
             try
             {
-                File.Copy(source, temporaryPath);
+                if (result.Manifest.Version >= 4 && File.Exists(target))
+                {
+                    JsonObject current =
+                        JsonNode.Parse(File.ReadAllText(target)) as JsonObject
+                        ?? throw new InvalidDataException(
+                            "The current overlay settings could not be merged and were kept unchanged."
+                        );
+                    JsonObject incoming =
+                        JsonNode.Parse(File.ReadAllText(source)) as JsonObject
+                        ?? throw new InvalidDataException("The incoming overlay settings are not a JSON object.");
+                    File.WriteAllText(temporaryPath, ProfileJsonMerge.MergeMissing(current, incoming).ToJsonString());
+                }
+                else
+                {
+                    File.Copy(source, temporaryPath);
+                }
                 File.Move(temporaryPath, target, overwrite: true);
             }
             finally

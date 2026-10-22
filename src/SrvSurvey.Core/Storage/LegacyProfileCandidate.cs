@@ -7,4 +7,5 @@ public enum LegacyProfileLocationKind
     Desktop,
     MicrosoftStore,
     MicrosoftStoreBackup,
+    WineOrProton,
 }

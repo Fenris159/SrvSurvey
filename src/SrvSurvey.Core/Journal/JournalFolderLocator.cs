@@ -290,7 +290,52 @@ public static class JournalFolderLocator
         }
     }
 
-    private static void DiscoverJournalDirectories(string root, int maximumDepth, Action<string> addCandidate)
+    internal static IReadOnlyList<string> GetWineUserDirectories(
+        string userProfile,
+        Func<string, string?> getEnvironmentVariable
+    )
+    {
+        string home = Path.GetFullPath(userProfile);
+        var users = new HashSet<string>(StringComparer.Ordinal);
+        foreach ((string Path, int MaximumDepth) root in GetLinuxPrefixRoots(home))
+        {
+            DiscoverWineUserDirectories(root.Path, root.MaximumDepth, path => users.Add(path));
+        }
+        DiscoverWineUserDirectories(Path.Combine(home, "Games"), 6, path => users.Add(path));
+        foreach (string prefix in ReadHeroicPrefixes(home).Concat(ReadLutrisPrefixes(home)))
+        {
+            DiscoverWineUserDirectories(prefix, 2, path => users.Add(path));
+        }
+        foreach (string library in GetSteamLibraryRoots(home))
+        {
+            DiscoverWineUserDirectories(Path.Combine(library, "steamapps", "compatdata"), 3, path => users.Add(path));
+        }
+        foreach (string variable in new[] { "WINEPREFIX", "STEAM_COMPAT_DATA_PATH" })
+        {
+            string? prefix = getEnvironmentVariable(variable);
+            if (!string.IsNullOrWhiteSpace(prefix))
+            {
+                DiscoverWineUserDirectories(ExpandHome(prefix, home), 2, path => users.Add(path));
+            }
+        }
+        return users.Order(StringComparer.Ordinal).ToArray();
+    }
+
+    private static void DiscoverJournalDirectories(string root, int maximumDepth, Action<string> addCandidate) =>
+        DiscoverWineUserDirectories(
+            root,
+            maximumDepth,
+            user =>
+            {
+                string journal = Path.Combine(user, JournalSegments[0], JournalSegments[1], JournalSegments[2]);
+                if (Directory.Exists(journal))
+                {
+                    addCandidate(journal);
+                }
+            }
+        );
+
+    internal static void DiscoverWineUserDirectories(string root, int maximumDepth, Action<string> addCandidate)
     {
         if (!Directory.Exists(root))
         {
@@ -311,7 +356,7 @@ public static class JournalFolderLocator
 
             if (Path.GetFileName(current.Path).Equals("drive_c", StringComparison.OrdinalIgnoreCase))
             {
-                AddWineUserJournalDirectories(current.Path, addCandidate);
+                AddWineUserDirectories(current.Path, addCandidate);
                 continue;
             }
 
@@ -343,7 +388,7 @@ public static class JournalFolderLocator
         }
     }
 
-    private static void AddWineUserJournalDirectories(string driveC, Action<string> addCandidate)
+    private static void AddWineUserDirectories(string driveC, Action<string> addCandidate)
     {
         string users = Path.Combine(driveC, "users");
         if (!Directory.Exists(users))
@@ -355,16 +400,7 @@ public static class JournalFolderLocator
         {
             foreach (string user in Directory.EnumerateDirectories(users))
             {
-                string journalDirectory = Path.Combine(
-                    user,
-                    JournalSegments[0],
-                    JournalSegments[1],
-                    JournalSegments[2]
-                );
-                if (Directory.Exists(journalDirectory))
-                {
-                    addCandidate(journalDirectory);
-                }
+                addCandidate(user);
             }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)

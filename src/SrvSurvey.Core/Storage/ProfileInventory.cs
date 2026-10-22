@@ -8,9 +8,19 @@ public sealed record ProfileInventory(
     IReadOnlyList<ProfileInventoryEntry> Entries
 )
 {
-    public static async Task<ProfileInventory> CreateAsync(
+    public static Task<ProfileInventory> CreateAsync(string rootPath, CancellationToken cancellationToken = default) =>
+        CreateCoreAsync(rootPath, null, cancellationToken);
+
+    internal static Task<ProfileInventory> CreateForImportAsync(
         string rootPath,
-        CancellationToken cancellationToken = default
+        ICollection<ProfileImportWarning> warnings,
+        CancellationToken cancellationToken
+    ) => CreateCoreAsync(rootPath, warnings, cancellationToken);
+
+    private static async Task<ProfileInventory> CreateCoreAsync(
+        string rootPath,
+        ICollection<ProfileImportWarning>? warnings,
+        CancellationToken cancellationToken
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
@@ -24,7 +34,7 @@ public sealed record ProfileInventory(
         RejectReparsePoint(new DirectoryInfo(root));
 
         (List<string> directories, List<string> files) = await Task.Run(
-                () => EnumerateProfile(root, cancellationToken),
+                () => EnumerateProfile(root, warnings, cancellationToken),
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -33,17 +43,24 @@ public sealed record ProfileInventory(
         foreach (string file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var fileInfo = new FileInfo(file);
-            string hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
-            fileInfo.Refresh();
-            entries.Add(
-                new ProfileInventoryEntry(
-                    NormalizeRelativePath(root, file),
-                    fileInfo.Length,
-                    fileInfo.LastWriteTimeUtc,
-                    hash
-                )
-            );
+            try
+            {
+                var fileInfo = new FileInfo(file);
+                string hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
+                fileInfo.Refresh();
+                entries.Add(
+                    new ProfileInventoryEntry(
+                        NormalizeRelativePath(root, file),
+                        fileInfo.Length,
+                        fileInfo.LastWriteTimeUtc,
+                        hash
+                    )
+                );
+            }
+            catch (Exception exception) when (warnings is not null && IsRecoverable(exception))
+            {
+                warnings.Add(new ProfileImportWarning(NormalizeRelativePath(root, file), exception.Message));
+            }
         }
 
         return new ProfileInventory(root, directories, entries);
@@ -51,6 +68,7 @@ public sealed record ProfileInventory(
 
     private static (List<string> Directories, List<string> Files) EnumerateProfile(
         string root,
+        ICollection<ProfileImportWarning>? warnings,
         CancellationToken cancellationToken
     )
     {
@@ -64,19 +82,24 @@ public sealed record ProfileInventory(
             cancellationToken.ThrowIfCancellationRequested();
             string current = pendingDirectories.Pop();
 
-            foreach (string? directory in Directory.EnumerateDirectories(current).Order())
+            foreach (string directory in EnumeratePaths(root, current, true, warnings))
             {
                 var directoryInfo = new DirectoryInfo(directory);
-                RejectReparsePoint(directoryInfo);
+                if (!AcceptEntry(root, directoryInfo, warnings))
+                {
+                    continue;
+                }
                 directories.Add(NormalizeRelativePath(root, directory));
                 pendingDirectories.Push(directory);
             }
 
-            foreach (string? file in Directory.EnumerateFiles(current).Order())
+            foreach (string file in EnumeratePaths(root, current, false, warnings))
             {
                 var fileInfo = new FileInfo(file);
-                RejectReparsePoint(fileInfo);
-                files.Add(file);
+                if (AcceptEntry(root, fileInfo, warnings))
+                {
+                    files.Add(file);
+                }
             }
         }
 
@@ -85,6 +108,43 @@ public sealed record ProfileInventory(
 
         return (directories, files);
     }
+
+    private static string[] EnumeratePaths(
+        string root,
+        string current,
+        bool directories,
+        ICollection<ProfileImportWarning>? warnings
+    )
+    {
+        try
+        {
+            return (
+                directories ? Directory.EnumerateDirectories(current) : Directory.EnumerateFiles(current)
+            ).ToArray();
+        }
+        catch (Exception exception) when (warnings is not null && IsRecoverable(exception))
+        {
+            warnings.Add(new ProfileImportWarning(NormalizeRelativePath(root, current), exception.Message));
+            return [];
+        }
+    }
+
+    private static bool AcceptEntry(string root, FileSystemInfo info, ICollection<ProfileImportWarning>? warnings)
+    {
+        try
+        {
+            RejectReparsePoint(info);
+            return true;
+        }
+        catch (Exception exception) when (warnings is not null && IsRecoverable(exception))
+        {
+            warnings.Add(new ProfileImportWarning(NormalizeRelativePath(root, info.FullName), exception.Message));
+            return false;
+        }
+    }
+
+    internal static bool IsRecoverable(Exception exception) =>
+        exception is IOException or UnauthorizedAccessException or InvalidDataException;
 
     internal static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)
     {

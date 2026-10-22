@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Journal;
+
 namespace SrvSurvey.Core.Storage;
 
 public static class LegacyProfileLocator
@@ -26,7 +28,18 @@ public static class LegacyProfileLocator
             int fileCount;
             try
             {
-                fileCount = Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count();
+                fileCount = Directory
+                    .EnumerateFiles(
+                        path,
+                        "*",
+                        new EnumerationOptions
+                        {
+                            RecurseSubdirectories = true,
+                            IgnoreInaccessible = true,
+                            AttributesToSkip = FileAttributes.ReparsePoint,
+                        }
+                    )
+                    .Count();
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
@@ -57,6 +70,11 @@ public static class LegacyProfileLocator
         ArgumentException.ThrowIfNullOrWhiteSpace(selectedPath);
 
         string selected = Path.TrimEndingDirectorySeparator(Path.GetFullPath(selectedPath));
+        string? prefixProfile = FindWinePrefixProfile(selected);
+        if (prefixProfile is not null)
+        {
+            return new ProfileImportSource(prefixProfile, ProfileImportSourceKind.Legacy, null);
+        }
         string? crossPlatformProfile = FindCrossPlatformProfile(selected, currentDataDirectory);
         if (crossPlatformProfile is not null)
         {
@@ -78,6 +96,26 @@ public static class LegacyProfileLocator
             .Select(FindNewestVersionProfile)
             .FirstOrDefault(path => path is not null);
         return new ProfileImportSource(versionProfile ?? selected, ProfileImportSourceKind.Legacy, null);
+    }
+
+    internal static bool IsWinePrefixRoot(string path) =>
+        Directory.Exists(Path.Combine(path, "drive_c"))
+        || Directory.Exists(Path.Combine(path, "pfx", "drive_c"))
+        || string.Equals(Path.GetFileName(path), "drive_c", StringComparison.OrdinalIgnoreCase);
+
+    private static string? FindWinePrefixProfile(string selected)
+    {
+        if (!IsWinePrefixRoot(selected))
+        {
+            return null;
+        }
+        var users = new List<string>();
+        JournalFolderLocator.DiscoverWineUserDirectories(selected, 2, users.Add);
+        return users
+            .Order(StringComparer.Ordinal)
+            .SelectMany(AppDataPaths.GetWineProfileParents)
+            .Select(FindNewestVersionProfile)
+            .FirstOrDefault(path => path is not null);
     }
 
     private static string? FindCrossPlatformProfile(string selected, string? currentDataDirectory)

@@ -32,6 +32,17 @@ adjacent `cross-platform-ui.json`, including folder paths with a trailing
 separator. Selecting the active destination explicitly
 continues to fail the overlap check.
 
+On Linux, automatic detection also searches `.wine`, Steam/Proton compatdata
+for any application ID, native and Flatpak Steam libraries, external libraries
+from `libraryfolders.vdf`, native and Flatpak Bottles, `~/Games`, configured
+Heroic/Lutris prefixes, `WINEPREFIX`, and `STEAM_COMPAT_DATA_PATH`. Traversal is
+bounded and skips child symbolic links. Windows user directories within each
+prefix are checked for the original roaming and Store profile locations.
+Manual folder selection remains available for custom locations; a Wine prefix,
+Proton application/pfx directory, or `drive_c` can also be selected directly.
+A prefix without a recognized SrvSurvey profile is rejected before copying its
+Windows files.
+
 ## Data compatibility
 
 | Upstream saved data | XP behavior and evidence |
@@ -51,42 +62,71 @@ The new player/Codex regression compares every imported file with both the
 source and its verified backup. It checks the readable data, not just a
 successful file copy. The fixtures use synthetic player names and keys.
 
-## Backup and collision contract
+## Backup, merge, and recovery contract
 
-The importer still inventories and SHA-256 verifies the entire source,
-including skipped layouts. It independently backs up the existing destination,
-stages the selected files, verifies both originals have remained unchanged,
-and activates the staged directory with rollback protection.
+Imports add missing data and retain current values. Global and regional Codex
+ledgers union discoveries by entry ID. Valid current records, including manual
+Bingo checks and their location/time metadata, win duplicate IDs. An incoming
+valid record can repair an invalid current entry. Current player totals and
+scalars remain unchanged; nested maps gain missing keys. Permanent Ram Tah
+completion sets gain missing entries. Current arrays and explicit null values
+are retained by default, including empty unsold-claim lists: importing older
+claims must not resurrect a sale already completed in XP. Retired
+`scannedOrganics` claims are not added to a player that already has the modern
+claim list. New commanders, modes, and files are added.
 
-Manifest version 3 keeps the full source inventory and records
-`SkippedRelativePaths`; `GetImportedEntries()` identifies the activated source
-files. Readers continue to accept earlier manifests without the skip list.
-Conflict records and displayed imported counts exclude skipped files.
+Current UI preferences also win, while missing compatible preferences can be
+filled. Original overlay positions remain excluded. XP layout imports can fill
+missing panels while preserving current commander positions. Unsupported file
+collisions retain the current file; both originals remain recoverable.
 
-Same-name player and Codex files retain the established source-wins rule;
-this is a profile import, not a record-by-record synchronization. Destination-only
-files are retained, and overwritten files remain under the verified backup's
-`previous-destination` directory. Original source files are never edited.
+Source scanning and capture recover readable files individually. Locked,
+inaccessible, changing, linked, or incompatible files produce path-specific
+warnings; one failure does not discard other recovered player/Codex data.
+Malformed player/Codex files are backed up but excluded from activation. Valid
+entries in a partially malformed Codex ledger remain usable. Other unknown or
+malformed JSON files are retained without conversion when no current version
+would be replaced. A failed settings conversion still activates usable player
+data and completes the normal restart workflow.
 
-An XP source may itself contain `.srv-survey-import.json`. Previously that old
-manifest collided with the new manifest during staging. It is now backed up
-with the source and excluded from activation, which receives a fresh manifest.
+The source is never edited. Each successfully captured raw file is SHA-256
+verified in `profile/`; the current destination receives a separately verified
+`previous-destination/` backup. A separate `import-payload/` contains new/merged
+files with their own inventory. Manifest version 4 records the raw source,
+previous destination, conflicts, skipped paths, warnings, and `ActivatedEntries`.
+`GetImportedEntries()` returns actual activated hashes, including merged JSON,
+and remains compatible with older manifests. An old source import manifest is
+backed up but excluded from activation.
+
+The combined profile is staged and verified, and the current destination must
+remain unchanged through activation. Destination write/activation errors retain
+the captured recovery backup and preserve or roll back the current profile.
+The exception and Settings message identify its location. Successfully recovered
+data is kept even when some inputs fail, and `.srv-survey-recovery.json` records
+warning details. Repeated imports are permitted and preserve progress made since
+the previous import; warning-producing imports offer a recovery retry.
 
 ## Operational limits
 
-Close original SrvSurvey during import: changes to its files while copying
-intentionally stop activation. Symbolic links and junctions remain rejected,
-and the source, destination, and backup trees must not overlap. Existing
-completed imports are not silently repeated or used to reset a user's layout.
-An exact reporter error remains necessary to establish whether these reproduced
-failures account for every reported import failure.
+Close the source SrvSurvey during import to obtain a consistent snapshot. A
+source file changing during capture is skipped with a warning. Root symbolic
+links/junctions and overlapping source, destination, and backup trees remain
+rejected. An unreadable current destination stops activation because a verified
+backup cannot be guaranteed. A wholly unusable source leaves current data
+unchanged and retains any raw files already captured.
+
+Persistent array formats without a defined identity are kept from the current
+file rather than combined speculatively; the incoming version remains backed up.
+No reporter's exact error or profile was supplied, so the reproduced failure
+cases do not establish the cause of every reported import failure.
 
 ## Validation
 
-- Release solution build: zero warnings and errors.
-- Focused import, player, Codex, and organic storage tests: 72 passed.
-- Settings import workflow, settings migration, and commander layout tests:
-  30 passed, including original and XP theme/layout import policies.
-- The required `pwsh ./tools/Test-ChangedCodeQuality.ps1` gate runs through the
-  local pre-commit hook, including full-suite coverage collection, formatting,
-  analyzer checks, and localization validation.
+Regression tests exercise the production importer, real player/Codex readers,
+and Settings workflow. They cover current Bingo progress plus older discoveries,
+regional ledgers, repeated imports, current player totals and sold-claim safety,
+byte-identical raw backups, malformed/locked/changing input, path collisions,
+optional UI failure and restart, and native/external/Flatpak Wine/Proton
+selection. The repository quality gate checks formatting, localization,
+changed-line analyzer findings, full affected test suites, and the 80% new-code
+coverage requirement.

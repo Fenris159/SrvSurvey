@@ -9,6 +9,38 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         $"SrvSurvey-profile-locator-tests-{Guid.NewGuid():N}"
     );
 
+    [Theory]
+    [InlineData("", "drive_c")]
+    [InlineData("pfx", "pfx/drive_c")]
+    [InlineData("", "")]
+    public void ManualSelectionFindsOriginalProfilesInsideWineOrProtonPrefixes(
+        string prefixSegment,
+        string selectedSegment
+    )
+    {
+        string prefix = Path.Combine(temporaryDirectory, "prefix");
+        string drive = Path.Combine(prefix, prefixSegment, "drive_c");
+        string profile = Path.Combine(
+            drive,
+            "users",
+            "steamuser",
+            "AppData",
+            "Roaming",
+            "SrvSurvey",
+            "SrvSurvey",
+            "1.1.0.0"
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(
+            Path.Combine(prefix, selectedSegment)
+        );
+
+        Assert.Equal(profile, result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.Legacy, result.Kind);
+    }
+
     [Fact]
     public void DiscoverReturnsOnlyExistingProfilesWithoutChangingThem()
     {

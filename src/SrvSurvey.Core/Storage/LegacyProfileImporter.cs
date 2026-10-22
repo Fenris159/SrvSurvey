@@ -7,8 +7,10 @@ public sealed class LegacyProfileImporter
     private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
 
     public const string ManifestFileName = ".srv-survey-import.json";
+    public const string RecoveryReportFileName = ".srv-survey-recovery.json";
+    public const string RecoveryDirectoryDataKey = "SrvSurvey.ProfileImport.RecoveryDirectory";
 
-    private const int ManifestVersion = 3;
+    private const int ManifestVersion = 4;
     private readonly TimeProvider timeProvider;
     private readonly Action<ProfileImportCheckpoint>? checkpoint;
 
@@ -62,30 +64,28 @@ public sealed class LegacyProfileImporter
             throw new IOException($"The import destination is a file and cannot contain a profile: {destination}");
         }
 
-        if (File.Exists(Path.Combine(destination, ManifestFileName)))
-        {
-            throw new InvalidOperationException(
-                $"The cross-platform profile has already imported profile data: {destination}"
-            );
-        }
-
         progress?.Report(new ProfileImportProgress(ProfileImportStage.ScanningLegacyProfile));
+        var warnings = new List<ProfileImportWarning>();
         ProfileInventory sourceInventory = await ProfileInventory
-            .CreateAsync(source, cancellationToken)
+            .CreateForImportAsync(source, warnings, cancellationToken)
             .ConfigureAwait(false);
         if (sourceInventory.Entries.Count == 0)
         {
             throw new InvalidDataException($"The selected profile does not contain any files: {source}");
         }
-
-        ProfileInventory importedInventory = SelectImportedFiles(sourceInventory, importSource.Kind);
+        checkpoint?.Invoke(ProfileImportCheckpoint.AfterSourceScan);
 
         bool destinationExisted = Directory.Exists(destination);
         progress?.Report(new ProfileImportProgress(ProfileImportStage.ScanningCurrentProfile));
         ProfileInventory destinationInventory = destinationExisted
             ? await ProfileInventory.CreateAsync(destination, cancellationToken).ConfigureAwait(false)
             : EmptyInventory(destination);
-        ProfileImportConflict[] conflicts = FindConflicts(importedInventory, destinationInventory);
+        ProfileInventory mergeInventory = destinationInventory with
+        {
+            Entries = destinationInventory
+                .Entries.Where(entry => !string.Equals(entry.RelativePath, ManifestFileName, PathComparison))
+                .ToArray(),
+        };
         string operationId = Guid.NewGuid().ToString("N");
         DateTimeOffset timestamp = timeProvider.GetUtcNow();
         string backupName = $"profile-import-{timestamp:yyyyMMddTHHmmssZ}-{operationId}";
@@ -104,16 +104,44 @@ public sealed class LegacyProfileImporter
         {
             progress?.Report(new ProfileImportProgress(ProfileImportStage.BackingUpLegacyProfile));
             Directory.CreateDirectory(backupProfileStage);
-            await CopyAndVerifyAsync(
+            sourceInventory = await CopyAndVerifyAsync(
                     source,
                     backupProfileStage,
                     sourceInventory,
                     overwrite: false,
                     new ProfileCopyProgress(progress, ProfileImportStage.BackingUpLegacyProfile),
-                    cancellationToken
+                    cancellationToken,
+                    warnings
                 )
                 .ConfigureAwait(false);
             await VerifyExactProfileAsync(backupProfileStage, sourceInventory, cancellationToken).ConfigureAwait(false);
+            ProfileInventory importedInventory = await ProfileImportCompatibility
+                .SelectReadableDataAsync(
+                    SelectImportedFiles(sourceInventory, importSource.Kind),
+                    backupProfileStage,
+                    warnings,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            await File.WriteAllTextAsync(
+                    Path.Combine(backupStage, RecoveryReportFileName),
+                    JsonSerializer.Serialize(
+                        new
+                        {
+                            SourceDirectory = source,
+                            sourceInventory.Entries,
+                            Warnings = warnings,
+                        },
+                        IndentedJson
+                    ),
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            if (importedInventory.Entries.Count == 0)
+            {
+                throw new InvalidDataException("No compatible files could be recovered from the selected profile.");
+            }
+            ProfileImportConflict[] conflicts = FindConflicts(importedInventory, destinationInventory);
 
             if (destinationInventory.Entries.Count > 0 || destinationInventory.RelativeDirectories.Count > 0)
             {
@@ -132,6 +160,23 @@ public sealed class LegacyProfileImporter
                     .ConfigureAwait(false);
             }
 
+            progress?.Report(new ProfileImportProgress(ProfileImportStage.BuildingMergedProfile));
+            importedInventory = await ProfileImportMerger
+                .BuildPayloadAsync(
+                    importedInventory with
+                    {
+                        RootPath = backupProfileStage,
+                    },
+                    mergeInventory with
+                    {
+                        RootPath = previousDestinationStage,
+                    },
+                    Path.Combine(backupStage, "import-payload"),
+                    warnings,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+
             var manifest = new ProfileImportManifest(
                 ManifestVersion,
                 timestamp,
@@ -143,22 +188,43 @@ public sealed class LegacyProfileImporter
                 destinationInventory.RelativeDirectories,
                 destinationInventory.Entries,
                 conflicts,
-                sourceInventory.Entries.Except(importedInventory.Entries).Select(entry => entry.RelativePath).ToArray()
+                sourceInventory
+                    .Entries.Where(entry =>
+                        !importedInventory.Entries.Any(imported => imported.RelativePath == entry.RelativePath)
+                    )
+                    .Select(entry => entry.RelativePath)
+                    .ToArray(),
+                warnings.ToArray(),
+                importedInventory.Entries
             );
+            await File.WriteAllTextAsync(
+                    Path.Combine(backupStage, RecoveryReportFileName),
+                    JsonSerializer.Serialize(
+                        new
+                        {
+                            SourceDirectory = source,
+                            sourceInventory.Entries,
+                            Warnings = warnings,
+                        },
+                        IndentedJson
+                    ),
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             await WriteManifestAsync(Path.Combine(backupStage, ManifestFileName), manifest, cancellationToken)
                 .ConfigureAwait(false);
             Directory.Move(backupStage, finalBackup);
 
             progress?.Report(new ProfileImportProgress(ProfileImportStage.BuildingMergedProfile));
             Directory.CreateDirectory(destinationStage);
-            int mergedFileCount = destinationInventory.Entries.Count + importedInventory.Entries.Count;
-            long mergedByteCount = GetTotalBytes(destinationInventory) + GetTotalBytes(importedInventory);
+            int mergedFileCount = mergeInventory.Entries.Count + importedInventory.Entries.Count;
+            long mergedByteCount = GetTotalBytes(mergeInventory) + GetTotalBytes(importedInventory);
             if (destinationInventory.Entries.Count > 0 || destinationInventory.RelativeDirectories.Count > 0)
             {
                 await CopyAndVerifyAsync(
                         Path.Combine(finalBackup, "previous-destination"),
                         destinationStage,
-                        destinationInventory,
+                        mergeInventory,
                         overwrite: false,
                         new ProfileCopyProgress(
                             progress,
@@ -172,16 +238,16 @@ public sealed class LegacyProfileImporter
             }
 
             await CopyAndVerifyAsync(
-                    Path.Combine(finalBackup, "profile"),
+                    Path.Combine(finalBackup, "import-payload"),
                     destinationStage,
                     importedInventory,
                     overwrite: true,
                     new ProfileCopyProgress(
                         progress,
                         ProfileImportStage.BuildingMergedProfile,
-                        CompletedFileOffset: destinationInventory.Entries.Count,
+                        CompletedFileOffset: mergeInventory.Entries.Count,
                         TotalFileCount: mergedFileCount,
-                        CompletedByteOffset: GetTotalBytes(destinationInventory),
+                        CompletedByteOffset: GetTotalBytes(mergeInventory),
                         TotalByteCount: mergedByteCount
                     ),
                     cancellationToken
@@ -190,7 +256,7 @@ public sealed class LegacyProfileImporter
             await VerifyMergedProfileExactAsync(
                     destinationStage,
                     importedInventory,
-                    destinationInventory,
+                    mergeInventory,
                     hasImportManifest: false,
                     cancellationToken
                 )
@@ -203,7 +269,7 @@ public sealed class LegacyProfileImporter
             await VerifyMergedProfileExactAsync(
                     destinationStage,
                     importedInventory,
-                    destinationInventory,
+                    mergeInventory,
                     hasImportManifest: true,
                     cancellationToken
                 )
@@ -211,14 +277,6 @@ public sealed class LegacyProfileImporter
             await VerifyManifestCopyAsync(
                     Path.Combine(finalBackup, ManifestFileName),
                     Path.Combine(destinationStage, ManifestFileName),
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
-            await VerifyInventoryUnchangedAsync(
-                    source,
-                    sourceInventory,
-                    expectedToExist: true,
-                    "The selected profile changed while it was being imported",
                     cancellationToken
                 )
                 .ConfigureAwait(false);
@@ -246,7 +304,7 @@ public sealed class LegacyProfileImporter
             await VerifyMergedProfileExactAsync(
                     destination,
                     importedInventory,
-                    destinationInventory,
+                    mergeInventory,
                     hasImportManifest: true,
                     cancellationToken
                 )
@@ -264,22 +322,56 @@ public sealed class LegacyProfileImporter
             TryDeleteVerifiedRollback(rollbackDirectory);
             return new ProfileImportResult(destination, finalBackup, manifest);
         }
-        catch
+        catch (Exception exception)
         {
             if (profileActivated)
             {
                 RollBackActivatedProfile(destination, rollbackDirectory, failedActivationDirectory);
             }
-
+            string? retained = PreserveRecoveryBackup(backupStage, finalBackup);
+            if (retained is not null)
+            {
+                exception.Data[RecoveryDirectoryDataKey] = retained;
+            }
             throw;
         }
         finally
         {
-            DeleteStagingDirectory(backupStage);
             DeleteStagingDirectory(destinationStage);
             RestoreRollbackIfRequired(destination, rollbackDirectory);
             TryDeleteVerifiedRollback(failedActivationDirectory);
         }
+    }
+
+    public static bool CanRetryRecovery(string destinationDirectory)
+    {
+        try
+        {
+            ProfileImportManifest? manifest = JsonSerializer.Deserialize<ProfileImportManifest>(
+                File.ReadAllText(Path.Combine(destinationDirectory, ManifestFileName))
+            );
+            return manifest?.Warnings?.Count > 0;
+        }
+        catch (Exception exception) when (ProfileInventory.IsRecoverable(exception) || exception is JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static string? PreserveRecoveryBackup(string stage, string final)
+    {
+        if (Directory.Exists(stage))
+        {
+            try
+            {
+                Directory.Move(stage, final);
+            }
+            catch (Exception exception) when (ProfileInventory.IsRecoverable(exception))
+            {
+                return stage;
+            }
+        }
+        return Directory.Exists(final) ? final : null;
     }
 
     private static ProfileInventory SelectImportedFiles(ProfileInventory source, ProfileImportSourceKind kind)
@@ -300,30 +392,80 @@ public sealed class LegacyProfileImporter
         };
     }
 
-    private static async Task CopyAndVerifyAsync(
+    private static async Task<ProfileInventory> CopyAndVerifyAsync(
         string sourceRoot,
         string destinationRoot,
         ProfileInventory inventory,
         bool overwrite,
         ProfileCopyProgress progress,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        List<ProfileImportWarning>? warnings = null
     )
     {
         foreach (string relativeDirectory in inventory.RelativeDirectories)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Directory.CreateDirectory(ProfileInventory.ResolveEntryPath(destinationRoot, relativeDirectory));
+            try
+            {
+                Directory.CreateDirectory(ProfileInventory.ResolveEntryPath(destinationRoot, relativeDirectory));
+            }
+            catch (Exception exception) when (warnings is not null && ProfileInventory.IsRecoverable(exception))
+            {
+                warnings.Add(new ProfileImportWarning(relativeDirectory, exception.Message));
+            }
         }
 
         int completedFiles = progress.CompletedFileOffset;
         long completedBytes = progress.CompletedByteOffset;
         int expectedFileCount = progress.TotalFileCount ?? progress.CompletedFileOffset + inventory.Entries.Count;
         long expectedByteCount = progress.TotalByteCount ?? progress.CompletedByteOffset + GetTotalBytes(inventory);
+        var copied = new List<ProfileInventoryEntry>();
         foreach (ProfileInventoryEntry entry in inventory.Entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (
+                !await CopyEntryAsync(sourceRoot, destinationRoot, entry, overwrite, warnings, cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                continue;
+            }
+            copied.Add(entry);
+            completedFiles++;
+            completedBytes += entry.Length;
+            progress.Reporter?.Report(
+                new ProfileImportProgress(
+                    progress.Stage,
+                    completedFiles,
+                    expectedFileCount,
+                    completedBytes,
+                    expectedByteCount
+                )
+            );
+        }
+        if (warnings is null)
+        {
+            return inventory;
+        }
+        ProfileInventory actual = await ProfileInventory
+            .CreateAsync(destinationRoot, cancellationToken)
+            .ConfigureAwait(false);
+        return inventory with { Entries = copied, RelativeDirectories = actual.RelativeDirectories };
+    }
+
+    private static async Task<bool> CopyEntryAsync(
+        string sourceRoot,
+        string destinationRoot,
+        ProfileInventoryEntry entry,
+        bool overwrite,
+        List<ProfileImportWarning>? warnings,
+        CancellationToken cancellationToken
+    )
+    {
+        string destinationPath = ProfileInventory.ResolveEntryPath(destinationRoot, entry.RelativePath);
+        try
+        {
             string sourcePath = ProfileInventory.ResolveEntryPath(sourceRoot, entry.RelativePath);
-            string destinationPath = ProfileInventory.ResolveEntryPath(destinationRoot, entry.RelativePath);
             string destinationParent =
                 Path.GetDirectoryName(destinationPath)
                 ?? throw new InvalidDataException($"The profile entry has no parent directory: {entry.RelativePath}");
@@ -356,17 +498,13 @@ public sealed class LegacyProfileImporter
 
             await VerifyEntryAsync(destinationPath, entry, cancellationToken).ConfigureAwait(false);
             File.SetLastWriteTimeUtc(destinationPath, entry.LastWriteTimeUtc);
-            completedFiles++;
-            completedBytes += entry.Length;
-            progress.Reporter?.Report(
-                new ProfileImportProgress(
-                    progress.Stage,
-                    completedFiles,
-                    expectedFileCount,
-                    completedBytes,
-                    expectedByteCount
-                )
-            );
+            return true;
+        }
+        catch (Exception exception) when (warnings is not null && ProfileInventory.IsRecoverable(exception))
+        {
+            warnings.Add(new ProfileImportWarning(entry.RelativePath, exception.Message));
+            File.Delete(destinationPath);
+            return false;
         }
     }
 
@@ -652,6 +790,13 @@ public sealed class LegacyProfileImporter
             throw new DirectoryNotFoundException($"The selected profile directory does not exist: {source}");
         }
 
+        if (LegacyProfileLocator.IsWinePrefixRoot(source))
+        {
+            throw new InvalidDataException(
+                "No SrvSurvey profile was found in the selected Wine/Proton prefix. Choose the folder containing the player's F*-live.json or F*-codex.json files."
+            );
+        }
+
         if (PathsOverlap(source, destination) || PathsOverlap(source, backupParent))
         {
             throw new InvalidOperationException(
@@ -734,6 +879,7 @@ public readonly record struct ProfileImportProgress(
 
 internal enum ProfileImportCheckpoint
 {
+    AfterSourceScan,
     BeforeActivationValidation,
     AfterProfileActivation,
 }
@@ -749,15 +895,20 @@ public sealed record ProfileImportManifest(
     IReadOnlyList<string> PreviousDestinationDirectories,
     IReadOnlyList<ProfileInventoryEntry> PreviousDestinationEntries,
     IReadOnlyList<ProfileImportConflict> Conflicts,
-    IReadOnlyList<string>? SkippedRelativePaths = null
+    IReadOnlyList<string>? SkippedRelativePaths = null,
+    IReadOnlyList<ProfileImportWarning>? Warnings = null,
+    IReadOnlyList<ProfileInventoryEntry>? ActivatedEntries = null
 )
 {
     public IReadOnlyList<ProfileInventoryEntry> GetImportedEntries() =>
-        SkippedRelativePaths is null
-            ? Entries
-            : Entries
-                .Where(entry => !SkippedRelativePaths.Contains(entry.RelativePath, StringComparer.Ordinal))
-                .ToArray();
+        ActivatedEntries
+        ?? (
+            SkippedRelativePaths is null
+                ? Entries
+                : Entries
+                    .Where(entry => !SkippedRelativePaths.Contains(entry.RelativePath, StringComparer.Ordinal))
+                    .ToArray()
+        );
 }
 
 public sealed record ProfileImportConflict(
@@ -771,4 +922,9 @@ public sealed record ProfileImportResult(
     string DestinationDirectory,
     string BackupDirectory,
     ProfileImportManifest Manifest
-);
+)
+{
+    public IReadOnlyList<ProfileImportWarning> Warnings => Manifest.Warnings ?? Array.Empty<ProfileImportWarning>();
+}
+
+public sealed record ProfileImportWarning(string RelativePath, string Message);

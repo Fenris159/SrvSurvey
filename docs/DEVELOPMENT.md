@@ -149,7 +149,8 @@ automatically generated commit lists are disabled.
   Compatibility code and tests are part of the converted product, not a build
   dependency on the previous implementation.
   The [profile import audit](PROFILE_IMPORT_COMPATIBILITY.md) records the upstream
-  save formats, source-selection fixes, and exclusion of original overlay positions.
+  save formats, Wine/Proton source detection, preservation of current progress,
+  partial recovery warnings, and exclusion of original overlay positions.
 
 ## Upstream parity baseline
 

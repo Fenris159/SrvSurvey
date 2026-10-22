@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Configuration;
@@ -37,12 +39,26 @@ public static class CrossPlatformUiSettingsImporter
         Directory.CreateDirectory(destinationDirectory);
         Directory.CreateDirectory(backupDirectory);
 
+        await File.WriteAllBytesAsync(
+                Path.Combine(backupDirectory, "incoming-cross-platform-ui.json"),
+                importedBytes,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
         string? backupPath = null;
         if (File.Exists(destination))
         {
             backupPath = Path.Combine(backupDirectory, LegacyUiSettingsMigrator.BackupFileName);
             File.Copy(destination, backupPath, overwrite: false);
             await VerifyEqualAsync(destination, backupPath, cancellationToken).ConfigureAwait(false);
+            byte[] currentBytes = await File.ReadAllBytesAsync(backupPath, cancellationToken).ConfigureAwait(false);
+            ValidateSettings(currentBytes);
+            JsonObject current = JsonNode.Parse(currentBytes)!.AsObject();
+            JsonObject incoming = JsonNode.Parse(importedBytes)!.AsObject();
+            JsonObject merged = ProfileJsonMerge.MergeMissing(current, incoming);
+            importedBytes = JsonNode.DeepEquals(current, merged)
+                ? currentBytes
+                : JsonSerializer.SerializeToUtf8Bytes(merged);
         }
 
         string stagedPath = Path.Combine(destinationDirectory, Path.GetRandomFileName());
