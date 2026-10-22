@@ -162,6 +162,15 @@ internal sealed class X11OverlayPlatformService
         );
     }
 
+    /// <summary>Prepares unregistered capture surfaces without enrolling them in gameplay placement or bypass policy.</summary>
+    public void PrepareWindowForShow(Window window)
+    {
+        if (window is StreamOverlayWindow)
+        {
+            PrepareOverlayWindow(window);
+        }
+    }
+
     /// <summary>Sets the overlay tool classification before Avalonia maps through its separate X11 connection.</summary>
     public void PrepareOverlayWindow(Window window)
     {

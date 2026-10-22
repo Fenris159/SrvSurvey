@@ -320,6 +320,8 @@ public sealed class OverlayPresentationSession : IDisposable
     {
         public OverlayPlatformCapabilities Capabilities => platform.Capabilities;
 
+        public void PrepareWindowForShow(Window window) => platform.PrepareWindowForShow(window);
+
         public OverlayPreparationResult PreparePassiveWindow(Window window) => platform.PreparePassiveWindow(window);
 
         public OverlayInteractionResult PrepareInteractiveWindow(Window window) =>
@@ -349,10 +351,12 @@ public sealed class OverlayPresentationSession : IDisposable
         public void Dispose() { }
     }
 
-    private sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)
+    internal sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)
         : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities => controller.Capabilities;
+
+        public void PrepareWindowForShow(Window window) => controller.PrepareWindowForShow(window);
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {

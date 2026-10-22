@@ -13,6 +13,25 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class StreamOverlayCoordinatorTests
 {
+    /// <summary>The real stream definition must prepare each capture before mapping, including through borrowed platforms.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CaptureNativePolicyRunsBeforeShowWithoutRegisteringAsAGameplayPanel(bool useSharedPlatform)
+    {
+        using var context = new TestContext(isForeground: true, useSharedPlatform: useSharedPlatform);
+        (Window capture, bool wasVisible) = Assert.Single(context.Harness.PreShowWindows);
+        Assert.IsType<StreamOverlayWindow>(capture);
+        Assert.False(wasVisible);
+        Assert.True(capture.IsVisible);
+        Assert.Empty(context.Registry.Snapshot());
+        context.ViewModel.Enabled = false;
+        context.ViewModel.Enabled = true;
+        Assert.Equal(2, context.Harness.PreShowWindows.Count);
+        Assert.NotSame(capture, context.Harness.PreShowWindows[1].Window);
+        Assert.False(context.Harness.PreShowWindows[1].WasVisible);
+    }
+
     /// <summary>The joined stream canvas uses background capture policy rather than gameplay overlay stacking.</summary>
     [AvaloniaFact]
     public void CaptureWindowDoesNotJoinTheAlwaysOnTopGameplayPanels()
@@ -391,12 +410,18 @@ public sealed class StreamOverlayCoordinatorTests
 
         public ManualClock Clock { get; } = new();
 
-        public TestContext(bool isForeground, bool keepVisible = false, bool isVisible = true)
+        public TestContext(
+            bool isForeground,
+            bool keepVisible = false,
+            bool isVisible = true,
+            bool useSharedPlatform = false
+        )
         {
             KeepVisible = keepVisible;
             Harness = new HostedOverlayTestHarness(
                 registry,
-                () => new OverlayGameWindowTracker(new SnapshotTracker(this), () => KeepVisible)
+                () => new OverlayGameWindowTracker(new SnapshotTracker(this), () => KeepVisible),
+                useSharedPlatform: useSharedPlatform
             )
             {
                 GameWindow = new GameWindowSnapshot(

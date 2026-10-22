@@ -46,6 +46,9 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
     public OverlayPlatformCapabilities Capabilities => nativePlatform.Capabilities;
 
+    /// <summary>Preserves native pre-map policy for unregistered windows such as the joined capture surface.</summary>
+    public void PrepareWindowForShow(Window window) => nativePlatform.PrepareWindowForShow(window);
+
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);

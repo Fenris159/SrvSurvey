@@ -12,20 +12,25 @@ internal sealed class HostedOverlayTestHarness : IDisposable
     public HostedOverlayTestHarness(
         OverlayWindowRegistry? registry = null,
         Func<IGameWindowTracker>? createTracker = null,
-        LegacyOverlayLayout? overlayLayout = null
+        LegacyOverlayLayout? overlayLayout = null,
+        bool useSharedPlatform = false
     )
     {
-        Session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Hosted overlay test session"),
-            new OverlayPresentationSessionDependencies(
-                CreatePlatform,
-                createTracker ?? CreateTracker,
-                CreateTimer,
-                overlayLayout ?? LegacyOverlayLayout.Empty,
-                Diagnostics.Add,
-                WindowRegistry: registry
-            )
+        var decision = new OverlayPresentationDecision(
+            OverlayPresentationMode.MultipleWindows,
+            "Hosted overlay test session"
         );
+        var dependencies = new OverlayPresentationSessionDependencies(
+            CreatePlatform,
+            createTracker ?? CreateTracker,
+            CreateTimer,
+            overlayLayout ?? LegacyOverlayLayout.Empty,
+            Diagnostics.Add,
+            WindowRegistry: registry
+        );
+        Session = useSharedPlatform
+            ? OverlayPresentationSession.CreateWithSharedPlatform(decision, dependencies)
+            : OverlayPresentationSession.CreateForAdapters(decision, dependencies);
     }
 
     public static GameWindowSnapshot AvailableGameWindow { get; } =
@@ -50,6 +55,8 @@ internal sealed class HostedOverlayTestHarness : IDisposable
     public List<OverlayHostDiagnostic> Diagnostics { get; } = [];
 
     public List<Window> PreparedWindows { get; } = [];
+
+    public List<(Window Window, bool WasVisible)> PreShowWindows { get; } = [];
 
     public List<Window> InteractiveWindows { get; } = [];
 
@@ -102,6 +109,8 @@ internal sealed class HostedOverlayTestHarness : IDisposable
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
+
+        public void PrepareWindowForShow(Window window) => harness.PreShowWindows.Add((window, window.IsVisible));
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
