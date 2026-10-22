@@ -6,10 +6,54 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import textwrap
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+class ReleaseSourceTests(unittest.TestCase):
+    def test_every_checkout_uses_the_workflow_commit(self):
+        workflow = (ROOT / ".github/workflows/build-srvsurvey-xp.yml").read_text()
+        refs = re.findall(r"^\s+ref:\s*(.+)$", workflow, re.MULTILINE)
+        self.assertEqual(["${{ github.sha }}"] * 4, refs)
+
+    def test_conflicting_manual_source_is_rejected_before_checkout(self):
+        workflow = (ROOT / ".github/workflows/build-srvsurvey-xp.yml").read_text()
+        guard = re.search(
+            r"      - name: Validate manual release source\n[\s\S]*?        run: \|\n((?:          .*\n|\n)+)",
+            workflow,
+        )
+        self.assertIsNotNone(guard)
+        self.assertLess(guard.start(), workflow.index("      - name: Check out source"))
+        body = textwrap.dedent(guard.group(1))
+        sha = "1234567890abcdef1234567890abcdef12345678"
+        for event, requested, ref, expected in [
+            ("workflow_dispatch", "", "SrvSurvey-Avalonia", 0),
+            ("workflow_dispatch", "SrvSurvey-Avalonia", "SrvSurvey-Avalonia", 0),
+            ("workflow_dispatch", "release-tag", "release-tag", 0),
+            ("workflow_dispatch", sha, "release-tag", 0),
+            ("workflow_dispatch", "unreviewed-branch", "SrvSurvey-Avalonia", 2),
+            ("workflow_dispatch", "f" * 40, "SrvSurvey-Avalonia", 2),
+            ("pull_request", "", "246/merge", 0),
+        ]:
+            with self.subTest(event=event, requested=requested, ref=ref):
+                result = subprocess.run(
+                    ["bash", "-eu", "-o", "pipefail", "-c", body],
+                    env={
+                        **os.environ,
+                        "GITHUB_EVENT_NAME": event,
+                        "REQUESTED_SOURCE_REF": requested,
+                        "WORKFLOW_REF_NAME": ref,
+                        "WORKFLOW_SHA": sha,
+                    },
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=5,
+                )
+                self.assertEqual(expected, result.returncode, result.stderr)
 
 
 class ReleaseDependencyTests(unittest.TestCase):

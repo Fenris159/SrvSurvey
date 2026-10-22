@@ -106,10 +106,14 @@ verification. Packages are already compressed, so artifact upload uses
 Sonar checks, journal scenarios, native OpenXR tests, SBOM generation, metadata
 checks, and both Ubuntu runtime checks remain required.
 
-Packaging and metadata jobs check out only the resolved source commit. Linux
+Packaging and metadata jobs check out only the workflow's source commit. Linux
 PR validation and Sonar analysis retain full history for merge-base checks and
-analysis. Runtime validation and release indexing use the same source commit as
-the packaged application, including when a manual dispatch selects another ref.
+analysis. Every release job uses that same commit. Choose a manual release's
+branch or tag with GitHub's **Run workflow** selector or `gh workflow run --ref`.
+The legacy `source_ref` input is an optional compatibility check and must match
+the selected branch/tag or its commit SHA. A conflicting revision is rejected
+before checkout, so manual dispatch cannot execute an arbitrary source revision
+using another branch's cache permissions.
 
 Exercise cache reuse, corruption recovery, failed downloads, mirror fallback,
 and installation failures without changing the host:
