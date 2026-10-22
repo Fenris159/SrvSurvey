@@ -21,11 +21,11 @@ installing an update.
   available. Duplicate Wine aliases and unrelated game folders no longer hide
   or duplicate detected profiles. Prefix scanning runs when import needs it,
   avoiding repeated discovery during normal path resolution.
-- **Preserve XP settings and overlay positions.** Original SrvSurvey desktop
-  and VR positions are backed up and skipped. XP imports keep current settings
-  and positions while filling missing panels, including layout-only profiles
-  and recovery retries. Imported panels retain their source display dimensions
-  without changing existing panels' position references.
+- **Keep your current overlay layouts.** Layouts from original SrvSurvey and
+  older XP profiles are backed up and skipped, including shared and commander
+  panels, position references, size overrides, and VR calibrations. Existing
+  panel positions stay unchanged; new profiles use XP defaults. Compatible UI
+  preferences still merge while retaining current values.
 - **Confirm healthy update startup and improve rollback.** Update verification
   allows up to three minutes and requires the main window to appear, render a
   frame, and process another UI turn. Local profile recovery still runs, while

@@ -45,6 +45,9 @@ Windows files.
 
 ## Data compatibility
 
+New data files retain their original bytes. Collisions follow the merge rules
+below; raw source files always remain in the verified backup.
+
 | Upstream saved data | XP behavior and evidence |
 | --- | --- |
 | [`F{FID}-live.json` / `F{FID}-legacy.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/CommanderSettings.cs) | Compatible filenames and field names. Player identity, exploration totals, biological claims and samples, sphere/boxel searches, Ram Tah progress, combat missions, journey references, and per-player service keys have corresponding readers. Unknown fields remain in the copied JSON. Tests import multiple commanders and both galaxy profiles, then load the files through the actual catalog and stores. |
@@ -56,7 +59,7 @@ Windows files.
 | [`guardian/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/GuardianSiteData.cs), [`human/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/HumanSiteData.cs), and their `legacy` subdirectories | Retained recursively, including Guardian beacons and surveys. Existing activity-specific readers and tests cover their interpretation. |
 | [`F{FID}-colony.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/ColonyData.cs), quest state, bookmarks, caches, and unrecognized files | Retained recursively. `LegacyColonizationProfileStore` and `LegacyQuestStateStore` retain the original formats; unknown files are not discarded. |
 | [`settings.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/Settings.cs) | Copied unchanged, then compatible preferences are translated by `LegacyUiSettingsMigrator`. Malformed preferences do not overwrite the current UI settings. |
-| Original `plotters.json` and `vr/` calibration files | Preserved only in the verified source backup. They are excluded from activation and cannot replace current XP desktop or VR positions. Fresh XP profiles use their own default positions. The old absolute-position normalization migration has been removed. XP-to-XP layout imports remain supported. |
+| Overlay layout files from original SrvSurvey or XP: shared `plotters.json`, `overlay-*`, `theme.json`, `vr/`, and `commanders/{FID}/overlays/` | Preserved in the verified source backup and excluded from activation for every profile import. Current desktop/VR positions, references, sizes, and calibrations remain unchanged. Fresh profiles use XP defaults. Layout publication, display-frame inference, and pending position migration are not part of profile import. |
 
 The new player/Codex regression compares every imported file with both the
 source and its verified backup. It checks the readable data, not just a
@@ -78,14 +81,13 @@ claims must not resurrect a sale already completed in XP. Retired
 claim list. New commanders, modes, and files are added.
 
 Current UI preferences also win, while missing compatible preferences can be
-filled. Original overlay positions remain excluded. XP layout imports can fill
-missing panels while preserving current commander positions. Shared and nested
-commander layouts use the pre-import snapshot to identify new panels. Source
-placement provenance is retained until display references are assigned, so a
-failed adjacent-settings import can be repaired by retrying without rescaling
-panels the user has moved manually. Damaged optional overrides are skipped
-individually without rolling back other recovered panels. Unsupported file
-collisions retain the current file; both originals remain recoverable.
+filled. Overlay layouts from every imported client are backed up and skipped,
+including shared layouts and commander-specific overlay directories. Importing
+UI preferences never rewrites current overlay position references. This keeps
+profile import focused on player/Codex data; native backup and restore remains
+a separate workflow with its existing machine-specific restore rules.
+Unsupported file collisions retain the current file; both originals remain
+recoverable.
 
 Source scanning and capture recover readable files individually. Locked,
 inaccessible, changing, linked, or incompatible files produce path-specific

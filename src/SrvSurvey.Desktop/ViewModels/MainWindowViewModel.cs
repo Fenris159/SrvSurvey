@@ -2283,16 +2283,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     )
     {
         var warnings = result.Warnings.ToList();
-        IReadOnlySet<string> importedOverlayNames = new HashSet<string>(StringComparer.Ordinal);
-        await TryProfileImportStepAsync(
-            "overlays",
-            () =>
-            {
-                importedOverlayNames = CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result, warnings);
-                return Task.CompletedTask;
-            },
-            warnings
-        );
         string settingsStatus = "No adjacent cross-platform-ui.json file was selected.";
         if (selectedSource.UiSettingsPath is not null)
         {
@@ -2305,20 +2295,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                         selectedSource.UiSettingsPath,
                         AppDataPaths.UiSettingsPath,
                         result.BackupDirectory,
-                        AppDataPaths.OverlaySettingsDirectory,
-                        importedOverlayNames,
                         CancellationToken.None
                     );
-                    new ImportedOverlayReferenceRecovery(AppDataPaths).Complete(result, warnings);
                     settingsStatus = settings.Imported
                         ? "Imported the current-format UI settings."
                         : "The current-format UI settings did not require import.";
-                    if (settings.ReferencedOverlayCount > 0)
-                    {
-                        settingsStatus =
-                            "Imported the current-format UI settings and preserved relative placement for "
-                            + $"{settings.ReferencedOverlayCount:N0} overlays.";
-                    }
                 },
                 warnings
             );
@@ -2331,6 +2312,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} local-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + settingsStatus
             + $" Verified backups: {result.BackupDirectory}";
         await AppendProfileImportWarningsAsync(result, warnings);
@@ -2339,15 +2321,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private async Task CompleteLegacyProfileImportAsync(ProfileImportResult result)
     {
         var warnings = result.Warnings.ToList();
-        await TryProfileImportStepAsync(
-            "overlays",
-            () =>
-            {
-                CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result, warnings);
-                return Task.CompletedTask;
-            },
-            warnings
-        );
         LegacyUiSettingsMigrationResult settingsMigration = LegacyUiSettingsMigrationResult.NotRequired;
         await TryProfileImportStepAsync(
             "settings.json",
@@ -2382,7 +2355,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} current-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + "Legacy overlay positions were skipped; current layouts were kept. "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + GetSettingsMigrationStatus(settingsMigration)
             + " "
             + GetOrganicMigrationStatus(organicMigration)

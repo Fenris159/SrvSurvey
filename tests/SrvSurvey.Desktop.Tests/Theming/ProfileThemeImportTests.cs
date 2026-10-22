@@ -17,7 +17,9 @@ public sealed class ProfileThemeImportTests : IDisposable
     [Theory]
     [InlineData(ProfileImportSourceKind.Legacy)]
     [InlineData(ProfileImportSourceKind.CrossPlatform)]
-    public async Task ImportPreservesThemeAndAppliesLayoutPolicyIndependentlyOfAppTheme(ProfileImportSourceKind kind)
+    public async Task ImportKeepsCurrentOverlayThemeAndLayoutsWhileMergingApplicationPreferences(
+        ProfileImportSourceKind kind
+    )
     {
         string source = Path.Combine(temporaryDirectory, "legacy");
         string data = Path.Combine(temporaryDirectory, "data");
@@ -25,6 +27,7 @@ public sealed class ProfileThemeImportTests : IDisposable
         string backups = Path.Combine(temporaryDirectory, "backups");
         Directory.CreateDirectory(source);
         Directory.CreateDirectory(config);
+        Directory.CreateDirectory(data);
         byte[] themeBytes =
             """
             {
@@ -39,6 +42,11 @@ public sealed class ProfileThemeImportTests : IDisposable
               "FutureOverlay": "right:18, bottom:44"
             }
             """u8.ToArray();
+        byte[] currentTheme = """{"orange":[128,70,80,90],"future":"orange"}"""u8.ToArray();
+        byte[] currentLayout =
+            """{"PlotBodyInfo":"left:80, top:120, 0.45","FutureOverlay":"right:18, bottom:44"}"""u8.ToArray();
+        await File.WriteAllBytesAsync(Path.Combine(data, "theme.json"), currentTheme);
+        await File.WriteAllBytesAsync(Path.Combine(data, "plotters.json"), currentLayout);
         await File.WriteAllBytesAsync(Path.Combine(source, "theme.json"), themeBytes);
         await File.WriteAllBytesAsync(Path.Combine(source, "plotters.json"), layoutBytes);
         await File.WriteAllTextAsync(
@@ -70,7 +78,7 @@ public sealed class ProfileThemeImportTests : IDisposable
         Assert.Equal("orange-dark", themePreferences.LoadThemeKey());
         Assert.True(importedOverlay.IsCustom);
         Assert.Null(importedOverlay.Error);
-        Assert.Equal(Color.FromArgb(128, 10, 20, 30), importedOverlay.GetColor("orange"));
+        Assert.Equal(Color.FromArgb(128, 70, 80, 90), importedOverlay.GetColor("orange"));
         Assert.Equal(importedOverlay.GetColor("orange"), importedOverlay.GetColor("future"));
         Assert.Equal(
             overlayAccentBefore,
@@ -78,25 +86,16 @@ public sealed class ProfileThemeImportTests : IDisposable
         );
         Assert.Equal(importedOverlay, service.CurrentOverlayTheme);
         Assert.Null(importedLayout.Error);
-        if (kind == ProfileImportSourceKind.CrossPlatform)
-        {
-            Assert.Equal(2, importedLayout.Placements.Count);
-            Assert.Equal(0.75, importedLayout.GetOpacity("PlotBodyInfo"));
-            Assert.Equal(layoutBytes, await File.ReadAllBytesAsync(Path.Combine(data, "plotters.json")));
-        }
-        else
-        {
-            Assert.Empty(importedLayout.Placements);
-            Assert.Equal(0.55, importedLayout.GetOpacity("PlotBodyInfo"));
-            Assert.False(File.Exists(Path.Combine(data, "plotters.json")));
-        }
+        Assert.Equal(2, importedLayout.Placements.Count);
+        Assert.Equal(0.45, importedLayout.GetOpacity("PlotBodyInfo"));
+        Assert.Equal(currentLayout, await File.ReadAllBytesAsync(Path.Combine(data, "plotters.json")));
         Assert.Equal(0.55, importedLayout.GetOpacity("FutureOverlay"));
         Assert.Equal(themeBytes, await File.ReadAllBytesAsync(Path.Combine(source, "theme.json")));
         Assert.Equal(
             themeBytes,
             await File.ReadAllBytesAsync(Path.Combine(import.BackupDirectory, "profile", "theme.json"))
         );
-        Assert.Equal(themeBytes, await File.ReadAllBytesAsync(Path.Combine(data, "theme.json")));
+        Assert.Equal(currentTheme, await File.ReadAllBytesAsync(Path.Combine(data, "theme.json")));
         Assert.Equal(layoutBytes, await File.ReadAllBytesAsync(Path.Combine(source, "plotters.json")));
         Assert.Equal(
             layoutBytes,

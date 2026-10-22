@@ -125,7 +125,7 @@ public sealed class LegacyProfileImporter
             await VerifyExactProfileAsync(backupProfileStage, sourceInventory, cancellationToken).ConfigureAwait(false);
             ProfileInventory importedInventory = await ProfileImportCompatibility
                 .SelectReadableDataAsync(
-                    SelectImportedFiles(sourceInventory, importSource.Kind),
+                    SelectImportedFiles(sourceInventory),
                     backupProfileStage,
                     warnings,
                     cancellationToken
@@ -415,22 +415,37 @@ public sealed class LegacyProfileImporter
         return Directory.Exists(final) ? final : null;
     }
 
-    private static ProfileInventory SelectImportedFiles(ProfileInventory source, ProfileImportSourceKind kind)
+    private static ProfileInventory SelectImportedFiles(ProfileInventory source)
     {
         bool ImportPath(string path) =>
-            !string.Equals(path, ManifestFileName, StringComparison.OrdinalIgnoreCase)
-            && (
-                kind == ProfileImportSourceKind.CrossPlatform
-                || !string.Equals(path, "plotters.json", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(path, "vr", StringComparison.OrdinalIgnoreCase)
-                    && !path.StartsWith("vr/", StringComparison.OrdinalIgnoreCase)
-            );
-
+            !string.Equals(path, ManifestFileName, StringComparison.OrdinalIgnoreCase) && !IsOverlayLayoutPath(path);
         return source with
         {
             RelativeDirectories = source.RelativeDirectories.Where(ImportPath).ToArray(),
             Entries = source.Entries.Where(entry => ImportPath(entry.RelativePath)).ToArray(),
         };
+    }
+
+    private static bool IsOverlayLayoutPath(string path)
+    {
+        const StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+        if (string.Equals(path, "vr", comparison) || path.StartsWith("vr/", comparison))
+        {
+            return true;
+        }
+        if (
+            path.StartsWith("commanders/", comparison)
+            && (path.EndsWith("/overlays", comparison) || path.Contains("/overlays/", comparison))
+        )
+        {
+            return true;
+        }
+        return !path.Contains('/')
+            && (
+                string.Equals(path, "plotters.json", comparison)
+                || string.Equals(path, "theme.json", comparison)
+                || path.StartsWith("overlay-", comparison)
+            );
     }
 
     private static async Task<ProfileInventory> CopyAndVerifyAsync(

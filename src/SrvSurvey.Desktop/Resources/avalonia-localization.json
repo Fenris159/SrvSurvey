@@ -13665,20 +13665,16 @@
       "translation": "Der importierte Systemverlauf blieb erhalten, konnte aber nicht sicher von {0} geladen werden: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Die UI-Einstellungen des aktuellen Formats wurden importiert und die relative Platzierung für {0}-Overlays beibehalten."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Die UI-Einstellungen des aktuellen Formats wurden importiert."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. {4} Verifizierte Backups: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} Verifizierte Backups: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Ältere Overlay-Positionen wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -20007,10 +20003,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "Ausstehende Live-Speicherung ist fehlgeschlagen; Entwurf beibehalten"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "Die ausstehenden Overlay-Referenzwiederherstellungsdaten sind ungültig."
     },
     {
       "source": "PendingCargoAdjustments",
@@ -26787,10 +26779,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "Inkompatible Overlay-Einstellungen wurden übersprungen; andere geborgene Platten wurden aufbewahrt. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -34781,10 +34769,6 @@
       "translation": "unten"
     },
     {
-      "source": "bounds:",
-      "translation": "Grenzen:"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "Grenzen:{0},{1},{2},{3}"
     },
@@ -36675,10 +36659,6 @@
     {
       "source": "preview",
       "translation": "Vorschau"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "vorheriges Ziel"
     },
     {
       "source": "prior-scans",
@@ -52711,20 +52691,16 @@
       "translation": "El historial del sistema importado se conservó pero no se pudo cargar de forma segura desde {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Se importó la configuración de la interfaz de usuario del formato actual y se conservó la ubicación relativa para las superposiciones {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Se importó la configuración de la interfaz de usuario del formato actual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. {4} Copias de seguridad verificadas: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} Copias de seguridad verificadas: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron las posiciones de superposición heredadas; Se mantuvieron los diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -59053,10 +59029,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "Falló el guardado en vivo pendiente; borrador retenido"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "Los datos de recuperación de referencia de superposición pendientes no son válidos."
     },
     {
       "source": "PendingCargoAdjustments",
@@ -65833,10 +65805,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SaltarAnillosForDss"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "Se omitieron configuraciones de superposición incompatibles; Se conservaron otros paneles recuperados. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -73827,10 +73795,6 @@
       "translation": "abajo"
     },
     {
-      "source": "bounds:",
-      "translation": "límites:"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "límites:{0},{1},{2},{3}"
     },
@@ -75721,10 +75685,6 @@
     {
       "source": "preview",
       "translation": "avance"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "destino-anterior"
     },
     {
       "source": "prior-scans",
@@ -91757,20 +91717,16 @@
       "translation": "L'historique du système importé a été conservé mais n'a pas pu être chargé en toute sécurité à partir de {0} : {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Importation des paramètres d'interface utilisateur au format actuel et maintien du placement relatif pour les superpositions {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Importation des paramètres d'interface utilisateur au format actuel."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. {4} Sauvegardes vérifiées : {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} Sauvegardes vérifiées : {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les anciennes positions de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} {5}Asauvegardes vérifiées : {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} {5}Asauvegardes vérifiées : {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -98099,10 +98055,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "La sauvegarde en direct en attente a échoué ; projet retenu"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "Les données de récupération de référence de superposition en attente ne sont pas valides."
     },
     {
       "source": "PendingCargoAdjustments",
@@ -104879,10 +104831,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SauterAnneauxForDss"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "Paramètres de superposition incompatibles ignorés ; d'autres panneaux récupérés ont été conservés. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -112873,10 +112821,6 @@
       "translation": "en bas"
     },
     {
-      "source": "bounds:",
-      "translation": "bornes:"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "limites : {0},{1},{2},{3}"
     },
@@ -114767,10 +114711,6 @@
     {
       "source": "preview",
       "translation": "aperçu"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "destination précédente"
     },
     {
       "source": "prior-scans",
@@ -130803,20 +130743,16 @@
       "translation": "O histórico do sistema importado foi preservado, mas não pôde ser carregado com segurança de {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Importou as configurações da interface do usuário no formato atual e preservou o posicionamento relativo para sobreposições {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Importou as configurações da interface do usuário no formato atual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. {4} Backups verificados: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} Backups verificados: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. As posições de sobreposição herdadas foram ignoradas; os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -137145,10 +137081,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "Falha no salvamento ao vivo pendente; rascunho retido"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "Os dados de recuperação de referência de sobreposição pendentes são inválidos."
     },
     {
       "source": "PendingCargoAdjustments",
@@ -143925,10 +143857,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "Configurações de sobreposição incompatíveis ignoradas; outros painéis recuperados foram mantidos. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -151919,10 +151847,6 @@
       "translation": "inferior"
     },
     {
-      "source": "bounds:",
-      "translation": "limites:"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "limites:{0},{1},{2},{3}"
     },
@@ -153813,10 +153737,6 @@
     {
       "source": "preview",
       "translation": "visualização"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "destino anterior"
     },
     {
       "source": "prior-scans",
@@ -169849,20 +169769,16 @@
       "translation": "Импортированная системная история сохранилась, но ее не удалось безопасно загрузить из {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Импортированы настройки пользовательского интерфейса текущего формата и сохранено относительное расположение наложений {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Импортированы настройки пользовательского интерфейса текущего формата."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. {4} Проверенные резервные копии: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} Проверенные резервные копии: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Устаревшие позиции наложения были пропущены; текущие макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -176191,10 +176107,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "Ожидание живого сохранения не удалось; проект сохранен"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "Ожидаемые данные восстановления ссылки наложения недействительны."
     },
     {
       "source": "PendingCargoAdjustments",
@@ -182971,10 +182883,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "Пропущены несовместимые настройки наложения; другие восстановленные панели сохранились. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -190965,10 +190873,6 @@
       "translation": "дно"
     },
     {
-      "source": "bounds:",
-      "translation": "границы:"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "границы: {0}, {1}, {2}, {3}"
     },
@@ -192859,10 +192763,6 @@
     {
       "source": "preview",
       "translation": "предварительный просмотр"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "предыдущий пункт назначения"
     },
     {
       "source": "prior-scans",
@@ -208895,20 +208795,16 @@
       "translation": "导入的系统历史记录已保留，但无法从 {0} 安全加载：{1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "导入当前格式的 UI 设置并保留 {0} 叠加层的相对位置。"
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "导入当前格式的 UI 设置。"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。 {4} 已验证的备份：{5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} 已验证的备份：{5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。跳过旧的叠加位置；保留当前布局。 {4} {5}已验证的备份：{6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} {5}已验证的备份：{6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -215237,10 +215133,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "等待实时保存失败；保留草稿"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "挂起的覆盖参考恢复数据无效。"
     },
     {
       "source": "PendingCargoAdjustments",
@@ -222017,10 +221909,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "福特斯跳过环"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "跳过不兼容的覆盖设置；其他回收的面板被保留。 {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -230011,10 +229899,6 @@
       "translation": "底部"
     },
     {
-      "source": "bounds:",
-      "translation": "界限："
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "边界：{0}、{1}、{2}、{3}"
     },
@@ -231905,10 +231789,6 @@
     {
       "source": "preview",
       "translation": "预览"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "先前目的地"
     },
     {
       "source": "prior-scans",
@@ -247941,20 +247821,16 @@
       "translation": "* IMPORTED SYSTEM HISTORY WAS PRESERVED BUT COULD NOT BE LOADED SAFELY FROM {0}: {1} >>>!"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "* IMPORTED THE CURRENT-FORMAT UI SETTINGS AND PRESERVED RELATIVE PLACEMENT FOR {0} OVERLAYS. >>>!"
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "* IMPORTED THE CURRENT-FORMAT UI SETTINGS. >>>!"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. {4} VERIFIED BACKUPS: {5} >>>!"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} VERIFIED BACKUPS: {5} >>>!"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. LEGACY OVERLAY POSITIONS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -254283,10 +254159,6 @@
     {
       "source": "Pending live save failed; draft retained",
       "translation": "* PENDING LIVE SAVE FAILED; DRAFT RETAINED >>>!"
-    },
-    {
-      "source": "Pending overlay reference recovery data is invalid.",
-      "translation": "* PENDING OVERLAY REFERENCE RECOVERY DATA IS INVALID. >>>!"
     },
     {
       "source": "PendingCargoAdjustments",
@@ -261063,10 +260935,6 @@
     {
       "source": "SkipRingsForDss",
       "translation": "* SKIPRINGSFORDSS >>>!"
-    },
-    {
-      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-      "translation": "* SKIPPED INCOMPATIBLE OVERLAY SETTINGS; OTHER RECOVERED PANELS WERE KEPT. {0} >>>!"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -269057,10 +268925,6 @@
       "translation": "* BOTTOM >>>!"
     },
     {
-      "source": "bounds:",
-      "translation": "* BOUNDS: >>>!"
-    },
-    {
       "source": "bounds:{0},{1},{2},{3}",
       "translation": "* BOUNDS:{0},{1},{2},{3} >>>!"
     },
@@ -270951,10 +270815,6 @@
     {
       "source": "preview",
       "translation": "* PREVIEW >>>!"
-    },
-    {
-      "source": "previous-destination",
-      "translation": "* PREVIOUS-DESTINATION >>>!"
     },
     {
       "source": "prior-scans",

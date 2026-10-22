@@ -623,10 +623,7 @@ public sealed class LegacyOverlayLayoutStore
     }
 
     /// <summary>Stores imported frame dimensions while excluding concurrent layout writers.</summary>
-    public int SaveImportedPositionReferences(
-        OverlayPositionReference reference,
-        IReadOnlySet<string>? importedNames = null
-    )
+    public int SaveImportedPositionReferences(OverlayPositionReference reference)
     {
         ArgumentNullException.ThrowIfNull(reference);
         ValidatePositionReference(reference, nameof(reference));
@@ -640,24 +637,18 @@ public sealed class LegacyOverlayLayoutStore
             }
 
             JsonObject plotters = ParseObject(plottersPath);
-            Dictionary<string, OverlayPositionReference> existingReferences = LoadPositionReferences([]);
-            var placements = plotters
-                .Where(entry =>
-                    (importedNames is null || importedNames.Contains(entry.Key))
-                    && !existingReferences.ContainsKey(entry.Key)
-                )
-                .ToDictionary(
-                    entry => entry.Key,
-                    _ => new LegacyOverlayPlacement(
-                        LegacyHorizontalAnchor.Left,
-                        0,
-                        LegacyVerticalAnchor.Top,
-                        0,
-                        null,
-                        PositionReference: reference
-                    ),
-                    StringComparer.Ordinal
-                );
+            var placements = plotters.ToDictionary(
+                entry => entry.Key,
+                _ => new LegacyOverlayPlacement(
+                    LegacyHorizontalAnchor.Left,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    0,
+                    null,
+                    PositionReference: reference
+                ),
+                StringComparer.Ordinal
+            );
             SavePositionReferencesCore(placements);
             return placements.Count;
         }

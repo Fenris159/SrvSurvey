@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -8,50 +7,6 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class CommanderSettingsProfileTests
 {
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public async Task PublishingImportedLayoutsFillsMissingPanelsWithoutReplacingCurrentCommanderPositions(
-        bool sharedAlreadyMatches,
-        bool commented
-    )
-    {
-        using var temp = new ProfileSyncTestRoot();
-        AppDataPaths paths = temp.Paths with { SettingsFrontierId = "F123" };
-        string source = Path.Combine(temp.Paths.CacheDirectory, "source", "cross-platform");
-        Directory.CreateDirectory(source);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "plotters.json"),
-            """{"PlotJumpInfo":"left:10, top:20","PlotBodyInfo":"left:30, top:40"}"""
-        );
-        if (sharedAlreadyMatches)
-        {
-            Directory.CreateDirectory(paths.DataDirectory);
-            File.Copy(Path.Combine(source, "plotters.json"), Path.Combine(paths.DataDirectory, "plotters.json"));
-        }
-        Directory.CreateDirectory(paths.OverlaySettingsDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"),
-            commented
-                ? """{/* position */ "PlotJumpInfo":"left:100, top:200",}"""
-                : """{"PlotJumpInfo":"left:100, top:200"}"""
-        );
-        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
-            new ProfileImportSource(source, ProfileImportSourceKind.CrossPlatform, null),
-            paths.DataDirectory,
-            Path.Combine(temp.Paths.CacheDirectory, "backups")
-        );
-
-        CommanderSettingsProfile.PublishImportedOverlays(paths, result);
-
-        JsonNode layout = JsonNode.Parse(
-            await File.ReadAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"))
-        )!;
-        Assert.Equal("left:100, top:200", layout["PlotJumpInfo"]!.GetValue<string>());
-        Assert.Equal("left:30, top:40", layout["PlotBodyInfo"]!.GetValue<string>());
-    }
-
     /// <summary>Legacy vehicle VR calibrations initialize private commander copies once, without carrying later edits to another commander.</summary>
     [Theory]
     [InlineData(false)]

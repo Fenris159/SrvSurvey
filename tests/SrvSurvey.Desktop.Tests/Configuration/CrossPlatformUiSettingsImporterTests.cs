@@ -65,7 +65,7 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
     }
 
     [Fact]
-    public async Task ImportRecordsTheSourceDisplaySizeForRelativeOverlayPlacement()
+    public async Task ImportingPreferencesKeepsCurrentOverlayPositionReferences()
     {
         string source = Path.Combine(temporaryDirectory, "source", "cross-platform-ui.json");
         string destination = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
@@ -99,15 +99,15 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
         CrossPlatformUiSettingsImportResult result = await CrossPlatformUiSettingsImporter.ImportAsync(
             source,
             destination,
-            backup,
-            data
+            backup
         );
         LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(data).Load();
 
         Assert.Equal(new OverlayPositionReference(1920, 1080), layout.Placements["PlotJumpInfo"].PositionReference);
-        Assert.Equal(1, result.ReferencedOverlayCount);
+        Assert.True(result.Imported);
+        Assert.Null(layout.Placements["PlotBodyInfo"].PositionReference);
         Assert.Equal(
-            new PixelPoint(640, 360),
+            new PixelPoint(960, 540),
             layout.GetPosition("PlotBodyInfo", new PixelRect(0, 0, 2560, 1440), new PixelSize(300, 120))
         );
     }

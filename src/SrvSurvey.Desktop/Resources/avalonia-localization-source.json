@@ -4673,7 +4673,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "ApplicationWindowScalePercent",
@@ -16779,7 +16779,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "DesktopBehaviorCard",
@@ -27415,14 +27415,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
     "Text": "Imported the current-format UI settings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27431,7 +27423,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
+    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -27439,7 +27431,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Legacy overlay positions were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -33676,7 +33668,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "Monitor {0}",
@@ -40142,14 +40134,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
-    "Text": "Pending overlay reference recovery data is invalid.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ImportedOverlayReferenceRecovery.cs"
   },
   {
     "Text": "PendingCargoAdjustments",
@@ -53736,14 +53720,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
-  },
-  {
-    "Text": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "Skipped {0} other-commander journal(s).",
@@ -69749,14 +69725,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
-    "Text": "bounds:",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
-  },
-  {
     "Text": "bounds:{0},{1},{2},{3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -73541,14 +73509,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml.cs"
   },
   {
-    "Text": "previous-destination",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
-  },
-  {
     "Text": "prior-scans",
     "IsFormat": false,
     "SourceKinds": [
@@ -73578,7 +73538,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
     "Text": "profile files and retained deletion history",

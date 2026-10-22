@@ -668,6 +668,69 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Theory]
+    [InlineData(ProfileImportSourceKind.Legacy, false)]
+    [InlineData(ProfileImportSourceKind.Legacy, true)]
+    [InlineData(ProfileImportSourceKind.CrossPlatform, false)]
+    [InlineData(ProfileImportSourceKind.CrossPlatform, true)]
+    public async Task AllProfileImportsBackUpLayoutsWithoutActivatingOrChangingThem(
+        ProfileImportSourceKind kind,
+        bool existing
+    )
+    {
+        string source = Path.Combine(temporaryDirectory, "layout-source");
+        string destination = Path.Combine(temporaryDirectory, "layout-destination");
+        string[] layouts =
+        [
+            "plotters.json",
+            "overlay-scale-overrides.json",
+            "overlay-position-references.json",
+            "overlay-size-overrides.json",
+            "overlay-typography-overrides.json",
+            "overlay-growth-overrides.json",
+            "overlay-theme-states.json",
+            "theme.json",
+            "vr/testbuggy.json",
+            "commanders/F123/overlays/plotters.json",
+            "commanders/F123/overlays/settings.json",
+            "commanders/F123/overlays/vr/testbuggy.json",
+        ];
+        foreach (string path in layouts)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(source, path))!);
+            await File.WriteAllTextAsync(Path.Combine(source, path), "incoming:" + path);
+            if (existing)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(destination, path))!);
+                await File.WriteAllTextAsync(Path.Combine(destination, path), "current:" + path);
+            }
+        }
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            new ProfileImportSource(source, kind, null),
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+        Assert.Equal("F123-live.json", Assert.Single(result.Manifest.GetImportedEntries()).RelativePath);
+        Assert.Empty(result.Warnings);
+        foreach (string path in layouts)
+        {
+            Assert.Contains(path, result.Manifest.SkippedRelativePaths!);
+            Assert.Equal(
+                "incoming:" + path,
+                await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", path))
+            );
+            if (existing)
+            {
+                Assert.Equal("current:" + path, await File.ReadAllTextAsync(Path.Combine(destination, path)));
+            }
+            else
+            {
+                Assert.False(File.Exists(Path.Combine(destination, path)));
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task OriginalOverlayPositionsAreBackedUpWithoutReplacingXpLayouts(bool hasCurrentLayout)
@@ -722,7 +785,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
-    public async Task CurrentFormatImportPreservesLayoutsAndBacksUpItsPreviousImportManifest()
+    public async Task CurrentFormatImportSkipsLayoutsAndBacksUpItsPreviousImportManifest()
     {
         string source = Path.Combine(temporaryDirectory, "cross-platform");
         string destination = Path.Combine(temporaryDirectory, "xp");
@@ -741,10 +804,13 @@ public sealed class LegacyProfileImporterTests : IDisposable
             Path.Combine(temporaryDirectory, "backups")
         );
 
-        Assert.Equal(3, result.Manifest.GetImportedEntries().Count);
-        Assert.Equal([LegacyProfileImporter.ManifestFileName], result.Manifest.SkippedRelativePaths);
-        Assert.Equal("XP positions", await File.ReadAllTextAsync(Path.Combine(destination, "plotters.json")));
-        Assert.Equal("XP VR positions", await File.ReadAllTextAsync(Path.Combine(destination, "vr", "testbuggy.json")));
+        Assert.Single(result.Manifest.GetImportedEntries());
+        Assert.Equal(
+            [LegacyProfileImporter.ManifestFileName, "plotters.json", "vr/testbuggy.json"],
+            result.Manifest.SkippedRelativePaths
+        );
+        Assert.False(File.Exists(Path.Combine(destination, "plotters.json")));
+        Assert.False(File.Exists(Path.Combine(destination, "vr", "testbuggy.json")));
         Assert.Equal(
             "old import manifest",
             await File.ReadAllTextAsync(
@@ -1205,7 +1271,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
         string destination = Path.Combine(temporaryDirectory, "current");
         string backups = Path.Combine(temporaryDirectory, "backups");
         Directory.CreateDirectory(source);
-        await File.WriteAllTextAsync(Path.Combine(source, "theme.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
 
         ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(source, destination, backups);
         await using FileStream manifestStream = File.OpenRead(
@@ -1216,7 +1282,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Assert.NotNull(manifest);
         Assert.Equal(4, manifest.Version);
         Assert.Equal(result.BackupDirectory, manifest.BackupDirectory);
-        Assert.Equal("theme.json", Assert.Single(manifest.Entries).RelativePath);
+        Assert.Equal("F123-live.json", Assert.Single(manifest.Entries).RelativePath);
         Assert.Empty(manifest.PreviousDestinationEntries);
         Assert.Empty(manifest.Conflicts);
     }

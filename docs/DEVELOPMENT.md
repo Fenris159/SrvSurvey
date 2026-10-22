@@ -150,7 +150,7 @@ automatically generated commit lists are disabled.
   dependency on the previous implementation.
   The [profile import audit](PROFILE_IMPORT_COMPATIBILITY.md) records the upstream
   save formats, Wine/Proton source detection, preservation of current progress,
-  partial recovery warnings, and exclusion of original overlay positions.
+  partial recovery warnings, and exclusion of imported overlay layouts.
 
 ## Upstream parity baseline
 

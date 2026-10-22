@@ -1734,7 +1734,7 @@ public sealed class MainWindowViewModelTests
                 currentLayout,
                 await File.ReadAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"))
             );
-            Assert.Contains("overlay positions were skipped", viewModel.ProfileStatusMessage);
+            Assert.Contains("Overlay layouts were skipped", viewModel.ProfileStatusMessage);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));

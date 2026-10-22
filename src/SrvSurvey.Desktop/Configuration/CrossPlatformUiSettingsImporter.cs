@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -15,8 +14,6 @@ public static class CrossPlatformUiSettingsImporter
         string sourcePath,
         string destinationPath,
         string backupDirectory,
-        string? overlayDataDirectory = null,
-        IReadOnlySet<string>? importedOverlayNames = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -33,7 +30,6 @@ public static class CrossPlatformUiSettingsImporter
 
         byte[] importedBytes = await File.ReadAllBytesAsync(source, cancellationToken).ConfigureAwait(false);
         ValidateSettings(importedBytes);
-        byte[] sourceBytes = importedBytes;
 
         string destinationDirectory =
             Path.GetDirectoryName(destination)
@@ -70,21 +66,9 @@ public static class CrossPlatformUiSettingsImporter
             await VerifyBytesAsync(stagedPath, importedBytes, cancellationToken).ConfigureAwait(false);
             File.Move(stagedPath, destination, overwrite: true);
             await VerifyBytesAsync(destination, importedBytes, cancellationToken).ConfigureAwait(false);
-            int referencedOverlayCount = 0;
-            if (
-                !string.IsNullOrWhiteSpace(overlayDataDirectory)
-                && TryReadOverlayPositionReference(sourceBytes, out OverlayPositionReference? reference)
-                && reference is not null
-            )
-            {
-                referencedOverlayCount = new LegacyOverlayLayoutStore(
-                    overlayDataDirectory
-                ).SaveImportedPositionReferences(reference, importedOverlayNames);
-            }
-
             await WriteCompletionSignalAsync(backupDirectory, importedBytes, cancellationToken).ConfigureAwait(false);
 
-            return new CrossPlatformUiSettingsImportResult(true, backupPath, referencedOverlayCount);
+            return new CrossPlatformUiSettingsImportResult(true, backupPath);
         }
         finally
         {
@@ -109,45 +93,6 @@ public static class CrossPlatformUiSettingsImporter
         {
             throw new InvalidDataException("The selected profile UI settings are not valid JSON.", exception);
         }
-    }
-
-    internal static bool TryReadOverlayPositionReference(byte[] settingsBytes, out OverlayPositionReference? reference)
-    {
-        ArgumentNullException.ThrowIfNull(settingsBytes);
-        using var document = JsonDocument.Parse(settingsBytes);
-        if (
-            !document.RootElement.TryGetProperty("DesktopBehavior", out JsonElement desktopBehavior)
-            || !desktopBehavior.TryGetProperty("ApplicationWindowPosition", out JsonElement position)
-            || !position.TryGetProperty("Monitor", out JsonElement monitorElement)
-            || monitorElement.ValueKind != JsonValueKind.String
-        )
-        {
-            reference = null;
-            return false;
-        }
-
-        string? monitor = monitorElement.GetString();
-        if (monitor is null || !monitor.StartsWith("bounds:", StringComparison.OrdinalIgnoreCase))
-        {
-            reference = null;
-            return false;
-        }
-
-        string[] parts = monitor["bounds:".Length..].Split(',', StringSplitOptions.TrimEntries);
-        if (
-            parts.Length != 4
-            || !int.TryParse(parts[2], out int width)
-            || !int.TryParse(parts[3], out int height)
-            || width <= 0
-            || height <= 0
-        )
-        {
-            reference = null;
-            return false;
-        }
-
-        reference = new OverlayPositionReference(width, height);
-        return true;
     }
 
     private static async Task VerifyEqualAsync(
@@ -208,8 +153,4 @@ public static class CrossPlatformUiSettingsImporter
     }
 }
 
-public sealed record CrossPlatformUiSettingsImportResult(
-    bool Imported,
-    string? BackupPath,
-    int ReferencedOverlayCount = 0
-);
+public sealed record CrossPlatformUiSettingsImportResult(bool Imported, string? BackupPath);
