@@ -1,0 +1,31 @@
+name: Set up Linux release dependencies
+description: Install missing Ubuntu release tools using cached package downloads
+inputs:
+  profile:
+    description: Required package set (build or runtime)
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Identify Ubuntu package cache
+      id: image
+      shell: bash
+      run: |
+        source /etc/os-release
+        echo "release=$VERSION_ID" >> "$GITHUB_OUTPUT"
+        echo "image=${ImageVersion:-unknown}" >> "$GITHUB_OUTPUT"
+        echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Ubuntu package archives
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+      with:
+        # Only downloaded archives, never dpkg state, installed tools, or APT indexes.
+        path: ${{ runner.temp }}/apt-archives/*.deb
+        key: ubuntu-${{ steps.image.outputs.release }}-${{ runner.arch }}-apt-v1-${{ inputs.profile }}-${{ hashFiles('scripts/Install-LinuxReleaseDependencies.sh') }}-${{ steps.image.outputs.image }}-${{ steps.image.outputs.week }}
+        restore-keys: ubuntu-${{ steps.image.outputs.release }}-${{ runner.arch }}-apt-v1-${{ inputs.profile }}-${{ hashFiles('scripts/Install-LinuxReleaseDependencies.sh') }}-
+
+    - name: Install missing release dependencies
+      shell: bash
+      env:
+        DEPENDENCY_PROFILE: ${{ inputs.profile }}
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/Install-LinuxReleaseDependencies.sh" "$DEPENDENCY_PROFILE" "$RUNNER_TEMP/apt-archives"
