@@ -1697,6 +1697,8 @@ public sealed class MainWindowViewModelTests
             );
             Directory.CreateDirectory(Path.Combine(data, "logs"));
             await File.WriteAllTextAsync(Path.Combine(data, "logs", "startup.txt"), "startup log");
+            const string currentLayout = "{\"PlotBodyInfo\":\"right:60, top:80\"}";
+            await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), currentLayout);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
@@ -1706,6 +1708,8 @@ public sealed class MainWindowViewModelTests
             {
                 SettingsFrontierId = "F123",
             };
+            Directory.CreateDirectory(paths.OverlaySettingsDirectory);
+            await File.WriteAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"), currentLayout);
             var applicationLog = new ApplicationLogService(data);
             await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
@@ -1719,18 +1723,20 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.True(File.Exists(applicationLog.CurrentLogPath));
             Assert.Contains("Profile import:", await File.ReadAllTextAsync(applicationLog.CurrentLogPath));
-            Assert.Contains("Imported 2 legacy files", viewModel.ProfileStatusMessage);
+            Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
             Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Equal(currentLayout, await File.ReadAllTextAsync(Path.Combine(data, "plotters.json")));
             Assert.Equal(
-                new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 12, LegacyVerticalAnchor.Top, 16, null),
-                new LegacyOverlayLayoutStore(paths.OverlaySettingsDirectory).Load().Placements["PlotBodyInfo"]
+                currentLayout,
+                await File.ReadAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"))
             );
+            Assert.Contains("Overlay layouts were skipped", viewModel.ProfileStatusMessage);
             Assert.True(viewModel.HasCompletedLegacyImport);
-            Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+            Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
         }
         finally
@@ -2021,6 +2027,267 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task OriginalProfileSelectionSkipsTheRunningXpDestination()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-original-profile-vm-{Guid.NewGuid():N}");
+        try
+        {
+            string selectedRoot = Path.Combine(root, "SrvSurvey");
+            string source = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+            string data = Path.Combine(selectedRoot, "cross-platform");
+            Directory.CreateDirectory(source);
+            Directory.CreateDirectory(data);
+            const string player = """
+                {"fid":"F123","commander":"Original","explRewards":1000000,"organicRewards":5000000,
+                 "scannedBioEntryIds":["42_1_2310101_1000000_True"],
+                 "migratedNonSystemDataOrganics":true,"migratedScannedOrganicsInEntryId":true}
+                """;
+            const string codex = """
+                {"fid":"F123","commander":"Original","codexFirsts":{"2310101":"2022-08-31T05:38:57_669611992529_11"}}
+                """;
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), player);
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-codex.json"), codex);
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-codex-18.json"), codex);
+            await File.WriteAllTextAsync(Path.Combine(data, "F123-live.json"), "{\"fid\":\"F123\"}");
+            var paths = new AppDataPaths(selectedRoot, data, Path.Combine(root, "cache"), []);
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            viewModel.LegacyProfileSourcePath = selectedRoot;
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.Equal(source, viewModel.LegacyProfileSourcePath);
+            Assert.True(viewModel.HasCompletedLegacyImport, viewModel.ProfileStatusMessage);
+            Assert.Equal(player, await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json")));
+            CommanderProfileLoadResult imported = await new CommanderProfileStore(data).LoadAsync("F123", true);
+            Assert.Equal(1000000, imported.Data!.Exploration.EstimatedRewards);
+            Assert.Equal(5000000, imported.Data.Exobiology.OrganicRewards);
+            Assert.Equal("42_1_2310101_1000000_True", Assert.Single(imported.Data.Exobiology.ScannedBioEntryIds));
+            foreach (int region in new[] { 0, 18 })
+            {
+                CommanderCodexLoadResult ledger = await new CommanderCodexStore(data).LoadAsync("F123", null, region);
+                Assert.Empty(ledger.Warnings);
+                Assert.Equal(669611992529, ledger.Data!.Firsts[2310101].SystemAddress);
+                Assert.Equal(11, ledger.Data.Firsts[2310101].BodyId);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ProfileImportRetainsPlayerDataAndRestartsWhenAdjacentUiSettingsAreIncompatible()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-recover-ui-{Guid.NewGuid():N}");
+        try
+        {
+            string sourceRoot = Path.Combine(root, "source");
+            string source = Path.Combine(sourceRoot, "cross-platform");
+            Directory.CreateDirectory(source);
+            const string player = """{"fid":"F123","commander":"Recovered","explRewards":12345}""";
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), player);
+            await File.WriteAllTextAsync(Path.Combine(sourceRoot, "cross-platform-ui.json"), "{broken");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            bool restarted = false;
+            viewModel.ProfileImportCompleted += () =>
+            {
+                restarted = true;
+                return Task.CompletedTask;
+            };
+            viewModel.LegacyProfileSourcePath = sourceRoot;
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.True(LegacyProfileImporter.CanRetryRecovery(paths.DataDirectory));
+            await using MainWindowViewModel nextStart = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            Assert.Contains("warning", nextStart.ProfileStatusMessage, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(LegacyProfileImporter.RecoveryReportFileName, nextStart.ProfileStatusMessage);
+            Assert.True(restarted, viewModel.ProfileStatusMessage);
+            Assert.True(viewModel.HasCompletedLegacyImport);
+            Assert.Contains("Warning", viewModel.ProfileStatusMessage, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("cross-platform-ui.json", viewModel.ProfileStatusMessage);
+            Assert.DoesNotContain("Profile import stopped", viewModel.ProfileStatusMessage);
+            Assert.Equal(player, await File.ReadAllTextAsync(Path.Combine(paths.DataDirectory, "F123-live.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task PartialOriginalImportKeepsCurrentBingoAndPlayerDataAndActivatesRecoveredData()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-partial-merge-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            string prefix = Path.Combine(root, "wine");
+            string source = Path.Combine(
+                prefix,
+                "drive_c",
+                "users",
+                "cmdr",
+                "AppData",
+                "Roaming",
+                "SrvSurvey",
+                "SrvSurvey",
+                "1.1.0.0"
+            );
+            Directory.CreateDirectory(source);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            Directory.CreateDirectory(paths.DataDirectory);
+            const string currentPlayer = """{"fid":"F123","explRewards":200,"scannedBioEntryIds":[]}""";
+            await File.WriteAllTextAsync(Path.Combine(paths.DataDirectory, "F123-live.json"), currentPlayer);
+            await new CommanderCodexStore(paths.DataDirectory).SetManualDiscoveryAsync("F123", null, 2310206, true);
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "F123-live.json"),
+                """{"fid":"F123","explRewards":100}"""
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "F123-codex.json"),
+                """{"fid":"F123","codexFirsts":{"2310101":"2022-08-31T05:38:57_42_1"}}"""
+            );
+            await File.WriteAllTextAsync(Path.Combine(source, "F456-live.json"), "{broken");
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "F789-live.json"),
+                """{"fid":"F789","explRewards":1234}"""
+            );
+            await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            bool restarted = false;
+            viewModel.ProfileImportCompleted += () =>
+            {
+                restarted = true;
+                return Task.CompletedTask;
+            };
+            viewModel.LegacyProfileSourcePath = prefix;
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.True(restarted, viewModel.ProfileStatusMessage);
+            Assert.Equal(
+                currentPlayer,
+                await File.ReadAllTextAsync(Path.Combine(paths.DataDirectory, "F123-live.json"))
+            );
+            var codex = new CommanderCodexStore(paths.DataDirectory);
+            Assert.Equal(2, (await codex.LoadAsync("F123", null)).Data!.Firsts.Count);
+            Assert.Equal(
+                1234,
+                (await new CommanderProfileStore(paths.DataDirectory).LoadAsync("F789", true))
+                    .Data!
+                    .Exploration
+                    .EstimatedRewards
+            );
+            Assert.Contains("F456-live.json", viewModel.ProfileStatusMessage);
+            Assert.Contains("Recovered data was kept", viewModel.ProfileStatusMessage);
+            Assert.DoesNotContain("Profile import stopped", viewModel.ProfileStatusMessage);
+            Assert.Equal("Retry profile recovery", viewModel.ImportProfileButtonText);
+            Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+            string backup = Assert.Single(Directory.GetDirectories(viewModel.ProfileBackupDirectory));
+            Assert.Contains(
+                "F456-live.json",
+                await File.ReadAllTextAsync(Path.Combine(backup, LegacyProfileImporter.RecoveryReportFileName))
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LayoutOnlyXpSourcesStillMergeTheirAdjacentPreferences(bool nested)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-preferences-only-{Guid.NewGuid():N}");
+        try
+        {
+            string sourceRoot = Path.Combine(root, "source");
+            string source = Path.Combine(sourceRoot, "cross-platform");
+            string layouts = nested ? Path.Combine(source, "commanders", "F123", "overlays") : source;
+            Directory.CreateDirectory(layouts);
+            await File.WriteAllTextAsync(
+                Path.Combine(layouts, "plotters.json"),
+                """{"PlotBodyInfo":"left:960, top:540"}"""
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(sourceRoot, "cross-platform-ui.json"),
+                """{"Version":1,"Theme":"orange-dark","JumpInfo":{"AutoShow":false}}"""
+            );
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            Directory.CreateDirectory(paths.ConfigDirectory);
+            await File.WriteAllTextAsync(paths.UiSettingsPath, """{"Version":1,"Theme":"blue-dark"}""");
+            await using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+            bool restarted = false;
+            model.ProfileImportCompleted += () =>
+            {
+                restarted = true;
+                return Task.CompletedTask;
+            };
+            model.LegacyProfileSourcePath = sourceRoot;
+
+            await model.ImportLegacyProfileAsync();
+
+            Assert.True(model.HasCompletedLegacyImport, model.ProfileStatusMessage);
+            Assert.True(restarted, model.ProfileStatusMessage);
+            Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Empty(Directory.EnumerateFiles(paths.DataDirectory, "plotters.json", SearchOption.AllDirectories));
+            string backup = Directory.GetDirectories(model.ProfileBackupDirectory, "profile-import-*").Single();
+            Assert.True(File.Exists(Path.Combine(backup, "incoming-cross-platform-ui.json")));
+            Assert.Contains("Overlay layouts were skipped", model.ProfileStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task CurrentWindowsProfileAndUiSettingsCanBeImportedFromApplicationDataRoot()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-current-profile-vm-tests-{Guid.NewGuid():N}");
@@ -2038,6 +2305,10 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(sourceUiSettings, "{\"Version\":1,\"Theme\":\"orange-dark\"}");
             await File.WriteAllTextAsync(Path.Combine(data, "local-only.json"), "{}");
             var paths = new AppDataPaths(config, data, Path.Combine(root, "cache"), []);
+            await File.WriteAllTextAsync(
+                paths.UiSettingsPath,
+                """{"Version":1,"Theme":"blue-dark","CurrentOnly":42}"""
+            );
             await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
                 builder => builder.WithAppDataPaths(paths)
@@ -2050,9 +2321,10 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal("{\"fid\":\"F123\"}", await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json")));
             Assert.True(File.Exists(Path.Combine(data, "local-only.json")));
+            Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
             Assert.Equal(
-                await File.ReadAllBytesAsync(sourceUiSettings),
-                await File.ReadAllBytesAsync(paths.UiSettingsPath)
+                42,
+                JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath))!["CurrentOnly"]!.GetValue<int>()
             );
             Assert.Contains("current-format files", viewModel.ProfileStatusMessage);
             Assert.Contains("Imported the current-format UI settings", viewModel.ProfileStatusMessage);

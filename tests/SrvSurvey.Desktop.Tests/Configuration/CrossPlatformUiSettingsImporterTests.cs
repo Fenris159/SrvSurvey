@@ -1,6 +1,7 @@
 using Avalonia;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
 
@@ -12,14 +13,17 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
     );
 
     [Fact]
-    public async Task ImportReplacesCurrentSettingsAndBacksUpThePreviousFile()
+    public async Task ImportKeepsCurrentSettingsAndBacksUpBothVersions()
     {
         string source = Path.Combine(temporaryDirectory, "source", "cross-platform-ui.json");
         string destination = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
         string backup = Path.Combine(temporaryDirectory, "backup");
         Directory.CreateDirectory(Path.GetDirectoryName(source)!);
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await File.WriteAllTextAsync(source, "{\"Version\":1,\"Theme\":\"orange-dark\"}");
+        await File.WriteAllTextAsync(
+            source,
+            "{\"Version\":1,\"Theme\":\"orange-dark\",\"JumpInfo\":{\"AutoShow\":false}}"
+        );
         await File.WriteAllTextAsync(destination, "{\"Version\":1,\"Theme\":\"blue-dark\"}");
 
         CrossPlatformUiSettingsImportResult result = await CrossPlatformUiSettingsImporter.ImportAsync(
@@ -29,7 +33,12 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
         );
 
         Assert.True(result.Imported);
-        Assert.Equal(await File.ReadAllBytesAsync(source), await File.ReadAllBytesAsync(destination));
+        Assert.Equal("blue-dark", new ThemePreferenceStore(destination).LoadThemeKey());
+        Assert.False(new JumpInfoSettingsStore(destination).Load().AutoShow);
+        Assert.Equal(
+            await File.ReadAllBytesAsync(source),
+            await File.ReadAllBytesAsync(Path.Combine(backup, "incoming-cross-platform-ui.json"))
+        );
         Assert.Equal(
             "{\"Version\":1,\"Theme\":\"blue-dark\"}",
             await File.ReadAllTextAsync(Path.Combine(backup, LegacyUiSettingsMigrator.BackupFileName))
@@ -56,7 +65,7 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
     }
 
     [Fact]
-    public async Task ImportRecordsTheSourceDisplaySizeForRelativeOverlayPlacement()
+    public async Task ImportingPreferencesKeepsCurrentOverlayPositionReferences()
     {
         string source = Path.Combine(temporaryDirectory, "source", "cross-platform-ui.json");
         string destination = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
@@ -75,19 +84,30 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
             }
             """
         );
-        await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), """{"PlotBodyInfo":"left:960, top:540"}""");
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        await File.WriteAllTextAsync(
+            destination,
+            """{"DesktopBehavior":{"ApplicationWindowPosition":{"Monitor":"bounds:0,0,2560,1440"}}}"""
+        );
+        await File.WriteAllTextAsync(Path.Combine(data, "plotters.json"), """{"PlotJumpInfo":"left:100, top:200"}""");
+        new LegacyOverlayLayoutStore(data).SaveImportedPositionReferences(new OverlayPositionReference(1920, 1080));
+        await File.WriteAllTextAsync(
+            Path.Combine(data, "plotters.json"),
+            """{"PlotJumpInfo":"left:100, top:200","PlotBodyInfo":"left:960, top:540"}"""
+        );
 
         CrossPlatformUiSettingsImportResult result = await CrossPlatformUiSettingsImporter.ImportAsync(
             source,
             destination,
-            backup,
-            data
+            backup
         );
         LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(data).Load();
 
-        Assert.Equal(1, result.ReferencedOverlayCount);
+        Assert.Equal(new OverlayPositionReference(1920, 1080), layout.Placements["PlotJumpInfo"].PositionReference);
+        Assert.True(result.Imported);
+        Assert.Null(layout.Placements["PlotBodyInfo"].PositionReference);
         Assert.Equal(
-            new PixelPoint(640, 360),
+            new PixelPoint(960, 540),
             layout.GetPosition("PlotBodyInfo", new PixelRect(0, 0, 2560, 1440), new PixelSize(300, 120))
         );
     }

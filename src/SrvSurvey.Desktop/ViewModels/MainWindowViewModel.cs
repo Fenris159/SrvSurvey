@@ -201,6 +201,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
     private ProfileImportSource profileImportSource = new(string.Empty, ProfileImportSourceKind.Legacy, null);
+    private bool canRetryProfileRecovery;
     private string profileStatusMessage;
     private string settingsLinkStatusMessage = string.Empty;
     private string questStatusMessage = "Quests are disabled.";
@@ -884,8 +885,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(legacyProfileSourcePath))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(legacyProfileSourcePath);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    legacyProfileSourcePath,
+                    AppDataPaths.DataDirectory
+                );
             }
+            canRetryProfileRecovery = LegacyProfileImporter.CanRetryRecovery(AppDataPaths.DataDirectory);
             profileStatusMessage = GetInitialProfileStatus();
             importLegacyProfileCommand = new AsyncCommand(ImportLegacyProfileAsync, CanImportLegacyProfile);
             ImportLegacyProfileCommand = importLegacyProfileCommand;
@@ -1356,7 +1361,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             string normalized = value?.Trim() ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(normalized) && Directory.Exists(normalized))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(normalized);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    normalized,
+                    AppDataPaths.DataDirectory
+                );
                 normalized = profileImportSource.DataDirectory;
             }
             else
@@ -1368,7 +1376,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 return;
             }
 
-            if (!HasCompletedLegacyImport && !IsImportingProfile)
+            if (!IsImportingProfile)
             {
                 ProfileStatusMessage = string.IsNullOrWhiteSpace(normalized)
                     ? "Choose an SrvSurvey profile or application-data folder to import."
@@ -1408,14 +1416,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         SettingsLinkStatusMessage = $"Could not open {description}: {reason}";
     }
 
-    public string ImportProfileButtonText =>
-        IsImportingProfile
-            ? "Importing profile..."
-            : (HasCompletedLegacyImport) switch
+    public string ImportProfileButtonText
+    {
+        get
+        {
+            if (IsImportingProfile)
             {
-                true => "Profile imported",
-                false => "Back up, verify, and import",
-            };
+                return "Importing profile...";
+            }
+            if (canRetryProfileRecovery && HasCompletedLegacyImport)
+            {
+                return "Retry profile recovery";
+            }
+            return "Back up, verify, and merge";
+        }
+    }
 
     public bool HasCompletedLegacyImport =>
         File.Exists(Path.Combine(AppDataPaths.DataDirectory, LegacyProfileImporter.ManifestFileName));
@@ -2190,7 +2205,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             });
             ProfileImportSource selectedSource = profileImportSource;
             ProfileImportResult result = await profileImporter.ImportAsync(
-                LegacyProfileSourcePath,
+                selectedSource,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory,
                 progress,
@@ -2198,6 +2213,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             await finalProgressDispatch.Task;
             Volatile.Write(ref acceptsProfileImportProgress, false);
+            canRetryProfileRecovery = result.Warnings.Count > 0;
             if (selectedSource.Kind == ProfileImportSourceKind.CrossPlatform)
             {
                 await CompleteCrossPlatformProfileImportAsync(selectedSource, result);
@@ -2221,6 +2237,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             )
         {
             ProfileStatusMessage = "Profile import stopped: " + exception.Message;
+            if (exception.Data[LegacyProfileImporter.RecoveryDirectoryDataKey] is string recoveryDirectory)
+            {
+                ProfileStatusMessage += $" Recovered files were retained at: {recoveryDirectory}";
+            }
         }
         finally
         {
@@ -2262,68 +2282,141 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         ProfileImportResult result
     )
     {
-        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
+        var warnings = result.Warnings.ToList();
         string settingsStatus = "No adjacent cross-platform-ui.json file was selected.";
         if (selectedSource.UiSettingsPath is not null)
         {
-            CrossPlatformUiSettingsImportResult settings = await CrossPlatformUiSettingsImporter.ImportAsync(
-                selectedSource.UiSettingsPath,
-                AppDataPaths.UiSettingsPath,
-                result.BackupDirectory,
-                AppDataPaths.OverlaySettingsDirectory,
-                CancellationToken.None
+            settingsStatus = "The current-format UI settings were not imported.";
+            await TryProfileImportStepAsync(
+                "cross-platform-ui.json",
+                async () =>
+                {
+                    CrossPlatformUiSettingsImportResult settings = await CrossPlatformUiSettingsImporter.ImportAsync(
+                        selectedSource.UiSettingsPath,
+                        AppDataPaths.UiSettingsPath,
+                        result.BackupDirectory,
+                        CancellationToken.None
+                    );
+                    settingsStatus = settings.Imported
+                        ? "Imported the current-format UI settings."
+                        : "The current-format UI settings did not require import.";
+                },
+                warnings
             );
-            settingsStatus = settings.Imported
-                ? "Imported the current-format UI settings."
-                : "The current-format UI settings did not require import.";
-            if (settings.ReferencedOverlayCount > 0)
-            {
-                settingsStatus =
-                    "Imported the current-format UI settings and preserved relative placement for "
-                    + $"{settings.ReferencedOverlayCount:N0} overlays.";
-            }
         }
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} current-format files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} current-format files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} local-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + settingsStatus
             + $" Verified backups: {result.BackupDirectory}";
+        await AppendProfileImportWarningsAsync(result, warnings);
     }
 
     private async Task CompleteLegacyProfileImportAsync(ProfileImportResult result)
     {
-        LegacyOverlayLayoutImportMigrationResult overlayLayoutMigration =
-            LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(AppDataPaths);
-        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
-        LegacyUiSettingsMigrationResult settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(
-            AppDataPaths
+        var warnings = result.Warnings.ToList();
+        LegacyUiSettingsMigrationResult settingsMigration = LegacyUiSettingsMigrationResult.NotRequired;
+        await TryProfileImportStepAsync(
+            "settings.json",
+            () =>
+            {
+                settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(AppDataPaths);
+                if (settingsMigration.Error is not null)
+                {
+                    warnings.Add(new ProfileImportWarning("settings.json", settingsMigration.Error));
+                }
+                return Task.CompletedTask;
+            },
+            warnings
         );
-        LegacyOrganicProfileMigrationResult organicMigration = await new LegacyOrganicProfileMigrator(
-            AppDataPaths.DataDirectory
-        ).MigrateAsync(CancellationToken.None);
-        foreach (string error in organicMigration.Errors)
-        {
-            applicationLogService?.Append("Legacy organic history was preserved without conversion: " + error);
-        }
+        LegacyOrganicProfileMigrationResult organicMigration = LegacyOrganicProfileMigrationResult.NotRequired;
+        await TryProfileImportStepAsync(
+            "organic",
+            async () =>
+            {
+                organicMigration = await new LegacyOrganicProfileMigrator(AppDataPaths.DataDirectory).MigrateAsync(
+                    CancellationToken.None
+                );
+                warnings.AddRange(organicMigration.Errors.Select(error => new ProfileImportWarning("organic", error)));
+            },
+            warnings
+        );
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} legacy files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} current-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + GetOverlayLayoutMigrationStatus(overlayLayoutMigration)
-            + " "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + GetSettingsMigrationStatus(settingsMigration)
             + " "
             + GetOrganicMigrationStatus(organicMigration)
             + $"Verified backups: {result.BackupDirectory}";
+        await AppendProfileImportWarningsAsync(result, warnings);
+    }
+
+    private static async Task TryProfileImportStepAsync(
+        string path,
+        Func<Task> action,
+        List<ProfileImportWarning> warnings
+    )
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception exception)
+        {
+            warnings.Add(new ProfileImportWarning(path, exception.Message));
+        }
+    }
+
+    private async Task AppendProfileImportWarningsAsync(ProfileImportResult result, List<ProfileImportWarning> warnings)
+    {
+        if (warnings.Count == 0)
+        {
+            return;
+        }
+        canRetryProfileRecovery = true;
+        string report = Path.Combine(result.BackupDirectory, LegacyProfileImporter.RecoveryReportFileName);
+        try
+        {
+            await File.WriteAllTextAsync(
+                report,
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        result.Manifest.SourceDirectory,
+                        result.Manifest.Entries,
+                        Warnings = warnings,
+                    }
+                ),
+                CancellationToken.None
+            );
+            await LegacyProfileImporter.SaveRecoveryWarningsAsync(result, warnings);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add(new ProfileImportWarning("warning report", exception.Message));
+        }
+        foreach (ProfileImportWarning warning in warnings)
+        {
+            applicationLogService?.Append($"Profile import warning: {warning.RelativePath}: {warning.Message}");
+        }
+        string details = string.Join(
+            " | ",
+            warnings.Take(10).Select(warning => $"{warning.RelativePath}: {warning.Message}")
+        );
+        ProfileStatusMessage +=
+            $" Recovered data was kept. Warnings ({warnings.Count:N0}): {details} Full report: {report}";
     }
 
     private async Task PrepareForProfileImportAsync()
@@ -2380,21 +2473,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             : "No legacy UI preference translation was required.";
     }
 
-    private static string GetOverlayLayoutMigrationStatus(LegacyOverlayLayoutImportMigrationResult migration)
-    {
-        if (migration.Error is not null)
-        {
-            return "Legacy overlay positions were preserved, but absolute desktop "
-                + "anchors could not be converted. Reposition affected panels in "
-                + $"the overlay editor. {migration.Error}";
-        }
-
-        return migration.Migrated
-            ? $"Converted {migration.NormalizedPlacementCount:N0} absolute overlay "
-                + "placement(s) to game-window-relative anchors."
-            : "No absolute overlay placement conversion was required.";
-    }
-
     private static string GetOrganicMigrationStatus(LegacyOrganicProfileMigrationResult migration)
     {
         string status = migration.Migrated
@@ -2419,7 +2497,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return !IsDiagnosticReplay
             && !IsImportingProfile
             && Directory.Exists(LegacyProfileSourcePath)
-            && !HasCompletedLegacyImport
             && !File.Exists(AppDataPaths.DataDirectory);
     }
 
@@ -2430,11 +2507,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             return "Profile import is unavailable during diagnostic replay.";
         }
 
+        if (HasCompletedLegacyImport && canRetryProfileRecovery)
+        {
+            return "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. "
+                + $"Full report: {LegacyProfileImporter.GetRecoveryReportPath(AppDataPaths.DataDirectory)}";
+        }
+
         if (HasCompletedLegacyImport)
         {
-            return $"Profile data has already been imported into "
-                + $"{AppDataPaths.DataDirectory}. The verified backup and conflict "
-                + "manifest are retained for recovery.";
+            return $"Profile data is available in {AppDataPaths.DataDirectory}. Further imports add missing data and keep current values; verified backups are retained.";
         }
 
         if (File.Exists(AppDataPaths.DataDirectory))
@@ -2444,8 +2525,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         return LegacyProfiles.Count == 0
-            ? "No Windows profile was detected automatically. Choose its profile folder manually; "
-                + "both current-format and legacy profiles copied from Windows can be imported on Linux."
+            ? "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually."
             : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
                 + "Import creates checksum-verified backups, preserves current-only files, "
                 + "records collisions, and activates the merged copy transactionally.";

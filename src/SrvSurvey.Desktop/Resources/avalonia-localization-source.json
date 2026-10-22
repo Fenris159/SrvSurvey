@@ -4673,7 +4673,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "ApplicationWindowScalePercent",
@@ -6590,7 +6590,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
-    "Text": "Back up, verify, and import",
+    "Text": "Back up, verify, and merge",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11156,14 +11156,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
   },
   {
-    "Text": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11707,6 +11699,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Closing other SrvSurvey instances before continuing the update.",
@@ -14304,22 +14304,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
-  },
-  {
     "Text": "Cooling down",
     "IsFormat": false,
     "SourceKinds": [
@@ -14824,6 +14808,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerInputBackend.cs"
   },
   {
+    "Text": "Could not publish the update rollback outcome: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
+  },
+  {
     "Text": "Could not read SDL gamepad events: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -14958,6 +14950,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Could not stop the unhealthy replacement process: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
     "Text": "Could not validate update registration for PID {0}: {1}",
@@ -16787,7 +16787,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "DesktopBehaviorCard",
@@ -27407,14 +27407,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Imported overlay placement conversion was skipped: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
-  },
-  {
     "Text": "Imported regional Codex candidates: {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -27431,14 +27423,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
     "Text": "Imported the current-format UI settings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27447,7 +27431,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
+    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -27455,7 +27439,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
+    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -29952,14 +29936,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
-    "Text": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
     "Text": "Legacy overlay scales were not migrated: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31062,6 +31038,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
+    "Text": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
     "Text": "Local ring discoveries",
@@ -33692,7 +33676,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
     "Text": "Monitor {0}",
@@ -35287,22 +35271,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "No absolute overlay placement conversion was required.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
     "Text": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -36093,6 +36061,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
+  },
+  {
+    "Text": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "No passive overlay is registered with this identity.",
@@ -41674,7 +41650,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Previous page",
@@ -42008,7 +41984,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
+    "Text": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -42040,7 +42016,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
-    "Text": "Profile import: {0}",
+    "Text": "Profile import warning: {0}: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -42048,8 +42024,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Profile imported",
-    "IsFormat": false,
+    "Text": "Profile import: {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -45130,6 +45106,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Recovered files were retained at: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Recovered overlay file \u0027{0}\u0027; original retained at \u0027{1}\u0027.",
     "IsFormat": true,
     "SourceKinds": [
@@ -45144,6 +45136,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Red",
@@ -47226,6 +47226,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Retry profile recovery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Retry selected deliveries",
@@ -59609,6 +59617,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationCommanderInstanceLauncher.cs"
   },
   {
+    "Text": "The current UI settings are not a JSON object; they were kept unchanged.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
     "Text": "The current application assembly could not be resolved.",
     "IsFormat": false,
     "SourceKinds": [
@@ -59730,6 +59746,14 @@
   },
   {
     "Text": "The current-format UI settings did not require import.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "The current-format UI settings were not imported.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -61383,6 +61407,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
+  },
+  {
+    "Text": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateHealthMonitor.cs"
+  },
+  {
+    "Text": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateHealthMonitor.cs"
   },
   {
     "Text": "The replay overlay presentation contains an unknown overlay.",
@@ -65150,6 +65190,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
+    "Text": "Update startup: desktop initialized; waiting for the main window\u0027s first frame.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Update startup: local profile ready; constructing the desktop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
+    "Text": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "Update status has not been checked.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66641,7 +66705,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Verified update replacement startup with the handoff helper.",
+    "Text": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -68389,6 +68453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
+    "Text": "Wine / Proton profile ({0} files)",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/LegacyProfileOptionViewModel.cs"
+  },
+  {
     "Text": "Wings",
     "IsFormat": false,
     "SourceKinds": [
@@ -69659,14 +69731,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
-  },
-  {
-    "Text": "bounds:",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CrossPlatformUiSettingsImporter.cs"
   },
   {
     "Text": "bounds:{0},{1},{2},{3}",
@@ -73141,6 +73205,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
   },
   {
+    "Text": "organic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "origin",
     "IsFormat": false,
     "SourceKinds": [
@@ -73467,6 +73539,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "profile",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
     "Text": "profile files and retained deletion history",
@@ -75444,6 +75524,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "warning report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "water",

@@ -1,80 +1,54 @@
-# SrvSurvey-XP 2.1.3.0-rc.69.8
+# SrvSurvey-XP 2.1.3.0-rc.70
 
-RC69.8 improves Colonization market searches with local-stock exclusions,
-selectable data sources, clearer ShoppingList information, and sortable build
-project columns. Colonization overlays now default to hiding outside recognized
-ships through their existing vessel and vehicle exceptions.
+RC70 makes profile imports preserve existing progress and recover usable data
+when individual files fail. It also improves startup checks and rollback when
+installing an update.
 
 ## What's changed
 
-- **Find the OBS overlay on KDE Plasma.** The joined `SrvSurveyWindowOne overlay`
-  now appears in the PipeWire window picker on KDE Plasma, including CachyOS.
-  The Linux capture window rejects keyboard focus so Alt-Tab skips it during
-  gameplay.
-- **Sort build projects.** Click **Project**, **Loaded**, **Progress**, **Type**,
-  or **System** to sort the table; click again to reverse it. An arrow marks the
-  active column and direction. Projects start with progress descending so the
-  most complete builds appear first. Loaded and Progress sort by their numeric
-  percentages, while Type and System keep matching entries together. Your sort
-  stays active through filters, project refreshes, and carrier coverage changes.
-- **Exclude commodities available locally.** The new **Exclude Local Commodities**
-  button after **Select None** checks markets in the selected projects' systems
-  and deselects commodities whose remaining needs are covered by recorded local
-  stock. The existing loading indicator shows progress, and the button uses a
-  secondary highlight while enabled. Turning it off restores your manual choices.
-- **Keep local exclusions consistent.** Local-stock checks include surface ports
-  even when **Exclude surface ports** hides them from search results, and ignore
-  market age. Coverage is recalculated as needs, ShoppingList allocations,
-  selected projects, carrier cargo, or applicable filters change. The toggle and
-  cached local stock survive sessions. ShoppingList allocations are deducted from
-  the matching market stock before coverage is calculated. Refreshed local
-  coverage stays current even if the wider search fails.
-- **Choose market data sources.** **Data Source:** checkboxes beside the arrival
-  filter let you use Spansh, Ardent, or both. Both start enabled, your selection
-  is saved, and searches and local-stock checks only contact selected providers.
-- **Show markets in the reference system.** Searches include origin-system
-  markets at **0 ly**. **Include outdated local markets** can show older local
-  stock with an **Outdated** label, observation date, and warning. The market-age
-  limit still applies to results in other systems. Ardent local estimates have
-  no additional one-year cutoff when older local markets are enabled.
-- **Recover oversized Spansh search pages.** Searches retry with smaller pages
-  when a large station response exceeds the response-size limit, retaining
-  results already fetched instead of immediately stopping the provider search.
-  Ardent nearby searches also continue with a warning if the separate local
-  stock request fails; local-only checks still report failure.
-- **Clarify ShoppingList quantities.** Commodity tooltips separately show
-  **Still to plan** and **On ShoppingList here**, so zero unplanned tonnes cannot
-  be mistaken for a completed need when cargo is still on the list. Each tooltip
-  line translates independently while retaining its layout and theme colors.
-- **Keep provider warnings concise.** Repeated local checks no longer duplicate
-  warnings, including after restoring the shopping workspace. Invalid saved
-  warning entries are rejected instead of breaking workspace startup.
-- **Fix the Auto Refresh animation warning.** The Colonization rotation
-  animation now targets only its spinner, so unrelated labels keep their own
-  transforms without logging missing `RotateTransform` warnings.
-- **Hide Colonization overlays outside ships by default.** Every entry under
-  **Colonization → Overlay Exceptions → Vessel / Vehicle** starts unchecked:
-  Nomad, Scarab SRV, Scorpion, Rhino, Fighters, On foot, and Other / unknown.
-  Small, Medium, and Large ship defaults stay enabled. This applies to both
-  Colonization commodities and ShoppingList overlays; saved choices take
-  precedence and can still be changed through the existing exceptions window.
+- **Import original and older XP profiles without resetting progress.** Add
+  missing commanders and global or regional Codex discoveries while retaining
+  current player values, Bingo checks, and discovery metadata. Sold exploration
+  and biological claims stay sold, including when an import is repeated.
+- **Recover compatible data and explain what was skipped.** Locked, damaged,
+  or incompatible source files produce specific warnings while readable data
+  is kept. Optional settings failures no longer cancel a recovered import.
+  Verified backups retain captured originals and the previous profile, and
+  warnings and their recovery-report location remain visible after restart.
+- **Find profiles on Windows and Linux.** Selection recognizes original
+  versioned and Microsoft Store folders, common Wine/Proton and launcher
+  prefixes, and external Steam libraries. Manual folder selection remains
+  available. Duplicate Wine aliases and unrelated game folders no longer hide
+  or duplicate detected profiles. Prefix scanning runs when import needs it,
+  avoiding repeated discovery during normal path resolution.
+- **Keep your current overlay layouts.** Layouts from original SrvSurvey and
+  older XP profiles are backed up and skipped, including shared and commander
+  panels, position references, size overrides, and VR calibrations. Existing
+  panel positions stay unchanged; new profiles use XP defaults. Compatible UI
+  preferences still merge while retaining current values.
+- **Confirm healthy update startup and improve rollback.** Update verification
+  allows up to three minutes and requires the main window to appear, render a
+  frame, and process another UI turn. Local profile recovery still runs, while
+  automatic Google Drive checks wait until the next normal restart or
+  **Sync now**. Failure messages distinguish early exit from timeout, and canceled
+  health checks restore the previous AppImage or archive installation.
 
 ## Update channel and packages
 
-RC69.8 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC70 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.69.8`
-- Tag: `xp2-v2.1.3.0-rc.69.8`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.69.8-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.69.8-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.69.8-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.69.8-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.70`
+- Tag: `xp2-v2.1.3.0-rc.70`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.70-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.70-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.70-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.70-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 
-This remains a development preview. Market stock is an estimate from the
-selected providers. Local exclusions intentionally accept old stock; verify
-availability before travelling. Existing saved overlay exceptions are preserved.
+This remains a development preview. Close the source SrvSurvey before importing
+to obtain a consistent snapshot. Review any import warnings for skipped files;
+captured originals remain available in the recovery backup.

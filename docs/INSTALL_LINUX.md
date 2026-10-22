@@ -75,6 +75,16 @@ checks its release-index size and SHA-256 checksum, preserves the current image
 as a rollback copy, and starts the replacement. If the replacement does not
 confirm a healthy startup, SrvSurvey restores the previous AppImage.
 
+The replacement has up to three minutes to confirm that its main window has
+received a frame and the UI dispatcher is responding. Local recovery and staged
+restores still complete first. The update-verification launch defers automatic
+Google Drive checks so a slow network cannot hold up this confirmation; use
+**Sync now** or a normal restart to check cloud changes. The automatic-sync
+preference stays enabled. Logs record local-profile readiness and window
+readiness, and rollback outcomes distinguish an early process exit (with its
+exit code) from a startup timeout. A timed-out replacement is stopped before
+restoring the old image.
+
 The update helper uses AppImage extract-and-run mode, so updating does not add
 a FUSE requirement. Published releases also include embedded AppImage update
 information and a matching `.zsync` asset for compatibility with standard

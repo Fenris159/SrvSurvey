@@ -81,8 +81,10 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         );
     }
 
-    [Fact]
-    public async Task FailedHealthConfirmationRestoresOldInstallationByteForByte()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedHealthConfirmationRestoresOldInstallationByteForByte(bool canceled)
     {
         InstallationFixture fixture = await CreateFixtureAsync();
         ReleaseInstallationPreparation preparation = await new ReleaseInstallationPreparer().PrepareAsync(
@@ -97,7 +99,10 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
 
         ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
             preparation,
-            (_, _, _) => Task.FromResult(false)
+            (_, _, _) =>
+                canceled
+                    ? Task.FromException<bool>(new OperationCanceledException("Startup verification canceled"))
+                    : Task.FromResult(false)
         );
 
         Assert.Equal(ReleaseInstallationStatus.RolledBack, result.Status);
@@ -275,8 +280,10 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         Assert.False(File.Exists(preparation.BackupDirectory));
     }
 
-    [Fact]
-    public async Task AppImageLaunchFailureRestoresInstalledImageAndReportsError()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AppImageLaunchFailureRestoresInstalledImageAndReportsError(bool canceled)
     {
         string parent = Path.Combine(temporaryDirectory, "appimage-launch-failure");
         Directory.CreateDirectory(parent);
@@ -296,7 +303,12 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
 
         ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
             preparation,
-            (_, _, _) => throw new Win32Exception("replacement launch failed")
+            (_, _, _) =>
+                Task.FromException<bool>(
+                    canceled
+                        ? new OperationCanceledException("replacement launch failed")
+                        : new Win32Exception("replacement launch failed")
+                )
         );
 
         Assert.Equal(ReleaseInstallationStatus.RolledBack, result.Status);

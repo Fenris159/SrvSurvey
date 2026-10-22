@@ -174,7 +174,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         string backupPath = Assert.IsType<string>(result.PreviousSettingsBackupPath);
         Assert.Equal(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName), backupPath);
         Assert.Equal(currentSettings, await File.ReadAllTextAsync(backupPath));
-        Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal("green-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Equal("de", new LocalizationSettingsStore(paths.UiSettingsPath, paths.DataDirectory).Load());
         Assert.Equal(
             new JumpInfoPreferences(false, true, true, true),
@@ -407,7 +407,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName),
             result.PreviousSettingsBackupPath
         );
-        Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
     }
 
     [Fact]
@@ -667,6 +667,31 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new FirstFootfallInferenceSettingsStore(paths.UiSettingsPath).Load()
         );
         Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ImportWithoutPreferencesDoesNotRemigrateSettingsLeftByAnEarlierImport()
+    {
+        AppDataPaths paths = CreatePaths();
+        string source = Path.Combine(temporaryDirectory, "codex-only");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(paths.DataDirectory);
+        Directory.CreateDirectory(paths.ConfigDirectory);
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-codex.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(paths.DataDirectory, "settings.json"), """{"darkTheme":true}""");
+        const string current = """{"Theme":"green-light"}""";
+        await File.WriteAllTextAsync(paths.UiSettingsPath, current);
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.Null(result.Error);
+        Assert.False(result.Migrated);
+        Assert.Equal(current, await File.ReadAllTextAsync(paths.UiSettingsPath));
     }
 
     [Fact]

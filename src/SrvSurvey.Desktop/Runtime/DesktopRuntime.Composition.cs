@@ -447,7 +447,6 @@ internal sealed partial class DesktopRuntime
         linuxTerminationRegistration = RegisterLinuxTermination();
         if (diagnosticReplay is null)
         {
-            ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
             releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
                 appDataPaths,
                 applicationLog,
@@ -455,7 +454,24 @@ internal sealed partial class DesktopRuntime
             );
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
+        if (Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
+        {
+            applicationLog.Append("Update startup: desktop initialized; waiting for the main window's first frame.");
+        }
+        ApplicationStartupWindowPresenter.Present(
+            desktop,
+            mainWindow,
+            startup.BringMainWindowToFront,
+            diagnosticReplay is null
+                ? () =>
+                {
+                    if (shutdownTask is null)
+                    {
+                        ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+                    }
+                }
+                : null
+        );
     }
 
     /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
@@ -709,27 +725,6 @@ internal sealed partial class DesktopRuntime
         if (settingsMigration.Error is not null)
         {
             applicationLog.Append("Legacy UI settings migration was skipped: " + settingsMigration.Error);
-        }
-    }
-
-    private static void MigrateLegacyOverlayLayout(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
-    {
-        LegacyOverlayLayoutImportMigrationResult migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
-            appDataPaths
-        );
-        if (migration.Migrated)
-        {
-            applicationLog.Append(
-                $"Converted {migration.NormalizedPlacementCount:N0} imported "
-                    + "absolute overlay placement(s) to game-window-relative anchors."
-                    + (migration.BackupPath is null ? string.Empty : " Previous layout backup: " + migration.BackupPath)
-            );
-            return;
-        }
-
-        if (migration.Error is not null)
-        {
-            applicationLog.Append("Imported overlay placement conversion was skipped: " + migration.Error);
         }
     }
 
@@ -1057,7 +1052,6 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
         MigrateLegacyUiSettings(appDataPaths, applicationLog);
         MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
     }
@@ -1293,7 +1287,9 @@ internal sealed partial class DesktopRuntime
                 null
             )
         );
-        applicationLog.Append("Verified update replacement startup with the handoff helper.");
+        applicationLog.Append(
+            "Verified update replacement startup: the main window is visible and the UI dispatcher is responding."
+        );
     }
 
     private IGameWindowTracker CreateRawGameWindowTracker()

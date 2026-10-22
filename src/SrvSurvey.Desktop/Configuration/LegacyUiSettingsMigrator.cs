@@ -41,11 +41,25 @@ public sealed class LegacyUiSettingsMigrator
             ProfileImportManifest manifest =
                 JsonSerializer.Deserialize<ProfileImportManifest>(File.ReadAllText(manifestPath))
                 ?? throw new InvalidDataException("The legacy import manifest is empty.");
+            if (manifest.Version >= 4)
+            {
+                legacySettingsPath = Path.Combine(manifest.BackupDirectory, "profile", "settings.json");
+                if (!File.Exists(legacySettingsPath))
+                {
+                    return LegacyUiSettingsMigrationResult.NotRequired;
+                }
+            }
             JsonObject legacy =
                 JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject
                 ?? throw new InvalidDataException("The imported legacy settings file is not a JSON object.");
             var store = new UiSettingsDocumentStore(paths.UiSettingsPath);
-            JsonObject existing = store.Load();
+            JsonObject existing =
+                manifest.Version >= 4 && File.Exists(paths.UiSettingsPath)
+                    ? JsonNode.Parse(File.ReadAllText(paths.UiSettingsPath)) as JsonObject
+                        ?? throw new InvalidDataException(
+                            "The current UI settings are not a JSON object; they were kept unchanged."
+                        )
+                    : store.Load();
             if (HasMigrationMarker(existing, manifest))
             {
                 return MigrateNewPreferencesIfMissing(legacy, existing, store);
@@ -304,6 +318,15 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapCodexImages(legacy, root, manifest);
                 mappedCount += MapSection(legacy, root, "Travel", [("logDockToDockTimes", "LogDockToDockTimes")]);
                 mappedCount += MapInput(legacy, root);
+                if (manifest.Version >= 4)
+                {
+                    JsonObject merged = ProfileJsonMerge.MergeMissing(existing, root);
+                    root.Clear();
+                    foreach (KeyValuePair<string, JsonNode?> property in merged)
+                    {
+                        root[property.Key] = property.Value?.DeepClone();
+                    }
+                }
                 WriteMigrationMarker(root, manifest, mappedCount);
             });
 
