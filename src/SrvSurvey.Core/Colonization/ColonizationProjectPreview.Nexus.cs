@@ -3,6 +3,8 @@ namespace SrvSurvey.Core.Colonization;
 public sealed partial class ColonizationProjectPreview
 {
     private readonly bool? nexusRequirementsKnown;
+    public string? NexusName { get; }
+    public IReadOnlyList<ColonizationNexusSystemPlan>? NexusSystems { get; }
 
     /// <summary>Uses Raven's system totals, which include planned facilities without individual build IDs.</summary>
     public static ColonizationProjectPreview CreateNexusReport(
@@ -28,6 +30,8 @@ public sealed partial class ColonizationProjectPreview
     )
     {
         IsCombined = true;
+        NexusName = nexus.Name;
+        NexusSystems = systems;
         nexusRequirementsKnown = systems.Count > 0 && systems.All(system => system.Cargo.IsKnown);
         FetchedAt = fetchedAt;
         Projects = systems.SelectMany(system => system.System.Builds).DistinctBy(build => build.BuildId).ToArray();
@@ -52,7 +56,9 @@ public sealed partial class ColonizationProjectPreview
                 StringComparer.OrdinalIgnoreCase
             );
         Rows = CreateRows(needs, Carriers);
-        Remaining = Rows.Sum(row => row.Need);
-        CarrierDeficit = CalculateDeficit(Rows, Carriers);
+        Remaining = systems.Sum(system => system.Cargo.Remaining);
+        CarrierDeficit = systems.All(system => system.System.Needs is not null || system.Cargo.IsComplete)
+            ? CalculateDeficit(Rows, Carriers)
+            : null;
     }
 }

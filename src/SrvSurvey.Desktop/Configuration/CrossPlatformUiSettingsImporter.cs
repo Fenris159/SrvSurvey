@@ -1,7 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using SrvSurvey.Desktop.Platform.Overlay;
+using System.Text.Json.Nodes;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -13,7 +14,6 @@ public static class CrossPlatformUiSettingsImporter
         string sourcePath,
         string destinationPath,
         string backupDirectory,
-        string? overlayDataDirectory = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -37,12 +37,26 @@ public static class CrossPlatformUiSettingsImporter
         Directory.CreateDirectory(destinationDirectory);
         Directory.CreateDirectory(backupDirectory);
 
+        await File.WriteAllBytesAsync(
+                Path.Combine(backupDirectory, "incoming-cross-platform-ui.json"),
+                importedBytes,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
         string? backupPath = null;
         if (File.Exists(destination))
         {
             backupPath = Path.Combine(backupDirectory, LegacyUiSettingsMigrator.BackupFileName);
             File.Copy(destination, backupPath, overwrite: false);
             await VerifyEqualAsync(destination, backupPath, cancellationToken).ConfigureAwait(false);
+            byte[] currentBytes = await File.ReadAllBytesAsync(backupPath, cancellationToken).ConfigureAwait(false);
+            ValidateSettings(currentBytes);
+            JsonObject current = JsonNode.Parse(currentBytes)!.AsObject();
+            JsonObject incoming = JsonNode.Parse(importedBytes)!.AsObject();
+            JsonObject merged = ProfileJsonMerge.MergeMissing(current, incoming);
+            importedBytes = JsonNode.DeepEquals(current, merged)
+                ? currentBytes
+                : JsonSerializer.SerializeToUtf8Bytes(merged);
         }
 
         string stagedPath = Path.Combine(destinationDirectory, Path.GetRandomFileName());
@@ -52,21 +66,9 @@ public static class CrossPlatformUiSettingsImporter
             await VerifyBytesAsync(stagedPath, importedBytes, cancellationToken).ConfigureAwait(false);
             File.Move(stagedPath, destination, overwrite: true);
             await VerifyBytesAsync(destination, importedBytes, cancellationToken).ConfigureAwait(false);
-            int referencedOverlayCount = 0;
-            if (
-                !string.IsNullOrWhiteSpace(overlayDataDirectory)
-                && TryReadOverlayPositionReference(importedBytes, out OverlayPositionReference? reference)
-                && reference is not null
-            )
-            {
-                referencedOverlayCount = new LegacyOverlayLayoutStore(
-                    overlayDataDirectory
-                ).SaveImportedPositionReferences(reference);
-            }
-
             await WriteCompletionSignalAsync(backupDirectory, importedBytes, cancellationToken).ConfigureAwait(false);
 
-            return new CrossPlatformUiSettingsImportResult(true, backupPath, referencedOverlayCount);
+            return new CrossPlatformUiSettingsImportResult(true, backupPath);
         }
         finally
         {
@@ -91,45 +93,6 @@ public static class CrossPlatformUiSettingsImporter
         {
             throw new InvalidDataException("The selected profile UI settings are not valid JSON.", exception);
         }
-    }
-
-    internal static bool TryReadOverlayPositionReference(byte[] settingsBytes, out OverlayPositionReference? reference)
-    {
-        ArgumentNullException.ThrowIfNull(settingsBytes);
-        using var document = JsonDocument.Parse(settingsBytes);
-        if (
-            !document.RootElement.TryGetProperty("DesktopBehavior", out JsonElement desktopBehavior)
-            || !desktopBehavior.TryGetProperty("ApplicationWindowPosition", out JsonElement position)
-            || !position.TryGetProperty("Monitor", out JsonElement monitorElement)
-            || monitorElement.ValueKind != JsonValueKind.String
-        )
-        {
-            reference = null;
-            return false;
-        }
-
-        string? monitor = monitorElement.GetString();
-        if (monitor is null || !monitor.StartsWith("bounds:", StringComparison.OrdinalIgnoreCase))
-        {
-            reference = null;
-            return false;
-        }
-
-        string[] parts = monitor["bounds:".Length..].Split(',', StringSplitOptions.TrimEntries);
-        if (
-            parts.Length != 4
-            || !int.TryParse(parts[2], out int width)
-            || !int.TryParse(parts[3], out int height)
-            || width <= 0
-            || height <= 0
-        )
-        {
-            reference = null;
-            return false;
-        }
-
-        reference = new OverlayPositionReference(width, height);
-        return true;
     }
 
     private static async Task VerifyEqualAsync(
@@ -190,8 +153,4 @@ public static class CrossPlatformUiSettingsImporter
     }
 }
 
-public sealed record CrossPlatformUiSettingsImportResult(
-    bool Imported,
-    string? BackupPath,
-    int ReferencedOverlayCount = 0
-);
+public sealed record CrossPlatformUiSettingsImportResult(bool Imported, string? BackupPath);

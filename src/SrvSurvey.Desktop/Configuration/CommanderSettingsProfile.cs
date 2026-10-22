@@ -120,52 +120,6 @@ internal static class CommanderSettingsProfile
         }
     }
 
-    /// <summary>Publishes imported layout files as a recoverable generation under source and destination leases.</summary>
-    public static void PublishImportedOverlays(AppDataPaths paths, ProfileImportResult result)
-    {
-        if (Path.GetFullPath(paths.DataDirectory) == Path.GetFullPath(paths.OverlaySettingsDirectory))
-        {
-            return;
-        }
-
-        using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
-            OverlayFiles.SelectMany(file =>
-                new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
-            )
-        );
-        var importedFiles = result
-            .Manifest.Entries.Select(entry => entry.RelativePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        Directory.CreateDirectory(paths.OverlaySettingsDirectory);
-        using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
-            paths.OverlaySettingsDirectory
-        );
-        foreach (string fileName in OverlayFiles)
-        {
-            if (!importedFiles.Contains(fileName))
-            {
-                continue;
-            }
-
-            string source = Path.Combine(paths.DataDirectory, fileName);
-            string target = Path.Combine(paths.OverlaySettingsDirectory, fileName);
-            string temporaryPath = target + $".{Guid.NewGuid():N}.tmp";
-            try
-            {
-                File.Copy(source, temporaryPath);
-                File.Move(temporaryPath, target, overwrite: true);
-            }
-            finally
-            {
-                if (File.Exists(temporaryPath))
-                {
-                    File.Delete(temporaryPath);
-                }
-            }
-        }
-        transaction.Commit();
-    }
-
     private static DateTime LatestJournalWriteTime(string directory)
     {
         try

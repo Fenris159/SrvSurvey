@@ -71,6 +71,44 @@ public sealed class ColonizationNexusReportTests
         );
     }
 
+    [Theory]
+    [InlineData(20, 60)]
+    [InlineData(80, 0)]
+    public void MissingBreakdownPreservesKnownBalanceAndDoesNotInventCoverage(long progress, long remaining)
+    {
+        ColonizationNexus nexus = Sample() with
+        {
+            Systems =
+            [
+                new()
+                {
+                    Name = "Unreported",
+                    Total = 80,
+                    Progress = progress,
+                },
+            ],
+        };
+        var report = ColonizationProjectPreview.CreateNexusReport(nexus, null, DateTimeOffset.UnixEpoch);
+        Assert.Equal(remaining, report.Remaining);
+        Assert.Equal(progress, report.Delivered);
+        Assert.Equal(80, report.MaximumRequired);
+        Assert.Equal(remaining == 0 ? 0L : (long?)null, report.CarrierDeficit);
+        Assert.Equal(remaining == 0 ? 0L : (long?)null, report.ReadyOnCarriers);
+        Assert.Equal(remaining == 0 ? 0 : 2, ColonizationProjectPreview.Trips(report.Remaining, 50));
+    }
+
+    [Theory]
+    [InlineData(null, 2, "Alpha; Beta")]
+    [InlineData("Beta", 1, "Beta")]
+    public void CsvIncludesNexusAndSelectedSystemsWithoutRequiringBuildIds(string? scope, int count, string names)
+    {
+        var report = ColonizationProjectPreview.CreateNexusReport(Sample(), scope, DateTimeOffset.UnixEpoch);
+        string csv = ColonizationProjectCsvExporter.Write(report);
+        Assert.Contains($"\"Systems\",\"{count}\"", csv);
+        Assert.Contains("\"Nexus\",\"Route\"", csv);
+        Assert.Contains($"\"Included systems\",\"{names}\"", csv);
+    }
+
     internal static ColonizationNexus Sample()
     {
         var carrier = new ColonizationFleetCarrier

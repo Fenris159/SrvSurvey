@@ -3317,8 +3317,8 @@
       "translation": "Sichern Sie den Commander-Mining-Verlauf, Missionen, Einstellungen, lokale Entdeckungen, freigegebene Lesezeichen und angehängte Screenshots in einer ZIP-Datei. Bei der Wiederherstellung werden Mining-Daten und freigegebene Lesezeichen durch den Sicherungsinhalt ersetzt, wobei die vorherigen Dateien für die Wiederherstellung erhalten bleiben."
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "Sichern, überprüfen und importieren"
+      "source": "Back up, verify, and merge",
+      "translation": "Sichern, überprüfen und zusammenführen"
     },
     {
       "source": "BackSpace",
@@ -5617,10 +5617,6 @@
       "translation": "Wählen Sie den Screenshot-Ordner Elite Dangerous."
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Wählen Sie den Anwendungsdatenordner SrvSurvey, seinen plattformübergreifenden Ordner oder einen Legacy-Versionsordner. UI-Einstellungen im aktuellen Format werden importiert, wenn cross-platform-ui.json neben dem ausgewählten Profil steht."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Wählen Sie die Anwendungsidentität, optimieren Sie das Erscheinungsbild des Overlays im Spiel und konfigurieren Sie das Overlay-Verhalten."
     },
@@ -5891,6 +5887,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "Schließen Sie das Original SrvSurvey, damit seine Dateien stabil sind, und wählen Sie dann seinen Profilordner in den Einstellungen aus."
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "Schließen Sie die Quelle SrvSurvey vor dem Import. Wählen Sie einen Profilordner oder ein Wine/Proton-Präfix. Importe fügen fehlende Spieler- und Codex-Daten hinzu und behalten die aktuellen Werte und den Bingo-Fortschritt bei. Ursprüngliche Overlay-Positionen werden übersprungen. Lesbare Daten bleiben erhalten, wenn einige Dateien nicht kompatibel sind. Einzelheiten dazu finden Sie im Warnbericht. XP-Profile können angrenzende cross-platform-ui.json Einstellungen enthalten."
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -7193,14 +7193,6 @@
       "translation": "Konvertierte den zurückgezogenen organischen Verlauf, ohne seine Quelle zu ändern: {0} Profil(e), {1} Körperdatei(en), {2} Scan(s) und {3} Organismus(e)."
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Die absoluten Overlay-Platzierungen {0} wurden in spielfensterrelative Anker umgewandelt."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "{0} importierte absolute Overlay-Platzierung(en) in spielfensterrelative Anker konvertiert.{1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "Abkühlung"
     },
@@ -7457,6 +7449,10 @@
       "translation": "{0} konnte nicht geöffnet werden: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Das Update-Rollback-Ergebnis konnte nicht veröffentlicht werden: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "SDL-Gamepad-Ereignisse konnten nicht gelesen werden: {0}"
     },
@@ -7523,6 +7519,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Der FSS-Erfassungspuffer konnte nicht ausgewählt werden."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Der fehlerhafte Ersatzprozess konnte nicht beendet werden: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -13801,10 +13801,6 @@
       "translation": "Importierte Nur-Namen-Einstellungen werden nur angewendet, wenn genau ein Profil übereinstimmt, wodurch verhindert wird, dass Daten an den falschen Kommandanten geschrieben werden."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Die importierte Overlay-Platzierungskonvertierung wurde übersprungen: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Importierte regionale Codex-Kandidaten: {0}."
     },
@@ -13813,20 +13809,16 @@
       "translation": "Der importierte Systemverlauf blieb erhalten, konnte aber nicht sicher von {0} geladen werden: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Die UI-Einstellungen des aktuellen Formats wurden importiert und die relative Platzierung für {0}-Overlays beibehalten."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Die UI-Einstellungen des aktuellen Formats wurden importiert."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. {4} Verifizierte Backups: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} Verifizierte Backups: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. {4} {5} {6}Verifizierte Backups: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -15085,10 +15077,6 @@
       "translation": "Die alte organische Migration wurde übersprungen, ohne dass die Quelldaten geändert wurden: {0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Ältere Overlay-Positionen blieben erhalten, absolute Desktop-Anker konnten jedoch nicht konvertiert werden. Positionieren Sie betroffene Panels im Overlay-Editor neu. {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "Ältere Overlay-Skalen wurden nicht migriert: {0}"
     },
@@ -15647,6 +15635,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "Die Initialisierung des lokalen Profils ist fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "Die Wiederherstellung des lokalen Profils ist abgeschlossen. Die automatische Cloud-Synchronisierung wird während der Update-Überprüfung verzögert; Verwenden Sie „Jetzt synchronisieren“ oder starten Sie normal neu, um Google Drive zu überprüfen."
     },
     {
       "source": "Local ring discoveries",
@@ -17817,14 +17809,6 @@
       "translation": "Mit diesem Konto ist kein Geschwaderträger verknüpft."
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "Es wurde kein Windows-Profil automatisch erkannt. Wählen Sie den Profilordner manuell aus. Sowohl von Windows kopierte Profile im aktuellen Format als auch ältere Profile können unter Linux importiert werden."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Es war keine absolute Konvertierung der Overlay-Platzierung erforderlich."
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "Kein Akquisitionsziel verfügte sowohl über einen passenden Ring als auch über eine qualifizierte Verkaufsstation.{0}"
     },
@@ -18235,6 +18219,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "Es wurde kein Organismus-spezifischer Temperaturbereich ermittelt."
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "Es wurde kein Originalprofil automatisch erkannt. Wählen Sie manuell einen Profilordner oder ein Wine/Proton-Präfix."
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -21237,8 +21225,8 @@
       "translation": "Die Verarbeitung erfolgt optional und schreibt die konvertierte Ausgabe an das konfigurierte Ziel."
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "Profildaten wurden bereits in {0} importiert. Die überprüfte Sicherung und das Konfliktmanifest werden zur Wiederherstellung aufbewahrt."
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "Profildaten sind in {0} verfügbar. Weitere Importe ergänzen fehlende Daten und behalten aktuelle Werte bei; Verifizierte Backups bleiben erhalten."
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -21253,12 +21241,12 @@
       "translation": "Profilimport überprüft"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "Profilimport: {0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "Profilimportwarnung: {0}: {1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "Profil importiert"
+      "source": "Profile import: {0}",
+      "translation": "Profilimport: {0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -22837,12 +22825,24 @@
       "translation": "Overlay-Layout wiederherstellen"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "Die wiederhergestellten Daten blieben erhalten. Warnungen ({0}): {1} Vollständiger Bericht: {2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "Wiederhergestellte Dateien wurden unter folgender Adresse aufbewahrt: {0}"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Wiederhergestellte Overlay-Datei „{0}“; Original unter „{1}“ aufbewahrt."
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "Overlay-Deckkraft in „{0}“ wiederhergestellt; Original unter „{1}“ aufbewahrt."
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Die wiederhergestellten Profildaten sind verfügbar. Beim vorherigen Import wurden Warnungen gemeldet. Wählen Sie einen Profilordner, um die Wiederherstellung erneut zu versuchen. Vollständiger Bericht: {0}"
     },
     {
       "source": "Red",
@@ -23927,6 +23927,10 @@
     {
       "source": "Retry position save",
       "translation": "Versuchen Sie erneut, die Position zu speichern"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "Wiederholen Sie die Profilwiederherstellung"
     },
     {
       "source": "Retry selected deliveries",
@@ -30173,8 +30177,16 @@
       "translation": "Die aktuelle Guardian-Umfrage kann nicht gespeichert werden."
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "Die aktuellen Nexus-Details konnten nicht überprüft werden."
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "Der aktuelle ausführbare Pfad SrvSurvey ist nicht verfügbar."
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "Die aktuellen UI-Einstellungen sind kein JSON-Objekt; sie wurden unverändert beibehalten."
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -30239,6 +30251,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "Die UI-Einstellungen im aktuellen Format mussten nicht importiert werden."
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "Die UI-Einstellungen im aktuellen Format wurden nicht importiert."
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -31069,6 +31085,14 @@
       "translation": "Der Ersetzungsprozess SrvSurvey wurde nicht gestartet."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Der Ersetzungsprozess bestätigte nicht, dass innerhalb von {0} Sekunden ein sichtbares, reagierendes Hauptfenster angezeigt wurde. Ein Rollback wurde angefordert. Sehen Sie sich das Anwendungsprotokoll für die letzte Startphase an."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Der Ersetzungsprozess wurde mit dem Code {0} beendet, bevor das Hauptfenster den Start bestätigte. Informationen zu Startfehlern finden Sie im Anwendungsprotokoll."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "Die Wiedergabe-Overlay-Präsentation enthält ein unbekanntes Overlay."
     },
@@ -31807,6 +31831,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "Diese Frontier-Autorisierung wurde von einer älteren Anwendungsversion gestartet. Kehren Sie zu SrvSurvey zurück und verbinden Sie den aktiven Kommandanten erneut."
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "Dieser Nexus wurde am Raven Colonial geändert. Schließen Sie diesen Editor, aktualisieren Sie Nexus und öffnen Sie es erneut, bevor Sie es speichern."
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -32965,6 +32993,18 @@
       "translation": "Bestätigung des Update-Ersatzzustands fehlgeschlagen: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Update-Start: Desktop initialisiert; Warten auf den ersten Frame des Hauptfensters."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Update-Start: lokales Profil bereit; Aufbau des Desktops."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Update-Start: Vorbereiten der lokalen Profilwiederherstellung, ohne auf Google Drive warten zu müssen."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "Der Update-Status wurde nicht überprüft."
     },
@@ -33713,8 +33753,8 @@
       "translation": "Verifiziertes Backup: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Verifizierter Update-Ersatz-Start mit dem Handoff-Helper."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Verifizierter Update-Ersetzungsstart: Das Hauptfenster ist sichtbar und der UI-Dispatcher antwortet."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -34589,6 +34629,10 @@
       "translation": "Windows: Die OpenVR-Clientbibliothek ist in SrvSurvey enthalten."
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "Wine / Proton Profil ({0} Dateien)"
+    },
+    {
       "source": "Wings",
       "translation": "Flügel"
     },
@@ -35223,10 +35267,6 @@
     {
       "source": "bottom",
       "translation": "unten"
-    },
-    {
-      "source": "bounds:",
-      "translation": "Grenzen:"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -36977,6 +37017,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod: Methode Destroy ist auf der Schnittstelle org.freedesktop.IBus.Service nicht implementiert"
     },
     {
+      "source": "organic",
+      "translation": "organisch"
+    },
+    {
       "source": "origin",
       "translation": "Herkunft"
     },
@@ -37139,6 +37183,10 @@
     {
       "source": "privacy",
       "translation": "Privatsphäre"
+    },
+    {
+      "source": "profile",
+      "translation": "Profil"
     },
     {
       "source": "profile files and retained deletion history",
@@ -38127,6 +38175,10 @@
     {
       "source": "waiting to retry",
       "translation": "Ich warte auf einen erneuten Versuch"
+    },
+    {
+      "source": "warning report",
+      "translation": "Warnbericht"
     },
     {
       "source": "water",
@@ -42823,8 +42875,8 @@
       "translation": "Haga una copia de seguridad del historial de minería, las misiones, la configuración, los descubrimientos locales, los marcadores compartidos y las capturas de pantalla adjuntas de Commander en un solo archivo ZIP. Restaurar reemplaza los datos mineros y los marcadores compartidos con el contenido de la copia de seguridad, conservando los archivos anteriores para la recuperación."
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "Realizar copias de seguridad, verificar e importar"
+      "source": "Back up, verify, and merge",
+      "translation": "Realizar copias de seguridad, verificar y fusionar"
     },
     {
       "source": "BackSpace",
@@ -45123,10 +45175,6 @@
       "translation": "Elija la carpeta de captura de pantalla Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Elija la carpeta de datos de la aplicación SrvSurvey, su carpeta multiplataforma o una carpeta de versión heredada. La configuración de la interfaz de usuario del formato actual se importa cuando cross-platform-ui.json está al lado del perfil seleccionado."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Elija la identidad de la aplicación, ajuste la apariencia de la superposición en el juego y configure el comportamiento de la superposición."
     },
@@ -45397,6 +45445,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "Cierra el SrvSurvey original para que sus archivos sean estables, luego elige su carpeta de perfil en Configuración."
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "Cierre la fuente SrvSurvey antes de importar. Elija una carpeta de perfil o prefijo Wine/Proton. Las importaciones agregan datos faltantes del jugador y del Codex y mantienen los valores actuales y el progreso del bingo. Se omiten las posiciones de superposición originales. Los datos legibles se conservan si algunos archivos son incompatibles; Los detalles aparecen en el informe de advertencia. Los perfiles XP pueden incluir configuraciones adyacentes cross-platform-ui.json."
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -46699,14 +46751,6 @@
       "translation": "Historia orgánica retirada convertida sin cambiar su fuente: {0} perfil(es), {1} archivo(s) del cuerpo, {2} escaneo(s) y {3} organismo(s)."
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Se convirtieron las ubicaciones de superposición absoluta {0} en anclajes relativos a la ventana del juego."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Se convirtió {0} en ubicaciones de superposición absolutas importadas a anclajes relativos a la ventana del juego.{1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "Enfriándose"
     },
@@ -46963,6 +47007,10 @@
       "translation": "No se pudo abrir {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "No se pudo publicar el resultado de la reversión de la actualización: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "No se pudieron leer los eventos del gamepad SDL: {0}"
     },
@@ -47029,6 +47077,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "No se pudo seleccionar el búfer de captura FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "No se pudo detener el proceso de reemplazo defectuoso: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -53307,10 +53359,6 @@
       "translation": "Las preferencias de solo nombre importadas se aplican solo cuando coincide exactamente un perfil, lo que evita que los datos se escriban en el comandante equivocado."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Se omitió la conversión de ubicación de superposición importada: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidatos del Codex regional importados: {0}."
     },
@@ -53319,20 +53367,16 @@
       "translation": "El historial del sistema importado se conservó pero no se pudo cargar de forma segura desde {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Se importó la configuración de la interfaz de usuario del formato actual y se conservó la ubicación relativa para las superposiciones {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Se importó la configuración de la interfaz de usuario del formato actual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. {4} Copias de seguridad verificadas: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} Copias de seguridad verificadas: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. {4} {5} {6}Copias de seguridad verificadas: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -54591,10 +54635,6 @@
       "translation": "Se omitió la migración orgánica heredada sin modificar sus datos de origen: {0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Se conservaron las posiciones de superposición heredadas, pero no se pudieron convertir los anclajes absolutos del escritorio. Reposicione los paneles afectados en el editor de superposición. {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "Las escalas superpuestas heredadas no se migraron: {0}"
     },
@@ -55153,6 +55193,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "Error al inicializar el perfil local: {0}"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "La recuperación del perfil local está completa. La sincronización automática en la nube se difiere durante la verificación de la actualización; use Sincronizar ahora o reinicie normalmente para verificar Google Drive."
     },
     {
       "source": "Local ring discoveries",
@@ -57323,14 +57367,6 @@
       "translation": "Ningún Squadron Carrier está asociado con esta cuenta."
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "No se detectó ningún perfil de Windows automáticamente. Elija su carpeta de perfil manualmente; Tanto los perfiles en formato actual como los heredados copiados de Windows se pueden importar en Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "No se requirió ninguna conversión absoluta de ubicación de superposición."
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "Ningún objetivo de adquisición tenía un anillo coincidente y una estación de venta calificada.{0}"
     },
@@ -57741,6 +57777,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "No se resolvió ningún rango de temperatura específico del organismo."
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "No se detectó ningún perfil original automáticamente. Elija una carpeta de perfil o el prefijo Wine/Proton manualmente."
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -60743,8 +60783,8 @@
       "translation": "El procesamiento es voluntario y escribe la salida convertida en el destino configurado."
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "Los datos del perfil ya se importaron a {0}. La copia de seguridad verificada y el manifiesto de conflicto se conservan para su recuperación."
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "Los datos del perfil están disponibles en {0}. Las importaciones adicionales agregan datos faltantes y mantienen los valores actuales; Se conservan las copias de seguridad verificadas."
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -60759,12 +60799,12 @@
       "translation": "Importación de perfil verificada"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "Importación de perfil: {0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "Advertencia de importación de perfil: {0}: {1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "Perfil importado"
+      "source": "Profile import: {0}",
+      "translation": "Importación de perfil: {0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -62343,12 +62383,24 @@
       "translation": "Recuperar diseño superpuesto"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "Los datos recuperados se conservaron. Advertencias ({0}): {1} Informe completo: {2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "Los archivos recuperados se conservaron en: {0}"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Archivo de superposición recuperado '{0}'; original conservado en '{1}'."
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "Opacidad de superposición recuperada en '{0}'; original conservado en '{1}'."
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Los datos de perfil recuperados están disponibles. La importación anterior informó advertencias; elija una carpeta de perfil para volver a intentar la recuperación. Informe completo: {0}"
     },
     {
       "source": "Red",
@@ -63433,6 +63485,10 @@
     {
       "source": "Retry position save",
       "translation": "Reintentar guardar posición"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "Reintentar la recuperación del perfil"
     },
     {
       "source": "Retry selected deliveries",
@@ -69679,8 +69735,16 @@
       "translation": "La encuesta actual de Guardian no está disponible para guardar."
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "No se pudieron verificar los detalles actuales de Nexus."
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "La ruta ejecutable SrvSurvey actual no está disponible."
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "La configuración actual de la interfaz de usuario no es un objeto JSON; se mantuvieron sin cambios."
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -69745,6 +69809,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "La configuración de la interfaz de usuario del formato actual no requirió importación."
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "La configuración de la interfaz de usuario del formato actual no se importó."
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -70575,6 +70643,14 @@
       "translation": "El proceso de reemplazo SrvSurvey no se inició."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "El proceso de reemplazo no confirmó una ventana principal visible y receptiva en {0} segundos. Se solicitó la reversión. Consulte el registro de la aplicación para conocer la última etapa de inicio."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "El proceso de reemplazo finalizó con el código {0} antes de que su ventana principal confirmara el inicio. Consulte el registro de la aplicación para conocer los errores de inicio."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "La presentación de superposición de repetición contiene una superposición desconocida."
     },
@@ -71313,6 +71389,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "Esta autorización Frontier fue iniciada por una versión anterior de la aplicación. Regrese a SrvSurvey y conecte nuevamente el comandante activo."
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "Este Nexus cambió el Raven Colonial. Cierra este editor, actualiza Nexus y vuelve a abrirlo antes de guardar."
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -72471,6 +72551,18 @@
       "translation": "Error de confirmación de estado de reemplazo de actualización: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Inicio de actualización: escritorio inicializado; esperando el primer fotograma de la ventana principal."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Inicio de actualización: perfil local listo; construyendo el escritorio."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Inicio de la actualización: preparación de la recuperación del perfil local sin esperar a Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "No se ha comprobado el estado de la actualización."
     },
@@ -73219,8 +73311,8 @@
       "translation": "Copia de seguridad verificada: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Inicio de reemplazo de actualización verificado con el asistente de transferencia."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Inicio de reemplazo de actualización verificado: la ventana principal está visible y el despachador de UI está respondiendo."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -74095,6 +74187,10 @@
       "translation": "Windows: la biblioteca cliente OpenVR se incluye con SrvSurvey."
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "Perfil Wine / Proton (archivos {0})"
+    },
+    {
       "source": "Wings",
       "translation": "alas"
     },
@@ -74729,10 +74825,6 @@
     {
       "source": "bottom",
       "translation": "abajo"
-    },
-    {
-      "source": "bounds:",
-      "translation": "límites:"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -76483,6 +76575,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod: Method Destroy no está implementado en la interfaz org.freedesktop.IBus.Service"
     },
     {
+      "source": "organic",
+      "translation": "orgánico"
+    },
+    {
       "source": "origin",
       "translation": "origen"
     },
@@ -76645,6 +76741,10 @@
     {
       "source": "privacy",
       "translation": "privacidad"
+    },
+    {
+      "source": "profile",
+      "translation": "perfil"
     },
     {
       "source": "profile files and retained deletion history",
@@ -77633,6 +77733,10 @@
     {
       "source": "waiting to retry",
       "translation": "esperando para volver a intentarlo"
+    },
+    {
+      "source": "warning report",
+      "translation": "informe de advertencia"
     },
     {
       "source": "water",
@@ -82329,8 +82433,8 @@
       "translation": "Sauvegardez l'historique minier du commandant, les missions, les paramètres, les découvertes locales, les signets partagés et les captures d'écran jointes dans un seul ZIP. La restauration remplace les données d'exploration de données et les signets partagés par le contenu de la sauvegarde, en conservant les fichiers précédents pour la récupération."
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "Sauvegarder, vérifier et importer"
+      "source": "Back up, verify, and merge",
+      "translation": "Sauvegarder, vérifier et fusionner"
     },
     {
       "source": "BackSpace",
@@ -84629,10 +84733,6 @@
       "translation": "Choisissez le dossier de capture d'écran Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Choisissez le dossier de données d'application SrvSurvey, son dossier multiplateforme ou un dossier de version héritée. Les paramètres d'interface utilisateur au format actuel sont importés lorsque cross-platform-ui.json se trouve à côté du profil sélectionné."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Choisissez l'identité de l'application, ajustez l'apparence de la superposition dans le jeu et configurez le comportement de la superposition."
     },
@@ -84903,6 +85003,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "Fermez le SrvSurvey d'origine pour que ses fichiers soient stables, puis choisissez son dossier de profil dans Paramètres."
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "Fermez la source SrvSurvey avant l'importation. Choisissez un dossier de profil ou un préfixe Wine/Proton. Les importations ajoutent les données manquantes sur les joueurs et le Codex et conservent les valeurs actuelles et la progression du Bingo. Les positions de superposition d'origine sont ignorées. Les données lisibles sont conservées si certains fichiers sont incompatibles ; les détails apparaissent dans le rapport d’avertissement. Les profils XP peuvent inclure des paramètres adjacents cross-platform-ui.json."
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -86205,14 +86309,6 @@
       "translation": "Conversion de l'historique organique retiré sans changer sa source : {0} profil(s), {1} fichier(s) corps, {2} analyse(s) et {3} organisme(s)."
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Conversion des emplacements de superposition absolus {0} en ancres relatives à la fenêtre de jeu."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Conversion des emplacements de superposition absolus importés {0} en ancres relatives à la fenêtre de jeu.{1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "Refroidissement"
     },
@@ -86469,6 +86565,10 @@
       "translation": "Impossible d'ouvrir {0} : {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Impossible de publier le résultat de l'annulation de la mise à jour : {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Impossible de lire les événements de la manette de jeu SDL : {0}"
     },
@@ -86535,6 +86635,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Impossible de sélectionner le tampon de capture FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Impossible d’arrêter le processus de remplacement défaillant : {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -92813,10 +92917,6 @@
       "translation": "Les préférences de nom uniquement importées ne sont appliquées que lorsqu'exactement un profil correspond, empêchant ainsi les données d'être écrites sur le mauvais commandant."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "La conversion de l'emplacement de superposition importé a été ignorée : {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidats Codex régionaux importés : {0}."
     },
@@ -92825,20 +92925,16 @@
       "translation": "L'historique du système importé a été conservé mais n'a pas pu être chargé en toute sécurité à partir de {0} : {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Importation des paramètres d'interface utilisateur au format actuel et maintien du placement relatif pour les superpositions {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Importation des paramètres d'interface utilisateur au format actuel."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. {4} Sauvegardes vérifiées : {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} Sauvegardes vérifiées : {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. {4} {5} {6}Asauvegardes vérifiées : {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} {5}Asauvegardes vérifiées : {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -94097,10 +94193,6 @@
       "translation": "La migration organique héritée a été ignorée sans modifier ses données sources : {0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Les anciennes positions de superposition ont été conservées, mais les ancres absolues du bureau n'ont pas pu être converties. Repositionnez les panneaux concernés dans l'éditeur de superposition. {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "Les anciennes échelles de superposition n'ont pas été migrées : {0}"
     },
@@ -94659,6 +94751,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "Échec de l'initialisation du profil local : {0}"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "La récupération du profil local est terminée. La synchronisation automatique du cloud est différée lors de la vérification de la mise à jour ; utilisez Sync maintenant ou redémarrez normalement pour vérifier Google Drive."
     },
     {
       "source": "Local ring discoveries",
@@ -96829,14 +96925,6 @@
       "translation": "Aucun Squadron Carrier n'est associé à ce compte."
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "Aucun profil Windows n'a été détecté automatiquement. Choisissez son dossier de profil manuellement ; les profils au format actuel et hérité copiés à partir de Windows peuvent être importés sous Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Aucune conversion absolue de placement de superposition n’était requise."
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "Aucune cible d'acquisition ne disposait à la fois d'un anneau correspondant et d'une station de vente éligible.{0}"
     },
@@ -97247,6 +97335,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "Aucune plage de température spécifique à l’organisme n’a été résolue."
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "Aucun profil d'origine n'a été détecté automatiquement. Choisissez manuellement un dossier de profil ou un préfixe Wine/Proton."
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -100249,8 +100341,8 @@
       "translation": "Le traitement est facultatif et écrit la sortie convertie vers la destination configurée."
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "Les données de profil ont déjà été importées dans {0}. La sauvegarde vérifiée et le manifeste de conflit sont conservés pour la récupération."
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "Les données de profil sont disponibles dans {0}. D'autres importations ajoutent des données manquantes et conservent les valeurs actuelles ; les sauvegardes vérifiées sont conservées."
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -100265,12 +100357,12 @@
       "translation": "Importation de profil vérifiée"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "Importation de profil : {0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "Avertissement d'importation de profil : {0} : {1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "Profil importé"
+      "source": "Profile import: {0}",
+      "translation": "Importation de profil : {0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -101849,12 +101941,24 @@
       "translation": "Récupérer la disposition de superposition"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "Les données récupérées ont été conservées. Avertissements ({0}) : {1} Rapport complet : {2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "Les fichiers récupérés ont été conservés à : {0}"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Fichier de superposition récupéré « {0} » ; original conservé à '{1}'."
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "Opacité de superposition récupérée dans « {0} » ; original conservé à '{1}'."
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Les données de profil récupérées sont disponibles. L'importation précédente a signalé des avertissements ; choisissez un dossier de profil pour réessayer la récupération. Rapport complet : {0}"
     },
     {
       "source": "Red",
@@ -102939,6 +103043,10 @@
     {
       "source": "Retry position save",
       "translation": "Réessayez d'enregistrer la position"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "Réessayez la récupération du profil"
     },
     {
       "source": "Retry selected deliveries",
@@ -109185,8 +109293,16 @@
       "translation": "L'enquête Guardian actuelle n'est pas disponible pour la sauvegarde."
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "Les détails actuels du Nexus n'ont pas pu être vérifiés."
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "Le chemin d'accès actuel de l'exécutable SrvSurvey n'est pas disponible."
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "Les paramètres actuels de l'interface utilisateur ne sont pas un objet JSON ; ils sont restés inchangés."
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -109251,6 +109367,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "Les paramètres de l'interface utilisateur au format actuel ne nécessitaient pas d'importation."
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "Les paramètres de l'interface utilisateur au format actuel n'ont pas été importés."
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -110081,6 +110201,14 @@
       "translation": "Le processus de remplacement SrvSurvey n'a pas démarré."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Le processus de remplacement n’a pas confirmé une fenêtre principale visible et réactive dans un délai de {0} secondes. Le retour à la version précédente a été demandé. Consultez le journal de l’application pour connaître la dernière étape du démarrage."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Le processus de remplacement s'est terminé avec le code {0} avant que sa fenêtre principale ne confirme le démarrage. Consultez le journal des applications pour connaître les erreurs de démarrage."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "La présentation de superposition de rediffusion contient une superposition inconnue."
     },
@@ -110819,6 +110947,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "Cette autorisation Frontier a été démarrée par une ancienne version de l'application. Retournez à SrvSurvey et connectez à nouveau le commandant actif."
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "Ce Nexus a changé Raven Colonial. Fermez cet éditeur, actualisez Nexus et rouvrez-le avant de sauvegarder."
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -111977,6 +112109,18 @@
       "translation": "Échec de la confirmation de l'état de remplacement de la mise à jour : {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Démarrage de la mise à jour : bureau initialisé ; en attendant le premier cadre de la fenêtre principale."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Démarrage de la mise à jour : profil local prêt ; construire le bureau."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Démarrage de la mise à jour : préparer la récupération du profil local sans attendre Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "L'état de la mise à jour n'a pas été vérifié."
     },
@@ -112725,8 +112869,8 @@
       "translation": "Sauvegarde vérifiée : {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Démarrage de remplacement de mise à jour vérifié avec l'assistant de transfert."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Démarrage du remplacement de la mise à jour vérifié : la fenêtre principale est visible et le répartiteur de l'interface utilisateur répond."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -113601,6 +113745,10 @@
       "translation": "Windows : la bibliothèque client OpenVR est incluse avec SrvSurvey."
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "Profil Wine / Proton (fichiers {0})"
+    },
+    {
       "source": "Wings",
       "translation": "Ailes"
     },
@@ -114235,10 +114383,6 @@
     {
       "source": "bottom",
       "translation": "en bas"
-    },
-    {
-      "source": "bounds:",
-      "translation": "bornes:"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -115989,6 +116133,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod : La méthode Destroy n'est pas implémentée sur l'interface org.freedesktop.IBus.Service"
     },
     {
+      "source": "organic",
+      "translation": "organique"
+    },
+    {
       "source": "origin",
       "translation": "origine"
     },
@@ -116151,6 +116299,10 @@
     {
       "source": "privacy",
       "translation": "confidentialité"
+    },
+    {
+      "source": "profile",
+      "translation": "profil"
     },
     {
       "source": "profile files and retained deletion history",
@@ -117139,6 +117291,10 @@
     {
       "source": "waiting to retry",
       "translation": "en attendant de réessayer"
+    },
+    {
+      "source": "warning report",
+      "translation": "rapport d'avertissement"
     },
     {
       "source": "water",
@@ -121835,8 +121991,8 @@
       "translation": "Faça backup do histórico de mineração do comandante, missões, configurações, descobertas locais, marcadores compartilhados e capturas de tela anexadas em um ZIP. A restauração substitui os dados de mineração e os marcadores compartilhados pelo conteúdo do backup, mantendo os arquivos anteriores para recuperação."
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "Faça backup, verifique e importe"
+      "source": "Back up, verify, and merge",
+      "translation": "Faça backup, verifique e mescle"
     },
     {
       "source": "BackSpace",
@@ -124135,10 +124291,6 @@
       "translation": "Escolha a pasta de captura de tela Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Escolha a pasta de dados do aplicativo SrvSurvey, sua pasta de plataforma cruzada ou uma pasta de versão herdada. As configurações da interface do usuário no formato atual são importadas quando cross-platform-ui.json está ao lado do perfil selecionado."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Escolha a identidade do aplicativo, ajuste a aparência da sobreposição no jogo e configure o comportamento da sobreposição."
     },
@@ -124409,6 +124561,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "Feche o SrvSurvey original para que seus arquivos fiquem estáveis e escolha sua pasta de perfil em Configurações."
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "Feche a fonte SrvSurvey antes de importar. Escolha uma pasta de perfil ou prefixo Wine/Proton. As importações adicionam dados ausentes do jogador e do Codex e mantêm os valores atuais e o progresso do Bingo. As posições de sobreposição originais são ignoradas. Os dados legíveis são mantidos se alguns arquivos forem incompatíveis; os detalhes aparecem no relatório de aviso. Perfis XP podem incluir configurações adjacentes cross-platform-ui.json."
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -125711,14 +125867,6 @@
       "translation": "Histórico orgânico retirado convertido sem alterar sua fonte: {0} perfil(es), {1} arquivo(s) de corpo, {2} varredura(s) e {3} organismo(s)."
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Colocações de sobreposição absoluta {0} convertidas em âncoras relativas à janela do jogo."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "{0} convertido(s) posicionamento(s) de sobreposição absoluta importada para âncoras relativas à janela do jogo.{1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "Esfriando"
     },
@@ -125975,6 +126123,10 @@
       "translation": "Não foi possível abrir {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Não foi possível publicar o resultado da reversão da atualização: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Não foi possível ler os eventos do gamepad SDL: {0}"
     },
@@ -126041,6 +126193,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Não foi possível selecionar o buffer de captura do FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Não foi possível interromper o processo de substituição com falha: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -132319,10 +132475,6 @@
       "translation": "As preferências importadas somente de nome são aplicadas somente quando exatamente um perfil corresponde, evitando que os dados sejam gravados no comandante errado."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "A conversão do canal de sobreposição importado foi ignorada: {0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Candidatos regionais do Codex importados: {0}."
     },
@@ -132331,20 +132483,16 @@
       "translation": "O histórico do sistema importado foi preservado, mas não pôde ser carregado com segurança de {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Importou as configurações da interface do usuário no formato atual e preservou o posicionamento relativo para sobreposições {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Importou as configurações da interface do usuário no formato atual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. {4} Backups verificados: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} Backups verificados: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. {4} {5} {6}Backups verificados: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -133603,10 +133751,6 @@
       "translation": "A migração orgânica legada foi ignorada sem modificar seus dados de origem: {0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "As posições de sobreposição herdadas foram preservadas, mas as âncoras absolutas da área de trabalho não puderam ser convertidas. Reposicione os painéis afetados no editor de sobreposição. {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "As escalas de sobreposição legadas não foram migradas: {0}"
     },
@@ -134165,6 +134309,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "Falha na inicialização do perfil local: {0}"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "A recuperação do perfil local foi concluída. A sincronização automática na nuvem é adiada durante a verificação da atualização; use Sincronizar agora ou reinicie normalmente para verificar o Google Drive."
     },
     {
       "source": "Local ring discoveries",
@@ -136335,14 +136483,6 @@
       "translation": "Nenhum Squadron Carrier está associado a esta conta."
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "Nenhum perfil do Windows foi detectado automaticamente. Escolha sua pasta de perfil manualmente; tanto os perfis de formato atual quanto os legados copiados do Windows podem ser importados no Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Nenhuma conversão absoluta de posicionamento de sobreposição foi necessária."
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "Nenhum alvo de aquisição tinha um anel correspondente e uma estação de venda qualificada.{0}"
     },
@@ -136753,6 +136893,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "Nenhuma faixa de temperatura específica do organismo foi resolvida."
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "Nenhum perfil original foi detectado automaticamente. Escolha uma pasta de perfil ou prefixo Wine/Proton manualmente."
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -139755,8 +139899,8 @@
       "translation": "O processamento é opcional e grava a saída convertida no destino configurado."
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "Os dados do perfil já foram importados para {0}. O backup verificado e o manifesto de conflito são retidos para recuperação."
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "Os dados do perfil estão disponíveis em {0}. Outras importações adicionam dados ausentes e mantêm os valores atuais; backups verificados são retidos."
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -139771,12 +139915,12 @@
       "translation": "Importação de perfil verificada"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "Importação de perfil: {0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "Aviso de importação de perfil: {0}: {1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "Perfil importado"
+      "source": "Profile import: {0}",
+      "translation": "Importação de perfil: {0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -141355,12 +141499,24 @@
       "translation": "Recuperar layout de sobreposição"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "Os dados recuperados foram mantidos. Avisos ({0}): {1} Relatório completo: {2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "Os arquivos recuperados foram retidos em: {0}"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Arquivo de sobreposição recuperado '{0}'; original retido em '{1}'."
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "Opacidade de sobreposição recuperada em '{0}'; original retido em '{1}'."
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Os dados do perfil recuperado estão disponíveis. A importação anterior relatou avisos; escolha uma pasta de perfil para tentar novamente a recuperação. Relatório completo: {0}"
     },
     {
       "source": "Red",
@@ -142445,6 +142601,10 @@
     {
       "source": "Retry position save",
       "translation": "Tentar salvar novamente a posição"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "Tentar novamente a recuperação do perfil"
     },
     {
       "source": "Retry selected deliveries",
@@ -148691,8 +148851,16 @@
       "translation": "A pesquisa atual do Guardian não está disponível para salvar."
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "Os detalhes atuais do Nexus não puderam ser verificados."
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "O caminho do executável SrvSurvey atual não está disponível."
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "As configurações atuais da UI não são um objeto JSON; eles foram mantidos inalterados."
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -148757,6 +148925,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "As configurações da interface do usuário no formato atual não exigiram importação."
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "As configurações da interface do usuário no formato atual não foram importadas."
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -149587,6 +149759,14 @@
       "translation": "O processo de substituição SrvSurvey não foi iniciado."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "O processo de substituição não confirmou uma janela principal visível e responsiva em {0} segundos. A reversão foi solicitada. Consulte o log do aplicativo para o último estágio de inicialização."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "O processo de substituição foi encerrado com o código {0} antes que sua janela principal confirmasse a inicialização. Consulte o log do aplicativo para erros de inicialização."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "A apresentação de sobreposição de reprodução contém uma sobreposição desconhecida."
     },
@@ -150325,6 +150505,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "Esta autorização Frontier foi iniciada por uma versão mais antiga do aplicativo. Volte para SrvSurvey e conecte o comandante ativo novamente."
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "Este Nexus mudou para Raven Colonial. Feche este editor, atualize o Nexus e abra-o novamente antes de salvar."
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -151483,6 +151667,18 @@
       "translation": "Falha na confirmação da integridade da substituição da atualização: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Inicialização da atualização: desktop inicializado; aguardando o primeiro quadro da janela principal."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Inicialização da atualização: perfil local pronto; construindo a área de trabalho."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Inicialização da atualização: preparando a recuperação do perfil local sem esperar pelo Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "O status da atualização não foi verificado."
     },
@@ -152231,8 +152427,8 @@
       "translation": "Backup verificado: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Inicialização de substituição de atualização verificada com o auxiliar de transferência."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Inicialização de substituição de atualização verificada: a janela principal está visível e o despachante da UI está respondendo."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -153107,6 +153303,10 @@
       "translation": "Windows: a biblioteca cliente OpenVR está incluída em SrvSurvey."
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "Perfil Wine / Proton (arquivos {0})"
+    },
+    {
       "source": "Wings",
       "translation": "Asas"
     },
@@ -153741,10 +153941,6 @@
     {
       "source": "bottom",
       "translation": "inferior"
-    },
-    {
-      "source": "bounds:",
-      "translation": "limites:"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -155495,6 +155691,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod: O método Destroy não está implementado na interface org.freedesktop.IBus.Service"
     },
     {
+      "source": "organic",
+      "translation": "orgânico"
+    },
+    {
       "source": "origin",
       "translation": "origem"
     },
@@ -155657,6 +155857,10 @@
     {
       "source": "privacy",
       "translation": "privacidade"
+    },
+    {
+      "source": "profile",
+      "translation": "perfil"
     },
     {
       "source": "profile files and retained deletion history",
@@ -156645,6 +156849,10 @@
     {
       "source": "waiting to retry",
       "translation": "esperando para tentar novamente"
+    },
+    {
+      "source": "warning report",
+      "translation": "relatório de aviso"
     },
     {
       "source": "water",
@@ -161341,8 +161549,8 @@
       "translation": "Резервное копирование истории майнинга командира, миссий, настроек, локальных открытий, общих закладок и прикрепленных снимков экрана в одном ZIP-архиве. При восстановлении данные интеллектуального анализа и общие закладки заменяются содержимым резервной копии, сохраняя предыдущие файлы для восстановления."
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "Резервное копирование, проверка и импорт"
+      "source": "Back up, verify, and merge",
+      "translation": "Резервное копирование, проверка и объединение"
     },
     {
       "source": "BackSpace",
@@ -163641,10 +163849,6 @@
       "translation": "Выберите папку со скриншотами Elite Dangerous"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "Выберите папку данных приложения SrvSurvey, ее кроссплатформенную папку или папку устаревшей версии. Настройки пользовательского интерфейса текущего формата импортируются, когда cross-platform-ui.json находится рядом с выбранным профилем."
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "Выберите идентификатор приложения, настройте внешний вид наложения в игре и настройте поведение наложения."
     },
@@ -163915,6 +164119,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "Закройте исходный файл SrvSurvey, чтобы его файлы были стабильными, затем выберите папку его профиля в настройках."
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "Закройте исходный код SrvSurvey перед импортом. Выберите папку профиля или префикс Wine/Proton. Импорт добавляет недостающие данные об игроке и Кодексе, а также сохраняет текущие значения и прогресс в бинго. Исходные позиции наложения пропускаются. Читаемые данные сохраняются, если некоторые файлы несовместимы; Подробности появятся в отчете о предупреждениях. Профили XP могут включать соседние настройки cross-platform-ui.json."
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -165217,14 +165425,6 @@
       "translation": "Преобразована устаревшая органическая история без изменения ее источника: профиль(ы) {0}, файл(ы) тела {1}, скан(ы) {2} и организм(ы) {3} ."
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "Абсолютное размещение наложения {0} преобразовано в привязки относительно окна игры."
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "Преобразован {0} импортированных абсолютных размещений наложения в привязки относительно окна игры. {1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "Охлаждение"
     },
@@ -165481,6 +165681,10 @@
       "translation": "Не удалось открыть {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Не удалось опубликовать результат отката обновления: {0}."
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Не удалось прочитать события SDL геймпада: {0}."
     },
@@ -165547,6 +165751,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "Не удалось выбрать буфер захвата FSS."
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "Не удалось остановить неисправный процесс замены: {0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -171825,10 +172033,6 @@
       "translation": "Импортированные настройки только имени применяются только в том случае, если совпадает ровно один профиль, что предотвращает запись данных не тому командиру."
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "Импортированное преобразование размещения наложения пропущено: {0}."
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "Импортированные региональные кандидаты Кодекса: {0}."
     },
@@ -171837,20 +172041,16 @@
       "translation": "Импортированная системная история сохранилась, но ее не удалось безопасно загрузить из {0}: {1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "Импортированы настройки пользовательского интерфейса текущего формата и сохранено относительное расположение наложений {0}."
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "Импортированы настройки пользовательского интерфейса текущего формата."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. {4} Проверенные резервные копии: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} Проверенные резервные копии: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. {4} {5} {6}Проверенные резервные копии: {7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -173109,10 +173309,6 @@
       "translation": "Устаревшая органическая миграция была пропущена без изменения исходных данных: {0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "Устаревшие позиции наложения были сохранены, но абсолютные привязки рабочего стола преобразовать невозможно. Измените положение затронутых панелей в редакторе наложений. {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "Устаревшие масштабы наложения не были перенесены: {0}."
     },
@@ -173671,6 +173867,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "Не удалось инициализировать локальный профиль: {0}."
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "Восстановление локального профиля завершено. Автоматическая синхронизация с облаком откладывается во время проверки обновлений; используйте «Синхронизировать сейчас» или перезагрузите компьютер в обычном режиме, чтобы проверить Google Диск."
     },
     {
       "source": "Local ring discoveries",
@@ -175841,14 +176041,6 @@
       "translation": "С этой учетной записью не связан ни один авиаперевозчик."
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "Ни один профиль Windows не был обнаружен автоматически. Выберите папку его профиля вручную; Профили как текущего формата, так и устаревшие, скопированные из Windows, можно импортировать в Linux."
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "Никакого абсолютного преобразования размещения наложения не требовалось."
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "Ни одна цель приобретения не имела как соответствующего кольца, так и подходящей станции продажи.{0}"
     },
@@ -176259,6 +176451,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "Никакой диапазон температур, специфичный для конкретного организма, не был установлен."
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "Ни один исходный профиль не был обнаружен автоматически. Выберите папку профиля или префикс Wine/Proton вручную."
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -179261,8 +179457,8 @@
       "translation": "Обработка является добровольной и записывает преобразованные выходные данные в настроенное место назначения."
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "Данные профиля уже импортированы в {0}. Проверенная резервная копия и манифест конфликта сохраняются для восстановления."
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "Данные профиля доступны в {0}. Дальнейший импорт добавляет недостающие данные и сохраняет текущие значения; проверенные резервные копии сохраняются."
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -179277,12 +179473,12 @@
       "translation": "Импорт профиля подтвержден"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "Импорт профиля: {0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "Предупреждение об импорте профиля: {0}: {1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "Профиль импортирован"
+      "source": "Profile import: {0}",
+      "translation": "Импорт профиля: {0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -180861,12 +181057,24 @@
       "translation": "Восстановить макет наложения"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "Восстановленные данные были сохранены. Предупреждения ({0}): {1} Полный отчет: {2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "Восстановленные файлы сохранились по адресу: {0}."
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "Восстановлен файл наложения «{0}»; оригинал сохранен под номером «{1}»."
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "Восстановлена ​​непрозрачность наложения в «{0}»; оригинал сохранен под номером «{1}»."
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "Восстановленные данные профиля доступны. Предыдущий импорт сообщил о предупреждениях; выберите папку профиля, чтобы повторить попытку восстановления. Полный отчет: {0}"
     },
     {
       "source": "Red",
@@ -181951,6 +182159,10 @@
     {
       "source": "Retry position save",
       "translation": "Повторить попытку сохранения позиции"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "Повторить попытку восстановления профиля"
     },
     {
       "source": "Retry selected deliveries",
@@ -188197,8 +188409,16 @@
       "translation": "Текущий опрос Guardian недоступен для сохранения."
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "Текущие данные Nexus не удалось проверить."
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "Текущий путь к исполняемому файлу SrvSurvey недоступен."
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "Текущие настройки пользовательского интерфейса не являются объектом JSON; они остались без изменений."
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -188263,6 +188483,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "Настройки пользовательского интерфейса текущего формата не требовали импорта."
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "Настройки пользовательского интерфейса текущего формата не были импортированы."
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -189093,6 +189317,14 @@
       "translation": "Процесс замены SrvSurvey не начался."
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "Процесс замены не подтвердил наличие видимого и отзывчивого главного окна в течение {0} секунд. Запрошен откат. См. журнал приложения для последнего этапа запуска."
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "Процесс замены завершился с кодом {0} до того, как его главное окно подтвердило запуск. Просмотрите журнал приложения на предмет ошибок запуска."
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "Представление наложения повтора содержит неизвестное наложение."
     },
@@ -189831,6 +190063,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "Эта авторизация Frontier была запущена более старой версией приложения. Вернитесь к SrvSurvey и снова подключите активный командир."
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "Этот Нексус изменился на Raven Colonial. Закройте этот редактор, обновите Nexus и снова откройте его перед сохранением."
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -190989,6 +191225,18 @@
       "translation": "Не удалось подтвердить работоспособность замены обновления: {0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "Запуск обновления: рабочий стол инициализирован; ожидание первого кадра главного окна."
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "Запуск обновления: локальный профиль готов; сборка рабочего стола."
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "Запуск обновления: готовим восстановление локального профиля, не дожидаясь Google Drive."
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "Статус обновления не проверялся."
     },
@@ -191737,8 +191985,8 @@
       "translation": "Проверенная резервная копия: {0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "Проверенный запуск замены обновлений с помощью помощника по передаче обслуживания."
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "Проверенный запуск замены обновлений: видно главное окно и UI-диспетчер отвечает."
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -192613,6 +192861,10 @@
       "translation": "Windows: клиентская библиотека OpenVR включена в комплект SrvSurvey."
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "Профиль Wine / Proton (файлы {0})"
+    },
+    {
       "source": "Wings",
       "translation": "Крылья"
     },
@@ -193247,10 +193499,6 @@
     {
       "source": "bottom",
       "translation": "дно"
-    },
-    {
-      "source": "bounds:",
-      "translation": "границы:"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -195001,6 +195249,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod: метод Destroy не реализован в интерфейсе org.freedesktop.IBus.Service"
     },
     {
+      "source": "organic",
+      "translation": "органический"
+    },
+    {
       "source": "origin",
       "translation": "источник"
     },
@@ -195163,6 +195415,10 @@
     {
       "source": "privacy",
       "translation": "конфиденциальность"
+    },
+    {
+      "source": "profile",
+      "translation": "профиль"
     },
     {
       "source": "profile files and retained deletion history",
@@ -196151,6 +196407,10 @@
     {
       "source": "waiting to retry",
       "translation": "ожидаю повторной попытки"
+    },
+    {
+      "source": "warning report",
+      "translation": "предупреждающий отчет"
     },
     {
       "source": "water",
@@ -200847,8 +201107,8 @@
       "translation": "在一个 ZIP 中备份指挥官采矿历史、任务、设置、本地发现、共享书签和附加屏幕截图。恢复将挖掘数据和共享书签替换为备份内容，并保留以前的文件进行恢复。"
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "备份、验证和导入"
+      "source": "Back up, verify, and merge",
+      "translation": "备份、验证和合并"
     },
     {
       "source": "BackSpace",
@@ -203147,10 +203407,6 @@
       "translation": "选择 Elite Dangerous 屏幕截图文件夹"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "选择 SrvSurvey 应用程序数据文件夹、其跨平台文件夹或旧版本文件夹。当 cross-platform-ui.json 位于所选配置文件旁边时，将导入当前格式的 UI 设置。"
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "选择应用程序标识、调整游戏内叠加外观并配置叠加行为。"
     },
@@ -203421,6 +203677,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "关闭原始的 SrvSurvey 以确保其文件稳定，然后在“设置”中选择其配置文件文件夹。"
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "导入前关闭源SrvSurvey。选择配置文件文件夹或 Wine/Proton 前缀。导入添加缺失的玩家和 Codex 数据并保留当前值和 Bingo 进度。原始叠加位置将被跳过。如果某些文件不兼容，则保留可读数据；详细信息显示在警告报告中。 XP 配置文件可以包含相邻的 cross-platform-ui.json 设置。"
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -204723,14 +204983,6 @@
       "translation": "转换退役的有机历史而不更改其来源：{0}配置文件、{1}正文文件、{2}扫描和{3}有机体。"
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "将 {0} 绝对叠加位置转换为游戏窗口相对锚点。"
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "将 {0} 导入的绝对叠加位置转换为游戏窗口相对锚点。{1}"
-    },
-    {
       "source": "Cooling down",
       "translation": "冷却"
     },
@@ -204987,6 +205239,10 @@
       "translation": "无法打开 {0}：{1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "无法发布更新回滚结果：{0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "无法读取 SDL 游戏手柄事件：{0}"
     },
@@ -205053,6 +205309,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "无法选择 FSS 捕获缓冲区。"
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "无法停止异常的替换进程：{0}"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -211331,10 +211591,6 @@
       "translation": "仅当一个配置文件完全匹配时，才会应用导入的仅名称首选项，从而防止数据写入错误的指挥官。"
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "已跳过导入的叠加放置转换：{0}"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "导入的区域法典候选者：{0}。"
     },
@@ -211343,20 +211599,16 @@
       "translation": "导入的系统历史记录已保留，但无法从 {0} 安全加载：{1}"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "导入当前格式的 UI 设置并保留 {0} 叠加层的相对位置。"
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "导入当前格式的 UI 设置。"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。 {4} 已验证的备份：{5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} 已验证的备份：{5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。 {4} {5} {6}已验证的备份：{7}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} {5}已验证的备份：{6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -212615,10 +212867,6 @@
       "translation": "跳过旧版有机迁移而不修改其源数据：{0}"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "保留了旧的覆盖位置，但无法转换绝对桌面锚点。在叠加编辑器中重新定位受影响的面板。 {0}"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "旧版叠加比例未迁移：{0}"
     },
@@ -213177,6 +213425,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "本地配置文件初始化失败：{0}"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "本地配置文件恢复已完成。更新验证期间自动云同步被推迟；使用立即同步或正常重新启动来检查 Google 云端硬盘。"
     },
     {
       "source": "Local ring discoveries",
@@ -215347,14 +215599,6 @@
       "translation": "没有中队航母与此帐户关联。"
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "没有自动检测到 Windows 配置文件。手动选择其配置文件文件夹；从 Windows 复制的当前格式和旧版配置文件都可以导入到 Linux 上。"
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "不需要绝对的叠加放置转换。"
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "没有收购目标同时拥有匹配环和合格销售站。{0}"
     },
@@ -215765,6 +216009,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "没有解决生物体特定的温度范围。"
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "未自动检测到原始配置文件。手动选择配置文件文件夹或 Wine/Proton 前缀。"
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -218767,8 +219015,8 @@
       "translation": "处理是选择加入的，并将转换后的输出写入配置的目标。"
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "配置文件数据已导入到 {0} 中。保留经过验证的备份和冲突清单以供恢复。"
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "配置文件数据可在 {0} 中获取。进一步导入添加缺失数据并保留当前值；保留经过验证的备份。"
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -218783,12 +219031,12 @@
       "translation": "配置文件导入已验证"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "配置文件导入：{0}"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "配置文件导入警告：{0}：{1}"
     },
     {
-      "source": "Profile imported",
-      "translation": "导入配置文件"
+      "source": "Profile import: {0}",
+      "translation": "配置文件导入：{0}"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -220367,12 +220615,24 @@
       "translation": "恢复覆盖布局"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "恢复的数据被保留。警告 ({0})：{1} 完整报告：{2}"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "恢复的文件保留在：{0}"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "恢复覆盖文件“{0}”；原始保留在“{1}”。"
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "恢复“{0}”中的覆盖不透明度；原始保留在“{1}”。"
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "恢复的配置文件数据可用。之前的导入报告了警告；选择一个配置文件文件夹以重试恢复。完整报告：{0}"
     },
     {
       "source": "Red",
@@ -221457,6 +221717,10 @@
     {
       "source": "Retry position save",
       "translation": "重试位置保存"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "重试配置文件恢复"
     },
     {
       "source": "Retry selected deliveries",
@@ -227703,8 +227967,16 @@
       "translation": "当前的卫报调查无法保存。"
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "无法检查当前的 Nexus 详细信息。"
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "当前的 SrvSurvey 可执行路径不可用。"
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "当前的 UI 设置不是 JSON 对象；它们保持不变。"
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -227769,6 +228041,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "当前格式的 UI 设置不需要导入。"
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "未导入当前格式的 UI 设置。"
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -228599,6 +228875,14 @@
       "translation": "替换 SrvSurvey 进程未启动。"
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "替换过程未在 {0} 秒内确认可见、响应的主窗口。已请求回滚。查看应用程序日志以了解最后的启动阶段。"
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "在主窗口确认启动之前，替换进程已退出，代码为 {0}。请参阅应用程序日志以了解启动错误。"
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "重播叠加演示包含未知叠加。"
     },
@@ -229337,6 +229621,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "此 Frontier 授权是由较旧的应用程序版本启动的。返回 SrvSurvey 并再次连接活动指挥官。"
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "此 Nexus 于 Raven Colonial 发生变化。关闭此编辑器，刷新 Nexus，然后在保存之前重新打开它。"
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -230495,6 +230783,18 @@
       "translation": "更新替换运行状况确认失败：{0}"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "更新启动：桌面初始化；等待主窗口的第一帧。"
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "更新启动：本地配置文件准备就绪；构建桌面。"
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "更新启动：准备本地配置文件恢复，无需等待 Google Drive。"
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "尚未检查更新状态。"
     },
@@ -231243,8 +231543,8 @@
       "translation": "已验证的备份：{0}"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "使用切换助手验证更新替换启动。"
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "已验证更新替换启动：主窗口可见并且 UI 调度程序正在响应。"
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -232119,6 +232419,10 @@
       "translation": "Windows：OpenVR 客户端库包含在 SrvSurvey 中。"
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "酒/Proton配置文件（{0}文件）"
+    },
+    {
       "source": "Wings",
       "translation": "翅膀"
     },
@@ -232753,10 +233057,6 @@
     {
       "source": "bottom",
       "translation": "底部"
-    },
-    {
-      "source": "bounds:",
-      "translation": "界限："
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -234507,6 +234807,10 @@
       "translation": "org.freedesktop.DBus.Error.UnknownMethod：接口 org.freedesktop.IBus.Service 上未实现方法销毁"
     },
     {
+      "source": "organic",
+      "translation": "有机的"
+    },
+    {
       "source": "origin",
       "translation": "起源"
     },
@@ -234669,6 +234973,10 @@
     {
       "source": "privacy",
       "translation": "隐私"
+    },
+    {
+      "source": "profile",
+      "translation": "轮廓"
     },
     {
       "source": "profile files and retained deletion history",
@@ -235657,6 +235965,10 @@
     {
       "source": "waiting to retry",
       "translation": "等待重试"
+    },
+    {
+      "source": "warning report",
+      "translation": "警告报告"
     },
     {
       "source": "water",
@@ -240353,8 +240665,8 @@
       "translation": "* BACK UP COMMANDER MINING HISTORY, MISSIONS, SETTINGS, LOCAL DISCOVERIES, SHARED BOOKMARKS AND ATTACHED SCREENSHOTS IN ONE ZIP. RESTORE REPLACES MINING DATA AND SHARED BOOKMARKS WITH THE BACKUP CONTENTS, RETAINING THE PREVIOUS FILES FOR RECOVERY. >>>!"
     },
     {
-      "source": "Back up, verify, and import",
-      "translation": "* BACK UP, VERIFY, AND IMPORT >>>!"
+      "source": "Back up, verify, and merge",
+      "translation": "* BACK UP, VERIFY, AND MERGE >>>!"
     },
     {
       "source": "BackSpace",
@@ -242653,10 +242965,6 @@
       "translation": "* CHOOSE THE ELITE DANGEROUS SCREENSHOT FOLDER >>>!"
     },
     {
-      "source": "Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile.",
-      "translation": "* CHOOSE THE SRVSURVEY APPLICATION-DATA FOLDER, ITS CROSS-PLATFORM FOLDER, OR A LEGACY VERSION FOLDER. CURRENT-FORMAT UI SETTINGS ARE IMPORTED WHEN CROSS-PLATFORM-UI.JSON IS BESIDE THE SELECTED PROFILE. >>>!"
-    },
-    {
       "source": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
       "translation": "* CHOOSE THE APPLICATION IDENTITY, TUNE IN-GAME OVERLAY APPEARANCE, AND CONFIGURE OVERLAY BEHAVIOR. >>>!"
     },
@@ -242927,6 +243235,10 @@
     {
       "source": "Close the original SrvSurvey so its files are stable, then choose its profile folder in Settings.",
       "translation": "* CLOSE THE ORIGINAL SRVSURVEY SO ITS FILES ARE STABLE, THEN CHOOSE ITS PROFILE FOLDER IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings.",
+      "translation": "* CLOSE THE SOURCE SRVSURVEY BEFORE IMPORTING. CHOOSE A PROFILE FOLDER OR WINE/PROTON PREFIX. IMPORTS ADD MISSING PLAYER AND CODEX DATA AND KEEP CURRENT VALUES AND BINGO PROGRESS. ORIGINAL OVERLAY POSITIONS ARE SKIPPED. READABLE DATA IS KEPT IF SOME FILES ARE INCOMPATIBLE; DETAILS APPEAR IN THE WARNING REPORT. XP PROFILES CAN INCLUDE ADJACENT CROSS-PLATFORM-UI.JSON SETTINGS. >>>!"
     },
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
@@ -244229,14 +244541,6 @@
       "translation": "* CONVERTED RETIRED ORGANIC HISTORY WITHOUT CHANGING ITS SOURCE: {0} PROFILE(S), {1} BODY FILE(S), {2} SCAN(S), AND {3} ORGANISM(S). >>>!"
     },
     {
-      "source": "Converted {0} absolute overlay placement(s) to game-window-relative anchors.",
-      "translation": "* CONVERTED {0} ABSOLUTE OVERLAY PLACEMENT(S) TO GAME-WINDOW-RELATIVE ANCHORS. >>>!"
-    },
-    {
-      "source": "Converted {0} imported absolute overlay placement(s) to game-window-relative anchors.{1}",
-      "translation": "* CONVERTED {0} IMPORTED ABSOLUTE OVERLAY PLACEMENT(S) TO GAME-WINDOW-RELATIVE ANCHORS.{1} >>>!"
-    },
-    {
       "source": "Cooling down",
       "translation": "* COOLING DOWN >>>!"
     },
@@ -244493,6 +244797,10 @@
       "translation": "* COULD NOT OPEN {0}: {1} >>>!"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "* COULD NOT PUBLISH THE UPDATE ROLLBACK OUTCOME: {0} >>>!"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "* COULD NOT READ SDL GAMEPAD EVENTS: {0} >>>!"
     },
@@ -244559,6 +244867,10 @@
     {
       "source": "Could not select the FSS capture buffer.",
       "translation": "* COULD NOT SELECT THE FSS CAPTURE BUFFER. >>>!"
+    },
+    {
+      "source": "Could not stop the unhealthy replacement process: {0}",
+      "translation": "* COULD NOT STOP THE UNHEALTHY REPLACEMENT PROCESS: {0} >>>!"
     },
     {
       "source": "Could not validate update registration for PID {0}: {1}",
@@ -250837,10 +251149,6 @@
       "translation": "* IMPORTED NAME-ONLY PREFERENCES ARE APPLIED ONLY WHEN EXACTLY ONE PROFILE MATCHES, PREVENTING DATA FROM BEING WRITTEN TO THE WRONG COMMANDER. >>>!"
     },
     {
-      "source": "Imported overlay placement conversion was skipped: {0}",
-      "translation": "* IMPORTED OVERLAY PLACEMENT CONVERSION WAS SKIPPED: {0} >>>!"
-    },
-    {
       "source": "Imported regional Codex candidates: {0}.",
       "translation": "* IMPORTED REGIONAL CODEX CANDIDATES: {0}. >>>!"
     },
@@ -250849,20 +251157,16 @@
       "translation": "* IMPORTED SYSTEM HISTORY WAS PRESERVED BUT COULD NOT BE LOADED SAFELY FROM {0}: {1} >>>!"
     },
     {
-      "source": "Imported the current-format UI settings and preserved relative placement for {0} overlays.",
-      "translation": "* IMPORTED THE CURRENT-FORMAT UI SETTINGS AND PRESERVED RELATIVE PLACEMENT FOR {0} OVERLAYS. >>>!"
-    },
-    {
       "source": "Imported the current-format UI settings.",
       "translation": "* IMPORTED THE CURRENT-FORMAT UI SETTINGS. >>>!"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. {4} Verified backups: {5}",
-      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. {4} VERIFIED BACKUPS: {5} >>>!"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} VERIFIED BACKUPS: {5} >>>!"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. {4} {5} {6}Verified backups: {7}",
-      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. {4} {5} {6}VERIFIED BACKUPS: {7} >>>!"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -252121,10 +252425,6 @@
       "translation": "* LEGACY ORGANIC MIGRATION WAS SKIPPED WITHOUT MODIFYING ITS SOURCE DATA: {0} >>>!"
     },
     {
-      "source": "Legacy overlay positions were preserved, but absolute desktop anchors could not be converted. Reposition affected panels in the overlay editor. {0}",
-      "translation": "* LEGACY OVERLAY POSITIONS WERE PRESERVED, BUT ABSOLUTE DESKTOP ANCHORS COULD NOT BE CONVERTED. REPOSITION AFFECTED PANELS IN THE OVERLAY EDITOR. {0} >>>!"
-    },
-    {
       "source": "Legacy overlay scales were not migrated: {0}",
       "translation": "* LEGACY OVERLAY SCALES WERE NOT MIGRATED: {0} >>>!"
     },
@@ -252683,6 +252983,10 @@
     {
       "source": "Local profile initialization failed: {0}",
       "translation": "* LOCAL PROFILE INITIALIZATION FAILED: {0} >>>!"
+    },
+    {
+      "source": "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive.",
+      "translation": "* LOCAL PROFILE RECOVERY IS COMPLETE. AUTOMATIC CLOUD SYNC IS DEFERRED DURING UPDATE VERIFICATION; USE SYNC NOW OR RESTART NORMALLY TO CHECK GOOGLE DRIVE. >>>!"
     },
     {
       "source": "Local ring discoveries",
@@ -254853,14 +255157,6 @@
       "translation": "* NO SQUADRON CARRIER IS ASSOCIATED WITH THIS ACCOUNT. >>>!"
     },
     {
-      "source": "No Windows profile was detected automatically. Choose its profile folder manually; both current-format and legacy profiles copied from Windows can be imported on Linux.",
-      "translation": "* NO WINDOWS PROFILE WAS DETECTED AUTOMATICALLY. CHOOSE ITS PROFILE FOLDER MANUALLY; BOTH CURRENT-FORMAT AND LEGACY PROFILES COPIED FROM WINDOWS CAN BE IMPORTED ON LINUX. >>>!"
-    },
-    {
-      "source": "No absolute overlay placement conversion was required.",
-      "translation": "* NO ABSOLUTE OVERLAY PLACEMENT CONVERSION WAS REQUIRED. >>>!"
-    },
-    {
       "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
       "translation": "* NO ACQUISITION TARGET HAD BOTH A MATCHING RING AND A QUALIFYING SELL STATION.{0} >>>!"
     },
@@ -255271,6 +255567,10 @@
     {
       "source": "No organism-specific temperature range was resolved.",
       "translation": "* NO ORGANISM-SPECIFIC TEMPERATURE RANGE WAS RESOLVED. >>>!"
+    },
+    {
+      "source": "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually.",
+      "translation": "* NO ORIGINAL PROFILE WAS DETECTED AUTOMATICALLY. CHOOSE A PROFILE FOLDER OR WINE/PROTON PREFIX MANUALLY. >>>!"
     },
     {
       "source": "No passive overlay is registered with this identity.",
@@ -258273,8 +258573,8 @@
       "translation": "* PROCESSING IS OPT-IN AND WRITES CONVERTED OUTPUT TO THE CONFIGURED DESTINATION. >>>!"
     },
     {
-      "source": "Profile data has already been imported into {0}. The verified backup and conflict manifest are retained for recovery.",
-      "translation": "* PROFILE DATA HAS ALREADY BEEN IMPORTED INTO {0}. THE VERIFIED BACKUP AND CONFLICT MANIFEST ARE RETAINED FOR RECOVERY. >>>!"
+      "source": "Profile data is available in {0}. Further imports add missing data and keep current values; verified backups are retained.",
+      "translation": "* PROFILE DATA IS AVAILABLE IN {0}. FURTHER IMPORTS ADD MISSING DATA AND KEEP CURRENT VALUES; VERIFIED BACKUPS ARE RETAINED. >>>!"
     },
     {
       "source": "Profile import is unavailable during diagnostic replay.",
@@ -258289,12 +258589,12 @@
       "translation": "* PROFILE IMPORT VERIFIED >>>!"
     },
     {
-      "source": "Profile import: {0}",
-      "translation": "* PROFILE IMPORT: {0} >>>!"
+      "source": "Profile import warning: {0}: {1}",
+      "translation": "* PROFILE IMPORT WARNING: {0}: {1} >>>!"
     },
     {
-      "source": "Profile imported",
-      "translation": "* PROFILE IMPORTED >>>!"
+      "source": "Profile import: {0}",
+      "translation": "* PROFILE IMPORT: {0} >>>!"
     },
     {
       "source": "Profile restore preserved a machine setting edited after staging: {0}",
@@ -259873,12 +260173,24 @@
       "translation": "* RECOVER OVERLAY LAYOUT >>>!"
     },
     {
+      "source": "Recovered data was kept. Warnings ({0}): {1} Full report: {2}",
+      "translation": "* RECOVERED DATA WAS KEPT. WARNINGS ({0}): {1} FULL REPORT: {2} >>>!"
+    },
+    {
+      "source": "Recovered files were retained at: {0}",
+      "translation": "* RECOVERED FILES WERE RETAINED AT: {0} >>>!"
+    },
+    {
       "source": "Recovered overlay file '{0}'; original retained at '{1}'.",
       "translation": "* RECOVERED OVERLAY FILE '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
     },
     {
       "source": "Recovered overlay opacity in '{0}'; original retained at '{1}'.",
       "translation": "* RECOVERED OVERLAY OPACITY IN '{0}'; ORIGINAL RETAINED AT '{1}'. >>>!"
+    },
+    {
+      "source": "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. Full report: {0}",
+      "translation": "* RECOVERED PROFILE DATA IS AVAILABLE. THE PREVIOUS IMPORT REPORTED WARNINGS; CHOOSE A PROFILE FOLDER TO RETRY RECOVERY. FULL REPORT: {0} >>>!"
     },
     {
       "source": "Red",
@@ -260963,6 +261275,10 @@
     {
       "source": "Retry position save",
       "translation": "* RETRY POSITION SAVE >>>!"
+    },
+    {
+      "source": "Retry profile recovery",
+      "translation": "* RETRY PROFILE RECOVERY >>>!"
     },
     {
       "source": "Retry selected deliveries",
@@ -267209,8 +267525,16 @@
       "translation": "* THE CURRENT GUARDIAN SURVEY IS NOT AVAILABLE TO SAVE. >>>!"
     },
     {
+      "source": "The current Nexus details could not be checked.",
+      "translation": "* THE CURRENT NEXUS DETAILS COULD NOT BE CHECKED. >>>!"
+    },
+    {
       "source": "The current SrvSurvey executable path is unavailable.",
       "translation": "* THE CURRENT SRVSURVEY EXECUTABLE PATH IS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "The current UI settings are not a JSON object; they were kept unchanged.",
+      "translation": "* THE CURRENT UI SETTINGS ARE NOT A JSON OBJECT; THEY WERE KEPT UNCHANGED. >>>!"
     },
     {
       "source": "The current application assembly could not be resolved.",
@@ -267275,6 +267599,10 @@
     {
       "source": "The current-format UI settings did not require import.",
       "translation": "* THE CURRENT-FORMAT UI SETTINGS DID NOT REQUIRE IMPORT. >>>!"
+    },
+    {
+      "source": "The current-format UI settings were not imported.",
+      "translation": "* THE CURRENT-FORMAT UI SETTINGS WERE NOT IMPORTED. >>>!"
     },
     {
       "source": "The dark area below the FSS tuning bar was not found.",
@@ -268105,6 +268433,14 @@
       "translation": "* THE REPLACEMENT SRVSURVEY PROCESS DID NOT START. >>>!"
     },
     {
+      "source": "The replacement process did not confirm a visible, responsive main window within {0} seconds. Rollback was requested. See the application log for the last startup stage.",
+      "translation": "* THE REPLACEMENT PROCESS DID NOT CONFIRM A VISIBLE, RESPONSIVE MAIN WINDOW WITHIN {0} SECONDS. ROLLBACK WAS REQUESTED. SEE THE APPLICATION LOG FOR THE LAST STARTUP STAGE. >>>!"
+    },
+    {
+      "source": "The replacement process exited with code {0} before its main window confirmed startup. See the application log for startup errors.",
+      "translation": "* THE REPLACEMENT PROCESS EXITED WITH CODE {0} BEFORE ITS MAIN WINDOW CONFIRMED STARTUP. SEE THE APPLICATION LOG FOR STARTUP ERRORS. >>>!"
+    },
+    {
       "source": "The replay overlay presentation contains an unknown overlay.",
       "translation": "* THE REPLAY OVERLAY PRESENTATION CONTAINS AN UNKNOWN OVERLAY. >>>!"
     },
@@ -268843,6 +269179,10 @@
     {
       "source": "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again.",
       "translation": "* THIS FRONTIER AUTHORIZATION WAS STARTED BY AN OLDER APPLICATION VERSION. RETURN TO SRVSURVEY AND CONNECT THE ACTIVE COMMANDER AGAIN. >>>!"
+    },
+    {
+      "source": "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.",
+      "translation": "* THIS NEXUS CHANGED ON RAVEN COLONIAL. CLOSE THIS EDITOR, REFRESH NEXUS, AND REOPEN IT BEFORE SAVING. >>>!"
     },
     {
       "source": "This Nexus is no longer available, or access has changed. Refresh the Nexus list to try again.",
@@ -270001,6 +270341,18 @@
       "translation": "* UPDATE REPLACEMENT HEALTH CONFIRMATION FAILED: {0} >>>!"
     },
     {
+      "source": "Update startup: desktop initialized; waiting for the main window's first frame.",
+      "translation": "* UPDATE STARTUP: DESKTOP INITIALIZED; WAITING FOR THE MAIN WINDOW'S FIRST FRAME. >>>!"
+    },
+    {
+      "source": "Update startup: local profile ready; constructing the desktop.",
+      "translation": "* UPDATE STARTUP: LOCAL PROFILE READY; CONSTRUCTING THE DESKTOP. >>>!"
+    },
+    {
+      "source": "Update startup: preparing local profile recovery without waiting for Google Drive.",
+      "translation": "* UPDATE STARTUP: PREPARING LOCAL PROFILE RECOVERY WITHOUT WAITING FOR GOOGLE DRIVE. >>>!"
+    },
+    {
       "source": "Update status has not been checked.",
       "translation": "* UPDATE STATUS HAS NOT BEEN CHECKED. >>>!"
     },
@@ -270749,8 +271101,8 @@
       "translation": "* VERIFIED BACKUP: {0} >>>!"
     },
     {
-      "source": "Verified update replacement startup with the handoff helper.",
-      "translation": "* VERIFIED UPDATE REPLACEMENT STARTUP WITH THE HANDOFF HELPER. >>>!"
+      "source": "Verified update replacement startup: the main window is visible and the UI dispatcher is responding.",
+      "translation": "* VERIFIED UPDATE REPLACEMENT STARTUP: THE MAIN WINDOW IS VISIBLE AND THE UI DISPATCHER IS RESPONDING. >>>!"
     },
     {
       "source": "Verified {0} staged files; preparing rollback...",
@@ -271625,6 +271977,10 @@
       "translation": "* WINDOWS: THE OPENVR CLIENT LIBRARY IS INCLUDED WITH SRVSURVEY. >>>!"
     },
     {
+      "source": "Wine / Proton profile ({0} files)",
+      "translation": "* WINE / PROTON PROFILE ({0} FILES) >>>!"
+    },
+    {
       "source": "Wings",
       "translation": "* WINGS >>>!"
     },
@@ -272259,10 +272615,6 @@
     {
       "source": "bottom",
       "translation": "* BOTTOM >>>!"
-    },
-    {
-      "source": "bounds:",
-      "translation": "* BOUNDS: >>>!"
     },
     {
       "source": "bounds:{0},{1},{2},{3}",
@@ -274013,6 +274365,10 @@
       "translation": "* ORG.FREEDESKTOP.DBUS.ERROR.UNKNOWNMETHOD: METHOD DESTROY IS NOT IMPLEMENTED ON INTERFACE ORG.FREEDESKTOP.IBUS.SERVICE >>>!"
     },
     {
+      "source": "organic",
+      "translation": "* ORGANIC >>>!"
+    },
+    {
       "source": "origin",
       "translation": "* ORIGIN >>>!"
     },
@@ -274175,6 +274531,10 @@
     {
       "source": "privacy",
       "translation": "* PRIVACY >>>!"
+    },
+    {
+      "source": "profile",
+      "translation": "* PROFILE >>>!"
     },
     {
       "source": "profile files and retained deletion history",
@@ -275163,6 +275523,10 @@
     {
       "source": "waiting to retry",
       "translation": "* WAITING TO RETRY >>>!"
+    },
+    {
+      "source": "warning report",
+      "translation": "* WARNING REPORT >>>!"
     },
     {
       "source": "water",

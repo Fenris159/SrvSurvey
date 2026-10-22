@@ -111,6 +111,7 @@ public sealed partial class ColonizationNexusEditorViewModelTests
     {
         var api = new Writer
         {
+            Existing = ExistingNexus(),
             ConfigureFailure = new IOException("offline"),
             DeleteFailure = new IOException("offline"),
         };
@@ -132,6 +133,95 @@ public sealed partial class ColonizationNexusEditorViewModelTests
         await model.ConfirmDeletionAsync();
         Assert.Contains("could not be confirmed", model.Status);
         Assert.True(model.IsDeleteConfirmationVisible);
+        Assert.False(model.IsBusy);
+    }
+
+    [Theory]
+    [InlineData("privacy")]
+    [InlineData("systems")]
+    [InlineData("commanders")]
+    [InlineData("carriers")]
+    [InlineData("notes")]
+    [InlineData("name")]
+    public async Task StaleEditorCannotReplaceAnotherMembersNewerChanges(string field)
+    {
+        ColonizationNexus source = ExistingNexus();
+        var api = new Writer { Existing = source };
+        using var model = new ColonizationNexusEditorViewModel(
+            api,
+            "Fenris",
+            "key",
+            () => true,
+            _ => Task.CompletedTask,
+            [],
+            source
+        );
+        model.Notes = "My edited notes";
+        model.Name = "My edited name";
+        api.Existing = field switch
+        {
+            "privacy" => source with { Open = false },
+            "systems" => source with { Systems = [.. source.Systems, new() { Name = "Beta", SystemAddress = 2 }] },
+            "commanders" => source with { Commanders = [.. source.Commanders, "New member"] },
+            "carriers" => source with { FleetCarriers = [] },
+            "notes" => source with { Notes = "Other notes" },
+            _ => source with { Name = "Other name" },
+        };
+        await model.SubmitAsync();
+        Assert.Equal(0, api.Renames);
+        Assert.Equal(0, api.Configures);
+        Assert.Contains("changed on Raven", model.Status);
+        Assert.Equal("My edited notes", model.Notes);
+        Assert.False(model.IsBusy);
+    }
+
+    [Fact]
+    public async Task CargoAndProgressRefreshDoesNotConflictWithAnUnchangedEditorSource()
+    {
+        ColonizationNexus source = ExistingNexus();
+        var api = new Writer { Existing = source };
+        using var model = new ColonizationNexusEditorViewModel(
+            api,
+            "Fenris",
+            "key",
+            () => true,
+            _ => Task.CompletedTask,
+            [],
+            source
+        );
+        api.Existing = source with
+        {
+            Systems = [source.Systems[0] with { Progress = 25 }],
+            FleetCarriers = [source.FleetCarriers[0] with { Cargo = new() { ["steel"] = 50 } }],
+        };
+        model.Notes = "My notes";
+        await model.SubmitAsync();
+        Assert.Equal(1, api.Configures);
+    }
+
+    [Fact]
+    public async Task ChangedAccountWhileCheckingLatestEditorSourcePreventsWrites()
+    {
+        ColonizationNexus source = ExistingNexus();
+        var pending = new TaskCompletionSource<ColonizationNexus?>();
+        var api = new Writer { Existing = source, PendingNexusRead = pending.Task };
+        bool current = true;
+        using var model = new ColonizationNexusEditorViewModel(
+            api,
+            "Fenris",
+            "key",
+            () => current,
+            _ => Task.CompletedTask,
+            [],
+            source
+        );
+        Task saving = model.SubmitAsync();
+        Assert.True(model.IsBusy);
+        current = false;
+        pending.SetResult(source);
+        await saving;
+        Assert.Equal(0, api.Configures);
+        Assert.Equal(0, api.Renames);
         Assert.False(model.IsBusy);
     }
 

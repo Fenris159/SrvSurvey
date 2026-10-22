@@ -56,9 +56,13 @@ public sealed partial class ColonizationProjectPreviewViewModel
     }
 
     /// <summary>Aggregates only the chosen system's builds, retaining shared-carrier deduplication and the original fetch time.</summary>
-    private void ApplyReport()
+    private void ApplyReport(ColonizationProjectPreview? candidate = null)
     {
-        if (nexusSnapshot is not null)
+        if (candidate is not null)
+        {
+            Snapshot = candidate;
+        }
+        else if (nexusSnapshot is not null)
         {
             Snapshot = ColonizationProjectPreview.CreateNexusReport(
                 nexusSnapshot,

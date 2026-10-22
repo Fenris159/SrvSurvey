@@ -123,6 +123,73 @@ public sealed class ColonizationNexusReportViewModelTests
         Assert.Contains("last successful", report.Status);
     }
 
+    [Fact]
+    public async Task InvalidRefreshRetainsTheFilterCacheTitleAndUsablePreviousScopes()
+    {
+        ColonizationNexus source = Sample();
+        using var report = new ColonizationProjectPreviewViewModel(
+            _ => Task.FromResult<ColonizationNexus?>(source),
+            "Beta",
+            () => true,
+            () => 50
+        );
+        await report.RefreshAsync();
+        ColonizationProjectPreview? before = report.Snapshot;
+        IReadOnlyList<PreviewSystemOption> options = report.SystemOptions;
+        string title = report.Title;
+        source = source with
+        {
+            Name = "Invalid",
+            Systems =
+            [
+                new()
+                {
+                    Name = "Overflow",
+                    Needs = new() { ["steel"] = long.MaxValue, ["water"] = long.MaxValue },
+                },
+            ],
+        };
+        await report.RefreshAsync();
+        Assert.Same(before, report.Snapshot);
+        Assert.Same(options, report.SystemOptions);
+        Assert.Equal(title, report.Title);
+        Assert.DoesNotContain(report.SystemOptions, option => option.SystemName == "Overflow");
+        report.SelectedSystem = report.SystemOptions.Single(option => option.SystemName == "Alpha");
+        Assert.Equal(30, report.Snapshot!.Remaining);
+        Assert.Contains("last successful", report.Status);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SystemDetailsUseNormalizedNeedsAndKeepKnownUnreportedBalances(bool missing)
+    {
+        var system = new ColonizationNexusSystem
+        {
+            Name = "Alpha",
+            Total = 150,
+            Progress = 50,
+            Needs = missing
+                ? null
+                : new()
+                {
+                    ["steel"] = 100,
+                    ["$steel_name;"] = 100,
+                    [""] = 500,
+                    ["water"] = -1,
+                },
+        };
+        using var report = new ColonizationProjectPreviewViewModel(
+            _ => Task.FromResult<ColonizationNexus?>(Sample() with { Systems = [system] }),
+            null,
+            () => true,
+            () => 50
+        );
+        await report.RefreshAsync();
+        Assert.Equal(100, report.Snapshot!.Remaining);
+        Assert.StartsWith("100 t remaining", Assert.Single(report.Details, row => row.Label == "Alpha").Value);
+    }
+
     internal static ColonizationNexus Sample(long betaNeed = 70) =>
         new()
         {

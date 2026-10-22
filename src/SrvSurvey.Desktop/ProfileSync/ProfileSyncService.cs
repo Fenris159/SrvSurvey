@@ -43,11 +43,13 @@ internal sealed class ProfileSyncService : IDisposable
     internal event Action? Changed;
 
     /// <summary>Applies downloads before workspaces load, or safely defers when another instance is active.</summary>
-    internal async Task StartupAsync(CancellationToken cancellationToken = default)
+    internal Task StartupAsync(CancellationToken cancellationToken = default) => StartupAsync(false, cancellationToken);
+
+    internal async Task StartupAsync(bool deferCloudSync, CancellationToken cancellationToken = default)
     {
         try
         {
-            await StartRegisteredProfileAsync(cancellationToken).ConfigureAwait(false);
+            await StartRegisteredProfileAsync(deferCloudSync, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
             when (exception is not ProfileInitializationException && IsExpectedFailure(exception))
@@ -56,7 +58,7 @@ internal sealed class ProfileSyncService : IDisposable
         }
     }
 
-    private async Task StartRegisteredProfileAsync(CancellationToken cancellationToken)
+    private async Task StartRegisteredProfileAsync(bool deferCloudSync, CancellationToken cancellationToken)
     {
         (bool another, bool restored, SyncMergeResult? restoreConflicts, ProfileSnapshot? conflictSnapshot) =
             await InitializeReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -73,6 +75,13 @@ internal sealed class ProfileSyncService : IDisposable
             pendingSnapshot = conflictSnapshot;
             SetStatus(
                 $"{restoreConflicts.Conflicts.Count} edits made after staging need a choice in Data & migration. Local data and the staged backup were retained."
+            );
+            return;
+        }
+        if (deferCloudSync)
+        {
+            SetStatus(
+                "Local profile recovery is complete. Automatic cloud sync is deferred during update verification; use Sync now or restart normally to check Google Drive."
             );
             return;
         }

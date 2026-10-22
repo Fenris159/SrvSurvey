@@ -84,6 +84,24 @@ internal sealed partial class DesktopRuntime
     private bool manualOverlaySuppressed;
     private string[] originalStartupArguments = [];
 
+    private static (CommanderProfileViewModel? Profile, string? Status) CreateDiagnosticProfile(
+        DiagnosticReplayContext? replay
+    ) =>
+        replay is null
+            ? (null, null)
+            : (
+                new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                $"Diagnostic replay: {replay.Commander.Name} ({replay.Commander.FrontierId}); external effects disabled."
+            );
+
+    private bool ShouldKeepOverlaysVisible() =>
+        mainViewModel is { } current
+        && (
+            current.OverlayBehavior.KeepWhenGameLosesFocus
+            || current.OverlayInteraction.IsEditing
+            || current.OverlayInteraction.IsLiveInteractionEnabled
+        );
+
     /// <summary>Composes desktop services, settings, and capture dependencies at startup.</summary>
     private void InitializeDesktopApplication(
         Application application,
@@ -159,13 +177,7 @@ internal sealed partial class DesktopRuntime
             gameWindowTracker: CreateRawGameWindowTracker(),
             registry: null,
             overlayLayout,
-            () =>
-                mainViewModel is { } current
-                && (
-                    current.OverlayBehavior.KeepWhenGameLosesFocus
-                    || current.OverlayInteraction.IsEditing
-                    || current.OverlayInteraction.IsLiveInteractionEnabled
-                ),
+            ShouldKeepOverlaysVisible,
             diagnostic =>
                 applicationLog.Append(
                     $"Overlay host '{diagnostic.PlotterName}' "
@@ -198,6 +210,7 @@ internal sealed partial class DesktopRuntime
             )
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
+        (CommanderProfileViewModel? Profile, string? Status) replayProfile = CreateDiagnosticProfile(diagnosticReplay);
         using var mainViewModelStartup = new MainWindowViewModelStartup(
             configuredJournalDirectory,
             new MainWindowFoundationInputs
@@ -211,14 +224,9 @@ internal sealed partial class DesktopRuntime
                 CommanderPreferenceSettingsStore = commanderPreferenceStore,
                 CommanderPreferenceCommandLineOverride = commanderPreferenceResolution.IsCommandLineOverride,
                 CommanderPreferenceInitialStatus = commanderPreferenceResolution.StatusMessage,
-                FrontierProfile = diagnosticReplay is null
-                    ? null
-                    : new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                FrontierProfile = replayProfile.Profile,
                 IsDiagnosticReplay = diagnosticReplay is not null,
-                DiagnosticReplayStatus = diagnosticReplay is null
-                    ? null
-                    : $"Diagnostic replay: {diagnosticReplay.Commander.Name} "
-                        + $"({diagnosticReplay.Commander.FrontierId}); external effects disabled.",
+                DiagnosticReplayStatus = replayProfile.Status,
                 ExternalNetworkClient = externalNetworkClient,
                 ReplayViewportProvider = CaptureReplayViewport,
             },
@@ -447,7 +455,6 @@ internal sealed partial class DesktopRuntime
         linuxTerminationRegistration = RegisterLinuxTermination();
         if (diagnosticReplay is null)
         {
-            ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
             releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
                 appDataPaths,
                 applicationLog,
@@ -455,7 +462,24 @@ internal sealed partial class DesktopRuntime
             );
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
+        if (Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
+        {
+            applicationLog.Append("Update startup: desktop initialized; waiting for the main window's first frame.");
+        }
+        ApplicationStartupWindowPresenter.Present(
+            desktop,
+            mainWindow,
+            startup.BringMainWindowToFront,
+            diagnosticReplay is null
+                ? () =>
+                {
+                    if (shutdownTask is null)
+                    {
+                        ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+                    }
+                }
+                : null
+        );
     }
 
     /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
@@ -709,27 +733,6 @@ internal sealed partial class DesktopRuntime
         if (settingsMigration.Error is not null)
         {
             applicationLog.Append("Legacy UI settings migration was skipped: " + settingsMigration.Error);
-        }
-    }
-
-    private static void MigrateLegacyOverlayLayout(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
-    {
-        LegacyOverlayLayoutImportMigrationResult migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
-            appDataPaths
-        );
-        if (migration.Migrated)
-        {
-            applicationLog.Append(
-                $"Converted {migration.NormalizedPlacementCount:N0} imported "
-                    + "absolute overlay placement(s) to game-window-relative anchors."
-                    + (migration.BackupPath is null ? string.Empty : " Previous layout backup: " + migration.BackupPath)
-            );
-            return;
-        }
-
-        if (migration.Error is not null)
-        {
-            applicationLog.Append("Imported overlay placement conversion was skipped: " + migration.Error);
         }
     }
 
@@ -1057,7 +1060,6 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
         MigrateLegacyUiSettings(appDataPaths, applicationLog);
         MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
     }
@@ -1293,7 +1295,9 @@ internal sealed partial class DesktopRuntime
                 null
             )
         );
-        applicationLog.Append("Verified update replacement startup with the handoff helper.");
+        applicationLog.Append(
+            "Verified update replacement startup: the main window is visible and the UI dispatcher is responding."
+        );
     }
 
     private IGameWindowTracker CreateRawGameWindowTracker()

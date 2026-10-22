@@ -1,11 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 
 namespace SrvSurvey.Desktop.Platform;
 
 internal static class ApplicationStartupWindowPresenter
 {
-    public static void Present(IClassicDesktopStyleApplicationLifetime desktop, Window mainWindow, bool bringToFront)
+    public static void Present(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        Window mainWindow,
+        bool bringToFront,
+        Action? onReady = null
+    )
     {
         ArgumentNullException.ThrowIfNull(desktop);
         ArgumentNullException.ThrowIfNull(mainWindow);
@@ -18,12 +24,25 @@ internal static class ApplicationStartupWindowPresenter
             mainWindow.Show();
         }
 
-        if (!bringToFront)
+        if (bringToFront)
         {
-            return;
+            mainWindow.WindowState = WindowState.Normal;
+            mainWindow.Activate();
         }
-
-        mainWindow.WindowState = WindowState.Normal;
-        mainWindow.Activate();
+        if (onReady is not null)
+        {
+            mainWindow.RequestAnimationFrame(_ =>
+                Dispatcher.UIThread.Post(
+                    () =>
+                    {
+                        if (mainWindow.IsVisible && ReferenceEquals(desktop.MainWindow, mainWindow))
+                        {
+                            onReady();
+                        }
+                    },
+                    DispatcherPriority.Background
+                )
+            );
+        }
     }
 }

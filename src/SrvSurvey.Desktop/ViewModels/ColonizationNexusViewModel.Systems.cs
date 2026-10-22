@@ -116,7 +116,13 @@ public sealed partial class ColonizationNexusViewModel
             }
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or IOException or OperationCanceledException or OverflowException)
+            when (exception
+                    is HttpRequestException
+                        or IOException
+                        or InvalidDataException
+                        or OperationCanceledException
+                        or OverflowException
+            )
         {
             if (IsCurrent(cancel))
             {

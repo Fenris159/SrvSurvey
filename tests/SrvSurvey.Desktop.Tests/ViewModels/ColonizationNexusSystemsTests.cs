@@ -94,13 +94,15 @@ public sealed class ColonizationNexusSystemsTests
         Assert.Equal(0, api.SystemChanges);
     }
 
-    [Fact]
-    public async Task FailedSaveKeepsTheSnapshotAndProfileChangesDiscardPendingConfirmation()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedSaveKeepsTheSnapshotAndProfileChangesDiscardPendingConfirmation(bool invalidData)
     {
         var api = new ColonizationNexusEditorViewModelTests.Writer
         {
             Existing = NexusFixture.Snapshot(),
-            SystemsFailure = new IOException("secret"),
+            SystemsFailure = invalidData ? new InvalidDataException("secret") : new IOException("secret"),
         };
         using ColonizationNexusViewModel model = Create(api);
         await model.RefreshAsync();
@@ -115,6 +117,21 @@ public sealed class ColonizationNexusSystemsTests
         Assert.False(model.IsSystemRemovalVisible);
         await model.ConfirmSystemRemovalAsync();
         Assert.Equal(1, api.SystemChanges);
+    }
+
+    [Fact]
+    public async Task InvalidFreshSnapshotDuringRemovalReportsFailureWithoutWriting()
+    {
+        var api = new ColonizationNexusEditorViewModelTests.Writer { Existing = NexusFixture.Snapshot() };
+        using ColonizationNexusViewModel model = Create(api);
+        await model.RefreshAsync();
+        model.RequestSystemRemoval(model.Detail!.Systems[0]);
+        api.PendingNexusRead = Task.FromException<ColonizationNexus?>(new InvalidDataException("secret"));
+        await model.ConfirmSystemRemovalAsync();
+        Assert.Contains("could not be confirmed", model.StatusMessage);
+        Assert.False(model.IsBusy);
+        Assert.Equal(0, api.SystemChanges);
+        Assert.Equal(3, model.Detail.Systems.Count);
     }
 
     [Fact]

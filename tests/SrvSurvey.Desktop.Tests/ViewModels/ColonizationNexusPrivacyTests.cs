@@ -36,13 +36,17 @@ public sealed class ColonizationNexusPrivacyTests
         Assert.Equal("test-key", api.Key);
     }
 
-    [Fact]
-    public async Task FailuresKeepConfirmedStatusAndPreventNonmembersFromChangingPrivacy()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailuresKeepConfirmedStatusAndPreventNonmembersFromChangingPrivacy(bool invalidData)
     {
         var api = new ColonizationNexusEditorViewModelTests.Writer
         {
             Existing = NexusFixture.Snapshot(),
-            PrivacyFailure = new IOException("secret must not be shown"),
+            PrivacyFailure = invalidData
+                ? new InvalidDataException("secret must not be shown")
+                : new IOException("secret must not be shown"),
         };
         using var model = new ColonizationNexusViewModel(api, ColonizationBuildCatalog.LoadEmbedded(), _ => { });
         model.SetContext(true, "Test", "key");

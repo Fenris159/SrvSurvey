@@ -118,11 +118,8 @@ internal static class OverlayPopupPlacementBehavior
 
         public void RestoreOffsets()
         {
-            if (trackedTarget is not null)
-            {
-                trackedTarget.LayoutUpdated -= TargetLayoutUpdated;
-                trackedTarget = null;
-            }
+            trackedTarget?.LayoutUpdated -= TargetLayoutUpdated;
+            trackedTarget = null;
             if (!correctionApplied)
             {
                 return;

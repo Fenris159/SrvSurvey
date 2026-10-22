@@ -368,13 +368,12 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
                 .Concat([KeyValuePair.Create("Notes", snapshot.Project.Notes ?? string.Empty)])
                 .Select(pair => new PreviewField(pair.Key, pair.Value))
                 .ToArray();
-        if (nexusSnapshot is not null)
+        if (snapshot.NexusSystems is { } nexusSystems)
         {
-            Details = nexusSnapshot
-                .Systems.Where(system => selectedSystem.SystemName is null || system.Name == selectedSystem.SystemName)
+            Details = nexusSystems
                 .Select(system => new PreviewField(
-                    system.Name,
-                    $"{system.Needs?.Values.Sum():N0} t remaining · {system.Builds.Count:N0} linked build projects"
+                    system.System.Name,
+                    $"{system.Cargo.Remaining:N0} t remaining · {system.System.Builds.Count:N0} linked build projects"
                 ))
                 .Concat(Details)
                 .ToArray();

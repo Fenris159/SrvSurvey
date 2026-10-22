@@ -41,11 +41,13 @@ public sealed class LegacyUiSettingsMigrator
             ProfileImportManifest manifest =
                 JsonSerializer.Deserialize<ProfileImportManifest>(File.ReadAllText(manifestPath))
                 ?? throw new InvalidDataException("The legacy import manifest is empty.");
-            JsonObject legacy =
-                JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject
-                ?? throw new InvalidDataException("The imported legacy settings file is not a JSON object.");
+            JsonObject? legacy = ReadImportedLegacySettings(manifest, legacySettingsPath);
+            if (legacy is null)
+            {
+                return LegacyUiSettingsMigrationResult.NotRequired;
+            }
             var store = new UiSettingsDocumentStore(paths.UiSettingsPath);
-            JsonObject existing = store.Load();
+            JsonObject existing = ReadExistingUiSettings(manifest, paths.UiSettingsPath, store);
             if (HasMigrationMarker(existing, manifest))
             {
                 return MigrateNewPreferencesIfMissing(legacy, existing, store);
@@ -304,6 +306,15 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapCodexImages(legacy, root, manifest);
                 mappedCount += MapSection(legacy, root, "Travel", [("logDockToDockTimes", "LogDockToDockTimes")]);
                 mappedCount += MapInput(legacy, root);
+                if (manifest.Version >= 4)
+                {
+                    JsonObject merged = ProfileJsonMerge.MergeMissing(existing, root);
+                    root.Clear();
+                    foreach (KeyValuePair<string, JsonNode?> property in merged)
+                    {
+                        root[property.Key] = property.Value?.DeepClone();
+                    }
+                }
                 WriteMigrationMarker(root, manifest, mappedCount);
             });
 
@@ -321,6 +332,32 @@ public sealed class LegacyUiSettingsMigrator
             return new LegacyUiSettingsMigrationResult(false, 0, null, exception.Message);
         }
     }
+
+    private static JsonObject? ReadImportedLegacySettings(ProfileImportManifest manifest, string path)
+    {
+        if (manifest.Version >= 4)
+        {
+            path = Path.Combine(manifest.BackupDirectory, "profile", "settings.json");
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+        }
+        return JsonNode.Parse(File.ReadAllText(path)) as JsonObject
+            ?? throw new InvalidDataException("The imported legacy settings file is not a JSON object.");
+    }
+
+    private static JsonObject ReadExistingUiSettings(
+        ProfileImportManifest manifest,
+        string path,
+        UiSettingsDocumentStore store
+    ) =>
+        manifest.Version >= 4 && File.Exists(path)
+            ? JsonNode.Parse(File.ReadAllText(path)) as JsonObject
+                ?? throw new InvalidDataException(
+                    "The current UI settings are not a JSON object; they were kept unchanged."
+                )
+            : store.Load();
 
     private static int MapTheme(JsonObject legacy, JsonObject target)
     {

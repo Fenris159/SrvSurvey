@@ -27,10 +27,18 @@ public sealed partial class ColonizationProjectPreviewViewModel
         {
             return;
         }
-        nexusSnapshot = nexus ?? throw new InvalidDataException("This Nexus is no longer available.");
-        fetchedAt = DateTimeOffset.UtcNow;
+        ColonizationNexus candidate = nexus ?? throw new InvalidDataException("This Nexus is no longer available.");
+        DateTimeOffset candidateTime = DateTimeOffset.UtcNow;
+        string? scope = candidate.Systems.Any(system =>
+            string.Equals(system.Name, selectedSystem.SystemName, StringComparison.OrdinalIgnoreCase)
+        )
+            ? selectedSystem.SystemName
+            : null;
+        var report = ColonizationProjectPreview.CreateNexusReport(candidate, scope, candidateTime);
+        nexusSnapshot = candidate;
+        fetchedAt = candidateTime;
         refreshFailed = false;
         UpdateSystemOptions();
-        ApplyReport();
+        ApplyReport(report);
     }
 }

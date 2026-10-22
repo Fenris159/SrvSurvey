@@ -289,6 +289,10 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
         IsBusy = true;
         try
         {
+            if (!await CheckForConcurrentEditsAsync())
+            {
+                return;
+            }
             if (created is null)
             {
                 Status = "Creating Nexus on Raven Colonial...";
@@ -342,6 +346,55 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
             IsBusy = false;
         }
     }
+
+    private async Task<bool> CheckForConcurrentEditsAsync()
+    {
+        if (!IsEditing)
+        {
+            return true;
+        }
+        if (created is not { } original || writer is not IRavenColonialNexusReader reader)
+        {
+            throw new InvalidDataException("The current Nexus details could not be checked.");
+        }
+        ColonizationNexus? latest = await reader.GetNexusAsync(original.Id, Commander, apiKey, lifetime.Token);
+        if (!IsCurrent)
+        {
+            return false;
+        }
+        if (latest is null || !HasSameEditableDetails(original, latest))
+        {
+            Status =
+                "This Nexus changed on Raven Colonial. Close this editor, refresh Nexus, and reopen it before saving.";
+            return false;
+        }
+        return true;
+    }
+
+    private static bool HasSameEditableDetails(ColonizationNexus original, ColonizationNexus latest) =>
+        original.Name == latest.Name
+        && (original.Notes ?? string.Empty) == (latest.Notes ?? string.Empty)
+        && original.Open == latest.Open
+        && string.Equals(original.Owner, latest.Owner, StringComparison.OrdinalIgnoreCase)
+        && original
+            .Systems.Select(system => system.Name)
+            .SequenceEqual(latest.Systems.Select(system => system.Name), StringComparer.OrdinalIgnoreCase)
+        && original
+            .Commanders.Append(original.Owner)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .SequenceEqual(
+                latest
+                    .Commanders.Append(latest.Owner)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase
+            )
+        && original
+            .FleetCarriers.Select(carrier => carrier.MarketId)
+            .Distinct()
+            .Order()
+            .SequenceEqual(latest.FleetCarriers.Select(carrier => carrier.MarketId).Distinct().Order());
 
     private void ExplainFailure(Exception exception)
     {

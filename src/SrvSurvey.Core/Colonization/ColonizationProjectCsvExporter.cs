@@ -170,14 +170,28 @@ public static partial class ColonizationProjectCsvExporter
             {
                 ["Build projects"] = Number(preview.Projects.Count),
                 ["Systems"] = Number(
-                    preview
-                        .Projects.Select(project => project.SystemName)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Count()
+                    preview.NexusSystems?.Count
+                        ?? preview
+                            .Projects.Select(project => project.SystemName)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .Count()
                 ),
                 ["Linked fleet carriers"] = string.Join("; ", preview.Carriers.Select(carrier => carrier.Label)),
                 ["Linked commanders"] = string.Join("; ", preview.Commanders.Keys),
-            }.Concat(SummaryDetails(preview));
+            }
+                .Concat(
+                    preview.NexusName is { } name
+                        ? new[]
+                        {
+                            KeyValuePair.Create("Nexus", name),
+                            KeyValuePair.Create(
+                                "Included systems",
+                                string.Join("; ", preview.NexusSystems!.Select(system => system.System.Name))
+                            ),
+                        }
+                        : []
+                )
+                .Concat(SummaryDetails(preview));
         }
         ColonizationProject project = preview.Project;
         return new Dictionary<string, string>

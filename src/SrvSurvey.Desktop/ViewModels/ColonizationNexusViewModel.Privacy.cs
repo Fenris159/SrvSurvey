@@ -42,7 +42,13 @@ public sealed partial class ColonizationNexusViewModel
             StatusMessage = saved.Open ? "Nexus is now public." : "Nexus is now private.";
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or IOException or OperationCanceledException or OverflowException)
+            when (exception
+                    is HttpRequestException
+                        or IOException
+                        or InvalidDataException
+                        or OperationCanceledException
+                        or OverflowException
+            )
         {
             if (IsCurrent(cancel))
             {
