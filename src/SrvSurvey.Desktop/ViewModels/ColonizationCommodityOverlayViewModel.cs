@@ -20,6 +20,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
     private HashSet<string> pendingCommodities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private bool hasMarketSinceDocking;
     private bool isSquadronBankOpen;
+    private bool isDockedAtCarrier;
     private bool showSatisfiedGroups;
     private string platformStatus = string.Empty;
     private bool isClickThrough;
@@ -246,7 +247,8 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         ColonizationCommodityPlan updatedPlan,
         EliteStatus? updatedStatus,
         bool updatedHasMarketSinceDocking = false,
-        bool updatedIsSquadronBankOpen = false
+        bool updatedIsSquadronBankOpen = false,
+        bool updatedIsDockedAtCarrier = false
     )
     {
         ArgumentNullException.ThrowIfNull(updatedPlan);
@@ -254,6 +256,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         status = updatedStatus;
         hasMarketSinceDocking = updatedHasMarketSinceDocking;
         isSquadronBankOpen = updatedIsSquadronBankOpen;
+        isDockedAtCarrier = updatedIsDockedAtCarrier;
         RebuildGroups();
         RaisePlanProperties();
     }
@@ -305,11 +308,23 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(InputMode));
     }
 
-    /// <summary>Builds category rows using coverage rules and omits collapsed groups when requested.</summary>
+    private bool UseNeedsOrder => preferences.SortNeedsAscendingAtCarriers && isDockedAtCarrier;
+
+    /// <summary>Uses a single NEED-sorted list at carriers, otherwise retaining the market categories.</summary>
+    private IEnumerable<IGrouping<string, ColonizationCommodityPlanRow>> GetRowGroups()
+    {
+        return UseNeedsOrder
+            ? Plan
+                .Rows.OrderBy(row => row.Needed)
+                .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(_ => "Commodities")
+            : Plan.Rows.GroupBy(row => row.Category);
+    }
+
+    /// <summary>Builds rows and keeps the single carrier NEED list expanded regardless of category collapse settings.</summary>
     private void RebuildGroups()
     {
-        ColonizationCommodityGroupViewModel[] updatedGroups = Plan
-            .Rows.GroupBy(row => row.Category)
+        ColonizationCommodityGroupViewModel[] updatedGroups = GetRowGroups()
             .Select(group =>
             {
                 ColonizationCommodityOverlayRowViewModel[] rows = group
@@ -330,7 +345,8 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                     )
                     .ToArray();
                 bool canCollapse =
-                    !Plan.IsAtConstructionSite
+                    !UseNeedsOrder
+                    && !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
                     && Plan.FleetCarriers.Count > 0
                     && rows.All(row => row.FleetCarriersHaveEnough && row.InShip == 0);

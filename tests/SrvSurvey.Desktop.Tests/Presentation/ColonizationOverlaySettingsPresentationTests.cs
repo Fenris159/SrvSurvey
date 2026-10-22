@@ -103,6 +103,20 @@ public sealed class ColonizationOverlaySettingsPresentationTests
             Assert.Contains(nameof(ColonizationViewModel.HideCollapsedCommodityGroups), notifications);
             Assert.Contains("hidden", main.Colonization.CommodityOverlay.CollapseModeText);
             var store = new ColonizationSettingsStore(main.AppDataPaths.UiSettingsPath);
+            CheckBox sortNeeds = view.FindControl<CheckBox>("SortNeedsAscendingAtCarriersCheckBox")!;
+            Assert.Contains(view.FindControl<Border>("ColonizationShoppingCard")!, sortNeeds.GetLogicalAncestors());
+            Assert.Equal(
+                "Sort needs from least to greatest while docked at FCs",
+                Assert.IsType<TextBlock>(sortNeeds.Content).Text
+            );
+            Assert.Equal(false, sortNeeds.IsChecked);
+            sortNeeds.IsChecked = true;
+            Assert.True(main.Colonization.SortNeedsAscendingAtCarriers);
+            Assert.True(main.Colonization.CommodityOverlay.Preferences.SortNeedsAscendingAtCarriers);
+            Assert.True(store.LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
+            main.Colonization.SortNeedsAscendingAtCarriers = false;
+            Assert.Equal(false, sortNeeds.IsChecked);
+            Assert.False(store.LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
             Assert.True(store.LoadOverlayPreferences().HideCollapsedGroups);
             hideBadges.IsChecked = true;
             Assert.True(main.Colonization.HideCommodityRowBadges);

@@ -287,6 +287,13 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         set => SaveOverlayPreferences(overlayPreferences with { UseCompactScrollingCommoditiesList = value });
     }
 
+    /// <summary>Persists carrier-only ascending NEED sorting and immediately refreshes the overlay.</summary>
+    public bool SortNeedsAscendingAtCarriers
+    {
+        get => overlayPreferences.SortNeedsAscendingAtCarriers;
+        set => SaveOverlayPreferences(overlayPreferences with { SortNeedsAscendingAtCarriers = value });
+    }
+
     public bool HighlightAlmostCoveredFleetCarrierLoads
     {
         get => overlayPreferences.HighlightAlmostCoveredFleetCarrierLoads;
@@ -1634,7 +1641,12 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             ),
             latestStatus,
             hasMarketSinceDocking,
-            construction.IsSquadronBankOpen
+            construction.IsSquadronBankOpen,
+            updatedIsDockedAtCarrier: dock is not null
+                && (
+                    string.Equals(dock.StationType, FleetCarrierStationType, StringComparison.OrdinalIgnoreCase)
+                    || ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock)
+                )
         );
     }
 

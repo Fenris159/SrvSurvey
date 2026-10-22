@@ -27289,6 +27289,14 @@
       "translation": "Sortieren nach"
     },
     {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "Sortieren Sie die Anforderungen vom kleinsten zum größten, während Sie an FCs angedockt sind"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "SortNeedsAscendingAtCarriers"
+    },
+    {
       "source": "Sorted by {0} {1}",
       "translation": "Sortiert nach {0} {1}"
     },
@@ -66853,6 +66861,14 @@
     {
       "source": "Sort by",
       "translation": "Ordenar por"
+    },
+    {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "Ordene las necesidades de menor a mayor mientras está atracado en FC"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "OrdenarNecesidadesAscendenteEnCarriers"
     },
     {
       "source": "Sorted by {0} {1}",
@@ -106421,6 +106437,14 @@
       "translation": "Trier par"
     },
     {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "Trier les besoins du moins au plus grand lorsqu'il est amarré aux FC"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "TrierBesoinsAscendingAtCarriers"
+    },
+    {
       "source": "Sorted by {0} {1}",
       "translation": "Trié par {0} {1}"
     },
@@ -145985,6 +146009,14 @@
     {
       "source": "Sort by",
       "translation": "Ordenar por"
+    },
+    {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "Classifique as necessidades da menor para a maior enquanto estiver ancorado em FCs"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "ClassificarNecessidadesAscendenteAtCarriers"
     },
     {
       "source": "Sorted by {0} {1}",
@@ -185553,6 +185585,14 @@
       "translation": "Сортировать по"
     },
     {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "Сортировка потребностей от меньшего к большему при пристыковке к FC."
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "SortNeedsAcendingAtCarriers"
+    },
+    {
       "source": "Sorted by {0} {1}",
       "translation": "Сортировка: {0} {1}"
     },
@@ -225119,6 +225159,14 @@
       "translation": "排序方式"
     },
     {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "停靠在 FC 时，按需求从少到多排序"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "按运营商的需求升序排序"
+    },
+    {
       "source": "Sorted by {0} {1}",
       "translation": "按 {0} {1} 排序"
     },
@@ -264683,6 +264731,14 @@
     {
       "source": "Sort by",
       "translation": "* SORT BY >>>!"
+    },
+    {
+      "source": "Sort needs from least to greatest while docked at FCs",
+      "translation": "* SORT NEEDS FROM LEAST TO GREATEST WHILE DOCKED AT FCS >>>!"
+    },
+    {
+      "source": "SortNeedsAscendingAtCarriers",
+      "translation": "* SORTNEEDSASCENDINGATCARRIERS >>>!"
     },
     {
       "source": "Sorted by {0} {1}",

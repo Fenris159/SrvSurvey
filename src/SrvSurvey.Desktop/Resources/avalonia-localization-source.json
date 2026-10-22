@@ -13041,7 +13041,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
     "Text": "Commodities (up to 5)",
@@ -54743,6 +54743,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Sort needs from least to greatest while docked at FCs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "SortNeedsAscendingAtCarriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
   },
   {
     "Text": "Sorted by {0} {1}",
