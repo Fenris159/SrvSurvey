@@ -14808,6 +14808,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerInputBackend.cs"
   },
   {
+    "Text": "Could not publish the update rollback outcome: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
+  },
+  {
     "Text": "Could not read SDL gamepad events: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -40136,6 +40144,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Pending overlay reference recovery data is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ImportedOverlayReferenceRecovery.cs"
+  },
+  {
     "Text": "PendingCargoAdjustments",
     "IsFormat": false,
     "SourceKinds": [
@@ -53720,6 +53736,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "Skipped {0} other-commander journal(s).",

@@ -42,14 +42,17 @@ public sealed class LegacyProfileLocatorTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void XpLayoutsWithoutPlayerFilesRemainCrossPlatformSources(bool selectParent)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void XpLayoutsWithoutPlayerFilesRemainCrossPlatformSources(bool selectParent, bool nested)
     {
         string root = Path.Combine(temporaryDirectory, "xp-layout-only");
         string data = Path.Combine(root, "cross-platform");
-        Directory.CreateDirectory(data);
-        File.WriteAllText(Path.Combine(data, "plotters.json"), "{}");
+        string layout = nested ? Path.Combine(data, "commanders", "F123", "overlays") : data;
+        Directory.CreateDirectory(layout);
+        File.WriteAllText(Path.Combine(layout, "plotters.json"), "{}");
         string ui = Path.Combine(root, "cross-platform-ui.json");
         File.WriteAllText(ui, "{}");
         ProfileImportSource source = LegacyProfileLocator.ResolveManualSelectionSource(selectParent ? root : data);

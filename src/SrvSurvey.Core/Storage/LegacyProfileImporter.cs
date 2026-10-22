@@ -494,7 +494,7 @@ public sealed class LegacyProfileImporter
         return inventory with { Entries = copied, RelativeDirectories = actual.RelativeDirectories };
     }
 
-    private static async Task<bool> CopyEntryAsync(
+    internal static async Task<bool> CopyEntryAsync(
         string sourceRoot,
         string destinationRoot,
         ProfileInventoryEntry entry,
@@ -544,7 +544,22 @@ public sealed class LegacyProfileImporter
         catch (Exception exception) when (warnings is not null && ProfileInventory.IsRecoverable(exception))
         {
             warnings.Add(new ProfileImportWarning(entry.RelativePath, exception.Message));
-            File.Delete(destinationPath);
+            try
+            {
+                if (File.Exists(destinationPath))
+                {
+                    File.Delete(destinationPath);
+                }
+            }
+            catch (Exception cleanupException) when (ProfileInventory.IsRecoverable(cleanupException))
+            {
+                warnings.Add(
+                    new ProfileImportWarning(
+                        entry.RelativePath,
+                        "Partial-file cleanup failed: " + cleanupException.Message
+                    )
+                );
+            }
             return false;
         }
     }

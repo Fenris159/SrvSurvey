@@ -65,7 +65,9 @@ public static class ProfileJsonMerge
         {
             AddCodexEntries(firsts, existing, preserveValid: false);
         }
-        AddCodexEntries(firsts, incoming, preserveValid: true);
+        var normalizedIncoming = new JsonObject();
+        AddCodexEntries(normalizedIncoming, incoming, preserveValid: false);
+        AddCodexEntries(firsts, normalizedIncoming, preserveValid: true);
         return firsts;
     }
 

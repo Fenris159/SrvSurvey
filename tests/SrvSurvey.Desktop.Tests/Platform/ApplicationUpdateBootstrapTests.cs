@@ -11,6 +11,76 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         $"SrvSurvey-update-bootstrap-tests-{Guid.NewGuid():N}"
     );
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RolledBackHelpersRestartEvenWhenCallerOrOutcomePublicationFails(bool writeFails)
+    {
+        using var caller = new CancellationTokenSource();
+        if (!writeFails)
+        {
+            await caller.CancelAsync();
+        }
+        bool restarted = false;
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.RolledBack,
+            token =>
+            {
+                token.ThrowIfCancellationRequested();
+                if (writeFails)
+                {
+                    throw new IOException("outcome unavailable");
+                }
+                return Task.CompletedTask;
+            },
+            () => restarted = true,
+            TimeSpan.FromSeconds(1),
+            caller.Token
+        );
+        Assert.Equal(3, code);
+        Assert.True(restarted);
+    }
+
+    [Fact]
+    public async Task RollbackOutcomeTimeoutStillRestartsTheOriginalInstallation()
+    {
+        bool restarted = false;
+        var blocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.RolledBack,
+            _ => blocked.Task,
+            () => restarted = true,
+            TimeSpan.FromMilliseconds(10),
+            CancellationToken.None
+        );
+        Assert.Equal(3, code);
+        Assert.True(restarted);
+        blocked.SetResult();
+    }
+
+    [Fact]
+    public async Task InstalledHelperPublishesWithItsCallerTokenWithoutRestarting()
+    {
+        using var caller = new CancellationTokenSource();
+        bool published = false;
+        bool restarted = false;
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.Installed,
+            token =>
+            {
+                Assert.Equal(caller.Token, token);
+                published = true;
+                return Task.CompletedTask;
+            },
+            () => restarted = true,
+            TimeSpan.FromSeconds(1),
+            caller.Token
+        );
+        Assert.Equal(0, code);
+        Assert.True(published);
+        Assert.False(restarted);
+    }
+
     [Fact]
     public void ConfirmationModeStripsOnlyInternalArguments()
     {

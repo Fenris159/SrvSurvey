@@ -1,3 +1,4 @@
+using System.Collections;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Storage;
@@ -96,7 +97,9 @@ public sealed record AppDataPaths(
         IReadOnlyList<LegacyProfileCandidate> candidates = platform switch
         {
             DesktopPlatform.Windows => BuildWindowsLegacyCandidates(roaming, local),
-            DesktopPlatform.Linux => BuildLinuxLegacyCandidates(home, getEnvironmentVariable),
+            DesktopPlatform.Linux => new DeferredLegacyCandidates(() =>
+                BuildLinuxLegacyCandidates(home, getEnvironmentVariable)
+            ),
             _ => [],
         };
 
@@ -106,6 +109,19 @@ public sealed record AppDataPaths(
             NormalizeRoot(platform, cacheDirectory),
             candidates
         );
+    }
+
+    private sealed class DeferredLegacyCandidates(Func<LegacyProfileCandidate[]> discover)
+        : IReadOnlyList<LegacyProfileCandidate>
+    {
+        private readonly Lazy<LegacyProfileCandidate[]> candidates = new(discover);
+        public int Count => candidates.Value.Length;
+        public LegacyProfileCandidate this[int index] => candidates.Value[index];
+
+        public IEnumerator<LegacyProfileCandidate> GetEnumerator() =>
+            ((IEnumerable<LegacyProfileCandidate>)candidates.Value).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private static LegacyProfileCandidate[] BuildLinuxLegacyCandidates(

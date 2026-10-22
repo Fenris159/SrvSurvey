@@ -19,7 +19,8 @@ installing an update.
   versioned and Microsoft Store folders, common Wine/Proton and launcher
   prefixes, and external Steam libraries. Manual folder selection remains
   available. Duplicate Wine aliases and unrelated game folders no longer hide
-  or duplicate detected profiles.
+  or duplicate detected profiles. Prefix scanning runs when import needs it,
+  avoiding repeated discovery during normal path resolution.
 - **Preserve XP settings and overlay positions.** Original SrvSurvey desktop
   and VR positions are backed up and skipped. XP imports keep current settings
   and positions while filling missing panels, including layout-only profiles

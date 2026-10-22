@@ -509,32 +509,67 @@ internal static class ApplicationUpdateBootstrap
             }
         }
 
-        await store
-            .WriteOutcomeAsync(
-                plan,
-                new ReleaseInstallationOutcome(
-                    status,
-                    plan.Preparation.RequestId,
-                    plan.Preparation.Version,
-                    DateTimeOffset.UtcNow,
-                    result.BackupDirectory,
-                    result.FailedDirectory,
-                    result.Error
-                ),
+        return await CompleteHelperOutcomeAsync(
+                result.Status,
+                token =>
+                    store.WriteOutcomeAsync(
+                        plan,
+                        new ReleaseInstallationOutcome(
+                            status,
+                            plan.Preparation.RequestId,
+                            plan.Preparation.Version,
+                            DateTimeOffset.UtcNow,
+                            result.BackupDirectory,
+                            result.FailedDirectory,
+                            result.Error
+                        ),
+                        token
+                    ),
+                () =>
+                    StartWithoutConfirmation(
+                        Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint),
+                        plan.Preparation.StartupArguments,
+                        plan.PlanPath
+                    ),
+                TimeSpan.FromSeconds(10),
                 cancellationToken
             )
             .ConfigureAwait(false);
-        if (result.Status == ReleaseInstallationStatus.RolledBack)
-        {
-            StartWithoutConfirmation(
-                Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint),
-                plan.Preparation.StartupArguments,
-                plan.PlanPath
-            );
-            return 3;
-        }
+    }
 
-        return 0;
+    internal static async Task<int> CompleteHelperOutcomeAsync(
+        ReleaseInstallationStatus status,
+        Func<CancellationToken, Task> publishOutcome,
+        Action restart,
+        TimeSpan recoveryTimeout,
+        CancellationToken cancellationToken
+    )
+    {
+        if (status != ReleaseInstallationStatus.RolledBack)
+        {
+            await publishOutcome(cancellationToken).ConfigureAwait(false);
+            return 0;
+        }
+        using var recovery = new CancellationTokenSource(recoveryTimeout);
+        try
+        {
+            await publishOutcome(recovery.Token).WaitAsync(recovery.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or OperationCanceledException
+            )
+        {
+            Trace.TraceWarning("Could not publish the update rollback outcome: {0}", exception.Message);
+        }
+        finally
+        {
+            restart();
+        }
+        return 3;
     }
 
     private static async Task HandleHelperFailureAsync(

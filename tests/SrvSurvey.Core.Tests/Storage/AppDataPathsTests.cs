@@ -81,6 +81,54 @@ public sealed class AppDataPathsTests
     }
 
     [Fact]
+    public void PrefixDiscoveryIsDeferredAndReusedForAllCandidateAccess()
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-lazy-discovery-{Guid.NewGuid():N}");
+        string prefix = Path.Combine(home, "prefix");
+        string profile = Path.Combine(
+            prefix,
+            "drive_c",
+            "users",
+            "cmdr",
+            "AppData",
+            "Roaming",
+            "SrvSurvey",
+            "SrvSurvey",
+            "1.1.0.0"
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        int discoveries = 0;
+        try
+        {
+            var paths = AppDataPaths.Resolve(
+                DesktopPlatform.Linux,
+                home,
+                string.Empty,
+                string.Empty,
+                key =>
+                {
+                    if (key != "WINEPREFIX")
+                    {
+                        return null;
+                    }
+                    discoveries++;
+                    return prefix;
+                }
+            );
+            Assert.Equal(0, discoveries);
+            Assert.Equal(4, paths.LegacyProfileCandidates.Count);
+            Assert.Equal(profile, paths.LegacyProfileCandidates[0].Path);
+            Assert.Equal(4, paths.LegacyProfileCandidates.ToArray().Length);
+            Assert.Equal(1, discoveries);
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
+    [Fact]
     public void WineCompatibilityAliasesAppearAsOneProfile()
     {
         if (OperatingSystem.IsWindows())

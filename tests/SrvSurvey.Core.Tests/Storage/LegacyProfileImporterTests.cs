@@ -134,6 +134,55 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Assert.Null(LegacyProfileImporter.GetRecoveryReportPath(destination));
     }
 
+    [Theory]
+    [InlineData("2026-10-20T12:00:00_-1_-1", "2022-10-20T12:00:00_42_1")]
+    [InlineData("2022-10-20T12:00:00_42_1", "2026-10-20T12:00:00_-1_-1")]
+    [InlineData("2022-10-20T12:00:00_42_1", "broken")]
+    public async Task IncomingAliasesKeepTheSourcesLastValidReadableDiscovery(string first, string last)
+    {
+        string source = Path.Combine(temporaryDirectory, "competing-alias-source");
+        string destination = Path.Combine(temporaryDirectory, "competing-alias-destination");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "F123-codex.json"),
+            JsonSerializer.Serialize(
+                new { codexFirsts = new Dictionary<string, string> { ["02310101"] = first, ["2310101"] = last } }
+            )
+        );
+        await File.WriteAllTextAsync(Path.Combine(destination, "F123-codex.json"), "{\"codexFirsts\":{}}");
+        CommanderCodexFirst expected = (await new CommanderCodexStore(source).LoadAsync("F123", null)).Data!.Firsts[
+            2310101
+        ];
+        await new LegacyProfileImporter().ImportAsync(source, destination, Path.Combine(temporaryDirectory, "backups"));
+        CommanderCodexFirst actual = (await new CommanderCodexStore(destination).LoadAsync("F123", null)).Data!.Firsts[
+            2310101
+        ];
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public async Task AnUnavailableCopyParentSkipsTheEntryWithoutLosingItsWarning()
+    {
+        string source = Path.Combine(temporaryDirectory, "copy-source");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        ProfileInventory inventory = await ProfileInventory.CreateAsync(source);
+        string blocked = Path.Combine(temporaryDirectory, "blocked-copy-parent");
+        await File.WriteAllTextAsync(blocked, "not a directory");
+        var warnings = new List<ProfileImportWarning>();
+        bool copied = await LegacyProfileImporter.CopyEntryAsync(
+            source,
+            blocked,
+            Assert.Single(inventory.Entries),
+            false,
+            warnings,
+            CancellationToken.None
+        );
+        Assert.False(copied);
+        Assert.Equal("F123-live.json", Assert.Single(warnings).RelativePath);
+    }
+
     [Fact]
     public async Task WhollyLockedProfilesReportTheInaccessibleFileInsteadOfAnEmptyProfile()
     {

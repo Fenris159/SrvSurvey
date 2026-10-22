@@ -79,7 +79,12 @@ claim list. New commanders, modes, and files are added.
 
 Current UI preferences also win, while missing compatible preferences can be
 filled. Original overlay positions remain excluded. XP layout imports can fill
-missing panels while preserving current commander positions. Unsupported file
+missing panels while preserving current commander positions. Shared and nested
+commander layouts use the pre-import snapshot to identify new panels. Source
+placement provenance is retained until display references are assigned, so a
+failed adjacent-settings import can be repaired by retrying without rescaling
+panels the user has moved manually. Damaged optional overrides are skipped
+individually without rolling back other recovered panels. Unsupported file
 collisions retain the current file; both originals remain recoverable.
 
 Source scanning and capture recover readable files individually. Locked,

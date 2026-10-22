@@ -2288,7 +2288,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             "overlays",
             () =>
             {
-                importedOverlayNames = CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
+                importedOverlayNames = CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result, warnings);
                 return Task.CompletedTask;
             },
             warnings
@@ -2309,6 +2309,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                         importedOverlayNames,
                         CancellationToken.None
                     );
+                    new ImportedOverlayReferenceRecovery(AppDataPaths).Complete(result, warnings);
                     settingsStatus = settings.Imported
                         ? "Imported the current-format UI settings."
                         : "The current-format UI settings did not require import.";
@@ -2342,7 +2343,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             "overlays",
             () =>
             {
-                CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
+                CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result, warnings);
                 return Task.CompletedTask;
             },
             warnings

@@ -169,8 +169,33 @@ public static class LegacyProfileLocator
         }
     }
 
-    private static bool ContainsCrossPlatformData(string path) =>
-        ContainsProfileData(path) || File.Exists(Path.Combine(path, "plotters.json"));
+    private static bool ContainsCrossPlatformData(string path)
+    {
+        if (ContainsProfileData(path) || File.Exists(Path.Combine(path, "plotters.json")))
+        {
+            return true;
+        }
+        string commanders = Path.Combine(path, "commanders");
+        try
+        {
+            return Directory.Exists(commanders)
+                && Directory
+                    .EnumerateDirectories(
+                        commanders,
+                        "*",
+                        new EnumerationOptions
+                        {
+                            IgnoreInaccessible = true,
+                            AttributesToSkip = FileAttributes.ReparsePoint,
+                        }
+                    )
+                    .Any(commander => File.Exists(Path.Combine(commander, "overlays", "plotters.json")));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     private static string GetPhysicalDirectory(string path)
     {

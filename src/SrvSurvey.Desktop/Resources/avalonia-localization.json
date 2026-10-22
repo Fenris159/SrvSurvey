@@ -7385,6 +7385,10 @@
       "translation": "{0} konnte nicht geöffnet werden: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Das Update-Rollback-Ergebnis konnte nicht veröffentlicht werden: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "SDL-Gamepad-Ereignisse konnten nicht gelesen werden: {0}"
     },
@@ -20005,6 +20009,10 @@
       "translation": "Ausstehende Live-Speicherung ist fehlgeschlagen; Entwurf beibehalten"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "Die ausstehenden Overlay-Referenzwiederherstellungsdaten sind ungültig."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ausstehende Frachtanpassungen"
     },
@@ -26779,6 +26787,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "Inkompatible Overlay-Einstellungen wurden übersprungen; andere geborgene Platten wurden aufbewahrt. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -46419,6 +46431,10 @@
       "translation": "No se pudo abrir {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "No se pudo publicar el resultado de la reversión de la actualización: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "No se pudieron leer los eventos del gamepad SDL: {0}"
     },
@@ -59039,6 +59055,10 @@
       "translation": "Falló el guardado en vivo pendiente; borrador retenido"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "Los datos de recuperación de referencia de superposición pendientes no son válidos."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes De Carga Pendientes"
     },
@@ -65813,6 +65833,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SaltarAnillosForDss"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "Se omitieron configuraciones de superposición incompatibles; Se conservaron otros paneles recuperados. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -85453,6 +85477,10 @@
       "translation": "Impossible d'ouvrir {0} : {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Impossible de publier le résultat de l'annulation de la mise à jour : {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Impossible de lire les événements de la manette de jeu SDL : {0}"
     },
@@ -98073,6 +98101,10 @@
       "translation": "La sauvegarde en direct en attente a échoué ; projet retenu"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "Les données de récupération de référence de superposition en attente ne sont pas valides."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustements de fret en attente"
     },
@@ -104847,6 +104879,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SauterAnneauxForDss"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "Paramètres de superposition incompatibles ignorés ; d'autres panneaux récupérés ont été conservés. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -124487,6 +124523,10 @@
       "translation": "Não foi possível abrir {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Não foi possível publicar o resultado da reversão da atualização: {0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Não foi possível ler os eventos do gamepad SDL: {0}"
     },
@@ -137107,6 +137147,10 @@
       "translation": "Falha no salvamento ao vivo pendente; rascunho retido"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "Os dados de recuperação de referência de sobreposição pendentes são inválidos."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes de carga pendentes"
     },
@@ -143881,6 +143925,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "Configurações de sobreposição incompatíveis ignoradas; outros painéis recuperados foram mantidos. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -163521,6 +163569,10 @@
       "translation": "Не удалось открыть {0}: {1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "Не удалось опубликовать результат отката обновления: {0}."
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "Не удалось прочитать события SDL геймпада: {0}."
     },
@@ -176141,6 +176193,10 @@
       "translation": "Ожидание живого сохранения не удалось; проект сохранен"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "Ожидаемые данные восстановления ссылки наложения недействительны."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ожидается корректировка груза"
     },
@@ -182915,6 +182971,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "SkipRingsForDss"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "Пропущены несовместимые настройки наложения; другие восстановленные панели сохранились. {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -202555,6 +202615,10 @@
       "translation": "无法打开 {0}：{1}"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "无法发布更新回滚结果：{0}"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "无法读取 SDL 游戏手柄事件：{0}"
     },
@@ -215175,6 +215239,10 @@
       "translation": "等待实时保存失败；保留草稿"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "挂起的覆盖参考恢复数据无效。"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "待定货物调整"
     },
@@ -221949,6 +222017,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "福特斯跳过环"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "跳过不兼容的覆盖设置；其他回收的面板被保留。 {0}"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
@@ -241589,6 +241661,10 @@
       "translation": "* COULD NOT OPEN {0}: {1} >>>!"
     },
     {
+      "source": "Could not publish the update rollback outcome: {0}",
+      "translation": "* COULD NOT PUBLISH THE UPDATE ROLLBACK OUTCOME: {0} >>>!"
+    },
+    {
       "source": "Could not read SDL gamepad events: {0}",
       "translation": "* COULD NOT READ SDL GAMEPAD EVENTS: {0} >>>!"
     },
@@ -254209,6 +254285,10 @@
       "translation": "* PENDING LIVE SAVE FAILED; DRAFT RETAINED >>>!"
     },
     {
+      "source": "Pending overlay reference recovery data is invalid.",
+      "translation": "* PENDING OVERLAY REFERENCE RECOVERY DATA IS INVALID. >>>!"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "* PENDINGCARGOADJUSTMENTS >>>!"
     },
@@ -260983,6 +261063,10 @@
     {
       "source": "SkipRingsForDss",
       "translation": "* SKIPRINGSFORDSS >>>!"
+    },
+    {
+      "source": "Skipped incompatible overlay settings; other recovered panels were kept. {0}",
+      "translation": "* SKIPPED INCOMPATIBLE OVERLAY SETTINGS; OTHER RECOVERED PANELS WERE KEPT. {0} >>>!"
     },
     {
       "source": "Skipped {0} other-commander journal(s).",
