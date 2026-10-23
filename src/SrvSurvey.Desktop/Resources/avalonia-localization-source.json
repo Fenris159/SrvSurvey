@@ -18206,6 +18206,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Drag to change width. Height follows content.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml.cs"
+  },
+  {
     "Text": "Drag to resize this overlay panel",
     "IsFormat": false,
     "SourceKinds": [
@@ -31769,6 +31777,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/JumpRouteProgressControl.cs"
+  },
+  {
+    "Text": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/JumpRouteProgressControl.cs"
+  },
+  {
     "Text": "M 0,{0} H {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -35417,6 +35441,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Next jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
   },
   {
     "Text": "Next or active direction",
@@ -51205,6 +51237,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Scoopable star",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
   },
   {
     "Text": "Score",

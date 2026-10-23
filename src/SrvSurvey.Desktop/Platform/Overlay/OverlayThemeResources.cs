@@ -15,6 +15,12 @@ internal interface IOverlayPanelSizeAware
     void SetPanelSizeOverrideActive(bool active);
 }
 
+/// <summary>A panel whose saved width applies while visible content determines its height.</summary>
+internal interface IOverlayPanelSizePolicy
+{
+    bool AutoHeight { get; }
+}
+
 public static class OverlayThemeResources
 {
     internal const string OverlayTypographyClass = "srv-overlay";
@@ -1005,7 +1011,12 @@ public static class OverlayThemeResources
                 Override(Control.MaxWidthProperty, double.PositiveInfinity);
                 Override(Control.MaxHeightProperty, double.PositiveInfinity);
                 Override(Control.HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Stretch);
-                Override(Control.VerticalAlignmentProperty, Avalonia.Layout.VerticalAlignment.Stretch);
+                Override(
+                    Control.VerticalAlignmentProperty,
+                    content is IOverlayPanelSizePolicy { AutoHeight: true }
+                        ? Avalonia.Layout.VerticalAlignment.Top
+                        : Avalonia.Layout.VerticalAlignment.Stretch
+                );
                 if (content is ContentControl)
                 {
                     Override(
@@ -1018,7 +1029,10 @@ public static class OverlayThemeResources
                     );
                 }
                 Override(Control.WidthProperty, size.Width);
-                Override(Control.HeightProperty, size.Height);
+                if (content is not IOverlayPanelSizePolicy { AutoHeight: true })
+                {
+                    Override(Control.HeightProperty, size.Height);
+                }
             }
             content.InvalidateMeasure();
         }

@@ -245,6 +245,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public IReadOnlyList<JumpInfoRouteLeg> RouteLegs => routePlan?.Legs ?? [];
 
+    public bool HasRouteLegs => RouteLegs.Count > 0;
+
     public int TargetLegIndex => routePlan?.TargetLegIndex ?? -1;
 
     public string DiscoveryText => CreateDiscoveryText(summary);
@@ -318,6 +320,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(JumpProgress));
         OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(RouteLegs));
+        OnPropertyChanged(nameof(HasRouteLegs));
         OnPropertyChanged(nameof(TargetLegIndex));
         OnPropertyChanged(nameof(DiscoveryText));
         OnPropertyChanged(nameof(HasDiscoveryText));
@@ -850,6 +853,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(RouteLegs));
         OnPropertyChanged(nameof(TargetLegIndex));
+        OnPropertyChanged(nameof(HasRouteLegs));
         RaiseVisibilityProperties();
     }
 

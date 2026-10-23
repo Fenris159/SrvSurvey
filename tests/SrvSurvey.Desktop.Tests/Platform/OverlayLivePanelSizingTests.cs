@@ -657,7 +657,9 @@ public sealed class OverlayLivePanelSizingTests
             Assert.Equal(originalSize, presentation.Bounds.Size);
             layout.SetPlacement(plotter, layout.Placements[plotter] with { SizeOverride = new(820, 600) });
             using WriteableBitmap? resizedFrame = host.CaptureRenderedFrame();
-            Assert.Equal(new Size(820, 600), presentation.Bounds.Size);
+            Assert.Equal(820, presentation.Bounds.Width);
+            Assert.True(presentation.Bounds.Height < 600);
+            Size resizedSize = presentation.Bounds.Size;
             host.Remove(presenter);
             presenter.Content = null;
             // Complete the old host's queued layout before attaching to another window.
@@ -665,7 +667,7 @@ public sealed class OverlayLivePanelSizingTests
             window.Content = content;
             using WriteableBitmap? restoredFrame = window.CaptureRenderedFrame();
             Assert.Equal(headerSize, header.FontSize);
-            Assert.Equal(new Size(820, 600), presentation.Bounds.Size);
+            Assert.Equal(resizedSize, presentation.Bounds.Size);
         }
         finally
         {

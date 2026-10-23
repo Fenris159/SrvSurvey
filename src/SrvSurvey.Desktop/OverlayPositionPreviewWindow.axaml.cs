@@ -366,6 +366,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         runtimePresentation = presentation;
+        if (presentation is IOverlayPanelSizePolicy { AutoHeight: true })
+        {
+            PanelResizeThumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+            ToolTip.SetTip(PanelResizeThumb, "Drag to change width. Height follows content.");
+        }
         presentation.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
         presentation.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
         // Host the real shared template inside the yellow body; the folder
@@ -481,7 +486,9 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         resizeWidth = Math.Max(minimumResizeWidth, resizeWidth + eventArgs.Vector.X);
-        resizeHeight = Math.Max(minimumResizeHeight, resizeHeight + eventArgs.Vector.Y);
+        resizeHeight = runtimePresentation is IOverlayPanelSizePolicy { AutoHeight: true }
+            ? Math.Max(1, runtimePresentation.Bounds.Height)
+            : Math.Max(minimumResizeHeight, resizeHeight + eventArgs.Vector.Y);
         var updated = new OverlayPanelSize(Math.Round(resizeWidth), Math.Round(resizeHeight));
         ConfigureSize(updated);
         PanelSizeChanged?.Invoke(this, new OverlayPreviewSizeChangedEventArgs(Definition.Name, updated));
