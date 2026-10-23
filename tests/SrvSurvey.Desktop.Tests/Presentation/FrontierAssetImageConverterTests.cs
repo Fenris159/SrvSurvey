@@ -4,6 +4,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed class FrontierAssetImageConverterTests
 {
+    /// <summary>Verifies bundled assets decode successfully and power emblems retain transparent pixels.</summary>
     [Theory]
     [InlineData("Assets/Frontier/Ranks/exploration/rank-9.png")]
     [InlineData("Assets/Frontier/Ranks/powerplay/rank-1.png")]
@@ -42,6 +43,7 @@ public sealed class FrontierAssetImageConverterTests
         }
     }
 
+    /// <summary>Verifies that commander-image bindings resolve dynamic bundled assets through the runtime converter.</summary>
     [Fact]
     public void DynamicFrontierImagesUseTheRuntimeAssetConverter()
     {
@@ -51,6 +53,7 @@ public sealed class FrontierAssetImageConverterTests
         Assert.Equal(5, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
     }
 
+    /// <summary>Counts converter bindings in markup to detect newly unconverted dynamic asset paths.</summary>
     private static int CountOccurrences(string value, string search)
     {
         int count = 0;

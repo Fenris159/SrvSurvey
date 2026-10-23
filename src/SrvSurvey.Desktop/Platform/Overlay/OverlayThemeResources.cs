@@ -12,6 +12,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal interface IOverlayPanelSizeAware
 {
+    /// <summary>Marks editor sizing overrides so content-height panels continue to honor their requested width.</summary>
     void SetPanelSizeOverrideActive(bool active);
 }
 
@@ -988,6 +989,7 @@ public static class OverlayThemeResources
         private readonly List<IDisposable> overrides = [];
         private OverlayPanelSize? appliedSize;
 
+        /// <summary>Applies configured panel dimensions while allowing content-height presentations to measure their own height.</summary>
         public void ApplySize(OverlayPanelSize? size)
         {
             if (size == appliedSize)

@@ -1,10 +1,12 @@
 using System.Globalization;
 using SrvSurvey.Core.Frontier;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.Platform.Frontier;
 
 public sealed partial class FrontierAccountService
 {
+    /// <summary>Recovers bounded daily Powerplay history while preserving cached status and renewed credentials on failure.</summary>
     private async Task<(FrontierAccountSnapshot Snapshot, FrontierAccountCredential Credential)> RefreshPowerplayAsync(
         FrontierAccountSnapshot snapshot,
         FrontierAccountSnapshot? previous,
@@ -30,7 +32,7 @@ public sealed partial class FrontierAccountService
         // A new connection can recover a recent session even when no local journal is available.
         // Recover a complete baseline before replaying daily deltas in chronological order.
         // Keep only the small status snapshot; never persist the remote travel journal.
-        var journals = new List<string>();
+        var journals = new List<IReadOnlyList<JournalEventEnvelope>>();
         for (int daysAgo = 0; daysAgo < 7; daysAgo++)
         {
             string date = now.AddDays(-daysAgo).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
@@ -50,8 +52,8 @@ public sealed partial class FrontierAccountService
 
             if (response.Content is { } content)
             {
-                journals.Add(content);
-                if (HasCompletePowerplayBaseline(content, commander.FrontierId))
+                journals.Insert(0, FrontierPowerplayJournal.ReadPowerplayEvents(content, commander.FrontierId));
+                if (FrontierPowerplayJournal.HasRecoveryBaseline(journals.SelectMany(day => day)))
                 {
                     break;
                 }
@@ -67,19 +69,12 @@ public sealed partial class FrontierAccountService
         }
 
         FrontierPowerplaySnapshot? powerplay = snapshot.Powerplay;
-        journals.Reverse();
-        foreach (string journal in journals)
+        foreach (JournalEventEnvelope entry in journals.SelectMany(day => day))
         {
-            powerplay = FrontierPowerplayJournal.Parse(journal, commander.FrontierId, powerplay) ?? powerplay;
+            powerplay = FrontierPowerplayJournal.Apply(powerplay, entry);
         }
         snapshot = snapshot with { Powerplay = powerplay };
 
         return (snapshot with { PowerplayFetchedAt = now, PowerplayError = string.Empty }, credential);
-    }
-
-    private static bool HasCompletePowerplayBaseline(string journal, string frontierId)
-    {
-        FrontierPowerplaySnapshot? baseline = FrontierPowerplayJournal.Parse(journal, frontierId);
-        return baseline is { Power.Length: 0 } or { Rank: not null, Merits: not null };
     }
 }

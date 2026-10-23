@@ -19,6 +19,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class JumpRouteProgressPresentationTests
 {
+    /// <summary>Verifies route pixels distinguish the active jump and scoopable stars in a monochrome theme.</summary>
     [AvaloniaTheory]
     [InlineData(0)]
     [InlineData(1)]
@@ -108,8 +109,10 @@ public sealed class JumpRouteProgressPresentationTests
         }
     }
 
+    /// <summary>Identifies pixels belonging to the dedicated active-jump highlight.</summary>
     private static bool IsCyan(Color color) => color.B > 200 && color.B - color.R > 60;
 
+    /// <summary>Reads a rendered pixel in control coordinates for route-marker assertions.</summary>
     private static Color Pixel(WriteableBitmap bitmap, Point point)
     {
         using ILockedFramebuffer buffer = bitmap.Lock();
@@ -122,6 +125,7 @@ public sealed class JumpRouteProgressPresentationTests
             : Color.FromArgb(value[3], value[2], value[1], value[0]);
     }
 
+    /// <summary>Saves an optional rendered route screenshot when an evidence output path is configured.</summary>
     private static void SaveEvidence(WriteableBitmap frame, int targetIndex)
     {
         string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");

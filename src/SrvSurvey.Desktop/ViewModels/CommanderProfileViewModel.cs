@@ -437,6 +437,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<FrontierRankCardViewModel> Ranks => rankRows ??= BuildRanks();
 
+    /// <summary>Combines Frontier ranks with the applicable remote or newer local Powerplay membership.</summary>
     private List<FrontierRankCardViewModel> BuildRanks()
     {
         if (Snapshot is null)
@@ -484,6 +485,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return rows;
     }
 
+    /// <summary>Builds a power-colored membership card with numeric status, badge tier, and translatable source.</summary>
     private static FrontierRankCardViewModel BuildPowerplayRankCard(
         FrontierPowerplaySnapshot powerplay,
         bool fromLocalJournal
@@ -511,7 +513,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         );
     }
 
-    public void UpdateJournalPowerplay(string? frontierId, IReadOnlyList<JournalEventEnvelope> journalEvents)
+    /// <summary>Applies identity-attributed local Powerplay events and invalidates the displayed rank cards when status changes.</summary>
+    public void UpdateJournalPowerplay(
+        string? frontierId,
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? initialCommanderName = null
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (detectedFrontierId is null)
@@ -534,7 +541,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             current,
             journalEvents,
             detectedFrontierId,
-            NormalizeFrontierId(frontierId)
+            NormalizeFrontierId(frontierId),
+            initialCommanderName
         );
 
         if (ReferenceEquals(current, seed) || current == journalPowerplay)
@@ -1528,6 +1536,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return item.Bonus > 0 ? $"Reward: {FormatCredits(item.Bonus)}" : string.Empty;
     }
 
+    /// <summary>Switches the detected commander and clears local projections before activating the selected Frontier account.</summary>
     public async Task SetCommanderContextAsync(
         string? frontierId,
         string? commanderName,
@@ -3325,6 +3334,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
     }
 
+    /// <summary>Converts journal identifiers into readable labels by separating words and normalizing case.</summary>
     private static string HumanizeIdentifier(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -3354,6 +3364,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         );
     }
 
+    /// <summary>Resolves a pledged power's bundled emblem and color with a generic fallback for unknown powers.</summary>
     private static (string Path, string? Tint) PowerplayIcon(string power)
     {
         string name = PowerplayPlan.InaraPowerName(
@@ -3371,6 +3382,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         );
     }
 
+    /// <summary>Selects a bundled legacy rank or faction asset within its supported rating range.</summary>
     private static string RankIcon(string key, int level)
     {
         int rank = Math.Clamp(level + 1, 1, 9);

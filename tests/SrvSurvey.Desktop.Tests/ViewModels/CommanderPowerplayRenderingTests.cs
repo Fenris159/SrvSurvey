@@ -16,6 +16,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Verifies power colors, the corner badge, numeric rank, and merits in the rendered commander card.</summary>
     [AvaloniaTheory]
     [InlineData("Aisling Duval", "#0099FF")]
     [InlineData("Archon Delaine", "#FF0000")]

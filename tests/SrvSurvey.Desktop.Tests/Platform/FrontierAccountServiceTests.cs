@@ -8,6 +8,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed partial class FrontierAccountServiceTests
 {
+    /// <summary>Verifies that the OAuth audience supports Frontier, Steam, and Epic accounts.</summary>
     [Fact]
     public async Task AuthorizationRequestAllowsFrontierSteamAndEpicAccounts()
     {
@@ -134,6 +135,7 @@ public sealed partial class FrontierAccountServiceTests
         Assert.True(store.Document.AuthorizationResults["state-b"].Succeeded);
     }
 
+    /// <summary>Verifies that concurrent commander connections retain independent pending OAuth states.</summary>
     [Fact]
     public async Task ConcurrentCommanderConnectionsKeepTheirAuthorizationStatesSeparate()
     {
@@ -275,6 +277,7 @@ public sealed partial class FrontierAccountServiceTests
         Assert.NotNull(store.Document.PendingAuthorization);
     }
 
+    /// <summary>Verifies CAPI section ordering, the bounded journal search, and refresh cooldown enforcement.</summary>
     [Fact]
     public async Task RefreshFetchesProfileAndCarrierThenEnforcesCooldown()
     {
@@ -403,6 +406,7 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that a confirmed absence of carrier data is cached without repeated optional requests.</summary>
     [Fact]
     public async Task CarrierAbsenceIsCachedForFifteenMinutes()
     {

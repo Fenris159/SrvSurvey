@@ -17,6 +17,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class JumpInfoOverlaySizingTests
 {
+    /// <summary>Verifies that editor resizing changes Next Jump width while content determines its height.</summary>
     [AvaloniaFact]
     public void EditorResizeChangesWidthWhileHeightFollowsContent()
     {
@@ -47,6 +48,7 @@ public sealed class JumpInfoOverlaySizingTests
         }
     }
 
+    /// <summary>Verifies that changing destination details resizes panel height without changing its configured width.</summary>
     [AvaloniaTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -114,6 +116,7 @@ public sealed class JumpInfoOverlaySizingTests
         }
     }
 
+    /// <summary>Installs destination-detail fixtures for overlay measurement and resizing checks.</summary>
     private static void InstallDetails(JumpInfoOverlayViewModel model, int count)
     {
         model.JumpInfo.InstallEditorPreview(
@@ -144,6 +147,7 @@ public sealed class JumpInfoOverlaySizingTests
         );
     }
 
+    /// <summary>Verifies that a long lookup warning wraps within both live and editor-preview widths.</summary>
     [AvaloniaFact]
     public void LongLookupWarningCannotExpandRuntimeOrPreviewWidth()
     {

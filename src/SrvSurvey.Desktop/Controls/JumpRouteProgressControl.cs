@@ -45,6 +45,7 @@ public sealed class JumpRouteProgressControl : Control
         IBrush?
     >(nameof(ScoopableBrush));
 
+    /// <summary>Registers route properties that invalidate the progress drawing when the route changes.</summary>
     static JumpRouteProgressControl()
     {
         AffectsRender<JumpRouteProgressControl>(
@@ -107,6 +108,7 @@ public sealed class JumpRouteProgressControl : Control
         set => SetValue(ScoopableBrushProperty, value);
     }
 
+    /// <summary>Draws route legs and star markers within the control's available bounds.</summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -145,6 +147,7 @@ public sealed class JumpRouteProgressControl : Control
         DrawMarkers(context, legs, endpoints, layout, brushes);
     }
 
+    /// <summary>Draws one route leg with its active, completed, or boosted presentation.</summary>
     private double DrawLeg(
         DrawingContext context,
         IReadOnlyList<JumpInfoRouteLeg> legs,
@@ -174,6 +177,7 @@ public sealed class JumpRouteProgressControl : Control
         return nextX;
     }
 
+    /// <summary>Draws route stars and keeps the active destination marker visible above adjacent legs.</summary>
     private void DrawMarkers(
         DrawingContext context,
         IReadOnlyList<JumpInfoRouteLeg> legs,
@@ -212,6 +216,7 @@ public sealed class JumpRouteProgressControl : Control
         }
     }
 
+    /// <summary>Selects a leg's themed brush while preserving the dedicated active-jump highlight.</summary>
     private IBrush ResolveLegBrush(int index, LegBrushes brushes)
     {
         if (index == TargetLegIndex)
@@ -234,6 +239,7 @@ public sealed class JumpRouteProgressControl : Control
         public required IBrush Brush { get; init; }
     }
 
+    /// <summary>Draws solid or dashed route segments using the requested stroke width.</summary>
     private void DrawLegSegments(LegSegmentDraw draw)
     {
         if (draw.Leg.RequiresBoost)
@@ -260,6 +266,7 @@ public sealed class JumpRouteProgressControl : Control
         );
     }
 
+    /// <summary>Draws the marker identifying a boosted route leg.</summary>
     private void DrawLegMarker(
         DrawingContext context,
         JumpInfoRouteLeg leg,

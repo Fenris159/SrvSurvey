@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed partial class FrontierAccountServiceTests
 {
+    /// <summary>Verifies remote journal recovery, snapshot persistence, and the successful-check polling interval.</summary>
     [Fact]
     public async Task RefreshImportsPowerplayFromFrontierDailyJournalAndCachesIt()
     {
@@ -68,6 +69,138 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that a confirmed new membership survives unavailable older history without inheriting old numeric values.</summary>
+    [Theory]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayJoin","Power":"A. Lavigny-Duval"}""", false)]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayDefect","ToPower":"Aisling Duval"}""", false)]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayDefect","ToPower":"Aisling Duval"}""", true)]
+    public async Task MembershipResetNeedsNoOlderJournalEvenWhenNumericStatusIsUnknown(
+        string transition,
+        bool fullSnapshotFirst
+    )
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-powerplay-baseline-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var now = DateTimeOffset.Parse(
+            "2026-10-23T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var prior = new FrontierPowerplaySnapshot("A. Lavigny-Duval", 160, 1000, now.AddDays(-2));
+        await new FrontierProfileCacheStore(Path.Combine(root, "cache.json")).SaveAsync(
+            FrontierCapiSnapshotParser.Parse("""{"commander":{"name":"Fenris"}}""", null, now.AddDays(-2)) with
+            {
+                Powerplay = prior,
+                PowerplayFetchedAt = now.AddDays(-2),
+            }
+        );
+        var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+        int journalRequests = 0;
+        try
+        {
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                {
+                    now = now.AddSeconds(1);
+                    string path = request.RequestUri!.AbsolutePath;
+                    if (path.StartsWith("/journal/", StringComparison.Ordinal))
+                    {
+                        journalRequests++;
+                        string prefix = """{"event":"Commander","FID":"F123"}""" + "\n";
+                        if (fullSnapshotFirst)
+                        {
+                            prefix +=
+                                """{"timestamp":"2026-10-23T02:00:00Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1000}"""
+                                + "\n";
+                        }
+                        return journalRequests == 1
+                            ? Json(HttpStatusCode.OK, prefix + transition)
+                            : Json(HttpStatusCode.ServiceUnavailable, "older history unavailable");
+                    }
+                    return path == "/profile"
+                        ? Json(HttpStatusCode.OK, """{"commander":{"name":"Fenris"}}""")
+                        : Json(HttpStatusCode.NoContent, "");
+                },
+                root,
+                () => now
+            );
+
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
+
+            Assert.NotNull(snapshot.Powerplay);
+            Assert.Equal(
+                transition.Contains("PowerplayJoin", StringComparison.Ordinal) ? prior.Power : "Aisling Duval",
+                snapshot.Powerplay.Power
+            );
+            Assert.Null(snapshot.Powerplay.Rank);
+            Assert.Null(snapshot.Powerplay.Merits);
+            Assert.Empty(snapshot.PowerplayError);
+            Assert.Equal(1, journalRequests);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    /// <summary>Verifies that a completed empty search cannot exclude older dates from later recovery.</summary>
+    [Fact]
+    public async Task AnEarlierEmptySearchDoesNotExcludeOlderDatesFromTheNextRecovery()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-powerplay-retry-{Guid.NewGuid():N}");
+        var now = DateTimeOffset.Parse(
+            "2026-10-23T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+        bool available = false;
+        var requests = new List<string>();
+        try
+        {
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                {
+                    now = now.AddSeconds(1);
+                    string path = request.RequestUri!.AbsolutePath;
+                    requests.Add(path);
+                    return path switch
+                    {
+                        "/profile" => Json(HttpStatusCode.OK, """{"commander":{"name":"Fenris"}}"""),
+                        "/journal/2026/10/20" when available => Json(
+                            HttpStatusCode.OK,
+                            """
+                            {"event":"Commander","FID":"F123"}
+                            {"timestamp":"2026-10-20T03:00:00Z","event":"Powerplay","Power":"Aisling Duval","Rank":80,"Merits":500}
+                            """
+                        ),
+                        _ => Json(HttpStatusCode.NoContent, ""),
+                    };
+                },
+                root,
+                () => now
+            );
+
+            Assert.Null((await service.RefreshAsync()).Powerplay);
+            Assert.Equal(7, requests.Count(path => path.StartsWith("/journal/", StringComparison.Ordinal)));
+            now = now.AddMinutes(16);
+            available = true;
+            requests.Clear();
+
+            FrontierAccountSnapshot recovered = await service.RefreshAsync();
+
+            Assert.NotNull(recovered.Powerplay);
+            Assert.Equal(80, recovered.Powerplay.Rank);
+            Assert.Contains("/journal/2026/10/20", requests);
+            Assert.Equal(4, requests.Count(path => path.StartsWith("/journal/", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    /// <summary>Verifies that an explicit unpledged event stops recovery without extra historical requests.</summary>
     [Theory]
     [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayLeave"}""")]
     [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"Powerplay","Power":""}""")]
@@ -116,6 +249,7 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that cross-day rank and merit deltas form a complete status before older history is requested.</summary>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -166,13 +300,7 @@ public sealed partial class FrontierAccountServiceTests
                             {"timestamp":"2026-10-22T03:00:00Z","event":"PowerplayRank","Power":"A. Lavigny-Duval","Rank":161}
                             """
                         ),
-                        "/journal/2026/10/21" => Json(
-                            HttpStatusCode.OK,
-                            """
-                            {"event":"Commander","FID":"F123"}
-                            {"timestamp":"2026-10-21T01:00:00Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":100}
-                            """
-                        ),
+                        "/journal/2026/10/21" => Json(HttpStatusCode.ServiceUnavailable, "older history unavailable"),
                         _ => Json(HttpStatusCode.NoContent, ""),
                     };
                 },
@@ -186,7 +314,7 @@ public sealed partial class FrontierAccountServiceTests
             Assert.Equal(161, snapshot.Powerplay.Rank);
             Assert.Equal(250, snapshot.Powerplay.Merits);
             Assert.Equal(prior.Power, snapshot.Powerplay.Power);
-            Assert.Equal(3, requests.Count(path => path.StartsWith("/journal/", StringComparison.Ordinal)));
+            Assert.Equal(2, requests.Count(path => path.StartsWith("/journal/", StringComparison.Ordinal)));
             Assert.Equal(
                 snapshot.Powerplay,
                 (await new FrontierProfileCacheStore(Path.Combine(root, "cache.json")).LoadAsync())!.Powerplay
@@ -198,6 +326,7 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that an incomplete journal response cannot overwrite credentials renewed after an authorization challenge.</summary>
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
     [InlineData(HttpStatusCode.UnprocessableEntity)]
@@ -250,6 +379,7 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that incomplete or unavailable history preserves the previously cached membership.</summary>
     [Theory]
     [InlineData(HttpStatusCode.PartialContent)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]

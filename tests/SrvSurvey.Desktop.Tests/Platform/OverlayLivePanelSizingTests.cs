@@ -609,6 +609,7 @@ public sealed class OverlayLivePanelSizingTests
         Assert.Equal(600, panel.Height);
     }
 
+    /// <summary>Verifies natural panel height and retained typography when Next Jump moves between overlay hosts.</summary>
     [AvaloniaFact]
     public void NextJumpKeepsItsSizeAndTypographyWhenMovedToACombinedHost()
     {

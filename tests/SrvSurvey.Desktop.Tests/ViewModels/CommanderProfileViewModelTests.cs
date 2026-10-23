@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Verifies every supported pledge resolves to its bundled emblem and assigned color.</summary>
     [Theory]
     [InlineData("Aisling Duval", "aisling-duval", "#0099FF")]
     [InlineData("Archon Delaine", "archon-delaine", "#FF0000")]
@@ -48,6 +49,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.Equal(color, card.IconTint);
     }
 
+    /// <summary>Verifies badge boundaries through large ranks while retaining the actual numeric rank.</summary>
     [Theory]
     [InlineData(0, 1)]
     [InlineData(19, 1)]
@@ -89,6 +91,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.Equal(string.Empty, card.MeritsText);
     }
 
+    /// <summary>Verifies modern membership replaces legacy zero and follows newer account-matched journal updates.</summary>
     [Fact]
     public async Task ModernPowerplayCardReplacesLegacyZeroAndTracksNewerLocalEvents()
     {
@@ -171,6 +174,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.False(card.HasMerits);
     }
 
+    /// <summary>Verifies unknown status stays distinct from unpledged and local updates remain scoped to the active commander.</summary>
     [Fact]
     public async Task PowerplayUnknownDoesNotClaimUnpledgedAndLocalStatusIsScopedToTheJournalAccount()
     {
@@ -222,6 +226,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
     }
 
+    /// <summary>Verifies a linked-commander catalog warning remains visible after account activation.</summary>
     [Fact]
     public async Task CatalogWarningSurvivesCommanderActivation()
     {
@@ -1516,6 +1521,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Verifies startup loads linked carrier data without opening the card or repeating a completed refresh.</summary>
     [Fact]
     public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
     {
@@ -1563,6 +1569,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Verifies the production journal projection supplies reputation and Powerplay status without carrier data.</summary>
     [AvaloniaFact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
@@ -1575,7 +1582,7 @@ public sealed partial class CommanderProfileViewModelTests
                 Path.Combine(journals, "Journal.2026-07-29T120000.01.log"),
                 """
                 {"timestamp":"2026-07-29T12:00:00Z","event":"Commander","Name":"Fenris","FID":"F123"}
-                {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
+                {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","Odyssey":true}
                 {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
                 {"timestamp":"2026-07-29T12:05:01Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1260198}
 
@@ -1629,6 +1636,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Verifies the production journal projection updates and clears the displayed carrier jump as events arrive.</summary>
     [AvaloniaFact]
     public async Task MainJournalRefreshUpdatesAndClearsCurrentCarrierJumpImmediately()
     {

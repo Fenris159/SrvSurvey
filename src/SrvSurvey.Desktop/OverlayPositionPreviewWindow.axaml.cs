@@ -351,6 +351,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
     }
 
+    /// <summary>Builds a live overlay presentation for the editor and adopts its sizing policy.</summary>
     private bool TryUseRuntimePresentation()
     {
         if (

@@ -72,11 +72,16 @@ Powerplay 2.0 status comes from timestamped `Powerplay`, `PowerplayRank`,
 `commander.rank.power` value is not a reliable pledge indicator: a zero is shown
 as **Unavailable**, rather than **None**, when journal status is unknown.
 Refreshing Frontier data checks the remote daily `/journal/YYYY/MM/DD` endpoint,
-starting today and looking back at most seven UTC days until a complete
-matching-account status or the cached snapshot's UTC day is reached. Daily
-changes are then replayed oldest first, so a new merits update cannot skip an
-intervening rank update. This check runs at most once per 15 minutes after a
-successful check. Only the small pledge/rank/merits snapshot is cached; remote
+starting today and looking back at most seven UTC days until the collected
+records define the current membership or the cached snapshot's UTC day is
+reached. Matching rank and merit deltas can establish status across days; a
+valid join, defection, or leave also supplies a baseline without older history.
+Relevant Powerplay records are replayed oldest first, so a new merits update
+cannot skip an intervening rank update. Unrelated travel records are discarded
+as each response is read rather than retaining entire daily journals. This check runs at most once per 15 minutes after a
+successful check. The last-check timestamp does not shorten future lookbacks,
+so older dates remain eligible after an empty search. Only the small
+pledge/rank/merits snapshot is cached; remote
 travel journals are not stored or imported into travel history.
 
 The rank card shows the pledged power, numeric rank (including ranks above 100),
@@ -94,7 +99,9 @@ the actual numeric rank. Unknown ranks and unpledged commanders show no small
 badge. Merits appear on the next line.
 Newer local journal events update the active commander's card during play.
 Identity boundaries and the commander active before each batch attribute pending
-events correctly when journal files rotate. Joining or defecting starts a new
+events correctly when journal files rotate. A FID-less LoadGame retains the
+confirmed identity of the same commander; a different name requires a new
+confirmation. Joining or defecting starts a new
 membership without inheriting an earlier membership's rank or merits, even when
 the power name matches. Blank powers in rank, merit, join, and defect events are
 ignored; an explicit unpledged full snapshot or leave event remains valid.

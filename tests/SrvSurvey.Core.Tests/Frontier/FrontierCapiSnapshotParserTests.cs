@@ -4,6 +4,7 @@ namespace SrvSurvey.Core.Tests.Frontier;
 
 public sealed class FrontierCapiSnapshotParserTests
 {
+    /// <summary>Verifies that a legacy zero Powerplay rating is distinct from an explicit unpledged journal status.</summary>
     [Fact]
     public void LegacyZeroPowerRatingDoesNotClaimTheCommanderIsUnpledged()
     {

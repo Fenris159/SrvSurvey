@@ -843,6 +843,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    /// <summary>Notifies route, progress, legend, and command bindings after the active plan changes.</summary>
     private void RaisePlanProperties()
     {
         OnPropertyChanged(nameof(TargetName));

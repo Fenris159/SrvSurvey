@@ -421,6 +421,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
             .ConfigureAwait(false);
     }
 
+    /// <summary>Refreshes the selected commander's CAPI sections and Powerplay status while retaining updated credentials.</summary>
     private async Task<FrontierAccountSnapshot> RefreshAsync(
         FrontierCommanderIdentity commander,
         bool forceCarrierRefresh,
@@ -589,6 +590,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         return snapshot;
     }
 
+    /// <summary>Converts optional endpoint failures into section errors while recovering any renewed credentials.</summary>
     private async Task<OptionalCapiResponse> TryRequestOptionalCapiAsync(
         string endpoint,
         FrontierCommanderIdentity commander,
@@ -633,6 +635,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         }
     }
 
+    /// <summary>Applies optional carrier data while keeping cached state scoped to the same commander.</summary>
     private static FrontierAccountSnapshot ApplyCarrierResult(
         FrontierAccountSnapshot snapshot,
         FrontierAccountSnapshot? previous,
@@ -1105,6 +1108,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         }
     }
 
+    /// <summary>Requests bounded complete CAPI content, renewing credentials once when authorization requires it.</summary>
     private async Task<CapiResponse> RequestCapiAsync(
         string endpoint,
         FrontierCommanderIdentity commander,

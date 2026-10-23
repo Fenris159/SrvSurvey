@@ -7,6 +7,7 @@ public sealed partial class JumpInfoOverlayPresentation : UserControl, IOverlayP
 {
     public bool AutoHeight => true;
 
+    /// <summary>Loads the Next Jump presentation and enables height measurement from its current content.</summary>
     public JumpInfoOverlayPresentation()
     {
         InitializeComponent();

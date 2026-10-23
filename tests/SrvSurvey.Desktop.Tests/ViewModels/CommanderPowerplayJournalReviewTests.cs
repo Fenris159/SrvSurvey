@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Verifies that numeric rank, merits, and timestamped journal-source text use complete translation formats.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -52,6 +53,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Verifies real journal rotation cannot apply a previous commander's pending event to the newly selected commander.</summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
