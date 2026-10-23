@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -113,13 +114,19 @@ public sealed class JournalDirectoryMonitor
 
     public string? CurrentJournalPath => currentJournalPath;
 
+    public IReadOnlyList<string> JournalDirectories => Array.AsReadOnly(journalDirectories);
+
+    /// <summary>Serializes journal and companion reads so consumed cursors and emitted batches cannot race.</summary>
     public async Task<JournalMonitorUpdate> PollAsync(CancellationToken cancellationToken = default)
     {
         await pollLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         JournalMonitorUpdate update;
         try
         {
-            update = await PollLockedAsync(cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            // Once journal bytes are consumed, return the complete batch even if its caller is stopping.
+            // The projection must be able to persist those observations before honoring cancellation.
+            update = await PollLockedAsync(CancellationToken.None).ConfigureAwait(false);
         }
         finally
         {
@@ -529,6 +536,11 @@ public sealed class JournalDirectoryMonitor
             && journalEvent is not null
         )
         {
+            journalEvent = journalEvent with
+            {
+                SourceRecordIdentity =
+                    Path.GetFileName(currentJournalPath) + ":" + byteOffset.ToString(CultureInfo.InvariantCulture),
+            };
             if (journalEvent.EventName != "SendText" || RememberTextEvent(byteOffset, journalEvent.RawJson))
             {
                 events.Add(journalEvent);

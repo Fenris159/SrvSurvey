@@ -99,7 +99,7 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     }
 
     [Fact]
-    public void OverlaySettingsOfferMasterAvailabilityAndOptionalShortcuts()
+    public void OverlaySettingsOfferPanelAvailabilityAndSharedShortcuts()
     {
         string path = Path.Combine(
             FindRepositoryRoot(),
@@ -124,7 +124,8 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         Assert.Contains("{Binding IsEnabled, Mode=TwoWay}", values);
         Assert.Contains("{Binding Shortcut.Chord, Mode=TwoWay}", values);
         Assert.Contains("Click, then hold shortcut keys", values);
-        Assert.Contains(values, value => value.Contains("no default binding", StringComparison.Ordinal));
+        Assert.Contains("{Binding CollapseCoveredColonyGroupsBinding.Chord, Mode=TwoWay}", values);
+        Assert.Contains("{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}", values);
 
         XElement outerStack = settings.Root!.Elements().Single(element => element.Name.LocalName == "StackPanel");
         XElement lastCard = outerStack.Elements().Last(element => element.Name.LocalName == "Border");

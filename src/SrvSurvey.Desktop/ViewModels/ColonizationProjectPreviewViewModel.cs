@@ -7,7 +7,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// <summary>Owns one read-only build preview, refreshing only while its popout is open and retaining the last snapshot after a failed refresh.</summary>
 public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly IRavenColonialProjectReader reader;
+    private readonly IRavenColonialProjectReader? reader;
     private readonly Func<IReadOnlyList<string>> buildIds;
     private readonly bool isCombined;
     private readonly Func<bool> isEnabled;
@@ -30,6 +30,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
     )
         : this(reader, () => [buildId], false, isEnabled, currentShipCapacity, delayAsync)
     {
+        ArgumentNullException.ThrowIfNull(reader);
         ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
     }
 
@@ -41,11 +42,14 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         Func<int>? currentShipCapacity = null,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null
     )
-        : this(reader, buildIds, true, isEnabled, currentShipCapacity, delayAsync) { }
+        : this(reader, buildIds, true, isEnabled, currentShipCapacity, delayAsync)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+    }
 
     /// <summary>Shares consent, timing, and cancellation between individual and combined reports.</summary>
     private ColonizationProjectPreviewViewModel(
-        IRavenColonialProjectReader reader,
+        IRavenColonialProjectReader? reader,
         Func<IReadOnlyList<string>> buildIds,
         bool isCombined,
         Func<bool>? isEnabled,
@@ -53,7 +57,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         Func<TimeSpan, CancellationToken, Task>? delayAsync
     )
     {
-        this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        this.reader = reader;
         this.buildIds = buildIds ?? throw new ArgumentNullException(nameof(buildIds));
         this.isCombined = isCombined;
         this.isEnabled = isEnabled ?? (() => true);
@@ -72,14 +76,26 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         {
             if (isCombined)
             {
-                return "Combined Build Report";
+                return nexusSnapshot is null
+                    ? "Combined Build Report"
+                    : $"{nexusSnapshot.Name} · {selectedSystem.Label}";
             }
             return Snapshot?.Project.BuildName is { } name && !string.IsNullOrWhiteSpace(name) ? name : "Build preview";
         }
     }
     public string WindowTitle => $"{Title} - Raven build preview";
     public bool IsCombinedReport => isCombined;
-    public string DetailsTitle => isCombined ? "Build projects in this report" : "Project details";
+    public string DetailsTitle
+    {
+        get
+        {
+            if (readNexus is not null)
+            {
+                return "Systems and builds in this report";
+            }
+            return isCombined ? "Build projects in this report" : "Project details";
+        }
+    }
     public string EffectsDescription =>
         isCombined
             ? "Combined reference effects, grouped by system. Actual system totals depend on other sites and links."
@@ -91,6 +107,10 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
             if (Snapshot is not { } snapshot)
             {
                 return "Loading live Raven build data…";
+            }
+            if (readNexus is not null)
+            {
+                return "Reported Nexus needs, including planned facilities";
             }
             return isCombined
                 ? CombinedSubtitle(snapshot)
@@ -197,6 +217,11 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         Notify();
         try
         {
+            if (readNexus is not null)
+            {
+                await RefreshNexusReportAsync();
+                return;
+            }
             IReadOnlyList<ColonizationProjectPreviewData> data = await ReadReportDataAsync();
             if (disposed)
             {
@@ -233,7 +258,12 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
             // A closed preview must not report its cancellation as a service failure.
         }
         catch (Exception exception)
-            when (exception is HttpRequestException or IOException or InvalidDataException or OperationCanceledException
+            when (exception
+                    is HttpRequestException
+                        or IOException
+                        or InvalidDataException
+                        or OverflowException
+                        or OperationCanceledException
             )
         {
             refreshFailed = true;
@@ -255,7 +285,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         foreach (string id in buildIds().Distinct(StringComparer.OrdinalIgnoreCase))
         {
             lifetimeToken.ThrowIfCancellationRequested();
-            ColonizationProjectPreviewData? build = await reader.ReadProjectPreviewAsync(id, lifetimeToken);
+            ColonizationProjectPreviewData? build = await reader!.ReadProjectPreviewAsync(id, lifetimeToken);
             if (build is null)
             {
                 if (isCombined)
@@ -338,6 +368,16 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
                 .Concat([KeyValuePair.Create("Notes", snapshot.Project.Notes ?? string.Empty)])
                 .Select(pair => new PreviewField(pair.Key, pair.Value))
                 .ToArray();
+        if (snapshot.NexusSystems is { } nexusSystems)
+        {
+            Details = nexusSystems
+                .Select(system => new PreviewField(
+                    system.System.Name,
+                    $"{system.Cargo.Remaining:N0} t remaining · {system.System.Builds.Count:N0} linked build projects"
+                ))
+                .Concat(Details)
+                .ToArray();
+        }
         if (snapshot.IsCombined)
         {
             EffectGroups = ColonizationProjectCsvExporter

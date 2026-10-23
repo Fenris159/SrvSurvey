@@ -71,6 +71,9 @@ public enum GlobalInputAction
     ToggleMineMapVisibility,
     ToggleSurfaceMiningSurveyVisibility,
     ToggleVrOverlayInteraction,
+    ToggleExplorationPoisVisibility,
+    ToggleColonizationWishListVisibility,
+    ToggleCollapseCoveredColonyGroups,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -192,6 +195,13 @@ public static class GlobalInputActionCatalog
             "Collapse construction data",
             "Collapse or expand construction commodity rows.",
             "ALT SHIFT S"
+        ),
+        Define(
+            GlobalInputAction.ToggleCollapseCoveredColonyGroups,
+            "toggleCollapseCoveredColonyGroups",
+            "Toggle cargo group collapse",
+            "Collapse or expand cargo groups covered by linked Fleet Carriers.",
+            "ALT CTRL SHIFT X"
         ),
         Define(
             GlobalInputAction.NextWindow,
@@ -359,6 +369,12 @@ public static class GlobalInputActionCatalog
             "PlotBuildCommodities"
         ),
         DefineOverlayToggle(
+            GlobalInputAction.ToggleColonizationWishListVisibility,
+            "toggleColonizationWishListVisibility",
+            "Colonization ShoppingList",
+            "PlotColonizationWishList"
+        ),
+        DefineOverlayToggle(
             GlobalInputAction.ToggleFlightWarningVisibility,
             "toggleFlightWarningVisibility",
             "Flight warning",
@@ -393,6 +409,12 @@ public static class GlobalInputActionCatalog
             "toggleGalaxyMapSystemIntelligenceVisibility",
             "Galaxy Map system intelligence",
             "PlotGalMap"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleExplorationPoisVisibility,
+            "toggleExplorationPoisVisibility",
+            "Exploration POIs",
+            "PlotExplorationPois"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleSurfaceSurveyVisibility,

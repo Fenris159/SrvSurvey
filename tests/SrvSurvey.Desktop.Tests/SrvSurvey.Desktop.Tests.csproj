@@ -28,6 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SrvSurvey.Desktop\SrvSurvey.Desktop.csproj" />
     <None Update="Fixtures\MiningHud\*.gz" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Fixtures\Spansh\*.json" Link="Fixtures\Spansh\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

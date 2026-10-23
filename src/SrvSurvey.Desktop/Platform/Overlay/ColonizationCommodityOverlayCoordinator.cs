@@ -5,12 +5,16 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotBuildCommodities";
     private readonly ColonizationCommodityOverlayViewModel viewModel;
     private readonly HostedOverlayWindow hostedWindow;
-    private bool manualShow;
+    private readonly OverlayWindowRegistry windowRegistry;
+    private bool userEnabled;
+    private bool? manualVisibility;
     private bool isSuppressed;
     private bool disposed;
 
+    /// <summary>Hosts shopping cargo and distinguishes automatic eligibility from explicit session activation.</summary>
     public ColonizationCommodityOverlayCoordinator(
         ColonizationCommodityOverlayViewModel viewModel,
         OverlayPresentationSession presentationSession
@@ -18,9 +22,11 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         ArgumentNullException.ThrowIfNull(presentationSession);
+        windowRegistry = presentationSession.WindowRegistry;
+        userEnabled = windowRegistry.IsUserVisible(PlotterName);
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
-                "PlotBuildCommodities",
+                PlotterName,
                 _ => new ColonizationCommodityOverlayWindow(viewModel),
                 (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize),
                 viewModel.ApplyPreparation
@@ -30,6 +36,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             }
         );
         this.viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        windowRegistry.Changed += OnRegistryChanged;
         SynchronizeIntent();
     }
 
@@ -37,23 +44,18 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
     public bool IsSuppressed => isSuppressed;
 
-    public void ToggleVisibility()
+    /// <summary>Toggles actual visibility, pins manual display, and keeps the availability checkbox in parity.</summary>
+    public void ToggleVisibility(OverlayPanelVisibilityViewModel availability)
     {
+        ArgumentNullException.ThrowIfNull(availability);
         if (disposed)
         {
             return;
         }
 
-        if (IsVisible)
-        {
-            manualShow = false;
-            isSuppressed = true;
-        }
-        else
-        {
-            manualShow = true;
-            isSuppressed = false;
-        }
+        bool show = !IsVisible;
+        availability.Panels.Single(panel => panel.PlotterName == PlotterName).IsEnabled = show;
+        manualVisibility = show;
 
         SynchronizeIntent();
     }
@@ -69,6 +71,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         SynchronizeIntent();
     }
 
+    /// <summary>Releases visibility subscriptions and the hosted panel once.</summary>
     public void Dispose()
     {
         if (disposed)
@@ -78,17 +81,38 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
         disposed = true;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        windowRegistry.Changed -= OnRegistryChanged;
         hostedWindow.Dispose();
     }
 
+    /// <summary>Reconciles game-state eligibility after the commodity plan or display settings change.</summary>
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow))
+        if (
+            eventArgs.PropertyName
+            is nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow)
+                or nameof(ColonizationCommodityOverlayViewModel.CanShowManually)
+        )
         {
             SynchronizeIntent();
         }
     }
 
+    /// <summary>Pins the panel when availability is explicitly enabled and clears that request when disabled.</summary>
+    private void OnRegistryChanged(object? sender, EventArgs eventArgs)
+    {
+        bool enabled = windowRegistry.IsUserVisible(PlotterName);
+        if (enabled == userEnabled)
+        {
+            return;
+        }
+
+        userEnabled = enabled;
+        manualVisibility = enabled ? true : null;
+        SynchronizeIntent();
+    }
+
+    /// <summary>Combines persistent manual display with automatic context and global overlay suppression.</summary>
     private void SynchronizeIntent()
     {
         if (disposed)
@@ -96,7 +120,12 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             return;
         }
 
-        bool wantsWindow = manualShow && viewModel.CanShowManually || viewModel.ShouldAutoShow;
+        bool wantsWindow = manualVisibility switch
+        {
+            true => viewModel.CanShowManually,
+            false => false,
+            null => viewModel.ShouldAutoShow,
+        };
         hostedWindow.Reconcile(!isSuppressed && wantsWindow);
     }
 }

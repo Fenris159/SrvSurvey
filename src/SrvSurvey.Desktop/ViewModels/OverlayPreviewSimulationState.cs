@@ -38,6 +38,7 @@ internal static class OverlayPreviewSimulationProjector
     private const string StratumTectonicas = "Stratum Tectonicas";
     private const string BacteriumAcies = "Bacterium Acies";
 
+    /// <summary>Projects representative session evidence into the requested overlay preview model.</summary>
     public static OverlayPreviewSimulationContent Project(
         OverlayLayoutDefinition definition,
         OverlayPreviewSimulationState state
@@ -90,6 +91,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Atmosphere", "Thin carbon dioxide"),
                 Row("Signals", "6 biological | 2 geological"),
                 Row("Materials", "Polonium 0.8% | Tellurium 1.2%")
+            ),
+            "PlotColonizationWishList" => Content(
+                "ShoppingList",
+                "Planned purchases (tonnes)",
+                "2 STATIONS | 4 COMMODITIES",
+                Row("Abraham Lincoln · Sol", "Steel: 200 | Polymers: 120"),
+                Row("Galileo · Sol", "Steel: 100 | Water: 180")
             ),
             "PlotBuildCommodities" => Content(
                 state.ColonyProjectName,
@@ -169,14 +177,12 @@ internal static class OverlayPreviewSimulationProjector
                 Row("C 2", "Terraformable HMC | 682,100 cr", 100, "✓", OverlayPreviewGlyphTone.Success)
             ),
             "PlotGalMap" => Content(
-                state.DestinationSystem,
-                "Route and system intelligence",
-                "QUEST DESTINATION | DATA UPDATED 2 M AGO",
-                Row("Distance", "42.6 ly"),
-                Row("Population", "18.2 million"),
-                Row("Security", "Medium"),
-                Row("Economy", "Industrial | Refinery"),
-                Row("Points of interest", "2 stations | 1 settlement")
+                "Great Annihilator",
+                "Selected target · 2 known POIs",
+                "EDAstro GEC | CC BY-NC-SA 3.0",
+                Row("Stellar Features", "6.9 / 10"),
+                Row("Azura Initiative", "Community | 6.8 / 10"),
+                Row("Current system", state.CurrentSystem)
             ),
             "PlotSurfaceMining" => Content(
                 state.CurrentBody,
@@ -376,6 +382,13 @@ internal static class OverlayPreviewSimulationProjector
                 "SCO READY IN 4 S",
                 "SCO",
                 Row("SCO", "Cooling down", 60)
+            ),
+            "PlotExplorationPois" => Content(
+                "EDAstro exploration POIs",
+                "2 known POIs",
+                "GEC | CC BY-NC-SA 3.0",
+                Row("Great Annihilator", "Stellar Features | 6.9 / 10"),
+                Row("Azura Initiative", "Community | 6.8 / 10")
             ),
             "PlotQuestMini" => Content(
                 "Decrypt Guardian logs",

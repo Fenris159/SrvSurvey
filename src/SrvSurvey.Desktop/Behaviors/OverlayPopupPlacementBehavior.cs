@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
@@ -10,6 +11,7 @@ namespace SrvSurvey.Desktop.Behaviors;
 /// <summary>
 /// Removes the drawn-decoration translation that Avalonia applies twice when
 /// positioning a popup inside the owning window's overlay layer.
+/// Tracks the placement target through ancestor scrolling without dismissing its popup.
 /// </summary>
 internal static class OverlayPopupPlacementBehavior
 {
@@ -21,6 +23,25 @@ internal static class OverlayPopupPlacementBehavior
         if (Interlocked.Exchange(ref registered, 1) == 0)
         {
             Popup.IsOpenProperty.Changed.AddClassHandler<Popup>(OnIsOpenChanged);
+            Control.RequestBringIntoViewEvent.AddClassHandler<ComboBox>(
+                OnComboBoxBringIntoView,
+                RoutingStrategies.Bubble
+            );
+        }
+    }
+
+    private static void OnComboBoxBringIntoView(ComboBox comboBox, RequestBringIntoViewEventArgs eventArgs)
+    {
+        if (
+            comboBox.IsDropDownOpen
+            && eventArgs.TargetObject is Visual target
+            && !ReferenceEquals(target, comboBox)
+            && !comboBox.IsVisualAncestorOf(target)
+        )
+        {
+            // Popup rows already scroll within their own menu. Their focus requests must not
+            // reach the page scroller through the ComboBox's logical event route.
+            eventArgs.Handled = true;
         }
     }
 
@@ -57,16 +78,26 @@ internal static class OverlayPopupPlacementBehavior
         private double originalHorizontalOffset;
         private double originalVerticalOffset;
         private bool correctionApplied;
+        private Control? trackedTarget;
+        private PixelPoint targetPosition;
+        private Size targetSize;
 
         public void ApplyCorrection()
         {
             RestoreOffsets();
+            Control? placementTarget = popup.PlacementTarget ?? popup.FindLogicalAncestorOfType<Control>();
+            if (placementTarget is not null && TopLevel.GetTopLevel(placementTarget) is not null)
+            {
+                trackedTarget = placementTarget;
+                targetPosition = placementTarget.PointToScreen(default);
+                targetSize = placementTarget.Bounds.Size;
+                placementTarget.LayoutUpdated += TargetLayoutUpdated;
+            }
             if (!popup.IsUsingOverlayLayer)
             {
                 return;
             }
 
-            Control? placementTarget = popup.PlacementTarget ?? popup.FindLogicalAncestorOfType<Control>();
             if (placementTarget is null)
             {
                 return;
@@ -87,6 +118,8 @@ internal static class OverlayPopupPlacementBehavior
 
         public void RestoreOffsets()
         {
+            trackedTarget?.LayoutUpdated -= TargetLayoutUpdated;
+            trackedTarget = null;
             if (!correctionApplied)
             {
                 return;
@@ -95,6 +128,27 @@ internal static class OverlayPopupPlacementBehavior
             correctionApplied = false;
             popup.SetCurrentValue(Popup.HorizontalOffsetProperty, originalHorizontalOffset);
             popup.SetCurrentValue(Popup.VerticalOffsetProperty, originalVerticalOffset);
+        }
+
+        private void TargetLayoutUpdated(object? sender, EventArgs args)
+        {
+            if (!popup.IsOpen || trackedTarget is not { } target)
+            {
+                return;
+            }
+            PixelPoint position = target.PointToScreen(default);
+            Size size = target.Bounds.Size;
+            if (position == targetPosition && size == targetSize)
+            {
+                return;
+            }
+            targetPosition = position;
+            targetSize = size;
+            // Avalonia only checks the target's own Bounds, missing movement caused by its ancestors.
+            // Reapply its anchor through the public placement API, preserving the original value/binding.
+            Rect? anchor = popup.PlacementRect;
+            popup.SetCurrentValue(Popup.PlacementRectProperty, anchor is null ? new Rect(default, size) : null);
+            popup.SetCurrentValue(Popup.PlacementRectProperty, anchor);
         }
     }
 }

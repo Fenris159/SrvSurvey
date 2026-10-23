@@ -15,6 +15,15 @@ internal sealed class JournalProjectionState
 
     internal CargoInventoryState CargoInventory { get; } = new();
 
+    /// <summary>Verified provider cargo remains independent of local consumers that still suppress shared companion data.</summary>
+    internal CargoInventoryState ProviderCargoInventory { get; } = new();
+
+    internal bool AwaitFreshProviderCargoSnapshot { get; set; } = true;
+    internal string? ProviderCargoFrontierId { get; set; }
+    internal string? ProviderCargoJournalPath { get; set; }
+    internal bool ProviderCargoSessionEnded { get; set; }
+    internal DateTimeOffset? ProviderCargoSessionEndedAt { get; set; }
+
     internal EliteStatus? LatestStatus { get; set; }
 
     internal CargoSnapshot? LatestCargo { get; set; }

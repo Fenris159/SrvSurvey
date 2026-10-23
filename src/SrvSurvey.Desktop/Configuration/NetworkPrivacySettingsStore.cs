@@ -11,6 +11,7 @@ public sealed class NetworkPrivacySettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
+    /// <summary>Restores explicit sharing consent with disabled defaults for absent or invalid values.</summary>
     public NetworkPrivacyPreferences Load()
     {
         var settings = documentStore.Load()["NetworkPrivacy"] as JsonObject;
@@ -18,10 +19,12 @@ public sealed class NetworkPrivacySettingsStore
         return new NetworkPrivacyPreferences(
             GetBoolean(settings, "EddnUploadEnabled", defaults.EddnUploadEnabled),
             GetBoolean(settings, "UploadGreenGasGiantCandidates", defaults.UploadGreenGasGiantCandidates),
-            GetBoolean(settings, "UploadHumanSettlementGeometry", defaults.UploadHumanSettlementGeometry)
+            GetBoolean(settings, "UploadHumanSettlementGeometry", defaults.UploadHumanSettlementGeometry),
+            GetBoolean(settings, "EdAstroUploadEnabled", defaults.EdAstroUploadEnabled)
         );
     }
 
+    /// <summary>Saves sharing preferences while preserving unrelated settings and removing obsolete EDDN schema choices.</summary>
     public void Save(NetworkPrivacyPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
@@ -36,6 +39,7 @@ public sealed class NetworkPrivacySettingsStore
 
             root["Version"] = 1;
             settings["EddnUploadEnabled"] = preferences.EddnUploadEnabled;
+            settings["EdAstroUploadEnabled"] = preferences.EdAstroUploadEnabled;
             settings.Remove("EddnUseTestSchemas");
             settings.Remove("EddnEnvironment");
             settings["UploadGreenGasGiantCandidates"] = preferences.UploadGreenGasGiantCandidates;
@@ -52,7 +56,8 @@ public sealed class NetworkPrivacySettingsStore
 public sealed record NetworkPrivacyPreferences(
     bool EddnUploadEnabled,
     bool UploadGreenGasGiantCandidates,
-    bool UploadHumanSettlementGeometry = false
+    bool UploadHumanSettlementGeometry = false,
+    bool EdAstroUploadEnabled = false
 )
 {
     public static NetworkPrivacyPreferences Default { get; } =

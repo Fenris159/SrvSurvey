@@ -24,32 +24,36 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
     private int previewStateIndex;
-    private Point? pendingPanelTopCenter;
-    private OverlayPanelSize? sizeOverride;
     private double resizeWidth;
     private double resizeHeight;
+    private double minimumResizeWidth;
+    private double minimumResizeHeight;
 
+    /// <summary>Creates the default sample-data preview with shared presentation scaling.</summary>
     public OverlayPositionPreviewWindow()
     {
         InitializeComponent();
+        Opened += OnRenderSurfaceChanged;
+        ScalingChanged += OnRenderSurfaceChanged;
         Definition = OverlayLayoutCatalog.Supported[0];
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
-        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
     }
 
+    /// <summary>Creates an editor preview for the same presentation used by the chosen live panel.</summary>
     public OverlayPositionPreviewWindow(OverlayLayoutDefinition definition)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         InitializeComponent();
+        Opened += OnRenderSurfaceChanged;
+        ScalingChanged += OnRenderSurfaceChanged;
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
-        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
@@ -230,6 +234,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewSurface.Opacity = 1d;
     }
 
+    /// <summary>Applies the editor text and icon scales to the shared presentation.</summary>
     public void ConfigureTypography(OverlayTypographyScale scale)
     {
         ArgumentNullException.ThrowIfNull(scale);
@@ -237,6 +242,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         RefreshTypographyBaseline();
     }
 
+    /// <summary>Sizes the shared panel and trims its editor tab without letting the label constrain manual resizing.</summary>
     public void ConfigureSize(OverlayPanelSize? size)
     {
         if (runtimePresentation is null)
@@ -245,10 +251,28 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return;
         }
 
-        sizeOverride = size;
+        EditorFolderTab.MaxWidth = size is null
+            ? double.PositiveInfinity
+            : Math.Max(
+                EditorFolderTab.MinWidth,
+                size.Width
+                    + PreviewBody.BorderThickness.Left
+                    + PreviewBody.BorderThickness.Right
+                    - EditorFolderTab.Margin.Left
+                    - EditorFolderTab.Margin.Right
+            );
         OverlayThemeResources.ApplyPanelSize(runtimePresentation, size);
         PreviewSurface.InvalidateMeasure();
         InvalidateMeasure();
+    }
+
+    /// <summary>Applies the live colonization settings to the shared presentation without replacing its sample plan.</summary>
+    internal void ConfigureColonizationPreferences(ColonizationOverlayPreferences preferences)
+    {
+        if (runtimePresentation?.DataContext is ColonizationCommodityOverlayViewModel colonization)
+        {
+            colonization.ApplyPreferences(preferences);
+        }
     }
 
     internal void RefreshTypographyBaseline()
@@ -352,6 +376,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         return true;
     }
 
+    /// <summary>Changes sample content while the editor host preserves the panel's inward-facing corner.</summary>
     internal bool CycleEditorPreviewState()
     {
         if (previewStates.Count <= 1 || runtimePresentation is null)
@@ -359,12 +384,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return false;
         }
 
-        double scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
-        OverlayPreviewPanelMetrics currentMetrics = GetPanelMetrics(scaling);
-        pendingPanelTopCenter = new Point(
-            Position.X + currentMetrics.OriginOffset.X + (currentMetrics.PanelSize.Width / 2d),
-            Position.Y + currentMetrics.OriginOffset.Y
-        );
         previewStateIndex = (previewStateIndex + 1) % previewStates.Count;
         object? previousDataContext = runtimePresentation.DataContext;
         runtimePresentation.DataContext = OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
@@ -377,21 +396,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewSurface.InvalidateMeasure();
         InvalidateMeasure();
         return true;
-    }
-
-    private void OnPreviewSurfaceLayoutUpdated(object? sender, EventArgs eventArgs)
-    {
-        if (pendingPanelTopCenter is not { } anchor)
-        {
-            return;
-        }
-
-        OverlayPreviewPanelMetrics metrics = GetPanelMetrics(RenderScaling);
-        Position = new PixelPoint(
-            (int)Math.Round(anchor.X - metrics.OriginOffset.X - (metrics.PanelSize.Width / 2d)),
-            (int)Math.Round(anchor.Y - metrics.OriginOffset.Y)
-        );
-        pendingPanelTopCenter = null;
     }
 
     private void UpdateEditorPreviewStateButton()
@@ -414,19 +418,26 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         );
     }
 
+    /// <summary>Cycles the panel sample state without starting a move or resize gesture.</summary>
     private void OnEditorFolderTabStateButtonClick(object? sender, RoutedEventArgs eventArgs)
     {
         _ = CycleEditorPreviewState();
         eventArgs.Handled = true;
     }
 
+    /// <summary>Applies the selected scale against the preview's actual rendering monitor once attached.</summary>
     private void ApplyConfiguredScale()
     {
         int scaleIndex = scaleOverride ?? globalScaleIndex;
-        scaleFactor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaleRenderScaling);
-        OverlayThemeResources.ApplyScale(this, scaleIndex, scaleRenderScaling);
+        double scaling = OverlayThemeResources.GetPresentationScaling(this, scaleRenderScaling);
+        scaleFactor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
+        OverlayThemeResources.ApplyScale(this, scaleIndex, scaling);
     }
 
+    /// <summary>Resolves legacy and relative scale settings on the monitor actually rendering this preview.</summary>
+    private void OnRenderSurfaceChanged(object? sender, EventArgs eventArgs) => ApplyConfiguredScale();
+
+    /// <summary>Opens per-panel appearance settings for a right-click on the preview.</summary>
     private void OnPreviewSurfacePointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (!eventArgs.GetCurrentPoint(this).Properties.IsRightButtonPressed)
@@ -438,6 +449,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         eventArgs.Handled = true;
     }
 
+    /// <summary>Captures the shared panel's unscaled dimensions at the start of a manual resize.</summary>
     private void OnPanelResizeStarted(object? sender, VectorEventArgs eventArgs)
     {
         if (runtimePresentation is null)
@@ -445,11 +457,22 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return;
         }
 
-        resizeWidth = sizeOverride?.Width ?? Math.Max(1d, runtimePresentation.Bounds.Width);
-        resizeHeight = sizeOverride?.Height ?? Math.Max(1d, runtimePresentation.Bounds.Height);
+        // The folder tab can make the visible frame wider than its natural content.
+        // Start from that frame so the first movement cannot disappear into an invisible width gap.
+        resizeWidth = Math.Max(
+            1d,
+            PreviewBody.Bounds.Width - PreviewBody.BorderThickness.Left - PreviewBody.BorderThickness.Right
+        );
+        resizeHeight = Math.Max(
+            1d,
+            PreviewBody.Bounds.Height - PreviewBody.BorderThickness.Top - PreviewBody.BorderThickness.Bottom
+        );
+        minimumResizeWidth = Math.Min(120d, resizeWidth);
+        minimumResizeHeight = Math.Min(48d, resizeHeight);
         eventArgs.Handled = true;
     }
 
+    /// <summary>Uses the grip's already transformed local delta so every panel follows the pointer at any scale.</summary>
     private void OnPanelResizeDelta(object? sender, VectorEventArgs eventArgs)
     {
         if (runtimePresentation is null)
@@ -457,20 +480,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return;
         }
 
-        double safeScale = double.IsFinite(scaleFactor) && scaleFactor > 0 ? scaleFactor : 1d;
-        resizeWidth = Math.Max(120d, resizeWidth + (eventArgs.Vector.X / safeScale));
-        resizeHeight = Math.Max(48d, resizeHeight + (eventArgs.Vector.Y / safeScale));
+        resizeWidth = Math.Max(minimumResizeWidth, resizeWidth + eventArgs.Vector.X);
+        resizeHeight = Math.Max(minimumResizeHeight, resizeHeight + eventArgs.Vector.Y);
         var updated = new OverlayPanelSize(Math.Round(resizeWidth), Math.Round(resizeHeight));
         ConfigureSize(updated);
         PanelSizeChanged?.Invoke(this, new OverlayPreviewSizeChangedEventArgs(Definition.Name, updated));
         eventArgs.Handled = true;
     }
 
+    /// <summary>Consumes the completed resize gesture without forwarding it to panel movement.</summary>
     private static void OnPanelResizeCompleted(object? sender, VectorEventArgs eventArgs)
     {
         eventArgs.Handled = true;
     }
 
+    /// <summary>Rejects nonfinite opacity and values outside the supported zero-to-one range.</summary>
     private static void ValidateOpacity(double opacity, string parameterName)
     {
         if (!double.IsFinite(opacity) || opacity is < 0 or > 1)
@@ -479,8 +503,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
     }
 
+    /// <summary>Detaches rendering callbacks and disposes the preview's owned sample data.</summary>
     protected override void OnClosed(EventArgs e)
     {
+        Opened -= OnRenderSurfaceChanged;
+        ScalingChanged -= OnRenderSurfaceChanged;
         DisposeEditorDataContext(runtimePresentation?.DataContext);
         runtimePresentation?.DataContext = null;
         base.OnClosed(e);

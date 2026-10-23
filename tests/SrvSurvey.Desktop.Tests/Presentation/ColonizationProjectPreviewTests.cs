@@ -339,7 +339,7 @@ public sealed class ColonizationProjectPreviewTests
             link.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.Equal(1, opened);
             Assert.False(row.IsShown);
-            Assert.False(row.IsPrimary);
+            Assert.False(row.IsFocused);
             Assert.True(main.Colonization.HasUnsavedProjectVisibility);
             link.DataContext = null;
             link.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

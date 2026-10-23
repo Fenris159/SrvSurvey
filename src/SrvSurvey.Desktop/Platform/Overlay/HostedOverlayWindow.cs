@@ -71,6 +71,10 @@ internal sealed class HostedOverlayPlacement
 
     public PixelRect GameBounds { get; }
 
+    /// <summary>Retains a coordinator's stricter safe area when growth anchoring follows custom placement.</summary>
+    public PixelRect? VisibleBounds { get; set; }
+
+    /// <summary>Applies layout-aware base dimensions before measuring a panel.</summary>
     public void SetBaseSize(double width, double height)
     {
         OverlayThemeResources.SetBaseSize(Window, overlayLayout, width, height);
@@ -125,7 +129,11 @@ internal sealed record OverlayPresentationSessionDependencies(
     LegacyOverlayLayout OverlayLayout,
     Action<OverlayHostDiagnostic>? ReportDiagnostic = null,
     OverlayWindowRegistry? WindowRegistry = null
-);
+)
+{
+    /// <summary>Bounds combined panels to the game-sized canvas instead of the larger physical monitor.</summary>
+    public bool ConstrainToGameBounds { get; init; }
+}
 
 internal interface IHostedOverlayTimer : IDisposable
 {
@@ -167,8 +175,11 @@ internal sealed class HostedOverlayWindow : IDisposable
     private readonly IHostedOverlayTimer timer;
     private readonly Action<OverlayHostDiagnostic>? reportDiagnostic;
     private readonly OverlayWindowRegistry windowRegistry;
+    private readonly bool constrainToGameBounds;
     private readonly Action<HostedOverlayWindow> removeFromSession;
     private readonly Lock reconciliationGate = new();
+    private readonly OverlayContentPlacement contentPlacement = new();
+    private bool contentPlacementReady;
     private Window? window;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private volatile bool wantsWindow;
@@ -182,6 +193,7 @@ internal sealed class HostedOverlayWindow : IDisposable
     private bool isVisible;
     private bool preparationFailureReported;
 
+    /// <summary>Initializes one panel host with its tracker, native platform, timer, and layout dependencies.</summary>
     public HostedOverlayWindow(
         PassiveOverlayWindowDefinition definition,
         OverlayPresentationSessionDependencies dependencies,
@@ -198,6 +210,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         overlayLayout = dependencies.OverlayLayout;
         reportDiagnostic = dependencies.ReportDiagnostic;
         windowRegistry = dependencies.WindowRegistry ?? OverlayWindowRegistry.Shared;
+        constrainToGameBounds = dependencies.ConstrainToGameBounds;
         platform =
             dependencies.CreatePlatform()
             ?? throw new InvalidOperationException("The overlay platform factory returned null.");
@@ -499,6 +512,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         OpenWindow();
     }
 
+    /// <summary>Creates the panel and owns its presentation, measurement and screen-change subscriptions.</summary>
     private void OpenWindow()
     {
         if (definition.BeginPresentation is { } beginPresentation)
@@ -521,12 +535,17 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         definition.ConfigureWindow?.Invoke(overlay);
+        contentPlacementReady = false;
         overlay.Opened += OnWindowOpened;
         overlay.Closed += OnWindowClosed;
+        overlay.SizeChanged += OnWindowSizeChanged;
+        overlay.Screens.Changed += OnScreensChanged;
         window = overlay;
+        platform.PrepareWindowForShow(overlay);
         overlay.Show();
     }
 
+    /// <summary>Prepares a shown panel and defers its growth anchor until initial layout is measured.</summary>
     private void OnWindowOpened(object? sender, EventArgs eventArgs)
     {
         if (sender is not Window opened || !ReferenceEquals(window, opened))
@@ -558,8 +577,24 @@ internal sealed class HostedOverlayWindow : IDisposable
 
         preparationFailureReported = false;
         SetVisible(opened.IsVisible);
+        if (definition.RequiresLayoutCatalog)
+        {
+            // Loaded follows the initial measure/render pass, including deferred item templates.
+            Dispatcher.UIThread.Post(() => CompleteInitialPlacement(opened), DispatcherPriority.Loaded);
+        }
     }
 
+    /// <summary>Seeds legacy positions from realized content without overwriting a retained corner after reopening.</summary>
+    private void CompleteInitialPlacement(Window opened)
+    {
+        if (!disposed && ReferenceEquals(window, opened))
+        {
+            contentPlacementReady = true;
+            ReconcileOnUiThread();
+        }
+    }
+
+    /// <summary>Releases a closed window while retaining its content corner for the next presentation.</summary>
     private void OnWindowClosed(object? sender, EventArgs eventArgs)
     {
         if (sender is not Window closed || !ReferenceEquals(window, closed))
@@ -567,19 +602,55 @@ internal sealed class HostedOverlayWindow : IDisposable
             return;
         }
 
+        closed.SizeChanged -= OnWindowSizeChanged;
+        closed.Screens.Changed -= OnScreensChanged;
+        closed.Opened -= OnWindowOpened;
+        closed.Closed -= OnWindowClosed;
         window = null;
         EndPresentation();
         SetVisible(false);
     }
 
+    /// <summary>Repositions measured content immediately, using the existing reconciliation guard.</summary>
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs eventArgs)
+    {
+        if (isVisible && ReferenceEquals(sender, window))
+        {
+            // Bounds may still describe the previous layout during SizeChanged.
+            // Reuse the posted reconciliation path after measurement completes.
+            lock (reconciliationGate)
+            {
+                if (disposed || reconciliationPosted)
+                {
+                    return;
+                }
+                reconciliationPosted = true;
+            }
+            Dispatcher.UIThread.Post(RunPostedReconciliation);
+        }
+    }
+
+    /// <summary>Reevaluates the corner after a monitor or scaling configuration change.</summary>
+    private void OnScreensChanged(object? sender, EventArgs eventArgs)
+    {
+        contentPlacement.Reset();
+        ReconcileOnUiThread();
+    }
+
+    /// <summary>Evaluates whether the current game window permits this panel to be presented.</summary>
     private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
     {
         return definition.IsGameWindowEligible?.Invoke(snapshot)
             ?? (snapshot.IsAvailable && snapshot.IsVisible && snapshot.IsForeground);
     }
 
+    /// <summary>Updates automatic placement without fighting an active user drag.</summary>
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
+        if (ManagedOverlayWindowDragSession.IsDragging(target) || windowRegistry.IsCombinedDragging(target))
+        {
+            return;
+        }
         if (definition.ApplyLayoutTheme)
         {
             OverlayThemeResources.ApplyOpacity(target, overlayLayout, definition.PlotterName);
@@ -592,12 +663,34 @@ internal sealed class HostedOverlayWindow : IDisposable
 
         var placement = new HostedOverlayPlacement(target, screen, gameBounds, overlayLayout, definition);
         PixelPoint position = definition.Placement?.Invoke(placement) ?? placement.GetPosition(placement.PrepareSize());
+        if (definition.RequiresLayoutCatalog && contentPlacementReady)
+        {
+            RegisteredOverlayWindow registered =
+                windowRegistry.Snapshot().FirstOrDefault(entry => ReferenceEquals(entry.Window, target))
+                ?? new RegisteredOverlayWindow(target, definition.PlotterName);
+            PixelSize size = OverlayWindowMetrics.GetPixelSize(registered);
+            PixelRect monitor = OverlayContentPlacement.GetMonitorBounds(target, position, size, gameBounds);
+            PixelRect? viewport = constrainToGameBounds ? gameBounds : null;
+            if (placement.VisibleBounds is { } safeBounds)
+            {
+                viewport = (viewport ?? monitor).Intersect(safeBounds);
+            }
+            position = contentPlacement.Resolve(
+                position,
+                size,
+                monitor,
+                gameBounds,
+                overlayLayout.Placements.GetValueOrDefault(definition.PlotterName),
+                viewport
+            );
+        }
         if (target.Position != position)
         {
             target.Position = position;
         }
     }
 
+    /// <summary>Closes the current presentation and detaches its native lifecycle subscriptions.</summary>
     private void CloseWindow()
     {
         Window? closing = window;
@@ -610,6 +703,8 @@ internal sealed class HostedOverlayWindow : IDisposable
         window = null;
         closing.Opened -= OnWindowOpened;
         closing.Closed -= OnWindowClosed;
+        closing.SizeChanged -= OnWindowSizeChanged;
+        closing.Screens.Changed -= OnScreensChanged;
         closing.Close();
         EndPresentation();
         SetVisible(false);

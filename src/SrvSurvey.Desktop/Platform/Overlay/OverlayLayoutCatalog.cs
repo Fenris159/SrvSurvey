@@ -63,6 +63,15 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)
         ),
         Define(
+            "PlotColonizationWishList",
+            "Colonization ShoppingList",
+            "Colonization.WishList",
+            OverlayLayoutCategory.CombatAndColonization,
+            OverlaySettingsCategory.Colonization,
+            new(280, 260),
+            new(LegacyHorizontalAnchor.Left, 0, LegacyVerticalAnchor.Middle, 0, ShowInGalaxyMap: true)
+        ),
+        Define(
             "PlotFlightWarning",
             "Flight warning",
             "SystemSurvey.AutoShowFlightWarnings",
@@ -122,6 +131,15 @@ public static class OverlayLayoutCatalog
             OverlaySettingsCategory.Exploration,
             new(240, 180),
             new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)
+        ),
+        Define(
+            "PlotExplorationPois",
+            "Exploration POIs",
+            "ExplorationPois.AutoShow",
+            OverlayLayoutCategory.ExplorationAndNavigation,
+            OverlaySettingsCategory.Exploration,
+            new(320, 340),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)
         ),
         Define(
             "PlotMiningNotifications",

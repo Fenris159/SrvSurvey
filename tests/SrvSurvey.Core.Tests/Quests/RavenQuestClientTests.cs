@@ -8,6 +8,36 @@ namespace SrvSurvey.Core.Tests.Quests;
 
 public sealed class RavenQuestClientTests
 {
+    /// <summary>A server-side Azure query error is actionable without changing the authenticated commander's identity.</summary>
+    [Fact]
+    public async Task AzureCommanderQueryErrorExplainsServerEscaping()
+    {
+        RavenQuestClient client = Create(
+            new StubHandler(request =>
+            {
+                Assert.Equal("/root/api/quest/cmdr/load/active", request.RequestUri!.AbsolutePath);
+                Assert.Empty(request.RequestUri.Query);
+                Assert.Null(request.Content);
+                Assert.Equal("secret-key", Assert.Single(request.Headers.GetValues("rcc-key")));
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(
+                        """{"status":500,"detail":"Syntax error at position 21 in 'PartitionKey eq '@I'M NOBODY'S BITCH''. ErrorCode: InvalidInput RequestId: abc"}""",
+                        Encoding.UTF8,
+                        "application/json"
+                    ),
+                };
+            })
+        );
+        RavenColonialServiceException error = await Assert.ThrowsAsync<RavenColonialServiceException>(() =>
+            client.LoadCommanderQuestsAsync(RavenQuestState.active, "secret-key")
+        );
+        Assert.Equal(HttpStatusCode.InternalServerError, error.StatusCode);
+        Assert.Contains("Raven's server", error.Message);
+        Assert.Contains("escaping", error.Message);
+        Assert.DoesNotContain("RequestId", error.Message);
+    }
+
     [Fact]
     public async Task LoadsPublishedDefinitionsWithOptionalApiKey()
     {

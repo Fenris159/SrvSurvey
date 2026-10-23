@@ -4,6 +4,16 @@ namespace SrvSurvey.Core.Tests.Frontier;
 
 public sealed class FrontierCapiSnapshotParserTests
 {
+    /// <summary>CAPI parsing resolves the new ship identity in both the active ship and stored fleet.</summary>
+    [Fact]
+    public void RecognizesAnacondaMkIIInTheCurrentShipAndFleet()
+    {
+        string profile = ProfileJson.Replace("cobramkiii", "anacondamkii", StringComparison.Ordinal);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(profile, null, DateTimeOffset.UnixEpoch);
+        Assert.Equal("Anaconda Mk II", snapshot.CurrentShip!.Type);
+        Assert.Contains(snapshot.Ships, ship => ship.Type == "Anaconda Mk II");
+    }
+
     [Fact]
     public void ParsesCommanderFleetRanksAndCarrierDetails()
     {

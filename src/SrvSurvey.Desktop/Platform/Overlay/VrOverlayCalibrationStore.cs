@@ -23,8 +23,11 @@ public sealed class VrOverlayCalibrationStore
         );
     }
 
+    /// <summary>Reads calibration after serialized layout recovery.</summary>
     public VrOverlayCalibrationCatalog Load()
     {
+        using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+        OverlayLayoutFileAccess.Recover(dataDirectory);
         Dictionary<string, VrOverlayCalibration> defaults = LoadFile(
             File.Exists(plottersPath) ? plottersPath : defaultPlottersPath,
             allowDesktopPrefix: true
@@ -48,6 +51,7 @@ public sealed class VrOverlayCalibrationStore
         return new VrOverlayCalibrationCatalog(defaults, factoryDefaults, overrides);
     }
 
+    /// <summary>Updates calibration under the same folder lease as desktop layout writers.</summary>
     public VrOverlayCalibrationSaveResult Save(
         string plotterName,
         VrOverlayCalibration calibration,
@@ -57,6 +61,8 @@ public sealed class VrOverlayCalibrationStore
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         ArgumentNullException.ThrowIfNull(calibration);
         calibration.Validate();
+        using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+        OverlayLayoutFileAccess.Recover(dataDirectory);
         string? normalizedMode = NormalizeMode(mode);
         return normalizedMode is null
             ? SaveDefault(plotterName, calibration)

@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             x:Class="SrvSurvey.Desktop.Controls.SpanshSystemListEntry" x:Name="Root"
+             x:DataType="vm:SpanshSystemListViewModel">
+  <StackPanel Spacing="8">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" KeyDown="Entry_KeyDown">
+      <controls:SystemNameEntry x:Name="DestinationEntry" Text="{Binding Draft, Mode=TwoWay}" PlaceholderText="{Binding #Root.PlaceholderText}" />
+      <Button x:Name="AddDestinationButton" Grid.Column="1" Classes="primary"
+              VerticalAlignment="Top" Content="{Binding CommitLabel}" Command="{Binding CommitCommand}"
+              Click="FocusEntry_Click" AutomationProperties.Name="Add or save destination" />
+    </Grid>
+    <Button Classes="secondary" Content="Cancel edit" Command="{Binding CancelEditCommand}"
+            IsVisible="{Binding IsEditing}" HorizontalAlignment="Left" />
+    <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                  IsVisible="{Binding HasRows}">
+      <ItemsControl x:Name="DestinationRows" ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SpanshDestinationViewModel">
+            <Border Classes="card" Padding="8" Margin="0,0,0,6">
+              <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Text="{Binding Number}" Classes="muted" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                <CheckBox Grid.Column="2" Content="Refuel" IsChecked="{Binding Refuel, Mode=TwoWay}"
+                          IsVisible="{Binding ShowRefuel}" VerticalAlignment="Center"
+                          ToolTip.Tip="Refuel the carrier at this destination" />
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
+                  <Button Classes="secondary" Content="Edit" Command="{Binding EditCommand}" Click="FocusEntry_Click" Padding="8,6" />
+                  <Button Classes="secondary" Content="↑" Command="{Binding UpCommand}" Width="32" MinWidth="32" Padding="6"
+                          ToolTip.Tip="Move destination up" AutomationProperties.Name="Move destination up" />
+                  <Button Classes="secondary" Content="↓" Command="{Binding DownCommand}" Width="32" MinWidth="32" Padding="6"
+                          ToolTip.Tip="Move destination down" AutomationProperties.Name="Move destination down" />
+                  <Button Classes="secondary" Content="×" Command="{Binding RemoveCommand}" Width="32" MinWidth="32" Padding="6"
+                          ToolTip.Tip="Remove destination" AutomationProperties.Name="Remove destination" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </StackPanel>
+</UserControl>

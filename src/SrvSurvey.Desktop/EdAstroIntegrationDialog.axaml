@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.EdAstroIntegrationDialog"
+        Width="760" Height="720" MinWidth="620" MinHeight="560"
+        CanResize="True" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        Title="Configure EDAstro Sharing">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="eyebrow" Text="OPTIONAL DATA SHARING" />
+      <TextBlock Classes="page-title" FontSize="24" Text="Configure EDAstro Sharing" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Help EDAstro collect public exploration data. This installation-wide choice is off by default and applies to new live Commander sessions after you opt in." />
+    </StackPanel>
+    <ScrollViewer Grid.Row="1" Margin="0,20,0,0">
+      <StackPanel Spacing="16">
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="What SrvSurvey-XP sends" />
+            <TextBlock TextWrapping="Wrap" Text="Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Reports can include carrier callsign, name, ID, fuel, docking access, services and planned destination; the station and system where you dock; and biological or Codex discoveries, bodies and recorded locations." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Commander names, Frontier IDs, credit balances, carrier finances and EDDiscovery extension fields are removed. Startup history, diagnostic replay, Legacy sessions and unattributed shared data are not submitted." />
+          </StackPanel>
+        </Border>
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Identity and external service" />
+            <TextBlock TextWrapping="Wrap" Text="Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="EDAstro requires no application registration or approval. Submissions follow the event types requested by the service; rejected batches are logged and retried after a cooldown." />
+          </StackPanel>
+        </Border>
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Delivery and local storage" />
+            <TextBlock TextWrapping="Wrap" Text="Live reports are batched in a bounded memory queue: at most 200 events per request, with at least ten seconds between requests and no more than 100 attempts per fifteen minutes. Retry-After and provider quota headers can extend the wait." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Transient failures retry with backoff. Multiple Elite clients can contribute when each commander is bound to a distinct physical journal folder; uncertain attribution pauses collection and delivery. Turning sharing off cancels pending requests and clears the queue. Captured reports survive restarts in a private local retry queue and are not included in backups." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Success logging is consolidated into fifteen-minute activity summaries. POI catalogue downloads and bookmarks use their separate exploration settings; journal reports do not create curated POIs." />
+          </StackPanel>
+        </Border>
+        <Border Background="{DynamicResource RavenSurfaceBrush}" CornerRadius="8" Padding="14">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}" FontWeight="SemiBold" TextWrapping="Wrap" Text="Enable EDAstro uploads in only one application at a time, such as SrvSurvey-XP, EDDiscovery or EDMC, to avoid duplicate submissions." />
+        </Border>
+        <CheckBox x:Name="EdAstroUploadEnabledCheckBox" FontWeight="SemiBold" Content="Enable EDAstro sharing for live Commander sessions" />
+        <TextBlock x:Name="SaveErrorText" Foreground="{DynamicResource RavenWarningBrush}" IsVisible="False" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Margin="0,20,0,0" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+      <Button Classes="secondary" Click="Cancel_Click" Content="Cancel" />
+      <Button Classes="primary" Click="Save_Click" Content="Save" />
+    </StackPanel>
+  </Grid>
+</Window>

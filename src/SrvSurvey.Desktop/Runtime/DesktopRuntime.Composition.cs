@@ -30,6 +30,7 @@ internal sealed partial class DesktopRuntime
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private PosixSignalRegistration? linuxTerminationRegistration;
     private ColonizationCommodityOverlayCoordinator? colonizationCommodityOverlayCoordinator;
+    private ColonizationWishListOverlayCoordinator? colonizationWishListOverlayCoordinator;
     private SphericalSearchOverlayCoordinator? sphericalSearchOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private RouteBioOverlayCoordinator? routeBioOverlayCoordinator;
@@ -50,6 +51,7 @@ internal sealed partial class DesktopRuntime
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
+    private ExplorationPoiOverlayCoordinator? explorationPoiOverlayCoordinator;
     private MultiGameCommanderOverlayCoordinator? multiGameCommanderOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private ColonizationProjectPreviewWindowCoordinator? colonizationProjectPreviewWindowCoordinator;
@@ -80,6 +82,25 @@ internal sealed partial class DesktopRuntime
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
+    private string[] originalStartupArguments = [];
+
+    private static (CommanderProfileViewModel? Profile, string? Status) CreateDiagnosticProfile(
+        DiagnosticReplayContext? replay
+    ) =>
+        replay is null
+            ? (null, null)
+            : (
+                new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                $"Diagnostic replay: {replay.Commander.Name} ({replay.Commander.FrontierId}); external effects disabled."
+            );
+
+    private bool ShouldKeepOverlaysVisible() =>
+        mainViewModel is { } current
+        && (
+            current.OverlayBehavior.KeepWhenGameLosesFocus
+            || current.OverlayInteraction.IsEditing
+            || current.OverlayInteraction.IsLiveInteractionEnabled
+        );
 
     /// <summary>Composes desktop services, settings, and capture dependencies at startup.</summary>
     private void InitializeDesktopApplication(
@@ -89,6 +110,7 @@ internal sealed partial class DesktopRuntime
     )
     {
         DiagnosticReplayContext? diagnosticReplay = startup.DiagnosticReplay;
+        originalStartupArguments = startup.Arguments.ToArray();
         diagnosticReplayContext = diagnosticReplay;
         HttpClient? externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(diagnosticReplay);
         diagnosticNetworkClientOwnership = externalNetworkClient;
@@ -114,17 +136,25 @@ internal sealed partial class DesktopRuntime
             applicationLog.Append(commanderPreferenceResolution.StatusMessage);
         }
 
-        string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
+        string? targetFrontierId = diagnosticReplay is null
+            ? StartupOptions.GetFrontierId(startup.Arguments)
+                ?? StartupOptions.GetInstanceFrontierId(startup.Arguments)
+                ?? appDataPaths.SettingsFrontierId
+                ?? commanderPreferenceResolution.TargetFrontierId
+            : null;
         appDataPaths = PrepareCommanderSettings(
             appDataPaths,
             targetFrontierId,
-            startup.AppDataPathsOverride is null && diagnosticReplay is null,
+            diagnosticReplay is null,
             configuredJournalDirectory,
             applicationLog
         );
 
         LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
-        var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.OverlaySettingsDirectory);
+        var overlayLayoutStore = new LegacyOverlayLayoutStore(
+            appDataPaths.OverlaySettingsDirectory,
+            message => applicationLog.Append(message)
+        );
         LegacyOverlayLayout overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
 
         var themeService = new RavenThemeService(
@@ -147,13 +177,7 @@ internal sealed partial class DesktopRuntime
             gameWindowTracker: CreateRawGameWindowTracker(),
             registry: null,
             overlayLayout,
-            () =>
-                mainViewModel is { } current
-                && (
-                    current.OverlayBehavior.KeepWhenGameLosesFocus
-                    || current.OverlayInteraction.IsEditing
-                    || current.OverlayInteraction.IsLiveInteractionEnabled
-                ),
+            ShouldKeepOverlaysVisible,
             diagnostic =>
                 applicationLog.Append(
                     $"Overlay host '{diagnostic.PlotterName}' "
@@ -186,11 +210,13 @@ internal sealed partial class DesktopRuntime
             )
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
+        (CommanderProfileViewModel? Profile, string? Status) replayProfile = CreateDiagnosticProfile(diagnosticReplay);
         using var mainViewModelStartup = new MainWindowViewModelStartup(
             configuredJournalDirectory,
             new MainWindowFoundationInputs
             {
                 ThemeService = themeService,
+                ProfileSyncService = startup.ProfileSyncService,
                 AppDataPaths = appDataPaths,
                 InputSettings = inputSettings,
                 ApplicationLogService = applicationLog,
@@ -198,14 +224,9 @@ internal sealed partial class DesktopRuntime
                 CommanderPreferenceSettingsStore = commanderPreferenceStore,
                 CommanderPreferenceCommandLineOverride = commanderPreferenceResolution.IsCommandLineOverride,
                 CommanderPreferenceInitialStatus = commanderPreferenceResolution.StatusMessage,
-                FrontierProfile = diagnosticReplay is null
-                    ? null
-                    : new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()),
+                FrontierProfile = replayProfile.Profile,
                 IsDiagnosticReplay = diagnosticReplay is not null,
-                DiagnosticReplayStatus = diagnosticReplay is null
-                    ? null
-                    : $"Diagnostic replay: {diagnosticReplay.Commander.Name} "
-                        + $"({diagnosticReplay.Commander.FrontierId}); external effects disabled.",
+                DiagnosticReplayStatus = replayProfile.Status,
                 ExternalNetworkClient = externalNetworkClient,
                 ReplayViewportProvider = CaptureReplayViewport,
             },
@@ -241,6 +262,10 @@ internal sealed partial class DesktopRuntime
             message => applicationLog.Append(message)
         );
         mainWindow = new MainWindow(viewModel);
+        viewModel.ExplorationPois.UseActions(
+            WriteClipboardAsync,
+            async uri => await mainWindow.Launcher.LaunchUriAsync(uri)
+        );
         windowChromeThemeCoordinator = new WindowChromeThemeCoordinator(mainWindow, themeService);
         mainWindow.Opened += HandleMainWindowOpened;
         AttachMainWindow(mainWindow);
@@ -253,9 +278,16 @@ internal sealed partial class DesktopRuntime
                 RestartApplicationAsync("Published reference data refreshed")
             );
             viewModel.Localization.SetRestartHandler(() => RestartApplicationAsync("Language preference changed"));
-            ConfigureReleaseInstaller(viewModel, desktop, appDataPaths, applicationLog, startup.Arguments);
+            ConfigureReleaseInstaller(
+                viewModel,
+                desktop,
+                appDataPaths,
+                applicationLog,
+                StartupOptions.ForRestart(startup.Arguments, appDataPaths.SettingsFrontierId)
+            );
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
+            viewModel.ProfileSync.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested += RestartAfterCommanderPreferenceChangeAsync;
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(directory),
@@ -392,6 +424,10 @@ internal sealed partial class DesktopRuntime
             modeProvider: () => viewModel.CurrentVrOverlayMode
         );
         galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(viewModel.GalaxyMap, overlayPresentation);
+        explorationPoiOverlayCoordinator = new ExplorationPoiOverlayCoordinator(
+            viewModel.ExplorationPois,
+            overlayPresentation
+        );
         multiGameCommanderOverlayCoordinator = new MultiGameCommanderOverlayCoordinator(
             viewModel.CommanderInstances,
             viewModel.OverlayBehavior,
@@ -405,6 +441,10 @@ internal sealed partial class DesktopRuntime
             viewModel.Colonization.CommodityOverlay,
             overlayPresentation
         );
+        colonizationWishListOverlayCoordinator = new ColonizationWishListOverlayCoordinator(
+            viewModel.Colonization.WishList,
+            overlayPresentation
+        );
         viewModel.OverlayBehavior.PropertyChanged += HandleOverlayBehaviorChanged;
         ApplyOverlaySuppression();
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.OverlayDependentsReady);
@@ -415,7 +455,6 @@ internal sealed partial class DesktopRuntime
         linuxTerminationRegistration = RegisterLinuxTermination();
         if (diagnosticReplay is null)
         {
-            ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
             releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
                 appDataPaths,
                 applicationLog,
@@ -423,9 +462,27 @@ internal sealed partial class DesktopRuntime
             );
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
+        if (Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
+        {
+            applicationLog.Append("Update startup: desktop initialized; waiting for the main window's first frame.");
+        }
+        ApplicationStartupWindowPresenter.Present(
+            desktop,
+            mainWindow,
+            startup.BringMainWindowToFront,
+            diagnosticReplay is null
+                ? () =>
+                {
+                    if (shutdownTask is null)
+                    {
+                        ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+                    }
+                }
+                : null
+        );
     }
 
+    /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
     private static AppDataPaths PrepareCommanderSettings(
         AppDataPaths paths,
         string? targetFrontierId,
@@ -434,7 +491,9 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog
     )
     {
-        string? settingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
+        string? settingsFrontierId =
+            CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId)
+            ?? CommanderSettingsProfile.NormalizeFrontierId(paths.SettingsFrontierId);
         if (settingsFrontierId is null && discoverJournalCommander)
         {
             settingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
@@ -451,7 +510,11 @@ internal sealed partial class DesktopRuntime
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             applicationLog.Append("Commander settings could not be initialized: " + exception.Message);
-            paths = paths with { SettingsFrontierId = null };
+            applicationLog.Append(
+                "Settings remain bound to the commander at '"
+                    + paths.OverlaySettingsDirectory
+                    + "'; they will not be redirected to the shared profile."
+            );
         }
 
         return paths;
@@ -673,27 +736,6 @@ internal sealed partial class DesktopRuntime
         }
     }
 
-    private static void MigrateLegacyOverlayLayout(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
-    {
-        LegacyOverlayLayoutImportMigrationResult migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
-            appDataPaths
-        );
-        if (migration.Migrated)
-        {
-            applicationLog.Append(
-                $"Converted {migration.NormalizedPlacementCount:N0} imported "
-                    + "absolute overlay placement(s) to game-window-relative anchors."
-                    + (migration.BackupPath is null ? string.Empty : " Previous layout backup: " + migration.BackupPath)
-            );
-            return;
-        }
-
-        if (migration.Error is not null)
-        {
-            applicationLog.Append("Imported overlay placement conversion was skipped: " + migration.Error);
-        }
-    }
-
     private static void MigrateLegacyOrganicProfiles(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
         try
@@ -867,6 +909,7 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportPreparing -= StopJournalMonitorForProfileImportAsync;
             viewModel.ProfileImportCompleted -= RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
+            viewModel.ProfileSync.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
@@ -906,6 +949,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
+    /// <summary>Disposes the desktop-dependent overlay resources after application producers stop.</summary>
     private Task DisposeDesktopDependentsAsync()
     {
         DisposeResource(ref windowChromeThemeCoordinator);
@@ -917,6 +961,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref multiGameCommanderOverlayCoordinator);
         DisposeResource(ref errorReportWindowCoordinator);
         DisposeResource(ref colonizationCommodityOverlayCoordinator);
+        DisposeResource(ref colonizationWishListOverlayCoordinator);
         DisposeResource(ref systemNotesWindowCoordinator);
         DisposeResource(ref colonizationProjectPreviewWindowCoordinator);
         DisposeResource(ref journeyWindowCoordinator);
@@ -944,6 +989,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref streamOverlayCoordinator);
         DisposeResource(ref vrOverlayCoordinator);
         DisposeResource(ref galaxyMapOverlayCoordinator);
+        DisposeResource(ref explorationPoiOverlayCoordinator);
         DisposeResource(ref systemSurveyOverlayCoordinator);
         DisposeResource(ref guardianOverlayCoordinator);
         return Task.CompletedTask;
@@ -1014,7 +1060,6 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        MigrateLegacyOverlayLayout(appDataPaths, applicationLog);
         MigrateLegacyUiSettings(appDataPaths, applicationLog);
         MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
     }
@@ -1250,7 +1295,9 @@ internal sealed partial class DesktopRuntime
                 null
             )
         );
-        applicationLog.Append("Verified update replacement startup with the handoff helper.");
+        applicationLog.Append(
+            "Verified update replacement startup: the main window is visible and the UI dispatcher is responding."
+        );
     }
 
     private IGameWindowTracker CreateRawGameWindowTracker()
@@ -1270,11 +1317,18 @@ internal sealed partial class DesktopRuntime
         mainWindow?.RestoreAndActivate();
     }
 
-    private async Task RestartApplicationAsync(string reason)
+    /// <summary>Starts a replacement after shutdown, retaining the commander unless startup preferences must be reselected.</summary>
+    private async Task RestartApplicationAsync(string reason, bool preserveCommander = true)
     {
         await RestartAsync(() =>
         {
-            new ApplicationRestartService().StartRestartHelper();
+            new ApplicationRestartService(
+                StartupOptions.ForRestart(
+                    originalStartupArguments,
+                    mainViewModel?.AppDataPaths.SettingsFrontierId,
+                    preserveCommander
+                )
+            ).StartRestartHelper();
             applicationLogService?.Append(
                 reason + "; restart helper started and will launch the replacement after this process exits."
             );
@@ -1310,9 +1364,10 @@ internal sealed partial class DesktopRuntime
         return RestartApplicationAsync("Journal folder changed");
     }
 
+    /// <summary>Restarts without the retained assignment so the newly saved commander preference can take effect.</summary>
     private Task RestartAfterCommanderPreferenceChangeAsync()
     {
-        return RestartApplicationAsync("Commander preference changed");
+        return RestartApplicationAsync("Commander preference changed", preserveCommander: false);
     }
 
     private async Task WriteClipboardAsync(string text)
@@ -1379,6 +1434,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
+    /// <summary>Applies shared overlay suppression consistently to all hosted gameplay panels.</summary>
     private void ApplyOverlaySuppression()
     {
         MainWindowViewModel? viewModel = mainViewModel;
@@ -1405,10 +1461,12 @@ internal sealed partial class DesktopRuntime
         humanSiteOverlayCoordinator?.SetSuppressed(suppress);
         sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
         colonizationCommodityOverlayCoordinator?.SetSuppressed(suppress);
+        colonizationWishListOverlayCoordinator?.SetSuppressed(suppress);
         questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
         notificationOverlayCoordinator?.SetSuppressed(suppress);
         pulseOverlayCoordinator?.SetSuppressed(suppress);
         galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
+        explorationPoiOverlayCoordinator?.SetSuppressed(suppress);
         multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
     }
 
@@ -1448,6 +1506,7 @@ internal sealed partial class DesktopRuntime
         });
     }
 
+    /// <summary>Dispatches shortcuts, including persistent colonization visibility before generic availability toggles.</summary>
     private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
     {
         MainWindowViewModel viewModel =
@@ -1455,6 +1514,11 @@ internal sealed partial class DesktopRuntime
         if (mainWindow is null)
         {
             throw new InvalidOperationException("Main window is not ready.");
+        }
+
+        if (action == GlobalInputAction.ToggleColonizationCommoditiesVisibility)
+        {
+            return ToggleColonyShopping();
         }
 
         if (GlobalInputActionCatalog.TryGetOverlayPlotterName(action, out string? plotterName))
@@ -1502,6 +1566,7 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.Track8 => await ToggleQuickTrackerAsync(8),
             GlobalInputAction.RefreshColonyData => RefreshColonyData(),
             GlobalInputAction.CollapseColonyData => CollapseColonyData(),
+            GlobalInputAction.ToggleCollapseCoveredColonyGroups => ToggleCollapseCoveredColonyGroups(),
             GlobalInputAction.ToggleImageEmbed => ToggleImageEmbed(),
             _ => false,
         };
@@ -1529,9 +1594,15 @@ internal sealed partial class DesktopRuntime
         return true;
     }
 
+    /// <summary>Uses one show/hide path for both colonization shortcuts and the availability checkbox.</summary>
     private bool ToggleColonyShopping()
     {
-        colonizationCommodityOverlayCoordinator?.ToggleVisibility();
+        if (mainViewModel is null || colonizationCommodityOverlayCoordinator is null)
+        {
+            return false;
+        }
+
+        colonizationCommodityOverlayCoordinator.ToggleVisibility(mainViewModel.OverlayPanelVisibility);
         return true;
     }
 
@@ -1623,6 +1694,14 @@ internal sealed partial class DesktopRuntime
     private bool CollapseColonyData()
     {
         mainViewModel?.Colonization.CommodityOverlay.ToggleSatisfiedGroups();
+        return true;
+    }
+
+    /// <summary>Updates the saved collapse option and live commodity groups together.</summary>
+    private bool ToggleCollapseCoveredColonyGroups()
+    {
+        ColonizationViewModel colonization = mainViewModel!.Colonization;
+        colonization.CollapseCoveredCommodityGroups = !colonization.CollapseCoveredCommodityGroups;
         return true;
     }
 

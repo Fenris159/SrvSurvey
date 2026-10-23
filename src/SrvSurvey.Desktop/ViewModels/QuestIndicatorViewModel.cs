@@ -45,13 +45,13 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     public IReadOnlyList<QuestObjectiveRowViewModel> Objectives
     {
         get => objectives;
-        private set => SetField(ref objectives, value);
+        private set => SetField(ref objectives, OverlayListRetention.Keep(objectives, value));
     }
 
     public IReadOnlyList<QuestIndicatorLocationViewModel> Locations
     {
         get => locations;
-        private set => SetField(ref locations, value);
+        private set => SetField(ref locations, OverlayListRetention.Keep(locations, value));
     }
 
     public void Update(

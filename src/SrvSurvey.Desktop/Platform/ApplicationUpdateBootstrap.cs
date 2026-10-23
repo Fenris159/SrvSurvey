@@ -219,7 +219,6 @@ internal static class ApplicationUpdateBootstrap
     internal const string ConfirmArgument = "--confirm-update";
     internal const string ResultArgument = "--update-result";
     private static readonly TimeSpan ParentExitTimeout = TimeSpan.FromMinutes(2);
-    private static readonly TimeSpan HealthTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan ReplacementExitTimeout = TimeSpan.FromSeconds(15);
     private static string? pendingConfirmationPlanPath;
     private static string? pendingOutcomePlanPath;
@@ -510,32 +509,67 @@ internal static class ApplicationUpdateBootstrap
             }
         }
 
-        await store
-            .WriteOutcomeAsync(
-                plan,
-                new ReleaseInstallationOutcome(
-                    status,
-                    plan.Preparation.RequestId,
-                    plan.Preparation.Version,
-                    DateTimeOffset.UtcNow,
-                    result.BackupDirectory,
-                    result.FailedDirectory,
-                    result.Error
-                ),
+        return await CompleteHelperOutcomeAsync(
+                result.Status,
+                token =>
+                    store.WriteOutcomeAsync(
+                        plan,
+                        new ReleaseInstallationOutcome(
+                            status,
+                            plan.Preparation.RequestId,
+                            plan.Preparation.Version,
+                            DateTimeOffset.UtcNow,
+                            result.BackupDirectory,
+                            result.FailedDirectory,
+                            result.Error
+                        ),
+                        token
+                    ),
+                () =>
+                    StartWithoutConfirmation(
+                        Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint),
+                        plan.Preparation.StartupArguments,
+                        plan.PlanPath
+                    ),
+                TimeSpan.FromSeconds(10),
                 cancellationToken
             )
             .ConfigureAwait(false);
-        if (result.Status == ReleaseInstallationStatus.RolledBack)
-        {
-            StartWithoutConfirmation(
-                Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint),
-                plan.Preparation.StartupArguments,
-                plan.PlanPath
-            );
-            return 3;
-        }
+    }
 
-        return 0;
+    internal static async Task<int> CompleteHelperOutcomeAsync(
+        ReleaseInstallationStatus status,
+        Func<CancellationToken, Task> publishOutcome,
+        Action restart,
+        TimeSpan recoveryTimeout,
+        CancellationToken cancellationToken
+    )
+    {
+        if (status != ReleaseInstallationStatus.RolledBack)
+        {
+            await publishOutcome(cancellationToken).ConfigureAwait(false);
+            return 0;
+        }
+        using var recovery = new CancellationTokenSource(recoveryTimeout);
+        try
+        {
+            await publishOutcome(recovery.Token).WaitAsync(recovery.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or OperationCanceledException
+            )
+        {
+            Trace.TraceWarning("Could not publish the update rollback outcome: {0}", exception.Message);
+        }
+        finally
+        {
+            restart();
+        }
+        return 3;
     }
 
     private static async Task HandleHelperFailureAsync(
@@ -855,32 +889,57 @@ internal static class ApplicationUpdateBootstrap
         using Process replacement =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(HealthTimeout);
+        return await ConfirmReplacementHealthAsync(
+                token =>
+                    ApplicationUpdateHealthMonitor.WaitAsync(
+                        () => replacement.HasExited,
+                        healthToken => store.IsHealthConfirmedAsync(plan, healthToken),
+                        ApplicationUpdateHealthMonitor.StartupTimeout,
+                        token
+                    ),
+                () => replacement.ExitCode,
+                () => StopReplacementAsync(replacement),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
+    internal static async Task<bool> ConfirmReplacementHealthAsync(
+        Func<CancellationToken, Task<ApplicationUpdateHealthStatus>> waitForHealth,
+        Func<int> getExitCode,
+        Func<Task> stopReplacement,
+        CancellationToken cancellationToken
+    )
+    {
+        ApplicationUpdateHealthStatus status;
         try
         {
-            while (!timeout.IsCancellationRequested)
-            {
-                if (await store.IsHealthConfirmedAsync(plan, timeout.Token).ConfigureAwait(false))
-                {
-                    return true;
-                }
-
-                if (replacement.HasExited)
-                {
-                    return false;
-                }
-
-                await Task.Delay(100, timeout.Token).ConfigureAwait(false);
-            }
+            status = await waitForHealth(cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch
         {
-            // Health confirmation timed out; rollback follows below.
+            await TryStopReplacementAsync(stopReplacement).ConfigureAwait(false);
+            throw;
         }
+        if (status == ApplicationUpdateHealthStatus.Healthy)
+        {
+            return true;
+        }
+        int? exitCode = status == ApplicationUpdateHealthStatus.Exited ? getExitCode() : null;
+        await TryStopReplacementAsync(stopReplacement).ConfigureAwait(false);
+        throw new IOException(ApplicationUpdateHealthMonitor.DescribeFailure(status, exitCode));
+    }
 
-        await StopReplacementAsync(replacement).ConfigureAwait(false);
-        return false;
+    private static async Task TryStopReplacementAsync(Func<Task> stopReplacement)
+    {
+        try
+        {
+            await stopReplacement().ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or InvalidOperationException or Win32Exception)
+        {
+            Trace.TraceWarning("Could not stop the unhealthy replacement process: {0}", exception.Message);
+        }
     }
 
     private static async Task StopReplacementAsync(Process replacement)

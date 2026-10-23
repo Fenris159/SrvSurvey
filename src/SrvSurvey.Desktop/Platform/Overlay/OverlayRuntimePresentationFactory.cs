@@ -11,18 +11,21 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 /// </summary>
 internal static class OverlayRuntimePresentationFactory
 {
+    /// <summary>Identifies panel IDs supported by the runtime presentation factory.</summary>
     public static bool IsSupported(string plotterName) =>
         plotterName
             is "PlotBioStatus"
                 or "PlotBioSystem"
                 or "PlotBodyInfo"
                 or "PlotBuildCommodities"
+                or "PlotColonizationWishList"
                 or "PlotFlightWarning"
                 or "PlotFloatie"
                 or "PlotFootCombat"
                 or "PlotFSS"
                 or "PlotFSSInfo"
                 or "PlotGalMap"
+                or "PlotExplorationPois"
                 or "PlotMiningNotifications"
                 or "PlotMiningCargo"
                 or "PlotMiningReference"
@@ -103,6 +106,7 @@ internal static class OverlayRuntimePresentationFactory
         return CreateEditorDataContext(plotterName, previewStateIndex);
     }
 
+    /// <summary>Creates the requested live panel using its existing shared workspace model.</summary>
     public static Control? CreatePresentation(string plotterName) =>
         plotterName switch
         {
@@ -110,12 +114,14 @@ internal static class OverlayRuntimePresentationFactory
             "PlotBioSystem" => new BiologySurveyOverlayPresentation(),
             "PlotBodyInfo" => new BodyInformationOverlayPresentation(),
             "PlotBuildCommodities" => new ColonizationCommodityOverlayPresentation(),
+            "PlotColonizationWishList" => new ColonizationWishListOverlayPresentation(),
             "PlotFlightWarning" => new FlightWarningOverlayPresentation(),
             "PlotFloatie" => new NotificationOverlayPresentation(),
             "PlotFootCombat" => new FootCombatOverlayPresentation(),
             "PlotFSS" => new LastFssBodyOverlayPresentation(),
             "PlotFSSInfo" => new FssInfoOverlayPresentation(),
             "PlotGalMap" => new GalaxyMapOverlayPresentation(),
+            "PlotExplorationPois" => new ExplorationPoiOverlayPresentation(),
             "PlotMiningNotifications" or "PlotMiningFiregroups" => new MiningActivityOverlayPresentation(),
             "PlotMiningCargo" => new MiningCargoOverlayPresentation(),
             "PlotMiningReference" => new MiningReferenceOverlayPresentation(),

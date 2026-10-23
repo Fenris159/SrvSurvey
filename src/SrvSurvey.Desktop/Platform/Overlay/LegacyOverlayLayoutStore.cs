@@ -13,6 +13,7 @@ public sealed class LegacyOverlayLayoutStore
 {
     private const string WidthProperty = "width";
     private const string HeightProperty = "height";
+    private const string BackupDirectoryName = "overlay-layout-backups";
     private static readonly ConcurrentDictionary<string, object> FileLocks = new(
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
@@ -23,33 +24,181 @@ public sealed class LegacyOverlayLayoutStore
     private readonly string typographyOverridesPath;
     private readonly string sizeOverridesPath;
     private readonly string positionReferencesPath;
+    private readonly string growthOverridesPath;
     private readonly object fileLock;
+    private readonly Action<string> log;
 
-    public LegacyOverlayLayoutStore(string dataDirectory)
+    /// <summary>Resolves the owning layout folder and its legacy and optional metadata files.</summary>
+    public LegacyOverlayLayoutStore(string dataDirectory, Action<string>? log = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         this.dataDirectory = Path.GetFullPath(dataDirectory);
+        this.log = log ?? (message => System.Diagnostics.Trace.WriteLine(message));
         plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
         settingsPath = Path.Combine(this.dataDirectory, "settings.json");
         scaleOverridesPath = Path.Combine(this.dataDirectory, "overlay-scale-overrides.json");
         typographyOverridesPath = Path.Combine(this.dataDirectory, "overlay-typography-overrides.json");
         sizeOverridesPath = Path.Combine(this.dataDirectory, "overlay-size-overrides.json");
         positionReferencesPath = Path.Combine(this.dataDirectory, "overlay-position-references.json");
+        growthOverridesPath = Path.Combine(this.dataDirectory, "overlay-growth-overrides.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
+    /// <summary>Identifies the exact commander or shared folder used by this layout.</summary>
+    public string DirectoryPath => dataDirectory;
+
+    /// <summary>Logs recoverable UI failures alongside the active save location.</summary>
+    internal void ReportFailure(string operation, Exception exception) =>
+        log($"{operation} at '{dataDirectory}': {exception}");
+
+    /// <summary>Preserves damaged files and restores their latest valid backups, using defaults only when no valid backup exists.</summary>
+    public string RecoverInvalidLayout()
+    {
+        lock (fileLock)
+        {
+            using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+            string preserved = Path.Combine(
+                dataDirectory,
+                BackupDirectoryName,
+                "recovery-" + Guid.NewGuid().ToString("N")
+            );
+            Directory.CreateDirectory(preserved);
+            string journal = Path.Combine(dataDirectory, "overlay-layout-pending.json");
+            try
+            {
+                OverlayLayoutFileAccess.Recover(dataDirectory);
+            }
+            catch (InvalidDataException)
+            {
+                File.Copy(journal, Path.Combine(preserved, Path.GetFileName(journal)));
+                File.Delete(journal);
+            }
+            using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
+                dataDirectory
+            );
+            foreach (string name in OverlayLayoutFileAccess.FileNames)
+            {
+                string target = Path.Combine(dataDirectory, name);
+                if (!File.Exists(target) || IsValidRecoveryFile(target))
+                {
+                    continue;
+                }
+                File.Copy(target, Path.Combine(preserved, name));
+                string prefix = Path.GetFileNameWithoutExtension(name) + "-";
+                string? backup = Directory
+                    .EnumerateFiles(Path.Combine(dataDirectory, BackupDirectoryName), "*.json")
+                    .Where(path => Path.GetFileName(path).StartsWith(prefix, StringComparison.Ordinal))
+                    .OrderByDescending(File.GetLastWriteTimeUtc)
+                    .FirstOrDefault(IsValidRecoveryFile);
+                if (backup is null)
+                {
+                    File.Delete(target);
+                }
+                else
+                {
+                    OverlayLayoutFileAccess.WriteAtomic(target, File.ReadAllBytes(backup));
+                }
+                log($"Recovered overlay file '{target}'; original retained at '{preserved}'.");
+            }
+            RecoverInvalidOpacity(preserved);
+            LegacyOverlayLayout repaired = LoadCore();
+            if (repaired.Error is not null)
+            {
+                throw new InvalidDataException(repaired.Error);
+            }
+            transaction.Commit();
+            return preserved;
+        }
+    }
+
+    /// <summary>Repairs only the overlay-owned opacity property, retaining all other shared settings.</summary>
+    private void RecoverInvalidOpacity(string preserved)
+    {
+        var errors = new List<string>();
+        _ = LoadDefaultOpacity(errors);
+        if (errors.Count == 0)
+        {
+            return;
+        }
+        File.Copy(settingsPath, Path.Combine(preserved, OverlayLayoutFileAccess.SharedSettingsFileName));
+        string? backup = Directory
+            .EnumerateFiles(Path.Combine(dataDirectory, BackupDirectoryName), "settings-*.json")
+            .OrderByDescending(File.GetLastWriteTimeUtc)
+            .FirstOrDefault(IsValidRecoveryFile);
+        OverlayLayoutFileAccess.RestoreSettingsOpacity(
+            settingsPath,
+            backup is null ? null : OverlayLayoutFileAccess.SnapshotSettingsOpacity(backup)
+        );
+        log($"Recovered overlay opacity in '{settingsPath}'; original retained at '{preserved}'.");
+    }
+
+    /// <summary>Validates a single original or backup with the normal readers without touching the user's other settings.</summary>
+    private static bool IsValidRecoveryFile(string path)
+    {
+        string temporary = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-layout-validation-" + Guid.NewGuid().ToString("N")
+        );
+        Directory.CreateDirectory(temporary);
+        try
+        {
+            string stem = Path.GetFileNameWithoutExtension(path);
+            string? name = OverlayLayoutFileAccess.JournalFileNames.FirstOrDefault(file =>
+                Path.GetFileName(path) == file
+                || stem.StartsWith(Path.GetFileNameWithoutExtension(file) + "-", StringComparison.Ordinal)
+            );
+            if (name is null)
+            {
+                return false;
+            }
+            File.Copy(path, Path.Combine(temporary, name));
+            return new LegacyOverlayLayoutStore(temporary).Load().Error is null;
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            return false;
+        }
+        finally
+        {
+            Directory.Delete(temporary, recursive: true);
+        }
+    }
+
+    /// <summary>Reads a coherent saved generation, recovering interrupted writes and reporting damaged files.</summary>
     public LegacyOverlayLayout Load()
     {
         lock (fileLock)
         {
-            return LoadCore();
+            try
+            {
+                using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+                OverlayLayoutFileAccess.Recover(dataDirectory);
+                LegacyOverlayLayout loaded = LoadCore();
+                if (loaded.Error is not null)
+                {
+                    log("Overlay layout load failed: " + loaded.Error);
+                }
+                return loaded;
+            }
+            catch (Exception exception) when (IsPersistenceFailure(exception))
+            {
+                log($"Overlay layout load failed at '{dataDirectory}': {exception}");
+                return new LegacyOverlayLayout(
+                    new Dictionary<string, LegacyOverlayPlacement>(),
+                    null,
+                    $"Could not read overlay layout '{dataDirectory}': {exception.Message}"
+                );
+            }
         }
     }
 
+    /// <summary>Migrates legacy scale values under the shared layout folder lease.</summary>
     public LegacyOverlayScaleMigrationResult MigrateLegacyScaleOverrides(double renderScaling)
     {
         lock (fileLock)
         {
+            using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+            OverlayLayoutFileAccess.Recover(dataDirectory);
             var errors = new List<string>();
             Dictionary<string, int> overrides = LoadScaleOverrides(errors);
             if (errors.Count > 0)
@@ -79,7 +228,100 @@ public sealed class LegacyOverlayLayoutStore
         return Save(placements, 1d, updateDefaultOpacity: false);
     }
 
+    /// <summary>Serializes and commits a complete layout generation, preserving a crash-recovery journal until success.</summary>
     public LegacyOverlayLayoutSaveResult Save(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
+        double defaultOpacity,
+        bool updateDefaultOpacity
+    )
+    {
+        lock (fileLock)
+        {
+            using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+            OverlayLayoutFileAccess.Recover(dataDirectory);
+            return SaveTransaction(placements, defaultOpacity, updateDefaultOpacity);
+        }
+    }
+
+    /// <summary>Merges a session's changed fields under the same lease as persistence, preserving independent edits.</summary>
+    public LegacyOverlayLayoutSaveResult SaveChanges(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        lock (fileLock)
+        {
+            using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+            OverlayLayoutFileAccess.Recover(dataDirectory);
+            LegacyOverlayLayout latest = LoadCore();
+            if (latest.Error is not null)
+            {
+                throw new InvalidDataException(latest.Error);
+            }
+            IReadOnlyDictionary<string, LegacyOverlayPlacement> merged = session.MergeWith(latest);
+            if (session.HasDefaultOpacityChange)
+            {
+                _ = OverlayPositionEditSession.MergeField(
+                    session.OriginalDefaultOpacity ?? 1d,
+                    session.DefaultOpacity,
+                    latest.DefaultOpacity ?? 1d,
+                    "all overlays",
+                    "global opacity"
+                );
+            }
+            return SaveTransaction(merged, session.DefaultOpacity, session.HasDefaultOpacityChange);
+        }
+    }
+
+    /// <summary>Logs the exact commit outcome and converts expected parser failures into a recoverable layout error.</summary>
+    private LegacyOverlayLayoutSaveResult SaveTransaction(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
+        double opacity,
+        bool updateOpacity
+    )
+    {
+        log($"Overlay layout save requested at '{dataDirectory}': {string.Join(", ", placements.Keys)}.");
+        try
+        {
+            using OverlayLayoutFileAccess.Transaction transaction = OverlayLayoutFileAccess.BeginTransaction(
+                dataDirectory
+            );
+            LegacyOverlayLayoutSaveResult result = SaveLocked(placements, opacity, updateOpacity);
+            LegacyOverlayLayout saved = LoadCore();
+            if (saved.Error is not null)
+            {
+                throw new InvalidDataException(saved.Error);
+            }
+            transaction.Commit();
+            log($"Overlay layout save committed at '{dataDirectory}': {result.UpdatedPlacementCount} placement(s).");
+            return result with { CommittedLayout = saved };
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            log($"Overlay layout save failed at '{dataDirectory}': {exception}");
+            if (exception is JsonException or FormatException or OverflowException)
+            {
+                throw new InvalidDataException(
+                    $"Invalid overlay layout data at '{dataDirectory}': {exception.Message}",
+                    exception
+                );
+            }
+            throw;
+        }
+    }
+
+    /// <summary>Recognizes expected storage and data failures without hiding programmer errors.</summary>
+    internal static bool IsPersistenceFailure(Exception exception) =>
+        exception
+            is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException
+                or JsonException
+                or FormatException
+                or OverflowException;
+
+    /// <summary>Maintains verified backups and per-file rollback inside the caller's recovery transaction.</summary>
+    private LegacyOverlayLayoutSaveResult SaveLocked(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
         double defaultOpacity,
         bool updateDefaultOpacity
@@ -104,7 +346,6 @@ public sealed class LegacyOverlayLayoutStore
 
         lock (fileLock)
         {
-            bool settingsExisted = File.Exists(settingsPath);
             bool scaleOverridesExisted = File.Exists(scaleOverridesPath);
             bool typographyOverridesExisted = File.Exists(typographyOverridesPath);
             bool sizeOverridesExisted = File.Exists(sizeOverridesPath);
@@ -127,6 +368,7 @@ public sealed class LegacyOverlayLayoutStore
                     placements
                 );
                 (sizeOverridesBackupPath, updatedSizeOverrideCount) = SaveSizeOverridesCore(placements);
+                SaveGrowthOverridesCore(placements);
                 LegacyOverlayLayoutSaveResult result =
                     placements.Count > 0
                         ? SaveCore(placements)
@@ -147,7 +389,7 @@ public sealed class LegacyOverlayLayoutStore
             {
                 try
                 {
-                    RestoreFileIfChanged(updateDefaultOpacity, settingsPath, settingsBackupPath, settingsExisted);
+                    // The outer recovery transaction rolls back only the shared opacity property.
                     RestoreFileIfChanged(
                         updatedScaleOverrideCount > 0,
                         scaleOverridesPath,
@@ -230,6 +472,7 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    /// <summary>Reads legacy coordinates and optional panel metadata as one layout generation.</summary>
     private LegacyOverlayLayout LoadCore()
     {
         var positions = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
@@ -271,6 +514,7 @@ public sealed class LegacyOverlayLayoutStore
         ApplyTypographyOverrides(positions, typographyOverrides);
         ApplySizeOverrides(positions, LoadSizeOverrides(errors));
         ApplyPositionReferences(positions, LoadPositionReferences(errors));
+        ApplyGrowthOverrides(positions, errors);
 
         // New mining warnings start at the player's flight-warning placement.
         // Once saved independently, never overwrite their position or scale.
@@ -378,12 +622,15 @@ public sealed class LegacyOverlayLayoutStore
         return new LegacyOverlayLayoutSaveResult(plottersPath, backupPath, placements.Count);
     }
 
+    /// <summary>Stores imported frame dimensions while excluding concurrent layout writers.</summary>
     public int SaveImportedPositionReferences(OverlayPositionReference reference)
     {
         ArgumentNullException.ThrowIfNull(reference);
         ValidatePositionReference(reference, nameof(reference));
         lock (fileLock)
         {
+            using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
+            OverlayLayoutFileAccess.Recover(dataDirectory);
             if (!File.Exists(plottersPath))
             {
                 return 0;
@@ -421,6 +668,145 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    /// <summary>Reads per-panel growth preferences without changing their coordinate anchors.</summary>
+    private void ApplyGrowthOverrides(Dictionary<string, LegacyOverlayPlacement> positions, List<string> errors)
+    {
+        if (!File.Exists(growthOverridesPath))
+        {
+            return;
+        }
+        try
+        {
+            foreach ((string name, JsonNode? value) in ParseObject(growthOverridesPath))
+            {
+                (OverlayGrowthDirection direction, LegacyHorizontalAnchor? anchor) = ReadGrowthOverride(value, name);
+                if (positions.TryGetValue(name, out LegacyOverlayPlacement? placement))
+                {
+                    positions[name] = placement with { GrowthDirection = direction, GrowthAnchor = anchor };
+                }
+            }
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            errors.Add($"Could not read overlay growth overrides '{growthOverridesPath}': {exception.Message}");
+        }
+    }
+
+    /// <summary>Reads both previous named overrides and new records containing a retained growth anchor.</summary>
+    private static (OverlayGrowthDirection Direction, LegacyHorizontalAnchor? Anchor) ReadGrowthOverride(
+        JsonNode? value,
+        string name
+    )
+    {
+        if (value is JsonObject record)
+        {
+            OverlayGrowthDirection direction = ReadGrowthDirection(record["direction"], name);
+            LegacyHorizontalAnchor? anchor = record["anchor"] is null
+                ? null
+                : ReadGrowthDirection(record["anchor"], name) switch
+                {
+                    OverlayGrowthDirection.Left => LegacyHorizontalAnchor.Left,
+                    OverlayGrowthDirection.Right => LegacyHorizontalAnchor.Right,
+                    _ => throw new InvalidDataException($"Overlay growth anchor '{name}' must be left or right."),
+                };
+            return (direction, anchor);
+        }
+        return (ReadGrowthDirection(value, name), null);
+    }
+
+    /// <summary>Validates named directions, using automatic behavior when no override exists.</summary>
+    private static OverlayGrowthDirection ReadGrowthDirection(JsonNode? value, string name)
+    {
+        if (value is null)
+        {
+            return OverlayGrowthDirection.Automatic;
+        }
+        if (value is JsonValue scalar && scalar.TryGetValue<string>(out string? text))
+        {
+            return text.ToLowerInvariant() switch
+            {
+                "automatic" => OverlayGrowthDirection.Automatic,
+                "left" => OverlayGrowthDirection.Left,
+                "right" => OverlayGrowthDirection.Right,
+                _ => throw new InvalidDataException(
+                    $"Overlay growth override '{name}' must be automatic, left or right."
+                ),
+            };
+        }
+        throw new InvalidDataException($"Overlay growth override '{name}' must be a named direction.");
+    }
+
+    /// <summary>Writes only changed directions under the owning layout transaction, preserving other panels and verified backups.</summary>
+    private void SaveGrowthOverridesCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        JsonObject root = File.Exists(growthOverridesPath) ? ParseObject(growthOverridesPath) : [];
+        bool changed = false;
+        foreach ((string name, LegacyOverlayPlacement placement) in placements)
+        {
+            if (!Enum.IsDefined(placement.GrowthDirection))
+            {
+                throw new ArgumentOutOfRangeException(nameof(placements), "Overlay growth direction is invalid.");
+            }
+            if (placement.GrowthAnchor is not (null or LegacyHorizontalAnchor.Left or LegacyHorizontalAnchor.Right))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(placements),
+                    "Overlay growth anchor must be left or right."
+                );
+            }
+            if (
+                ReadGrowthOverride(root[name], name) == (placement.GrowthDirection, placement.GrowthAnchor)
+                && root[name] is not JsonValue
+            )
+            {
+                continue;
+            }
+            changed = true;
+            if (placement.GrowthDirection == OverlayGrowthDirection.Automatic && placement.GrowthAnchor is null)
+            {
+                root.Remove(name);
+            }
+            else
+            {
+                root[name] = new JsonObject
+                {
+                    ["direction"] = placement.GrowthDirection.ToString().ToLowerInvariant(),
+                    ["anchor"] = placement.GrowthAnchor?.ToString().ToLowerInvariant(),
+                };
+            }
+        }
+        if (!changed)
+        {
+            return;
+        }
+        Directory.CreateDirectory(dataDirectory);
+        if (File.Exists(growthOverridesPath))
+        {
+            _ = CreateVerifiedBackup(growthOverridesPath, "overlay-growth-overrides");
+        }
+        string temporaryPath = $"{growthOverridesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            JsonObject verified = ParseObject(temporaryPath);
+            foreach ((string name, LegacyOverlayPlacement placement) in placements)
+            {
+                if (ReadGrowthOverride(verified[name], name) != (placement.GrowthDirection, placement.GrowthAnchor))
+                {
+                    throw new InvalidDataException(
+                        $"Overlay growth override '{name}' could not be verified before saving."
+                    );
+                }
+            }
+            File.Move(temporaryPath, growthOverridesPath, true);
+        }
+        finally
+        {
+            DeleteFileIfPresent(temporaryPath);
+        }
+    }
+
+    /// <summary>Reads and validates coordinate reference sizes, reporting malformed files.</summary>
     private Dictionary<string, OverlayPositionReference> LoadPositionReferences(List<string> errors)
     {
         var references = new Dictionary<string, OverlayPositionReference>(StringComparer.Ordinal);
@@ -888,7 +1274,7 @@ public sealed class LegacyOverlayLayoutStore
 
     private string CreateVerifiedBackup(string sourcePath, string filePrefix)
     {
-        string backupDirectory = Path.Combine(dataDirectory, "overlay-layout-backups");
+        string backupDirectory = Path.Combine(dataDirectory, BackupDirectoryName);
         Directory.CreateDirectory(backupDirectory);
         string backupPath = Path.Combine(
             backupDirectory,
@@ -928,11 +1314,12 @@ public sealed class LegacyOverlayLayoutStore
         return rollbackPath;
     }
 
+    /// <summary>Atomically restores earlier bytes during exception rollback.</summary>
     private static void RestoreFile(string path, string? backupPath, bool existed)
     {
         if (existed && backupPath is not null)
         {
-            File.Copy(backupPath, path, true);
+            OverlayLayoutFileAccess.WriteAtomic(path, File.ReadAllBytes(backupPath));
         }
         else if (!existed && File.Exists(path))
         {
@@ -1315,7 +1702,8 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private static JsonObject ParseObject(string path)
+    /// <summary>Reads legacy JSON objects while accepting comments and trailing commas.</summary>
+    internal static JsonObject ParseObject(string path)
     {
         return JsonNode.Parse(
                 File.ReadAllText(path),
@@ -1603,8 +1991,18 @@ public sealed record LegacyOverlayPlacement(
     int? ScaleIndex = null,
     OverlayTypographyScale? TypographyScale = null,
     OverlayPositionReference? PositionReference = null,
-    OverlayPanelSize? SizeOverride = null
+    OverlayPanelSize? SizeOverride = null,
+    OverlayGrowthDirection GrowthDirection = OverlayGrowthDirection.Automatic,
+    LegacyHorizontalAnchor? GrowthAnchor = null
 );
+
+/// <summary>Selects automatic monitor-based growth or a persistent direction for an individual panel.</summary>
+public enum OverlayGrowthDirection
+{
+    Automatic,
+    Left,
+    Right,
+}
 
 public sealed record OverlayPositionReference(int Width, int Height);
 
@@ -1612,6 +2010,8 @@ public sealed record OverlayPanelSize(double Width, double Height);
 
 public sealed record LegacyOverlayLayoutSaveResult(string Path, string? BackupPath, int UpdatedPlacementCount)
 {
+    /// <summary>The verified generation committed under the folder lease, without a racy follow-up read.</summary>
+    public LegacyOverlayLayout? CommittedLayout { get; init; }
     public string? SettingsBackupPath { get; init; }
 
     public bool UpdatedDefaultOpacity { get; init; }

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -9,6 +10,51 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayRuntimePresentationFactoryTests
 {
+    /// <summary>Renders every shared overlay state without editor-only passive or platform input-status labels in gameplay content.</summary>
+    [AvaloniaFact]
+    public void SharedPresentationsKeepInputStatusOutOfGameplayContent()
+    {
+        string[] inputLabels =
+        [
+            "PSV",
+            "PASSIVE",
+            "CLICK-THROUGH",
+            "PASS-THROUGH UNAVAILABLE",
+            "PASS-THROUGH AVAILABLE",
+        ];
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
+        {
+            int stateCount = OverlayRuntimePresentationFactory.GetEditorPreviewStates(definition.Name).Count;
+            for (int index = 0; index < stateCount; index++)
+            {
+                Assert.True(
+                    OverlayRuntimePresentationFactory.TryCreate(
+                        definition.Name,
+                        index,
+                        out Control? presentation,
+                        out object? context
+                    )
+                );
+                var window = new Window { Content = presentation, SizeToContent = SizeToContent.WidthAndHeight };
+                try
+                {
+                    OverlayThemeResources.ApplyLegacyPresentation(window, definition.Name);
+                    window.Show();
+                    window.UpdateLayout();
+                    Assert.DoesNotContain(
+                        presentation!.GetVisualDescendants().OfType<TextBlock>(),
+                        label => inputLabels.Contains(label.Text, StringComparer.OrdinalIgnoreCase)
+                    );
+                }
+                finally
+                {
+                    window.Close();
+                    (context as IDisposable)?.Dispose();
+                }
+            }
+        }
+    }
+
     [Fact]
     public void StatefulPlottersExposeNamedEditorPreviewStates()
     {
@@ -98,6 +144,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
         }
     }
 
+    /// <summary>Verifies remaining editors have non empty representative content.</summary>
     [Fact]
     public void RemainingEditorsHaveNonEmptyRepresentativeContent()
     {
@@ -107,6 +154,12 @@ public sealed class OverlayRuntimePresentationFactoryTests
         Assert.True(colonization.HasRows);
         Assert.NotEmpty(colonization.Groups);
         Assert.Contains(colonization.Groups.SelectMany(group => group.Rows), row => row.IsSatisfied);
+        Assert.Contains(
+            colonization.Groups.SelectMany(group => group.Rows),
+            row => row.Needed is >= 10_000 and < 100_000
+        );
+        Assert.Contains(colonization.Groups.SelectMany(group => group.Rows), row => row.Needed >= 100_000);
+        Assert.Contains(colonization.Groups.SelectMany(group => group.Rows), row => row.OnFleetCarriers >= 10_000);
 
         NotificationViewModel notification = Assert.IsType<NotificationViewModel>(
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotFloatie")
@@ -123,7 +176,9 @@ public sealed class OverlayRuntimePresentationFactoryTests
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotGalMap")
         );
         Assert.True(galMap.HasPrimarySystem);
-        Assert.True(galMap.HasRouteFooter);
+        Assert.Equal("SELECTED", galMap.PrimarySystemDisplay.Label);
+        Assert.True(galMap.HasPrimaryPois);
+        Assert.Equal(2, galMap.PrimaryPois.Count);
 
         SurfaceSurveyOverlayViewModel surface = Assert.IsType<SurfaceSurveyOverlayViewModel>(
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotGrounded")

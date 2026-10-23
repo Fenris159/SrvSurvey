@@ -14,6 +14,7 @@ public sealed class OverlayWindowRegistry
     private HashSet<string> vehicleExcludedPlotters = new(StringComparer.Ordinal);
     private bool galaxyMapContextActive;
     private bool editorSuppressed;
+    private readonly HashSet<Window> combinedDragWindows = [];
     private bool manualSuppressed;
     private bool suitSuppressed;
     private bool sessionSuppressed;
@@ -22,6 +23,29 @@ public sealed class OverlayWindowRegistry
     private bool reconcileAgain;
 
     public static OverlayWindowRegistry Shared { get; } = new();
+
+    /// <summary>Reports accepted user gestures from native and combined presenters, excluding automatic placement.</summary>
+    internal event Action<Window, PixelPoint>? UserPositionChanged;
+
+    /// <summary>Publishes a pointer-driven panel position to its active placement session.</summary>
+    internal void ReportUserPosition(Window window, PixelPoint position) =>
+        UserPositionChanged?.Invoke(window, position);
+
+    /// <summary>Prevents polling from repositioning a combined panel during a pointer gesture.</summary>
+    internal void SetCombinedDragging(Window window, bool dragging)
+    {
+        if (dragging)
+        {
+            combinedDragWindows.Add(window);
+        }
+        else
+        {
+            combinedDragWindows.Remove(window);
+        }
+    }
+
+    /// <summary>Indicates whether the combined presenter currently owns a panel gesture.</summary>
+    internal bool IsCombinedDragging(Window window) => combinedDragWindows.Contains(window);
 
     public event EventHandler? Changed;
 
@@ -299,7 +323,8 @@ public sealed class OverlayWindowRegistry
         return new OverlayVisibilityFacts(
             Requested: requested,
             HostEligible: true,
-            UserEnabled: IsUserVisible(definition.Name),
+            // Colonization availability pins manual display; its coordinator owns automatic visibility.
+            UserEnabled: definition.Name == "PlotBuildCommodities" || IsUserVisible(definition.Name),
             GalaxyMapAllowed: !galaxyMapContextActive || definition.ShowInGalaxyMap,
             EditorSuppressed: editorSuppressed,
             ManualSuppressed: manualSuppressed,
@@ -352,6 +377,11 @@ public sealed class OverlayWindowRegistry
         {
             if (registrations.TryGetValue(window, out Registration? registration))
             {
+                // Hide clears Owner, including recursively hidden children. Snapshot every visible owner before hiding any.
+                if (window.IsVisible)
+                {
+                    registration.PresentationOwner = window.Owner as Window;
+                }
                 entries.Add((window, registration));
             }
         }
@@ -392,6 +422,14 @@ public sealed class OverlayWindowRegistry
 
     private static void ApplyVisibility(Window window, Registration registration, bool visible)
     {
+        if (registration.PresentationOwner is { PlatformImpl: null })
+        {
+            // Hidden children are detached by Avalonia, so an owner closing must still release its saved children.
+            window.Close();
+            registration.Presented = false;
+            return;
+        }
+
         if (registration.PresentationVisual is not null)
         {
             registration.PresentationVisible = visible;
@@ -409,7 +447,14 @@ public sealed class OverlayWindowRegistry
         {
             if (visible)
             {
-                window.Show();
+                if (registration.PresentationOwner is { } owner)
+                {
+                    window.Show(owner);
+                }
+                else
+                {
+                    window.Show();
+                }
             }
             else
             {
@@ -451,6 +496,7 @@ public sealed class OverlayWindowRegistry
 
     private void Unregister(Window window)
     {
+        combinedDragWindows.Remove(window);
         Dispatcher.UIThread.VerifyAccess();
         if (!registrations.TryGetValue(window, out Registration? registration))
         {
@@ -491,6 +537,8 @@ public sealed class OverlayWindowRegistry
 
         public Visual? PresentationVisual { get; set; }
 
+        public Window? PresentationOwner { get; set; }
+
         public bool PresentationVisible { get; set; }
 
         public bool Presented { get; set; }
@@ -516,6 +564,7 @@ public sealed record RegisteredOverlayWindow(
 
 internal static class OverlayWindowMetrics
 {
+    /// <summary>Measures the current shared presentation in physical pixels on its rendering surface before placement.</summary>
     public static PixelSize PrepareForPlacement(
         Window window,
         LegacyOverlayLayout layout,
@@ -527,23 +576,54 @@ internal static class OverlayWindowMetrics
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        double scaling = NormalizeScaling(targetScaling);
+        double scaling = NormalizeScaling(OverlayThemeResources.GetPresentationScaling(window, targetScaling));
         int scaleIndex = layout.GetScaleIndex(plotterName);
         OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
+        window.UpdateLayout();
         double fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
         PixelSize fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
-        return GetPixelSize(window, fallback, scaling);
+        return GetMeasuredPresentationSize(window, scaling) ?? GetPixelSize(window, fallback, scaling);
     }
 
+    /// <summary>Reports the rendered panel footprint, falling back to host or catalog geometry until measured.</summary>
     public static PixelSize GetPixelSize(RegisteredOverlayWindow registered)
     {
         ArgumentNullException.ThrowIfNull(registered);
-        double scaling = NormalizeScaling(registered.Window.RenderScaling);
+        double scaling = NormalizeScaling(
+            OverlayThemeResources.GetPresentationScaling(registered.Window, registered.Window.RenderScaling)
+        );
         PixelSize previewSize = OverlayLayoutCatalog.GetRequired(registered.PlotterName).PreviewSize;
         PixelSize fallback = ScalePixelSize(previewSize, scaling);
-        return GetPixelSize(registered.Window, fallback, scaling, registered.PresentationVisual);
+        return GetMeasuredPresentationSize(registered.Window, scaling)
+            ?? GetPixelSize(registered.Window, fallback, scaling, registered.PresentationVisual);
     }
 
+    /// <summary>Measures the shared panel's transformed footprint without native resize lag or transparent host padding.</summary>
+    private static PixelSize? GetMeasuredPresentationSize(Window window, double scaling)
+    {
+        if (
+            OverlayThemeResources.GetPresentationRoot(window) is not UserControl panel
+            || panel.Bounds.Width <= 0
+            || panel.Bounds.Height <= 0
+            || TopLevel.GetTopLevel(panel) is not { } surface
+        )
+        {
+            return null;
+        }
+        if (
+            panel.TranslatePoint(default, surface) is not { } start
+            || panel.TranslatePoint(new Point(panel.Bounds.Width, panel.Bounds.Height), surface) is not { } end
+        )
+        {
+            return null;
+        }
+        return new PixelSize(
+            Math.Max(1, (int)Math.Ceiling((end.X - start.X) * scaling)),
+            Math.Max(1, (int)Math.Ceiling((end.Y - start.Y) * scaling))
+        );
+    }
+
+    /// <summary>Converts a logical footprint to positive enclosing physical pixel dimensions.</summary>
     private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>
         new(
             Math.Max(1, (int)Math.Ceiling(size.Width * scaling)),

@@ -54,6 +54,10 @@ public sealed class RavenThemeService
         ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",
         ["RavenOverlayColoniseDeficitDimBrush"] = "colonise.deficitDark",
         ["RavenOverlayColoniseHighlightBrush"] = "colonise.highlight",
+        ["RavenOverlayColoniseCategoryBrush"] = "colonize.category",
+        ["RavenOverlayColoniseNeedBrush"] = "colonize.need",
+        ["RavenOverlayColoniseHaveBrush"] = "colonize.have",
+        ["RavenOverlayColoniseShipBrush"] = "colonize.ship",
         ["RavenOverlayColoniseItemBrush"] = "colonise.item",
         ["RavenOverlayColoniseItemDimBrush"] = "colonise.itemDark",
         ["RavenOverlayColoniseRowHighlightBrush"] = "colonise.rowHighlight",
@@ -178,6 +182,7 @@ public sealed class RavenThemeService
         SetBrush("RavenAccentHoverBrush", theme.AccentHoverColor);
         SetBrush("RavenControlAccentBrush", theme.ControlAccentColor);
         SetBrush("RavenControlAccentHoverBrush", theme.ControlAccentHoverColor);
+        SetBrush("RavenTagFillBrush", theme.TagFillColor);
         SetBrush("RavenAccentMutedBrush", theme.AccentMutedColor);
         SetBrush("RavenSecondaryFillBrush", theme.SecondaryFillColor);
         SetBrush("RavenInteractiveHoverBrush", theme.InteractiveHoverColor);
@@ -198,11 +203,13 @@ public sealed class RavenThemeService
         SetBrush("RavenSuccessBrush", theme.SuccessColor);
         SetBrush("RavenWarningBrush", theme.WarningColor);
         SetBrush("RavenDangerBrush", theme.DangerColor);
+        SetBrush("RavenDangerForegroundBrush", theme.DangerForegroundColor);
         ApplyWindowChromeResources(theme);
         ApplyFluentCheckBoxResources(theme);
         ApplyDepthResources(theme);
     }
 
+    /// <summary>Applies overlay colors and gives the loading highlight the commodity row fill's opacity.</summary>
     private void ApplyOverlayTheme(LegacyOverlayTheme theme, bool notify)
     {
         ArgumentNullException.ThrowIfNull(theme);
@@ -216,6 +223,12 @@ public sealed class RavenThemeService
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
+
+        Color highlight = theme.GetColor("colonise.highlight");
+        SetBrush(
+            "RavenOverlayColoniseLoadHighlightBrush",
+            Color.FromArgb(theme.GetColor("colonise.rowHighlight").A, highlight.R, highlight.G, highlight.B)
+        );
 
         OverlayTypographySettings typography = theme.EffectiveTypography;
         application.Resources["RavenOverlayHeaderFontSize"] = typography.Header;

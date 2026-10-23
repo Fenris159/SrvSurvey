@@ -23,7 +23,7 @@ public sealed record ColonizationPendingContributionRequirements(
     ColonizationConstructionDepotSnapshot? Depot = null
 );
 
-/// <summary>An ordered carrier delta retains its baseline and journal event time; null time prevents retirement by a market timestamp.</summary>
+/// <summary>An ordered carrier delta retains its baseline, journal time, and local observation time for full-manifest reconciliation.</summary>
 public sealed record ColonizationPendingCargoAdjustment(
     string Owner,
     long MarketId,
@@ -31,7 +31,10 @@ public sealed record ColonizationPendingCargoAdjustment(
     DateTimeOffset? RecordedAt,
     Dictionary<string, int>? Before,
     bool Attempted = true,
-    bool OutcomeUnknown = true
+    bool OutcomeUnknown = true,
+    DateTimeOffset? ObservedAt = null,
+    string? SourceEventName = null,
+    bool AwaitingBaseline = false
 );
 
 /// <summary>A construction market whose Raven site row was already repaired, so later docks skip the lookup.</summary>

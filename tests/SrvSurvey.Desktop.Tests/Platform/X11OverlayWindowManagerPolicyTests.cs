@@ -11,6 +11,21 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class X11OverlayWindowManagerPolicyTests
 {
+    /// <summary>X11 advertises the OBS capture surface as a normal window without dock or utility classification.</summary>
+    [Theory]
+    [InlineData(0, 17)]
+    [InlineData(23, 17)]
+    [InlineData(23, 0)]
+    public void BackgroundCaptureUsesOnlyTheNormalWindowType(uint utilityWindowAtom, uint normalWindowAtom)
+    {
+        nuint[] types = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+            utilityWindowAtom,
+            normalWindowAtom,
+            captureWindow: true
+        );
+        Assert.Equal(normalWindowAtom == 0 ? [] : new nuint[] { normalWindowAtom }, types);
+    }
+
     /// <summary>Rejects notification and OSD classifications that KWin animates, including normal-first ordering.</summary>
     [Fact]
     public void OverlayClassificationUsesUtilityBeforeNormalFallback()

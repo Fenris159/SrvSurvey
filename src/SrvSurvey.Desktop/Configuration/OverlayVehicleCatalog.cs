@@ -53,6 +53,7 @@ public static class OverlayVehicleCatalog
         new("type6", "Type-6 Transporter", MediumGroup),
         new("type8", "Type-8 Transporter", MediumGroup),
         new("anaconda", "Anaconda", LargeGroup),
+        new("anacondamkii", "Anaconda Mk II", LargeGroup),
         new("belugaliner", "Beluga Liner", LargeGroup),
         new("explorer_nx", "Caspian Explorer", LargeGroup),
         new("federation_corvette", "Federal Corvette", LargeGroup),
@@ -71,6 +72,9 @@ public static class OverlayVehicleCatalog
         new("on-foot", "On foot", VehicleGroup),
         new(UnknownKey, "Other / unknown", VehicleGroup),
     ];
+
+    public static bool IsAllowedByDefault(OverlaySettingsCategory category, OverlayVehicleDefinition vehicle) =>
+        category != OverlaySettingsCategory.Colonization || vehicle.Group != VehicleGroup;
 
     public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(OverlaySettingsCategory category) =>
         category == OverlaySettingsCategory.MineMap

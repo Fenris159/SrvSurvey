@@ -1,18 +1,232 @@
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.Tests.Platform;
+using SrvSurvey.Desktop.Tests.ProfileSync;
+using SrvSurvey.Desktop.Tests.ViewModels;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Runtime;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    /// <summary>The app always passes resolved paths; doing so must still initialize an automatic commander's private settings.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NormalStartupWithResolvedPathsStillSelectsCommanderSettings(bool selectBeforeComposition)
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.2026-10-15T010000.01.log"),
+            """{"event":"Commander","Name":"First","FID":"F123"}"""
+        );
+        AppDataPaths paths = temp.Paths;
+        new OverlayScaleSettingsStore(paths.SharedUiSettingsPath).Save(new(OverlayScaleCatalog.GetIndex(65)));
+        string[] arguments = ["--journal-directory", journals];
+        DesktopStartupContext context = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => paths,
+            CancellationToken.None
+        );
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var applicationLog = new ApplicationLogService(paths.DataDirectory);
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = selectBeforeComposition ? context.AppDataPaths : paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.OverlayInfrastructureReady
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+
+        AppDataPaths commander = paths with { SettingsFrontierId = "F123" };
+        Assert.True(File.Exists(Path.Combine(commander.OverlaySettingsDirectory, ".profile-initialized")));
+        Assert.Equal(
+            OverlayScaleCatalog.GetIndex(65),
+            new OverlayScaleSettingsStore(commander.UiSettingsPath).Load().Index
+        );
+    }
+
+    /// <summary>Both colonization actions show a hidden available panel on their first press and keep checkbox state synchronized.</summary>
+    [AvaloniaTheory]
+    [InlineData(GlobalInputAction.ToggleColonizationCommoditiesVisibility)]
+    [InlineData(GlobalInputAction.ShowColonyShopping)]
+    public async Task ColonizationShortcutsToggleActualVisibilityAndPersistThroughDocking(GlobalInputAction action)
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var window = new MainWindow(main);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
+        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
+        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        try
+        {
+            Assert.False(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            ColonizationCommodityOverlayViewModel overlay = main.Colonization.CommodityOverlay;
+            Assert.Same(overlay, main.OverlayInteraction.ColonizationOverlay);
+            var plan = new ColonizationCommodityPlan
+            {
+                Title = "Test build",
+                ProjectNames = ["Test build"],
+                FleetCarriers = [],
+                Rows =
+                [
+                    new ColonizationCommodityPlanRow
+                    {
+                        Commodity = "steel",
+                        DisplayName = "Steel",
+                        Category = "Metals",
+                        Needed = 100,
+                    },
+                ],
+            };
+            var shipStatus = new EliteStatus { Flags = StatusFlags.InMainShip };
+            var journal = new JournalSessionState();
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    """{"event":"LoadGame","Ship":"python"}""",
+                    out JournalEventEnvelope? loadGame,
+                    out _
+                )
+            );
+            journal.Apply(loadGame!);
+            main.OverlayExceptions.UpdateBoardedVehicle(journal, shipStatus);
+            overlay.Apply(plan, shipStatus);
+            using var host = new HostedOverlayTestHarness(OverlayWindowRegistry.Shared);
+            using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
+            typeof(DesktopRuntime)
+                .GetField("colonizationCommodityOverlayCoordinator", flags)!
+                .SetValue(runtime, coordinator);
+            OverlayPanelVisibilityEntryViewModel panel = main.OverlayPanelVisibility.Panels.Single(item =>
+                item.PlotterName == "PlotBuildCommodities"
+            );
+            Assert.True(panel.IsEnabled);
+            Assert.False(coordinator.IsVisible);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(coordinator.IsVisible);
+            overlay.Apply(
+                plan,
+                new EliteStatus { Flags = StatusFlags.Docked, GuiFocus = GuiFocus.StationServices },
+                updatedHasMarketSinceDocking: true
+            );
+            overlay.Apply(plan, new EliteStatus { Flags = StatusFlags.InMainShip });
+            Assert.True(coordinator.IsVisible);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.False(panel.IsEnabled);
+            Assert.False(coordinator.IsVisible);
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(panel.IsEnabled);
+            Assert.True(coordinator.IsVisible);
+        }
+        finally
+        {
+            main.OverlayPanelVisibility.EnsureVisible("PlotBuildCommodities");
+            window.Close();
+        }
+    }
+
+    /// <summary>The shortcut updates live groups, the bound checkbox preference, and persisted settings on each press.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CollapseCoveredGroupsShortcutUpdatesAndPersistsDisplayStyle(bool hideCollapsedGroups)
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null);
+        var window = new MainWindow(main);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
+        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
+        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        ColonizationViewModel colonization = main.Colonization;
+        colonization.CollapseCoveredCommodityGroups = false;
+        colonization.HideCollapsedCommodityGroups = hideCollapsedGroups;
+        colonization.CommodityOverlay.Apply(
+            new ColonizationCommodityPlan
+            {
+                Title = "Test build",
+                ProjectNames = ["Test build"],
+                FleetCarriers = [new ColonizationFleetCarrier { MarketId = 1, Name = "ABC-123" }],
+                Rows =
+                [
+                    new ColonizationCommodityPlanRow
+                    {
+                        Commodity = "steel",
+                        DisplayName = "Steel",
+                        Category = "Metals",
+                        Needed = 100,
+                        OnFleetCarriers = 100,
+                    },
+                ],
+            },
+            new EliteStatus { Flags = StatusFlags.Docked }
+        );
+        var store = new ColonizationSettingsStore(main.AppDataPaths.UiSettingsPath);
+        try
+        {
+            Assert.False(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+            InputBindingViewModel binding = main.InputSettings.Bindings.Single(item =>
+                item.Definition.Action == GlobalInputAction.ToggleCollapseCoveredColonyGroups
+            );
+            Assert.Equal("ALT CTRL SHIFT X", binding.Chord);
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+
+            Assert.True(colonization.CollapseCoveredCommodityGroups);
+            Assert.True(store.LoadOverlayPreferences().CollapseCoveredGroups);
+            Assert.Equal(hideCollapsedGroups, colonization.HideCollapsedCommodityGroups);
+            Assert.Equal(hideCollapsedGroups, store.LoadOverlayPreferences().HideCollapsedGroups);
+            if (hideCollapsedGroups)
+            {
+                Assert.Empty(colonization.CommodityOverlay.Groups);
+            }
+            else
+            {
+                Assert.True(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+            }
+
+            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+
+            Assert.False(colonization.CollapseCoveredCommodityGroups);
+            Assert.False(store.LoadOverlayPreferences().CollapseCoveredGroups);
+            Assert.Equal(hideCollapsedGroups, colonization.HideCollapsedCommodityGroups);
+            Assert.Equal(hideCollapsedGroups, store.LoadOverlayPreferences().HideCollapsedGroups);
+            Assert.False(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [Fact]
     public async Task ConcurrentShutdownRequestsShareOneOrderedStop()
     {
@@ -203,7 +417,8 @@ public sealed class DesktopRuntimeTests
             Assert.DoesNotContain("Desktop runtime shutdown failed", applicationLog.Text, StringComparison.Ordinal);
             Assert.Null(desktop.MainWindow);
             Assert.Empty(OverlayWindowRegistry.Shared.Snapshot());
-            Assert.True(OverlayWindowRegistry.Shared.ShouldPresent("PlotBuildCommodities"));
+            // Vehicle exceptions can still hide an unknown vessel; runtime suppression must be cleared.
+            Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotBuildCommodities"));
         }
         finally
         {
@@ -225,24 +440,107 @@ public sealed class DesktopRuntimeTests
         }
     }
 
+    /// <summary>Hides immediately while cleanup runs and rejects repeated close attempts until orderly shutdown.</summary>
     [AvaloniaFact]
-    public async Task MainWindowCloseWaitsForRuntimeCleanup()
+    public async Task MainWindowCloseHidesWhileRuntimeCleanupFinishes()
     {
         List<string> events = [];
         var window = new Window();
+        bool closed = false;
+        window.Closed += (_, _) => closed = true;
         var lifetime = new RecordingDesktopLifetime(events, window.Close);
         var phases = new RecordingDesktopRuntimePhases(events);
         await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         runtime.AttachMainWindow(window);
         window.Show();
 
-        window.Close();
+        try
+        {
+            window.Close();
+            Task stopping = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+            Assert.False(window.IsVisible);
+            Assert.False(window.IsEnabled);
+            Assert.False(closed);
+            Assert.False(stopping.IsCompleted);
+            window.Close();
+            Assert.False(closed);
+            Assert.Same(stopping, runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose));
+            Assert.DoesNotContain("shutdown:0", events);
+        }
+        finally
+        {
+            phases.AllowProducerStop.SetResult();
+            await runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        }
+        Assert.True(closed);
+        Assert.Equal(1, events.Count(item => item == "shutdown:0"));
+    }
 
-        Assert.True(window.IsVisible);
-        Assert.False(window.IsEnabled);
+    /// <summary>Retains the process and local snapshot until a held Drive upload completes, even after another close request.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedCloseCannotInterruptShutdownBackup(bool uploadFails)
+    {
+        using var root = new ProfileSyncTestRoot();
+        root.Store.SavePreferences(new(Automatic: true));
+        root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"current\"}");
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = async token =>
+            {
+                entered.SetResult();
+                await release.Task.WaitAsync(token);
+                if (uploadFails)
+                {
+                    throw new HttpRequestException("offline");
+                }
+            },
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+        List<string> events = [];
+        var window = new Window();
+        bool closed = false;
+        window.Closed += (_, _) => closed = true;
+        var lifetime = new RecordingDesktopLifetime(events, window.Close);
+        var phases = new RecordingDesktopRuntimePhases(events) { DisposeViewModel = () => service.ShutdownAsync() };
         phases.AllowProducerStop.SetResult();
-        await runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
-        Assert.False(window.IsVisible);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
+        runtime.AttachMainWindow(window);
+        window.Show();
+        try
+        {
+            window.Close();
+            Task stopping = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Single(Directory.EnumerateFiles(Path.Combine(root.Store.StateDirectory, "backups")));
+            Assert.False(closed);
+            Assert.False(stopping.IsCompleted);
+            window.Close();
+            Assert.False(closed);
+            Assert.False(window.IsVisible);
+            Assert.DoesNotContain("shutdown:0", events);
+        }
+        finally
+        {
+            release.TrySetResult();
+            await runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        }
+        Assert.True(closed);
+        Assert.Equal(1, events.Count(item => item == "shutdown:0"));
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(root.Store.StateDirectory, "backups")));
+        if (uploadFails)
+        {
+            Assert.Empty(cloud.Uploaded);
+            Assert.Contains("Local data was retained", service.Status);
+        }
+        else
+        {
+            Assert.Single(cloud.Uploaded);
+            Assert.Contains("Google Drive", service.Status);
+        }
     }
 
     [Fact]
@@ -385,6 +683,9 @@ public sealed class DesktopRuntimeTests
 
         public Action? OnDisposeViewModel { get; set; }
 
+        /// <summary>Supplies asynchronous cleanup work to hold shutdown until a backup completes.</summary>
+        public Func<Task>? DisposeViewModel { get; init; }
+
         public void Quiesce(DesktopShutdownReason reason)
         {
             events.Add($"quiesce:{reason}");
@@ -411,11 +712,12 @@ public sealed class DesktopRuntimeTests
             return Task.CompletedTask;
         }
 
+        /// <summary>Records view-model disposal and awaits any injected background backup work.</summary>
         public Task DisposeViewModelAsync()
         {
             events.Add("dispose-view-model");
             OnDisposeViewModel?.Invoke();
-            return Task.CompletedTask;
+            return DisposeViewModel?.Invoke() ?? Task.CompletedTask;
         }
 
         public Task DisposeInfrastructureAsync()

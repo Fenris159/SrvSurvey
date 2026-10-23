@@ -436,7 +436,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
         }
     }
 
-    private static bool TryParseFirst(JsonNode? value, out CommanderCodexFirst first)
+    internal static bool TryParseFirst(JsonNode? value, out CommanderCodexFirst first)
     {
         first = null!;
         if (value is JsonValue scalar && scalar.TryGetValue<string>(out string? text))

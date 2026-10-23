@@ -70,6 +70,7 @@ public static class JournalSnapshotReader
         return state.CreateSnapshot(sourcePath, malformedLineCount);
     }
 
+    /// <summary>Applies valid journal lines without capturing a caller's UI context and counts malformed lines.</summary>
     private static async Task<int> ApplyAsync(
         TextReader reader,
         JournalSessionState state,
@@ -78,7 +79,7 @@ public static class JournalSnapshotReader
     {
         int malformedLineCount = 0;
 
-        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {

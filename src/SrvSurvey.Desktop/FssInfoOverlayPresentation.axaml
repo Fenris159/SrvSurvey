@@ -30,14 +30,6 @@
                      Text="{Binding Survey.SystemTitle}"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock Classes="overlay-detail"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
 
       <StackPanel Grid.Row="1" Spacing="3">

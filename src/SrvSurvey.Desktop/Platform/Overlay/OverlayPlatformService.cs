@@ -10,6 +10,12 @@ public interface IOverlayPlatformService : IDisposable
 {
     OverlayPlatformCapabilities Capabilities { get; }
 
+    /// <summary>Applies native capture and focus policy before the window is mapped, independently of theme registration.</summary>
+    void PrepareWindowForShow(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+    }
+
     OverlayPreparationResult PreparePassiveWindow(Window window);
 
     OverlayInteractionResult SetInteractive(Window window, bool interactive);
@@ -106,9 +112,6 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
 {
     private const int ExtendedWindowStyle = -20;
     private const long ToolWindow = 0x00000080L;
-    private const long Transparent = 0x00000020L;
-    private const long Layered = 0x00080000L;
-    private const long NoActivate = 0x08000000L;
     private const uint NoSize = 0x0001;
     private const uint NoMove = 0x0002;
     private const uint NoZOrder = 0x0004;
@@ -131,6 +134,7 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
         );
     }
 
+    /// <summary>Applies input and stacking policy while keeping the joined capture surface behind gameplay overlays.</summary>
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -145,9 +149,7 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
         }
 
         nint style = GetWindowLongPtr(handle, ExtendedWindowStyle);
-        nint updated = interactive
-            ? (style | (nint)(ToolWindow | Layered)) & ~(nint)(Transparent | NoActivate)
-            : style | (nint)(ToolWindow | Transparent | Layered | NoActivate);
+        nint updated = WindowsOverlayWindowStyles.Apply(window, style, interactive);
         Marshal.SetLastPInvokeError(0);
         nint previous = SetWindowLongPtr(handle, ExtendedWindowStyle, updated);
         int error = Marshal.GetLastPInvokeError();
@@ -160,7 +162,10 @@ internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformSe
             );
         }
 
-        if (!SetWindowPos(handle, nint.Zero, 0, 0, 0, 0, NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
+        bool captureWindow = window is StreamOverlayWindow;
+        nint insertAfter = captureWindow ? (nint)1 : nint.Zero; // HWND_BOTTOM keeps the capture behind gameplay.
+        uint positionFlags = NoSize | NoMove | DoNotActivate | FrameChanged | (captureWindow ? 0 : NoZOrder);
+        if (!SetWindowPos(handle, insertAfter, 0, 0, 0, 0, positionFlags))
         {
             error = Marshal.GetLastPInvokeError();
             _ = SetWindowLongPtr(handle, ExtendedWindowStyle, style);

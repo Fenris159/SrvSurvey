@@ -53,7 +53,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         Assert.Equal(1, client.LoadCount);
         Assert.Equal(2, viewModel.Projects.Count);
-        Assert.True(viewModel.Projects.Single(row => row.Project.BuildId == "shown").IsPrimary);
+        Assert.True(viewModel.Projects.Single(row => row.Project.BuildId == "shown").IsFocused);
         Assert.False(viewModel.Projects.Single(row => row.Project.BuildId == "hidden").IsShown);
         Assert.Equal("Cargo required: 300 | 3 trips in current ship", viewModel.ProjectSummary);
     }
@@ -92,16 +92,16 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
 
-        await viewModel.TogglePrimaryProjectAsync(viewModel.Projects[0]);
+        await viewModel.ToggleFocusProjectAsync(viewModel.Projects[0]);
 
         Assert.Equal("build-1", Assert.Single(client.PrimaryProjectRequests));
-        Assert.True(Assert.Single(viewModel.Projects).IsPrimary);
+        Assert.True(Assert.Single(viewModel.Projects).IsFocused);
 
-        await viewModel.TogglePrimaryProjectAsync(viewModel.Projects[0]);
+        await viewModel.ToggleFocusProjectAsync(viewModel.Projects[0]);
 
         Assert.Equal(2, client.PrimaryProjectRequests.Count);
         Assert.Null(client.PrimaryProjectRequests[1]);
-        Assert.False(Assert.Single(viewModel.Projects).IsPrimary);
+        Assert.False(Assert.Single(viewModel.Projects).IsFocused);
     }
 
     [Fact]
@@ -1494,7 +1494,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         ColonizationProjectRowViewModel project = Assert.Single(viewModel.Projects);
         Assert.Equal("cached-build", project.Project.BuildId);
-        Assert.True(project.IsPrimary);
+        Assert.True(project.IsFocused);
         Assert.Equal("Cargo required: 300", viewModel.ProjectSummary);
         Assert.Contains("offline", viewModel.StatusMessage);
         Assert.Equal(1, client.LoadCount);
@@ -2295,7 +2295,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         using var entered = new ManualResetEventSlim(false);
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier with { Cargo = [] }]),
             FleetCarrierResponse = carrier,
             GateGetFleetCarrier = gate,
             EnteredGetFleetCarrier = entered,
@@ -2305,16 +2305,15 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents([
-            Event(
-                "Docked",
-                """
-                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
-                "StationName":"SQD-001","StationType":"FleetCarrier",
-                "StationServices":["commodities","squadronBank"]
-                """
-            ),
-        ]);
+        JournalEventEnvelope dock = Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+            "StationName":"SQD-001","StationType":"FleetCarrier",
+            "StationServices":["commodities","squadronBank"]
+            """
+        );
+        viewModel.ApplyJournalEvents([dock]);
         viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
@@ -2334,7 +2333,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             }
         );
 
-        Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80, stationName: "SQD-001"));
+        Task dockSync = viewModel.SynchronizeLiveProjectsAsync([dock], allowPublishing: true);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await viewModel.SynchronizeLiveProjectsAsync(
             [
@@ -2350,7 +2349,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         Assert.Empty(client.FleetCarrierAdjustments);
 
         gate.SetResult(true);
-        await marketSync;
+        await dockSync;
 
         FleetCarrierAdjustmentCall queued = Assert.Single(client.FleetCarrierAdjustments);
         Assert.Equal(-5, queued.Changes["steel"]);
@@ -3131,8 +3130,38 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         return result!;
     }
 
-    private sealed class StubRavenColonialClient : IRavenColonialClient
+    private sealed class StubRavenColonialClient : IRavenColonialClient, IRavenColonialPlanningSystemReader
     {
+        public IReadOnlyList<ColonizationSystemRecord> DiscoveredPlanningSystems { get; set; } = [];
+
+        public Task<IReadOnlyList<ColonizationSystemRecord>>? PlanningDiscoveryTask { get; set; }
+
+        public Func<
+            string,
+            CancellationToken,
+            Task<IReadOnlyList<ColonizationSystemRecord>>
+        >? LoadPlanningDiscovery { get; set; }
+
+        public Exception? PlanningDiscoveryFailure { get; set; }
+
+        public List<string> PlanningDiscoveryCommanders { get; } = [];
+
+        public Task<IReadOnlyList<ColonizationSystemRecord>> GetCommanderPlanningSystemsAsync(
+            string commander,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        )
+        {
+            PlanningDiscoveryCommanders.Add(commander);
+            return LoadPlanningDiscovery?.Invoke(commander, cancellationToken)
+                ?? PlanningDiscoveryTask
+                ?? (
+                    PlanningDiscoveryFailure is null
+                        ? Task.FromResult(DiscoveredPlanningSystems)
+                        : Task.FromException<IReadOnlyList<ColonizationSystemRecord>>(PlanningDiscoveryFailure)
+                );
+        }
+
         public ColonizationCommanderProjects Workspace { get; set; } = new([], [], null, []);
 
         public Exception? Failure { get; set; }
@@ -3199,6 +3228,8 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         public List<SystemUpdateCall> SystemUpdates { get; } = [];
 
+        public Task<ColonizationSystemRecord>? SystemPublishTask { get; set; }
+
         public List<SystemSitePatchCall> SystemSitePatches { get; } = [];
 
         public Queue<Exception> SystemSiteFailures { get; } = new();
@@ -3216,6 +3247,10 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         public Queue<Exception> ProjectCompletionFailures { get; } = new();
 
         public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse { get; set; } = [];
+        public Dictionary<string, ColonizationSystemRecord>? PlanningSystems { get; set; }
+        public Task<ColonizationSystemRecord>? PlanningSystemTask { get; set; }
+        public Func<string, CancellationToken, Task<ColonizationSystemRecord>>? LoadPlanningSystem { get; set; }
+        public HttpRequestException? PlanningSystemFailure { get; set; }
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
@@ -3238,7 +3273,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             LoadCount++;
             if (LoadWorkspace is not null)
             {
-                return LoadWorkspace(commanderName);
+                return LoadWorkspace(commanderName).WaitAsync(cancellationToken);
             }
             return Failure is null
                 ? Task.FromResult(Workspace)
@@ -3430,7 +3465,22 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         public Task<ColonizationSystemRecord> GetSystemAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
+        ) =>
+            LoadPlanningSystem?.Invoke(systemNameOrAddress, cancellationToken)
+            ?? PlanningSystemTask
+            ?? (
+                PlanningSystemFailure is not null
+                    ? Task.FromException<ColonizationSystemRecord>(PlanningSystemFailure)
+                    : Task.FromResult(
+                        PlanningSystems?.GetValueOrDefault(systemNameOrAddress)
+                            ?? new ColonizationSystemRecord
+                            {
+                                Name = systemNameOrAddress,
+                                SystemAddress = 42,
+                                Sites = SystemSitesResponse.ToList(),
+                            }
+                    )
+            );
 
         public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
             string systemNameOrAddress,
@@ -3445,15 +3495,16 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         )
         {
             SystemUpdates.Add(new SystemUpdateCall(systemNameOrAddress, update, apiKey));
-            return Task.FromResult(
-                new ColonizationSystemRecord
-                {
-                    SystemAddress = 42,
-                    Name = systemNameOrAddress,
-                    Architect = update.Architect,
-                    Sites = update.UpdatedSites,
-                }
-            );
+            return SystemPublishTask
+                ?? Task.FromResult(
+                    new ColonizationSystemRecord
+                    {
+                        SystemAddress = 42,
+                        Name = systemNameOrAddress,
+                        Architect = update.Architect,
+                        Sites = update.UpdatedSites,
+                    }
+                );
         }
 
         /// <summary>

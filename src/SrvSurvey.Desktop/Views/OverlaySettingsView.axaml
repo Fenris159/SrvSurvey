@@ -179,7 +179,7 @@
                 <TextBlock Classes="muted"
                            FontSize="11"
                            TextWrapping="Wrap"
-                           Text="Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode." />
+                           Text="Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
                 <controls:ShortcutCaptureBox Chord="{Binding VrOverlayInteractionBinding.Chord, Mode=TwoWay}"
@@ -232,6 +232,12 @@
                                FormatString="N0"
                                Value="{Binding CustomOpacityPercent, Mode=TwoWay}" />
               </Grid>
+              <StackPanel IsVisible="{Binding OverlayLayout.CanRecoverLayout}" Spacing="6">
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Restore valid layout backups, or defaults where no valid backup exists. Damaged files are preserved." />
+                <Button Classes="secondary" Command="{Binding OverlayLayout.RecoverCommand}" Content="Recover overlay layout" />
+              </StackPanel>
+              <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding OverlayLayout.SaveDirectory}" />
               <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                 <TextBlock VerticalAlignment="Center"
                            Classes="muted"
@@ -250,6 +256,10 @@
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="{Binding OverlayInteraction.StatusMessage}" />
+            <StackPanel IsVisible="{Binding OverlayInteraction.HasPendingLivePositions}" Orientation="Horizontal" Spacing="8">
+              <Button Classes="secondary" Command="{Binding OverlayInteraction.SaveCommand}" Content="Retry position save" />
+              <Button Classes="secondary" Command="{Binding OverlayInteraction.CancelCommand}" Content="Discard unsaved positions" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <TextBlock Classes="muted"
@@ -263,6 +273,24 @@
                    Foreground="{DynamicResource RavenWarningBrush}"
                    Text="{Binding OverlayBehavior.SettingsStatus}"
                    TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="FiregroupsVisibilityCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Cockpit view visibility" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Choose where the Firegroups overlay appears: the left-hand panel, main cockpit, or right-hand panel. Changes apply immediately." />
+        <WrapPanel>
+          <CheckBox x:Name="FiregroupsLeftViewCheckBox" Margin="0,0,24,0" Content="Left"
+                    IsChecked="{Binding Firegroups.ShowOverlayInLeftView, Mode=TwoWay}" />
+          <CheckBox x:Name="FiregroupsMainViewCheckBox" Margin="0,0,24,0" Content="Main"
+                    IsChecked="{Binding Firegroups.ShowOverlayInMainView, Mode=TwoWay}" />
+          <CheckBox x:Name="FiregroupsRightViewCheckBox" Content="Right"
+                    IsChecked="{Binding Firegroups.ShowOverlayInRightView, Mode=TwoWay}" />
+        </WrapPanel>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap"
+                   Text="{Binding Firegroups.OverlaySettingsStatus}" />
       </StackPanel>
     </Border>
 
@@ -347,6 +375,18 @@
                     IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}"
                     Content="Allow timed notification messages" />
         </Grid>
+        <Grid ColumnDefinitions="*,140" ColumnSpacing="20">
+          <StackPanel Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Visible message limit" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Show only the newest messages when this limit is exceeded. Default: 3." />
+          </StackPanel>
+          <NumericUpDown x:Name="NotificationVisibleMessageLimitInput"
+                         Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Minimum="1" Maximum="20" Increment="1" FormatString="N0"
+                         Value="{Binding Notifications.VisibleMessageLimit, Mode=TwoWay}" />
+        </Grid>
         <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
           <StackPanel Spacing="10">
             <CheckBox IsChecked="{Binding Notifications.MaterialCountAfterPickup, Mode=TwoWay}"
@@ -397,6 +437,16 @@
                    IsVisible="{Binding Notifications.HasSettingsStatus}"
                    TextWrapping="Wrap"
                    Text="{Binding Notifications.SettingsStatus}" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="ExplorationPoiCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Current-system POIs" />
+        <CheckBox IsChecked="{Binding ExplorationPois.AutoShow, Mode=TwoWay}"
+                  Content="Auto-show known POIs in the current system" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility." />
       </StackPanel>
     </Border>
 
@@ -485,6 +535,14 @@
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
                    Text="{Binding StreamOverlay.StatusMessage}" />
+        <ItemsControl IsVisible="{Binding StreamOverlay.HasActiveOverlays}"
+                      ItemsSource="{Binding StreamOverlay.ActiveOverlayNames}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <TextBlock Classes="muted"
                    FontSize="11"
                    TextWrapping="Wrap"
@@ -496,28 +554,39 @@
       <StackPanel Spacing="18">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="SteamVR overlays" />
+            <TextBlock Classes="card-title" Text="VR overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+                       Text="Put live SrvSurvey panels into your headset through SteamVR or the VDXR route, with per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
           </StackPanel>
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"
                     IsChecked="{Binding VrOverlay.Enabled, Mode=TwoWay}"
+                    IsEnabled="{Binding VrOverlay.CanEnableOverlays}"
                     Content="Enable VR overlays" />
         </Grid>
 
         <Grid ColumnDefinitions="300,*" ColumnSpacing="20">
           <StackPanel Spacing="6">
             <TextBlock Classes="eyebrow" Text="1 · CHOOSE YOUR HEADSET ROUTE" />
-            <ComboBox ItemsSource="{Binding VrOverlay.PlatformProfiles}"
-                      SelectedItem="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+            <controls:VrPlatformPicker x:Name="VrRoutePicker"
+                                      Profiles="{Binding VrOverlay.PlatformProfiles}"
+                                      SelectedProfile="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+              <ComboBox.Styles>
+                <Style Selector="ComboBoxItem:disabled">
+                  <Setter Property="Opacity" Value="0.45" />
+                </Style>
+              </ComboBox.Styles>
               <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="overlay:VrPlatformProfile">
-                  <TextBlock Text="{Binding DisplayName}" />
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding DisplayName}" />
+                    <TextBlock Text="{Binding UnavailableReason}" IsVisible="{Binding !IsAvailable}"
+                               FontSize="11" TextWrapping="Wrap" />
+                  </StackPanel>
                 </DataTemplate>
               </ComboBox.ItemTemplate>
-            </ComboBox>
+            </controls:VrPlatformPicker>
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Bottom">
             <TextBlock FontWeight="SemiBold"
@@ -670,7 +739,7 @@
                          Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays." />
+                         Text="Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays." />
               <Button Grid.Column="1"
                       Classes="secondary"
                       Command="{Binding VrOverlay.CancelCommand}"
@@ -1284,14 +1353,32 @@
         </StackPanel>
         <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
           <StackPanel Spacing="10">
-            <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
-                      Content="Auto show colonization overlay" />
+            <CheckBox x:Name="ColonizationAutoHideUntilDockedCheckBox"
+                      IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
+                      Content="Auto hide colonization overlay until docked" />
+            <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                       Text="The panel appears automatically when docking or opening enabled game panels. Turn this off for persistent display. You can also keep it visible using Colonization commodities or its shortcut." />
             <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
                       Content="Show when looking at right-hand panel" />
-            <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
+            <CheckBox x:Name="CollapseCoveredCommodityGroupsCheckBox"
+                      IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
                       Content="Collapse cargo groups when enough on FCs" />
+            <CheckBox x:Name="HideCollapsedCommodityGroupsCheckBox"
+                      Margin="24,0,0,0"
+                      IsChecked="{Binding Colonization.HideCollapsedCommodityGroups, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.CollapseCoveredCommodityGroups}"
+                      Content="Hide collapsed groups" />
             <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
                       Content="Use compact/scrolling commodities list" />
+            <CheckBox x:Name="SortNeedsAscendingAtCarriersCheckBox"
+                      IsChecked="{Binding Colonization.SortNeedsAscendingAtCarriers, Mode=TwoWay}">
+              <TextBlock Text="Sort needs from least to greatest while docked at FCs" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox x:Name="HideCommodityRowBadgesCheckBox"
+                      IsChecked="{Binding Colonization.HideCommodityRowBadges, Mode=TwoWay}"
+                      Content="Hide row badges" />
+            <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                       Text="Hide status and assignment labels beside commodity names. Completion checkmarks remain visible." />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="10">
             <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
@@ -1299,9 +1386,10 @@
             <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
                       Content="Show delta vs sum" />
-            <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
+            <CheckBox x:Name="CombineShipCargoCountsCheckBox"
+                      IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                      Content="Share column with ship cargo counts" />
+                      Content="Combine Ship totals into FC counts" />
             <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
                       Content="Highlight if ship can load enough on FCs" />
@@ -1816,7 +1904,7 @@
           <TextBlock Classes="card-title" Text="Panel availability and shortcuts" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="These master switches control whether each panel may render. Existing auto-show and context settings still decide when an enabled panel appears. Shortcut fields are optional and have no default binding." />
+                     Text="These switches control panel availability. See each panel's description for its visibility behavior. Assign shortcuts here or in Settings → Input." />
         </StackPanel>
         <ItemsControl x:Name="PanelVisibilityItems">
           <ItemsControl.ItemTemplate>
@@ -1849,6 +1937,32 @@
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <Grid x:Name="CollapseCoveredGroupsShortcutRow"
+              Margin="0,4"
+              ColumnDefinitions="*,260"
+              ColumnSpacing="24">
+          <StackPanel Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Collapse cargo groups when enough on FCs" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.Definition.Description}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock Classes="muted" FontSize="11" Text="Collapse/expand shortcut" />
+            <controls:ShortcutCaptureBox x:Name="CollapseCoveredGroupsShortcutBox"
+                                         Chord="{Binding CollapseCoveredColonyGroupsBinding.Chord, Mode=TwoWay}"
+                                         PlaceholderText="Click, then hold shortcut keys"
+                                         ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
+            <TextBlock Classes="muted"
+                       FontSize="10"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="10"
+                       IsVisible="{Binding CollapseCoveredColonyGroupsBinding.HasValidationError}"
+                       Text="{Binding CollapseCoveredColonyGroupsBinding.ValidationMessage}" />
+          </StackPanel>
+        </Grid>
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    IsVisible="{Binding OverlayPanelVisibility.HasPersistenceStatus}"
                    TextWrapping="Wrap"

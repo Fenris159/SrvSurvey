@@ -6,6 +6,13 @@
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=coverage)](https://sonarcloud.io/component_measures?id=Fenris159_SrvSurvey&metric=coverage)
 [![License](https://img.shields.io/github/license/Fenris159/SrvSurvey)](LICENSE)
 
+[![Active users (7d)](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge&label=active%20users%20%287d%29&color=blue)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Active users (30d)](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3D30d&label=active%20users%20%2830d%29&color=brightgreen)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Linux users](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3Dlinux&label=linux%20users&color=orange)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+[![Windows users](https://img.shields.io/endpoint?url=https%3A%2F%2Fsrvsurvey-telemetry.fenrisnihilus.workers.dev%2Fbadge%3Fvalue%3Dwindows&label=windows%20users&color=0078d4)](https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public)
+
+<sub>Counts represent anonymous installations. Activity badges use the last 7 or 30 days; Linux and Windows badges show lifetime totals.</sub>
+
 [![Application language](https://img.shields.io/badge/application-C%23-512BD4?logo=dotnet)](https://github.com/Fenris159/SrvSurvey/tree/SrvSurvey-Avalonia/src)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Avalonia 12.1](https://img.shields.io/badge/Avalonia-12.1.0-8B44AC)](https://avaloniaui.net/)
@@ -249,6 +256,82 @@ alignment practical before placing and tracking the rig.
   journal-driven updates.
 - Manages Raven Colonial construction projects, required commodities, delivered
   cargo, payment estimates, project status and Fleet Carrier supply planning.
+  Planned sites are included as `(Plan)` projects with catalog cargo estimates.
+  Their needs can be previewed, selected for Market Search, and allocated to a
+  ShoppingList. Plans and local Show preferences are cached per commander and
+  remain available while traveling. Live builds replace matching plan estimates.
+  The My build projects toolbar filters by system and by All Projects, Building,
+  or Planning. Both filters default to All. A saved Raven API key discovers plans
+  across the commander's Raven systems without requiring a visit; cached plans
+  remain available when a refresh fails.
+  Make Focus limits the commodity overlay to one live build or planned site.
+  Plan focus is saved per commander and compares catalog needs with Use Carrier
+  cargo. Clear Focus restores the combined Show selection. Market Search project
+  tags retain their button appearance when unselected and remain independent of focus.
+  Use Carrier and the FC Diff carrier choice mirror each other in both directions.
+  Prepare new project becomes Cancel while the form is open and resets the draft.
+  Colonization opens on Projects, followed by Market Search, System Editor, and
+  Settings tabs. Projects contains Create a project, My build projects, and Live
+  Depot. Consent and cargo sync live on Settings; system sites remain expanded
+  on System Editor.
+  Projects selected with Show appear in the commodity overlay when docked with
+  auto-hide enabled, even when Colonization commodities availability is off.
+  Turning availability on keeps the panel visible after undocking for that session.
+  Ctrl+Alt+Shift+X toggles Collapse cargo groups when enough on FCs and saves the
+  preference. Hide collapsed groups controls whether collapsed groups are hidden.
+  Assign the shortcut under Panel availability and shortcuts in Colonization
+  overlay settings or in Settings → Input. Global keyboard input must be enabled.
+- Refreshes shopping needs from Raven Colonial before each market search. Optional
+  Auto Refresh polls project data every 60 seconds for the current session, stops
+  after one hour, and updates open shopping needs without replacing saved market
+  results. Active builds and visible planned sites from the current and known
+  build systems appear in the project list, including unlinked catalog plans.
+  LOADED estimates the percentage of each project's remaining needs covered by
+  stock from the selected carrier, or all linked carriers for ALL. It recalculates
+  when needs or stock change and displays two decimal places. Use Carrier defaults to ALL,
+  restores the commander's saved selection after loading, and chooses the starting
+  carrier for FC Diff and the manifest editor.
+- Edits manifests for all commander-linked Fleet Carriers, including teammates’
+  carriers, in a compact Raven-style popup. Select a carrier, refresh its Frontier
+  data, update its system and grouped cargo amounts, or add/remove commodities.
+  Frontier refresh enforces five minutes between attempts, including reopening
+  the editor. Hide Non-Colony Commodities starts enabled; hidden cargo is retained
+  on Save, and other goods use their market categories when shown.
+  The system field uses the shared system autocomplete; Save updates the carrier's
+  Raven Colonial location before saving its manifest.
+  A read-only Journal column compares Raven amounts with local CAPI totals plus
+  later journal transactions; unavailable local totals display N/A.
+- Selects builds with project tags in the Market Search tab, independently of
+  Show in the project list, with combined commodity needs,
+  editable search location/radius, and concurrent Spansh/Ardent market results.
+  Compact result columns sit inside full-width rows. Expanded commodity tags wrap
+  across the available width; scrolling starts after twenty collapsed rows of
+  content, with its scrollbar beside the results. Accent-colored instructions
+  explain ShoppingList toggles, and rows have no selection highlight.
+  Commodity toggles and Select All/Select None filter markets; station commodity
+  tags use a secondary highlight for ShoppingList selections and remain available
+  to toggle off. Spansh reuses saved search pages and Ardent allows
+  at most three nearby commodity requests at once.
+  Pad size, market age, arrival distance, carriers, surface ports and full-supply
+  filters refine the results. FC Diff starts enabled and subtracts manifest stock
+  from all linked carriers or one selected carrier before allocating ShoppingList
+  purchases. Shopping selections, results and controls persist
+  between sessions; Market Search restores them after current projects load, and
+  Refresh updates market stock. Partial provider responses remain usable; a total
+  provider outage keeps previous results.
+  Click station names or individual goods to build a persistent ShoppingList tree.
+  A new search or Clear Search resets the ShoppingList. Hide short supplies or sort
+  by the most available commodities; remove ShoppingList goods or whole stations
+  with the red × buttons. Purchases are capped by remaining need and station stock;
+  ShoppingList allocations reduce remaining needs, and removals restore them while
+  selected station tags remain available for toggling off.
+  A nonempty ShoppingList also appears as a passive, themed in-game tree panel.
+  It starts at the left-center of the screen, grows to half the monitor height,
+  then scrolls using the standard overlay interaction mode. Its width follows
+  the longest row. In interactive mode, use the red × buttons to remove goods
+  or stations, or click a system name to copy it for the Galaxy Map. Position, growth,
+  typography and scale are available alongside the other colonization panels
+  in the editor's Combat & colonization category.
 - Tracks massacre missions and relevant ship or on-foot combat events with
   dedicated compact overlays.
 
@@ -264,6 +347,8 @@ alignment practical before placing and tracking the rig.
 - Supports separate native overlay windows and a combined host, configurable
   keyboard/controller shortcuts, click-through behavior and vehicle-specific
   exceptions.
+- Provides a [joined stream overlay](docs/JOINED_STREAM_OVERLAY.md) named
+  SrvSurveyWindowOne for capture software such as OBS.
 - Ships English, Deutsch, Español, Français, Português (Brasil), Русский and
   简体中文 interfaces, plus a Pseudo locale for localization testing.
 - Handles narrow layouts with application-wide horizontal mouse-wheel, trackpad
@@ -312,6 +397,7 @@ installation is not required for packaged builds.
 - [Linux troubleshooting](docs/Linux_Troubleshooting.md)
 - [Overlay troubleshooting](docs/Overlay_Troubleshooting.md)
 - [Ubuntu 26.04, Elite Dangerous, and Gamescope setup](docs/UBUNTU_26_GAMESCOPE.md)
+- [Steam Deck Gaming Mode setup and validation](docs/STEAMOS_GAMING_MODE.md)
 - [CachyOS, KDE Plasma, and Gamescope setup](docs/CACHYOS_GAMESCOPE.md)
 
 Linux overlays support native X11 and XWayland. A Wayland desktop must expose an

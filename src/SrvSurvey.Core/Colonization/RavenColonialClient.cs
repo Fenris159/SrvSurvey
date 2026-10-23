@@ -130,6 +130,7 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };

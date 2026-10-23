@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -116,6 +117,8 @@ internal sealed class GuardianOverlayPreviewState : IGuardianOverlayPresentation
     public int PreferredOverlayHeight => 400;
 
     public GuardianSiteMapProjection? ActiveMapProjection { get; }
+
+    public EliteStatus? MotionStatus => null;
 
     public GuardianSiteProximitySnapshot? Proximity { get; }
 

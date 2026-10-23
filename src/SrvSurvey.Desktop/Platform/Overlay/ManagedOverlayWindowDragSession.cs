@@ -88,6 +88,9 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         eventArgs.Pointer.Capture(window);
     }
 
+    /// <summary>Prevents automatic host placement from fighting an active user gesture.</summary>
+    internal static bool IsDragging(Window window) => ActiveSessions.ContainsKey(window);
+
     internal static bool CanBeginFrom(Control surface, PointerPressedEventArgs eventArgs)
     {
         if (!eventArgs.GetCurrentPoint(surface).Properties.IsLeftButtonPressed)

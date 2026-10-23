@@ -92,6 +92,11 @@ public static class OverlayThemeResources
         "ColoniseDeficit",
         "ColoniseDeficitDim",
         "ColoniseHighlight",
+        "ColoniseLoadHighlight",
+        "ColoniseCategory",
+        "ColoniseNeed",
+        "ColoniseHave",
+        "ColoniseShip",
         "ColoniseItem",
         "ColoniseItemDim",
         "ColoniseRowHighlight",
@@ -254,6 +259,7 @@ public static class OverlayThemeResources
         }
     }
 
+    /// <summary>Weakly tracks windows without duplicate registrations and prunes collected entries.</summary>
     private static void TrackThemeWindow(Window window)
     {
         lock (ThemeWindowsLock)
@@ -276,6 +282,7 @@ public static class OverlayThemeResources
         }
     }
 
+    /// <summary>Keeps live layout changes connected to the shared presentation, including combined hosts.</summary>
     private static void RegisterLayoutSettings(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         if (LayoutSettingsRegistrations.TryGetValue(window, out LayoutSettingsRegistration? existing))
@@ -284,7 +291,7 @@ public static class OverlayThemeResources
             return;
         }
 
-        Control? typographyRoot = GetTypographyRoot(window);
+        Control? typographyRoot = GetPresentationRoot(window);
         LayoutSettingsRegistrations.Add(
             window,
             new LayoutSettingsRegistration(window, layout, plotterName, typographyRoot)
@@ -470,6 +477,7 @@ public static class OverlayThemeResources
         return definition?.PreviewSize.Width;
     }
 
+    /// <summary>Applies the panel opacity override or the layout global opacity.</summary>
     public static void ApplyOpacity(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -483,23 +491,25 @@ public static class OverlayThemeResources
         }
     }
 
+    /// <summary>Applies font roles directly to the shared presentation rather than its native host wrapper.</summary>
     public static void ApplyTypography(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        if (GetTypographyRoot(window) is { } content)
+        if (GetPresentationRoot(window) is { } content)
         {
             OverlayTypographyResources.ApplyWhenAttached(content, layout.GetTypographyScale(plotterName));
         }
     }
 
+    /// <summary>Lets the shared presentation own its saved size while the native window follows its content.</summary>
     public static void ApplyPanelSize(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        if (GetTypographyRoot(window) is not { } content)
+        if (GetPresentationRoot(window) is not { } content)
         {
             return;
         }
@@ -521,29 +531,59 @@ public static class OverlayThemeResources
         ApplyPanelSize(panel, layout.GetSizeOverride(plotterName));
     }
 
+    /// <summary>Applies shared editor/live alignment, layout precision, and an optional saved size to the presentation.</summary>
     internal static void ApplyPanelSize(Control content, OverlayPanelSize? size)
     {
         ArgumentNullException.ThrowIfNull(content);
+        if (content is UserControl)
+        {
+            // A presentation has the same natural layout in an editor body,
+            // a separate window, or a combined canvas.
+            content.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+            content.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
+            content.UseLayoutRounding = false;
+        }
         PanelSizeRegistrations.GetValue(content, control => new PanelSizeRegistration(control)).ApplySize(size);
     }
 
-    private static Control? GetTypographyRoot(Window window)
+    /// <summary>Uses the actual rendering surface's DPI once it is measured, including reparented combined panels.</summary>
+    internal static double GetPresentationScaling(Window window, double fallback)
+    {
+        Control? content = GetPresentationRoot(window);
+        TopLevel? surface = content is not null ? TopLevel.GetTopLevel(content) : window;
+        return surface is { Bounds.Width: > 0 } ? surface.RenderScaling : fallback;
+    }
+
+    /// <summary>Finds the shared panel even when a combined or stream host has moved its scaling container.</summary>
+    internal static Control? GetPresentationRoot(Window window)
     {
         // Combined overlays replace the source window's content with a placeholder.
         // Its registered scaling container still owns the visible presentation.
         if (ScaleRegistrations.TryGetValue(window, out ScaleRegistration? registration))
         {
-            return registration.Container.Child;
+            return UnwrapPresentation(registration.Container.Child);
         }
 
-        return window.Content switch
-        {
-            LayoutTransformControl { Child: Control child } => child,
-            Control content => content,
-            _ => null,
-        };
+        return UnwrapPresentation(
+            window.Content switch
+            {
+                LayoutTransformControl { Child: Control child } => child,
+                Control content => content,
+                _ => null,
+            }
+        );
     }
 
+    /// <summary>Shares the presentation itself as the typography and sizing root, excluding native host chrome.</summary>
+    private static Control? UnwrapPresentation(object? content) =>
+        content switch
+        {
+            Border { Child: UserControl panel } => panel,
+            Control control => control,
+            _ => null,
+        };
+
+    /// <summary>Resolves a registered panel's scale against its current rendering surface.</summary>
     public static void ApplyScale(Window window, LegacyOverlayLayout layout)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -551,17 +591,19 @@ public static class OverlayThemeResources
         int scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(window, out string? plotterName)
             ? layout.GetScaleIndex(plotterName)
             : layout.ScaleIndex;
-        ApplyScale(window, scaleIndex, window.RenderScaling);
+        ApplyScale(window, scaleIndex, GetPresentationScaling(window, window.RenderScaling));
     }
 
+    /// <summary>Scales the named presentation using its visible host DPI, including combined canvases.</summary>
     public static void ApplyScale(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        ApplyScale(window, layout.GetScaleIndex(plotterName), window.RenderScaling);
+        ApplyScale(window, layout.GetScaleIndex(plotterName), GetPresentationScaling(window, window.RenderScaling));
     }
 
+    /// <summary>Scales the shared presentation for the given rendering scale without replacing its content.</summary>
     public static void ApplyScale(Window window, int scaleIndex, double renderScaling)
     {
         ArgumentNullException.ThrowIfNull(window);

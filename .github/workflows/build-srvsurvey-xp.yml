@@ -14,10 +14,10 @@ on:
   workflow_dispatch:
     inputs:
       source_ref:
-        description: Branch, tag, or commit to build
-        required: true
+        description: Optional compatibility check; must match the selected workflow branch, tag, or commit
+        required: false
         type: string
-        default: SrvSurvey-Avalonia
+        default: ""
       release_channel:
         description: Stable requires a base project Version; development requires -rc.N or -rc.N.N and creates a pre-release
         required: true
@@ -53,11 +53,25 @@ jobs:
       source_sha: ${{ steps.metadata.outputs.source_sha }}
 
     steps:
+      - name: Validate manual release source
+        shell: bash
+        env:
+          REQUESTED_SOURCE_REF: ${{ inputs.source_ref }}
+          WORKFLOW_REF_NAME: ${{ github.ref_name }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && -n "$REQUESTED_SOURCE_REF" \
+              && "$REQUESTED_SOURCE_REF" != "$WORKFLOW_REF_NAME" \
+              && "$REQUESTED_SOURCE_REF" != "$WORKFLOW_SHA" ]]; then
+            echo "::error::Choose the source using Run workflow's branch/tag selector or gh workflow run --ref. source_ref must match that selection."
+            exit 2
+          fi
+
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.sha }}
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          fetch-depth: 1
 
       - name: Resolve and validate version
         id: metadata
@@ -131,13 +145,23 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release-metadata.outputs.source_sha }}
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          # Changed-code validation needs the PR merge base; packaging needs only HEAD.
+          fetch-depth: ${{ github.event_name == 'pull_request' && matrix.rid == 'linux-x64' && '0' || '1' }}
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+
+      - name: Cache NuGet dependencies
+        # Windows measured slower with the expanded package cache; keep its parallel restore.
+        if: matrix.rid == 'linux-x64'
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-${{ runner.arch }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/nuget.config', '**/NuGet.Config', '**/NuGet.config', 'global.json', '**/dotnet-tools.json') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-nuget-v1-
 
       - name: Restore local tools
         run: dotnet tool restore
@@ -145,12 +169,16 @@ jobs:
       - name: Restore
         run: dotnet restore SrvSurvey.slnx
 
-      - name: Install Linux desktop registration test tool
+      - name: Test release and SteamOS helper scripts
         if: matrix.rid == 'linux-x64'
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes desktop-file-utils
+        run: python3 -m unittest discover -s tests/scripts -v
+
+      - name: Set up Linux release dependencies
+        if: matrix.rid == 'linux-x64'
+        uses: ./.github/actions/setup-linux-release
+        with:
+          profile: build
 
       - name: Verify C# formatting
         run: dotnet csharpier check .
@@ -167,6 +195,26 @@ jobs:
       - name: Build
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 
+      - name: Build and test Windows OpenXR layer
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: |
+          cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -A x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build artifacts/openxr-build --config Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir artifacts/openxr-build -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --install artifacts/openxr-build --config Release --prefix artifacts/openxr-layer
+
+      - name: Test OpenXR frame protocol on Linux
+        if: matrix.rid == 'linux-x64'
+        shell: bash
+        run: |
+          cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build artifacts/openxr-build
+          ctest --test-dir artifacts/openxr-build --output-on-failure
+
       - name: Test
         timeout-minutes: 10
         run: >-
@@ -175,6 +223,10 @@ jobs:
           --logger trx
           --blame-hang-timeout 2m
           --blame-hang-dump-type mini
+
+      - name: Enforce journal upload scenario matrix
+        shell: pwsh
+        run: ./tools/Test-JournalUploadScenarios.ps1 -ResultsDirectory .
 
       - name: Upload test diagnostics
         if: always()
@@ -193,6 +245,8 @@ jobs:
         env:
           INARA_APPLICATION_API_KEY: ${{ secrets.INARA_APPLICATION_API_KEY }}
           VOXSTELLAR_SHARED_KEY: ${{ secrets.VOXSTELLAR_SHARED_KEY }}
+          GoogleDriveClientId: ${{ secrets.GOOGLE_DRIVE_CLIENT_ID }}
+          GoogleDriveClientSecret: ${{ secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
         run: |
           dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
             --configuration Release `
@@ -283,24 +337,12 @@ jobs:
             --file "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-${{ matrix.rid }}.tar.gz" \
             --directory "artifacts/${{ matrix.rid }}" .
 
-      - name: Install AppImage validation tools
+      - name: Cache pinned AppImage tools
         if: matrix.archive == 'tar.gz'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            appstream \
-            binutils \
-            file \
-            imagemagick \
-            libfontconfig1 \
-            libice6 \
-            libsm6 \
-            libx11-6 \
-            libxext6 \
-            patchelf \
-            xauth \
-            xvfb
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ${{ runner.temp }}/appimage-tools
+          key: ${{ runner.os }}-${{ runner.arch }}-appimage-tools-v1-${{ hashFiles('scripts/Get-AppImageTools.sh') }}
 
       - name: Validate Linux desktop metadata
         if: matrix.archive == 'tar.gz'
@@ -314,26 +356,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/appimage-tools" artifacts/appimage
+          bash ./scripts/Get-AppImageTools.sh "$RUNNER_TEMP/appimage-tools"
           linuxdeploy="$RUNNER_TEMP/appimage-tools/linuxdeploy-x86_64.AppImage"
-          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
-            --output "$linuxdeploy" \
-            "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/linuxdeploy-x86_64.AppImage"
-          echo "c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d  $linuxdeploy" \
-            | sha256sum --check --strict
-          chmod +x "$linuxdeploy"
           tool="$RUNNER_TEMP/appimage-tools/appimagetool-x86_64.AppImage"
-          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
-            --output "$tool" \
-            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage"
-          echo "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  $tool" \
-            | sha256sum --check --strict
-          chmod +x "$tool"
           runtime="$RUNNER_TEMP/appimage-tools/runtime-x86_64"
-          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' \
-            --output "$runtime" \
-            "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64"
-          echo "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d  $runtime" \
-            | sha256sum --check --strict
           convert "src/SrvSurvey.Desktop/Assets/logo-remastered-linux-windows-split.png" \
             -background none \
             -resize 256x256 \
@@ -392,6 +418,8 @@ jobs:
           path: packages/*
           if-no-files-found: error
           retention-days: 14
+          # Packages are already compressed; avoid recompressing them for transport.
+          compression-level: 0
 
   validate-linux-ubuntu-26:
     name: Validate Linux x64 on Ubuntu 26.04
@@ -405,7 +433,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Download Linux package
         uses: actions/download-artifact@v8
@@ -413,15 +441,10 @@ jobs:
           name: SrvSurvey-package-linux-x64
           path: packages
 
-      - name: Install AppImage validation tools
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            binutils \
-            file \
-            xauth \
-            xvfb
+      - name: Set up Linux runtime validation dependencies
+        uses: ./.github/actions/setup-linux-release
+        with:
+          profile: runtime
 
       - name: Validate AppImage dependency closure and XWayland startup
         shell: bash
@@ -445,8 +468,8 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: SrvSurvey-Avalonia
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          fetch-depth: 1
 
       - name: Download platform packages
         uses: actions/download-artifact@v8

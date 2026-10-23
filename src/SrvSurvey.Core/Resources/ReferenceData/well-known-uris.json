@@ -19,6 +19,8 @@
   "CanonnUndiscoveredCodexCommander": "https://canonn-science.github.io/undiscovered-codex/?cmdr=",
   "CanonnChallenge": "https://canonn.science/codex/canonn-challenge/",
   "EdastroCodexMap": "https://edastro.com/mapcharts/codex.html",
+  "EdastroPoiCatalog": "https://edastro.com/gec/json/all",
+  "EdastroPoiPagePrefix": "https://edastro.com/gec/view/",
   "EdastroOrganicMapPrefix": "https://edastro.b-cdn.net/mapcharts/organic/organic-",
   "SpanshApiBase": "https://spansh.co.uk/api/",
   "SpanshBody": "https://spansh.co.uk/body/",
@@ -34,5 +36,16 @@
   "VoxStellarWebhook": "https://voxstellar.com/webhooks/v1/system",
   "VoxStellarPrivacyPolicy": "https://voxstellar.com/privacy-policy",
   "VoxStellarTermsOfService": "https://voxstellar.com/terms-of-service",
-  "VoxStellarPluginSource": "https://github.com/SvenSapphire/EDMC-VoxStellar"
+  "VoxStellarPluginSource": "https://github.com/SvenSapphire/EDMC-VoxStellar",
+  "GoogleDriveAppDataScope": "https://www.googleapis.com/auth/drive.appdata",
+  "GoogleOAuthToken": "https://oauth2.googleapis.com/token",
+  "GoogleOAuthAuthorize": "https://accounts.google.com/o/oauth2/v2/auth",
+  "GoogleDriveFiles": "https://www.googleapis.com/drive/v3/files",
+  "GoogleDriveUpload": "https://www.googleapis.com/upload/drive/v3/files",
+  "GoogleDriveFilesDirectory": "https://www.googleapis.com/drive/v3/files/",
+  "ActiveUsersPing": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/ping",
+  "ActiveUsersPublic": "https://srvsurvey-telemetry.fenrisnihilus.workers.dev/public",
+  "EdastroNewPoi": "https://edastro.com/gec/new",
+  "EdastroAcceptedEvents": "https://edastro.com/api/accepting",
+  "EdastroJournalUpload": "https://edastro.com/api/journal"
 }

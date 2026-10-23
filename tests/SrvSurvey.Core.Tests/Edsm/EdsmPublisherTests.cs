@@ -7,6 +7,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Edsm;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class EdsmPublisherTests
 {
     private static readonly EdsmPublicationOptions Options = new(
@@ -128,12 +129,13 @@ public sealed class EdsmPublisherTests
         Assert.Equal([0.0, 0.0, 0.0], uploaded["_systemCoordinates"]!.Values<double>());
     }
 
+    /// <summary>An invalid policy blocks uploads and reports its failure regardless of which update harvests background completion.</summary>
     [Fact]
     public async Task InvalidDiscardListFailsClosedAndUsesBoundedRetryCadence()
     {
         var handler = new EdsmResponseHandler { DiscardedEvents = [] };
         using EdsmPublisher publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(
+        EdsmPublicationResult applied = await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
                     """
@@ -153,7 +155,10 @@ public sealed class EdsmPublisherTests
         Assert.Equal(0, handler.PostCount);
         Assert.Equal(1, handler.GetCount);
         Assert.Equal(1, first.PendingEventCount);
-        Assert.Contains(first.Warnings, warning => warning.Contains("discarded-event list", StringComparison.Ordinal));
+        Assert.Contains(
+            applied.Warnings.Concat(first.Warnings).Concat(second.Warnings),
+            warning => warning.Contains("discarded-event list", StringComparison.Ordinal)
+        );
         Assert.Equal(1, second.PendingEventCount);
     }
 
@@ -318,6 +323,7 @@ public sealed class EdsmPublisherTests
         Assert.Equal(2, sent.AcceptedEventCount);
     }
 
+    /// <summary>Verifies that transient EDSM failures retain the batch and respect the retry deadline.</summary>
     [Fact]
     public async Task TransientFailureRetainsBatchAndRetriesWithoutImmediateLoop()
     {
@@ -341,7 +347,7 @@ public sealed class EdsmPublisherTests
 
         Assert.Equal(1, deferred.PendingEventCount);
         Assert.Equal(1, handler.PostCount);
-        Assert.Contains(deferred.Warnings, warning => warning.Contains("retained in memory", StringComparison.Ordinal));
+        Assert.Contains(deferred.Warnings, warning => warning.Contains("retained for retry", StringComparison.Ordinal));
 
         handler.PostStatusCode = HttpStatusCode.OK;
         EdsmPublicationResult retried = await publisher.FlushAsync();

@@ -15,7 +15,11 @@ internal sealed record EddnMessageContext(
     string? trackedBodyType = null
 );
 
-internal sealed record EddnPreparedMessage(string eventName, string schemaRef, JObject message);
+internal sealed record EddnPreparedMessage(string eventName, string schemaRef, JObject message)
+{
+    /// <summary>Identifies original journal evidence without including local metadata in the EDDN payload.</summary>
+    public string? SourceRecordIdentity { get; init; }
+}
 
 /// <summary>
 /// Builds schema-specific EDDN messages from journal events and the

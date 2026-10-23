@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
@@ -20,6 +21,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 internal static class OverlayEditorPreviewFactories
 {
     private const string UiSettingsFileName = "ui-settings.json";
+    private const string GalileoStation = "Galileo";
+    private const string AbrahamLincolnStation = "Abraham Lincoln";
 
     private static readonly OverlayPreviewSimulationState State = OverlayPreviewSimulationState.Default;
 
@@ -28,6 +31,51 @@ internal static class OverlayEditorPreviewFactories
 
     private static OverlayPlatformCapabilities Caps() => OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
+    /// <summary>Creates a POI panel preview for a system containing multiple attractions.</summary>
+    public static ExplorationPoiViewModel CreateExplorationPois()
+    {
+        string directory = SettingsDir("exploration-pois");
+        var model = new ExplorationPoiViewModel(
+            new EdAstroPoiClient(directory),
+            new ExplorationPoiSettingsStore(Path.Combine(directory, UiSettingsFileName))
+        );
+        model.InstallEditorPreview();
+        return model;
+    }
+
+    /// <summary>Builds the shared attraction fixture used by POI and Galaxy Map previews.</summary>
+    internal static ExplorationPoiCatalog CreateExplorationPoiCatalog()
+    {
+        var annihilator = new ExplorationPoi(
+            43,
+            "GEC",
+            "Great Annihilator",
+            "Great Annihilator",
+            2587943,
+            new GalacticCoordinate(354.844, -42.4375, 22997.2),
+            "Stellar Features",
+            string.Empty,
+            "A pair of black holes and five T Tauri stars.",
+            string.Empty,
+            6.92,
+            4.16,
+            25,
+            false
+        );
+        return new ExplorationPoiCatalog([
+            annihilator,
+            annihilator with
+            {
+                Id = 28,
+                Name = "Azura Initiative",
+                Category = "Community",
+                Summary = "A community expedition and settlement around the black holes.",
+                Rating = 6.76,
+            },
+        ]);
+    }
+
+    /// <summary>Builds representative route biology targets for the shared editor presentation.</summary>
     public static RouteBioOverlayViewModel CreateRouteBio()
     {
         string temporaryDirectory = SettingsDir("route-bio");
@@ -51,25 +99,105 @@ internal static class OverlayEditorPreviewFactories
         return vm;
     }
 
+    /// <summary>Previews illustrative cargo at the real Sol ports Galileo and Abraham Lincoln.</summary>
+    // Public station names and types: https://inara.cz/elite/starsystem/367/
+    internal static ColonizationWishListViewModel CreateWishList()
+    {
+        const string steelCommodity = "steel";
+        ColonizationShoppingNeed[] needs =
+        {
+            new ColonizationShoppingNeed(steelCommodity, "Steel", 300),
+            new ColonizationShoppingNeed("water", "Water", 180),
+            new ColonizationShoppingNeed("polymers", "Polymers", 120),
+        };
+        ColonizationMarketQuote[] quotes =
+        {
+            WishListQuote(1, GalileoStation, "Sol", steelCommodity, 100),
+            WishListQuote(1, GalileoStation, "Sol", "water", 180),
+            WishListQuote(2, AbrahamLincolnStation, "Sol", steelCommodity, 200),
+            WishListQuote(2, AbrahamLincolnStation, "Sol", "polymers", 120),
+        };
+        var model = new ColonizationWishListViewModel();
+        model.Apply(
+            new ColonizationShoppingState
+            {
+                Quotes = quotes,
+                WishList = quotes
+                    .Select(quote => new ColonizationWishListItem(
+                        ColonizationShopping.MarketKey(quote),
+                        quote.Commodity,
+                        quote.Stock
+                    ))
+                    .ToArray(),
+            },
+            needs
+        );
+        return model;
+    }
+
+    private static ColonizationMarketQuote WishListQuote(
+        long marketId,
+        string station,
+        string system,
+        string commodity,
+        long stock
+    ) =>
+        new(
+            system,
+            station,
+            marketId,
+            station == GalileoStation ? "Ocellus" : "Orbis",
+            3,
+            0,
+            station == GalileoStation ? 503 : 504,
+            commodity,
+            stock,
+            100,
+            DateTimeOffset.UtcNow,
+            "Preview"
+        );
+
     public static ColonizationCommodityOverlayViewModel CreateColonization()
     {
+        const int capacity = 512;
+        const string metalsCategory = "Metals";
+        const string technologyCategory = "Technology";
+        const string chemicalsCategory = "Chemicals";
+        ColonizationCommodityPlanRow[] rows =
+        [
+            Row("steel", "Steel", metalsCategory, 10_164, 96, 620),
+            Row("power_generators", "Power generators", technologyCategory, 840, 32, 210),
+            Row("polymers", "Polymers", chemicalsCategory, 610, 24, 590),
+            Row("water_purifiers", "Water purifiers", technologyCategory, 420, 16, 120) with
+            {
+                IsAvailableAtCurrentMarket = false,
+                IsUnavailableAtCurrentMarket = true,
+                CanCompleteFleetCarrierLoad = false,
+            },
+            Row("cmm_composites", "CMM composites", metalsCategory, 80, 0, 90),
+            Row("emergency_power_cells", "Emergency power cells", technologyCategory, 200, 12, 170),
+            Row("evacuation_shelter", "Evacuation shelter", "Consumer items", 75, 0, 75),
+            Row("titanium", "Titanium", metalsCategory, 320, 0, 400),
+            Row("copper", "Copper", metalsCategory, 240, 0, 60),
+            Row("aluminium", "Aluminium", metalsCategory, 420, 0, 90),
+            Row("computer_components", "Computer components", technologyCategory, 140, 0, 90),
+            Row("building_fabricators", "Building fabricators", technologyCategory, 123_456, 0, 20_000),
+            Row("medical_diagnostic_equipment", "Medical diagnostic equipment", technologyCategory, 100, 0, 40),
+            Row("insulating_membrane", "Insulating membrane", chemicalsCategory, 160, 0, 40),
+            Row("ceramics", "Ceramics", chemicalsCategory, 280, 0, 60),
+            Row("liquid_oxygen", "Liquid oxygen", chemicalsCategory, 180, 0, 240),
+        ];
+        long totalRemaining = rows.Sum(row => (long)row.Needed);
+        long carrierDeficit = rows.Sum(row => Math.Max(0L, (long)row.Needed - row.OnFleetCarriers));
         var vm = new ColonizationCommodityOverlayViewModel();
         vm.Apply(
             new ColonizationCommodityPlan
             {
                 Title = State.ColonyProjectName,
                 ProjectNames = [State.ColonyProjectName, "Relay Hub"],
-                Rows =
-                [
-                    Row("steel", "Steel", "Metals", 2450, 96, 620),
-                    Row("power_generators", "Power generators", "Technology", 840, 32, 210),
-                    Row("polymers", "Polymers", "Chemicals", 610, 24, 180),
-                    Row("water_purifiers", "Water purifiers", "Technology", 420, 16, 120),
-                    // Covered FC loads show the shared status column (✓) in both editor and live.
-                    Row("cmm_composites", "CMM composites", "Metals", 80, 0, 80),
-                    Row("emergency_power_cells", "Emergency power cells", "Technology", 200, 12, 30),
-                    Row("evacuation_shelter", "Evacuation shelter", "Consumer items", 75, 0, 75),
-                ],
+                Rows = rows.OrderBy(row => row.Category, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
                 FleetCarriers =
                 [
                     new ColonizationFleetCarrier
@@ -77,27 +205,24 @@ internal static class OverlayEditorPreviewFactories
                         MarketId = 1,
                         Name = "Raven's Reach",
                         DisplayName = "Raven's Reach",
-                        Cargo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["steel"] = 620,
-                            ["polymers"] = 180,
-                            ["cmm_composites"] = 80,
-                            ["evacuation_shelter"] = 75,
-                        },
+                        Cargo = rows.ToDictionary(
+                            row => row.Commodity,
+                            row => row.OnFleetCarriers,
+                            StringComparer.OrdinalIgnoreCase
+                        ),
                     },
                 ],
-                TotalRemaining = 4675,
-                TripsInCurrentShip = 12,
-                FleetCarrierDeficit = 1240,
-                FleetCarrierDeficitTrips = 4,
-                IsAtConstructionSite = true,
+                TotalRemaining = totalRemaining,
+                TripsInCurrentShip = (long)Math.Ceiling(totalRemaining / (double)capacity),
+                FleetCarrierDeficit = carrierDeficit,
+                FleetCarrierDeficitTrips = (long)Math.Ceiling(carrierDeficit / (double)capacity),
             },
             updatedStatus: null,
             updatedHasMarketSinceDocking: true
         );
-        vm.ApplyPreferences(ColonizationOverlayPreferences.Default with { ShowFleetCarrierCargo = true });
         return vm;
 
+        /// <summary>Supplies a sample market commodity with carrier-loading eligibility for the simulated ship capacity.</summary>
         static ColonizationCommodityPlanRow Row(
             string commodity,
             string display,
@@ -115,6 +240,7 @@ internal static class OverlayEditorPreviewFactories
                 InShip = ship,
                 OnFleetCarriers = fc,
                 IsAvailableAtCurrentMarket = true,
+                CanCompleteFleetCarrierLoad = needed > fc && needed - fc < capacity,
             };
     }
 
@@ -353,6 +479,9 @@ internal static class OverlayEditorPreviewFactories
         return new JumpInfoOverlayViewModel(jump, Caps());
     }
 
+    /// <summary>
+    /// Creates representative carrier logistics, jump timing and ETR for the overlay editor.
+    /// </summary>
     public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute(
         FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown
     )
@@ -371,7 +500,7 @@ internal static class OverlayEditorPreviewFactories
             HopProgress: "HOP 2 / 46",
             SystemName: "Col 359 Sector EE-X b16-1",
             JumpSummary: "499.76 LY JUMP  •  21,502.09 LY REMAINING",
-            JumpsLeft: "44 JUMPS LEFT",
+            RemainingJumps: 44,
             FuelLeft: "1,000 t",
             TritiumInMarket: "2,799 t",
             JumpFuel: "93 t",

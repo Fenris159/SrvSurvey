@@ -23,6 +23,147 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Manual resizing keeps the top-left fixed and the bottom-right grip beneath the pointer.</summary>
+    [AvaloniaTheory]
+    [InlineData("PlotBuildCommodities", false)]
+    [InlineData("PlotBuildCommodities", true)]
+    [InlineData("PlotMassacre", false)]
+    [InlineData("PlotMassacre", true)]
+    [InlineData("PlotSysStatus", false)]
+    [InlineData("PlotSysStatus", true)]
+    [InlineData("PlotFootCombat", false)]
+    [InlineData("PlotFootCombat", true)]
+    public void ManualResizeTracksPointerRegardlessOfContentGrowth(string name, bool right)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            name,
+            new(
+                right ? LegacyHorizontalAnchor.Right : LegacyHorizontalAnchor.Left,
+                300,
+                LegacyVerticalAnchor.Top,
+                100,
+                null,
+                SizeOverride: new(420, 300)
+            )
+        );
+        store.Save(layout.Placements);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var vm = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            layout,
+            registry,
+            host
+        );
+        vm.SelectedCategory = vm.Categories.Single(category =>
+            category.Category == OverlayLayoutCatalog.GetRequired(name).Category
+        );
+        Assert.True(vm.Begin());
+        try
+        {
+            Dispatcher.UIThread.RunJobs();
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+                candidate.Definition.Name == name
+            );
+            using WriteableBitmap? first = preview.CaptureRenderedFrame();
+            Thumb grip = preview.FindControl<Thumb>("PanelResizeThumb")!;
+            Point start = grip.TranslatePoint(new Point(11, 11), preview)!.Value;
+            PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            PixelPoint pointerStart = preview.PointToScreen(start);
+            preview.MouseMove(start, RawInputModifiers.None);
+            preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            for (int step = 1; step <= 8; step++)
+            {
+                PixelPoint pointer = new(pointerStart.X + step * 12, pointerStart.Y + step * 8);
+                Point relative = preview.PointToClient(pointer);
+                preview.MouseMove(relative, RawInputModifiers.LeftMouseButton);
+                Dispatcher.UIThread.RunJobs();
+                using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+                PixelPoint actual = preview.PointToScreen(grip.TranslatePoint(new Point(11, 11), preview)!.Value);
+                Assert.True(
+                    Math.Abs(actual.X - pointer.X) <= 1 && Math.Abs(actual.Y - pointer.Y) <= 1,
+                    $"{name} right={right} step {step}: pointer={pointer}, grip={actual}; origin={origin}, current={preview.GetPanelScreenOrigin(preview.RenderScaling)}"
+                );
+            }
+            preview.MouseUp(
+                preview.PointToClient(new PixelPoint(pointerStart.X + 96, pointerStart.Y + 64)),
+                MouseButton.Left,
+                RawInputModifiers.None
+            );
+            Dispatcher.UIThread.RunJobs();
+            PixelPoint releasedOrigin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            PixelSize releasedSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            Assert.Equal(origin, releasedOrigin);
+            vm.Save();
+            Assert.False(vm.IsEditing);
+            Assert.True(vm.Begin());
+            Dispatcher.UIThread.RunJobs();
+            preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == name);
+            using WriteableBitmap? reopened = preview.CaptureRenderedFrame();
+            Assert.Equal(releasedOrigin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            Assert.Equal(releasedSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
+        }
+        finally
+        {
+            vm.Cancel();
+        }
+    }
+
+    /// <summary>Editor sample states follow the same retained-corner policy as live panels.</summary>
+    [AvaloniaTheory]
+    [InlineData("left", false)]
+    [InlineData("right", true)]
+    public void CyclingContentStatesKeepsTheEditorsInwardTopCorner(string anchor, bool right)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
+        string original = $"{{\"PlotBioStatus\":\"{anchor}:20, top:100\"}}";
+        File.WriteAllText(path, original);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        viewModel.SelectedCategory = viewModel.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.BiologyAndSurface
+        );
+        Assert.True(viewModel.Begin());
+        Dispatcher.UIThread.RunJobs();
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioStatus"
+        );
+        OverlayPreviewPanelMetrics initial = preview.GetPanelMetrics(preview.RenderScaling);
+        PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        int edge = origin.X + (right ? initial.PanelSize.Width : 0);
+        for (int state = 0; state < preview.EditorPreviewStateCount; state++)
+        {
+            Assert.True(preview.CycleEditorPreviewState());
+            Dispatcher.UIThread.RunJobs();
+            OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            PixelPoint current = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            Assert.Equal(origin.Y, current.Y);
+            Assert.Equal(edge, current.X + (right ? metrics.PanelSize.Width : 0));
+        }
+        viewModel.Cancel();
+        Assert.Equal(original, File.ReadAllText(path));
+    }
+
+    /// <summary>The configured monitor fallback respects virtual-desktop offsets and display scaling.</summary>
     [Theory]
     [InlineData(0, 1080, 1)]
     [InlineData(-5120, -240, 1.5)]
@@ -151,6 +292,221 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         }
     }
 
+    /// <summary>Exercises saved settings and immediate changes through the same preference flow used by the application.</summary>
+    [AvaloniaFact]
+    public void ColonizationPreviewFollowsCurrentSettingsWithoutChangingLiveCargo()
+    {
+        var settings = new ColonizationSettingsStore(Path.Combine(temporaryDirectory, "colonization.json"));
+        settings.SaveOverlayPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                InlineFleetCarrierCargo = true,
+                ShowFleetCarrierDelta = true,
+                HideCollapsedGroups = true,
+                HighlightAlmostCoveredFleetCarrierLoads = true,
+                UseCompactScrollingCommoditiesList = true,
+            }
+        );
+        using var colonization = new ColonizationViewModel(settings);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = colonization.CommodityOverlay,
+        };
+
+        Assert.True(editor.Begin());
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        OverlayPositionPreviewWindow window = host.PreviewWindows.Single(preview =>
+            preview.Definition.Name == "PlotBuildCommodities"
+        );
+        ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
+            window.RuntimePresentation!.DataContext
+        );
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        int rightEdge =
+            window.GetPanelScreenOrigin(window.RenderScaling).X
+            + window.GetPanelMetrics(window.RenderScaling).PanelSize.Width;
+        Assert.Equal(colonization.CommodityOverlay.Preferences, preview.Preferences);
+        Assert.Equal("HAVE Δ", preview.FleetCarrierColumnHeader);
+        Assert.Empty(preview.ShipColumnHeader);
+        Assert.DoesNotContain(preview.Groups, group => group.Name == "Consumer items");
+        ColonizationCommodityOverlayRowViewModel polymers = preview
+            .Groups.SelectMany(group => group.Rows)
+            .Single(row => row.Commodity == "polymers");
+        Assert.Equal("+4", polymers.OnFleetCarriersText);
+        Assert.True(polymers.IsSatisfied);
+        Assert.True(polymers.IsFleetCarrierLoadHighlighted);
+        Assert.Equal("LOAD", polymers.MarketBadgeText);
+        Assert.True(polymers.HasMarketBadge);
+        colonization.HideCommodityRowBadges = true;
+        Assert.All(
+            preview.Groups.SelectMany(group => group.Rows),
+            row =>
+            {
+                Assert.False(row.HasMarketBadge);
+                Assert.False(row.HasAssignment);
+            }
+        );
+        Assert.True(settings.LoadOverlayPreferences().HideRowBadges);
+        colonization.HideCommodityRowBadges = false;
+        Assert.True(
+            preview.Groups.SelectMany(group => group.Rows).Single(row => row.Commodity == "polymers").HasMarketBadge
+        );
+        ScrollViewer scroll = Assert.Single(window.RuntimePresentation.GetVisualDescendants().OfType<ScrollViewer>());
+        Assert.Equal(300, scroll.MaxHeight);
+        Assert.True(
+            scroll.Extent.Height > scroll.Viewport.Height,
+            $"Extent={scroll.Extent.Height}; viewport={scroll.Viewport.Height}; bounds={scroll.Bounds.Height}"
+        );
+        Assert.Empty(colonization.CommodityOverlay.Plan.Rows);
+
+        colonization.InlineFleetCarrierCargo = false;
+        colonization.ShowFleetCarrierDelta = false;
+        colonization.HighlightAlmostCoveredFleetCarrierLoads = false;
+        colonization.HideCollapsedCommodityGroups = false;
+        colonization.UseCompactScrollingCommoditiesList = false;
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        Assert.Equal(
+            rightEdge,
+            window.GetPanelScreenOrigin(window.RenderScaling).X
+                + window.GetPanelMetrics(window.RenderScaling).PanelSize.Width
+        );
+        Assert.Same(preview, window.RuntimePresentation.DataContext);
+        Assert.Equal("FC", preview.FleetCarrierColumnHeader);
+        Assert.Equal("SHIP", preview.ShipColumnHeader);
+        polymers = preview.Groups.SelectMany(group => group.Rows).Single(row => row.Commodity == "polymers");
+        Assert.Equal("590", polymers.OnFleetCarriersText);
+        Assert.Equal("24", polymers.InShipText);
+        Assert.False(polymers.IsFleetCarrierLoadHighlighted);
+        Assert.False(polymers.IsSatisfied);
+        Assert.True(preview.Groups.Single(group => group.Name == "Consumer items").IsCollapsed);
+        Assert.Equal(double.PositiveInfinity, scroll.MaxHeight);
+        Assert.True(scroll.Bounds.Height > 300);
+
+        colonization.ShowFleetCarrierCargo = false;
+        Assert.All(preview.Groups, group => Assert.False(group.IsCollapsed));
+        Assert.False(preview.HasFleetCarriers);
+        Assert.All(preview.Groups.SelectMany(group => group.Rows), row => Assert.Empty(row.OnFleetCarriersText));
+        colonization.ShowFleetCarrierCargo = true;
+        colonization.CollapseCoveredCommodityGroups = false;
+        Assert.All(preview.Groups, group => Assert.False(group.IsCollapsed));
+        colonization.CommodityOverlay.Apply(preview.Plan with { Title = "Live project" }, null);
+        Assert.NotEqual("Live project", preview.Title);
+
+        editor.SelectedCategory = editor.Categories[0];
+        colonization.ShowFleetCarrierDelta = true;
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        window = host.PreviewWindows.Single(current => current.Definition.Name == "PlotBuildCommodities");
+        preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(window.RuntimePresentation!.DataContext);
+        Assert.Equal("FC Δ", preview.FleetCarrierColumnHeader);
+        editor.Cancel();
+    }
+
+    /// <summary>Detaches the live preference listener on both toolbar closure and editor cancellation.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClosedColonizationPreviewsNoLongerFollowSettings(bool closeToolbar)
+    {
+        var source = new ColonizationCommodityOverlayViewModel();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = source,
+        };
+        Assert.True(editor.Begin());
+        editor.SelectedCategory = editor.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.CombatAndColonization
+        );
+        ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
+            host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotBuildCommodities"
+            ).RuntimePresentation!.DataContext
+        );
+        if (closeToolbar)
+        {
+            host.EditorToolbar!.Close();
+        }
+        else
+        {
+            editor.Cancel();
+        }
+        source.ApplyPreferences(source.Preferences with { ShowFleetCarrierDelta = true });
+        Assert.False(preview.Preferences.ShowFleetCarrierDelta);
+        Assert.Empty(host.PreviewWindows);
+    }
+
+    /// <summary>Removes the original listener even when the editor's source is replaced or cleared before closing.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ClosingEditorDetachesOriginalColonizationSource(bool closeToolbar, bool clearSource)
+    {
+        var source = new ColonizationCommodityOverlayViewModel();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        using var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using var editor = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            ColonizationOverlay = source,
+        };
+        Assert.True(editor.Begin());
+        System.Reflection.FieldInfo eventField = typeof(ColonizationCommodityOverlayViewModel).GetField(
+            nameof(ColonizationCommodityOverlayViewModel.PropertyChanged),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        )!;
+        var before = eventField.GetValue(source) as MulticastDelegate;
+        Assert.Contains(before?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+        editor.ColonizationOverlay = clearSource ? null : new ColonizationCommodityOverlayViewModel();
+        if (closeToolbar)
+        {
+            host.EditorToolbar!.Close();
+        }
+        else
+        {
+            editor.Cancel();
+        }
+
+        var after = eventField.GetValue(source) as MulticastDelegate;
+        Assert.DoesNotContain(after?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, host));
+    }
+
     [AvaloniaFact]
     public void EditorMonitorLockClampsPanelBodyAndPreservesPositionAfterSavingAndReopening()
     {
@@ -196,6 +552,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         viewModel.Cancel();
     }
 
+    /// <summary>Expanded panel settings occupy space above the editor toolbar without covering its controls.</summary>
     [AvaloniaFact]
     public void PerOverlaySettingsAreLaidOutAboveTheToolbar()
     {
@@ -208,6 +565,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.NotNull(settings);
             Assert.NotNull(toolbar);
             Assert.True(Grid.GetRow(settings) < Grid.GetRow(toolbar));
+            Button growth = Assert.IsType<Button>(window.FindControl<Button>("GrowthDirectionButton"));
+            Button reset = Assert.IsType<Button>(window.FindControl<Button>("ResetOverlaySizeButton"));
+            Assert.True(Grid.GetColumn(growth) < Grid.GetColumn(reset));
         }
         finally
         {
@@ -215,6 +575,57 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         }
     }
 
+    /// <summary>The growth button cycles through all modes without moving the panel or changing toolbar placement.</summary>
+    [AvaloniaFact]
+    public void GrowthButtonCyclesInPlaceAndRestoresAutomaticBehavior()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"left:400, top:100\"}"
+        );
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var vm = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1920, 1080), true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        Assert.False(vm.CycleOverlayGrowthCommand.CanExecute(null));
+        Assert.True(vm.Begin());
+        vm.OpenOverlaySettings("PlotJumpInfo");
+        Dispatcher.UIThread.RunJobs();
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(panel =>
+            panel.Definition.Name == "PlotJumpInfo"
+        );
+        PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        OverlayPositionEditorWindow toolbar = Assert.IsType<OverlayPositionEditorWindow>(host.EditorToolbar);
+        Button button = Assert.IsType<Button>(toolbar.FindControl<Button>("GrowthDirectionButton"));
+        Assert.Equal("⇆", button.Content);
+        foreach (string symbol in new[] { "←", "→", "⇆" })
+        {
+            Assert.True(button.Command!.CanExecute(null));
+            button.Command.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(symbol, button.Content);
+            Assert.Equal(origin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+        }
+        using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
+        Assert.NotNull(frame);
+        frame.Save(
+            Path.Combine(Path.GetTempPath(), "srvsurvey-overlay-growth-settings.png"),
+            new PngBitmapEncoderOptions()
+        );
+        vm.Save();
+        Assert.Equal(OverlayGrowthDirection.Automatic, store.Load().Placements["PlotJumpInfo"].GrowthDirection);
+    }
+
+    /// <summary>Editor window titles retain the names recognized by existing KDE overlay rules.</summary>
     [AvaloniaFact]
     public void EditorAndPreviewTitlesMatchTheKdeOverlayRule()
     {
@@ -498,6 +909,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Empty(overflowing);
     }
 
+    /// <summary>Saving a resized panel preserves its visible origin when the position editor is reopened.</summary>
     [AvaloniaFact]
     public void ResizedPanelReopensAtItsSavedTopLeft()
     {
@@ -535,14 +947,13 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         preview.MouseMove(resizePoint + new Vector(120, 40), RawInputModifiers.LeftMouseButton);
         preview.MouseUp(resizePoint + new Vector(120, 40), MouseButton.Left, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
-        OverlayPreviewPanelMetrics resizedMetrics = preview.GetPanelMetrics(preview.RenderScaling);
         Assert.Equal(savedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
         viewModel.Save();
 
         LegacyOverlayLayout savedLayout = store.Load();
         OverlayPanelSize? savedSize = savedLayout.GetSizeOverride("PlotJumpInfo");
-        int expectedHorizontalOffset =
-            savedTopLeft.X - (hostBounds.X + ((hostBounds.Width - resizedMetrics.PanelSize.Width) / 2));
+        int expectedHorizontalOffset = savedTopLeft.X - hostBounds.X;
+        Assert.Equal(LegacyHorizontalAnchor.Left, savedLayout.Placements["PlotJumpInfo"].Horizontal);
         Assert.Equal(expectedHorizontalOffset, savedLayout.Placements["PlotJumpInfo"].HorizontalOffset);
         Assert.NotNull(savedSize);
         Assert.True(viewModel.Begin());
@@ -983,6 +1394,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
         Assert.True(vm.Begin());
         MiningCalibrationWindow calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
+        Assert.Same(host.EditorToolbar, calibration.Owner);
+        Assert.Same(calibration, calibration.ToolsWindow.Owner);
         PixelRect expected = detection.Settings.GetBounds(viewport);
         Assert.Equal(expected.Position, calibration.Position);
         Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));

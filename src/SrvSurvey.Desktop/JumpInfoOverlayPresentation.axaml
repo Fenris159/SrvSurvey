@@ -21,13 +21,6 @@
           <TextBlock FontSize="11" Classes="muted type-detail"
                      Text="Route and destination intelligence" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock FontSize="10" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
 
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
@@ -141,6 +134,8 @@
         <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasPointsOfInterest}"
                    Text="{Binding JumpInfo.PointsOfInterestText}"
                    TextWrapping="Wrap" />
+        <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasExplorationPois}"
+                   Text="{Binding JumpInfo.ExplorationPoiText, StringFormat='GEC POIs: {0}'}" TextWrapping="Wrap" />
         <ItemsControl IsVisible="{Binding JumpInfo.HasDetailLines}"
                       ItemsSource="{Binding JumpInfo.DetailLines}">
           <ItemsControl.ItemTemplate>

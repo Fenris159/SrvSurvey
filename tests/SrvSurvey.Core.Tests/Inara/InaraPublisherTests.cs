@@ -6,6 +6,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Inara;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class InaraPublisherTests
 {
     // Bound worker readiness without imposing a one-second CI scheduling deadline.
@@ -166,6 +167,75 @@ public sealed class InaraPublisherTests
         );
 
         Assert.DoesNotContain("setCommanderInventoryCargo", live.QueuedEventNames);
+    }
+
+    /// <summary>Companion inventory must not predate the journal record being enriched.</summary>
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public async Task CargoEnrichmentRequiresAFreshSnapshot(int seconds, bool expected)
+    {
+        var eventTime = DateTimeOffset.Parse(
+            "2026-07-28T12:00:01Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        using var client = new HttpClient(new InaraResponseHandler());
+        using var publisher = new InaraPublisher("2.1.3.0", client);
+        var cargo = new CargoSnapshot(
+            eventTime.AddSeconds(seconds),
+            "Cargo",
+            "Ship",
+            7,
+            [new CargoItem("tea", null, 7, 0)]
+        );
+        InaraPublicationResult result = await publisher.ApplyAsync(
+            CreateUpdate(
+                [Event("{\"timestamp\":\"2026-07-28T12:00:01Z\",\"event\":\"Cargo\",\"Vessel\":\"Ship\",\"Count\":7}")],
+                cargo,
+                allowPublishing: true,
+                allowSharedData: true
+            )
+        );
+        Assert.Equal(expected, result.QueuedEventNames.Contains("setCommanderInventoryCargo"));
+    }
+
+    /// <summary>Only matching, current locker files can enrich an attributable journal event.</summary>
+    [Theory]
+    [InlineData("2026-07-28T12:00:00Z", "ShipLocker", false)]
+    [InlineData("2026-07-28T12:00:01Z", "ShipLocker", true)]
+    [InlineData("2026-07-28T12:00:02Z", "ShipLocker", true)]
+    [InlineData("2026-07-28T12:00:02Z", "Cargo", false)]
+    [InlineData("invalid", "ShipLocker", false)]
+    public async Task LockerEnrichmentRequiresMatchingFreshEvidence(string timestamp, string eventName, bool expected)
+    {
+        string folder = Path.Combine(Path.GetTempPath(), "SrvSurvey-inara-locker-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(folder, "ShipLocker.json"),
+                $$"""{"timestamp":"{{timestamp}}","event":"{{eventName}}","Items":[],"Components":[],"Data":[],"Consumables":[]}"""
+            );
+            using var client = new HttpClient(new InaraResponseHandler());
+            using var publisher = new InaraPublisher("2.1.3.0", client);
+            InaraPublicationResult result = await publisher.ApplyAsync(
+                CreateUpdate(
+                    [Event("{\"timestamp\":\"2026-07-28T12:00:01Z\",\"event\":\"ShipLocker\"}")],
+                    null,
+                    allowPublishing: true,
+                    allowSharedData: true
+                ) with
+                {
+                    JournalPath = Path.Combine(folder, "Journal.01.log"),
+                }
+            );
+            Assert.Equal(expected, result.QueuedEventNames.Contains("setCommanderInventory"));
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
     }
 
     [Fact]
@@ -867,24 +937,6 @@ public sealed class InaraPublisherTests
 
         await publisher.ApplyAsync(CreateUpdate(events, cargo: null, allowPublishing: true, allowSharedData: true));
         InaraPublicationResult first = await publisher.FlushAsync();
-        await publisher.ApplyAsync(
-            CreateUpdate(
-                [
-                    Event(
-                        """
-                        {
-                          "timestamp": "2026-07-28T12:00:01Z",
-                          "event": "Music",
-                          "MusicTrack": "Exploration"
-                        }
-                        """
-                    ),
-                ],
-                cargo: null,
-                allowPublishing: true,
-                allowSharedData: true
-            )
-        );
 
         Assert.Equal(1, handler.RequestCount);
         Assert.Equal(128, handler.LastPayload!["events"]!.Count());

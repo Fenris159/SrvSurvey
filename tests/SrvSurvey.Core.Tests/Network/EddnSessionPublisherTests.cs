@@ -6,6 +6,79 @@ namespace SrvSurvey.Core.Tests.Network;
 
 public sealed class EddnSessionPublisherTests
 {
+    /// <summary>Revoked sidecar reads cannot publish after session end, even if sharing is reauthorized before they complete.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RevokingCompanionAccessRejectsLateReadsWithoutDroppingJournalEvents(bool reauthorize)
+    {
+        var response = new TaskCompletionSource<EddnCompanionReadResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        var sink = new RecordingSink();
+        CancellationToken readToken = default;
+        using EddnSessionPublisher session = CreateSession(
+            sink,
+            (_, _, token) =>
+            {
+                readToken = token;
+                return response.Task;
+            },
+            journalDirectory: Path.GetTempPath()
+        );
+        session.SetEnabled(true);
+        session.Apply(
+            Request(
+                Event(
+                    """{"timestamp":"2026-08-22T12:00:00Z","event":"Location","StarSystem":"Origin","SystemAddress":123,"StarPos":[1,2,3]}"""
+                ),
+                Event("""{"timestamp":"2026-08-22T12:00:01Z","event":"NavRoute"}""")
+            ),
+            CancellationToken.None
+        );
+        try
+        {
+            EddnApplyRequest end = Request(
+                Event(
+                    """{"timestamp":"2026-08-22T12:00:02Z","event":"FSDJump","StarSystem":"End","SystemAddress":124,"StarPos":[2,3,4]}"""
+                )
+            );
+            session.Apply(
+                new EddnApplyRequest
+                {
+                    JournalEvents = end.JournalEvents,
+                    Enabled = true,
+                    AllowPublishing = true,
+                    AllowSharedData = false,
+                    CommanderName = "Test Cmdr",
+                    FrontierId = "F123",
+                },
+                CancellationToken.None
+            );
+            if (reauthorize)
+            {
+                session.Apply(Request(), CancellationToken.None);
+            }
+        }
+        finally
+        {
+            // A reader that ignores cancellation must still fail the generation check before enqueueing.
+            response.TrySetResult(
+                new EddnCompanionReadResult(
+                    JObject.Parse(
+                        """{"timestamp":"2026-08-22T12:00:03Z","event":"NavRoute","Route":[{"StarSystem":"Foreign","SystemAddress":999,"StarPos":[9,9,9]}]}"""
+                    ),
+                    null
+                )
+            );
+            await session.WaitForCompanionReadsAsync();
+        }
+
+        Assert.DoesNotContain(sink.Messages, item => item.Prepared.eventName == "NavRoute");
+        Assert.True(readToken.IsCancellationRequested);
+        Assert.Contains(sink.Messages, item => item.Prepared.eventName == "FSDJump");
+    }
+
     [Fact]
     public async Task DisablingSessionCancelsAnActiveCompanionRead()
     {

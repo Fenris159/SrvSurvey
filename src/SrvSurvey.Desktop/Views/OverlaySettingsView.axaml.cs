@@ -36,9 +36,11 @@ public sealed partial class OverlaySettingsView : UserControl
         PanelVisibilityCard.IsVisible = panels.Count > 0;
     }
 
+    /// <summary>Shows controls for the selected overlay category and hides unrelated settings cards.</summary>
     private void ApplyCategory(OverlaySettingsCategory category)
     {
         bool isGlobal = category == OverlaySettingsCategory.Global;
+        FiregroupsVisibilityCard.IsVisible = category == OverlaySettingsCategory.Firegroups;
         MiningActivityCard.IsVisible = category == OverlaySettingsCategory.Mining;
         MineMapOverlayCard.IsVisible = category == OverlaySettingsCategory.MineMap;
         MiningShortcutsCard.IsVisible = category == OverlaySettingsCategory.MineMap;
@@ -49,6 +51,7 @@ public sealed partial class OverlaySettingsView : UserControl
         OpenVrOverlayCard.IsVisible = isGlobal;
 
         GalaxyMapCard.IsVisible = category == OverlaySettingsCategory.Exploration;
+        ExplorationPoiCard.IsVisible = category == OverlaySettingsCategory.Exploration;
         BoxelOverlayCard.IsVisible = category == OverlaySettingsCategory.Boxel;
         CombatOverlayCard.IsVisible = category == OverlaySettingsCategory.Quests;
         GuardianOverlayCard.IsVisible = category == OverlaySettingsCategory.Guardian;
@@ -57,6 +60,7 @@ public sealed partial class OverlaySettingsView : UserControl
         HumanTemplateAuthoringExpander.IsVisible = category == OverlaySettingsCategory.Quests;
         JumpInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;
         ColonizationShoppingCard.IsVisible = category == OverlaySettingsCategory.Colonization;
+        CollapseCoveredGroupsShortcutRow.IsVisible = category == OverlaySettingsCategory.Colonization;
 
         bool isExploration = category == OverlaySettingsCategory.Exploration;
         bool isExobiology = category == OverlaySettingsCategory.Exobiology;

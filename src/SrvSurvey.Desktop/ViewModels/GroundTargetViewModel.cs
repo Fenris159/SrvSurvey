@@ -142,6 +142,8 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public SurfaceCoordinate Target => state.Target;
 
+    public EliteStatus? MotionStatus => status;
+
     public string TargetStatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
 
     public bool ShouldShow => state.IsActive && state.Solution is not null && isStatusEligible;
@@ -169,6 +171,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         isStatusEligible = IsOverlayStatusEligible(status, musicTrack);
         useCurrentLocationCommand.RaiseCanExecuteChanged();
         UpdateDisplay();
+        OnPropertyChanged(nameof(MotionStatus));
     }
 
     /// <summary>
@@ -373,6 +376,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     private void UpdateDisplay()
     {
+        OnPropertyChanged(nameof(Target));
         CurrentCoordinates = state.CurrentLocation is SurfaceCoordinate current
             ? $"{current.Latitude:F6}, {current.Longitude:F6}"
             : Unavailable;

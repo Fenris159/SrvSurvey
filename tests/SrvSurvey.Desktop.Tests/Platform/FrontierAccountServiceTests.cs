@@ -30,6 +30,7 @@ public sealed class FrontierAccountServiceTests
         Assert.Contains("audience=frontier%2Csteam%2Cepic", authorizationUri.Query);
     }
 
+    /// <summary>A second commander can link while the fake keyring retains older secret entries.</summary>
     [Fact]
     public async Task SecondCommanderCanConnectWhenKeyringLookupReturnsTheOlderSecret()
     {
@@ -1428,6 +1429,7 @@ public sealed class FrontierAccountServiceTests
         throw new InvalidOperationException($"No pending Frontier authorization for {frontierId} became visible.");
     }
 
+    /// <summary>Emulates stale Secret Service lookup ordering with atomic snapshots during concurrent account updates.</summary>
     private static string StaleKeyringSecretToolScript(string storagePath)
     {
         string root = storagePath
@@ -1459,7 +1461,11 @@ public sealed class FrontierAccountServiceTests
                 return json.loads(index.read_text() or "[]")
 
             def save(items):
-                index.write_text(json.dumps(items))
+                # Simulate a slow write without exposing a partial keyring snapshot.
+                pending = index.with_suffix(".tmp")
+                pending.write_text(json.dumps(items))
+                time.sleep(0.1)
+                pending.replace(index)
 
             def matches(item):
                 have = item["attrs"]

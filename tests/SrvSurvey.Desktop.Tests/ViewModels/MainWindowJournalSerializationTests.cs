@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class MainWindowJournalSerializationTests
+public sealed partial class MainWindowJournalSerializationTests
 {
     /// <summary>Refresh waits for an earlier poll to finish using its dock, including when another waiting monitor is canceled.</summary>
     [Theory]

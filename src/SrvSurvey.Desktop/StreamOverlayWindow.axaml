@@ -5,11 +5,10 @@
         ShowActivated="False"
         ShowInTaskbar="False"
         WindowDecorations="None"
-        Topmost="True"
+        Topmost="False"
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
-        Opacity="0"
         Title="SrvSurveyWindowOne overlay">
   <Canvas x:Name="OverlayCanvas"
           Background="Transparent"

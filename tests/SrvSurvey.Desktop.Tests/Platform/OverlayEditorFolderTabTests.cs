@@ -92,6 +92,7 @@ public sealed class OverlayEditorFolderTabTests
         }
     }
 
+    /// <summary>Keeps the panel name and compact passive badge in the editor tab above the unchanged preview body.</summary>
     [AvaloniaFact]
     public void PreviewRendersAVisibleFolderTabAttachedAboveTheBody()
     {
@@ -109,6 +110,12 @@ public sealed class OverlayEditorFolderTabTests
 
             Assert.True(preview.EditorFolderTabControl.IsVisible);
             Assert.Equal(definition.DisplayName, preview.EditorFolderTabLabelControl.Text);
+            TextBlock passive = preview.FindControl<TextBlock>("EditorFolderTabPassiveLabel")!;
+            Assert.Equal("PSV", passive.Text);
+            Assert.True(passive.IsEffectivelyVisible);
+            Assert.Contains(preview.EditorFolderTabControl, passive.GetVisualAncestors());
+            Assert.Equal("Passive overlay", ToolTip.GetTip(passive));
+            Assert.InRange(passive.Bounds.Height, 1, preview.EditorFolderTabControl.Bounds.Height);
             Assert.True(preview.EditorFolderTabControl.MinHeight >= 24);
             Assert.True(preview.EditorFolderTabControl.Bounds.Width >= 72);
             Assert.True(preview.EditorFolderTabControl.Bounds.Height >= 24);
@@ -240,8 +247,9 @@ public sealed class OverlayEditorFolderTabTests
         }
     }
 
+    /// <summary>Changing survey sample content preserves the editor preview host position.</summary>
     [AvaloniaFact]
-    public void SurfaceMiningSurveyPreviewCyclesEveryStateAroundItsTopCenterAnchor()
+    public void SurfaceMiningSurveyPreviewCyclesEveryStateWithoutMovingItsHostWindow()
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMiningSurvey"));
         try
@@ -255,9 +263,7 @@ public sealed class OverlayEditorFolderTabTests
             SurfaceMiningSurveyOverlayPresentation presentation = Assert.IsType<SurfaceMiningSurveyOverlayPresentation>(
                 preview.RuntimePresentation
             );
-            OverlayPreviewPanelMetrics initialMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            double initialCenter =
-                preview.Position.X + initialMetrics.OriginOffset.X + (initialMetrics.PanelSize.Width / 2d);
+            PixelPoint initialPosition = preview.Position;
 
             Assert.Equal(
                 Avalonia.Layout.HorizontalAlignment.Center,
@@ -280,9 +286,9 @@ public sealed class OverlayEditorFolderTabTests
                 Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideCommandHint));
             }
 
-            OverlayPreviewPanelMetrics finalMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            double finalCenter = preview.Position.X + finalMetrics.OriginOffset.X + (finalMetrics.PanelSize.Width / 2d);
-            Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
+            // The position-editor host now owns growth anchoring; cycling data alone
+            // must not apply a second, competing top-center correction.
+            Assert.Equal(initialPosition, preview.Position);
         }
         finally
         {

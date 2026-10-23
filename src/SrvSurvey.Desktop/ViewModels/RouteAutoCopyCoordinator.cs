@@ -250,7 +250,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
 
     private static bool CanOwnAutoCopy(RouteWorkspaceViewModel route)
     {
-        return route.HasSavedRoute && route.AutoCopy;
+        return route.HasRoute && route.AutoCopy;
     }
 
     private static bool CanOwnAutoCopy(IBoxelSearchSession boxelSearch)

@@ -94,6 +94,7 @@ public sealed class OverlayThemeStateStore
         }
     }
 
+    /// <summary>Loads saved theme states and fills newly introduced brushes without replacing explicit choices.</summary>
     private OverlayThemeStateLoadResult LoadCore()
     {
         if (!File.Exists(path))
@@ -149,6 +150,7 @@ public sealed class OverlayThemeStateStore
 
                 _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
                 _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
+                OverlayThemePresetCatalog.AddMissingColonizationColors(colors);
                 ValidateColors(name, colors);
                 var typography = OverlayTypographySettings.Parse(
                     state["typography"] as JsonObject,
@@ -247,13 +249,14 @@ public sealed class OverlayThemeStateStore
         }
     }
 
+    /// <summary>Preserves a uniquely named, checksum-verified copy before replacing saved theme states.</summary>
     private string CreateVerifiedBackup(string directory)
     {
         string backupDirectory = Path.Combine(
             directory,
             "legacy-backups",
             "overlay-theme-states",
-            DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)
+            $"{DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)}-{Guid.NewGuid():N}"
         );
         Directory.CreateDirectory(backupDirectory);
         string backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));

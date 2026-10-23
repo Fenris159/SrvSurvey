@@ -8,6 +8,7 @@ public sealed class OverlayPositionEditSession
 {
     private readonly Dictionary<string, LegacyOverlayPlacement> original;
     private readonly double? originalDefaultOpacity;
+    private readonly int originalScaleIndex;
     private readonly LegacyOverlayLayout workingLayout;
     private double? workingDefaultOpacity;
 
@@ -21,9 +22,116 @@ public sealed class OverlayPositionEditSession
         );
         original = new Dictionary<string, LegacyOverlayPlacement>(placements, StringComparer.Ordinal);
         originalDefaultOpacity = activeLayout.DefaultOpacity;
+        originalScaleIndex = activeLayout.ScaleIndex;
         workingDefaultOpacity = originalDefaultOpacity;
         workingLayout = new LegacyOverlayLayout(placements, activeLayout.DefaultOpacity, null);
         workingLayout.SetScaleIndex(activeLayout.ScaleIndex);
+    }
+
+    /// <summary>Exposes the opening opacity for conflict detection against a newer persisted value.</summary>
+    internal double? OriginalDefaultOpacity => originalDefaultOpacity;
+
+    /// <summary>Indicates when preview geometry should replace a captured live panel size.</summary>
+    internal bool HasGeometryChanges(string plotterName)
+    {
+        LegacyOverlayPlacement current = GetPlacement(plotterName);
+        LegacyOverlayPlacement previous = GetOriginalPlacement(plotterName);
+        return originalScaleIndex != ScaleIndex
+            || current.ScaleIndex != previous.ScaleIndex
+            || current.TypographyScale != previous.TypographyScale
+            || current.SizeOverride != previous.SizeOverride;
+    }
+
+    /// <summary>Applies only edited fields to fresh persisted records and refuses conflicting edits to the same field.</summary>
+    internal IReadOnlyDictionary<string, LegacyOverlayPlacement> MergeWith(LegacyOverlayLayout latest)
+    {
+        var merged = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
+        foreach ((string name, LegacyOverlayPlacement requested) in Changes)
+        {
+            LegacyOverlayPlacement previous = GetOriginalPlacement(name);
+            LegacyOverlayPlacement current = latest.Placements.GetValueOrDefault(
+                name,
+                OverlayLayoutCatalog.GetRequired(name).DefaultPlacement
+            );
+            (
+                LegacyHorizontalAnchor Horizontal,
+                int HorizontalOffset,
+                LegacyVerticalAnchor Vertical,
+                int VerticalOffset,
+                OverlayPositionReference? PositionReference,
+                LegacyHorizontalAnchor? GrowthAnchor
+            ) position = MergeField(Position(previous), Position(requested), Position(current), name, "position");
+            merged[name] = current with
+            {
+                Horizontal = position.Horizontal,
+                HorizontalOffset = position.HorizontalOffset,
+                Vertical = position.Vertical,
+                VerticalOffset = position.VerticalOffset,
+                PositionReference = position.PositionReference,
+                GrowthAnchor = position.GrowthAnchor,
+                Opacity = MergeField(previous.Opacity, requested.Opacity, current.Opacity, name, "opacity"),
+                ScaleIndex = MergeField(previous.ScaleIndex, requested.ScaleIndex, current.ScaleIndex, name, "scale"),
+                TypographyScale = MergeField(
+                    previous.TypographyScale,
+                    requested.TypographyScale,
+                    current.TypographyScale,
+                    name,
+                    "text scale"
+                ),
+                SizeOverride = MergeField(
+                    previous.SizeOverride,
+                    requested.SizeOverride,
+                    current.SizeOverride,
+                    name,
+                    "size"
+                ),
+                GrowthDirection = MergeField(
+                    previous.GrowthDirection,
+                    requested.GrowthDirection,
+                    current.GrowthDirection,
+                    name,
+                    "growth direction"
+                ),
+            };
+        }
+        return merged;
+    }
+
+    /// <summary>Treats the coordinate reference and its anchors as one value so concurrent edits cannot split them.</summary>
+    private static (
+        LegacyHorizontalAnchor Horizontal,
+        int HorizontalOffset,
+        LegacyVerticalAnchor Vertical,
+        int VerticalOffset,
+        OverlayPositionReference? PositionReference,
+        LegacyHorizontalAnchor? GrowthAnchor
+    ) Position(LegacyOverlayPlacement value) =>
+        (
+            value.Horizontal,
+            value.HorizontalOffset,
+            value.Vertical,
+            value.VerticalOffset,
+            value.PositionReference,
+            value.GrowthAnchor
+        );
+
+    /// <summary>Preserves independent edits while requiring an explicit retry after a same-field conflict.</summary>
+    internal static T MergeField<T>(T previous, T requested, T current, string name, string field)
+    {
+        if (EqualityComparer<T>.Default.Equals(previous, requested))
+        {
+            return current;
+        }
+        if (
+            !EqualityComparer<T>.Default.Equals(current, previous)
+            && !EqualityComparer<T>.Default.Equals(current, requested)
+        )
+        {
+            throw new InvalidDataException(
+                $"The {field} for {name} changed in another editor or instance. No changes were saved; reopen the editor to choose the desired value."
+            );
+        }
+        return requested;
     }
 
     public bool HasChanges => Changes.Count > 0 || HasDefaultOpacityChange;
@@ -139,6 +247,18 @@ public sealed class OverlayPositionEditSession
         return workingLayout.SetPlacement(plotterName, placement with { SizeOverride = size });
     }
 
+    /// <summary>Changes a panel's growth preference without discarding its appearance or placement.</summary>
+    public bool SetGrowthDirection(string plotterName, OverlayGrowthDirection direction)
+    {
+        if (!Enum.IsDefined(direction))
+        {
+            throw new ArgumentOutOfRangeException(nameof(direction));
+        }
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(plotterName, placement with { GrowthDirection = direction });
+    }
+
+    /// <summary>Updates the draft for a supported panel without replacing its opening snapshot.</summary>
     public bool SetPlacement(string plotterName, LegacyOverlayPlacement placement)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
@@ -147,24 +267,31 @@ public sealed class OverlayPositionEditSession
         return workingLayout.SetPlacement(plotterName, placement);
     }
 
-    public bool MoveWithDefaultAnchors(
+    /// <summary>Saves the inward-facing top corner chosen from the panel's physical monitor.</summary>
+    public bool MoveWithContentAnchors(
         string plotterName,
         PixelPoint position,
         PixelSize previewSize,
-        PixelRect hostBounds
+        PixelRect hostBounds,
+        PixelRect? monitorBounds = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         LegacyOverlayPlacement placement = GetPlacement(plotterName);
-        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        LegacyOverlayPlacement defaults = definition.DefaultPlacement;
+        LegacyHorizontalAnchor anchor = OverlayContentPlacement.SelectHorizontalAnchor(
+            position,
+            previewSize,
+            monitorBounds ?? hostBounds,
+            placement.GrowthDirection
+        );
         LegacyOverlayPlacement reanchored = placement with
         {
-            Horizontal = defaults.Horizontal,
-            Vertical = definition.MoveVerticalAnchor,
+            Horizontal = anchor,
+            Vertical = LegacyVerticalAnchor.Top,
+            GrowthAnchor = anchor,
         };
-        LegacyOverlayPlacement centered = CreatePlacement(reanchored, position, previewSize, hostBounds);
-        return workingLayout.SetPlacement(plotterName, centered);
+        LegacyOverlayPlacement positioned = CreatePlacement(reanchored, position, previewSize, hostBounds);
+        return workingLayout.SetPlacement(plotterName, positioned);
     }
 
     internal static LegacyOverlayPlacement CreatePlacement(
@@ -208,9 +335,16 @@ public sealed class OverlayPositionEditSession
             ?? throw new InvalidOperationException($"Overlay '{plotterName}' has no working position.");
     }
 
-    public bool Move(string plotterName, PixelPoint position, PixelSize previewSize, PixelRect hostBounds)
+    /// <summary>Records a user drag with a stable corner for subsequent content growth.</summary>
+    public bool Move(
+        string plotterName,
+        PixelPoint position,
+        PixelSize previewSize,
+        PixelRect hostBounds,
+        PixelRect? monitorBounds = null
+    )
     {
-        return MoveWithDefaultAnchors(plotterName, position, previewSize, hostBounds);
+        return MoveWithContentAnchors(plotterName, position, previewSize, hostBounds, monitorBounds);
     }
 
     private static void ValidateOpacity(double opacity, string parameterName)

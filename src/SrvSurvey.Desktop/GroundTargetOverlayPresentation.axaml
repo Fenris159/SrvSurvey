@@ -20,13 +20,6 @@
           <TextBlock FontSize="10" Classes="muted type-detail"
                      Text="Live bearing and descent guidance" />
         </StackPanel>
-        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
-          <Border Classes="badge">
-            <TextBlock FontSize="9" Foreground="{DynamicResource RavenAccentBrush}"
-                       FontWeight="SemiBold"
-                       Text="{Binding InputMode}" />
-          </Border>
-        </LayoutTransformControl>
       </Grid>
 
       <Border Classes="overlay-divider"
@@ -34,6 +27,8 @@
 
       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
         <controls:GroundTargetGuidanceControl
+            MotionStatus="{Binding GroundTarget.MotionStatus}"
+            TargetLocation="{Binding GroundTarget.Target}"
             Width="104"
             Height="116"
             HorizontalAlignment="Center"

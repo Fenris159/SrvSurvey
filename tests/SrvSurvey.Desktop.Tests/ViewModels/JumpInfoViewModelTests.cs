@@ -9,6 +9,124 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class JumpInfoViewModelTests : IDisposable
 {
+    /// <summary>Calculates an individually selected jump from existing system metadata without requiring a plotted route.</summary>
+    [Fact]
+    public async Task IndividualTargetUsesExistingSummaryCoordinatesForDistance()
+    {
+        var pending = new TaskCompletionSource<SystemSummaryLoadResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        var client = new FakeSummaryClient(CreateSummary()) { PendingResponse = pending.Task };
+        using JumpInfoViewModel model = CreateViewModel(client);
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        Assert.Equal("DISTANCE UNAVAILABLE", model.TotalDistance);
+        model.BeginOverlayPresentation();
+        var notifications = new List<string?>();
+        model.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+        pending.SetResult(new SystemSummaryLoadResult(CreateSummary(), []));
+        await model.PendingSummaryLoad;
+
+        Assert.Equal("45.0 LY", model.TotalDistance);
+        Assert.Empty(model.RouteLegs);
+        Assert.Contains(nameof(JumpInfoViewModel.TotalDistance), notifications);
+        Assert.Equal([("Beta", 3L)], client.Requests);
+
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [Event("FSDJump", "\"StarSystem\":\"Beta\"")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        Assert.Equal("45.0 LY", model.TotalDistance);
+    }
+
+    /// <summary>Leaves distance unknown when origin or target coordinates are missing or metadata belongs to another target.</summary>
+    [Theory]
+    [InlineData("missing-origin")]
+    [InlineData("missing-target")]
+    [InlineData("different-target")]
+    public async Task IndividualTargetRequiresMatchingCoordinates(string scenario)
+    {
+        SystemSummary result = CreateSummary() with
+        {
+            Position = scenario == "missing-target" ? null : new GalacticCoordinate(45, 0, 0),
+            SystemName = scenario == "different-target" ? "Other" : "Beta",
+            SystemAddress = scenario == "different-target" ? 99 : 3,
+        };
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(result));
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                scenario == "missing-origin" ? null : new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await model.PendingSummaryLoad;
+
+        Assert.Equal("DISTANCE UNAVAILABLE", model.TotalDistance);
+    }
+
+    /// <summary>Verifies destination poi names enrich existing jump information.</summary>
+    [Fact]
+    public async Task DestinationPoiNamesEnrichExistingJumpInformation()
+    {
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        var poi = new SrvSurvey.Core.Exploration.ExplorationPoi(
+            1,
+            "GEC",
+            "Scenic stop",
+            "Beta",
+            3,
+            null,
+            "Stellar Features",
+            "",
+            "",
+            "",
+            7,
+            4,
+            10,
+            false
+        );
+        model.ApplyPoiCatalog(new SrvSurvey.Core.Exploration.ExplorationPoiCatalog([poi]));
+        Assert.False(model.HasExplorationPois);
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                CreateNavRoute(),
+                [FsdTarget("Beta", 3, "K")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await model.PendingSummaryLoad;
+        Assert.Equal("Scenic stop", model.ExplorationPoiText);
+        Assert.True(model.HasExplorationPois);
+        model.ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog.Empty);
+        Assert.False(model.HasExplorationPois);
+        Assert.Equal("45.0 LY", model.TotalDistance);
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-JumpInfoViewModel-" + Guid.NewGuid().ToString("N")
@@ -963,6 +1081,49 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShow);
     }
 
+    [Theory]
+    [InlineData(FollowRouteRepeatMode.FromStart)]
+    [InlineData(FollowRouteRepeatMode.Reverse)]
+    public async Task RepeatingFollowedRouteDoesNotShowFinishedAtTheTurnaround(FollowRouteRepeatMode mode)
+    {
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        var route = new FollowRouteDocument(
+            "F123",
+            "route.json",
+            true,
+            true,
+            0,
+            [Hop("Sol", 1, 0), Hop("Beta", 3, 45)],
+            RepeatMode: mode
+        );
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                route
+            )
+        );
+        await model.PendingSummaryLoad;
+        model.BeginOverlayPresentation();
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Beta",
+                3,
+                new GalacticCoordinate(45, 0, 0),
+                null,
+                [Event("FSDJump", "\"StarSystem\":\"Beta\",\"SystemAddress\":3")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                route
+            )
+        );
+
+        Assert.NotEqual("FINISHED", model.JumpProgress);
+    }
+
     [Fact]
     public void PresentationCallbacksAreNoOpsAfterDisposal()
     {
@@ -1061,6 +1222,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
 
     private sealed class FakeSummaryClient(SystemSummary summary) : ISystemSummaryClient
     {
+        /// <summary>Allows tests to release lookup metadata after an overlay has already opened.</summary>
+        public Task<SystemSummaryLoadResult>? PendingResponse { get; init; }
         public IReadOnlyList<string> Warnings { get; set; } = [];
         public Exception? Failure { get; init; }
         public List<(string Name, long Address)> Requests { get; } = [];
@@ -1076,7 +1239,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
             {
                 return Task.FromException<SystemSummaryLoadResult>(Failure);
             }
-            return Task.FromResult(new SystemSummaryLoadResult(summary, Warnings));
+            return PendingResponse?.WaitAsync(cancellationToken)
+                ?? Task.FromResult(new SystemSummaryLoadResult(summary, Warnings));
         }
     }
 

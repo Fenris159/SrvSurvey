@@ -15,6 +15,8 @@ internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService?
     internal bool BringMainWindowToFront { get; init; }
 
     internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
+
+    internal SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSyncService { get; init; }
 }
 
 internal enum DesktopStartupCheckpoint
@@ -225,6 +227,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         await RequestShutdownAsync(DesktopShutdownReason.RuntimeDisposed);
     }
 
+    /// <summary>Finishes dependent services and background backups before releasing the close guard and exiting.</summary>
     private async Task StopAsync(DesktopShutdownReason reason, int exitCode)
     {
         TryRun(() => QuiesceMainWindow(reason));
@@ -233,6 +236,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         await TryRunAsync(phases.DisposeDependentsAsync);
         await TryRunAsync(phases.DisposeViewModelAsync);
         await TryRunAsync(phases.DisposeInfrastructureAsync);
+        TryRun(ReleaseMainWindowCloseGuard);
         TryRun(() => lifetime.Shutdown(exitCode));
     }
 
@@ -254,26 +258,30 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         eventArgs.Cancel = RequestMainWindowClose(eventArgs.CloseReason);
     }
 
+    /// <summary>Dismisses the main window immediately while retaining its close guard during background cleanup.</summary>
     private void QuiesceMainWindow(DesktopShutdownReason reason)
     {
         Window? window = attachedMainWindow;
-        attachedMainWindow = null;
         if (window is null)
         {
             return;
         }
 
-        window.Closing -= HandleMainWindowClosing;
         if (reason == DesktopShutdownReason.OperatingSystemShutdown)
         {
             return;
         }
 
         window.IsEnabled = false;
-        if (reason is DesktopShutdownReason.Restart or DesktopShutdownReason.UpdateHandoff)
-        {
-            window.Hide();
-        }
+        window.Hide();
+    }
+
+    /// <summary>Allows the final lifetime shutdown to close the hidden window after all pending work has finished.</summary>
+    private void ReleaseMainWindowCloseGuard()
+    {
+        Window? window = attachedMainWindow;
+        attachedMainWindow = null;
+        window?.Closing -= HandleMainWindowClosing;
     }
 
     private void BeginStartupFailure(Exception exception)

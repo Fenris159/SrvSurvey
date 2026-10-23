@@ -5,6 +5,196 @@ namespace SrvSurvey.Core.Tests.Storage;
 
 public sealed class AppDataPathsTests
 {
+    [Theory]
+    [InlineData(".wine/drive_c/users/cmdr")]
+    [InlineData(".local/share/Steam/steamapps/compatdata/359320/pfx/drive_c/users/steamuser")]
+    [InlineData(".steam/steam/steamapps/compatdata/123456/pfx/drive_c/users/steamuser")]
+    [InlineData(".var/app/com.valvesoftware.Steam/data/Steam/steamapps/compatdata/359320/pfx/drive_c/users/steamuser")]
+    [InlineData(".local/share/bottles/bottles/SrvSurvey/drive_c/users/cmdr")]
+    [InlineData(".var/app/com.usebottles.bottles/data/bottles/bottles/SrvSurvey/drive_c/users/cmdr")]
+    [InlineData("Games/srvsurvey/drive_c/users/cmdr")]
+    public void LinuxDetectsOriginalProfilesInWineAndProtonPrefixes(string userDirectory)
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-prefix-tests-{Guid.NewGuid():N}");
+        string profile = Path.GetFullPath(
+            Path.Combine(home, userDirectory, "AppData", "Roaming", "SrvSurvey", "SrvSurvey", "1.1.0.0")
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        try
+        {
+            var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, home, string.Empty, string.Empty);
+            Assert.Contains(
+                LegacyProfileLocator.Discover(paths.LegacyProfileCandidates),
+                candidate => candidate.Path == profile
+            );
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
+    [Theory]
+    [InlineData("WINEPREFIX", "drive_c/users/cmdr")]
+    [InlineData("STEAM_COMPAT_DATA_PATH", "pfx/drive_c/users/steamuser")]
+    [InlineData("external-library", "steamapps/compatdata/12345/pfx/drive_c/users/steamuser")]
+    public void LinuxDetectsProfilesInConfiguredExternalPrefixes(string configuration, string userDirectory)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-external-prefix-tests-{Guid.NewGuid():N}");
+        string home = Path.Combine(root, "home");
+        string external = Path.Combine(root, "external");
+        string profile = Path.GetFullPath(
+            Path.Combine(external, userDirectory, "AppData", "Roaming", "SrvSurvey", "SrvSurvey", "1.1.0.0")
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        if (configuration == "external-library")
+        {
+            string steam = Path.Combine(home, ".local", "share", "Steam", "steamapps");
+            Directory.CreateDirectory(steam);
+            File.WriteAllText(
+                Path.Combine(steam, "libraryfolders.vdf"),
+                "\"libraryfolders\" { \"1\" { \"path\" \""
+                    + external.Replace("\\", "\\\\", StringComparison.Ordinal)
+                    + "\" } }"
+            );
+        }
+        try
+        {
+            var paths = AppDataPaths.Resolve(
+                DesktopPlatform.Linux,
+                home,
+                string.Empty,
+                string.Empty,
+                key => key == configuration ? external : null
+            );
+            Assert.Contains(
+                LegacyProfileLocator.Discover(paths.LegacyProfileCandidates),
+                candidate => candidate.Path == profile
+            );
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void PrefixDiscoveryIsDeferredAndReusedForAllCandidateAccess()
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-lazy-discovery-{Guid.NewGuid():N}");
+        string prefix = Path.Combine(home, "prefix");
+        string profile = Path.Combine(
+            prefix,
+            "drive_c",
+            "users",
+            "cmdr",
+            "AppData",
+            "Roaming",
+            "SrvSurvey",
+            "SrvSurvey",
+            "1.1.0.0"
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        int discoveries = 0;
+        try
+        {
+            var paths = AppDataPaths.Resolve(
+                DesktopPlatform.Linux,
+                home,
+                string.Empty,
+                string.Empty,
+                key =>
+                {
+                    if (key != "WINEPREFIX")
+                    {
+                        return null;
+                    }
+                    discoveries++;
+                    return prefix;
+                }
+            );
+            Assert.Equal(0, discoveries);
+            Assert.Equal(4, paths.LegacyProfileCandidates.Count);
+            Assert.Equal(profile, paths.LegacyProfileCandidates[0].Path);
+            Assert.Equal(4, paths.LegacyProfileCandidates.ToArray().Length);
+            Assert.Equal(1, discoveries);
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
+    [Fact]
+    public void WineCompatibilityAliasesAppearAsOneProfile()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-alias-prefix-{Guid.NewGuid():N}");
+        string user = Path.Combine(home, ".wine", "drive_c", "users", "cmdr");
+        string roaming = Path.Combine(user, "AppData", "Roaming");
+        string profile = Path.Combine(roaming, "SrvSurvey", "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        Directory.CreateSymbolicLink(Path.Combine(user, "Application Data"), roaming);
+        try
+        {
+            var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, home, string.Empty, string.Empty);
+            Assert.Single(LegacyProfileLocator.Discover(paths.LegacyProfileCandidates));
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
+    [Fact]
+    public void UnrelatedGameDirectoriesCannotConsumeAnotherProfilesDiscoveryBudget()
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-games-prefix-{Guid.NewGuid():N}");
+        string profile = Path.Combine(
+            home,
+            "Games",
+            "SrvSurvey",
+            "drive_c",
+            "users",
+            "cmdr",
+            "AppData",
+            "Roaming",
+            "SrvSurvey",
+            "SrvSurvey",
+            "1.1.0.0"
+        );
+        Directory.CreateDirectory(profile);
+        File.WriteAllText(Path.Combine(profile, "F123-live.json"), "{}");
+        for (int group = 0; group < 65; group++)
+        {
+            for (int leaf = 0; leaf < 65; leaf++)
+            {
+                Directory.CreateDirectory(
+                    Path.Combine(home, "Games", "Unrelated", $"group-{group:D2}", $"leaf-{leaf:D2}")
+                );
+            }
+        }
+        try
+        {
+            var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, home, string.Empty, string.Empty);
+            Assert.Contains(
+                LegacyProfileLocator.Discover(paths.LegacyProfileCandidates),
+                candidate => candidate.Path == profile
+            );
+        }
+        finally
+        {
+            Directory.Delete(home, true);
+        }
+    }
+
     [Fact]
     public void WindowsSeparatesNewDataFromLegacyProfile()
     {
@@ -30,6 +220,7 @@ public sealed class AppDataPathsTests
         Assert.DoesNotContain(paths.LegacyProfileCandidates, candidate => candidate.Path == paths.DataDirectory);
     }
 
+    /// <summary>Verifies Linux XDG storage roots and the separate location for operational journal upload queues.</summary>
     [Fact]
     public void LinuxUsesXdgDirectories()
     {
@@ -52,6 +243,17 @@ public sealed class AppDataPathsTests
         Assert.Equal(Path.GetFullPath("/mnt/data/SrvSurvey"), paths.DataDirectory);
         Assert.Equal(Path.GetFullPath("/mnt/cache/SrvSurvey"), paths.CacheDirectory);
         Assert.Empty(paths.LegacyProfileCandidates);
+        Assert.Equal(Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads"), paths.JournalUploadDirectory);
+        AppDataPaths firstCommander = paths with { SettingsFrontierId = "F123" };
+        AppDataPaths secondCommander = paths with { SettingsFrontierId = "F456" };
+        Assert.Equal(
+            Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads/profiles/F123"),
+            firstCommander.JournalUploadDirectory
+        );
+        Assert.Equal(
+            Path.GetFullPath("/mnt/data/SrvSurvey/journal-uploads/profiles/F456"),
+            secondCommander.JournalUploadDirectory
+        );
     }
 
     [Fact]

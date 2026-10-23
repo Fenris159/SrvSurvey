@@ -9,6 +9,7 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Tests.Network;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class VoxStellarPublisherTests
 {
     [Fact]
@@ -108,6 +109,46 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(request.Signature.ToLowerInvariant(), request.Signature);
     }
 
+    /// <summary>A foreign identity boundary stops later events from being assigned to the requested commander.</summary>
+    [Theory]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Other\",\"FID\":\"F123\"}")]
+    [InlineData("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F999\"}")]
+    [InlineData("{\"event\":\"Commander\",\"Name\":\"Other\"}")]
+    [InlineData("{\"event\":\"Commander\",\"Name\":42}")]
+    public async Task ForeignCommanderStopsTheCapturedBatch(string boundary)
+    {
+        var handler = new RecordingHandler();
+        using var client = new HttpClient(handler);
+        var publisher = new VoxStellarPublisher("2.1.3.0", "test-key", client, batchInterval: TimeSpan.Zero);
+        try
+        {
+            VoxStellarPublicationResult result = await publisher.ApplyAsync(
+                new VoxStellarApplyRequest
+                {
+                    CommanderName = "Test Cmdr",
+                    FrontierId = "F123",
+                    Enabled = true,
+                    AllowPublishing = true,
+                    JournalEvents =
+                    [
+                        Parse("{\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\"}"),
+                        Parse("{\"event\":\"Scan\",\"BodyName\":\"Own Body\"}"),
+                        Parse(boundary),
+                        Parse("{\"event\":\"Scan\",\"BodyName\":\"Foreign Body\"}"),
+                    ],
+                }
+            );
+            Assert.Equal(["Scan"], result.QueuedEventNames);
+        }
+        finally
+        {
+            publisher.Dispose();
+        }
+        RecordedRequest request = Assert.Single(handler.Requests);
+        Assert.Contains("Own Body", Encoding.UTF8.GetString(request.Body), StringComparison.Ordinal);
+        Assert.DoesNotContain("Foreign Body", Encoding.UTF8.GetString(request.Body), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task BootstrapAndDisabledUpdatesNeverReachTheWebhook()
     {
@@ -170,18 +211,20 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal(1, handler.CallCount);
     }
 
-    /// <summary>Preserves the transport-start consent fence with immediate and normally batched uploads.</summary>
+    /// <summary>Preserves the transport-start consent fence with immediate and explicitly timed batched uploads.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DisablingConsentWaitsUntilAuthorizedTransportHasStarted(bool useDefaultBatchInterval)
     {
+        var clock = new BatchClock();
         var handler = new TransportStartBlockingHandler();
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher(
             "1.0.0",
             "test-key",
             client,
+            timeProvider: clock,
             batchInterval: useDefaultBatchInterval ? null : TimeSpan.Zero
         );
         publisher.SetEnabled(true);
@@ -196,9 +239,20 @@ public sealed class VoxStellarPublisherTests
             }
         );
         Task? disableTask = null;
+        Task? batchTick = null;
         try
         {
-            // Startup includes the five-second batch interval and CI worker scheduling.
+            if (useDefaultBatchInterval)
+            {
+                ManualTimer timer = await clock.NextTimerAsync();
+                batchTick = Task.Factory.StartNew(
+                    timer.Fire,
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default
+                );
+            }
+
             await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
             var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -222,6 +276,10 @@ public sealed class VoxStellarPublisherTests
             if (disableTask is not null)
             {
                 await disableTask.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            if (batchTick is not null)
+            {
+                await batchTick.WaitAsync(TimeSpan.FromSeconds(10));
             }
         }
     }
@@ -408,6 +466,7 @@ public sealed class VoxStellarPublisherTests
         Assert.Empty(handler.Requests);
     }
 
+    /// <summary>Shutdown requests cancellation within its bounded deadline for an unresponsive upload.</summary>
     [Fact]
     public async Task ShutdownCancelsAnUnresponsiveUploadWithinItsDeadline()
     {
@@ -417,39 +476,64 @@ public sealed class VoxStellarPublisherTests
         await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
         await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
         await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(handler.Cancelled.Task.IsCompleted);
+        Assert.True(handler.RequestCancellation.IsCancellationRequested);
         Assert.Equal(1, handler.CallCount);
     }
 
+    /// <summary>Accepted outcomes are reported even when cancellation unwinds after bounded shutdown returns.</summary>
     [Fact]
     public async Task ShutdownRetainsCompletedOutcomesFromAnInterruptedBatch()
     {
         var clock = new BatchClock();
-        var handler = new CancellationHandler(acceptFirstRequest: true);
+        var cancellationCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new CancellationHandler(
+            acceptFirstRequest: true,
+            cancellationCompletion: cancellationCompletion.Task
+        );
         using var client = new HttpClient(handler);
         var logs = new ConcurrentQueue<string>();
+        var summaryLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var publisher = new VoxStellarPublisher(
             "1.0.0",
             "test-key",
             client,
-            log: logs.Enqueue,
+            log: message =>
+            {
+                logs.Enqueue(message);
+                summaryLogged.TrySetResult();
+            },
             timeProvider: clock
         );
-        await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
-        (await clock.NextTimerAsync()).Fire();
-        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(handler.Cancelled.Task.IsCompleted);
-        Assert.Equal(2, handler.CallCount);
-        Assert.Contains("1 accepted", Assert.Single(logs), StringComparison.Ordinal);
+        try
+        {
+            await publisher.ApplyAsync(
+                CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")])
+            );
+            (await clock.NextTimerAsync()).Fire();
+            await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(handler.RequestCancellation.IsCancellationRequested);
+            Assert.Equal(2, handler.CallCount);
+            Assert.Empty(logs);
+            cancellationCompletion.TrySetResult();
+            await summaryLogged.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Contains("1 accepted", Assert.Single(logs), StringComparison.Ordinal);
+        }
+        finally
+        {
+            cancellationCompletion.TrySetResult();
+        }
     }
 
-    private sealed class CancellationHandler(bool acceptFirstRequest = false) : HttpMessageHandler
+    /// <summary>Simulates cancellation whose transport continuation can resume after the bounded shutdown deadline.</summary>
+    private sealed class CancellationHandler(bool acceptFirstRequest = false, Task? cancellationCompletion = null)
+        : HttpMessageHandler
     {
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource Cancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public CancellationToken RequestCancellation { get; private set; }
         public int CallCount { get; private set; }
 
+        /// <inheritdoc />
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -460,17 +544,20 @@ public sealed class VoxStellarPublisherTests
             {
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
+            RequestCancellation = cancellationToken;
             Started.TrySetResult();
             try
             {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                return new HttpResponseMessage(HttpStatusCode.OK);
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            finally
             {
-                Cancelled.TrySetResult();
-                throw;
+                if (cancellationCompletion is not null)
+                {
+                    await cancellationCompletion.ConfigureAwait(false);
+                }
             }
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 

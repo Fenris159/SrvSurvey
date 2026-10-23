@@ -6,6 +6,11 @@ public static class OverlayThemePresetCatalog
 {
     public const string DefaultName = "Default";
 
+    private const string ColonizationCategoryKey = "colonize.category";
+    private const string ColonizationNeedKey = "colonize.need";
+    private const string ColonizationHaveKey = "colonize.have";
+    private const string ColonizationShipKey = "colonize.ship";
+    private const string PaleGoldColor = "#FFE8A3";
     private const string BioEmptyKey = "bio.empty";
     private const string BlackKey = "black";
     private const string HeaderKey = "header";
@@ -45,6 +50,14 @@ public static class OverlayThemePresetCatalog
         "grey",
     ];
 
+    private static readonly string[] ColonizationKeys =
+    [
+        ColonizationCategoryKey,
+        ColonizationNeedKey,
+        ColonizationHaveKey,
+        ColonizationShipKey,
+    ];
+
     private static readonly string[] ExpandedBiologyKeys =
     [
         BioConfirmedKey,
@@ -81,15 +94,16 @@ public static class OverlayThemePresetCatalog
         "bio.galacticRegionPotentialSegmentEdge",
     ];
 
+    /// <summary>Lists the built-in palettes with consistent cargo-status colors and distinct category accents.</summary>
     public static IReadOnlyList<OverlayThemePreset> Presets { get; } =
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),
         CreateMonochromeCompanion(),
-        CreateExpandedPreset("Nebula Cyan", "#5EC8F2", "#B8E8FF", "#D6EEF9", "#FFE8A3"),
-        CreateExpandedPreset("Toxic Green", "#5CFF9E", "#A8FFCC", "#D8FFE8", "#FFF066"),
-        CreateExpandedPreset("Crimson Wake", "#FF6B6B", "#FFB8B8", "#FFE4E4", "#FFD966"),
-        CreateExpandedPreset("Void Amethyst", "#C9A0FF", "#E2CCFF", "#E8E0F5", "#7FFFD4"),
-        CreateExpandedPreset("Cerulean Gold", "#3D9EE8", "#F2F7FC", "#C8E4FA", "#FFCC33"),
+        CreateExpandedPreset("Nebula Cyan", "#5EC8F2", "#B8E8FF", "#D6EEF9", PaleGoldColor, "#B8E8FF", PaleGoldColor),
+        CreateExpandedPreset("Toxic Green", "#5CFF9E", "#A8FFCC", "#D8FFE8", "#FFF066", "#BDE9FF", "#FFF066"),
+        CreateExpandedPreset("Crimson Wake", "#FF6B6B", "#FFB8B8", "#FFE4E4", "#FFD966", "#C7DCFF", "#FFD966"),
+        CreateExpandedPreset("Void Amethyst", "#C9A0FF", "#E2CCFF", "#E8E0F5", "#7FFFD4", "#E2CCFF", PaleGoldColor),
+        CreateExpandedPreset("Cerulean Gold", "#3D9EE8", "#F2F7FC", "#C8E4FA", "#FFCC33", "#C8E4FA", "#FFCC33"),
     ];
 
     public static OverlayThemePreset Default => Presets[0];
@@ -173,6 +187,27 @@ public static class OverlayThemePresetCatalog
         return changed;
     }
 
+    /// <summary>Fills missing category and column brushes from the matching preset without changing saved colors.</summary>
+    internal static void AddMissingColonizationColors(Dictionary<string, Color> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        if (ColonizationKeys.All(colors.ContainsKey))
+        {
+            return;
+        }
+
+        OverlayThemePreset preset =
+            Presets.FirstOrDefault(candidate =>
+                PresetIdentityKeys.All(key =>
+                    colors.TryGetValue(key, out Color color) && candidate.Colors[key] == color
+                )
+            ) ?? Default;
+        foreach (string key in ColonizationKeys)
+        {
+            colors.TryAdd(key, preset.Colors[key]);
+        }
+    }
+
     internal static bool AddMissingHeaderColor(Dictionary<string, Color> colors)
     {
         ArgumentNullException.ThrowIfNull(colors);
@@ -187,9 +222,18 @@ public static class OverlayThemePresetCatalog
         return true;
     }
 
+    /// <summary>Uses muted general colors while retaining the standard colonization surplus and deficit palette.</summary>
     private static OverlayThemePreset CreateMonochromeCompanion()
     {
-        var colors = CreateExpandedPreset("Monochrome Companion", "#C8CBD0", "#8DB2BE", "#D7D4CC", "#D4BF8F")
+        var colors = CreateExpandedPreset(
+            "Monochrome Companion",
+            "#C8CBD0",
+            "#8DB2BE",
+            "#D7D4CC",
+            "#D4BF8F",
+            "#8DB2BE",
+            "#D4BF8F"
+        )
             .Colors.ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
         colors[BlackKey] = Color.Parse("#111315");
         colors["grey"] = Color.Parse("#90979E");
@@ -197,10 +241,6 @@ public static class OverlayThemePresetCatalog
         colors["greenDark"] = Color.Parse("#405849");
         colors["red"] = Color.Parse("#CF8C86");
         colors["redDark"] = Color.Parse("#69433F");
-        colors["colonise.surplus"] = colors["green"];
-        colors["colonise.surplusDark"] = colors["greenDark"];
-        colors["colonise.deficit"] = colors["red"];
-        colors["colonise.deficitDark"] = colors["redDark"];
         colors["guardian.background"] = colors[BlackKey];
         colors["guardian.success"] = colors["green"];
         colors["guardian.danger"] = colors["red"];
@@ -237,12 +277,15 @@ public static class OverlayThemePresetCatalog
         colors[BioConfirmedDimPotentialSegmentEdgeKey] = WithAlpha(Scale(confirmed, 0.33), 124);
     }
 
+    /// <summary>Builds a complete theme with independent cargo colors and the standard colonization status palette.</summary>
     private static OverlayThemePreset CreateExpandedPreset(
         string name,
         string headerPrimary,
         string headerSecondary,
         string commodity,
-        string values
+        string values,
+        string cargo,
+        string ship
     )
     {
         var colors = LegacyOverlayThemeStore
@@ -265,7 +308,7 @@ public static class OverlayThemePresetCatalog
 
         ApplyGeneral(colors, palette);
         ApplyBiology(colors, palette);
-        ApplyColonisation(colors, palette);
+        ApplyColonisation(colors, palette, Color.Parse(cargo), Color.Parse(ship));
         ApplySettlements(colors, palette);
         ApplyGuardian(colors, palette);
         return new OverlayThemePreset(name, colors);
@@ -411,9 +454,18 @@ public static class OverlayThemePresetCatalog
         };
     }
 
-    private static void ApplyColonisation(Dictionary<string, Color> colors, ExpandedPalette palette)
+    /// <summary>Separates category, commodity, and cargo colors while keeping NEED white in every preset.</summary>
+    private static void ApplyColonisation(
+        Dictionary<string, Color> colors,
+        ExpandedPalette palette,
+        Color cargo,
+        Color ship
+    )
     {
         colors["colonise.highlight"] = palette.Value;
+        colors[ColonizationCategoryKey] = palette.Value;
+        colors[ColonizationHaveKey] = cargo;
+        colors[ColonizationShipKey] = ship;
         colors["colonise.item"] = palette.Primary;
         colors["colonise.itemDark"] = palette.PrimaryDark;
         colors["colonise.rowHighlight"] = WithAlpha(palette.Primary, 72);

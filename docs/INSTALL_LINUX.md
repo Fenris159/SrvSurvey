@@ -14,6 +14,10 @@ Keeping live overlays clickable after clicking Elite requires that guide's
 patched Gamescope runtime control and updated wrapper; stock
 `--force-grab-cursor` cannot pause capture for overlay interaction.
 
+For **Steam Deck Gaming Mode**, follow the separate
+[SteamOS setup and device validation guide](STEAMOS_GAMING_MODE.md). It uses the
+Deck's existing compositor and a native SrvSurvey launch alongside Steam/Proton.
+
 ## Download the package
 
 Download the AppImage or portable archive from the relevant
@@ -74,6 +78,16 @@ updater downloads the AppImage selected by the configured release channel,
 checks its release-index size and SHA-256 checksum, preserves the current image
 as a rollback copy, and starts the replacement. If the replacement does not
 confirm a healthy startup, SrvSurvey restores the previous AppImage.
+
+The replacement has up to three minutes to confirm that its main window has
+received a frame and the UI dispatcher is responding. Local recovery and staged
+restores still complete first. The update-verification launch defers automatic
+Google Drive checks so a slow network cannot hold up this confirmation; use
+**Sync now** or a normal restart to check cloud changes. The automatic-sync
+preference stays enabled. Logs record local-profile readiness and window
+readiness, and rollback outcomes distinguish an early process exit (with its
+exit code) from a startup timeout. A timed-out replacement is stopped before
+restoring the old image.
 
 The update helper uses AppImage extract-and-run mode, so updating does not add
 a FUSE requirement. Published releases also include embedded AppImage update
@@ -190,10 +204,11 @@ X11/XWayland integration in this package.
 
 Run Elite Dangerous and SrvSurvey as the same desktop user on the same display.
 Do not start SrvSurvey with `sudo` or from an unrelated SSH session. If Elite is
-inside a nested Gamescope session, SrvSurvey must be launched into the same
-session so it can see the game window and the Gamescope environment. If it
-cannot detect Elite there, first test both programs in the same normal
-X11/XWayland desktop session.
+inside Gamescope, follow the
+[Gaming Mode guide](STEAMOS_GAMING_MODE.md) or the
+[desktop Gamescope discovery instructions](Overlay_Troubleshooting.md#desktop-mode-including-normal-steamproton-launches).
+The verified compositor path can discover Elite on a separate game display;
+ordinary desktop sessions can follow a supported Gamescope outer window.
 
 ### Game screen capture on Wayland
 

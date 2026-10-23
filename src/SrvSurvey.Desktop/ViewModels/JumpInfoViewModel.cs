@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
@@ -24,6 +25,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private string? currentSystemName;
     private long? currentSystemAddress;
     private GalacticCoordinate? currentPosition;
+    private GalacticCoordinate? displayedOriginPosition;
     private NavRouteSnapshot? navRoute;
     private FollowRouteDocument? followedRoute;
     private FollowRouteDocument? displayedFollowedRoute;
@@ -33,6 +35,23 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private JumpTarget? inFlightTarget;
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
+    private ExplorationPoiCatalog poiCatalog = ExplorationPoiCatalog.Empty;
+
+    public string ExplorationPoiText =>
+        string.Join(
+            " · ",
+            poiCatalog.ForSystem(routePlan?.Target.Name, routePlan?.Target.SystemAddress).Select(p => p.Name)
+        );
+    public bool HasExplorationPois => ExplorationPoiText.Length > 0;
+
+    /// <summary>Adds local attraction context to the existing next-jump presentation.</summary>
+    public void ApplyPoiCatalog(ExplorationPoiCatalog catalog)
+    {
+        poiCatalog = catalog;
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
+    }
+
     private IReadOnlyList<JumpInfoDetailLineViewModel> detailLines = [];
     private HashSet<string> questTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private double? maximumJumpRange;
@@ -204,8 +223,25 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 : "DIRECT TARGET"
         );
 
+    /// <summary>Shows the plotted-route total or calculates an individual target's distance from matching system metadata.</summary>
     public string TotalDistance =>
-        routePlan is { Legs.Count: > 0 } plan ? $"{plan.TotalDistanceLy:N1} LY" : "DISTANCE UNAVAILABLE";
+        routePlan is { Legs.Count: > 0 } plan ? $"{plan.TotalDistanceLy:N1} LY" : CreateDirectDistanceText();
+
+    /// <summary>Uses the displayed jump's origin so arriving while the panel is held cannot change its distance to zero.</summary>
+    private string CreateDirectDistanceText()
+    {
+        if (
+            routePlan is not { Source: JumpInfoRouteSource.Direct } plan
+            || displayedOriginPosition is not { } origin
+            || summary is not { Position: { } targetPosition } targetSummary
+            || !SameTarget(plan.Target, new JumpTarget(targetSummary.SystemName, targetSummary.SystemAddress))
+        )
+        {
+            return "DISTANCE UNAVAILABLE";
+        }
+
+        return $"{origin.DistanceTo(targetPosition):N1} LY";
+    }
 
     public IReadOnlyList<JumpInfoRouteLeg> RouteLegs => routePlan?.Legs ?? [];
 
@@ -229,7 +265,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<JumpInfoDetailLineViewModel> DetailLines
     {
         get => detailLines;
-        private set => SetField(ref detailLines, value);
+        private set => SetField(ref detailLines, OverlayListRetention.Keep(detailLines, value));
     }
 
     public bool HasDetailLines => DetailLines.Count > 0;
@@ -289,6 +325,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasTraffic));
         OnPropertyChanged(nameof(PointsOfInterestText));
         OnPropertyChanged(nameof(HasPointsOfInterest));
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
         OnPropertyChanged(nameof(HasDetailLines));
         OnPropertyChanged(nameof(HasRefuelGuidance));
         OnPropertyChanged(nameof(HasNeutronGuidance));
@@ -534,6 +572,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         );
         UpdateInFlightStarClass(nextPlan);
         routePlan = PreserveInFlightStarClass(nextPlan);
+        displayedOriginPosition = currentPosition;
         RaisePlanProperties();
 
         JumpTarget? nextTarget = routePlan?.Target;
@@ -643,14 +682,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             : string.Join(" and ", providers) + " data unavailable.";
     }
 
+    /// <summary>Refreshes the bound next-jump summary and its matching attraction context.</summary>
     private void RefreshSummaryProperties()
     {
+        OnPropertyChanged(nameof(TotalDistance));
         OnPropertyChanged(nameof(DiscoveryText));
         OnPropertyChanged(nameof(HasDiscoveryText));
         OnPropertyChanged(nameof(TrafficText));
         OnPropertyChanged(nameof(HasTraffic));
         OnPropertyChanged(nameof(PointsOfInterestText));
         OnPropertyChanged(nameof(HasPointsOfInterest));
+        OnPropertyChanged(nameof(ExplorationPoiText));
+        OnPropertyChanged(nameof(HasExplorationPois));
         RefreshDetailLines();
     }
 
@@ -838,6 +881,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         if (
             followedRoute is not { IsActive: true, NextHop: { } nextHop, Hops.Count: > 0 }
+            || (followedRoute.Hops.Count > 1 && followedRoute.RepeatMode != FollowRouteRepeatMode.None)
             || followedRoute.LastReachedIndex + 2 != followedRoute.Hops.Count
         )
         {

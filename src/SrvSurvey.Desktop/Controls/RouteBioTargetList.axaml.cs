@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -65,6 +66,7 @@ public sealed partial class RouteBioTargetList : UserControl
         set => SetValue(ExpandToAvailableHeightProperty, value);
     }
 
+    /// <summary>Rebinds target rows and requests their viewport measurements after layout.</summary>
     private void ApplyItemsSource(IReadOnlyList<RouteBioTargetItemViewModel>? items)
     {
         BodyItems.ItemsSource = items;
@@ -72,9 +74,10 @@ public sealed partial class RouteBioTargetList : UserControl
         ScheduleViewportUpdate();
     }
 
+    /// <summary>Coalesces attached layout updates without polling a detached or not-yet-realized list.</summary>
     private void ScheduleViewportUpdate()
     {
-        if (viewportUpdatePending)
+        if (viewportUpdatePending || !this.IsAttachedToVisualTree())
         {
             return;
         }
@@ -90,6 +93,7 @@ public sealed partial class RouteBioTargetList : UserControl
         );
     }
 
+    /// <summary>Caps natural-height lists to realized rows and waits for layout instead of busy retrying absent containers.</summary>
     private void UpdateViewport()
     {
         int count = ItemsSource?.Count ?? 0;
@@ -105,7 +109,7 @@ public sealed partial class RouteBioTargetList : UserControl
         {
             if (BodyItems.ContainerFromIndex(index) is not Control container || container.Bounds.Height <= 0)
             {
-                ScheduleViewportUpdate();
+                // The next attached layout will retry once the row containers are realized.
                 return;
             }
 

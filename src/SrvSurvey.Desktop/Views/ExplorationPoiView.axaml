@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.ExplorationPoiView"
+             x:DataType="vm:ExplorationPoiViewModel">
+  <UserControl.Styles>
+    <Style Selector="ListBox.poi-results ListBoxItem">
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+  </UserControl.Styles>
+  <Border x:Name="PoiPanel" Classes="card" HorizontalAlignment="Stretch">
+    <StackPanel Spacing="14">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Exploration POIs · EDAstro" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="{Binding CurrentSystem, StringFormat='Current system: {0}'}" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="secondary" Content="New POI" Command="{Binding NewPoiCommand}" VerticalAlignment="Top" />
+        <Button Grid.Column="2" Classes="secondary" Content="Refresh catalogue" Command="{Binding RefreshCommand}" VerticalAlignment="Top" />
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="muted" Text="System search" />
+          <controls:SystemNameEntry x:Name="PoiSystemSearch"
+                                    Text="{Binding SystemQuery, Mode=TwoWay}"
+                                    PlaceholderText="Search systems"
+                                    IsEnabled="{Binding IsSystemSearchEnabled}"
+                                    VerticalAlignment="Top" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="5">
+          <TextBlock Classes="muted" Text="Attraction search" />
+          <TextBox x:Name="PoiAttractionSearch"
+                   Text="{Binding AttractionQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Search attractions"
+                   IsEnabled="{Binding IsAttractionSearchEnabled}"
+                   AcceptsReturn="False"
+                   VerticalAlignment="Top" />
+        </StackPanel>
+      </Grid>
+      <TextBlock Classes="muted" FontSize="11" Text="Clear the active search to use the other search." />
+
+      <Grid ColumnDefinitions="*,Auto,118" ColumnSpacing="12">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="muted" Text="Reference system" />
+          <controls:SystemNameEntry x:Name="PoiReferenceSystem"
+                                    Text="{Binding ReferenceSystem, Mode=TwoWay}"
+                                    PlaceholderText="System name or id64"
+                                    VerticalAlignment="Top" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="secondary" Content="Use current system"
+                Command="{Binding UseCurrentSystemCommand}" VerticalAlignment="Top" Margin="0,24,0,0" />
+        <StackPanel Grid.Column="2" Spacing="5">
+          <TextBlock Classes="muted" Text="Nearby radius (ly)" />
+          <NumericUpDown x:Name="PoiRadius" Minimum="0" Maximum="100000"
+                         IsEnabled="{Binding !CurrentOnly}"
+                         Value="{Binding MaximumDistanceLy, Mode=TwoWay}"
+                         VerticalAlignment="Top" />
+        </StackPanel>
+      </Grid>
+      <TextBlock Classes="muted" FontSize="11" Text="{Binding ReferenceStatus}" TextWrapping="Wrap" />
+
+      <WrapPanel>
+        <StackPanel Spacing="5" Width="208" Margin="0,0,16,8">
+          <TextBlock Classes="muted" Text="Category" />
+          <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Category, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+        </StackPanel>
+        <StackPanel Spacing="5" Width="132" Margin="0,0,16,8">
+          <TextBlock Classes="muted" Text="Minimum score / 10" />
+          <NumericUpDown Minimum="0" Maximum="10" Increment="0.5" Value="{Binding MinimumRating, Mode=TwoWay}" VerticalAlignment="Top" />
+        </StackPanel>
+        <StackPanel Spacing="4" Margin="0,20,0,0">
+          <CheckBox Content="Reference system only" IsChecked="{Binding CurrentOnly, Mode=TwoWay}" />
+          <WrapPanel>
+            <CheckBox Content="Rare POIs only" IsChecked="{Binding RareOnly, Mode=TwoWay}" Margin="0,0,12,0" />
+            <CheckBox Content="Include Legacy POIs" IsChecked="{Binding IncludeLegacy, Mode=TwoWay}" />
+          </WrapPanel>
+        </StackPanel>
+      </WrapPanel>
+
+      <TextBlock Classes="muted" Text="{Binding ResultCount}" />
+      <Grid RowDefinitions="Auto,*">
+        <Border Width="{Binding Bounds.Width, ElementName=PoiResultsTable}" HorizontalAlignment="Left">
+          <Grid Classes="table-header" ColumnDefinitions="*,170,84,68" ColumnSpacing="12" Margin="9,0,9,8">
+            <TextBlock x:Name="PoiNameHeader" Text="Attraction / system" />
+            <TextBlock x:Name="PoiCategoryHeader" Grid.Column="1" Text="Category" />
+            <TextBlock x:Name="PoiDistanceHeader" Grid.Column="2" Text="Distance" HorizontalAlignment="Right" />
+            <TextBlock x:Name="PoiScoreHeader" Grid.Column="3" Text="Score" HorizontalAlignment="Right" />
+          </Grid>
+        </Border>
+        <ScrollViewer x:Name="PoiResultsScroller" Grid.Row="1" Height="280"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                      AllowAutoHide="False">
+          <Border x:Name="PoiResultsTable" Margin="0,0,24,0" BorderThickness="1"
+                  BorderBrush="{DynamicResource RavenBorderBrush}" CornerRadius="6" ClipToBounds="True">
+            <ListBox x:Name="PoiResults" Classes="table-rows poi-results"
+                     ItemsSource="{Binding Items}" SelectedItem="{Binding Selected, Mode=TwoWay}"
+                     BorderThickness="0" Padding="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExplorationPoiItemViewModel">
+                  <Grid ColumnDefinitions="*,170,84,68" ColumnSpacing="12" Margin="8,6">
+                    <StackPanel Spacing="2">
+                      <TextBlock x:Name="PoiNameCell" FontWeight="SemiBold" Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
+                      <TextBlock Classes="muted" FontSize="11" Text="{Binding SystemName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SystemName}" />
+                    </StackPanel>
+                    <TextBlock x:Name="PoiCategoryCell" Grid.Column="1" Classes="muted" FontSize="11" Text="{Binding Categories}"
+                               TextWrapping="Wrap" VerticalAlignment="Center" ToolTip.Tip="{Binding Categories}" />
+                    <TextBlock x:Name="PoiDistanceCell" Grid.Column="2" Text="{Binding DistanceText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="2">
+                      <TextBlock x:Name="PoiScoreCell" Text="{Binding RatingText}" HorizontalAlignment="Right" />
+                      <TextBlock Classes="muted" FontSize="10" Text="{Binding RareText}" HorizontalAlignment="Right" />
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Border>
+        </ScrollViewer>
+      </Grid>
+
+      <StackPanel IsVisible="{Binding HasSelection}" Spacing="6">
+        <StackPanel DataContext="{Binding Selected}" x:DataType="vm:ExplorationPoiItemViewModel" Spacing="6">
+          <TextBlock Classes="card-title" Text="{Binding Name}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="{Binding VotesText}" />
+          <TextBlock Text="{Binding Summary}" IsVisible="{Binding HasSummary}" TextWrapping="Wrap" />
+        </StackPanel>
+        <ScrollViewer x:Name="PoiDescriptionScroller" MaxHeight="480" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding DescriptionPreview.Blocks}" Margin="0,0,24,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ExplorationPoiDescriptionBlockViewModel">
+                <StackPanel Spacing="6" Margin="0,0,0,12">
+                  <TextBlock Text="{Binding Text}" IsVisible="{Binding HasText}" TextWrapping="Wrap" />
+                  <Image Source="{Binding Image}" IsVisible="{Binding HasImage}"
+                         MaxHeight="360" Stretch="Uniform" HorizontalAlignment="Left" />
+                  <TextBlock Text="{Binding Caption}" IsVisible="{Binding HasCaption}" Classes="muted" FontSize="11" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding Status}" IsVisible="{Binding HasStatus}" Classes="muted" FontSize="11" TextWrapping="Wrap" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </StackPanel>
+      <WrapPanel>
+        <Button Classes="secondary" Content="Copy system" Command="{Binding CopySystemCommand}" Margin="0,0,10,4" />
+        <Button Classes="secondary" Content="Open GEC entry" Command="{Binding OpenSourceCommand}" Margin="0,0,10,4" />
+        <Button Classes="secondary" Content="Bookmark POI" Command="{Binding SavePoiCommand}" Margin="0,0,0,4" />
+      </WrapPanel>
+      <TextBlock Classes="muted" Text="{Binding DataStatus}" TextWrapping="Wrap" />
+      <TextBlock Classes="muted" FontSize="11" Text="Galactic Exploration Catalog · CC BY-NC-SA 3.0. Open the source entry for contributor credits and full details." TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

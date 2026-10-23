@@ -9,10 +9,11 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         $"SrvSurvey-input-settings-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Verifies catalog preserves legacy actions and adds overlay edit shortcut.</summary>
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(69, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(72, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog
@@ -27,12 +28,17 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             GlobalInputActionCatalog.Get(GlobalInputAction.ToggleOverlayInteraction).DefaultChord
         );
         Assert.Empty(GlobalInputActionCatalog.Get(GlobalInputAction.ToggleVrOverlayInteraction).DefaultChord);
+        Assert.Equal(
+            "ALT CTRL SHIFT X",
+            GlobalInputActionCatalog.Get(GlobalInputAction.ToggleCollapseCoveredColonyGroups).DefaultChord
+        );
+        Assert.Single(GlobalInputActionCatalog.All, definition => definition.DefaultChord == "ALT CTRL SHIFT X");
         Assert.Equal(new("adjustVR", "ALT V"), GetLegacyBinding(GlobalInputAction.AdjustVr));
         Assert.Equal(new("resetVR", string.Empty), GetLegacyBinding(GlobalInputAction.ResetVr));
         GlobalInputActionDefinition[] panelToggles = GlobalInputActionCatalog
             .All.Where(definition => definition.OverlayPlotterName is not null)
             .ToArray();
-        Assert.Equal(37, panelToggles.Length);
+        Assert.Equal(39, panelToggles.Length);
         Assert.All(
             panelToggles,
             definition =>

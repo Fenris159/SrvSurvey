@@ -1,0 +1,1650 @@
+{
+  "advancedcatalysers": {
+    "Name": "Advanced Catalysers",
+    "Category": "Technology"
+  },
+  "advancedmedicines": {
+    "Name": "Advanced Medicines",
+    "Category": "Medicines"
+  },
+  "advert1": {
+    "Name": "Ultra-Compact Processor Prototypes",
+    "Category": "Consumer Items"
+  },
+  "aerialedenapple": {
+    "Name": "Eden Apples of Aerial",
+    "Category": "Foods"
+  },
+  "aganipperush": {
+    "Name": "Aganippe Rush",
+    "Category": "Medicines"
+  },
+  "agriculturalmedicines": {
+    "Name": "Agri-Medicines",
+    "Category": "Medicines"
+  },
+  "agronomictreatment": {
+    "Name": "Agronomic Treatment",
+    "Category": "Chemicals"
+  },
+  "airelics": {
+    "Name": "AI Relics",
+    "Category": "Salvage"
+  },
+  "alacarakmoskinart": {
+    "Name": "Alacarakmo Skin Art",
+    "Category": "Consumer Items"
+  },
+  "albinoquechuamammoth": {
+    "Name": "Albino Quechua Mammoth Meat",
+    "Category": "Foods"
+  },
+  "alexandrite": {
+    "Name": "Alexandrite",
+    "Category": "Minerals"
+  },
+  "algae": {
+    "Name": "Algae",
+    "Category": "Foods"
+  },
+  "alieneggs": {
+    "Name": "Leathery Eggs",
+    "Category": "Consumer Items"
+  },
+  "altairianskin": {
+    "Name": "Altairian Skin",
+    "Category": "Consumer Items"
+  },
+  "aluminium": {
+    "Name": "Aluminium",
+    "Category": "Metals"
+  },
+  "alyabodilysoap": {
+    "Name": "Alya Body Soap",
+    "Category": "Medicines"
+  },
+  "ancientcasket": {
+    "Name": "Guardian Casket",
+    "Category": "Salvage"
+  },
+  "ancientkey": {
+    "Name": "Ancient Key",
+    "Category": "Salvage"
+  },
+  "ancientorb": {
+    "Name": "Guardian Orb",
+    "Category": "Salvage"
+  },
+  "ancientrelic": {
+    "Name": "Guardian Relic",
+    "Category": "Salvage"
+  },
+  "ancientrelictg": {
+    "Name": "Unclassified Relic",
+    "Category": "Salvage"
+  },
+  "ancienttablet": {
+    "Name": "Guardian Tablet",
+    "Category": "Salvage"
+  },
+  "ancienttotem": {
+    "Name": "Guardian Totem",
+    "Category": "Salvage"
+  },
+  "ancienturn": {
+    "Name": "Guardian Urn",
+    "Category": "Salvage"
+  },
+  "anduligafireworks": {
+    "Name": "Anduliga Fire Works",
+    "Category": "Consumer Items"
+  },
+  "animaleffigies": {
+    "Name": "Crom Silver Fesh",
+    "Category": "Legal Drugs"
+  },
+  "animalmeat": {
+    "Name": "Animal Meat",
+    "Category": "Foods"
+  },
+  "animalmonitors": {
+    "Name": "Animal Monitors",
+    "Category": "Technology"
+  },
+  "antimattercontainmentunit": {
+    "Name": "Antimatter Containment Unit",
+    "Category": "Salvage"
+  },
+  "antiquejewellery": {
+    "Name": "Antique Jewellery",
+    "Category": "Salvage"
+  },
+  "antiquities": {
+    "Name": "Antiquities",
+    "Category": "Salvage"
+  },
+  "anynacoffee": {
+    "Name": "Any Na Coffee",
+    "Category": "Foods"
+  },
+  "apavietii": {
+    "Name": "Apa Vietii",
+    "Category": "Legal Drugs"
+  },
+  "aquaponicsystems": {
+    "Name": "Aquaponic Systems",
+    "Category": "Technology"
+  },
+  "aroucaconventualsweets": {
+    "Name": "Arouca Conventual Sweets",
+    "Category": "Foods"
+  },
+  "articulationmotors": {
+    "Name": "Articulation Motors",
+    "Category": "Machinery"
+  },
+  "assaultplans": {
+    "Name": "Assault Plans",
+    "Category": "Salvage"
+  },
+  "atmosphericextractors": {
+    "Name": "Atmospheric Processors",
+    "Category": "Machinery"
+  },
+  "autofabricators": {
+    "Name": "Auto-Fabricators",
+    "Category": "Technology"
+  },
+  "azcancriformula42": {
+    "Name": "AZ Cancri Formula 42",
+    "Category": "Technology"
+  },
+  "bakedgreebles": {
+    "Name": "Baked Greebles",
+    "Category": "Foods"
+  },
+  "baltahsinevacuumkrill": {
+    "Name": "Baltah'sine Vacuum Krill",
+    "Category": "Foods"
+  },
+  "bankiamphibiousleather": {
+    "Name": "Banki Amphibious Leather",
+    "Category": "Textiles"
+  },
+  "basicmedicines": {
+    "Name": "Basic Medicines",
+    "Category": "Medicines"
+  },
+  "basicnarcotics": {
+    "Name": "Narcotics",
+    "Category": "Legal Drugs"
+  },
+  "bastnasite": {
+    "Name": "Bastnasite",
+    "Category": "Minerals"
+  },
+  "bastsnakegin": {
+    "Name": "Bast Snake Gin",
+    "Category": "Legal Drugs"
+  },
+  "battleweapons": {
+    "Name": "Battle Weapons",
+    "Category": "Weapons"
+  },
+  "bauxite": {
+    "Name": "Bauxite",
+    "Category": "Minerals"
+  },
+  "beer": {
+    "Name": "Beer",
+    "Category": "Legal Drugs"
+  },
+  "belalansrayleather": {
+    "Name": "Belalans Ray Leather",
+    "Category": "Textiles"
+  },
+  "benitoite": {
+    "Name": "Benitoite",
+    "Category": "Minerals"
+  },
+  "bertrandite": {
+    "Name": "Bertrandite",
+    "Category": "Minerals"
+  },
+  "beryllium": {
+    "Name": "Beryllium",
+    "Category": "Metals"
+  },
+  "bioreducinglichen": {
+    "Name": "Bioreducing Lichen",
+    "Category": "Technology"
+  },
+  "biowaste": {
+    "Name": "Biowaste",
+    "Category": "Waste"
+  },
+  "bismuth": {
+    "Name": "Bismuth",
+    "Category": "Metals"
+  },
+  "bluemilk": {
+    "Name": "Azure Milk",
+    "Category": "Foods"
+  },
+  "bootlegliquor": {
+    "Name": "Bootleg Liquor",
+    "Category": "Legal Drugs"
+  },
+  "borasetanipathogenetics": {
+    "Name": "Borasetani Pathogenetics",
+    "Category": "Weapons"
+  },
+  "bromellite": {
+    "Name": "Bromellite",
+    "Category": "Minerals"
+  },
+  "buckyballbeermats": {
+    "Name": "Buckyball Beer Mats",
+    "Category": "Consumer Items"
+  },
+  "buildingfabricators": {
+    "Name": "Building Fabricators",
+    "Category": "Machinery"
+  },
+  "burnhambiledistillate": {
+    "Name": "Burnham Bile Distillate",
+    "Category": "Legal Drugs"
+  },
+  "cd75catcoffee": {
+    "Name": "CD-75 Kitten Brand Coffee",
+    "Category": "Foods"
+  },
+  "centaurimegagin": {
+    "Name": "Centauri Mega Gin",
+    "Category": "Legal Drugs"
+  },
+  "ceramiccomposites": {
+    "Name": "Ceramic Composites",
+    "Category": "Industrial Materials"
+  },
+  "ceremonialheiketea": {
+    "Name": "Ceremonial Heike Tea",
+    "Category": "Foods"
+  },
+  "cetiaepyornisegg": {
+    "Name": "Aepyornis Egg",
+    "Category": "Foods"
+  },
+  "cetirabbits": {
+    "Name": "Ceti Rabbits",
+    "Category": "Foods"
+  },
+  "chameleoncloth": {
+    "Name": "Chameleon Cloth",
+    "Category": "Textiles"
+  },
+  "chateaudeaegaeon": {
+    "Name": "Chateau De Aegaeon",
+    "Category": "Legal Drugs"
+  },
+  "chemicalwaste": {
+    "Name": "Chemical Waste",
+    "Category": "Waste"
+  },
+  "cherbonesbloodcrystals": {
+    "Name": "Cherbones Blood Crystals",
+    "Category": "Metals"
+  },
+  "chieridanimarinepaste": {
+    "Name": "Chi Eridani Marine Paste",
+    "Category": "Foods"
+  },
+  "classifiedexperimentalequipment": {
+    "Name": "Classified Experimental Equipment",
+    "Category": "Technology"
+  },
+  "clothing": {
+    "Name": "Clothing",
+    "Category": "Consumer Items"
+  },
+  "cmmcomposite": {
+    "Name": "CMM Composite",
+    "Category": "Industrial Materials"
+  },
+  "cobalt": {
+    "Name": "Cobalt",
+    "Category": "Metals"
+  },
+  "coffee": {
+    "Name": "Coffee",
+    "Category": "Foods"
+  },
+  "coltan": {
+    "Name": "Coltan",
+    "Category": "Minerals"
+  },
+  "combatstabilisers": {
+    "Name": "Combat Stabilisers",
+    "Category": "Medicines"
+  },
+  "comercialsamples": {
+    "Name": "Commercial Samples",
+    "Category": "Salvage"
+  },
+  "computercomponents": {
+    "Name": "Computer Components",
+    "Category": "Technology"
+  },
+  "conductivefabrics": {
+    "Name": "Conductive Fabrics",
+    "Category": "Textiles"
+  },
+  "consumertechnology": {
+    "Name": "Consumer Technology",
+    "Category": "Consumer Items"
+  },
+  "coolinghoses": {
+    "Name": "Micro-weave Cooling Hoses",
+    "Category": "Industrial Materials"
+  },
+  "copper": {
+    "Name": "Copper",
+    "Category": "Metals"
+  },
+  "coquimspongiformvictuals": {
+    "Name": "Coquim Spongiform Victuals",
+    "Category": "Foods"
+  },
+  "coralsap": {
+    "Name": "Coral Sap",
+    "Category": "Salvage"
+  },
+  "cropharvesters": {
+    "Name": "Crop Harvesters",
+    "Category": "Machinery"
+  },
+  "cryolite": {
+    "Name": "Cryolite",
+    "Category": "Minerals"
+  },
+  "crystallinespheres": {
+    "Name": "Crystalline Spheres",
+    "Category": "Salvage"
+  },
+  "curatedcommodity": {
+    "Name": "Curated Commodity Package",
+    "Category": "Industrial Materials"
+  },
+  "damagedescapepod": {
+    "Name": "Damaged Escape Pod",
+    "Category": "Salvage"
+  },
+  "damnacarapaces": {
+    "Name": "Damna Carapaces",
+    "Category": "Textiles"
+  },
+  "datacore": {
+    "Name": "Data Core",
+    "Category": "Salvage"
+  },
+  "deltaphoenicispalms": {
+    "Name": "Delta Phoenicis Palms",
+    "Category": "Chemicals"
+  },
+  "deuringastruffles": {
+    "Name": "Deuringas Truffles",
+    "Category": "Foods"
+  },
+  "deuterium": {
+    "Name": "Deuterium",
+    "Category": "Minerals"
+  },
+  "diagnosticsensor": {
+    "Name": "Hardware Diagnostic Sensor",
+    "Category": "Technology"
+  },
+  "diamond": {
+    "Name": "Diamond",
+    "Category": "Minerals"
+  },
+  "diplomaticbag": {
+    "Name": "Diplomatic Bag",
+    "Category": "Salvage"
+  },
+  "disomacorn": {
+    "Name": "Diso Ma Corn",
+    "Category": "Foods"
+  },
+  "domesticappliances": {
+    "Name": "Domestic Appliances",
+    "Category": "Consumer Items"
+  },
+  "drones": {
+    "Name": "Limpets",
+    "Category": "NonMarketable"
+  },
+  "duradrives": {
+    "Name": "Duradrives",
+    "Category": "Consumer Items"
+  },
+  "earthrelics": {
+    "Name": "Earth Relics",
+    "Category": "Salvage"
+  },
+  "eleuthermals": {
+    "Name": "Eleu Thermals",
+    "Category": "Consumer Items"
+  },
+  "emergencypowercells": {
+    "Name": "Emergency Power Cells",
+    "Category": "Machinery"
+  },
+  "encripteddatastorage": {
+    "Name": "Encrypted Data Storage",
+    "Category": "Salvage"
+  },
+  "encryptedcorrespondence": {
+    "Name": "Encrypted Correspondence",
+    "Category": "Salvage"
+  },
+  "eraninpearlwhisky": {
+    "Name": "Eranin Pearl Whisky",
+    "Category": "Legal Drugs"
+  },
+  "eshuumbrellas": {
+    "Name": "Eshu Umbrellas",
+    "Category": "Consumer Items"
+  },
+  "esusekucaviar": {
+    "Name": "Esuseku Caviar",
+    "Category": "Foods"
+  },
+  "ethgrezeteabuds": {
+    "Name": "Ethgreze Tea Buds",
+    "Category": "Foods"
+  },
+  "evacuationshelter": {
+    "Name": "Evacuation Shelter",
+    "Category": "Consumer Items"
+  },
+  "exhaustmanifold": {
+    "Name": "Exhaust Manifold",
+    "Category": "Machinery"
+  },
+  "explosives": {
+    "Name": "Explosives",
+    "Category": "Chemicals"
+  },
+  "fish": {
+    "Name": "Fish",
+    "Category": "Foods"
+  },
+  "foodcartridges": {
+    "Name": "Food Cartridges",
+    "Category": "Foods"
+  },
+  "fossilremnants": {
+    "Name": "Fossil Remnants",
+    "Category": "Salvage"
+  },
+  "fruitandvegetables": {
+    "Name": "Fruit and Vegetables",
+    "Category": "Foods"
+  },
+  "fujintea": {
+    "Name": "Fujin Tea",
+    "Category": "Foods"
+  },
+  "galactictravelguide": {
+    "Name": "Galactic Travel Guide",
+    "Category": "Salvage"
+  },
+  "gallite": {
+    "Name": "Gallite",
+    "Category": "Minerals"
+  },
+  "gallium": {
+    "Name": "Gallium",
+    "Category": "Metals"
+  },
+  "geawendancedust": {
+    "Name": "Geawen Dance Dust",
+    "Category": "Legal Drugs"
+  },
+  "genebank": {
+    "Name": "Gene Bank",
+    "Category": "Salvage"
+  },
+  "geologicalequipment": {
+    "Name": "Geological Equipment",
+    "Category": "Machinery"
+  },
+  "geologicalsamples": {
+    "Name": "Geological Samples",
+    "Category": "Salvage"
+  },
+  "gerasiangueuzebeer": {
+    "Name": "Gerasian Gueuze Beer",
+    "Category": "Legal Drugs"
+  },
+  "giantirukamasnails": {
+    "Name": "Giant Irukama Snails",
+    "Category": "Foods"
+  },
+  "giantverrix": {
+    "Name": "Giant Verrix",
+    "Category": "Machinery"
+  },
+  "gilyasignatureweapons": {
+    "Name": "Gilya Signature Weapons",
+    "Category": "Weapons"
+  },
+  "gold": {
+    "Name": "Gold",
+    "Category": "Metals"
+  },
+  "gomanyauponcoffee": {
+    "Name": "Goman Yaupon Coffee",
+    "Category": "Foods"
+  },
+  "goslarite": {
+    "Name": "Goslarite",
+    "Category": "Minerals"
+  },
+  "grain": {
+    "Name": "Grain",
+    "Category": "Foods"
+  },
+  "grandidierite": {
+    "Name": "Grandidierite",
+    "Category": "Minerals"
+  },
+  "haematite": {
+    "Name": "Haematite",
+    "Category": "Minerals"
+  },
+  "hafnium178": {
+    "Name": "Hafnium 178",
+    "Category": "Metals"
+  },
+  "haidneblackbrew": {
+    "Name": "Haiden Black Brew",
+    "Category": "Foods"
+  },
+  "harmasilversearum": {
+    "Name": "Harma Silver Sea Rum",
+    "Category": "Legal Drugs"
+  },
+  "havasupaidreamcatcher": {
+    "Name": "Havasupai Dream Catcher",
+    "Category": "Consumer Items"
+  },
+  "hazardousenvironmentsuits": {
+    "Name": "H.E. Suits",
+    "Category": "Technology"
+  },
+  "heatsinkinterlink": {
+    "Name": "Heatsink Interlink",
+    "Category": "Machinery"
+  },
+  "heliostaticfurnaces": {
+    "Name": "Microbial Furnaces",
+    "Category": "Machinery"
+  },
+  "helium": {
+    "Name": "Helium",
+    "Category": "Chemicals"
+  },
+  "helium3": {
+    "Name": "Helium-3",
+    "Category": "Chemicals"
+  },
+  "helvetitjpearls": {
+    "Name": "Helvetitj Pearls",
+    "Category": "Metals"
+  },
+  "hip10175bushmeat": {
+    "Name": "HIP 10175 Bush Meat",
+    "Category": "Foods"
+  },
+  "hip118311swarm": {
+    "Name": "HIP 118311 Swarm",
+    "Category": "Weapons"
+  },
+  "hip41181squid": {
+    "Name": "HIP Proto-Squid",
+    "Category": "Foods"
+  },
+  "hiporganophosphates": {
+    "Name": "HIP Organophosphates",
+    "Category": "Chemicals"
+  },
+  "hnshockmount": {
+    "Name": "HN Shock Mount",
+    "Category": "Machinery"
+  },
+  "holvaduellingblades": {
+    "Name": "Holva Duelling Blades",
+    "Category": "Weapons"
+  },
+  "honestypills": {
+    "Name": "Honesty Pills",
+    "Category": "Medicines"
+  },
+  "hostage": {
+    "Name": "Hostages",
+    "Category": "Salvage"
+  },
+  "hr7221wheat": {
+    "Name": "HR 7221 Wheat",
+    "Category": "Foods"
+  },
+  "hydrogenfuel": {
+    "Name": "Hydrogen Fuel",
+    "Category": "Chemicals"
+  },
+  "hydrogenperoxide": {
+    "Name": "Hydrogen Peroxide",
+    "Category": "Chemicals"
+  },
+  "imperialslaves": {
+    "Name": "Imperial Slaves",
+    "Category": "Slavery"
+  },
+  "indibourbon": {
+    "Name": "Indi Bourbon",
+    "Category": "Legal Drugs"
+  },
+  "indite": {
+    "Name": "Indite",
+    "Category": "Minerals"
+  },
+  "indium": {
+    "Name": "Indium",
+    "Category": "Metals"
+  },
+  "insulatingmembrane": {
+    "Name": "Insulating Membrane",
+    "Category": "Industrial Materials"
+  },
+  "iondistributor": {
+    "Name": "Ion Distributor",
+    "Category": "Machinery"
+  },
+  "iridium": {
+    "Name": "Iridium",
+    "Category": "Metals"
+  },
+  "jadeite": {
+    "Name": "Jadeite",
+    "Category": "Minerals"
+  },
+  "jaquesquinentianstill": {
+    "Name": "Jaques Quinentian Still",
+    "Category": "Consumer Items"
+  },
+  "jaradharrepuzzlebox": {
+    "Name": "Jaradharre Puzzle Box",
+    "Category": "Consumer Items"
+  },
+  "jarouarice": {
+    "Name": "Jaroua Rice",
+    "Category": "Foods"
+  },
+  "jotunmookah": {
+    "Name": "Jotun Mookah",
+    "Category": "Textiles"
+  },
+  "kachiriginleaches": {
+    "Name": "Kachirigin Filter Leeches",
+    "Category": "Medicines"
+  },
+  "kamitracigars": {
+    "Name": "Kamitra Cigars",
+    "Category": "Legal Drugs"
+  },
+  "kamorinhistoricweapons": {
+    "Name": "Kamorin Historic Weapons",
+    "Category": "Weapons"
+  },
+  "karetiicouture": {
+    "Name": "Karetii Couture",
+    "Category": "Consumer Items"
+  },
+  "karsukilocusts": {
+    "Name": "Karsuki Locusts",
+    "Category": "Foods"
+  },
+  "kinagoinstruments": {
+    "Name": "Kinago Violins",
+    "Category": "Consumer Items"
+  },
+  "konggaale": {
+    "Name": "Kongga Ale",
+    "Category": "Legal Drugs"
+  },
+  "korrokungpellets": {
+    "Name": "Koro Kung Pellets",
+    "Category": "Chemicals"
+  },
+  "landmines": {
+    "Name": "Landmines",
+    "Category": "Weapons"
+  },
+  "lanthanum": {
+    "Name": "Lanthanum",
+    "Category": "Metals"
+  },
+  "largeexplorationdatacash": {
+    "Name": "Large Survey Data Cache",
+    "Category": "Salvage"
+  },
+  "lavianbrandy": {
+    "Name": "Lavian Brandy",
+    "Category": "Legal Drugs"
+  },
+  "leather": {
+    "Name": "Leather",
+    "Category": "Textiles"
+  },
+  "leestianeviljuice": {
+    "Name": "Leestian Evil Juice",
+    "Category": "Legal Drugs"
+  },
+  "lepidolite": {
+    "Name": "Lepidolite",
+    "Category": "Minerals"
+  },
+  "lftvoidextractcoffee": {
+    "Name": "Void Extract Coffee",
+    "Category": "Foods"
+  },
+  "liquidoxygen": {
+    "Name": "Liquid oxygen",
+    "Category": "Chemicals"
+  },
+  "liquor": {
+    "Name": "Liquor",
+    "Category": "Legal Drugs"
+  },
+  "lithium": {
+    "Name": "Lithium",
+    "Category": "Metals"
+  },
+  "lithiumhydroxide": {
+    "Name": "Lithium Hydroxide",
+    "Category": "Minerals"
+  },
+  "livehecateseaworms": {
+    "Name": "Live Hecate Sea Worms",
+    "Category": "Foods"
+  },
+  "lowtemperaturediamond": {
+    "Name": "Low Temperature Diamonds",
+    "Category": "Minerals"
+  },
+  "ltthypersweet": {
+    "Name": "LTT Hyper Sweet",
+    "Category": "Foods"
+  },
+  "lyraeweed": {
+    "Name": "Lyrae Weed",
+    "Category": "Legal Drugs"
+  },
+  "m3_tissuesample_membrane": {
+    "Name": "Mollusc Membrane",
+    "Category": "Salvage"
+  },
+  "m3_tissuesample_mycelium": {
+    "Name": "Mollusc Mycelium",
+    "Category": "Salvage"
+  },
+  "m3_tissuesample_spores": {
+    "Name": "Mollusc Spores",
+    "Category": "Salvage"
+  },
+  "m_tissuesample_fluid": {
+    "Name": "Mollusc Fluid",
+    "Category": "Salvage"
+  },
+  "m_tissuesample_nerves": {
+    "Name": "Mollusc Brain Tissue",
+    "Category": "Salvage"
+  },
+  "m_tissuesample_soft": {
+    "Name": "Mollusc Soft Tissue",
+    "Category": "Salvage"
+  },
+  "magnesite": {
+    "Name": "Magnesite",
+    "Category": "Minerals"
+  },
+  "magneticemittercoil": {
+    "Name": "Magnetic Emitter Coil",
+    "Category": "Machinery"
+  },
+  "marinesupplies": {
+    "Name": "Marine Equipment",
+    "Category": "Machinery"
+  },
+  "masterchefs": {
+    "Name": "Master Chefs",
+    "Category": "Slavery"
+  },
+  "mechucoshightea": {
+    "Name": "Mechucos High Tea",
+    "Category": "Foods"
+  },
+  "medbstarlube": {
+    "Name": "Medb Starlube",
+    "Category": "Chemicals"
+  },
+  "medicaldiagnosticequipment": {
+    "Name": "Medical Diagnostic Equipment",
+    "Category": "Technology"
+  },
+  "metaalloys": {
+    "Name": "Meta-Alloys",
+    "Category": "Industrial Materials"
+  },
+  "methaneclathrate": {
+    "Name": "Methane Clathrate",
+    "Category": "Minerals"
+  },
+  "methanolmonohydratecrystals": {
+    "Name": "Methanol Monohydrate Crystals",
+    "Category": "Minerals"
+  },
+  "microcontrollers": {
+    "Name": "Micro Controllers",
+    "Category": "Technology"
+  },
+  "militarygradefabrics": {
+    "Name": "Military Grade Fabrics",
+    "Category": "Textiles"
+  },
+  "militaryintelligence": {
+    "Name": "Military Intelligence",
+    "Category": "Salvage"
+  },
+  "mineralextractors": {
+    "Name": "Mineral Extractors",
+    "Category": "Machinery"
+  },
+  "mineraloil": {
+    "Name": "Mineral Oil",
+    "Category": "Chemicals"
+  },
+  "modularterminals": {
+    "Name": "Modular Terminals",
+    "Category": "Machinery"
+  },
+  "moissanite": {
+    "Name": "Moissanite",
+    "Category": "Minerals"
+  },
+  "mokojingbeastfeast": {
+    "Name": "Mokojing Beast Feast",
+    "Category": "Foods"
+  },
+  "momusbogspaniel": {
+    "Name": "Momus Bog Spaniel",
+    "Category": "Consumer Items"
+  },
+  "monazite": {
+    "Name": "Monazite",
+    "Category": "Minerals"
+  },
+  "motronaexperiencejelly": {
+    "Name": "Motrona Experience Jelly",
+    "Category": "Legal Drugs"
+  },
+  "mukusubiichitinos": {
+    "Name": "Mukusubii Chitin-os",
+    "Category": "Foods"
+  },
+  "mulachigiantfungus": {
+    "Name": "Mulachi Giant Fungus",
+    "Category": "Foods"
+  },
+  "musgravite": {
+    "Name": "Musgravite",
+    "Category": "Minerals"
+  },
+  "mutomimager": {
+    "Name": "Muon Imager",
+    "Category": "Technology"
+  },
+  "mysteriousidol": {
+    "Name": "Mysterious Idol",
+    "Category": "Salvage"
+  },
+  "nanobreakers": {
+    "Name": "Nanobreakers",
+    "Category": "Technology"
+  },
+  "nanomedicines": {
+    "Name": "Nanomedicines",
+    "Category": "Medicines"
+  },
+  "naturalfabrics": {
+    "Name": "Natural Fabrics",
+    "Category": "Textiles"
+  },
+  "neofabricinsulation": {
+    "Name": "Neofabric Insulation",
+    "Category": "Industrial Materials"
+  },
+  "neritusberries": {
+    "Name": "Neritus Berries",
+    "Category": "Foods"
+  },
+  "nerveagents": {
+    "Name": "Nerve Agents",
+    "Category": "Chemicals"
+  },
+  "ngadandarifireopals": {
+    "Name": "Ngadandari Fire Opals",
+    "Category": "Metals"
+  },
+  "ngunamodernantiques": {
+    "Name": "Nguna Modern Antiques",
+    "Category": "Consumer Items"
+  },
+  "njangarisaddles": {
+    "Name": "Njangari Saddles",
+    "Category": "Consumer Items"
+  },
+  "noneuclidianexotanks": {
+    "Name": "Non Euclidian Exotanks",
+    "Category": "Machinery"
+  },
+  "nonlethalweapons": {
+    "Name": "Non-Lethal Weapons",
+    "Category": "Weapons"
+  },
+  "occupiedcryopod": {
+    "Name": "Occupied Escape Pod",
+    "Category": "Salvage"
+  },
+  "ochoengchillies": {
+    "Name": "Ochoeng Chillies",
+    "Category": "Foods"
+  },
+  "olivine": {
+    "Name": "Olivine",
+    "Category": "Minerals"
+  },
+  "onionhead": {
+    "Name": "Onionhead",
+    "Category": "Legal Drugs"
+  },
+  "onionheada": {
+    "Name": "Onionhead Alpha Strain",
+    "Category": "Legal Drugs"
+  },
+  "onionheadb": {
+    "Name": "Onionhead Beta Strain",
+    "Category": "Legal Drugs"
+  },
+  "onionheadc": {
+    "Name": "Onionhead Gamma Strain",
+    "Category": "Legal Drugs"
+  },
+  "opal": {
+    "Name": "Void Opal",
+    "Category": "Minerals"
+  },
+  "ophiuchiexinoartefacts": {
+    "Name": "Ophiuch Exino Artefacts",
+    "Category": "Consumer Items"
+  },
+  "orrerianviciousbrew": {
+    "Name": "Orrerian Vicious Brew",
+    "Category": "Foods"
+  },
+  "osmium": {
+    "Name": "Osmium",
+    "Category": "Metals"
+  },
+  "p_particulatesample": {
+    "Name": "Anomaly Particles",
+    "Category": "Salvage"
+  },
+  "painite": {
+    "Name": "Painite",
+    "Category": "Minerals"
+  },
+  "palladium": {
+    "Name": "Palladium",
+    "Category": "Metals"
+  },
+  "pantaaprayersticks": {
+    "Name": "Pantaa Prayer Sticks",
+    "Category": "Medicines"
+  },
+  "pavoniseargrubs": {
+    "Name": "Pavonis Ear Grubs",
+    "Category": "Legal Drugs"
+  },
+  "performanceenhancers": {
+    "Name": "Performance Enhancers",
+    "Category": "Medicines"
+  },
+  "periclasedunite": {
+    "Name": "Periclase Dunite",
+    "Category": "Minerals"
+  },
+  "personaleffects": {
+    "Name": "Personal Effects",
+    "Category": "Salvage"
+  },
+  "personalgifts": {
+    "Name": "Festive Gifts",
+    "Category": "Salvage"
+  },
+  "personalweapons": {
+    "Name": "Personal Weapons",
+    "Category": "Weapons"
+  },
+  "pesticides": {
+    "Name": "Pesticides",
+    "Category": "Chemicals"
+  },
+  "platinum": {
+    "Name": "Platinum",
+    "Category": "Metals"
+  },
+  "platinumaloy": {
+    "Name": "Platinum Alloy",
+    "Category": "Metals"
+  },
+  "politicalprisoner": {
+    "Name": "Political Prisoners",
+    "Category": "Salvage"
+  },
+  "polymers": {
+    "Name": "Polymers",
+    "Category": "Industrial Materials"
+  },
+  "powerconverter": {
+    "Name": "Power Converter",
+    "Category": "Machinery"
+  },
+  "powergenerators": {
+    "Name": "Power Generators",
+    "Category": "Machinery"
+  },
+  "powergridassembly": {
+    "Name": "Energy Grid Assembly",
+    "Category": "Machinery"
+  },
+  "powertransferconduits": {
+    "Name": "Power Transfer Bus",
+    "Category": "Machinery"
+  },
+  "praseodymium": {
+    "Name": "Praseodymium",
+    "Category": "Metals"
+  },
+  "preciousgems": {
+    "Name": "Precious Gems",
+    "Category": "Salvage"
+  },
+  "progenitorcells": {
+    "Name": "Progenitor Cells",
+    "Category": "Medicines"
+  },
+  "prohibitedresearchmaterials": {
+    "Name": "Prohibited Research Materials",
+    "Category": "Salvage"
+  },
+  "pyrophyllite": {
+    "Name": "Pyrophyllite",
+    "Category": "Minerals"
+  },
+  "quartzpyroxenite": {
+    "Name": "Quartz Pyroxenite",
+    "Category": "Minerals"
+  },
+  "radiationbaffle": {
+    "Name": "Radiation Baffle",
+    "Category": "Machinery"
+  },
+  "rajukrustoves": {
+    "Name": "Rajukru Multi-Stoves",
+    "Category": "Consumer Items"
+  },
+  "rapabaosnakeskins": {
+    "Name": "Rapa Bao Snake Skins",
+    "Category": "Textiles"
+  },
+  "reactivearmour": {
+    "Name": "Reactive Armour",
+    "Category": "Weapons"
+  },
+  "reinforcedmountingplate": {
+    "Name": "Reinforced Mounting Plate",
+    "Category": "Machinery"
+  },
+  "resonatingseparators": {
+    "Name": "Resonating Separators",
+    "Category": "Technology"
+  },
+  "rhodplumsite": {
+    "Name": "Rhodplumsite",
+    "Category": "Minerals"
+  },
+  "robotics": {
+    "Name": "Robotics",
+    "Category": "Technology"
+  },
+  "rockforthfertiliser": {
+    "Name": "Rockforth Fertiliser",
+    "Category": "Chemicals"
+  },
+  "ruby": {
+    "Name": "Ruby",
+    "Category": "Minerals"
+  },
+  "rusanioldsmokey": {
+    "Name": "Rusani Old Smokey",
+    "Category": "Legal Drugs"
+  },
+  "rutile": {
+    "Name": "Rutile",
+    "Category": "Minerals"
+  },
+  "s6_tissuesample_cells": {
+    "Name": "Pod Outer Tissue",
+    "Category": "Salvage"
+  },
+  "s6_tissuesample_coenosarc": {
+    "Name": "Pod Shell Tissue",
+    "Category": "Salvage"
+  },
+  "s6_tissuesample_mesoglea": {
+    "Name": "Pod Mesoglea",
+    "Category": "Salvage"
+  },
+  "s9_tissuesample_shell": {
+    "Name": "Pod Tissue",
+    "Category": "Salvage"
+  },
+  "s_tissuesample_cells": {
+    "Name": "Pod Core Tissue",
+    "Category": "Salvage"
+  },
+  "s_tissuesample_core": {
+    "Name": "Pod Surface Tissue",
+    "Category": "Salvage"
+  },
+  "s_tissuesample_surface": {
+    "Name": "Pod Dead Tissue",
+    "Category": "Salvage"
+  },
+  "samarium": {
+    "Name": "Samarium",
+    "Category": "Metals"
+  },
+  "sanumameat": {
+    "Name": "Sanuma Decorative Meat",
+    "Category": "Foods"
+  },
+  "sap8corecontainer": {
+    "Name": "SAP 8 Core Container",
+    "Category": "Salvage"
+  },
+  "sapphire": {
+    "Name": "Sapphire",
+    "Category": "Minerals"
+  },
+  "saxonwine": {
+    "Name": "Saxon Wine",
+    "Category": "Legal Drugs"
+  },
+  "scientificresearch": {
+    "Name": "Scientific Research",
+    "Category": "Salvage"
+  },
+  "scientificsamples": {
+    "Name": "Scientific Samples",
+    "Category": "Salvage"
+  },
+  "scrap": {
+    "Name": "Scrap",
+    "Category": "Waste"
+  },
+  "semiconductors": {
+    "Name": "Semiconductors",
+    "Category": "Industrial Materials"
+  },
+  "serendibite": {
+    "Name": "Serendibite",
+    "Category": "Minerals"
+  },
+  "shanscharisorchid": {
+    "Name": "Shan's Charis Orchid",
+    "Category": "Consumer Items"
+  },
+  "silver": {
+    "Name": "Silver",
+    "Category": "Metals"
+  },
+  "skimercomponents": {
+    "Name": "Skimmer Components",
+    "Category": "Machinery"
+  },
+  "slaves": {
+    "Name": "Slaves",
+    "Category": "Slavery"
+  },
+  "smallexplorationdatacash": {
+    "Name": "Small Survey Data Cache",
+    "Category": "Salvage"
+  },
+  "soontillrelics": {
+    "Name": "Soontill Relics",
+    "Category": "Consumer Items"
+  },
+  "sothiscrystallinegold": {
+    "Name": "Sothis Crystalline Gold",
+    "Category": "Metals"
+  },
+  "spacepioneerrelics": {
+    "Name": "Space Pioneer Relics",
+    "Category": "Salvage"
+  },
+  "steel": {
+    "Name": "Steel",
+    "Category": "Metals"
+  },
+  "structuralregulators": {
+    "Name": "Structural Regulators",
+    "Category": "Technology"
+  },
+  "superconductors": {
+    "Name": "Superconductors",
+    "Category": "Industrial Materials"
+  },
+  "surfacestabilisers": {
+    "Name": "Surface Stabilisers",
+    "Category": "Chemicals"
+  },
+  "survivalequipment": {
+    "Name": "Survival Equipment",
+    "Category": "Consumer Items"
+  },
+  "syntheticfabrics": {
+    "Name": "Synthetic Fabrics",
+    "Category": "Textiles"
+  },
+  "syntheticmeat": {
+    "Name": "Synthetic Meat",
+    "Category": "Foods"
+  },
+  "syntheticreagents": {
+    "Name": "Synthetic Reagents",
+    "Category": "Chemicals"
+  },
+  "taaffeite": {
+    "Name": "Taaffeite",
+    "Category": "Minerals"
+  },
+  "tacticaldata": {
+    "Name": "Tactical Data",
+    "Category": "Salvage"
+  },
+  "tanmarktranquiltea": {
+    "Name": "Tanmark Tranquil Tea",
+    "Category": "Foods"
+  },
+  "tantalum": {
+    "Name": "Tantalum",
+    "Category": "Metals"
+  },
+  "tarachtorspice": {
+    "Name": "Tarach Spice",
+    "Category": "Legal Drugs"
+  },
+  "taurichimes": {
+    "Name": "Tauri Chimes",
+    "Category": "Consumer Items"
+  },
+  "tea": {
+    "Name": "Tea",
+    "Category": "Foods"
+  },
+  "telemetrysuite": {
+    "Name": "Telemetry Suite",
+    "Category": "Technology"
+  },
+  "terrainenrichmentsystems": {
+    "Name": "Land Enrichment Systems",
+    "Category": "Technology"
+  },
+  "terramaterbloodbores": {
+    "Name": "Terra Mater Blood Bores",
+    "Category": "Medicines"
+  },
+  "thallium": {
+    "Name": "Thallium",
+    "Category": "Metals"
+  },
+  "thargoidbonefragments": {
+    "Name": "Bone Fragments",
+    "Category": "Salvage"
+  },
+  "thargoidcystspecimen": {
+    "Name": "Cyst Specimen",
+    "Category": "Salvage"
+  },
+  "thargoidgeneratortissuesample": {
+    "Name": "Caustic Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidheart": {
+    "Name": "Thargoid Heart",
+    "Category": "Salvage"
+  },
+  "thargoidorgansample": {
+    "Name": "Organ Sample",
+    "Category": "Salvage"
+  },
+  "thargoidpod": {
+    "Name": "Xenobiological Prison Pod",
+    "Category": "Salvage"
+  },
+  "thargoidscouttissuesample": {
+    "Name": "Thargoid Scout Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype1": {
+    "Name": "Thargoid Cyclops Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype10a": {
+    "Name": "Titan Maw Deep Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype10b": {
+    "Name": "Titan Maw Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype10c": {
+    "Name": "Titan Maw Partial Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype2": {
+    "Name": "Thargoid Basilisk Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype3": {
+    "Name": "Thargoid Medusa Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype4": {
+    "Name": "Thargoid Hydra Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype5": {
+    "Name": "Thargoid Orthrus Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype6": {
+    "Name": "Thargoid Glaive Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype7": {
+    "Name": "Thargoid Scythe Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype9a": {
+    "Name": "Titan Deep Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype9b": {
+    "Name": "Titan Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtissuesampletype9c": {
+    "Name": "Titan Partial Tissue Sample",
+    "Category": "Salvage"
+  },
+  "thargoidtitandrivecomponent": {
+    "Name": "Titan Drive Component",
+    "Category": "Salvage"
+  },
+  "thehuttonmug": {
+    "Name": "The Hutton Mug",
+    "Category": "Consumer Items"
+  },
+  "thermalcoolingunits": {
+    "Name": "Thermal Cooling Units",
+    "Category": "Machinery"
+  },
+  "thorium": {
+    "Name": "Thorium",
+    "Category": "Metals"
+  },
+  "thortveitite": {
+    "Name": "Thortveitite",
+    "Category": "Minerals"
+  },
+  "thrutiscream": {
+    "Name": "Thrutis Cream",
+    "Category": "Legal Drugs"
+  },
+  "tiegfriessynthsilk": {
+    "Name": "Tiegfries Synth Silk",
+    "Category": "Textiles"
+  },
+  "timecapsule": {
+    "Name": "Time Capsule",
+    "Category": "Salvage"
+  },
+  "tiolcewaste2pasteunits": {
+    "Name": "Tiolce Waste2Paste Units",
+    "Category": "Consumer Items"
+  },
+  "titanium": {
+    "Name": "Titanium",
+    "Category": "Metals"
+  },
+  "tobacco": {
+    "Name": "Tobacco",
+    "Category": "Legal Drugs"
+  },
+  "toxandjivirocide": {
+    "Name": "Toxandji Virocide",
+    "Category": "Chemicals"
+  },
+  "toxicwaste": {
+    "Name": "Toxic Waste",
+    "Category": "Waste"
+  },
+  "transgeniconionhead": {
+    "Name": "Lucan Onionhead",
+    "Category": "Legal Drugs"
+  },
+  "trinketsoffortune": {
+    "Name": "Trinkets of Hidden Fortune",
+    "Category": "Consumer Items"
+  },
+  "tritium": {
+    "Name": "Tritium",
+    "Category": "Chemicals"
+  },
+  "unknownartifact": {
+    "Name": "Thargoid Sensor",
+    "Category": "Salvage"
+  },
+  "unknownartifact2": {
+    "Name": "Thargoid Probe",
+    "Category": "Salvage"
+  },
+  "unknownartifact3": {
+    "Name": "Thargoid Link",
+    "Category": "Salvage"
+  },
+  "unknownbiologicalmatter": {
+    "Name": "Thargoid Biological Matter",
+    "Category": "Salvage"
+  },
+  "unknownmineral": {
+    "Name": "Impure Spire Mineral",
+    "Category": "Salvage"
+  },
+  "unknownrefinedmineral": {
+    "Name": "Semi-Refined Spire Mineral",
+    "Category": "Salvage"
+  },
+  "unknownresin": {
+    "Name": "Thargoid Resin",
+    "Category": "Salvage"
+  },
+  "unknownsack": {
+    "Name": "Protective Membrane Scrap",
+    "Category": "Salvage"
+  },
+  "unknowntechnologysamples": {
+    "Name": "Thargoid Technology Samples",
+    "Category": "Salvage"
+  },
+  "unocuppiedescapepod": {
+    "Name": "Unoccupied Escape Pod",
+    "Category": "Salvage"
+  },
+  "unstabledatacore": {
+    "Name": "Unstable Data Core",
+    "Category": "Salvage"
+  },
+  "uraninite": {
+    "Name": "Uraninite",
+    "Category": "Minerals"
+  },
+  "uranium": {
+    "Name": "Uranium",
+    "Category": "Metals"
+  },
+  "usscargoancientartefact": {
+    "Name": "Ancient Artefact",
+    "Category": "Salvage"
+  },
+  "usscargoblackbox": {
+    "Name": "Black Box",
+    "Category": "Salvage"
+  },
+  "usscargoexperimentalchemicals": {
+    "Name": "Experimental Chemicals",
+    "Category": "Salvage"
+  },
+  "usscargomilitaryplans": {
+    "Name": "Military Plans",
+    "Category": "Salvage"
+  },
+  "usscargoprototypetech": {
+    "Name": "Prototype Tech",
+    "Category": "Salvage"
+  },
+  "usscargorareartwork": {
+    "Name": "Rare Artwork",
+    "Category": "Salvage"
+  },
+  "usscargorebeltransmissions": {
+    "Name": "Rebel Transmissions",
+    "Category": "Salvage"
+  },
+  "usscargotechnicalblueprints": {
+    "Name": "Technical Blueprints",
+    "Category": "Salvage"
+  },
+  "usscargotradedata": {
+    "Name": "Trade Data",
+    "Category": "Salvage"
+  },
+  "uszaiantreegrub": {
+    "Name": "Uszaian Tree Grub",
+    "Category": "Foods"
+  },
+  "utgaroarmillenialeggs": {
+    "Name": "Utgaroar Millennial Eggs",
+    "Category": "Foods"
+  },
+  "uzumokulowgwings": {
+    "Name": "Uzumoku Low-G Wings",
+    "Category": "Consumer Items"
+  },
+  "vanayequirhinofur": {
+    "Name": "Vanayequi Ceratomorpha Fur",
+    "Category": "Textiles"
+  },
+  "vegaslimweed": {
+    "Name": "Vega Slimweed",
+    "Category": "Medicines"
+  },
+  "vherculisbodyrub": {
+    "Name": "V Herculis Body Rub",
+    "Category": "Medicines"
+  },
+  "vidavantianlace": {
+    "Name": "Vidavantian Lace",
+    "Category": "Consumer Items"
+  },
+  "volkhabbeedrones": {
+    "Name": "Volkhab Bee Drones",
+    "Category": "Machinery"
+  },
+  "water": {
+    "Name": "Water",
+    "Category": "Chemicals"
+  },
+  "waterpurifiers": {
+    "Name": "Water Purifiers",
+    "Category": "Machinery"
+  },
+  "watersofshintara": {
+    "Name": "The Waters of Shintara",
+    "Category": "Medicines"
+  },
+  "wheemetewheatcakes": {
+    "Name": "Wheemete Wheat Cakes",
+    "Category": "Foods"
+  },
+  "wine": {
+    "Name": "Wine",
+    "Category": "Legal Drugs"
+  },
+  "witchhaulkobebeef": {
+    "Name": "Witchhaul Kobe Beef",
+    "Category": "Foods"
+  },
+  "wolf1301fesh": {
+    "Name": "Wolf Fesh",
+    "Category": "Legal Drugs"
+  },
+  "wreckagecomponents": {
+    "Name": "Wreckage Components",
+    "Category": "Salvage"
+  },
+  "wulpahyperboresystems": {
+    "Name": "Wulpa Hyperbore Systems",
+    "Category": "Machinery"
+  },
+  "wuthielokufroth": {
+    "Name": "Wuthielo Ku Froth",
+    "Category": "Legal Drugs"
+  },
+  "xihecompanions": {
+    "Name": "Xihe Biomorphic Companions",
+    "Category": "Technology"
+  },
+  "yasokondileaf": {
+    "Name": "Yaso Kondi Leaf",
+    "Category": "Legal Drugs"
+  },
+  "zeesszeantglue": {
+    "Name": "Zeessze Ant Grub Glue",
+    "Category": "Consumer Items"
+  }
+}

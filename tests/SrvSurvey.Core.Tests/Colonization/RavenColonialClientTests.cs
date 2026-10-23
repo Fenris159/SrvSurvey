@@ -5,6 +5,7 @@ using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Core.Tests.Colonization;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed partial class RavenColonialClientTests
 {
     [Fact]

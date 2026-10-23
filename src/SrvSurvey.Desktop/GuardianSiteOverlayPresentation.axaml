@@ -11,6 +11,7 @@
   <Border Classes="guardian-panel">
     <Grid>
       <controls:GuardianSiteMapControl
+          MotionStatus="{Binding Guardian.MotionStatus}"
           Projection="{Binding Guardian.ActiveMapProjection}"
           Proximity="{Binding Guardian.Proximity}"
           MapScale="{Binding Guardian.ActiveMapScale}"

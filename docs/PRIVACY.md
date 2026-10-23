@@ -56,9 +56,11 @@ Write events use the commander's personal Inara API key. The key is stored in
 that commander's local profile and is placed in Inara's `APIkey` message header.
 SrvSurvey identifies itself with `appName: SrvSurvey`; it does not embed or send
 an application access token. Commander name, Frontier ID, journal path, and
-live/beta eligibility are bound for the journal session. A queued event is
-discarded if that commander's key changes before transmission, so credentials
-and events cannot cross between commander sessions.
+live/beta eligibility are bound for the journal session. Captured mapped events
+are retained in a private local retry queue for their originating Frontier
+identity and Commander. A replacement key can resume that same account's
+queue; clearing its key removes retained work. API keys are never included in
+retry files, and events cannot cross between commander accounts.
 
 Events are buffered for about 35 seconds. Commander credit changes are derived
 from journal balance snapshots and transaction deltas, then coalesced to an
@@ -104,7 +106,7 @@ Direct EDSM synchronization is disabled by default. Saving an EDSM personal API
 key opts in only the displayed local Commander profile. SrvSurvey uses the
 current Elite journal Commander name as the EDSM account name, so the names must
 match. Clearing the stored key disables synchronization,
-cancels active delivery, and removes pending in-memory events for that profile.
+cancels active delivery, and removes retained pending events for that profile.
 This setting is separate from EDDN and does not enable EDDN sharing.
 
 SrvSurvey sends supported, new Live journal events to EDSM's authenticated
@@ -121,8 +123,10 @@ name and version, the Elite game version and build, and a bounded ordered batch
 of journal messages. When available, SrvSurvey adds only the transient context
 fields sanctioned by EDSM: system address, system name, system coordinates,
 market ID, station name, and ship ID. Credentials are stored only in the local
-Commander profile. Raw messages are held only in a bounded memory queue and are
-not written to SrvSurvey's normal logs or a durable retry file.
+Commander profile. Captured messages and their original game context are
+retained in a bounded private local retry queue until their final outcome is
+known. API keys are supplied from the current eligible profile at send time
+and are never stored in retry files or normal upload logs.
 
 Events are batched for about 30 seconds. Requests have bounded payloads and
 responses, one batch is in flight at a time, and transient failures use delayed
@@ -143,7 +147,9 @@ events, and unrelated events are not uploaded. New publication is also
 suppressed while multiple Elite windows make commander attribution ambiguous.
 
 Each request is sent directly to VoxStellar as a `commander` + `data` JSON
-object and signed with HMAC-SHA256. The ordered queue is memory-only. Turning
+object and signed with HMAC-SHA256. Captured bodies are retained in a bounded
+private local retry queue; the signing key and signatures are not persisted.
+Transient failures retry with a cooldown, including after a restart. Turning
 the option off advances its consent generation so entries that have not begun
 uploading cannot be sent under the former consent state. Logs record only event
 names and transport outcomes; they do not include journal payloads, commander

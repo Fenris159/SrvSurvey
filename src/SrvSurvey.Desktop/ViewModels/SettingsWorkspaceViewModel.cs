@@ -210,6 +210,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsDataSelected));
     }
 
+    /// <summary>Builds searchable settings entries and their navigation targets, including backup and synchronization.</summary>
     private static IReadOnlyList<SettingsSearchEntry> CreateCatalog() =>
         [
             new(
@@ -316,6 +317,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "DockToDockEnabledCheckBox",
                 "DockToDockCard",
                 "journey trip station csv export"
+            ),
+            new(
+                "Google Drive backup and sync",
+                DataCategoryKey,
+                "ProfileSyncCard",
+                "ProfileSyncCard",
+                "backup restore synchronize sync cloud machine google drive computer profile"
             ),
             new(
                 "Elite journal source",

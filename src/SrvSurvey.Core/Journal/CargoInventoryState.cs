@@ -17,6 +17,7 @@ public sealed class CargoInventoryState
 
     private readonly Dictionary<string, CargoItemState> inventory = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> lastInventory = CargoInventoryDiff.CreateCountMap();
+    private readonly Dictionary<string, long> marketChangesSinceSnapshot = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset timestamp;
     private string eventName = "Cargo";
     private string vessel = string.Empty;
@@ -57,8 +58,7 @@ public sealed class CargoInventoryState
     }
 
     /// <summary>
-    /// Drop a held before-snapshot without computing a diff (e.g. when skipNextCargoEvent
-    /// intentionally suppresses squadron supplyFC processing).
+    /// Drop a held before-snapshot without computing a diff.
     /// </summary>
     public void ClearPreservedSnapshot()
     {
@@ -71,17 +71,23 @@ public sealed class CargoInventoryState
     /// <summary>
     /// Ship cargo delta: current inventory − lastInventory (non-zero entries only).
     /// Rebases lastInventory to the current counts and clears any preserved snapshot so the
-    /// computed diff is consumed once. Call while the new inventory is already applied;
+    /// computed diff is consumed once. Optionally excludes market movements already sent separately to Raven.
+    /// Call while the new inventory is already applied;
     /// release the lock before network I/O or logging.
     /// </summary>
-    public Dictionary<string, int> GetDiff()
+    public Dictionary<string, int> GetDiff(bool excludeMarketChanges = false)
     {
         lock (syncRoot)
         {
             Dictionary<string, int> after = CreateCountMapUnlocked();
             Dictionary<string, int> diffs = CargoInventoryDiff.Compute(lastInventory, after);
+            if (excludeMarketChanges)
+            {
+                ExcludeMarketChanges(diffs);
+            }
             // Consume once: subsequent GetDiff calls baseline from this after-state.
             CargoInventoryDiff.CopyFromCounts(lastInventory, after);
+            marketChangesSinceSnapshot.Clear();
             preserveLastInventory = false;
             return diffs;
         }
@@ -106,6 +112,7 @@ public sealed class CargoInventoryState
                 // Commander/context clears must not leave a frozen before-snapshot forever.
                 preserveLastInventory = false;
                 lastInventory.Clear();
+                marketChangesSinceSnapshot.Clear();
                 return true;
             }
 
@@ -114,6 +121,7 @@ public sealed class CargoInventoryState
                 CopyCurrentToLastInventoryUnlocked();
             }
 
+            bool firstSnapshot = !hasState;
             Dictionary<string, CargoItemState> replacement = CreateInventory(snapshot.Inventory);
             bool changed =
                 !hasState
@@ -131,6 +139,10 @@ public sealed class CargoInventoryState
             eventName = snapshot.EventName;
             vessel = snapshot.Vessel;
             hasState = true;
+            if (firstSnapshot)
+            {
+                CopyCurrentToLastInventoryUnlocked();
+            }
             return changed;
         }
     }
@@ -157,16 +169,8 @@ public sealed class CargoInventoryState
                     GetString(root, TypeLocalisedProperty),
                     -Math.Max(0, GetInt32(root, CountProperty) ?? 0)
                 ),
-                "MarketBuy" => ApplyDelta(
-                    GetString(root, "Type"),
-                    GetString(root, TypeLocalisedProperty),
-                    Math.Max(0, GetInt32(root, CountProperty) ?? 0)
-                ),
-                "MarketSell" => ApplyDelta(
-                    GetString(root, "Type"),
-                    GetString(root, TypeLocalisedProperty),
-                    -Math.Max(0, GetInt32(root, CountProperty) ?? 0)
-                ),
+                "MarketBuy" => ApplyMarketDelta(root, sign: 1),
+                "MarketSell" => ApplyMarketDelta(root, sign: -1),
                 "CargoTransfer" => ApplyTransfers(root, isInSrv),
                 "ColonisationContribution" => ApplyContributions(root),
                 "Cargo" => ApplyCargoEvent(root),
@@ -231,6 +235,10 @@ public sealed class CargoInventoryState
             inventory[item.Key] = item.Value;
         }
 
+        if (!hasState)
+        {
+            CopyCurrentToLastInventoryUnlocked();
+        }
         vessel = updatedVessel;
         return true;
     }
@@ -325,9 +333,53 @@ public sealed class CargoInventoryState
         return true;
     }
 
+    /// <summary>Tracks effective market movement against the same baseline as the ship difference.</summary>
+    private bool ApplyMarketDelta(JsonElement root, int sign)
+    {
+        string? name = GetString(root, "Type")?.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
+        }
+        int before = inventory.GetValueOrDefault(name)?.Count ?? 0;
+        bool changed = ApplyDelta(
+            name,
+            GetString(root, TypeLocalisedProperty),
+            sign * Math.Max(0, GetInt32(root, CountProperty) ?? 0)
+        );
+        if (changed)
+        {
+            long movement = (long)(inventory.GetValueOrDefault(name)?.Count ?? 0) - before;
+            marketChangesSinceSnapshot[name] = marketChangesSinceSnapshot.GetValueOrDefault(name) + movement;
+        }
+        return changed;
+    }
+
+    /// <summary>Separates bank movement even when market actions follow a frozen transfer baseline.</summary>
+    private void ExcludeMarketChanges(Dictionary<string, int> diffs)
+    {
+        foreach (KeyValuePair<string, long> market in marketChangesSinceSnapshot)
+        {
+            long remaining = diffs.GetValueOrDefault(market.Key) - market.Value;
+            if (remaining is < -int.MaxValue or > int.MaxValue)
+            {
+                throw new InvalidDataException("The non-market cargo difference exceeds the supported count.");
+            }
+            if (remaining == 0)
+            {
+                diffs.Remove(market.Key);
+            }
+            else
+            {
+                diffs[market.Key] = (int)remaining;
+            }
+        }
+    }
+
     private void CopyCurrentToLastInventoryUnlocked()
     {
         lastInventory.Clear();
+        marketChangesSinceSnapshot.Clear();
         foreach (KeyValuePair<string, CargoItemState> item in inventory)
         {
             lastInventory[item.Key] = item.Value.Count;

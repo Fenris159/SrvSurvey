@@ -21,6 +21,14 @@ public static class SpanshRoutes
         };
 }
 
+/// <summary>Search criteria with an optional page size for callers that page larger result sets.</summary>
+public sealed record SpanshSearchRequest(string Route, string Reference, Dictionary<string, object> Filters, int Page)
+{
+    public int? PageSize { get; init; }
+    public string Sort { get; init; } = "distance";
+    public int MaximumBytes { get; init; } = SpanshApi.MaximumResponseBytes;
+}
+
 public sealed class SpanshApi
 {
     public const int MaximumResponseBytes = 8 * 1024 * 1024;
@@ -39,7 +47,7 @@ public sealed class SpanshApi
         this.onFailure = onFailure;
     }
 
-    public async Task<JsonDocument> SearchAsync(
+    public Task<JsonDocument> SearchAsync(
         string route,
         string reference,
         Dictionary<string, object> filters,
@@ -49,26 +57,76 @@ public sealed class SpanshApi
         CancellationToken cancellationToken = default
     )
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(reference);
+        return SearchAsync(
+            new SpanshSearchRequest(route, reference, filters, page) { Sort = sort, MaximumBytes = maximumBytes },
+            cancellationToken
+        );
+    }
+
+    public Task<JsonDocument> SearchAsync(SpanshSearchRequest search, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(search);
+        ArgumentException.ThrowIfNullOrWhiteSpace(search.Reference);
+        int pageSize = search.PageSize ?? SpanshRoutes.PageSize(search.Route);
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(pageSize, 500);
         var payload = new
         {
-            filters,
-            reference_system = reference.Trim(),
-            size = SpanshRoutes.PageSize(route),
-            page,
+            filters = search.Filters,
+            reference_system = search.Reference.Trim(),
+            size = pageSize,
+            page = search.Page,
             sort = new[]
             {
-                new Dictionary<string, object> { [sort] = new { direction = sort == "distance" ? "asc" : "desc" } },
+                new Dictionary<string, object>
+                {
+                    [search.Sort] = new { direction = search.Sort == "distance" ? "asc" : "desc" },
+                },
             },
         };
+        return SendSearchAsync(
+            () =>
+                new HttpRequestMessage(HttpMethod.Post, new Uri(origin, search.Route))
+                {
+                    Content = JsonContent.Create(payload),
+                },
+            search.Route,
+            search.MaximumBytes,
+            cancellationToken
+        );
+    }
+
+    /// <summary>Pages a saved provider search without executing its filters again.</summary>
+    public Task<JsonDocument> RecallAsync(
+        string route,
+        string reference,
+        int page,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reference);
+        ArgumentOutOfRangeException.ThrowIfNegative(page);
+        string path = $"{route}/recall/{Uri.EscapeDataString(reference)}" + (page > 0 ? $"/{page}" : string.Empty);
+        return SendSearchAsync(
+            () => new HttpRequestMessage(HttpMethod.Get, new Uri(origin, path)),
+            route,
+            MaximumResponseBytes,
+            cancellationToken
+        );
+    }
+
+    private async Task<JsonDocument> SendSearchAsync(
+        Func<HttpRequestMessage> createRequest,
+        string route,
+        int maximumBytes,
+        CancellationToken cancellationToken
+    )
+    {
         try
         {
             for (int attempt = 1; attempt <= MaximumAttempts; attempt++)
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(origin, route))
-                {
-                    Content = JsonContent.Create(payload),
-                };
+                using HttpRequestMessage request = createRequest();
                 using HttpResponseMessage response = await client
                     .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);

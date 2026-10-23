@@ -104,6 +104,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.Equal(theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light, application.RequestedThemeVariant);
             SolidColorBrush accent = Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
+            Assert.Equal(
+                Color.Parse(theme.TagFillColor),
+                Assert.IsType<SolidColorBrush>(application.Resources["RavenTagFillBrush"]).Color
+            );
+            Assert.Equal(
+                Color.Parse(theme.DangerForegroundColor),
+                Assert.IsType<SolidColorBrush>(application.Resources["RavenDangerForegroundBrush"]).Color
+            );
             SolidColorBrush selectedMutedText = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenSelectedMutedTextBrush"]
             );
@@ -136,6 +144,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         Assert.Equal("monochrome-dark", store.LoadThemeKey());
     }
 
+    /// <summary>Applies custom overlay colors to their dedicated resources independently of the application theme.</summary>
     [Fact]
     public void CustomLegacyPaletteCreatesOverlayAndNamedResources()
     {
@@ -155,11 +164,16 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
+        colors["colonize.category"] = Color.Parse("#ABCDEF");
         OverlayTypographySettings typography = OverlayTypographySettings.Default with { Header = 11.5, Detail = 10.5 };
         var service = new RavenThemeService(application, store, new LegacyOverlayTheme(colors, true, null, typography));
 
         service.ApplyCurrent();
 
+        Assert.Equal(
+            Color.Parse("#ABCDEF"),
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayColoniseCategoryBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 210, 180, 30),
             Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayHeaderBrush"]).Color

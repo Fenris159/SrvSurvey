@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -13,6 +14,7 @@ internal static class CommanderSettingsProfile
         "overlay-typography-overrides.json",
         "overlay-size-overrides.json",
         "overlay-position-references.json",
+        "overlay-growth-overrides.json",
         "theme.json",
         "overlay-theme-states.json",
     ];
@@ -44,6 +46,7 @@ internal static class CommanderSettingsProfile
         return null;
     }
 
+    /// <summary>Initializes commander-specific layout files while excluding concurrent imports and saves.</summary>
     public static void Prepare(AppDataPaths paths)
     {
         if (paths.SettingsFrontierId is null)
@@ -57,21 +60,56 @@ internal static class CommanderSettingsProfile
         }
 
         string marker = Path.Combine(paths.OverlaySettingsDirectory, ".profile-initialized");
-        if (File.Exists(marker))
+        string vrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vr-profile-initialized");
+        if (File.Exists(marker) && File.Exists(vrMarker))
         {
             return;
         }
 
-        CopyIfMissing(paths.SharedUiSettingsPath, paths.UiSettingsPath);
-        foreach (string fileName in OverlayFiles)
+        using IDisposable layoutLeases = OverlayLayoutFileAccess.AcquireForFiles(
+            OverlayFiles.SelectMany(file =>
+                new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
+            )
+        );
+        if (File.Exists(marker) && File.Exists(vrMarker))
         {
-            CopyIfMissing(
-                Path.Combine(paths.DataDirectory, fileName),
-                Path.Combine(paths.OverlaySettingsDirectory, fileName)
-            );
+            return;
+        }
+        if (!File.Exists(marker))
+        {
+            CopyIfMissing(paths.SharedUiSettingsPath, paths.UiSettingsPath);
+            foreach (string fileName in OverlayFiles)
+            {
+                CopyIfMissing(
+                    Path.Combine(paths.DataDirectory, fileName),
+                    Path.Combine(paths.OverlaySettingsDirectory, fileName)
+                );
+            }
         }
 
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
+        if (!File.Exists(vrMarker))
+        {
+            string legacyVrDirectory = Path.Combine(paths.DataDirectory, "vr");
+            if (Directory.Exists(legacyVrDirectory))
+            {
+                foreach (string source in Directory.EnumerateFiles(legacyVrDirectory, "*.json"))
+                {
+                    CopyIfMissing(source, Path.Combine(paths.OverlaySettingsDirectory, "vr", Path.GetFileName(source)));
+                }
+            }
+            WriteInitializationMarker(vrMarker);
+        }
+        WriteInitializationMarker(marker);
+    }
+
+    /// <summary>Records completed migration while accepting a marker already written by another instance.</summary>
+    private static void WriteInitializationMarker(string marker)
+    {
+        if (File.Exists(marker))
+        {
+            return;
+        }
         try
         {
             using var initialized = new FileStream(marker, FileMode.CreateNew, FileAccess.Write);
@@ -79,42 +117,6 @@ internal static class CommanderSettingsProfile
         catch (IOException) when (File.Exists(marker))
         {
             // Another instance finished the same profile migration first.
-        }
-    }
-
-    public static void PublishImportedOverlays(AppDataPaths paths, ProfileImportResult result)
-    {
-        if (Path.GetFullPath(paths.DataDirectory) == Path.GetFullPath(paths.OverlaySettingsDirectory))
-        {
-            return;
-        }
-
-        var importedFiles = result
-            .Manifest.Entries.Select(entry => entry.RelativePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        Directory.CreateDirectory(paths.OverlaySettingsDirectory);
-        foreach (string fileName in OverlayFiles)
-        {
-            if (!importedFiles.Contains(fileName))
-            {
-                continue;
-            }
-
-            string source = Path.Combine(paths.DataDirectory, fileName);
-            string target = Path.Combine(paths.OverlaySettingsDirectory, fileName);
-            string temporaryPath = target + $".{Guid.NewGuid():N}.tmp";
-            try
-            {
-                File.Copy(source, temporaryPath);
-                File.Move(temporaryPath, target, overwrite: true);
-            }
-            finally
-            {
-                if (File.Exists(temporaryPath))
-                {
-                    File.Delete(temporaryPath);
-                }
-            }
         }
     }
 

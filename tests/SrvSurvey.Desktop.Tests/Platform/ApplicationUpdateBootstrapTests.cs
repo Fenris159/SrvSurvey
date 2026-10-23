@@ -11,6 +11,154 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         $"SrvSurvey-update-bootstrap-tests-{Guid.NewGuid():N}"
     );
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RolledBackHelpersRestartEvenWhenCallerOrOutcomePublicationFails(bool writeFails)
+    {
+        using var caller = new CancellationTokenSource();
+        if (!writeFails)
+        {
+            await caller.CancelAsync();
+        }
+        bool restarted = false;
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.RolledBack,
+            token =>
+            {
+                Assert.NotEqual(caller.Token, token);
+                token.ThrowIfCancellationRequested();
+                if (writeFails)
+                {
+                    throw new IOException("outcome unavailable");
+                }
+                return Task.CompletedTask;
+            },
+            () => restarted = true,
+            TimeSpan.FromSeconds(1),
+            caller.Token
+        );
+        Assert.Equal(3, code);
+        Assert.True(restarted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartupErrorsSurviveReplacementCleanupFailures(bool canceled)
+    {
+        Exception startupError = canceled
+            ? new OperationCanceledException("startup canceled")
+            : new IOException("health marker unavailable");
+        int stopAttempts = 0;
+        Exception? error = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+                _ => Task.FromException<ApplicationUpdateHealthStatus>(startupError),
+                () => 0,
+                () =>
+                {
+                    stopAttempts++;
+                    return Task.FromException(new IOException("replacement did not exit"));
+                },
+                CancellationToken.None
+            )
+        );
+
+        Assert.Same(startupError, error);
+        Assert.Equal(1, stopAttempts);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnhealthyStartupDetailsSurviveReplacementCleanupFailures(bool exited)
+    {
+        ApplicationUpdateHealthStatus status = exited
+            ? ApplicationUpdateHealthStatus.Exited
+            : ApplicationUpdateHealthStatus.TimedOut;
+        int stopAttempts = 0;
+        IOException error = await Assert.ThrowsAsync<IOException>(() =>
+            ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+                _ => Task.FromResult(status),
+                () => 17,
+                () =>
+                {
+                    stopAttempts++;
+                    return Task.FromException(new IOException("replacement did not exit"));
+                },
+                CancellationToken.None
+            )
+        );
+
+        Assert.Equal(
+            ApplicationUpdateHealthMonitor.DescribeFailure(
+                status,
+                status == ApplicationUpdateHealthStatus.Exited ? 17 : null
+            ),
+            error.Message
+        );
+        Assert.Equal(1, stopAttempts);
+    }
+
+    [Fact]
+    public async Task HealthyReplacementsKeepRunning()
+    {
+        bool stopped = false;
+        bool healthy = await ApplicationUpdateBootstrap.ConfirmReplacementHealthAsync(
+            _ => Task.FromResult(ApplicationUpdateHealthStatus.Healthy),
+            () => 0,
+            () =>
+            {
+                stopped = true;
+                return Task.CompletedTask;
+            },
+            CancellationToken.None
+        );
+
+        Assert.True(healthy);
+        Assert.False(stopped);
+    }
+
+    [Fact]
+    public async Task RollbackOutcomeTimeoutStillRestartsTheOriginalInstallation()
+    {
+        bool restarted = false;
+        var blocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.RolledBack,
+            _ => blocked.Task,
+            () => restarted = true,
+            TimeSpan.FromMilliseconds(10),
+            CancellationToken.None
+        );
+        Assert.Equal(3, code);
+        Assert.True(restarted);
+        blocked.SetResult();
+    }
+
+    [Fact]
+    public async Task InstalledHelperPublishesWithItsCallerTokenWithoutRestarting()
+    {
+        using var caller = new CancellationTokenSource();
+        bool published = false;
+        bool restarted = false;
+        int code = await ApplicationUpdateBootstrap.CompleteHelperOutcomeAsync(
+            ReleaseInstallationStatus.Installed,
+            token =>
+            {
+                Assert.Equal(caller.Token, token);
+                published = true;
+                return Task.CompletedTask;
+            },
+            () => restarted = true,
+            TimeSpan.FromSeconds(1),
+            caller.Token
+        );
+        Assert.Equal(0, code);
+        Assert.True(published);
+        Assert.False(restarted);
+    }
+
     [Fact]
     public void ConfirmationModeStripsOnlyInternalArguments()
     {

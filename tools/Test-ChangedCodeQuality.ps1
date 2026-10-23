@@ -307,6 +307,7 @@ function Invoke-ChangedCoverageCheck {
                 --configuration Release `
                 --no-build `
                 --no-restore `
+                --logger trx `
                 --collect:"XPlat Code Coverage" `
                 --results-directory $resultsDirectory `
                 -- `
@@ -315,6 +316,16 @@ function Invoke-ChangedCoverageCheck {
                 throw "Coverage test run failed for $project."
             }
         }
+
+        # Desktop-only changes still require the core sender behavior matrix.
+        $coreTests = Join-Path $RepositoryRoot "tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj"
+        if ($coreTests -notin $testProjects) {
+            & dotnet test $coreTests --configuration Release --no-build --no-restore `
+                --filter "Category=JournalUploadScenario" --logger trx --results-directory $resultsDirectory
+            if ($LASTEXITCODE -ne 0) { throw "Journal upload behavior scenarios failed." }
+        }
+        # Provider scenarios are a behavior gate independent of aggregate line coverage.
+        & (Join-Path $RepositoryRoot "tools/Test-JournalUploadScenarios.ps1") -ResultsDirectory $resultsDirectory
 
         $reports = Get-ChildItem -Path $resultsDirectory -Filter "coverage.opencover.xml" -Recurse
         if ($reports.Count -eq 0) {
@@ -495,13 +506,13 @@ try {
 
         $ruleSetPath = Join-Path $repositoryRoot "tools/SonarCloud.ruleset"
         & dotnet build-server shutdown *> $null
+        # Sonar warnings must fail the build, including findings outside changed lines.
         & dotnet build $Solution `
             --configuration Release `
             --no-restore `
             -t:Rebuild `
             -m:1 `
-            "-p:TreatWarningsAsErrors=false" `
-            "-p:WarningsAsErrors=" `
+            "-p:TreatWarningsAsErrors=true" `
             "-p:CodeAnalysisRuleSet=$ruleSetPath" `
             "-clp:NoSummary" *> $sonarLogPath
         if ($LASTEXITCODE -ne 0) {

@@ -29,9 +29,39 @@ public static class WellKnownUris
     public static Uri EdsmCommanderApiSettings => RequireUri("EdsmCommanderApiSettings");
     public static Uri CanonnChallenge => RequireUri("CanonnChallenge");
     public static Uri EdastroCodexMap => RequireUri("EdastroCodexMap");
+    public static Uri EdastroPoiCatalog => RequireUri("EdastroPoiCatalog");
+
+    /// <summary>Opens the Galactic Exploration Catalog attraction submission form.</summary>
+    public static Uri EdastroNewPoi => RequireUri("EdastroNewPoi");
+
+    /// <summary>Returns the provider's currently accepted journal event names.</summary>
+    public static Uri EdastroAcceptedEvents => RequireUri("EdastroAcceptedEvents");
+
+    /// <summary>Receives consented journal batches with application metadata.</summary>
+    public static Uri EdastroJournalUpload => RequireUri("EdastroJournalUpload");
+
+    public static string EdastroPoiPagePrefix => Require("EdastroPoiPagePrefix");
     public static Uri CodexMissingForm => RequireUri("CodexMissingForm");
     public static Uri ColonisationWiki => RequireUri("ColonisationWiki");
     public static Uri EdGalaxyVisitedStars => RequireUri("EdGalaxyVisitedStars");
+    public static Uri GoogleDriveAppDataScope => RequireUri("GoogleDriveAppDataScope");
+
+    public static Uri GoogleOAuthToken => RequireUri("GoogleOAuthToken");
+
+    public static Uri GoogleOAuthAuthorize => RequireUri("GoogleOAuthAuthorize");
+
+    public static Uri GoogleDriveFiles => RequireUri("GoogleDriveFiles");
+
+    public static Uri GoogleDriveFilesDirectory => RequireUri("GoogleDriveFilesDirectory");
+
+    /// <summary>Receives anonymous daily installation check-ins.</summary>
+    public static Uri ActiveUsersPing => RequireUri("ActiveUsersPing");
+
+    /// <summary>Publishes aggregate activity counts without requiring a protected statistics credential.</summary>
+    public static Uri ActiveUsersPublic => RequireUri("ActiveUsersPublic");
+
+    public static Uri GoogleDriveUpload => RequireUri("GoogleDriveUpload");
+
     public static Uri FrontierOAuthRedirect => RequireUri("FrontierOAuthRedirect");
     public static Uri DesktopLogoAsset => RequireUri("DesktopLogoAsset");
     public static Uri GuardianScienceCorpsDiscord => RequireUri("GuardianScienceCorpsDiscord");

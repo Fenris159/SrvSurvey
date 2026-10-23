@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -19,9 +20,19 @@ internal sealed class JournalProjectionTick(JournalProjectionContext context)
 
     public string? PreviousCommanderName { get; set; }
 
+    public bool CommanderChanged { get; set; }
+
+    public IReadOnlyList<ColonizationPendingCargoAdjustment>? CapturedCarrierCargo { get; set; }
+
     public bool AllowSharedCargo { get; set; }
 
     public bool CargoChanged { get; set; }
+
+    /// <summary>Raven may use independently verified source folders while other shared-data consumers stay suppressed.</summary>
+    public bool AllowRavenCargo { get; set; }
+    public bool AllowFinalRavenCargo { get; set; }
+    public bool AllowAttributedJournal { get; set; }
+    public bool RavenCargoChanged { get; set; }
 
     public bool CodexDiscoveryChanged { get; set; }
 

@@ -1,6 +1,7 @@
 using Avalonia;
 using SrvSurvey.Core.Diagnostics.Replay;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Runtime;
@@ -10,6 +11,53 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 
 public sealed class DiagnosticReplayContextTests
 {
+    /// <summary>A replacement keeps its commander even when another has the latest journal; a requested preference change can reselect.</summary>
+    [Fact]
+    public async Task RestartKeepsItsCommanderUntilTheUserChangesTheStartupPreference()
+    {
+        using var temp = new TemporaryDirectory();
+        var paths = new AppDataPaths(Path.Combine(temp.Path, "config"), Path.Combine(temp.Path, "data"), temp.Path, []);
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.01.log"),
+            """{"event":"Commander","Name":"Other","FID":"F456"}"""
+        );
+        string[] retained = StartupOptions.ForRestart(["--journal-directory", temp.Path], "F123");
+        DesktopStartupContext first = await DesktopStartupContext.ResolveAsync(
+            retained,
+            () => paths,
+            CancellationToken.None
+        );
+        Assert.Equal("F123", first.AppDataPaths.SettingsFrontierId);
+        Assert.Null(StartupOptions.GetFrontierId(retained));
+        new CommanderPreferenceSettingsStore(paths.SharedUiSettingsPath).Save(new("Other", "F456"));
+        DesktopStartupContext changed = await DesktopStartupContext.ResolveAsync(
+            StartupOptions.ForRestart(retained, "F123", preserveCommander: false),
+            () => paths,
+            CancellationToken.None
+        );
+        Assert.Equal("F456", changed.AppDataPaths.SettingsFrontierId);
+    }
+
+    /// <summary>Language initialization happens before desktop composition and must already use the requested commander's profile.</summary>
+    [Fact]
+    public async Task NormalStartupResolvesTheRequestedCommandersLanguageBeforeComposition()
+    {
+        using var temp = new TemporaryDirectory();
+        var paths = new AppDataPaths(Path.Combine(temp.Path, "config"), Path.Combine(temp.Path, "data"), temp.Path, []);
+        new LocalizationSettingsStore(paths.SharedUiSettingsPath, paths.DataDirectory).Save("en");
+        AppDataPaths commander = paths with { SettingsFrontierId = "F123" };
+        new LocalizationSettingsStore(commander.UiSettingsPath, commander.OverlaySettingsDirectory).Save("fr");
+
+        DesktopStartupContext context = await DesktopStartupContext.ResolveAsync(
+            ["--frontier-id", "F123"],
+            () => paths,
+            CancellationToken.None
+        );
+
+        Assert.Equal("fr", LocalizationSettingsStore.ResolveCurrent(context.AppDataPaths));
+    }
+
+    /// <summary>Replay keeps mutable files inside its session and simulates a foreground game window without external effects.</summary>
     [Fact]
     public async Task ContextRedirectsAllMutableRootsAndSimulatesTheGameHost()
     {
@@ -140,7 +188,7 @@ public sealed class DiagnosticReplayContextTests
         using HttpClient client = DiagnosticReplayContext.CreateNetworkClient();
         var viewModel = new NearestSystemsViewModel(new NearestSystemsClient(client), new EmptySystemResolver());
         viewModel.UpdateContext("Replay System", new GalacticCoordinate(1, 2, 3), "Imported");
-        viewModel.BiologicalSignal = "Stratum";
+        viewModel.CodexName = "Stratum";
 
         await viewModel.SearchAsync();
 

@@ -23,12 +23,14 @@ public sealed class OverlayThemeResourcesTests
         ["PlotBioSystem"] = "SystemSurvey.AutoShowBioSystem",
         ["PlotBodyInfo"] = "SystemSurvey.AutoShowBodyInfo",
         ["PlotBuildCommodities"] = "Colonization.AutoShowCommodityOverlay",
+        ["PlotColonizationWishList"] = "Colonization.WishList",
         ["PlotFlightWarning"] = "SystemSurvey.AutoShowFlightWarnings",
         ["PlotFloatie"] = "Notifications.Enabled",
         ["PlotFootCombat"] = "Combat.AutoShowFootCombat",
         ["PlotFSS"] = "SystemSurvey.AutoShowLastFssBody",
         ["PlotFSSInfo"] = "SystemSurvey.AutoShowFssInfo",
         ["PlotGalMap"] = "GalaxyMap.AutoShow",
+        ["PlotExplorationPois"] = "ExplorationPois.AutoShow",
         ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
         ["PlotMiningCargo"] = "MiningWorkspace.ShouldShowCargo",
         ["PlotMiningReference"] = "MineMap.ShouldShowMiningReference",
@@ -528,10 +530,11 @@ public sealed class OverlayThemeResourcesTests
         Assert.Equal(definition.PreviewSize.Width, OverlayThemeResources.GetLegacyFormFactorWidth(definition.Name));
     }
 
+    /// <summary>Verifies every runtime overlay uses its editor catalog width.</summary>
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(37, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(39, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

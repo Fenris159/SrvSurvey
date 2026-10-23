@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Journal;
@@ -36,6 +38,9 @@ public interface IEddnPublisher
     void SetEnabled(bool enabled);
 
     void SetSuspended(bool suspended);
+
+    /// <summary>Invalidates outstanding companion reads independently of delivery of immutable retained reports.</summary>
+    void SetCompanionDataAllowed(bool allowed);
 }
 
 /// <summary>
@@ -56,6 +61,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     private EddnSessionKey? sessionKey;
     private bool sharingEnabled;
     private bool publishingSuspended;
+    private bool companionDataAllowed = true;
     private bool acceptingWrites = true;
     private bool disposed;
     private int disposeStarted;
@@ -63,6 +69,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     private long consentGeneration;
     private int stagedWriteCount;
 
+    /// <summary>Creates a sender using the existing single-queue storage contract.</summary>
     public EddnPublisher(
         string softwareVersion,
         HttpClient? client = null,
@@ -72,18 +79,32 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         Func<DateTimeOffset>? utcNow = null,
         bool automaticProcessing = true
     )
+        : this(
+            softwareVersion,
+            new EddnOutboxStorage(outboxPath ?? Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-v1.json")),
+            client,
+            endpoint,
+            log,
+            utcNow,
+            automaticProcessing
+        ) { }
+
+    /// <summary>Creates an independently owned queue with consent shared across this settings profile.</summary>
+    internal EddnPublisher(
+        string softwareVersion,
+        EddnOutboxStorage storage,
+        HttpClient? client = null,
+        Uri? endpoint = null,
+        Action<string>? log = null,
+        Func<DateTimeOffset>? utcNow = null,
+        bool automaticProcessing = true
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
         var transport = new EddnTransport(client, endpoint, $"SrvSurvey/{this.softwareVersion}");
-        outbox = new EddnOutbox(
-            outboxPath ?? Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-v1.json"),
-            transport,
-            WriteLog,
-            utcNow,
-            automaticProcessing
-        );
+        outbox = new EddnOutbox(storage, transport, WriteLog, utcNow, automaticProcessing);
         outboxWrites = Channel.CreateBounded<OutboxWriteCommand>(
             new BoundedChannelOptions(4096)
             {
@@ -141,6 +162,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         outbox.setSuspended(suspended);
     }
 
+    /// <summary>Projects opted-in live journal activity and returns queue outcomes without submitting bootstrap history.</summary>
     public Task<EddnPublicationResult> ApplyAsync(
         EddnApplyRequest request,
         CancellationToken cancellationToken = default
@@ -160,14 +182,45 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
 
             SetEnabled(request.Enabled);
+            SetCompanionDataAllowed(request.AllowSharedData);
             EddnSessionPublisher? currentSession = ReplaceSessionIfNeeded(request);
             if (currentSession is null)
             {
                 return Task.FromResult(EddnPublicationResult.Empty);
             }
 
-            return Task.FromResult(currentSession.Apply(request, cancellationToken));
+            EddnPublicationResult result = currentSession.Apply(request, cancellationToken);
+            return FinishCapturedWritesAsync(result, cancellationToken);
         }
+    }
+
+    /// <summary>Serializes companion authorization with session replacement without suspending the durable transport.</summary>
+    public void SetCompanionDataAllowed(bool allowed)
+    {
+        lock (applySync)
+        {
+            EddnSessionPublisher? current;
+            lock (sync)
+            {
+                if (disposed)
+                {
+                    return;
+                }
+                companionDataAllowed = allowed;
+                current = session;
+            }
+            current?.SetCompanionDataAllowed(allowed);
+        }
+    }
+
+    /// <summary>Does not finish a captured journal update until its prepared messages have reached durable storage.</summary>
+    private async Task<EddnPublicationResult> FinishCapturedWritesAsync(
+        EddnPublicationResult result,
+        CancellationToken cancellationToken
+    )
+    {
+        await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
+        return result;
     }
 
     internal async Task ProcessPendingAsync(CancellationToken cancellationToken = default)
@@ -201,6 +254,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         }
     }
 
+    /// <summary>Sanitizes a projected EDDN event and captures it with a stable source-record identity.</summary>
     bool IEddnSessionSink.TryEnqueue(
         EddnPreparedMessage prepared,
         UploadPayloadHeader header,
@@ -230,6 +284,16 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         }
 
         EddnQueuedMessage item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
+        if (prepared.SourceRecordIdentity is not null)
+        {
+            byte[] digest = SHA256.HashData(
+                Encoding.UTF8.GetBytes(
+                    header.uploaderID + "\n" + prepared.SourceRecordIdentity + "\n" + prepared.schemaRef
+                )
+            );
+            item.id = new Guid(digest.AsSpan(0, 16));
+            item.replayProtected = true;
+        }
         Interlocked.Increment(ref stagedWriteCount);
         if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(item, acceptedConsentGeneration, eventName, rejected)))
         {
@@ -329,6 +393,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             replacement.SetEnabled(sharingEnabled);
             replacement.SetSuspended(publishingSuspended);
         }
+        // Session replacement and companion authorization are serialized by applySync.
+        replacement.SetCompanionDataAllowed(companionDataAllowed);
 
         return replacement;
     }

@@ -64,6 +64,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
     private GuardianSiteMapProjection? activeMapProjection;
     private GuardianSiteProximitySnapshot? proximity;
     private EliteStatus? currentStatus;
+
     private string? musicTrack;
     private string filterText = string.Empty;
     private string selectedKindFilter = AllKinds;
@@ -250,6 +251,8 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public EliteStatus? MotionStatus => currentStatus;
 
     public IReadOnlyList<string> KindFilters { get; }
 
@@ -1326,10 +1329,15 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         }
     }
 
+    private IReadOnlyList<GuardianArtifactRequirementViewModel> statusObeliskArtifacts = [];
+
     public IReadOnlyList<GuardianArtifactRequirementViewModel> GuardianStatusObeliskArtifacts =>
-        GuardianStatusObelisk is { } obelisk
-            ? CreateArtifactRequirementRows(artifactInventory.GetRequirements(obelisk.ItemCodes))
-            : [];
+        statusObeliskArtifacts = OverlayListRetention.Keep(
+            statusObeliskArtifacts,
+            GuardianStatusObelisk is { } obelisk
+                ? CreateArtifactRequirementRows(artifactInventory.GetRequirements(obelisk.ItemCodes))
+                : []
+        );
 
     public string GuardianStatusObeliskMissionStatus
     {
@@ -1801,6 +1809,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         UpdateProximity();
         RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
+        OnPropertyChanged(nameof(MotionStatus));
     }
 
     public async Task UpdateStatusAsync(
@@ -1823,6 +1832,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         UpdateProximity();
         RefreshShipNavigation();
         NotifyAuxiliaryOverlayState();
+        OnPropertyChanged(nameof(MotionStatus));
         if (allowGesture && blink.Detected)
         {
             await HandleBlinkGestureAsync(status, cancellationToken);
@@ -3849,10 +3859,19 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         }
     }
 
+    private static bool SameSystemSite(GuardianSiteRowViewModel left, GuardianSiteRowViewModel right) =>
+        (left.Visit, left.Distance, left.IsDestination, left.HasImages)
+            == (right.Visit, right.Distance, right.IsDestination, right.HasImages)
+        && left.RamTahLogCodes.SequenceEqual(right.RamTahLogCodes);
+
+    private static bool SameRamTahLog(GuardianRamTahLogViewModel left, GuardianRamTahLogViewModel right) =>
+        left == right with { RequirementItems = left.RequirementItems }
+        && (left.RequirementItems ?? []).SequenceEqual(right.RequirementItems ?? []);
+
     private void NotifyAuxiliaryOverlayState()
     {
-        currentSystemSites = BuildCurrentSystemSites();
-        currentRamTahLogs = BuildCurrentRamTahLogs();
+        currentSystemSites = OverlayListRetention.Keep(currentSystemSites, BuildCurrentSystemSites(), SameSystemSite);
+        currentRamTahLogs = OverlayListRetention.Keep(currentRamTahLogs, BuildCurrentRamTahLogs(), SameRamTahLog);
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
         OnPropertyChanged(nameof(CurrentSystemSites));
@@ -3959,7 +3978,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(ShouldShowGuardianStatusOverlay));
         NotifyGuardianGuidanceChanged();
-        currentRamTahLogs = BuildCurrentRamTahLogs();
+        currentRamTahLogs = OverlayListRetention.Keep(currentRamTahLogs, BuildCurrentRamTahLogs(), SameRamTahLog);
         OnPropertyChanged(nameof(CurrentRamTahLogs));
         OnPropertyChanged(nameof(HasCurrentRamTahLogs));
         OnPropertyChanged(nameof(CurrentRamTahTitle));
@@ -4277,7 +4296,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         GuardianObelisk? target = GetMergedActiveObelisks(ActiveSite?.Reference, survey)
             .FirstOrDefault(obelisk => string.Equals(obelisk.Name, name, StringComparison.Ordinal));
         targetObeliskName = target?.Name;
-        currentRamTahLogs = BuildCurrentRamTahLogs();
+        currentRamTahLogs = OverlayListRetention.Keep(currentRamTahLogs, BuildCurrentRamTahLogs(), SameRamTahLog);
         OnPropertyChanged(nameof(TargetObeliskName));
         OnPropertyChanged(nameof(SelectedMapTargetPointName));
         OnPropertyChanged(nameof(SelectedMapPointName));

@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.1.3.0-rc.61</Version>
+    <Version>2.1.3.0-rc.70.1</Version>
     <FileVersion>2.1.3.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -37,6 +37,8 @@
          explicit patched-version override until the OpenVR binding is replaced. -->
     <PackageReference Include="System.Drawing.Common" Version="10.0.10" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
+    <!-- Override NetMQ's transitive XML/PKCS packages with Microsoft's security patch. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.13" />
     <PackageReference Include="Tmds.DBus" Version="0.95.1" />
   </ItemGroup>
 
@@ -58,6 +60,17 @@
   <ItemGroup>
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
     <ProjectReference Include="..\ThirdParty\PipeWire.NET\PipeWire.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GoogleDriveClientId)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SrvSurvey.GoogleDrive.ClientId</_Parameter1>
+      <_Parameter2>$(GoogleDriveClientId)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SrvSurvey.GoogleDrive.ClientSecret</_Parameter1>
+      <_Parameter2>$(GoogleDriveClientSecret)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup Condition="'$(InaraApplicationApiKey)' != ''">
@@ -93,6 +106,22 @@
     <Content Include="Assets\Fonts\**\OFL.txt"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.dll') and ('$(RuntimeIdentifier)' == 'win-x64' or ('$(RuntimeIdentifier)' == '' and '$(OS)' == 'Windows_NT'))">
+    <Content Include="../../artifacts/openxr-layer/*"
+             Link="OpenXR/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="VerifyWindowsOpenXrLayerPackage"
+          BeforeTargets="ComputeFilesToPublish"
+          Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.dll')"
+           Text="Build and install src/SrvSurvey.OpenXrLayer into artifacts/openxr-layer before publishing Windows packages. See docs/vr-vdxr.md." />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/SrvSurveyOpenXrLayer.json') or !Exists('$(MSBuildThisFileDirectory)../../artifacts/openxr-layer/Install-OpenXrLayer.ps1')"
+           Text="The Windows OpenXR package is incomplete. Install its manifest and registration script with cmake --install." />
+  </Target>
 
   <!-- Native packages mark their PDBs as runtime assets, so DebugSymbols=false does not exclude them.
        Keep symbols in development outputs, but omit them from player release packages. -->

@@ -4,16 +4,20 @@ using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Desktop.Configuration;
 
-public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoveryStore
+public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRecoveryStore
 {
     private const string ColonizationSectionKey = "Colonization";
     private const string VersionKey = "Version";
 
     private readonly UiSettingsDocumentStore documentStore;
 
+    /// <summary>Opens colonization settings with durable disk flushing for retained delivery and cargo writes.</summary>
     public ColonizationSettingsStore(string path)
     {
-        documentStore = new UiSettingsDocumentStore(path);
+        documentStore = new UiSettingsDocumentStore(path, flushToDisk: true);
+        shoppingDocumentStore = new UiSettingsDocumentStore(path + ".shopping.json");
+        planningDocumentStore = new UiSettingsDocumentStore(path + ".plans.json");
+        systemCatalogDocumentStore = new UiSettingsDocumentStore(path + ".systems.json");
     }
 
     public bool LoadEnabled()
@@ -25,6 +29,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
             && value;
     }
 
+    /// <summary>Loads shopping overlay options while preserving defaults for older settings documents.</summary>
     public ColonizationOverlayPreferences LoadOverlayPreferences()
     {
         JsonObject root = documentStore.Load();
@@ -44,7 +49,16 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
                 defaults.HighlightAlmostCoveredFleetCarrierLoads
             ),
             GetBoolean(overlay, "UseCompactScrollingCommoditiesList", defaults.UseCompactScrollingCommoditiesList)
-        );
+        )
+        {
+            HideCollapsedGroups = GetBoolean(overlay, "HideCollapsedGroups", defaults.HideCollapsedGroups),
+            HideRowBadges = GetBoolean(overlay, "HideRowBadges", defaults.HideRowBadges),
+            SortNeedsAscendingAtCarriers = GetBoolean(
+                overlay,
+                "SortNeedsAscendingAtCarriers",
+                defaults.SortNeedsAscendingAtCarriers
+            ),
+        };
     }
 
     public bool LoadFleetCarrierCargoSyncEnabled()
@@ -112,6 +126,7 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
         });
     }
 
+    /// <summary>Persists shopping overlay options without replacing other colonization settings.</summary>
     public void SaveOverlayPreferences(ColonizationOverlayPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
@@ -138,6 +153,9 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
             overlay["ShowFleetCarrierDelta"] = preferences.ShowFleetCarrierDelta;
             overlay["InlineFleetCarrierCargo"] = preferences.InlineFleetCarrierCargo;
             overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
+            overlay["HideCollapsedGroups"] = preferences.HideCollapsedGroups;
+            overlay["HideRowBadges"] = preferences.HideRowBadges;
+            overlay["SortNeedsAscendingAtCarriers"] = preferences.SortNeedsAscendingAtCarriers;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
             overlay["UseCompactScrollingCommoditiesList"] = preferences.UseCompactScrollingCommoditiesList;
         });
@@ -303,6 +321,15 @@ public sealed record ColonizationOverlayPreferences(
     bool UseCompactScrollingCommoditiesList
 )
 {
+    /// <summary>Omits collapsed categories entirely instead of displaying their heading and summary.</summary>
+    public bool HideCollapsedGroups { get; init; }
+
+    /// <summary>Hides status and assignment labels beside commodities while retaining completion checkmarks.</summary>
+    public bool HideRowBadges { get; init; }
+
+    /// <summary>Shows one ascending NEED list while docked at a fleet or squadron carrier.</summary>
+    public bool SortNeedsAscendingAtCarriers { get; init; }
+
     public static ColonizationOverlayPreferences Default { get; } =
         new(
             AutoShow: true,

@@ -93,6 +93,7 @@ public sealed class SurfaceMiningOverlaySizingTests
         }
     }
 
+    /// <summary>An empty mining session keeps the preview width and tracker size at two-times display scaling.</summary>
     [AvaloniaTheory]
     [InlineData("Wille 2 d")]
     [InlineData("Synuefe NL-N c23-4 B 3 with a much longer body name")]
@@ -198,6 +199,7 @@ public sealed class SurfaceMiningOverlaySizingTests
         }
     }
 
+    /// <summary>Live and editor mining layouts share real monitor DPI across data and scale changes.</summary>
     [AvaloniaTheory]
     [InlineData(-50, 1.25)]
     [InlineData(0, 1)]
@@ -216,6 +218,8 @@ public sealed class SurfaceMiningOverlaySizingTests
         var live = new SurfaceMiningOverlayWindow(viewModel);
         try
         {
+            preview.SetRenderScaling(renderScaling);
+            live.SetRenderScaling(renderScaling);
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(0, scaleIndex, renderScaling);

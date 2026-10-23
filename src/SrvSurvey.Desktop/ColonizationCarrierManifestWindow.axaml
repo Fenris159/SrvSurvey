@@ -1,0 +1,143 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        x:Class="SrvSurvey.Desktop.ColonizationCarrierManifestWindow"
+        x:DataType="vm:ColonizationCarrierManifestViewModel"
+        Title="Edit Carrier Manifest" Width="504" Height="850" MinWidth="460" MinHeight="450"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock"><Setter Property="FontSize" Value="13" /></Style>
+    <Style Selector="Button.manifest-icon">
+      <Setter Property="Padding" Value="3,0" /><Setter Property="MinWidth" Value="26" />
+      <Setter Property="MinHeight" Value="26" /><Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" /><Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="TextBox.manifest-amount">
+      <Setter Property="Padding" Value="4,1" /><Setter Property="MinHeight" Value="25" />
+      <Setter Property="TextAlignment" Value="Left" /><Setter Property="HorizontalContentAlignment" Value="Right" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.manifest-filter:checked, ToggleButton.manifest-filter:checked:pointerover, ToggleButton.manifest-filter:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.manifest-filter:checked /template/ ContentPresenter, ToggleButton.manifest-filter:checked:pointerover /template/ ContentPresenter, ToggleButton.manifest-filter:checked:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenControlAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+  </Window.Styles>
+  <Grid Margin="14" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+      <Button x:Name="RefreshCarrier" Classes="manifest-icon" Content="⟳" FontSize="23"
+              IsEnabled="{Binding CanRefresh}" Click="Refresh_Click"
+              ToolTip.Tip="Refresh FC data from Frontier. The owner must have logged into Raven Colonial within 30 days. Allow at least five minutes between attempts." />
+      <TextBlock Grid.Column="1" Text="Edit Carrier Manifest" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+    </Grid>
+    <StackPanel Grid.Row="1" Spacing="4" IsVisible="{Binding HasActivity}">
+      <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" Height="3" />
+      <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap" />
+    </StackPanel>
+    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="9">
+        <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="3" ColumnSpacing="6">
+          <TextBlock Text="Carrier name:" VerticalAlignment="Center" FontWeight="SemiBold" />
+          <ComboBox x:Name="CarrierSelector" Grid.Column="1" HorizontalAlignment="Stretch" MinHeight="30"
+                    ItemsSource="{Binding Carriers}" SelectedItem="{Binding SelectedCarrier}"
+                    IsEnabled="{Binding !IsBusy}" SelectionChanged="Carrier_Changed">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:CarrierManifestChoice"><TextBlock Text="{Binding Label}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Grid.Row="1" Text="Raw name:" VerticalAlignment="Center" FontWeight="SemiBold" />
+          <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto" Background="{DynamicResource RavenSurfaceBrush}">
+            <TextBlock Text="{Binding RawName}" Margin="4,0" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="manifest-icon" Content="⧉" behaviors:ClipboardCopyBehavior.Text="{Binding RawName}" ToolTip.Tip="Copy raw name" />
+          </Grid>
+          <TextBlock Grid.Row="2" Text="MarketId:" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" Background="{DynamicResource RavenSurfaceBrush}">
+            <TextBlock Text="{Binding MarketId}" Margin="4,0" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="manifest-icon" Content="⧉" behaviors:ClipboardCopyBehavior.Text="{Binding MarketId}" ToolTip.Tip="Copy MarketID" />
+          </Grid>
+          <TextBlock Grid.Row="3" Text="Owner:" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Border Grid.Row="3" Grid.Column="1" Background="{DynamicResource RavenSurfaceBrush}" Padding="4,2"><TextBlock Text="{Binding Owner}" /></Border>
+          <WrapPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,3,0,0">
+            <TextBlock Text="Access:" Margin="0,0,5,0" VerticalAlignment="Center" /><TextBlock Text="{Binding Access}" Foreground="{DynamicResource RavenAccentBrush}" Margin="0,0,5,0" VerticalAlignment="Center" />
+            <TextBlock Text="Notorious:" Margin="0,0,5,0" VerticalAlignment="Center" /><TextBlock Text="{Binding Notorious}" Foreground="{DynamicResource RavenAccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <ToggleButton x:Name="HideNonColonyCommodities" Classes="manifest-filter" Content="Hide Non-Colony Commodities" IsChecked="{Binding HideNonColonyCommodities, Mode=TwoWay}" FontSize="11" Padding="5,2" MinHeight="24" VerticalAlignment="Center" ToolTip.Tip="Hide goods that are not required by colony builds. Hidden cargo is preserved when saving." />
+          </WrapPanel>
+        </Grid>
+        <StackPanel Spacing="4" IsEnabled="{Binding CanEdit}">
+          <TextBlock Text="System name:" FontWeight="SemiBold" />
+          <controls:SystemNameEntry x:Name="CarrierSystem" Text="{Binding SystemName, Mode=TwoWay}"
+                                    PlaceholderText="Enter a system name" />
+        </StackPanel>
+        <StackPanel IsEnabled="{Binding CanEdit}" Spacing="5">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+            <ComboBox x:Name="AddManifestCommodity" ItemsSource="{Binding CommodityChoices}" PlaceholderText="Add commodity?" HorizontalAlignment="Stretch" SelectionChanged="AddCommodity_Changed">
+              <ComboBox.ItemContainerTheme>
+                <ControlTheme TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}" x:DataType="vm:CarrierManifestCommodityChoice">
+                  <Setter Property="IsEnabled" Value="{Binding !IsHeader}" />
+                  <Setter Property="Focusable" Value="{Binding !IsHeader}" />
+                </ControlTheme>
+              </ComboBox.ItemContainerTheme>
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CarrierManifestCommodityChoice">
+                  <StackPanel Spacing="5">
+                    <Border IsVisible="{Binding IsHeader}" Height="1" Margin="0,4,0,0" Background="{DynamicResource RavenBorderBrush}" />
+                    <TextBlock IsVisible="{Binding IsHeader}" Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource RavenAccentBrush}" />
+                    <TextBlock IsVisible="{Binding !IsHeader}" Text="{Binding Name}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button x:Name="ToggleManifestText" Grid.Column="1" Classes="manifest-icon" Command="{Binding ToggleTextCommand}" ToolTip.Tip="Edit all as text / return to table" AutomationProperties.Name="Edit all as text / return to table">
+              <Border BorderBrush="{DynamicResource RavenAccentBrush}" BorderThickness="1" Width="20" Height="14" VerticalAlignment="Center">
+                <TextBlock Text="123" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource RavenAccentBrush}" />
+              </Border>
+            </Button>
+          </Grid>
+          <TextBox x:Name="ManifestBulkText" IsVisible="{Binding TextMode}" Text="{Binding BulkText}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="280" />
+          <TextBlock IsVisible="{Binding HasInvalidAmounts}" Text="Amounts must be nonnegative whole tonnes." Foreground="{DynamicResource RavenDangerBrush}" TextWrapping="Wrap" />
+          <StackPanel IsVisible="{Binding !TextMode}" Spacing="0">
+            <Grid ColumnDefinitions="*,74,64,26" Margin="0,3,0,3">
+              <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="Commodity:" FontWeight="SemiBold" VerticalAlignment="Center" /><Button Classes="manifest-icon" Content="{Binding SortLabel}" Command="{Binding SortCommand}" ToolTip.Tip="Toggle category / alphabetical order" /></StackPanel>
+              <TextBlock Grid.Column="1" Text="Amount:" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+              <TextBlock Grid.Column="2" Text="Journal" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available." />
+            </Grid>
+            <ItemsControl x:Name="ManifestGroups" ItemsSource="{Binding Groups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CarrierManifestGroup">
+                  <StackPanel>
+                    <Border IsVisible="{Binding HasName}" Background="{DynamicResource RavenAccentBrush}" Padding="4,2"><TextBlock Text="{Binding Name}" Foreground="{DynamicResource RavenWindowBrush}" /></Border>
+                    <ItemsControl ItemsSource="{Binding Rows}">
+                      <ItemsControl.Styles><Style Selector="ContentPresenter:nth-child(2n)"><Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" /></Style></ItemsControl.Styles>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CarrierManifestRowViewModel">
+                          <Grid ColumnDefinitions="*,74,64,26" ColumnSpacing="2" Margin="0,1">
+                            <TextBlock Text="{Binding Name}" Margin="4,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
+                            <controls:NonNegativeIntegerBox Grid.Column="1" Classes="manifest-amount" Text="{Binding AmountText, Mode=TwoWay}" AutomationProperties.Name="Commodity amount in tonnes" />
+                            <TextBlock Grid.Column="2" Classes="muted journal-quantity" Text="{Binding JournalAmount}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <Button Grid.Column="3" Classes="manifest-icon" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove commodity" AutomationProperties.Name="Remove commodity">
+                              <Path Width="12" Height="14" Stretch="Uniform"
+                                    Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                                    Stroke="{DynamicResource RavenAccentBrush}" StrokeLineCap="Round" StrokeThickness="1.6" />
+                            </Button>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,74,64,26" Margin="0,7,0,0" ToolTip.Tip="Totals include hidden commodities."><TextBlock Text="Total:" HorizontalAlignment="Right" Margin="0,0,8,0" /><TextBlock Grid.Column="1" Text="{Binding Total}" HorizontalAlignment="Right" Margin="0,0,4,0" /><TextBlock Grid.Column="2" Text="{Binding JournalTotal}" Classes="muted" HorizontalAlignment="Right" Margin="0,0,6,0" /></Grid>
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+      <Button x:Name="SaveCarrierManifest" Classes="primary" Content="Save" IsEnabled="{Binding CanSave}" Click="Save_Click" />
+      <Button Classes="secondary" Content="Cancel" Click="Cancel_Click" />
+    </StackPanel>
+  </Grid>
+</Window>

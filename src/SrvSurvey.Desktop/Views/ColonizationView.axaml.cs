@@ -18,6 +18,31 @@ public sealed partial class ColonizationView : UserControl
         InitializeComponent();
     }
 
+    private void EditorSystemDropdown_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        AutoCompleteBox input = this.FindControl<AutoCompleteBox>("EditorSystemName")!;
+        bool open = !input.IsDropDownOpen;
+        input.Focus();
+        input.FilterMode = AutoCompleteFilterMode.None;
+        input.IsDropDownOpen = open;
+    }
+
+    private static void EditorSystemName_TextChanged(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is AutoCompleteBox input)
+        {
+            input.FilterMode = AutoCompleteFilterMode.StartsWith;
+        }
+    }
+
+    private void UncheckProjectSelection_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.Colonization.UncheckProjectSelection();
+        }
+    }
+
     /// <summary>Opens the clicked project's read-only popout without changing project selection or primary status.</summary>
     private void OpenProjectPreview_Click(object? sender, RoutedEventArgs eventArgs)
     {

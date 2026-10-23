@@ -5,18 +5,25 @@ public sealed class NetworkSurfaceCoverageTests
     private static readonly string[] HttpClientOwners =
     [
         "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
+        "src/SrvSurvey.Core/Colonization/ColonizationMarketSearchClient.cs",
         "src/SrvSurvey.Core/Exobiology/CanonnCodexChallengeClient.cs",
         "src/SrvSurvey.Core/Exobiology/CanonnSystemPoiClient.cs",
         "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
         "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
         "src/SrvSurvey.Core/Exploration/SystemBodyDataClient.cs",
+        "src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs",
         "src/SrvSurvey.Core/Edsm/EdsmPublisher.cs",
+        "src/SrvSurvey.Core/EdAstro/EdAstroPublisher.cs",
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
+        "src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs",
+        "src/SrvSurvey.Core/Network/EddnCommanderPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
+        "src/SrvSurvey.Core/Network/VoxStellarPublisherOptions.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
+        "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/ArdentApi.cs",
         "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
@@ -35,6 +42,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
+        "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs",
         "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs",
         "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
         "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs",
@@ -47,9 +55,12 @@ public sealed class NetworkSurfaceCoverageTests
             !path.EndsWith("MainWindowViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningSearchClient.cs", StringComparison.Ordinal)
+            && !path.EndsWith("ColonizationMarketSearchClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("ArdentSystemNameSuggestionClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("EddnCommanderPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("VoxStellarPublisherOptions.cs", StringComparison.Ordinal)
             && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
             && !path.EndsWith("DesktopRuntime.Composition.cs", StringComparison.Ordinal)
             && !path.EndsWith("MainWindowViewModelFactory.cs", StringComparison.Ordinal)
@@ -58,6 +69,28 @@ public sealed class NetworkSurfaceCoverageTests
 
     private static readonly NetworkSurface[] Surfaces =
     [
+        new(
+            "colonization-market-shopping",
+            [
+                "src/SrvSurvey.Core/Colonization/ColonizationMarketSearchClient.cs",
+                "src/SrvSurvey.Core/Search/ArdentApi.cs",
+                "src/SrvSurvey.Core/Search/SpanshApi.cs",
+            ],
+            [
+                "tests/SrvSurvey.Core.Tests/Colonization/ColonizationMarketSearchClientTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/Presentation/ColonizationShoppingPresentationTests.cs",
+            ]
+        ),
+        new(
+            "edastro-exploration-pois",
+            ["src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs"],
+            ["tests/SrvSurvey.Core.Tests/Exploration/EdAstroPoiClientTests.cs"]
+        ),
+        new(
+            "anonymous-daily-active-users",
+            ["src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs"],
+            ["tests/SrvSurvey.Core.Tests/Network/DailyActiveUsersClientTests.cs"]
+        ),
         new(
             "published-data-and-release-delivery",
             [
@@ -100,12 +133,14 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "spansh-search-and-routes",
             [
+                "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs",
                 "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
                 "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
                 "src/SrvSurvey.Core/Search/SpanshBoxelClient.cs",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Routes/SpanshRouteClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Routes/SpanshPlannerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/NearestSystemsClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/SpanshBoxelClientTests.cs",
             ]
@@ -128,6 +163,7 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "eddn-publication",
             [
+                "src/SrvSurvey.Core/Network/EddnCommanderPublisher.cs",
                 "src/SrvSurvey.Core/Network/EddnPublisher.cs",
                 "src/SrvSurvey.Core/Network/EddnMessageSanitizer.cs",
                 "src/SrvSurvey.Core/Network/EddnCompanionFileReader.cs",
@@ -136,11 +172,17 @@ public sealed class NetworkSurfaceCoverageTests
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Network/EddnPublisherTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/ViewModels/MultiCommanderJournalUploadTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnMessageSanitizerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnCompanionFileReaderTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnOutboxTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnTransportTests.cs",
             ]
+        ),
+        new(
+            "edastro-publication",
+            ["src/SrvSurvey.Core/EdAstro/EdAstroPublisher.cs"],
+            ["tests/SrvSurvey.Core.Tests/EdAstro/EdAstroPublisherTests.cs"]
         ),
         new(
             "inara-publication",
@@ -169,11 +211,13 @@ public sealed class NetworkSurfaceCoverageTests
             "raven-colonial-quests-and-ggg",
             [
                 "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
+                "src/SrvSurvey.Core/Colonization/RavenColonialClient.CarrierManifest.cs",
                 "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
                 "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialCarrierManifestTests.cs",
                 "tests/SrvSurvey.Core.Tests/Quests/RavenQuestClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/GreenGasGiantClientTests.cs",
             ]
@@ -199,6 +243,11 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Storage/VisitedStarsCacheServiceTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/Platform/CodexImageCacheTests.cs",
             ]
+        ),
+        new(
+            "google-drive-profile-sync",
+            ["src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"],
+            ["tests/SrvSurvey.Desktop.Tests/ProfileSync/GoogleDriveBackupClientTests.cs"]
         ),
         new(
             "diagnostic-network-denial",

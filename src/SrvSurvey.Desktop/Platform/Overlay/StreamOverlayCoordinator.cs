@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -12,10 +14,22 @@ public sealed class StreamOverlayCoordinator : IDisposable
     private readonly StreamOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
     private readonly HostedOverlayWindow hostedWindow;
+    private readonly TimeProvider timeProvider;
+    private long? unavailableSince;
+    private PixelRect captureBounds;
+    private nint captureHandle;
     private bool disposed;
 
     public StreamOverlayCoordinator(StreamOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
+        : this(viewModel, presentationSession, TimeProvider.System) { }
+
+    internal StreamOverlayCoordinator(
+        StreamOverlayViewModel viewModel,
+        OverlayPresentationSession presentationSession,
+        TimeProvider timeProvider
+    )
     {
+        this.timeProvider = timeProvider;
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         ArgumentNullException.ThrowIfNull(presentationSession);
         registry = presentationSession.WindowRegistry;
@@ -32,6 +46,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 RequiresLayoutCatalog = false,
                 ApplyLayoutTheme = false,
                 RetryPassivePreparationOnPoll = true,
+                IsGameWindowEligible = IsGameWindowEligible,
             }
         );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -69,7 +84,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -78,7 +93,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         SynchronizeIntent();
         if (hostedWindow.CurrentWindow is StreamOverlayWindow window)
         {
-            RenderFrames(window, hostedWindow.GameWindow.ClientBounds);
+            RenderFrames(window, captureBounds);
         }
     }
 
@@ -90,6 +105,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
+    /// <summary>Reconciles capture-window lifetime with the enabled setting and current game-window eligibility.</summary>
     private void SynchronizeIntent()
     {
         if (disposed)
@@ -98,6 +114,10 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
 
         hostedWindow.Reconcile(viewModel.Enabled);
+        if (!hostedWindow.IsVisible)
+        {
+            viewModel.ActiveOverlayNames = [];
+        }
         if (
             !viewModel.Enabled
             || hostedWindow.IsVisible
@@ -129,25 +149,48 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
     }
 
-    private static PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    /// <summary>Keeps the capture handle across minimization without accepting iconic or empty geometry.</summary>
+    private bool IsGameWindowEligible(GameWindowSnapshot snapshot)
     {
-        PixelRect gameBounds = placement.GameBounds;
-        Screen screen = placement.Screen;
+        if (snapshot.NativeHandle == nint.Zero)
+        {
+            unavailableSince ??= timeProvider.GetTimestamp();
+            if (timeProvider.GetElapsedTime(unavailableSince.Value) < TimeSpan.FromSeconds(2))
+            {
+                return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+            }
+            captureHandle = nint.Zero;
+            captureBounds = default;
+            return false;
+        }
+        unavailableSince = null;
+        if (captureHandle != snapshot.NativeHandle)
+        {
+            captureHandle = snapshot.NativeHandle;
+            captureBounds = default;
+        }
+        if (snapshot.IsAvailable && snapshot.IsVisible)
+        {
+            captureBounds = snapshot.ClientBounds;
+        }
+        return captureHandle != nint.Zero && captureBounds.Width > 0 && captureBounds.Height > 0;
+    }
+
+    /// <summary>Sizes the capture canvas in logical units and returns the game's physical screen origin.</summary>
+    private PixelPoint PlaceOverGame(HostedOverlayPlacement placement)
+    {
+        PixelRect gameBounds = captureBounds;
         Window target = placement.Window;
-        target.Width = gameBounds.Width / screen.Scaling;
-        target.Height = gameBounds.Height / screen.Scaling;
+        target.Width = gameBounds.Width / target.RenderScaling;
+        target.Height = gameBounds.Height / target.RenderScaling;
         return gameBounds.Position;
     }
 
+    /// <summary>Projects visible overlay bitmaps into the stream canvas while retaining capture resources for presentation.</summary>
     private void RenderFrames(StreamOverlayWindow target, PixelRect gameBounds)
     {
-        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
         var rendered = new List<StreamOverlayRenderedFrame>();
+        var panelNames = new List<string>();
         try
         {
             foreach (RegisteredOverlayWindow registered in registry.Snapshot())
@@ -155,18 +198,25 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 Window source = registered.Window;
                 Visual renderSource = registered.RenderSource;
                 Rect renderBounds = renderSource.Bounds;
-                if (!registered.IsVisible || renderBounds.Width <= 0 || renderBounds.Height <= 0)
+                if (
+                    !registered.IsVisible
+                    || source.Opacity <= 0
+                    || source is StreamOverlayWindow
+                    || renderBounds.Width <= 0
+                    || renderBounds.Height <= 0
+                )
                 {
                     continue;
                 }
 
-                double sourceScaling = source.RenderScaling;
+                double sourceScaling = TopLevel.GetTopLevel(renderSource)?.RenderScaling ?? source.RenderScaling;
                 var pixelSize = PixelSize.FromSize(renderBounds.Size, sourceScaling);
                 StreamOverlayFrame? projection = StreamOverlayProjection.Create(
                     gameBounds,
                     source.Position,
                     pixelSize,
-                    screen.Scaling
+                    target.RenderScaling,
+                    keepInsideCanvas: true
                 );
                 if (projection is null)
                 {
@@ -178,6 +228,12 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 {
                     bitmap = new RenderTargetBitmap(pixelSize, new Vector(96 * sourceScaling, 96 * sourceScaling));
                     bitmap.Render(renderSource);
+                    if (!HasVisiblePixels(bitmap))
+                    {
+                        bitmap.Dispose();
+                        bitmap = null;
+                        continue;
+                    }
                     rendered.Add(
                         new StreamOverlayRenderedFrame(
                             bitmap,
@@ -186,6 +242,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                         )
                     );
                     bitmap = null;
+                    panelNames.Add(OverlayLayoutCatalog.GetRequired(registered.PlotterName).DisplayName);
                 }
                 catch
                 {
@@ -194,6 +251,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
             }
 
             target.ReplaceFrames(rendered);
+            viewModel.ActiveOverlayNames = panelNames;
             viewModel.StatusMessage = $"Compositing {rendered.Count:N0} live overlays into SrvSurveyWindowOne.";
         }
         catch (Exception exception)
@@ -204,6 +262,36 @@ public sealed class StreamOverlayCoordinator : IDisposable
             }
 
             viewModel.StatusMessage = $"The joined stream overlay could not update: {exception.Message}";
+        }
+    }
+
+    /// <summary>Scans BGRA alpha bytes by row, excluding fully transparent panels from the streamed count.</summary>
+    private static bool HasVisiblePixels(RenderTargetBitmap bitmap)
+    {
+        using var pixels = new WriteableBitmap(bitmap.PixelSize, bitmap.Dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);
+        using ILockedFramebuffer buffer = pixels.Lock();
+        bitmap.CopyPixels(buffer);
+        int rowLength = checked(buffer.Size.Width * 4);
+        byte[] row = ArrayPool<byte>.Shared.Rent(rowLength);
+        try
+        {
+            for (int y = 0; y < buffer.Size.Height; y++)
+            {
+                Marshal.Copy(buffer.Address + (y * buffer.RowBytes), row, 0, rowLength);
+                ReadOnlySpan<byte> bytes = row.AsSpan(0, rowLength);
+                for (int alpha = 3; alpha < bytes.Length; alpha += 4)
+                {
+                    if (bytes[alpha] != 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(row);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -6,10 +7,15 @@ using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class BiologySurveyViewModel
+public sealed partial record BiologySurveyViewModel
 {
     private const string PendingRewardSuffix = " + pending";
-    private IReadOnlyList<BiologyOrganismGroupViewModel>? organismGroups;
+
+    // Group rows follow their immutable organism list without becoming mutable record state.
+    private static readonly ConditionalWeakTable<
+        IReadOnlyList<BiologyOrganismRowViewModel>,
+        IReadOnlyList<BiologyOrganismGroupViewModel>
+    > OrganismGroupCache = [];
 
     public BiologySurveyMode Mode { get; init; }
 
@@ -26,7 +32,7 @@ public sealed class BiologySurveyViewModel
     public IReadOnlyList<BiologyOrganismRowViewModel> Organisms { get; init; } = [];
 
     public IReadOnlyList<BiologyOrganismGroupViewModel> OrganismGroups =>
-        organismGroups ??= BiologyOrganismGroupViewModel.Create(Organisms);
+        OrganismGroupCache.GetValue(Organisms, BiologyOrganismGroupViewModel.Create);
 
     public string RewardSummary { get; init; } = string.Empty;
 
@@ -1417,7 +1423,7 @@ public sealed class BiologyBodyRowViewModel
     private RouteBodyVisual BodyVisual => bodyVisual ??= RouteBodyAssetResolver.Resolve(BodySubtype);
 }
 
-public sealed class BiologySignalRewardBandViewModel
+public sealed record BiologySignalRewardBandViewModel
 {
     public long MinimumReward { get; init; }
 
@@ -1514,7 +1520,7 @@ public sealed class BiologySignalRewardBandViewModel
         };
 }
 
-public sealed class BiologyOrganismRowViewModel
+public sealed record BiologyOrganismRowViewModel
 {
     public string DisplayName { get; init; } = string.Empty;
 

@@ -131,6 +131,13 @@ namespace SrvSurvey.LocalizationTool
 
     internal sealed class LocalizationSourceExtractor(string repositoryRoot)
     {
+        private static readonly string[] PlannerSourceNames =
+        [
+            "SpanshPlannerCatalog",
+            "SpanshPlannerDefinition",
+            "SpanshPlannerClient",
+            "SpanshShipBuild",
+        ];
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
         private static readonly HashSet<string> LocalizableAttributes = new(StringComparer.Ordinal)
@@ -197,12 +204,22 @@ namespace SrvSurvey.LocalizationTool
             }
         }
 
+        /// <summary>
+        /// Extracts desktop and planner user-facing strings in a stable source-file order.
+        /// </summary>
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
             string root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
             foreach (
                 string? path in Directory
                     .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+                    .Concat(
+                        PlannerSourceNames
+                            .Select(name =>
+                                Path.Combine(repositoryRoot, "src", "SrvSurvey.Core", "Routes", name + ".cs")
+                            )
+                            .Where(File.Exists)
+                    )
                     .Where(path => !IsBuildOutput(path))
                     .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
             )

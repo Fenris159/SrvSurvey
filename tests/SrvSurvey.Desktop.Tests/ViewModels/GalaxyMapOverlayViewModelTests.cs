@@ -24,6 +24,59 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.Same(GalaxyMapSystemViewModel.Empty, viewModel.SecondarySystemDisplay);
     }
 
+    /// <summary>Verifies recognized selected target takes precedence over active route and shows all pois.</summary>
+    [Fact]
+    public async Task RecognizedSelectedTargetTakesPrecedenceOverActiveRouteAndShowsAllPois()
+    {
+        using GalaxyMapOverlayViewModel model = CreateViewModel(new FakeSummaryClient());
+        var poi = new SrvSurvey.Core.Exploration.ExplorationPoi(
+            1,
+            "GEC",
+            "First attraction",
+            "Gamma",
+            4,
+            null,
+            "Stellar Features",
+            "",
+            "",
+            "",
+            7,
+            4,
+            10,
+            false
+        );
+        model.ApplyPoiCatalog(
+            new SrvSurvey.Core.Exploration.ExplorationPoiCatalog([poi, poi with { Id = 2, Name = "Second attraction" }])
+        );
+        model.ApplyUpdate(
+            "Sol",
+            1,
+            CreateRoute(),
+            [],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination
+                {
+                    System = 4,
+                    Body = 0,
+                    Name = "Gamma",
+                },
+            }
+        );
+        await model.PendingLoad;
+        Assert.Equal("SELECTED", model.PrimarySystem!.Label);
+        Assert.Equal("Gamma", model.PrimarySystem.Name);
+        Assert.True(model.HasPrimaryPois);
+        Assert.Contains("First attraction", model.PrimaryPoiText);
+        Assert.Contains("Second attraction", model.PrimaryPoiText);
+        Assert.Same(model.PrimaryPois, model.PrimaryPois);
+        Assert.Same(model.SecondaryPois, model.SecondaryPois);
+        Assert.False(model.HasSecondaryPois);
+        model.ApplyPoiCatalog(SrvSurvey.Core.Exploration.ExplorationPoiCatalog.Empty);
+        Assert.False(model.HasPrimaryPois);
+    }
+
     [Fact]
     public async Task GalaxyMapRouteShowsDestinationNextHopAndFactionInfluence()
     {

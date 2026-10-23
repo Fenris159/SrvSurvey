@@ -1,9 +1,11 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Network;
 
 // Behavioral reference:
 // https://github.com/EDCD/EDMarketConnector/blob/2b6a0ce1ee3ba60c21f3f4e9fa093046da8825e4/plugins/inara.py
@@ -20,7 +22,8 @@ public interface IInaraPublisher : IDisposable
 
     Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default);
 
-    void CancelPendingPublication();
+    /// <summary>Cancels active publication and optionally discards only this account's retained reports on explicit credential removal.</summary>
+    void CancelPendingPublication(bool discardRetainedReports = false);
 }
 
 /// <summary>
@@ -42,6 +45,8 @@ public sealed class InaraPublisher : IInaraPublisher
     public const int MaximumPostsPerWindow = 2;
     public static readonly TimeSpan InventoryIdleInterval = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(45);
+    private const string TimestampKey = "timestamp";
+    private const string EventKey = "event";
     private const int MaximumEventsPerRequest = 128;
     private const int MaximumPayloadBytes = 1024 * 1024;
     private const int MaximumResponseBytes = 1024 * 1024;
@@ -56,6 +61,8 @@ public sealed class InaraPublisher : IInaraPublisher
     private readonly InaraWriteRateLimiter rateLimiter = new();
     private readonly InaraEventMapper mapper = new();
     private readonly InaraEventQueue queue = new();
+    private readonly JournalUploadOutbox<InaraEvent>? outbox;
+    private long storageGeneration = -1;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
@@ -79,12 +86,14 @@ public sealed class InaraPublisher : IInaraPublisher
     private volatile bool stopping;
     private volatile bool disposed;
 
+    /// <summary>Creates an account-scoped journal sender with injectable transport, timing, diagnostics, and private durable storage.</summary>
     public InaraPublisher(
         string appVersion,
         HttpClient? httpClient = null,
         TimeProvider? timeProvider = null,
         Action<string>? log = null,
-        InaraAcceptedEventLog? acceptedEventLog = null
+        InaraAcceptedEventLog? acceptedEventLog = null,
+        string? outboxDirectory = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
@@ -92,6 +101,19 @@ public sealed class InaraPublisher : IInaraPublisher
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.log = log ?? (_ => { });
         this.acceptedEventLog = acceptedEventLog;
+        outbox = outboxDirectory is null
+            ? null
+            : new JournalUploadOutbox<InaraEvent>(
+                outboxDirectory,
+                "inara",
+                item => item.UploadIdentity,
+                item =>
+                    !string.IsNullOrWhiteSpace(item.UploadIdentity)
+                    && !string.IsNullOrWhiteSpace(item.Name)
+                    && !string.IsNullOrWhiteSpace(item.Timestamp)
+                    && item.Data is not null,
+                this.log
+            );
         successfulUploads = new UploadSuccessLogAggregator(() => this.timeProvider.GetUtcNow());
         if (httpClient is null)
         {
@@ -135,6 +157,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    /// <summary>Reconciles authorization, restores captured mapped events, and collects eligible live Inara activity.</summary>
     private async Task<InaraPublicationResult> ApplyCoreAsync(
         InaraPublicationUpdate update,
         CancellationToken cancellationToken
@@ -154,6 +177,15 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         bool publicationAuthorized = PreparePublicationAuthorization(options);
+        if (outbox is not null && storageGeneration != authorizationGeneration)
+        {
+            await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+        }
+        if (publicationAuthorized && !RestoreUploads(options))
+        {
+            ClearPublicationAuthorization();
+            publicationAuthorized = false;
+        }
         List<string> queuedNames = await CollectAllJournalEventsAsync(
                 update,
                 options,
@@ -230,6 +262,7 @@ public sealed class InaraPublisher : IInaraPublisher
         session = next;
     }
 
+    /// <summary>Processes only the attributable prefix of a captured batch, stopping at a foreign commander boundary.</summary>
     private async Task<List<string>> CollectAllJournalEventsAsync(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
@@ -242,16 +275,21 @@ public sealed class InaraPublisher : IInaraPublisher
         foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await CollectJournalEventAsync(
-                    update,
-                    options,
-                    journalEvent,
-                    publicationAuthorized,
-                    queuedNames,
-                    warnings,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            if (
+                !await CollectJournalEventAsync(
+                        update,
+                        options,
+                        journalEvent,
+                        publicationAuthorized,
+                        queuedNames,
+                        warnings,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
+            {
+                break;
+            }
         }
 
         return queuedNames;
@@ -266,7 +304,8 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
-    private async Task CollectJournalEventAsync(
+    /// <summary>Applies journal context and maps eligible activity without mixing another commander into this session.</summary>
+    private async Task<bool> CollectJournalEventAsync(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
         JournalEventEnvelope journalEvent,
@@ -284,7 +323,7 @@ public sealed class InaraPublisher : IInaraPublisher
                 warnings.Add(
                     $"Inara ignored {journalEvent.EventName} because its commander identity did not match the active journal session."
                 );
-                return;
+                return false;
             }
 
             if (publicationAuthorized)
@@ -301,8 +340,13 @@ public sealed class InaraPublisher : IInaraPublisher
                     .ConfigureAwait(false);
             }
 
+            // Newtonsoft's automatic date conversion must not turn the journal timestamp into culture-dependent text.
+            if (journalEvent.Payload.TryGetProperty(TimestampKey, out System.Text.Json.JsonElement timestamp))
+            {
+                entry[TimestampKey] = timestamp.GetString();
+            }
             ApplyPublicationState(journalEvent, entry);
-            QueueMappedEvents(update, options, entry, queuedNames, warnings);
+            QueueMappedEvents(update, options, journalEvent, entry, queuedNames, warnings);
         }
         catch (JsonException exception)
         {
@@ -312,11 +356,14 @@ public sealed class InaraPublisher : IInaraPublisher
         {
             warnings.Add($"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
         }
+        return true;
     }
 
+    /// <summary>Maps attributable live evidence and reports only newly captured provider events.</summary>
     private void QueueMappedEvents(
         InaraPublicationUpdate update,
         InaraPublicationOptions options,
+        JournalEventEnvelope journalEvent,
         JObject entry,
         List<string> queuedNames,
         List<string> warnings
@@ -326,6 +373,7 @@ public sealed class InaraPublisher : IInaraPublisher
         InaraSession? currentSession = session;
         bool canCollect =
             update.AllowPublishing
+            && IsPublicationAuthorized(authorizationGeneration)
             && currentSession is not null
             && CanUpload(options.ApiKey, currentSession.IsLive, currentSession.IsBeta, mapper.InMulticrew);
         IReadOnlyList<InaraEvent> mapped = mapper.Process(entry, context, canCollect);
@@ -335,14 +383,97 @@ public sealed class InaraPublisher : IInaraPublisher
             return;
         }
 
-        int dropped = queue.Enqueue(credentials.ApiKey, mapped);
+        mapped = mapped
+            .Select(
+                (item, index) =>
+                    item with
+                    {
+                        UploadIdentity = JournalUploadIdentity.Capture(
+                            journalEvent,
+                            item.Name + ":" + mapped.Take(index).Count(previous => previous.Name == item.Name)
+                        ),
+                    }
+            )
+            .ToArray();
+        int dropped = EnqueueCaptured(credentials.ApiKey, mapped, out IReadOnlyList<InaraEvent> captured);
         if (dropped > 0)
         {
             warnings.Add($"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
         }
 
-        queuedNames.AddRange(mapped.Select(item => item.Name));
+        queuedNames.AddRange(captured.Select(item => item.Name));
         ArmOutgoingSend(queue.HasOnlyInventoryReplaceKeys());
+    }
+
+    /// <summary>Reopens only the active commander's retained mapped events under current credentials.</summary>
+    private bool RestoreUploads(InaraPublicationOptions options)
+    {
+        if (outbox is null || session is null)
+        {
+            return true;
+        }
+        if (
+            !outbox.TryOpen(
+                session.FrontierId.ToUpperInvariant() + ":" + session.Commander.ToUpperInvariant(),
+                out IReadOnlyList<InaraEvent>? recovered
+            )
+        )
+        {
+            return false;
+        }
+        if (recovered is not null || storageGeneration != authorizationGeneration)
+        {
+            queue.TakeAll();
+            queue.Enqueue(options.ApiKey!.Trim(), recovered ?? outbox.ReadPending());
+            storageGeneration = authorizationGeneration;
+            nextSendAt = outbox.NotBefore ?? timeProvider.GetUtcNow();
+        }
+        return true;
+    }
+
+    /// <summary>Flushes new mapped payloads before queueing them and retires superseded absolute snapshots.</summary>
+    private int EnqueueCaptured(string apiKey, IReadOnlyList<InaraEvent> events, out IReadOnlyList<InaraEvent> captured)
+    {
+        captured = outbox?.Enqueue(events) ?? events;
+        if (outbox is not null)
+        {
+            InaraEvent[] replacements = captured.Where(item => !string.IsNullOrWhiteSpace(item.ReplaceKey)).ToArray();
+            outbox.Complete(
+                outbox
+                    .ReadPending()
+                    .Where(old =>
+                        replacements.Any(current =>
+                            current.ReplaceKey == old.ReplaceKey && current.UploadIdentity != old.UploadIdentity
+                        )
+                    )
+                    .Select(old => old.UploadIdentity)
+            );
+        }
+        return queue.Enqueue(apiKey, captured);
+    }
+
+    /// <summary>Checkpoints final outcomes while preserving the items the provider explicitly deferred.</summary>
+    private void CheckpointBatch(InaraQueuedEvent[] batch, long generation, List<string> warnings)
+    {
+        if (outbox is null || !IsPublicationAuthorized(generation))
+        {
+            return;
+        }
+        try
+        {
+            lock (sendStateSync)
+            {
+                string[] waiting = queue.PendingIdentities();
+                outbox.Complete(
+                    batch.Select(item => item.Event.UploadIdentity).Except(waiting, StringComparer.Ordinal)
+                );
+                outbox.DeferUntil(nextSendAt is { } next && next > outbox.NotBefore ? next : outbox.NotBefore);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add("Inara retained uploads could not be checkpointed: " + exception.Message);
+        }
     }
 
     private void ArmOutgoingSend(bool inventoryOnly)
@@ -455,17 +586,47 @@ public sealed class InaraPublisher : IInaraPublisher
         return cancellationToken.CanBeCanceled ? sharedStop.WaitAsync(cancellationToken) : sharedStop;
     }
 
-    public void CancelPendingPublication()
+    /// <inheritdoc />
+    public void CancelPendingPublication(bool discardRetainedReports = false)
     {
         if (stopping || disposed)
         {
             return;
         }
 
+        InaraSession? capturedSession = session;
+        string? account = capturedSession is not null
+            ? capturedSession.FrontierId.ToUpperInvariant() + ":" + capturedSession.Commander.ToUpperInvariant()
+            : null;
         ClearPublicationAuthorization();
         queue.TakeAll();
+        if (discardRetainedReports)
+        {
+            ClearRetainedUploads(account);
+        }
     }
 
+    /// <summary>Clears one attributable account on explicit removal while preserving other commanders' queues.</summary>
+    private void ClearRetainedUploads(string? account)
+    {
+        if (outbox is null || account is null)
+        {
+            return;
+        }
+        try
+        {
+            if (outbox.TryOpen(account, out _))
+            {
+                outbox.Clear();
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            log("Inara could not clear this account's retained uploads: " + exception.Message);
+        }
+    }
+
+    /// <summary>Finalizes authorized session work and releases resources while preserving durable pending reports.</summary>
     private async Task<InaraPublicationResult> StopCoreAsync()
     {
         stopping = true;
@@ -490,6 +651,7 @@ public sealed class InaraPublisher : IInaraPublisher
                 }
 
                 lifetimeCancellation.Dispose();
+                outbox?.Dispose();
             }
             finally
             {
@@ -560,6 +722,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return Version.TryParse(numeric.TrimEnd('.'), out Version? version) && version.Major >= 4;
     }
 
+    /// <summary>Rejects declared journal identities that do not match the active commander session.</summary>
     private bool JournalIdentityMatchesSession(JObject entry)
     {
         if (session is null)
@@ -567,7 +730,7 @@ public sealed class InaraPublisher : IInaraPublisher
             return false;
         }
 
-        string? eventName = entry.Value<string>("event");
+        string? eventName = entry.Value<string>(EventKey);
         string? commander = eventName switch
         {
             "Commander" => entry.Value<string>("Name"),
@@ -676,6 +839,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    /// <summary>Starts one authorized batch within the provider rate limit and current retry deadline.</summary>
     private bool TryStartBackgroundSend(
         bool force,
         out Task<InaraPublicationResult> sendTask,
@@ -692,6 +856,10 @@ public sealed class InaraPublisher : IInaraPublisher
             }
 
             DateTimeOffset now = timeProvider.GetUtcNow();
+            if (outbox?.NotBefore is { } retainedDeadline && now < retainedDeadline)
+            {
+                return false;
+            }
             DateTimeOffset allowedAt = rateLimiter.NextAllowedAt(now);
             if (allowedAt > now)
             {
@@ -797,6 +965,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return Combine(completed, sent);
     }
 
+    /// <summary>Captures final session updates and flushes authorized work before a session transition or shutdown.</summary>
     private async Task<InaraPublicationResult> FinalizeCurrentSessionAsync(CancellationToken cancellationToken)
     {
         if (session is null)
@@ -818,13 +987,13 @@ public sealed class InaraPublisher : IInaraPublisher
         )
         {
             IReadOnlyList<InaraEvent> finalEvents = mapper.Process(
-                new JObject { ["timestamp"] = timeProvider.GetUtcNow().ToString("O"), ["event"] = "Shutdown" },
+                new JObject { [TimestampKey] = timeProvider.GetUtcNow().ToString("O"), [EventKey] = "Shutdown" },
                 CreateContext(update: null),
                 collectEvents: true
             );
             if (finalEvents.Count > 0)
             {
-                queue.Enqueue(credentials.ApiKey, finalEvents);
+                EnqueueCaptured(credentials.ApiKey, finalEvents, out _);
             }
         }
 
@@ -843,6 +1012,7 @@ public sealed class InaraPublisher : IInaraPublisher
         );
     }
 
+    /// <summary>Submits mapped events and checkpoints only final outcomes while preserving deferred reports.</summary>
     private async Task<InaraPublicationResult> SendPendingAsync(
         InaraSession sendSession,
         string apiKey,
@@ -874,8 +1044,10 @@ public sealed class InaraPublisher : IInaraPublisher
                 $"Inara discarded {discarded} queued event(s) after the commander API key changed or was cleared."
             );
         }
+        InaraQueuedEvent[] capturedBatch = batch.ToArray();
         try
         {
+            outbox?.DeferUntil(timeProvider.GetUtcNow() + SendInterval);
             return await SendBatchAsync(sendSession, apiKey, generation, batch, warnings, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -889,6 +1061,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
         finally
         {
+            CheckpointBatch(capturedBatch, generation, warnings);
             lock (sendStateSync)
             {
                 activeBatchCount = 0;
@@ -1379,6 +1552,7 @@ public sealed class InaraPublisher : IInaraPublisher
         return normalized.Length <= maximumLength ? normalized : $"{normalized[..maximumLength]}...";
     }
 
+    /// <summary>Adds eligible cargo, materials, and backpack snapshots from the current monitor update.</summary>
     private static async Task<JObject> AddSidecarDataAsync(
         JObject entry,
         JournalEventEnvelope journalEvent,
@@ -1401,7 +1575,13 @@ public sealed class InaraPublisher : IInaraPublisher
             return entry;
         }
 
-        if (needsCargo && cargo is not null && string.Equals(cargo.Vessel, "Ship", StringComparison.OrdinalIgnoreCase))
+        if (
+            needsCargo
+            && cargo is not null
+            && string.Equals(cargo.Vessel, "Ship", StringComparison.OrdinalIgnoreCase)
+            && journalEvent.Timestamp is { } cargoEventTime
+            && cargo.Timestamp >= cargoEventTime
+        )
         {
             var augmented = (JObject)entry.DeepClone();
             augmented["Inventory"] = new JArray(
@@ -1446,8 +1626,23 @@ public sealed class InaraPublisher : IInaraPublisher
             using var reader = new StreamReader(stream, Encoding.UTF8);
             string content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             var sidecar = JObject.Parse(content);
-            sidecar["event"] = journalEvent.EventName;
-            sidecar["timestamp"] = entry["timestamp"]?.DeepClone();
+            if (
+                sidecar.Value<string>(EventKey) != "ShipLocker"
+                || !DateTimeOffset.TryParse(
+                    sidecar.Value<string>(TimestampKey),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
+                    out DateTimeOffset capturedAt
+                )
+                || journalEvent.Timestamp is not { } eventTime
+                || capturedAt < eventTime
+            )
+            {
+                warnings.Add("Inara ignored a stale or mismatched ShipLocker.json snapshot.");
+                return entry;
+            }
+            sidecar[EventKey] = journalEvent.EventName;
+            sidecar[TimestampKey] = entry[TimestampKey]?.DeepClone();
             return sidecar;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)

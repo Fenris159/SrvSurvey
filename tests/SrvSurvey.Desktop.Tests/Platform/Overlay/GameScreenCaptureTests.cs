@@ -478,6 +478,9 @@ public sealed class GameScreenCaptureTests : IDisposable
 
             WaylandCaptureSourceSelection.RequestReselection(directory);
 
+            Assert.True(capture.IsAvailable);
+            Assert.Contains("still closing", capture.UnavailableReason, StringComparison.Ordinal);
+            Assert.Equal(1, first.DisposeAttempts);
             InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => capture.Capture(bounds));
             Assert.Contains("could not be closed", failure.Message, StringComparison.Ordinal);
             Assert.Equal(1, created);
@@ -512,10 +515,31 @@ public sealed class GameScreenCaptureTests : IDisposable
 
         Assert.Throws<IOException>(() => capture.Dispose());
         Assert.False(first.IsDisposed);
+        Assert.False(capture.IsAvailable);
+        Assert.Contains("closed", capture.UnavailableReason, StringComparison.Ordinal);
         capture.Dispose();
 
         Assert.True(first.IsDisposed);
         Assert.Equal(2, first.DisposeAttempts);
+    }
+
+    /// <summary>Verifies reading capability cannot start or close a portal session on the UI thread.</summary>
+    [Fact]
+    public void GatedCapabilityChecksDoNotCreateSessions()
+    {
+        GameScreenCapture.WaylandPortalEnabled = true;
+        int created = 0;
+        using var capture = new GatedGameScreenCapture(() =>
+        {
+            created++;
+            return new StubCapture(_ => new CapturedPixelBuffer(1, 1, [0, 0, 0, 255]));
+        });
+
+        Assert.True(capture.IsAvailable);
+        Assert.Null(capture.UnavailableReason);
+        Assert.Equal(0, created);
+        _ = capture.Capture(new PixelRect(0, 0, 1, 1));
+        Assert.Equal(1, created);
     }
 
     /// <summary>Verifies the picker lease pauses capture only while selection is active.</summary>

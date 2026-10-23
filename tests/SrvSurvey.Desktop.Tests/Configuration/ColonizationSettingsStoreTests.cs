@@ -5,6 +5,7 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
 
+[Trait("Category", "JournalUploadScenario")]
 public sealed class ColonizationSettingsStoreTests : IDisposable
 {
     private readonly string directory = Path.Combine(
@@ -42,6 +43,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal("blue-dark", root["Theme"]?["Selected"]?.GetValue<string>());
     }
 
+    /// <summary>Retains legacy defaults and round-trips every shopping overlay option.</summary>
     [Fact]
     public void OverlayPreferencesUseLegacyDefaultsAndPersistOverrides()
     {
@@ -50,6 +52,9 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
 
         Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
         Assert.False(store.LoadOverlayPreferences().UseCompactScrollingCommoditiesList);
+        Assert.False(store.LoadOverlayPreferences().HideCollapsedGroups);
+        Assert.False(store.LoadOverlayPreferences().HideRowBadges);
+        Assert.False(store.LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
 
         ColonizationOverlayPreferences updated = ColonizationOverlayPreferences.Default with
         {
@@ -57,13 +62,58 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             ShowFleetCarrierDelta = true,
             InlineFleetCarrierCargo = true,
             CollapseCoveredGroups = false,
+            HideCollapsedGroups = true,
+            HideRowBadges = true,
             HighlightAlmostCoveredFleetCarrierLoads = true,
             UseCompactScrollingCommoditiesList = true,
+            SortNeedsAscendingAtCarriers = true,
         };
         store.SaveOverlayPreferences(updated);
 
         Assert.Equal(updated, store.LoadOverlayPreferences());
         Assert.False(store.LoadEnabled());
+    }
+
+    /// <summary>Older or malformed preference values keep category headings visible by default.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"CollapseCoveredGroups\":true}")]
+    [InlineData("{\"HideCollapsedGroups\":\"invalid\"}")]
+    public void OlderOverlayPreferencesDoNotHideCollapsedGroups(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideCollapsedGroups);
+    }
+
+    /// <summary>Keeps row badges enabled for older documents and malformed values of the new preference.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"HideCollapsedGroups\":true}")]
+    [InlineData("{\"HideRowBadges\":\"invalid\"}")]
+    public void OlderOverlayPreferencesKeepRowBadgesVisible(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().HideRowBadges);
+    }
+
+    /// <summary>Existing settings and malformed values retain normal market order.</summary>
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"SortNeedsAscendingAtCarriers\":\"invalid\"}")]
+    [InlineData("{\"SortNeedsAscendingAtCarriers\":null}")]
+    public void CarrierNeedsSortingDefaultsOffForOlderSettings(string overlay)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(path, "{\"Colonization\":{\"Overlay\":" + overlay + "}}");
+
+        Assert.False(new ColonizationSettingsStore(path).LoadOverlayPreferences().SortNeedsAscendingAtCarriers);
     }
 
     [Fact]
@@ -251,16 +301,19 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             42,
             new() { ["steel"] = -5 },
             DateTimeOffset.UtcNow,
-            null
+            null,
+            AwaitingBaseline: true
         );
-        ColonizationPendingCargoAdjustment second = first with { MarketId = 43 };
+        ColonizationPendingCargoAdjustment second = first with { MarketId = 43, AwaitingBaseline = false };
         string path = WritePendingEntries("PendingCargoAdjustments", first, invalid, second);
         var store = new ColonizationSettingsStore(path);
 
         IReadOnlyList<ColonizationPendingCargoAdjustment> loaded = store.LoadPendingCargoAdjustments();
         Assert.Equal([42L, 43L], loaded.Select(item => item.MarketId));
+        Assert.Equal([true, false], loaded.Select(item => item.AwaitingBaseline));
         store.SavePendingCargoAdjustments(loaded);
         Assert.Equal([42L, 43L], store.LoadPendingCargoAdjustments().Select(item => item.MarketId));
+        Assert.Equal([true, false], store.LoadPendingCargoAdjustments().Select(item => item.AwaitingBaseline));
     }
 
     /// <summary>Writes valid recovery entries on either side of deliberately malformed persisted data.</summary>

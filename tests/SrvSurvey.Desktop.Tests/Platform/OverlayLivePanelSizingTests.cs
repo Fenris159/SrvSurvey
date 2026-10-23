@@ -1,9 +1,14 @@
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -12,18 +17,224 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayLivePanelSizingTests
 {
+    /// <summary>Collection bursts stay bounded, show the newest message, and shrink after expiry in live and combined hosts.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, 0, 0)]
+    [InlineData(false, 180, 0)]
+    [InlineData(false, 500, 0)]
+    [InlineData(false, 0, 10)]
+    [InlineData(true, 0, 0)]
+    [InlineData(true, 180, 0)]
+    public void NotificationBurstStaysWithinItsPanel(bool combined, double savedHeight, int scaleIndex)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-notification-sizing-{Guid.NewGuid():N}");
+        var clock = new NotificationTimeProvider();
+        var viewModel = new NotificationViewModel(
+            new NotificationSettingsStore(Path.Combine(directory, "ui-settings.json")),
+            clock
+        );
+        var window = new NotificationOverlayWindow(viewModel);
+        var host = new CombinedOverlayWindow { Width = 1200, Height = 900 };
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFloatie"] = new(
+                    LegacyHorizontalAnchor.Left,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    SizeOverride: savedHeight > 0 ? new(240, savedHeight) : null
+                ),
+            },
+            null,
+            null
+        );
+        layout.SetScaleIndex(scaleIndex);
+        try
+        {
+            for (int index = 0; index < 40; index++)
+            {
+                viewModel.ShowMessage($"Collected: 3x Shield Emitters, new total {index * 3}");
+            }
+            Assert.Equal(420, window.MaxHeight);
+            OverlayThemeResources.Apply(window, layout, "PlotFloatie", new OverlayWindowRegistry());
+            Window visibleWindow = window;
+            if (combined)
+            {
+                Control content = Assert.IsType<Control>(window.Content, exactMatch: false);
+                window.Content = null;
+                host.Add(new ContentControl { Content = content, DataContext = viewModel });
+                OverlayThemeResources.Apply(host);
+                visibleWindow = host;
+            }
+            visibleWindow.Show();
+            using WriteableBitmap? frame = visibleWindow.CaptureRenderedFrame();
+            NotificationOverlayPresentation presentation = Assert.Single(
+                visibleWindow.GetVisualDescendants().OfType<NotificationOverlayPresentation>()
+            );
+            double maximumHeight = savedHeight > 0 ? savedHeight : 420;
+            Assert.InRange(presentation.Bounds.Height, 1, maximumHeight);
+            if (!combined)
+            {
+                Assert.InRange(
+                    window.Bounds.Height,
+                    1,
+                    Math.Ceiling(maximumHeight * OverlayScaleCatalog.GetRelativeScale(scaleIndex, window.RenderScaling))
+                );
+            }
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.VisibleMessageLimit = 5;
+            using WriteableBitmap? expandedLimit = visibleWindow.CaptureRenderedFrame();
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.VisibleMessageLimit = 20;
+            using WriteableBitmap? maximumLimit = visibleWindow.CaptureRenderedFrame();
+            Assert.InRange(presentation.Bounds.Height, 1, maximumHeight);
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            viewModel.ShowMessage("Collected: 3x Chemical Distillery, new total 12345");
+            using WriteableBitmap? updated = visibleWindow.CaptureRenderedFrame();
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            layout.SetPlacement("PlotFloatie", layout.Placements["PlotFloatie"] with { SizeOverride = null });
+            using WriteableBitmap? reset = visibleWindow.CaptureRenderedFrame();
+            Assert.InRange(presentation.Bounds.Height, 1, 420);
+            AssertNewestNotificationVisible(presentation, viewModel.Messages[^1].Text);
+            clock.Advance(TimeSpan.FromSeconds(7));
+            viewModel.Refresh();
+            viewModel.ShowMessage("Saved screenshot");
+            using WriteableBitmap? drained = visibleWindow.CaptureRenderedFrame();
+            Assert.Single(viewModel.Messages);
+            Assert.InRange(presentation.Bounds.Height, 1, 100);
+            AssertNewestNotificationVisible(presentation, "Saved screenshot");
+        }
+        finally
+        {
+            host.Close();
+            window.Close();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>Checks visible geometry rather than just collection membership so overflowing rows cannot hide newer notifications.</summary>
+    private static void AssertNewestNotificationVisible(NotificationOverlayPresentation presentation, string message)
+    {
+        ScrollViewer scroll = Assert.Single(presentation.GetVisualDescendants().OfType<ScrollViewer>());
+        Assert.InRange(Math.Abs(Math.Max(0, scroll.Extent.Height - scroll.Viewport.Height) - scroll.Offset.Y), 0, 1);
+        NotificationViewModel model = Assert.IsType<NotificationViewModel>(presentation.DataContext);
+        Assert.Equal(
+            model.VisibleMessages.Select(message => message.Text),
+            scroll.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text != "›").Select(text => text.Text)
+        );
+        TextBlock latest = Assert.Single(
+            presentation.GetVisualDescendants().OfType<TextBlock>(),
+            text => text.Text == message
+        );
+        Point top = Assert.IsType<Point>(latest.TranslatePoint(default, scroll));
+        Assert.InRange(top.Y, 0, scroll.Viewport.Height);
+        Assert.True(top.Y + latest.Bounds.Height <= scroll.Viewport.Height + 1);
+        NotificationLifetimeBar timer = Assert.Single(
+            presentation.GetVisualDescendants().OfType<NotificationLifetimeBar>()
+        );
+        Point timerOrigin = Assert.IsType<Point>(timer.TranslatePoint(default, presentation));
+        Assert.True(timerOrigin.Y >= 0 && timerOrigin.Y + timer.Bounds.Height <= presentation.Bounds.Height);
+    }
+
+    /// <summary>Expires notification bursts deterministically without waiting for their real-time timeout.</summary>
+    private sealed class NotificationTimeProvider : TimeProvider
+    {
+        private DateTimeOffset now = new(2026, 10, 13, 12, 0, 0, TimeSpan.Zero);
+
+        /// <summary>Returns the deterministic notification test clock.</summary>
+        public override DateTimeOffset GetUtcNow() => now;
+
+        /// <summary>Advances notification expiration without waiting for real timers.</summary>
+        public void Advance(TimeSpan duration) => now += duration;
+    }
+
+    /// <summary>The passive notification settings bind the row limit in both directions and save it for the next launch.</summary>
+    [AvaloniaFact]
+    public void PassiveNotificationSettingsChangeTheVisibleMessageLimit()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-notification-control-{Guid.NewGuid():N}");
+        MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder =>
+                builder.WithAppDataPaths(
+                    new(
+                        Path.Combine(directory, "config"),
+                        Path.Combine(directory, "data"),
+                        Path.Combine(directory, "cache"),
+                        []
+                    )
+                )
+        );
+        var view = new Views.OverlaySettingsView(OverlaySettingsCategory.Global) { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1000,
+            Height = 900,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            NumericUpDown input = Assert.IsType<NumericUpDown>(
+                view.FindControl<NumericUpDown>("NotificationVisibleMessageLimitInput")
+            );
+            Assert.True(view.FindControl<Border>("PassiveNotificationCard")!.IsVisible);
+            Assert.Equal(3m, input.Value);
+            input.Value = 5;
+            Assert.Equal(5, main.Notifications.VisibleMessageLimit);
+            Assert.Equal(5, new NotificationSettingsStore(main.AppDataPaths.UiSettingsPath).Load().VisibleMessageLimit);
+            main.Notifications.VisibleMessageLimit = 1;
+            Assert.Equal(1m, input.Value);
+        }
+        finally
+        {
+            window.Close();
+            main.Dispose();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>A sample list awaiting attachment must not busy retry viewport measurement before it has row containers.</summary>
+    [AvaloniaFact]
+    public void UnattachedRouteListDoesNotSpinWaitingForRows()
+    {
+        using var model = (RouteBioOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotRouteBio");
+        Assert.True(model.Targets.Count > RouteBioTargetList.MaxVisibleItemCount);
+        var list = new RouteBioTargetList { ItemsSource = model.Targets };
+        var frame = new DispatcherFrame();
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using CancellationTokenRegistration cancellation = deadline.Token.Register(() =>
+            Dispatcher.UIThread.Post(() => frame.Continue = false, DispatcherPriority.Send)
+        );
+        Dispatcher.UIThread.Post(() => frame.Continue = false, DispatcherPriority.Background);
+        Dispatcher.UIThread.PushFrame(frame);
+        Assert.False(deadline.IsCancellationRequested);
+        Assert.Null(TopLevel.GetTopLevel(list));
+    }
+
     private static readonly Dictionary<string, Type> LiveWindows = new()
     {
         ["PlotBioStatus"] = typeof(BiologyStatusOverlayWindow),
         ["PlotBioSystem"] = typeof(BiologySurveyOverlayWindow),
         ["PlotBodyInfo"] = typeof(BodyInformationOverlayWindow),
         ["PlotBuildCommodities"] = typeof(ColonizationCommodityOverlayWindow),
+        ["PlotColonizationWishList"] = typeof(ColonizationWishListOverlayWindow),
         ["PlotFlightWarning"] = typeof(FlightWarningOverlayWindow),
         ["PlotFloatie"] = typeof(NotificationOverlayWindow),
         ["PlotFootCombat"] = typeof(FootCombatOverlayWindow),
         ["PlotFSS"] = typeof(LastFssBodyOverlayWindow),
         ["PlotFSSInfo"] = typeof(FssInfoOverlayWindow),
         ["PlotGalMap"] = typeof(GalaxyMapOverlayWindow),
+        ["PlotExplorationPois"] = typeof(ExplorationPoiOverlayWindow),
         ["PlotMiningNotifications"] = typeof(MiningActivityOverlayWindow),
         ["PlotMiningFiregroups"] = typeof(MiningActivityOverlayWindow),
         ["PlotMiningCargo"] = typeof(MiningCargoOverlayWindow),
@@ -53,12 +264,16 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotTrackTarget"] = typeof(GroundTargetOverlayWindow),
     };
 
+    /// <summary>Every sample state retains the editor's spacing, colors, fonts, and measured footprint in live windows.</summary>
     [AvaloniaTheory]
     [InlineData("default")]
     [InlineData("compact")]
     [InlineData("expanded")]
     [InlineData("typography")]
     [InlineData("scaled")]
+    [InlineData("panel-scaled")]
+    [InlineData("combined")]
+    [InlineData("mixed-dpi")]
     [InlineData("updated")]
     [InlineData("reset")]
     public void EveryLivePanelFitsAndMatchesItsEditorPresentation(string scenario)
@@ -75,6 +290,7 @@ public sealed class OverlayLivePanelSizingTests
         Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
     }
 
+    /// <summary>Compares a live panel and its editor presentation across sample states, geometry, typography, and growth directions.</summary>
     private static void AuditPanel(
         OverlayLayoutDefinition definition,
         string scenario,
@@ -84,6 +300,7 @@ public sealed class OverlayLivePanelSizingTests
     {
         var preview = new OverlayPositionPreviewWindow(definition);
         Window? window = null;
+        CombinedOverlayWindow? host = null;
         try
         {
             OverlayThemeResources.Apply(preview);
@@ -93,6 +310,21 @@ public sealed class OverlayLivePanelSizingTests
                 preview.CycleEditorPreviewState();
             }
             Control expected = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+            if (expected.DataContext is NotificationViewModel notifications)
+            {
+                // Compare layout at one instant rather than sampling two different countdown values.
+                var frozen = new NotificationViewModel(
+                    new NotificationSettingsStore(
+                        Path.Combine(Path.GetTempPath(), $"notification-parity-{Guid.NewGuid():N}.json")
+                    ),
+                    new NotificationTimeProvider()
+                );
+                foreach (NotificationMessageViewModel message in notifications.Messages)
+                {
+                    frozen.ShowMessage(message.Text);
+                }
+                expected.DataContext = frozen;
+            }
             double sizeFactor = scenario == "compact" ? 0.8 : 1.3;
             OverlayPanelSize? size = scenario is "compact" or "expanded" or "reset"
                 ? new(
@@ -111,6 +343,7 @@ public sealed class OverlayLivePanelSizingTests
                         LegacyVerticalAnchor.Top,
                         8,
                         null,
+                        ScaleIndex: scenario == "panel-scaled" ? OverlayScaleCatalog.GetIndex(50) : null,
                         TypographyScale: typography,
                         SizeOverride: size
                     ),
@@ -122,7 +355,7 @@ public sealed class OverlayLivePanelSizingTests
             {
                 layout.SetScaleIndex(10);
             }
-            preview.ConfigureScale(layout.ScaleIndex, null, 1);
+            preview.ConfigureScale(layout.ScaleIndex, layout.Placements[definition.Name].ScaleIndex, 1);
             preview.ConfigureTypography(typography);
             preview.ConfigureSize(size);
             Type windowType = LiveWindows[definition.Name];
@@ -133,6 +366,11 @@ public sealed class OverlayLivePanelSizingTests
                     && parameter.ParameterType.IsInstanceOfType(expected.DataContext)
             );
             window = Assert.IsType<Window>(constructor.Invoke([expected.DataContext]), exactMatch: false);
+            if (scenario == "mixed-dpi")
+            {
+                window.SetRenderScaling(1.5);
+                preview.SetRenderScaling(1.0);
+            }
             OverlayThemeResources.Apply(window, layout, definition.Name, new OverlayWindowRegistry());
             window.Show();
             preview.Show();
@@ -156,13 +394,51 @@ public sealed class OverlayLivePanelSizingTests
                 preview.ConfigureTypography(typography);
                 preview.ConfigureSize(size);
             }
-            using WriteableBitmap? liveFrame = window.CaptureRenderedFrame();
+            Window visibleWindow = window;
+            if (scenario == "combined")
+            {
+                window.UpdateLayout();
+                Control content = Assert.IsType<Control>(window.Content, exactMatch: false);
+                host = new CombinedOverlayWindow
+                {
+                    Width = window.Bounds.Width + 100,
+                    Height = window.Bounds.Height + 100,
+                };
+                host.SetRenderScaling(1.5);
+                preview.SetRenderScaling(1.5);
+                window.Content = new Border { Width = window.Bounds.Width + 100, Height = window.Bounds.Height + 100 };
+                // Flush the source's queued layout before reparenting its content to another LayoutManager.
+                using WriteableBitmap? detachedFrame = window.CaptureRenderedFrame();
+                host.Add(new ContentControl { Content = content, DataContext = window.DataContext });
+                OverlayThemeResources.Apply(host);
+                host.Show();
+                visibleWindow = host;
+            }
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? liveFrame = visibleWindow.CaptureRenderedFrame();
             using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
             Control actual = Assert.Single(
-                window.GetVisualDescendants().OfType<Control>(),
+                visibleWindow.GetVisualDescendants().OfType<Control>(),
                 control => control.GetType() == expected.GetType()
             );
             string label = $"{definition.Name}/{state}/{scenario}";
+            ComparePresentationLayout(expected, actual, label, failures);
+            Point actualStart = Assert.IsType<Point>(actual.TranslatePoint(default, visibleWindow));
+            Point actualEnd = Assert.IsType<Point>(
+                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), visibleWindow)
+            );
+            PixelSize expectedPixels = preview.GetPanelMetrics(visibleWindow.RenderScaling).PanelSize;
+            var actualPixels = new PixelSize(
+                (int)Math.Ceiling((actualEnd.X - actualStart.X) * visibleWindow.RenderScaling),
+                (int)Math.Ceiling((actualEnd.Y - actualStart.Y) * visibleWindow.RenderScaling)
+            );
+            if (
+                Math.Abs(actualPixels.Width - expectedPixels.Width) > 1
+                || Math.Abs(actualPixels.Height - expectedPixels.Height) > 1
+            )
+            {
+                failures.Add($"{label}: live visual footprint {actualPixels} differs from editor {expectedPixels}");
+            }
             if (
                 Math.Abs(actual.Bounds.Width - expected.Bounds.Width) > 1
                 || Math.Abs(actual.Bounds.Height - expected.Bounds.Height) > 1
@@ -170,22 +446,132 @@ public sealed class OverlayLivePanelSizingTests
             {
                 failures.Add($"{label}: live {actual.Bounds.Size}, preview {expected.Bounds.Size}");
             }
-            Point start = Assert.IsType<Point>(actual.TranslatePoint(default, window));
-            Point end = Assert.IsType<Point>(
-                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), window)
-            );
-            if (start.X < -1 || start.Y < -1 || end.X > window.Bounds.Width + 1 || end.Y > window.Bounds.Height + 1)
+            string[] initialText = visibleWindow
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
+                .ToArray();
+            Size initialSize = visibleWindow.Bounds.Size;
+            byte[] initialPixels = ReadPixels(Assert.IsType<WriteableBitmap>(liveFrame));
+            foreach (
+                OverlayGrowthDirection direction in new[]
+                {
+                    OverlayGrowthDirection.Left,
+                    OverlayGrowthDirection.Right,
+                    OverlayGrowthDirection.Automatic,
+                }
+            )
             {
-                failures.Add($"{label}: content [{start} - {end}] clipped by live window {window.Bounds.Size}");
+                layout.SetPlacement(
+                    definition.Name,
+                    layout.Placements[definition.Name] with
+                    {
+                        GrowthDirection = direction,
+                    }
+                );
+                Dispatcher.UIThread.RunJobs();
+                using WriteableBitmap? refreshed = visibleWindow.CaptureRenderedFrame();
+                string[] refreshedText = visibleWindow
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Select(text => $"{text.Text}|{text.FontSize}|{text.Bounds}|{text.TextWrapping}")
+                    .ToArray();
+                if (
+                    initialSize != visibleWindow.Bounds.Size
+                    || !initialText.SequenceEqual(refreshedText)
+                    || !initialPixels.SequenceEqual(ReadPixels(Assert.IsType<WriteableBitmap>(refreshed)))
+                )
+                {
+                    failures.Add(
+                        $"{label}/{direction}: growth settings changed typography or panel size from {initialSize} to {visibleWindow.Bounds.Size}"
+                    );
+                }
+            }
+            Point start = Assert.IsType<Point>(actual.TranslatePoint(default, visibleWindow));
+            Point end = Assert.IsType<Point>(
+                actual.TranslatePoint(new Point(actual.Bounds.Width, actual.Bounds.Height), visibleWindow)
+            );
+            if (
+                start.X < -1
+                || start.Y < -1
+                || end.X > visibleWindow.Bounds.Width + 1
+                || end.Y > visibleWindow.Bounds.Height + 1
+            )
+            {
+                failures.Add($"{label}: content [{start} - {end}] clipped by live window {visibleWindow.Bounds.Size}");
             }
         }
         finally
         {
+            host?.Close();
             window?.Close();
             preview.Close();
         }
     }
 
+    /// <summary>Checks internal geometry and style so matching outer bounds cannot conceal tighter columns or rows.</summary>
+    private static void ComparePresentationLayout(Control expected, Control actual, string label, List<string> failures)
+    {
+        Control[] expectedControls = expected.GetVisualDescendants().OfType<Control>().ToArray();
+        Control[] actualControls = actual.GetVisualDescendants().OfType<Control>().ToArray();
+        if (expectedControls.Length != actualControls.Length)
+        {
+            failures.Add($"{label}: live/editor control counts differ");
+            return;
+        }
+        for (int index = 0; index < expectedControls.Length; index++)
+        {
+            Control editor = expectedControls[index];
+            Control live = actualControls[index];
+            if (DescribeStyle(editor) != DescribeStyle(live))
+            {
+                failures.Add(
+                    $"{label}/{index}: style {DescribeStyle(live)} differs from editor {DescribeStyle(editor)}"
+                );
+            }
+            if (!editor.IsEffectivelyVisible || !live.IsEffectivelyVisible)
+            {
+                continue;
+            }
+            Point editorOrigin = Assert.IsType<Point>(editor.TranslatePoint(default, expected));
+            Point liveOrigin = Assert.IsType<Point>(live.TranslatePoint(default, actual));
+            if (
+                Math.Abs(editorOrigin.X - liveOrigin.X) > 1
+                || Math.Abs(editorOrigin.Y - liveOrigin.Y) > 1
+                || Math.Abs(editor.Bounds.Width - live.Bounds.Width) > 1
+                || Math.Abs(editor.Bounds.Height - live.Bounds.Height) > 1
+            )
+            {
+                failures.Add(
+                    $"{label}/{index}/{editor.GetType().Name}: live [{liveOrigin}, {live.Bounds.Size}] differs from editor [{editorOrigin}, {editor.Bounds.Size}]"
+                );
+            }
+        }
+    }
+
+    /// <summary>Includes column padding, row spacing, wrapping, and brushes in the shared presentation contract.</summary>
+    private static string DescribeStyle(Control control) =>
+        control switch
+        {
+            TextBlock text =>
+                $"{text.Text}|{text.FontFamily}|{text.FontSize}|{text.FontWeight}|{text.TextWrapping}|{text.Foreground}|{text.LineHeight}",
+            Border border =>
+                $"{border.Padding}|{border.Margin}|{border.BorderThickness}|{border.Background}|{border.CornerRadius}",
+            Grid grid => $"{grid.RowSpacing}|{grid.ColumnSpacing}|{grid.Margin}",
+            StackPanel stack => $"{stack.Spacing}|{stack.Margin}|{stack.Orientation}",
+            _ => $"{control.GetType().Name}|{control.Margin}|{control.IsVisible}",
+        };
+
+    /// <summary>Compares actual rendered pixels so direction changes cannot silently alter row spacing, icons, or wrapping.</summary>
+    private static byte[] ReadPixels(WriteableBitmap bitmap)
+    {
+        using ILockedFramebuffer pixels = bitmap.Lock();
+        byte[] result = new byte[pixels.RowBytes * pixels.Size.Height];
+        Marshal.Copy(pixels.Address, result, 0, result.Length);
+        return result;
+    }
+
+    /// <summary>Resetting panel size restores the current bound dimensions and original layout constraints.</summary>
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]

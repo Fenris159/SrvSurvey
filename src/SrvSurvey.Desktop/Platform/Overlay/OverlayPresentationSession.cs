@@ -159,11 +159,19 @@ public sealed class OverlayPresentationSession : IDisposable
         return hostDependencies.CreateGameWindowTracker();
     }
 
+    /// <summary>Creates a hosted live panel with bounds appropriate to the selected presentation mode.</summary>
     internal HostedOverlayWindow HostPassiveWindow(PassiveOverlayWindowDefinition definition)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(definition);
-        var hosted = new HostedOverlayWindow(definition, hostDependencies, RemoveHostedWindow);
+        var hosted = new HostedOverlayWindow(
+            definition,
+            hostDependencies with
+            {
+                ConstrainToGameBounds = Decision.Mode == OverlayPresentationMode.CombinedWindow,
+            },
+            RemoveHostedWindow
+        );
         hostedWindows.Add(hosted);
         return hosted;
     }
@@ -312,6 +320,8 @@ public sealed class OverlayPresentationSession : IDisposable
     {
         public OverlayPlatformCapabilities Capabilities => platform.Capabilities;
 
+        public void PrepareWindowForShow(Window window) => platform.PrepareWindowForShow(window);
+
         public OverlayPreparationResult PreparePassiveWindow(Window window) => platform.PreparePassiveWindow(window);
 
         public OverlayInteractionResult PrepareInteractiveWindow(Window window) =>
@@ -341,10 +351,12 @@ public sealed class OverlayPresentationSession : IDisposable
         public void Dispose() { }
     }
 
-    private sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)
+    internal sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)
         : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities => controller.Capabilities;
+
+        public void PrepareWindowForShow(Window window) => controller.PrepareWindowForShow(window);
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {

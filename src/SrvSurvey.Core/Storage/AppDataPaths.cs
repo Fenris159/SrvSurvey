@@ -1,3 +1,4 @@
+using System.Collections;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Storage;
@@ -21,6 +22,12 @@ public sealed record AppDataPaths(
         SettingsFrontierId is null
             ? SharedUiSettingsPath
             : Path.Combine(ConfigDirectory, "commanders", SettingsFrontierId, "cross-platform-ui.json");
+
+    /// <summary>Stores private machine-local delivery queues independently of portable profile data.</summary>
+    public string JournalUploadDirectory =>
+        SettingsFrontierId is null
+            ? Path.Combine(DataDirectory, "journal-uploads")
+            : Path.Combine(DataDirectory, "journal-uploads", "profiles", SettingsFrontierId);
 
     public string OverlaySettingsDirectory =>
         SettingsFrontierId is null
@@ -87,10 +94,14 @@ public sealed record AppDataPaths(
             cacheDirectory = Combine(platform, local, ApplicationDirectoryName, "cache");
         }
 
-        IReadOnlyList<LegacyProfileCandidate> candidates =
-            platform == DesktopPlatform.Windows
-                ? BuildWindowsLegacyCandidates(roaming, local)
-                : Array.Empty<LegacyProfileCandidate>();
+        IReadOnlyList<LegacyProfileCandidate> candidates = platform switch
+        {
+            DesktopPlatform.Windows => BuildWindowsLegacyCandidates(roaming, local),
+            DesktopPlatform.Linux => new DeferredLegacyCandidates(() =>
+                BuildLinuxLegacyCandidates(home, getEnvironmentVariable)
+            ),
+            _ => [],
+        };
 
         return new AppDataPaths(
             NormalizeRoot(platform, configDirectory),
@@ -98,6 +109,50 @@ public sealed record AppDataPaths(
             NormalizeRoot(platform, cacheDirectory),
             candidates
         );
+    }
+
+    private sealed class DeferredLegacyCandidates(Func<LegacyProfileCandidate[]> discover)
+        : IReadOnlyList<LegacyProfileCandidate>
+    {
+        private readonly Lazy<LegacyProfileCandidate[]> candidates = new(discover);
+        public int Count => candidates.Value.Length;
+        public LegacyProfileCandidate this[int index] => candidates.Value[index];
+
+        public IEnumerator<LegacyProfileCandidate> GetEnumerator() =>
+            ((IEnumerable<LegacyProfileCandidate>)candidates.Value).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private static LegacyProfileCandidate[] BuildLinuxLegacyCandidates(
+        string home,
+        Func<string, string?> getEnvironmentVariable
+    ) =>
+        JournalFolderLocator
+            .GetWineUserDirectories(home, getEnvironmentVariable)
+            .SelectMany(user => GetWineProfileParents(user))
+            .Select(parent => new LegacyProfileCandidate(
+                LegacyProfileLocationKind.WineOrProton,
+                Path.Combine(parent, LegacyVersionDirectoryName)
+            ))
+            .ToArray();
+
+    internal static IEnumerable<string> GetWineProfileParents(string user)
+    {
+        yield return Path.Combine(user, "AppData", "Roaming", ApplicationDirectoryName, ApplicationDirectoryName);
+        yield return Path.Combine(user, "Application Data", ApplicationDirectoryName, ApplicationDirectoryName);
+        string redirected = Path.Combine(
+            user,
+            "AppData",
+            "Local",
+            "Packages",
+            StorePackageDirectoryName,
+            "LocalCache",
+            "Roaming",
+            ApplicationDirectoryName
+        );
+        yield return Path.Combine(redirected, ApplicationDirectoryName);
+        yield return Path.Combine(redirected, ApplicationDirectoryName + "-");
     }
 
     private static IReadOnlyList<LegacyProfileCandidate> BuildWindowsLegacyCandidates(string roaming, string local)

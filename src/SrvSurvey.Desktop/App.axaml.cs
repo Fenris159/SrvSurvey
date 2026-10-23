@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.ProfileSync;
 using SrvSurvey.Desktop.Runtime;
 
 namespace SrvSurvey.Desktop;
@@ -46,8 +47,10 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>Checks instance ownership, starts optional profile sync, and constructs the desktop on the UI thread.</summary>
     private async Task StartDesktopAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? profileSync = null;
         try
         {
             ApplicationStartupInstanceDecision startupDecision = await EvaluateStartupAsync(desktop)
@@ -58,17 +61,41 @@ public sealed partial class App : Application
                 return;
             }
 
+            if (Program.StartupContext?.DiagnosticReplay is null)
+            {
+                profileSync = await StartProfileSyncAsync(
+                        () =>
+                            new ProfileSyncService(
+                                new ProfileSyncStore(
+                                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                                ),
+                                log: message => Program.ApplicationLog?.Append(message)
+                            ),
+                        message => Program.ApplicationLog?.Append(message),
+                        Program.UpdateStartupMode
+                    )
+                    .ConfigureAwait(false);
+            }
+
             // Instance scanning resumes off the UI thread; Avalonia window construction must not.
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                string language = SrvSurvey.Desktop.Configuration.LocalizationSettingsStore.ResolveCurrent(
+                    Program.StartupContext?.AppDataPaths ?? AppDataPaths.ResolveCurrent()
+                );
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.Initialize(language);
+                SrvSurvey.Desktop.Localization.LocalizationCatalog.ApplyCulture(language);
                 desktopRuntime = DesktopRuntime.Start(
                     this,
                     desktop,
                     new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
                     {
                         AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
+                        ProfileSyncService = profileSync,
                         DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
-                        BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
+                        BringMainWindowToFront =
+                            startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting
+                            || Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm,
                     }
                 );
             });
@@ -81,11 +108,53 @@ public sealed partial class App : Application
                         or NotSupportedException
             )
         {
-            Program.ApplicationLog?.Append("Application instance startup check failed: " + exception.Message);
-            await Console.Error.WriteLineAsync(
-                "SrvSurvey could not verify whether another instance is running: " + exception.Message
-            );
+            Program.ApplicationLog?.Append("Application startup failed: " + exception.Message);
+            await Console.Error.WriteLineAsync("SrvSurvey could not start safely: " + exception.Message);
             await ShutdownOnUiThreadAsync(desktop, exitCode: 1);
+        }
+        finally
+        {
+            if (desktopRuntime is null)
+            {
+                profileSync?.Dispose();
+            }
+        }
+    }
+
+    /// <summary>Starts optional sync, releasing failed services so the desktop can construct its fallback.</summary>
+    internal static async Task<ProfileSyncService?> StartProfileSyncAsync(
+        Func<ProfileSyncService> createService,
+        Action<string> log,
+        ApplicationUpdateStartupMode updateMode = ApplicationUpdateStartupMode.Normal
+    )
+    {
+        ProfileSyncService? service = null;
+        try
+        {
+            service = createService();
+            bool deferCloudSync = updateMode == ApplicationUpdateStartupMode.Confirm;
+            if (deferCloudSync)
+            {
+                log("Update startup: preparing local profile recovery without waiting for Google Drive.");
+            }
+            await service.StartupAsync(deferCloudSync: deferCloudSync).ConfigureAwait(false);
+            if (deferCloudSync)
+            {
+                log("Update startup: local profile ready; constructing the desktop.");
+            }
+            return service;
+        }
+        catch (ProfileInitializationException exception)
+        {
+            service?.Dispose();
+            log("Local profile initialization failed: " + exception);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            log("Startup profile sync skipped: " + exception);
+            service?.Dispose();
+            return null;
         }
     }
 

@@ -128,6 +128,7 @@ public static class RavenThemeCatalog
             InteractiveHoverColor = "#3A3A3A",
             ControlAccentColor = "#F5F5F5",
             ControlAccentHoverColor = "#EDEDED",
+            TagFillColor = "#B8AA7B",
             FocusRingColor = "#CCE6D59A",
             ModalScrimColor = "#8C000000",
             SuccessColor = "#D6D6D6",

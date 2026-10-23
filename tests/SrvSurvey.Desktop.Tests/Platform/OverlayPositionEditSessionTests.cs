@@ -6,11 +6,12 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class OverlayPositionEditSessionTests
 {
+    /// <summary>Verifies catalog groups every positionable overlay exactly once.</summary>
     [Fact]
     public void CatalogGroupsEveryPositionableOverlayExactlyOnce()
     {
         Assert.Equal(7, OverlayLayoutCatalog.Categories.Count);
-        Assert.Equal(37, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(39, OverlayLayoutCatalog.Supported.Count);
         Assert.Equal(
             OverlayLayoutCatalog.Supported.Count,
             OverlayLayoutCatalog
@@ -139,8 +140,9 @@ public sealed class OverlayPositionEditSessionTests
         Assert.NotEqual(original, session.GetPlacement("PlotBioStatus"));
     }
 
+    /// <summary>Dragging stores the inward-facing top corner instead of the catalog default anchors.</summary>
     [Fact]
-    public void DraggingRestoresThePanelsStableDefaultAnchors()
+    public void DraggingChoosesTheInwardTopCorner()
     {
         var active = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>
@@ -158,7 +160,7 @@ public sealed class OverlayPositionEditSessionTests
         Assert.True(session.Move("PlotJumpInfo", destination, size, bounds));
 
         LegacyOverlayPlacement placement = session.GetPlacement("PlotJumpInfo");
-        Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
+        Assert.Equal(LegacyHorizontalAnchor.Left, placement.Horizontal);
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
         Assert.Equal(destination, session.GetPosition("PlotJumpInfo", bounds, size));
         Assert.Equal(
@@ -167,8 +169,9 @@ public sealed class OverlayPositionEditSessionTests
         );
     }
 
+    /// <summary>Centered placements retain a predictable corner as their content changes size.</summary>
     [Fact]
-    public void CenteringWithDefaultAnchorsKeepsDynamicPaneTopEdgeStable()
+    public void CenteringKeepsTheInwardTopCornerStable()
     {
         var active = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>
@@ -184,11 +187,11 @@ public sealed class OverlayPositionEditSessionTests
         var size = new PixelSize(600, 100);
         var center = new PixelPoint(400, 550);
 
-        Assert.True(session.MoveWithDefaultAnchors("PlotJumpInfo", center, size, bounds));
+        Assert.True(session.MoveWithContentAnchors("PlotJumpInfo", center, size, bounds));
 
         LegacyOverlayPlacement placement = session.GetPlacement("PlotJumpInfo");
-        Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
-        Assert.Equal(0, placement.HorizontalOffset);
+        Assert.Equal(LegacyHorizontalAnchor.Right, placement.Horizontal);
+        Assert.Equal(300, placement.HorizontalOffset);
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
         Assert.Equal(350, placement.VerticalOffset);
         Assert.Equal(0.7, placement.Opacity);

@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:routes="using:SrvSurvey.Core.Routes"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        x:Class="SrvSurvey.Desktop.SpanshSearchWindow"
+        x:DataType="vm:SpanshSearchViewModel"
+        Title="{Binding Title}"
+        Width="720" Height="820" MinWidth="560" MinHeight="500"
+        WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}" Padding="24,18"
+            BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+      <StackPanel Spacing="10">
+        <TextBlock Classes="eyebrow" Text="ROUTE PLANNER" />
+        <TextBlock Classes="page-title" Text="Spansh Search" />
+        <ComboBox x:Name="PlannerSelector" ItemsSource="{Binding Planners}"
+                  SelectedItem="{Binding SelectedPlanner, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="routes:SpanshPlannerDefinition"><TextBlock Text="{Binding Name}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </Border>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="24,20" Spacing="18" IsEnabled="{Binding !IsBusy}">
+        <Border Classes="card" Padding="16" IsVisible="{Binding IsGalaxy}">
+          <StackPanel Spacing="6">
+            <CheckBox Content="Use current equipped ship" IsChecked="{Binding UseCurrentShip, Mode=TwoWay}" />
+            <TextBlock Text="{Binding ShipDescription}" TextWrapping="Wrap" />
+            <TextBlock Classes="muted" Text="{Binding ShipStatus}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+        <ItemsControl x:Name="PlannerFields" ItemsSource="{Binding Fields}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SpanshPlannerFieldViewModel">
+              <StackPanel Spacing="6" Margin="0,0,0,16" IsVisible="{Binding IsVisible}">
+                <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding !IsBoolean}">
+                  <TextBlock Text="{Binding Label}" />
+                  <TextBlock Text="*" IsVisible="{Binding IsRequired}" />
+                </StackPanel>
+                <controls:SystemNameEntry IsVisible="{Binding IsSystem}" Text="{Binding Value, Mode=TwoWay}" PlaceholderText="System name" />
+                <StackPanel IsVisible="{Binding IsSystems}"><controls:SpanshSystemListEntry DataContext="{Binding SystemList}" /></StackPanel>
+                <NumericUpDown IsVisible="{Binding IsNumber}" Value="{Binding Number, Mode=TwoWay}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Width="220" HorizontalAlignment="Left" />
+                <TextBox IsVisible="{Binding IsText}" Text="{Binding Value, Mode=TwoWay}"
+                         IsReadOnly="{Binding IsReadOnly}" AcceptsReturn="{Binding IsMultiline}"
+                         TextWrapping="Wrap" MinHeight="80" MaxHeight="180" />
+                <CheckBox IsVisible="{Binding IsBoolean}" IsChecked="{Binding IsChecked, Mode=TwoWay}">
+                  <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                </CheckBox>
+                <ItemsControl IsVisible="{Binding IsRadioChoice}" ItemsSource="{Binding RadioChoices}">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SpanshRadioChoiceViewModel">
+                      <RadioButton GroupName="{Binding Group}" IsChecked="{Binding IsChecked, Mode=TwoWay}" Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
+                      </RadioButton>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ComboBox IsVisible="{Binding IsDropdownChoice}" ItemsSource="{Binding Choices}" SelectedItem="{Binding SelectedChoice, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate><DataTemplate x:DataType="routes:SpanshPlannerChoice"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Classes="muted" FontSize="11" Text="{Binding Help}" IsVisible="{Binding HasHelp}" TextWrapping="Wrap" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" Background="{DynamicResource RavenSidebarBrush}" Padding="24,16"
+            BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0">
+      <StackPanel Spacing="10">
+        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted" FontSize="11" Text="Results replace the on-screen itinerary. Use Save As to keep the route." TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+          <Button Classes="secondary" Content="Cancel search" Click="Cancel_Click" IsVisible="{Binding IsBusy}" />
+          <Button Classes="secondary" Content="Close" Click="Close_Click" />
+          <Button x:Name="SearchButton" Classes="primary" Content="Search" Click="Search_Click" IsEnabled="{Binding CanSearch}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

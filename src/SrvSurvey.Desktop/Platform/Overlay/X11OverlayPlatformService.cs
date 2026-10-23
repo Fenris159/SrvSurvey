@@ -181,6 +181,15 @@ internal sealed class X11OverlayPlatformService
         );
     }
 
+    /// <summary>Prepares unregistered capture surfaces without enrolling them in gameplay placement or bypass policy.</summary>
+    public void PrepareWindowForShow(Window window)
+    {
+        if (window is StreamOverlayWindow)
+        {
+            PrepareOverlayWindow(window);
+        }
+    }
+
     /// <summary>Sets the overlay tool classification before Avalonia maps through its separate X11 connection.</summary>
     public void PrepareOverlayWindow(Window window)
     {
@@ -190,13 +199,17 @@ internal sealed class X11OverlayPlatformService
         {
             if (handle != nint.Zero && TryGetDisplay(out nint currentDisplay))
             {
-                if (!ApplyWindowType(currentDisplay, handle))
+                if (!ApplyWindowType(currentDisplay, handle, window is StreamOverlayWindow))
                 {
                     Trace.TraceWarning("The X11 overlay utility-window type could not be applied.");
                 }
                 if (!TryPrepareGamescopeWindow(window, handle))
                 {
                     Trace.TraceWarning("Gamescope external-overlay registration failed; the HUD will remain hidden.");
+                }
+                if (window is StreamOverlayWindow)
+                {
+                    X11Native.DisableWindowInput(currentDisplay, unchecked((nuint)handle));
                 }
                 // Wait for this connection's property update before Avalonia shows the window.
                 _ = X11Native.XSync(currentDisplay, 0);
@@ -249,6 +262,7 @@ internal sealed class X11OverlayPlatformService
         );
     }
 
+    /// <summary>Applies input and stacking policy while keeping the joined capture surface behind gameplay overlays.</summary>
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -303,34 +317,13 @@ internal sealed class X11OverlayPlatformService
                         "Gamescope external-overlay registration failed."
                     );
                 }
-                bool stackingApplied = ApplyWindowType(currentDisplay, handle);
-                if (interactive)
-                {
-                    X11Native.XShapeCombineMask(
-                        currentDisplay,
-                        windowHandle,
-                        X11Native.ShapeInput,
-                        0,
-                        0,
-                        0,
-                        X11Native.ShapeSet
-                    );
-                }
-                else
-                {
-                    X11Native.XShapeCombineRectangles(
-                        currentDisplay,
-                        windowHandle,
-                        X11Native.ShapeInput,
-                        0,
-                        0,
-                        nint.Zero,
-                        0,
-                        X11Native.ShapeSet,
-                        X11Native.Unsorted
-                    );
-                }
+                bool stackingApplied = ApplyWindowType(currentDisplay, handle, window is StreamOverlayWindow);
+                SetWindowInput(currentDisplay, windowHandle, interactive);
 
+                if (window is StreamOverlayWindow)
+                {
+                    LowerCaptureWindow(currentDisplay, windowHandle);
+                }
                 _ = X11Native.XFlush(currentDisplay);
                 if (interactive)
                 {
@@ -353,6 +346,36 @@ internal sealed class X11OverlayPlatformService
                     $"X11 overlay interaction mode could not be changed: {exception.Message}"
                 );
             }
+        }
+    }
+
+    private static void SetWindowInput(nint currentDisplay, nuint windowHandle, bool interactive)
+    {
+        if (interactive)
+        {
+            X11Native.XShapeCombineMask(
+                currentDisplay,
+                windowHandle,
+                X11Native.ShapeInput,
+                0,
+                0,
+                0,
+                X11Native.ShapeSet
+            );
+        }
+        else
+        {
+            X11Native.XShapeCombineRectangles(
+                currentDisplay,
+                windowHandle,
+                X11Native.ShapeInput,
+                0,
+                0,
+                nint.Zero,
+                0,
+                X11Native.ShapeSet,
+                X11Native.Unsorted
+            );
         }
     }
 
@@ -1191,10 +1214,41 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
-    /// <summary>Publishes utility first, with normal fallback, without changing the window's management mode.</summary>
-    private bool ApplyWindowType(nint currentDisplay, nint handle)
+    /// <summary>Keeps the mapped capture drawable behind application windows without hiding its pixels from OBS.</summary>
+    internal static void LowerCaptureWindow(nint currentDisplay, nuint handle)
     {
-        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(utilityWindowAtom, normalWindowAtom);
+        var request = new X11Native.XClientMessageEvent
+        {
+            Type = ClientMessage,
+            Display = currentDisplay,
+            Window = handle,
+            MessageType = X11Native.XInternAtom(currentDisplay, "_NET_WM_STATE", onlyIfExists: 0),
+            Format = 32,
+            Data = new X11Native.XClientMessageData
+            {
+                L0 = 1,
+                L1 = unchecked((nint)X11Native.XInternAtom(currentDisplay, "_NET_WM_STATE_BELOW", onlyIfExists: 0)),
+                L3 = 1,
+            },
+        };
+        _ = X11Native.XSendEvent(
+            currentDisplay,
+            X11Native.XDefaultRootWindow(currentDisplay),
+            propagate: 0,
+            SubstructureNotifyMask | SubstructureRedirectMask,
+            ref request
+        );
+        _ = X11Native.XLowerWindow(currentDisplay, handle);
+    }
+
+    /// <summary>Publishes gameplay panels as utilities and the background capture as a normal application window.</summary>
+    private bool ApplyWindowType(nint currentDisplay, nint handle, bool captureWindow = false)
+    {
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+            utilityWindowAtom,
+            normalWindowAtom,
+            captureWindow
+        );
         if (windowTypes.Length == 0)
         {
             return false;

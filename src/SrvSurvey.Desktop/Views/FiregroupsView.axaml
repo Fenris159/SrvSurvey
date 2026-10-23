@@ -60,7 +60,7 @@
      </Expander>
      <Button Grid.Column="1" Click="DeleteConfiguration_Click" ToolTip.Tip="{Binding DeleteLabel}" AutomationProperties.Name="{Binding DeleteLabel}"
              Width="36" Height="36" Padding="8" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-      <Path Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+      <Path Data="{StaticResource RavenTrashIcon}"
             Stroke="{DynamicResource RavenTextBrush}" StrokeThickness="1.5" Width="18" Height="18" Stretch="Uniform"/>
      </Button>
      </Grid>

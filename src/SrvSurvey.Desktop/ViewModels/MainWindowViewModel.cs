@@ -8,9 +8,11 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
@@ -37,6 +39,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
+    private const string OverviewNavigationKey = "overview";
+
     private static readonly TimeSpan DefaultSystemBodyDataRetryDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaximumSystemBodyDataRetryDelay = TimeSpan.FromMinutes(4);
     private const int MaximumSystemBodyDataRetryAttempts = 3;
@@ -63,6 +67,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
+    private readonly JournalSourceRegistry journalSources;
     private readonly JournalProjectionState projectionState = new();
     private readonly JournalProjection journalProjections;
 
@@ -107,6 +112,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 #pragma warning restore CA2213, S2930
     private readonly GreenGasGiantPublicationCoordinator greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
+    private readonly IEdAstroPublisher edAstroPublisher;
     private readonly IVoxStellarPublisher voxStellarPublisher;
     private readonly IInaraPublisher inaraPublisher;
     private readonly IEdsmPublisher edsmPublisher;
@@ -195,6 +201,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
     private ProfileImportSource profileImportSource = new(string.Empty, ProfileImportSourceKind.Legacy, null);
+    private bool canRetryProfileRecovery;
     private string profileStatusMessage;
     private string settingsLinkStatusMessage = string.Empty;
     private string questStatusMessage = "Quests are disabled.";
@@ -234,6 +241,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
 
+    /// <summary>Constructs owned workspaces and services with failure-safe construction rollback.</summary>
     internal MainWindowViewModel(
         string? configuredJournalDirectory,
         MainWindowViewModelConstructionContext construction
@@ -272,6 +280,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         OverlayInteractionViewModel? overlayInteraction = overlay.OverlayInteraction;
         ICanonnHumanSiteClient? canonnHumanSiteClient = online.CanonnHumanSiteClient;
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = online.CanonnHumanSitePublisher;
+        IEdAstroPublisher? resolvedEdAstroPublisher = online.EdAstroPublisher;
         IEddnPublisher? resolvedEddnPublisher = online.EddnPublisher;
         IVoxStellarPublisher? resolvedVoxStellarPublisher = online.VoxStellarPublisher;
         ISystemBodyDataClient? resolvedSystemBodyDataClient = exploration.SystemBodyDataClient;
@@ -291,6 +300,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         rollback.Add(resolvedInaraPublisher);
         rollback.Add(resolvedEdsmPublisher);
         rollback.Add(resolvedEddnPublisher as IDisposable);
+        rollback.Add(resolvedEdAstroPublisher);
         rollback.Add(resolvedVoxStellarPublisher as IDisposable);
 
         try
@@ -301,6 +311,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             IsDiagnosticReplay = foundation.IsDiagnosticReplay;
             DiagnosticReplayStatus = foundation.DiagnosticReplayStatus ?? string.Empty;
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+            journalSources = new JournalSourceRegistry(AppDataPaths.CacheDirectory);
+            rollback.Add(journalSources);
             var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.SharedUiSettingsPath);
             IReadOnlyList<string> savedJournalDirectories = sharedJournalSettingsStore.Load().Directories;
             folderResolution = ResolveJournalFolder(
@@ -448,6 +460,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             VrOverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action == GlobalInputAction.ToggleVrOverlayInteraction
             );
+            CollapseCoveredColonyGroupsBinding = InputSettings.Bindings.Single(binding =>
+                binding.Definition.Action == GlobalInputAction.ToggleCollapseCoveredColonyGroups
+            );
             OverlayTheme =
                 overlayThemeSettings
                 ?? new OverlayThemeSettingsViewModel(
@@ -475,7 +490,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             StreamOverlay = new StreamOverlayViewModel(new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
             VrOverlay = new VrOverlayViewModel(
                 new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
-                new VrOverlayCalibrationStore(AppDataPaths.DataDirectory)
+                new VrOverlayCalibrationStore(AppDataPaths.OverlaySettingsDirectory)
             );
             NetworkPrivacy = new NetworkPrivacyViewModel(new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
             Inara = new InaraSettingsViewModel(commanderProfileStore);
@@ -487,7 +502,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     log: message => resolvedApplicationLogService?.Append(message),
                     acceptedEventLog: new InaraAcceptedEventLog(
                         Path.Combine(AppDataPaths.DataDirectory, "logs", "inara-accepted.txt")
-                    )
+                    ),
+                    outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
@@ -498,30 +514,48 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 ?? new EdsmPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     httpClient: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
             Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
             rollback.Add(() => Edsm.CredentialsChanged -= OnEdsmCredentialsChanged);
             this.eddnPublisher =
                 resolvedEddnPublisher
-                ?? new EddnPublisher(
+                ?? new EddnCommanderPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    Path.Combine(AppDataPaths.JournalUploadDirectory, "eddn"),
+                    Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     client: externalNetworkClient,
-                    outboxPath: Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     log: message => resolvedApplicationLogService?.Append(message)
                 );
             rollback.AddIfCreated(resolvedEddnPublisher, this.eddnPublisher as IDisposable);
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
-            this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+            InitializeEddnPublisher(targetFrontierId);
+            this.edAstroPublisher =
+                resolvedEdAstroPublisher
+                ?? new EdAstroPublisher(
+                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    client: externalNetworkClient,
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    outboxDirectory: JournalUploadStorageDirectory
+                );
+            rollback.AddIfCreated(resolvedEdAstroPublisher, this.edAstroPublisher);
+            NetworkPrivacy.EdAstroUploadEnabledChanged += OnEdAstroUploadEnabledChanged;
+            rollback.Add(() => NetworkPrivacy.EdAstroUploadEnabledChanged -= OnEdAstroUploadEnabledChanged);
+            this.edAstroPublisher.SetEnabled(NetworkPrivacy.EdAstroUploadEnabled);
             this.voxStellarPublisher =
                 resolvedVoxStellarPublisher
                 ?? new VoxStellarPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
                     IsDiagnosticReplay ? string.Empty : VoxStellarSharedKeyProvider.GetSharedKey(),
-                    client: externalNetworkClient,
-                    log: message => resolvedApplicationLogService?.Append(message)
+                    new VoxStellarPublisherOptions
+                    {
+                        Client = externalNetworkClient,
+                        Log = message => resolvedApplicationLogService?.Append(message),
+                        OutboxDirectory = JournalUploadStorageDirectory,
+                    }
                 );
             VoxStellar = new VoxStellarSharingViewModel(
                 new VoxStellarSettingsStore(AppDataPaths.UiSettingsPath),
@@ -542,13 +576,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 client: new RavenColonialClient(httpClient: externalNetworkClient, serviceUri: ravenServiceUri),
                 commanderProfileStore: commanderProfileStore,
                 legacyProfileStore: new LegacyColonizationProfileStore(AppDataPaths.DataDirectory)
-            );
+            )
+            {
+                MarketSearchFactory = () => new ColonizationMarketSearchClient(externalNetworkClient),
+            };
             rollback.Add(Colonization.Dispose);
+            OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(externalNetworkClient);
             Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory, ShowSurfaceMiningMap);
-            Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
+            Firegroups = new FiregroupsWorkspaceViewModel(
+                AppDataPaths.DataDirectory,
+                new FiregroupsOverlaySettingsStore(AppDataPaths.UiSettingsPath)
+            );
             MiningWorkspace = new MiningWorkspaceViewModel(
                 AppDataPaths.DataDirectory,
                 sharedSystemResolver,
@@ -628,9 +669,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 systemNotesSettingsStore
             );
             var spanshRouteClient = new SpanshRouteClient(externalNetworkClient);
+            var spanshPlannerClient = new SpanshPlannerClient(externalNetworkClient);
             var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
             var routeService = new FollowRouteService(new FollowRouteStore(AppDataPaths.DataDirectory));
-            Route = new RouteWorkspaceViewModel(routeService, routeNameImporter, spanshRouteClient);
+            Route = new RouteWorkspaceViewModel(
+                routeService,
+                routeNameImporter,
+                spanshRouteClient,
+                plannerClient: spanshPlannerClient,
+                currentShip: CurrentShipExport
+            );
+            rollback.Add(Route.SpanshSearch!.Dispose);
             RouteManager = new RouteManagerViewModel(routeService, Route);
             var fleetCarrierRouteService = new FollowRouteService(
                 new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier)
@@ -639,8 +688,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 fleetCarrierRouteService,
                 routeNameImporter,
                 spanshRouteClient,
-                FollowRouteKind.FleetCarrier
+                new RouteWorkspaceOptions(
+                    FollowRouteKind.FleetCarrier,
+                    PlannerClient: spanshPlannerClient,
+                    CurrentShip: CurrentShipExport,
+                    CarrierSnapshotSource: GetRouteCarrierSnapshot,
+                    RefreshCarrierSnapshot: RefreshRouteCarrierSnapshotAsync
+                )
             );
+            rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
             FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
             routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(Route, FleetCarrierRoute, boxelSearchSession);
             rollback.Add(routeAutoCopyCoordinator.Dispose);
@@ -678,6 +734,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 biologyCriteria: legacyReferences.BiologyCriteria,
                 regionalCodexCandidates: regionalCodexCandidates
             );
+            ExplorationPois = new ExplorationPoiViewModel(
+                exploration.ExplorationPoiClient
+                    ?? new EdAstroPoiClient(AppDataPaths.CacheDirectory, externalNetworkClient),
+                new ExplorationPoiSettingsStore(AppDataPaths.UiSettingsPath),
+                Bookmarks.Catalog,
+                sharedSystemResolver,
+                new CodexImageCache(Path.Combine(AppDataPaths.CacheDirectory, "poi-images"), externalNetworkClient)
+            );
+            rollback.Add(ExplorationPois.Dispose);
+            ExplorationPois.CatalogChanged += OnPoiCatalogChanged;
+            SystemSurvey.PropertyChanged += OnPoiExternalDataChanged;
+            rollback.Add(() => ExplorationPois.CatalogChanged -= OnPoiCatalogChanged);
+            rollback.Add(() => SystemSurvey.PropertyChanged -= OnPoiExternalDataChanged);
+            ExplorationPois.SetExternalEnabled(SystemSurvey.UseExternalData && !IsDiagnosticReplay);
             HumanSite = new HumanSiteViewModel(
                 new HumanSiteViewModelOptions
                 {
@@ -811,14 +881,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(legacyProfileSourcePath))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(legacyProfileSourcePath);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    legacyProfileSourcePath,
+                    AppDataPaths.DataDirectory
+                );
             }
+            canRetryProfileRecovery = LegacyProfileImporter.CanRetryRecovery(AppDataPaths.DataDirectory);
             profileStatusMessage = GetInitialProfileStatus();
             importLegacyProfileCommand = new AsyncCommand(ImportLegacyProfileAsync, CanImportLegacyProfile);
             ImportLegacyProfileCommand = importLegacyProfileCommand;
             JournalFolderPath = ResolvePrimaryJournalPath(folderResolution) ?? "No journal location is configured.";
             CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
-            TargetFrontierId = NormalizeOptionalId(targetFrontierId);
+            // Journal ownership must stay aligned with the commander-specific settings loaded at startup.
+            TargetFrontierId =
+                NormalizeOptionalId(targetFrontierId)
+                ?? CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
                 profileJournalDirectories
@@ -842,7 +919,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(() => CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged);
             gameWindowOwnership.Transfer();
             SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
-            this.eddnPublisher.SetSuspended(CommanderInstances.HasMultipleGameWindows);
+            this.eddnPublisher.SetSuspended(IsDiagnosticReplay);
+            this.edAstroPublisher.SetSuspended(IsDiagnosticReplay);
+            this.eddnPublisher.SetCompanionDataAllowed(
+                !CommanderInstances.HasMultipleGameWindows && !IsDiagnosticReplay
+            );
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths,
@@ -851,6 +932,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 externalEffectsAllowed: !IsDiagnosticReplay
             );
             rollback.Add(visitedStarsHttpClient);
+            ActiveUsers = new ActiveUsersViewModel(
+                new DailyActiveUsersClient(
+                    AppDataPaths.DataDirectory,
+                    ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly).ToString(),
+                    System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier.Split('-')[0],
+                    externalNetworkClient,
+                    message => resolvedApplicationLogService?.Append(message)
+                ),
+                enabled: !IsDiagnosticReplay
+            );
+            rollback.Add(ActiveUsers.DisposeAsync);
             statusMessage = BuildJournalReadyStatus(folderResolution.IsFound, TargetFrontierId);
             journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
             journalProjections = CreateJournalProjection();
@@ -886,7 +978,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
             NavigationItems =
             [
-                new("overview", "Overview", "Commander and current journal state"),
+                new(OverviewNavigationKey, "Overview", "Commander and current journal state"),
                 new("fleet-carrier", "Fleet Carrier", "Carrier operations and cargo"),
                 new("firegroups", "Firegroups", "Configure your firegroup reference", true),
                 new(ExplorationNavigationKey, "Exploration", "Trip totals and body scans", true),
@@ -908,7 +1000,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
             OverviewNavigationItems = NavigationItems
-                .Where(item => item.Key is "overview" or "fleet-carrier" or "firegroups")
+                .Where(item => item.Key is OverviewNavigationKey or "fleet-carrier" or "firegroups")
                 .ToArray();
             SurveyNavigationItems = NavigationItems
                 .Where(item => item.Key is ExplorationNavigationKey or ExobiologyNavigationKey or BoxelNavigationKey)
@@ -928,6 +1020,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 .ToArray();
             Guides = new GuidesViewModel(GuideCatalog.Create());
             SettingsWorkspace = new SettingsWorkspaceViewModel();
+            ProfileSync = new ProfileSyncViewModel(
+                foundation.ProfileSyncService
+                    ?? new SrvSurvey.Desktop.ProfileSync.ProfileSyncService(
+                        new SrvSurvey.Desktop.ProfileSync.ProfileSyncStore(AppDataPaths)
+                    )
+            );
+            rollback.Add(ProfileSync.Dispose);
+            ProfileSync.BeforeCapture = SaveWorkspaceContinuity;
+            RestoreWorkspaceContinuity();
 
             RavenThemeDefinition currentTheme =
                 themeService?.Current ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
@@ -942,6 +1043,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         {
             rollback.Rollback();
             throw;
+        }
+    }
+
+    private void InitializeEddnPublisher(string? targetFrontierId)
+    {
+        eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
+        if (eddnPublisher is EddnCommanderPublisher commanderPublisher)
+        {
+            commanderPublisher.RestorePendingAccount(targetFrontierId ?? AppDataPaths.SettingsFrontierId);
         }
     }
 
@@ -1007,7 +1117,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public SettingsWorkspaceViewModel SettingsWorkspace { get; }
 
+    public ProfileSyncViewModel ProfileSync { get; }
+
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
+    public ExplorationPoiViewModel ExplorationPois { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
@@ -1020,6 +1133,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public InputBindingViewModel OverlayInteractionBinding { get; }
 
     public InputBindingViewModel VrOverlayInteractionBinding { get; }
+
+    public InputBindingViewModel CollapseCoveredColonyGroupsBinding { get; }
 
     public OverlayThemeSettingsViewModel OverlayTheme { get; }
 
@@ -1073,6 +1188,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public VisitedStarsCacheViewModel VisitedStarsCache { get; }
 
+    /// <summary>Owns the machine-local daily activity refresh and sidebar count for this session.</summary>
+    public ActiveUsersViewModel ActiveUsers { get; }
+
     public IReadOnlyList<QuestRuntimeSnapshot> Quests => questRuntimeCoordinator.Snapshot;
 
     public int QuestUnreadMessageCount => Quests.Sum(quest => quest.UnreadMessageCount);
@@ -1104,6 +1222,27 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public RouteWorkspaceViewModel FleetCarrierRoute { get; }
 
     public RouteManagerViewModel FleetCarrierRouteManager { get; }
+
+    private FrontierAccountSnapshot? GetRouteCarrierSnapshot() =>
+        FrontierProfile.IsViewingJournalCommander ? FrontierProfile.Snapshot : null;
+
+    private async Task RefreshRouteCarrierSnapshotAsync()
+    {
+        if (!FrontierProfile.IsViewingJournalCommander || !FrontierProfile.IsLinked || FrontierProfile.IsBusy)
+        {
+            throw new InvalidOperationException("Frontier carrier data is not available for the journal commander.");
+        }
+        FrontierAccountSnapshot? previous = FrontierProfile.Snapshot;
+        await FrontierProfile.RefreshAsync();
+        if (
+            !FrontierProfile.IsViewingJournalCommander
+            || FrontierProfile.Snapshot is null
+            || ReferenceEquals(previous, FrontierProfile.Snapshot)
+        )
+        {
+            throw new IOException(FrontierProfile.StatusMessage);
+        }
+    }
 
     public JumpInfoViewModel JumpInfo { get; }
 
@@ -1184,6 +1323,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public JournalSettingsViewModel JournalSettings { get; }
 
+    public CurrentShipExportViewModel CurrentShipExport { get; } = new();
+
     public JournalPostProcessorViewModel JournalPostProcessor { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
@@ -1225,7 +1366,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             string normalized = value?.Trim() ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(normalized) && Directory.Exists(normalized))
             {
-                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(normalized);
+                profileImportSource = LegacyProfileLocator.ResolveManualSelectionSource(
+                    normalized,
+                    AppDataPaths.DataDirectory
+                );
                 normalized = profileImportSource.DataDirectory;
             }
             else
@@ -1237,7 +1381,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 return;
             }
 
-            if (!HasCompletedLegacyImport && !IsImportingProfile)
+            if (!IsImportingProfile)
             {
                 ProfileStatusMessage = string.IsNullOrWhiteSpace(normalized)
                     ? "Choose an SrvSurvey profile or application-data folder to import."
@@ -1277,14 +1421,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         SettingsLinkStatusMessage = $"Could not open {description}: {reason}";
     }
 
-    public string ImportProfileButtonText =>
-        IsImportingProfile
-            ? "Importing profile..."
-            : (HasCompletedLegacyImport) switch
+    public string ImportProfileButtonText
+    {
+        get
+        {
+            if (IsImportingProfile)
             {
-                true => "Profile imported",
-                false => "Back up, verify, and import",
-            };
+                return "Importing profile...";
+            }
+            if (canRetryProfileRecovery && HasCompletedLegacyImport)
+            {
+                return "Retry profile recovery";
+            }
+            return "Back up, verify, and merge";
+        }
+    }
 
     public bool HasCompletedLegacyImport =>
         File.Exists(Path.Combine(AppDataPaths.DataDirectory, LegacyProfileImporter.ManifestFileName));
@@ -1311,6 +1462,38 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public ICommand RefreshCommand { get; }
 
     public ICommand ShowProfileCommand { get; }
+
+    /// <summary>Restores portable workspace selections after all activity models are available.</summary>
+    private void RestoreWorkspaceContinuity()
+    {
+        WorkspaceContinuityPreferences preferences = new WorkspaceContinuitySettingsStore(
+            AppDataPaths.UiSettingsPath
+        ).Load();
+        MiningWorkspace.SelectedTab = preferences.MiningTab;
+        MineMap.SelectedTab = preferences.SurfaceMiningTab;
+        Guardian.SelectedWorkspaceTabIndex = preferences.GuardianTab;
+        ICommand carrierTab = preferences.FleetCarrierTab switch
+        {
+            1 => FleetCarrierWorkspace.SelectSquadronTabCommand,
+            2 => FleetCarrierWorkspace.SelectLinkedTabCommand,
+            _ => FleetCarrierWorkspace.SelectPersonalTabCommand,
+        };
+        carrierTab.Execute(null);
+        SelectedNavigation =
+            NavigationItems.FirstOrDefault(item => item.Key == preferences.Navigation) ?? NavigationItems[0];
+    }
+
+    /// <summary>Saves current workspace choices before exporting or shutting down.</summary>
+    private void SaveWorkspaceContinuity() =>
+        new WorkspaceContinuitySettingsStore(AppDataPaths.UiSettingsPath).Save(
+            new(
+                SelectedNavigation?.Key ?? OverviewNavigationKey,
+                MiningWorkspace.SelectedTab,
+                MineMap.SelectedTab,
+                Guardian.SelectedWorkspaceTabIndex,
+                (int)FleetCarrierWorkspace.SelectedTab
+            )
+        );
 
     public NavigationItemViewModel? SelectedNavigation
     {
@@ -1346,7 +1529,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public bool IsProfileSelected => isProfileSelected;
 
-    public bool IsOverviewSelected => SelectedNavigation?.Key == "overview" && !IsProfileSelected;
+    public bool IsOverviewSelected => SelectedNavigation?.Key == OverviewNavigationKey && !IsProfileSelected;
 
     public bool IsExplorationSelected => SelectedNavigation?.Key == ExplorationNavigationKey && !IsProfileSelected;
 
@@ -1613,20 +1796,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     {
         ArgumentNullException.ThrowIfNull(request);
         SelectedNavigation = NavigationItems.Single(item => item.Key == SearchNavigationKey);
-        if (request.Mode == CodexBingoNearestMode.Signal && !string.IsNullOrWhiteSpace(request.Signal))
-        {
-            await NearestSystems.SearchCodexSignalAsync(request.Signal);
-            return;
-        }
-
-        if (
-            request.Mode == CodexBingoNearestMode.MissingVariants
-            && !string.IsNullOrWhiteSpace(request.Genus)
-            && !string.IsNullOrWhiteSpace(request.Species)
-        )
-        {
-            await NearestSystems.SearchCodexVariantsAsync(request.Genus, request.Species, request.Variants);
-        }
+        await NearestSystems.SearchCodexAsync(request.Query);
     }
 
     public string SelectedThemeName => selectedTheme.DisplayName;
@@ -1966,13 +2136,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         TimeSpan interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
+        using var changes = new JournalDirectoryChangeSignal(journalMonitor.JournalDirectories);
         try
         {
             while (!Volatile.Read(ref disposed))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
-                await Task.Delay(interval, cancellationToken);
+                await changes.WaitAsync(interval, cancellationToken);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -2039,7 +2210,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             });
             ProfileImportSource selectedSource = profileImportSource;
             ProfileImportResult result = await profileImporter.ImportAsync(
-                LegacyProfileSourcePath,
+                selectedSource,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory,
                 progress,
@@ -2047,6 +2218,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             await finalProgressDispatch.Task;
             Volatile.Write(ref acceptsProfileImportProgress, false);
+            canRetryProfileRecovery = result.Warnings.Count > 0;
             if (selectedSource.Kind == ProfileImportSourceKind.CrossPlatform)
             {
                 await CompleteCrossPlatformProfileImportAsync(selectedSource, result);
@@ -2070,6 +2242,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             )
         {
             ProfileStatusMessage = "Profile import stopped: " + exception.Message;
+            if (exception.Data[LegacyProfileImporter.RecoveryDirectoryDataKey] is string recoveryDirectory)
+            {
+                ProfileStatusMessage += $" Recovered files were retained at: {recoveryDirectory}";
+            }
         }
         finally
         {
@@ -2111,68 +2287,141 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         ProfileImportResult result
     )
     {
-        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
+        var warnings = result.Warnings.ToList();
         string settingsStatus = "No adjacent cross-platform-ui.json file was selected.";
         if (selectedSource.UiSettingsPath is not null)
         {
-            CrossPlatformUiSettingsImportResult settings = await CrossPlatformUiSettingsImporter.ImportAsync(
-                selectedSource.UiSettingsPath,
-                AppDataPaths.UiSettingsPath,
-                result.BackupDirectory,
-                AppDataPaths.OverlaySettingsDirectory,
-                CancellationToken.None
+            settingsStatus = "The current-format UI settings were not imported.";
+            await TryProfileImportStepAsync(
+                "cross-platform-ui.json",
+                async () =>
+                {
+                    CrossPlatformUiSettingsImportResult settings = await CrossPlatformUiSettingsImporter.ImportAsync(
+                        selectedSource.UiSettingsPath,
+                        AppDataPaths.UiSettingsPath,
+                        result.BackupDirectory,
+                        CancellationToken.None
+                    );
+                    settingsStatus = settings.Imported
+                        ? "Imported the current-format UI settings."
+                        : "The current-format UI settings did not require import.";
+                },
+                warnings
             );
-            settingsStatus = settings.Imported
-                ? "Imported the current-format UI settings."
-                : "The current-format UI settings did not require import.";
-            if (settings.ReferencedOverlayCount > 0)
-            {
-                settingsStatus =
-                    "Imported the current-format UI settings and preserved relative placement for "
-                    + $"{settings.ReferencedOverlayCount:N0} overlays.";
-            }
         }
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} current-format files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} current-format files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} local-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + settingsStatus
             + $" Verified backups: {result.BackupDirectory}";
+        await AppendProfileImportWarningsAsync(result, warnings);
     }
 
     private async Task CompleteLegacyProfileImportAsync(ProfileImportResult result)
     {
-        LegacyOverlayLayoutImportMigrationResult overlayLayoutMigration =
-            LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(AppDataPaths);
-        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
-        LegacyUiSettingsMigrationResult settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(
-            AppDataPaths
+        var warnings = result.Warnings.ToList();
+        LegacyUiSettingsMigrationResult settingsMigration = LegacyUiSettingsMigrationResult.NotRequired;
+        await TryProfileImportStepAsync(
+            "settings.json",
+            () =>
+            {
+                settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(AppDataPaths);
+                if (settingsMigration.Error is not null)
+                {
+                    warnings.Add(new ProfileImportWarning("settings.json", settingsMigration.Error));
+                }
+                return Task.CompletedTask;
+            },
+            warnings
         );
-        LegacyOrganicProfileMigrationResult organicMigration = await new LegacyOrganicProfileMigrator(
-            AppDataPaths.DataDirectory
-        ).MigrateAsync(CancellationToken.None);
-        foreach (string error in organicMigration.Errors)
-        {
-            applicationLogService?.Append("Legacy organic history was preserved without conversion: " + error);
-        }
+        LegacyOrganicProfileMigrationResult organicMigration = LegacyOrganicProfileMigrationResult.NotRequired;
+        await TryProfileImportStepAsync(
+            "organic",
+            async () =>
+            {
+                organicMigration = await new LegacyOrganicProfileMigrator(AppDataPaths.DataDirectory).MigrateAsync(
+                    CancellationToken.None
+                );
+                warnings.AddRange(organicMigration.Errors.Select(error => new ProfileImportWarning("organic", error)));
+            },
+            warnings
+        );
 
         int retainedFiles = result.Manifest.PreviousDestinationEntries.Count - result.Manifest.Conflicts.Count;
-        long importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
+        long importedBytes = result.Manifest.GetImportedEntries().Sum(entry => entry.Length);
         ProfileStatusMessage =
-            $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
+            $"Imported {result.Manifest.GetImportedEntries().Count:N0} legacy files, "
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} current-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + GetOverlayLayoutMigrationStatus(overlayLayoutMigration)
-            + " "
+            + "Overlay layouts were skipped; current layouts were kept. "
             + GetSettingsMigrationStatus(settingsMigration)
             + " "
             + GetOrganicMigrationStatus(organicMigration)
             + $"Verified backups: {result.BackupDirectory}";
+        await AppendProfileImportWarningsAsync(result, warnings);
+    }
+
+    private static async Task TryProfileImportStepAsync(
+        string path,
+        Func<Task> action,
+        List<ProfileImportWarning> warnings
+    )
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception exception)
+        {
+            warnings.Add(new ProfileImportWarning(path, exception.Message));
+        }
+    }
+
+    private async Task AppendProfileImportWarningsAsync(ProfileImportResult result, List<ProfileImportWarning> warnings)
+    {
+        if (warnings.Count == 0)
+        {
+            return;
+        }
+        canRetryProfileRecovery = true;
+        string report = Path.Combine(result.BackupDirectory, LegacyProfileImporter.RecoveryReportFileName);
+        try
+        {
+            await File.WriteAllTextAsync(
+                report,
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        result.Manifest.SourceDirectory,
+                        result.Manifest.Entries,
+                        Warnings = warnings,
+                    }
+                ),
+                CancellationToken.None
+            );
+            await LegacyProfileImporter.SaveRecoveryWarningsAsync(result, warnings);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add(new ProfileImportWarning("warning report", exception.Message));
+        }
+        foreach (ProfileImportWarning warning in warnings)
+        {
+            applicationLogService?.Append($"Profile import warning: {warning.RelativePath}: {warning.Message}");
+        }
+        string details = string.Join(
+            " | ",
+            warnings.Take(10).Select(warning => $"{warning.RelativePath}: {warning.Message}")
+        );
+        ProfileStatusMessage +=
+            $" Recovered data was kept. Warnings ({warnings.Count:N0}): {details} Full report: {report}";
     }
 
     private async Task PrepareForProfileImportAsync()
@@ -2229,21 +2478,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             : "No legacy UI preference translation was required.";
     }
 
-    private static string GetOverlayLayoutMigrationStatus(LegacyOverlayLayoutImportMigrationResult migration)
-    {
-        if (migration.Error is not null)
-        {
-            return "Legacy overlay positions were preserved, but absolute desktop "
-                + "anchors could not be converted. Reposition affected panels in "
-                + $"the overlay editor. {migration.Error}";
-        }
-
-        return migration.Migrated
-            ? $"Converted {migration.NormalizedPlacementCount:N0} absolute overlay "
-                + "placement(s) to game-window-relative anchors."
-            : "No absolute overlay placement conversion was required.";
-    }
-
     private static string GetOrganicMigrationStatus(LegacyOrganicProfileMigrationResult migration)
     {
         string status = migration.Migrated
@@ -2268,7 +2502,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return !IsDiagnosticReplay
             && !IsImportingProfile
             && Directory.Exists(LegacyProfileSourcePath)
-            && !HasCompletedLegacyImport
             && !File.Exists(AppDataPaths.DataDirectory);
     }
 
@@ -2279,11 +2512,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             return "Profile import is unavailable during diagnostic replay.";
         }
 
+        if (HasCompletedLegacyImport && canRetryProfileRecovery)
+        {
+            return "Recovered profile data is available. The previous import reported warnings; choose a profile folder to retry recovery. "
+                + $"Full report: {LegacyProfileImporter.GetRecoveryReportPath(AppDataPaths.DataDirectory)}";
+        }
+
         if (HasCompletedLegacyImport)
         {
-            return $"Profile data has already been imported into "
-                + $"{AppDataPaths.DataDirectory}. The verified backup and conflict "
-                + "manifest are retained for recovery.";
+            return $"Profile data is available in {AppDataPaths.DataDirectory}. Further imports add missing data and keep current values; verified backups are retained.";
         }
 
         if (File.Exists(AppDataPaths.DataDirectory))
@@ -2293,8 +2530,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
 
         return LegacyProfiles.Count == 0
-            ? "No Windows profile was detected automatically. Choose its profile folder manually; "
-                + "both current-format and legacy profiles copied from Windows can be imported on Linux."
+            ? "No original profile was detected automatically. Choose a profile folder or Wine/Proton prefix manually."
             : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
                 + "Import creates checksum-verified backups, preserves current-only files, "
                 + "records collisions, and activates the merged copy transactionally.";
@@ -2452,8 +2688,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Projects the latest commander session into workspace state and starts eligible daily activity refreshes.</summary>
     private void ApplySnapshot(JournalSnapshot snapshot)
     {
+        ActiveUsers.SessionLoaded(!string.IsNullOrWhiteSpace(snapshot.FrontierId));
         CommanderInstances.UpdateCurrent(snapshot.FrontierId, snapshot.CommanderName);
         VisitedStarsCache.UpdateContext(snapshot.FrontierId, snapshot.CommanderName, snapshot.SystemName);
         CommanderName = Display(snapshot.CommanderName);
@@ -4371,15 +4609,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return string.IsNullOrWhiteSpace(value) ? Unavailable : value;
     }
 
+    /// <summary>Uses profile-scoped durable storage for live publication and keeps diagnostic replay free of upload persistence.</summary>
+    private string? JournalUploadStorageDirectory => IsDiagnosticReplay ? null : AppDataPaths.JournalUploadDirectory;
+
+    /// <summary>Applies a confirmed key edit immediately, retaining uploads on rotation and discarding them only on removal.</summary>
     private void OnInaraApiKeyChanged(object? sender, EventArgs eventArgs)
     {
         FrontierProfile.SetInaraApiKey(Inara.StoredApiKey);
-        inaraPublisher.CancelPendingPublication();
+        inaraPublisher.CancelPendingPublication(discardRetainedReports: string.IsNullOrWhiteSpace(Inara.StoredApiKey));
     }
 
+    /// <summary>Cancels stale credential use immediately and requests durable removal only for a confirmed clear.</summary>
     private void OnEdsmCredentialsChanged(object? sender, EventArgs eventArgs)
     {
-        edsmPublisher.CancelPendingPublication();
+        edsmPublisher.CancelPendingPublication(discardRetainedReports: string.IsNullOrWhiteSpace(Edsm.StoredApiKey));
     }
 
     private void OnVoxStellarUploadEnabledChanged(bool enabled)
@@ -4399,6 +4642,41 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Captures the final journal append and gives retained cargo a bounded shutdown attempt.</summary>
+    private async Task DrainCarrierCargoAtShutdownAsync()
+    {
+        if (journalMonitor is null || IsDiagnosticReplay)
+        {
+            return;
+        }
+        // Producers and consumed projections have stopped. Capture the last append with no canceled monitor token.
+        await journalUpdateGate.WaitAsync(CancellationToken.None);
+        try
+        {
+            try
+            {
+                JournalMonitorUpdate update = await journalMonitor.PollAsync(CancellationToken.None);
+                await journalProjections.CaptureCargoAsync(update);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                applicationLogService?.Append(
+                    "The final journal append could not be read at shutdown: " + exception.Message
+                );
+            }
+            finally
+            {
+                using var cargoShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                await Colonization.FlushFleetCarrierCargoAsync(cargoShutdown.Token);
+            }
+        }
+        finally
+        {
+            journalUpdateGate.Release();
+        }
+    }
+
+    /// <summary>Drains journal work, saves workspace continuity, backs up the profile and releases owned services.</summary>
     public async ValueTask DisposeAsync()
     {
         Task drain;
@@ -4446,8 +4724,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             }
         }
 
+        await TryDisposeAsync(() => new ValueTask(DrainCarrierCargoAtShutdownAsync()));
+        TryDispose(SaveWorkspaceContinuity);
+        await TryDisposeAsync(ActiveUsers.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
+        TryDispose(Route.SpanshSearch!.Dispose);
+        TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
+        await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
+        await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
         TryDispose(boxelNameSuggestions.Dispose);
@@ -4462,6 +4747,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(JournalHistory.Dispose);
         TryDispose(companionTimelineStore.Dispose);
         TryDispose(JumpInfo.Dispose);
+        TryDispose(() => ExplorationPois.CatalogChanged -= OnPoiCatalogChanged);
+        TryDispose(() => SystemSurvey.PropertyChanged -= OnPoiExternalDataChanged);
+        TryDispose(ExplorationPois.Dispose);
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         MineMap.PropertyChanged -= OnMineMapPropertyChanged;
@@ -4469,9 +4757,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
+        TryDispose(NearestSystems.Dispose);
         TryDispose(StationInfo.Dispose);
         TryDispose(MiningWorkspace.Dispose);
         TryDispose(FleetCarrierWorkspace.Dispose);
+        // Keep the owned disposal call visible to resource-lifetime analysis.
+        TryDispose(() => journalSources.Dispose());
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
@@ -4489,6 +4780,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(OverlayInteraction.Dispose);
         TryDispose(FrontierProfile.Dispose);
         TryDispose(() => visitedStarsHttpClient?.Dispose());
+        NetworkPrivacy.EdAstroUploadEnabledChanged -= OnEdAstroUploadEnabledChanged;
+        TryDispose(edAstroPublisher.Dispose);
         NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
         if (eddnPublisher is IDisposable disposableEddnPublisher)
         {
@@ -4501,6 +4794,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         await TryDisposeAsync(questRuntimeCoordinator.DisposeAsync);
+        if (!IsDiagnosticReplay)
+        {
+            await TryDisposeAsync(() => new ValueTask(ProfileSync.ShutdownAsync()));
+        }
+
+        TryDispose(ProfileSync.Dispose);
         ThrowDisposalFailures(failures);
     }
 
@@ -4519,6 +4818,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         throw new AggregateException("One or more main-window resources failed to dispose.", failures);
     }
 
+    /// <summary>Applies saved EDAstro consent immediately to the delivery module.</summary>
+    private void OnEdAstroUploadEnabledChanged(bool enabled) => edAstroPublisher.SetEnabled(enabled);
+
     private void OnEddnUploadEnabledChanged(bool enabled)
     {
         eddnPublisher.SetEnabled(enabled);
@@ -4533,6 +4835,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    /// <summary>Pauses shared-data consumers and journal delivery when multiple game windows make attribution ambiguous.</summary>
     private void OnCommanderInstancesPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName != nameof(CommanderInstancesViewModel.HasMultipleGameWindows))
@@ -4542,10 +4845,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
         bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
         SetSharedCargoSuppressed(hasMultipleGameWindows);
-        eddnPublisher.SetSuspended(hasMultipleGameWindows);
+        bool ambiguous = !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount);
+        eddnPublisher.SetCompanionDataAllowed(!ambiguous && !IsDiagnosticReplay);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 
+    /// <summary>Retains shared-data suppression while allowing Raven's independently verified commander sources.</summary>
     private void SetSharedCargoSuppressed(bool value)
     {
         if (value)
@@ -4560,7 +4865,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         FrontierProfile.UpdateLocalInventory(latestCargo, latestShipLocker, isSuppressed: value);
 
         DockToDock.SetSharedCargoSuppressed(value);
-        Colonization.SetSharedCargoSuppressed(value);
+        Colonization.SetSharedCargoSuppressed(
+            value && !journalSources.CanUseSource(CommanderInstances.AvailableGameWindowCount)
+        );
     }
 
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)

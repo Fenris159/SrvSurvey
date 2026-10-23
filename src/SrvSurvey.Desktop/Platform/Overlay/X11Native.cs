@@ -299,6 +299,48 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XFree(nint data);
 
+    /// <summary>Reads toolkit hints so capture focus policy can preserve icon, group, and initial-state metadata.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial nint XGetWMHints(nint display, nuint window);
+
+    /// <summary>Publishes the ICCCM input hint used by KWin's keyboard-focus and Alt-Tab eligibility checks.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XSetWMHints(nint display, nuint window, ref XWmHints hints);
+
+    /// <summary>Keeps capture windows out of keyboard switching without setting portal-filtered skip-switcher flags.</summary>
+    internal static void DisableWindowInput(nint display, nuint window)
+    {
+        nint existingHints = XGetWMHints(display, window);
+        try
+        {
+            XWmHints hints = existingHints == nint.Zero ? default : Marshal.PtrToStructure<XWmHints>(existingHints);
+            hints.Flags |= 1; // ICCCM InputHint
+            hints.Input = 0;
+            _ = XSetWMHints(display, window, ref hints);
+        }
+        finally
+        {
+            if (existingHints != nint.Zero)
+            {
+                _ = XFree(existingHints);
+            }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XWmHints
+    {
+        public nint Flags;
+        public int Input;
+        public int InitialState;
+        public nuint IconPixmap;
+        public nuint IconWindow;
+        public int IconX;
+        public int IconY;
+        public nuint IconMask;
+        public nuint WindowGroup;
+    }
+
     [LibraryImport("libX11.so.6")]
     internal static partial nint XGetImage(
         nint display,
@@ -333,6 +375,7 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XRaiseWindow(nint display, nuint window);
 
+    /// <summary>Lowers a capture window without unmapping it or changing keyboard focus.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XLowerWindow(nint display, nuint window);
 

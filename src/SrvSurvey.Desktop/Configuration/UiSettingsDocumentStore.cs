@@ -10,10 +10,13 @@ public sealed class UiSettingsDocumentStore
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
     private readonly object fileLock;
+    private readonly bool flushToDisk;
 
-    public UiSettingsDocumentStore(string path)
+    /// <summary>Configures atomic settings updates with optional disk flushing for recovery-critical data.</summary>
+    public UiSettingsDocumentStore(string path, bool flushToDisk = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        this.flushToDisk = flushToDisk;
         Path = System.IO.Path.GetFullPath(path);
         fileLock = FileLocks.GetOrAdd(Path, _ => new object());
     }
@@ -56,6 +59,7 @@ public sealed class UiSettingsDocumentStore
         }
     }
 
+    /// <summary>Replaces the settings document atomically and flushes it to disk when durability is requested.</summary>
     private void WriteObject(JsonObject root)
     {
         string directory =
@@ -70,6 +74,11 @@ public sealed class UiSettingsDocumentStore
             using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
             {
                 root.WriteTo(writer);
+                writer.Flush();
+                if (flushToDisk)
+                {
+                    stream.Flush(flushToDisk: true);
+                }
             }
 
             File.Move(temporaryPath, Path, true);

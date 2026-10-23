@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\ReferenceData\edsy-modules.json" LogicalName="SrvSurvey.Core.Resources.edsy-modules.json" />
     <PackageReference Include="LuaCSharp" Version="0.5.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
@@ -20,6 +21,8 @@
     <EmbeddedResource Include="Resources\ReferenceData\edtools-mining-spots.json" LogicalName="SrvSurvey.Core.Resources.edtools-mining-spots.json" />
     <EmbeddedResource Include="Resources\ReferenceData\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\spansh-codex-landmarks.json"
+                      LogicalName="SrvSurvey.Core.Resources.spansh-codex-landmarks.json" />
     <EmbeddedResource Include="Resources\ReferenceData\nebulae.json"
                       LogicalName="SrvSurvey.Core.Resources.nebulae.json" />
     <EmbeddedResource Include="Resources\ReferenceData\allRuins.json"
@@ -38,6 +41,7 @@
                       LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
     <EmbeddedResource Include="Resources\ReferenceData\colonization-effects.json"
                       LogicalName="SrvSurvey.Core.Resources.colonization-effects.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\manifest-commodity-names.json" LogicalName="SrvSurvey.Core.Resources.manifest-commodity-names.json" />
     <EmbeddedResource Include="Resources\ReferenceData\colonization-commodity-names.json"
                       LogicalName="SrvSurvey.Core.Resources.colonization-commodity-names.json" />
     <EmbeddedResource Include="Resources\ReferenceData\ggg.json"

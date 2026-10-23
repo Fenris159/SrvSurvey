@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
@@ -137,7 +138,7 @@
                     Grid.Row="1"
                     Grid.ColumnSpan="2"
                     Margin="0,10,0,0"
-                    IsEnabled="{Binding WaylandCapture.IsApplicable}"
+                    IsEnabled="{Binding WaylandCapture.CanChangeCaptureSettings}"
                     IsChecked="{Binding WaylandCapture.IsEnabled, Mode=TwoWay}"
                     Content="Enable Wayland screen capture" />
           <StackPanel x:Name="WaylandCaptureTrackerOptions"
@@ -558,6 +559,37 @@
         </Grid>
       </Border>
 
+      <Border x:Name="EdAstroCard"
+              Classes="card raised"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="12">
+              <TextBlock Classes="card-title" Text="EDAstro" />
+              <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontWeight="SemiBold"
+                           Text="OPT-IN" />
+              </Border>
+            </Grid>
+            <TextBlock TextWrapping="Wrap"
+                       Text="Contribute supported live fleet-carrier and exploration journal data to EDAstro." />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding NetworkPrivacy.EdAstroConsentSummary}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Review the event types, carrier locations, application identity, batching and delivery behavior before opting in." />
+          </StackPanel>
+          <Button x:Name="ConfigureEdAstroSharingButton"
+                  Grid.Column="1"
+                  Classes="primary"
+                  VerticalAlignment="Center"
+                  Click="ConfigureEdAstroSharing_Click"
+                  Content="Configure EDAstro Sharing" />
+        </Grid>
+      </Border>
+
       <Border x:Name="InaraCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
@@ -635,7 +667,7 @@
 
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander." />
+                     Text="Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite clients, attributable journal activity continues for this instance's commander. Cargo.json, ShipLocker.json, and Status.json enrichment is allowed only when every client is bound to a distinct physical journal folder and commander." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Inara.HasPublicationStatus}"
                      TextWrapping="Wrap"
@@ -720,7 +752,7 @@
 
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue." />
+                     Text="Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay and multicrew are excluded. Multiple Elite clients can upload when each commander is bound to a distinct physical journal folder. Captured reports survive restarts in a private local retry queue; API keys are not stored in retry files or normal logs." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Edsm.HasPublicationStatus}"
                      TextWrapping="Wrap"
@@ -948,6 +980,10 @@
                    Text="Bring settings, commander state, surveys, routes, journeys, caches, and other profile data from current-format or legacy SrvSurvey installations." />
       </StackPanel>
 
+      <Border x:Name="ProfileSyncCard" Classes="card raised" IsVisible="{Binding SettingsWorkspace.IsDataSelected}" IsEnabled="{Binding !IsDiagnosticReplay}">
+        <views:ProfileSyncView DataContext="{Binding ProfileSync}" />
+      </Border>
+
       <Border x:Name="JournalSourceCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsDataSelected}">
@@ -1035,7 +1071,7 @@
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile." />
+                         Text="Close the source SrvSurvey before importing. Choose a profile folder or Wine/Proton prefix. Imports add missing player and Codex data and keep current values and Bingo progress. Original overlay positions are skipped. Readable data is kept if some files are incompatible; details appear in the warning report. XP profiles can include adjacent cross-platform-ui.json settings." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="primary"
