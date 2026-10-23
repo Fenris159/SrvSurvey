@@ -5,6 +5,23 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class GamescopeScalingStateTests
 {
     [Fact]
+    public void SubscriptionReconciliationRetainsObservedTimestampsAcrossPolls()
+    {
+        var state = new GamescopeScalingState(0);
+        state.Observe([new(10, 0, ":primary")]);
+        state.ReconcileSubscription([1], [new(30, 1, ":game")]);
+        Assert.Equal(1u, state.Mode);
+        state.Observe([new(20, 3, ":primary")]);
+        Assert.Equal(1u, state.Mode);
+        state.ReconcileSubscription([0], [new(40, 4, ":game")]);
+        Assert.Null(state.Mode);
+        state.Observe([new(35, 3, ":primary"), new(40, 4, ":game")]);
+        Assert.Null(state.Mode);
+        state.Observe([new(41, 1, ":game")]);
+        Assert.Equal(1u, state.Mode);
+    }
+
+    [Fact]
     public void ReattachedSubscriptionsPreserveObservedHistoryAndRequireFreshCommandsAfterConflicts()
     {
         var state = new GamescopeScalingState(0);

@@ -9,6 +9,7 @@ pid_t __wrap_fork(void) {
     static int ordinal;
     ++ordinal;
     if (ordinal == atoi(getenv("SRVSURVEY_TEST_FAIL_FORK"))) {
+        printf("INJECTED_FORK %d\n", ordinal);
         errno = EAGAIN;
         return -1;
     }

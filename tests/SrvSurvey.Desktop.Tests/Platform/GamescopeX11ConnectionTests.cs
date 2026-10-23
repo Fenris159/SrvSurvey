@@ -43,6 +43,15 @@ public sealed partial class GamescopeX11ConnectionTests
 
         SetNumbers(primary.Display, primary.Root, "GAMESCOPE_FOCUS_DISPLAY", [0]);
         Assert.Equal(1u, connection.ReadFocus().ScalingMode);
+        SetNumbers(
+            primary.Display,
+            primary.Root,
+            "GAMESCOPE_FOCUS_DISPLAY",
+            name.Chunk(4).Select(chunk => BitConverter.ToUInt32(chunk)).ToArray()
+        );
+        Assert.Equal(1u, connection.ReadFocus().ScalingMode); // Unchanged retained properties preserve the observed order.
+        SetNumbers(primary.Display, primary.Root, "GAMESCOPE_FOCUS_DISPLAY", [0]);
+        Assert.Equal(1u, connection.ReadFocus().ScalingMode);
         _ = XDeleteProperty(
             game.Display,
             game.Root,
@@ -55,7 +64,7 @@ public sealed partial class GamescopeX11ConnectionTests
             "GAMESCOPE_FOCUS_DISPLAY",
             name.Chunk(4).Select(chunk => BitConverter.ToUInt32(chunk)).ToArray()
         );
-        Assert.Null(connection.ReadFocus().ScalingMode); // Primary's old auto request cannot replace observed integer mode.
+        Assert.Equal(0u, connection.ReadFocus().ScalingMode); // Gamescope processes property deletion as a new auto command.
         await Task.Delay(20);
         SetNumbers(game.Display, game.Root, GamescopeScalingState.ScalerAtom, [1]);
         Assert.Equal(1u, connection.ReadFocus().ScalingMode);

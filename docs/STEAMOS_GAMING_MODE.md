@@ -19,9 +19,10 @@ version differences still need the device checks below.
 2. Start SrvSurvey in Desktop Mode. Confirm that it finds your Elite journal
    folder and commander. Configure the overlay panels and positions there.
    Desktop configuration does not prove Gaming Mode composition.
-3. In **Settings → Input**, assign **Toggle live overlay interaction** to a
-   keyboard shortcut that does not conflict with Elite. Its default is
-   **Alt+Shift+O**. Record the shortcut for your Elite Steam Input layout.
+3. In **Settings → Input**, turn on **Enable key chords**, then assign
+   **Toggle live overlay interaction** to a keyboard shortcut that does not
+   conflict with Elite. Its default is **Alt+Shift+O**. Test the shortcut in
+   Desktop Mode and record it for your Elite Steam Input layout.
 4. Add the AppImage as a non-Steam game in the desktop Steam client. Set the
    shortcut's working directory to the folder containing the AppImage. For a
    portable installation, target `SrvSurvey.Desktop` in the extracted folder.

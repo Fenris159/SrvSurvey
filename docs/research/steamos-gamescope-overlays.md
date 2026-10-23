@@ -673,7 +673,10 @@ The scaling audit confirmed that `GAMESCOPE_NEW_SCALING_SCALER` is a command,
 not published current state. CLI `-S integer` sets the scaler directly, and the
 legacy `GAMESCOPE_SCALING_FILTER` path also changes it. The new observer reads
 startup arguments only from the verified same-user compositor, then joins root
-`PropertyNotify` commands from its primary and verified active game server.
+`PropertyNotify` commands from its primary and verified game servers. Game
+subscriptions stay open across focus changes so returning to an unchanged game
+preserves observed ordering. New subscriptions reconcile only their own retained
+properties and preserve the timestamps of events drained during attachment.
 It handles unchanged repeated values, legacy integer/auto mapping, invalid new
 values, timestamp wrap, and same-server event order. Conflicting historical
 commands or simultaneous conflicting commands on different servers leave the

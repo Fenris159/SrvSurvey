@@ -182,6 +182,7 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
     private int nestedProcessId;
     private ulong? nestedProcessStartTime;
     private bool hasNativeHostFocusPublisher;
+    private readonly HashSet<(int ProcessId, ulong StartTime)> nativeHostFocusPublishers = [];
 
     public GamescopeGameWindowTracker(
         IGameWindowTracker hostTracker,
@@ -223,6 +224,15 @@ internal sealed class GamescopeGameWindowTracker : IGameWindowTracker
             nestedProcessStartTime = bridge.ProcessStartTime;
         }
 
+        if (bridge.ProcessStartTime is ulong startTime)
+        {
+            (int ProcessId, ulong StartTime) identity = (bridge.ProcessId, startTime);
+            if (bridge.HasNativeHostFocusPublisher)
+            {
+                nativeHostFocusPublishers.Add(identity);
+            }
+            hasNativeHostFocusPublisher |= nativeHostFocusPublishers.Contains(identity);
+        }
         hasNativeHostFocusPublisher |= bridge.HasNativeHostFocusPublisher;
 
         GameWindowSnapshot nestedSnapshot = nestedTracker?.GetSnapshot() ?? GameWindowSnapshot.Unavailable;

@@ -244,6 +244,32 @@ public sealed class GamescopeGameWindowTrackerTests
     }
 
     [Fact]
+    public void NativePublisherCapabilitySurvivesBridgeInterruptionForTheSameProcessIdentity()
+    {
+        GamescopeGameWindowBridge? bridge = new(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = false,
+            HasNativeHostFocusPublisher = true,
+            ProcessStartTime = 123,
+        };
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true))
+        );
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        GamescopeGameWindowBridge original = bridge;
+        bridge = null;
+        Assert.False(tracker.GetSnapshot().IsAvailable);
+        bridge = original with { IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { IsHostForeground = true, HasNativeHostFocusPublisher = true };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { ProcessStartTime = 124, IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+    }
+
+    [Fact]
     public void ReusedProcessIdStartsIndependentNativeFocusTracking()
     {
         var first = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));

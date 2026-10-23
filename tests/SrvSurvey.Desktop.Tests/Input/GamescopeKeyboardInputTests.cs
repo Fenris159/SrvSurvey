@@ -8,6 +8,32 @@ namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class GamescopeKeyboardInputTests
 {
+    [Theory]
+    [InlineData(":3", true)]
+    [InlineData(":2", false)]
+    public async Task CompositorFocusOverridesAnUnrelatedGeometryBridge(string discoveredDisplay, bool opensGame)
+    {
+        var recorder = new FakeRecord();
+        string? opened = null;
+        await using var input = new GamescopeKeyboardInput(
+            () => new GamescopeGameWindowBridge(123, ":2", default),
+            display =>
+            {
+                opened = display;
+                return recorder;
+            },
+            ":0",
+            () => new EliteKeyboardDisplay(456, discoveredDisplay),
+            _ => new TestGameWindowTracker { Focused = true },
+            readFocusedDisplay: () => ":3"
+        );
+        recorder.Events = [new UioHookEvent { Type = EventType.KeyPressed }];
+        GameKeyboardEventBatch batch = input.ReadEvents(true);
+        Assert.Equal(opensGame ? ":3" : null, opened);
+        Assert.Equal(opensGame, batch.IsGameForeground);
+        Assert.Equal(opensGame ? 1 : 0, batch.Events.Count);
+    }
+
     /// <summary>Discovers and tracks an unbridged Elite display without listening twice on the desktop server.</summary>
     [Fact]
     public async Task DiscoversDisplayWithoutBridgeAndCarriesGameFocus()

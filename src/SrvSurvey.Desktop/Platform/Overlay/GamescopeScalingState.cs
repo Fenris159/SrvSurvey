@@ -30,8 +30,12 @@ internal sealed class GamescopeScalingState(uint? startupMode)
         };
     }
 
-    public void ReconcileSubscription(IEnumerable<uint> existingRequests)
+    public void ReconcileSubscription(
+        IEnumerable<uint> existingRequests,
+        IEnumerable<GamescopeScalingRequest>? observedRequests = null
+    )
     {
+        Observe(observedRequests ?? []);
         if (existingRequests.Any(mode => mode != Mode))
         {
             Mode = null;

@@ -29,8 +29,7 @@ internal sealed partial class GamescopeX11Connection : IDisposable
     private readonly string displayName;
     private GamescopeScalingState? scaling;
     private GamescopeDisplayIdentity? scalingIdentity;
-    private GamescopeX11Connection? gameScaling;
-    private string? gameScalingName;
+    private readonly Dictionary<string, GamescopeX11Connection> gameScaling = new(StringComparer.Ordinal);
     private bool scalingInitialized;
     private bool scalingSubscribed;
     private bool reportedUnknownScaling;
@@ -110,7 +109,7 @@ internal sealed partial class GamescopeX11Connection : IDisposable
 
     private uint? ReadScalingMode(string? gameDisplay)
     {
-        if (!scalingInitialized || gameScalingName != gameDisplay)
+        if (!scalingInitialized)
         {
             scalingIdentity = ReadIdentity();
         }
@@ -118,25 +117,25 @@ internal sealed partial class GamescopeX11Connection : IDisposable
             GamescopeScalingState.ReadStartupMode("/proc", scalingIdentity?.ProcessId)
         );
         SubscribeScaling();
-        bool attached = AttachGameScaling(gameDisplay);
+        GamescopeX11Connection? attached = AttachGameScaling(gameDisplay);
         List<GamescopeScalingRequest> requests = ReadScalingRequests();
-        requests.AddRange(gameScaling?.ReadScalingRequests() ?? []);
-        if (!scalingInitialized || attached)
+        foreach (GamescopeX11Connection connection in gameScaling.Values)
         {
-            // Newly subscribed servers retain values but no historical cross-server ordering.
-            // Include anything queued during subscription before accepting a fresh command.
-            IEnumerable<uint> existing = ReadExistingScalingRequests()
-                .Concat(gameScaling?.ReadExistingScalingRequests() ?? [])
-                .Concat(requests.Select(request => request.Mode));
-            if (scalingInitialized)
-            {
-                scaling.ReconcileSubscription(existing);
-            }
-            else
-            {
-                scaling.Initialize(existing);
-            }
+            requests.AddRange(connection.ReadScalingRequests());
+        }
+        if (!scalingInitialized)
+        {
+            uint[] existing = ReadExistingScalingRequests()
+                .Concat(attached?.ReadExistingScalingRequests() ?? [])
+                .ToArray();
+            scaling.Initialize(existing);
+            scaling.ReconcileSubscription(existing, requests);
             scalingInitialized = true;
+        }
+        else if (attached is not null)
+        {
+            // Existing subscriptions retain their event history; only this server has untimed history.
+            scaling.ReconcileSubscription(attached.ReadExistingScalingRequests(), requests);
         }
         else
         {
@@ -152,17 +151,16 @@ internal sealed partial class GamescopeX11Connection : IDisposable
         return scaling.Mode;
     }
 
-    private bool AttachGameScaling(string? gameDisplay)
+    private GamescopeX11Connection? AttachGameScaling(string? gameDisplay)
     {
-        if (gameScalingName != gameDisplay || gameScaling is { IsAlive: false })
+        foreach (string failed in gameScaling.Where(pair => !pair.Value.IsAlive).Select(pair => pair.Key).ToArray())
         {
-            gameScaling?.Dispose();
-            gameScaling = null;
-            gameScalingName = gameDisplay;
+            gameScaling[failed].Dispose();
+            gameScaling.Remove(failed);
         }
         if (
-            gameScaling is null
-            && gameDisplay is not null
+            gameDisplay is not null
+            && !gameScaling.ContainsKey(gameDisplay)
             && !GamescopeExternalGameWindowTracker.SameDisplay(displayName, gameDisplay)
             && scalingIdentity?.ProcessId is uint pid
         )
@@ -170,16 +168,16 @@ internal sealed partial class GamescopeX11Connection : IDisposable
             GamescopeX11Connection? candidate = TryOpen(gameDisplay);
             if (candidate?.ReadIdentity()?.ProcessId == pid)
             {
-                gameScaling = candidate;
-                gameScaling.SubscribeScaling();
-                return true;
+                gameScaling.Add(gameDisplay, candidate);
+                candidate.SubscribeScaling();
+                return candidate;
             }
             else
             {
                 candidate?.Dispose();
             }
         }
-        return false;
+        return null;
     }
 
     private void SubscribeScaling()
@@ -485,8 +483,11 @@ internal sealed partial class GamescopeX11Connection : IDisposable
 
     public void Dispose()
     {
-        gameScaling?.Dispose();
-        gameScaling = null;
+        foreach (GamescopeX11Connection subscription in gameScaling.Values)
+        {
+            subscription.Dispose();
+        }
+        gameScaling.Clear();
         nint connection = display;
         display = nint.Zero;
         if (connection != nint.Zero)
