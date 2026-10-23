@@ -31,18 +31,24 @@ public static class FrontierPowerplayJournal
     public static bool HasRecoveryBaseline(IEnumerable<JournalEventEnvelope> entries)
     {
         FrontierPowerplaySnapshot? status = null;
-        bool reset = false;
+        bool recovered = false;
         foreach (JournalEventEnvelope entry in entries)
         {
             FrontierPowerplaySnapshot? updated = Apply(status, entry);
-            if (!ReferenceEquals(updated, status) && entry.EventName is JoinEvent or DefectEvent or "PowerplayLeave")
+            if (
+                !ReferenceEquals(updated, status)
+                && (
+                    entry.EventName is JoinEvent or DefectEvent or "PowerplayLeave"
+                    || updated is { Power.Length: 0 } or { Rank: not null, Merits: not null }
+                )
+            )
             {
-                reset = true;
+                recovered = true;
             }
             status = updated;
         }
 
-        return reset || status is { Power.Length: 0 } or { Rank: not null, Merits: not null };
+        return recovered;
     }
 
     /// <summary>Attributes each event using its identity boundary and the commander active before the batch.</summary>
@@ -170,11 +176,7 @@ public static class FrontierPowerplayJournal
             }
             return (frontierId, name);
         }
-        if (
-            name is not null
-            && previous.Name is not null
-            && !string.Equals(name, previous.Name, StringComparison.OrdinalIgnoreCase)
-        )
+        if (name is not null && !string.Equals(name, previous.Name, StringComparison.OrdinalIgnoreCase))
         {
             return (null, name);
         }

@@ -239,7 +239,7 @@ public sealed class JumpRouteProgressControl : Control
         public required IBrush Brush { get; init; }
     }
 
-    /// <summary>Draws solid or dashed route segments using the requested stroke width.</summary>
+    /// <summary>Draws solid route segments with boost underlays and a thicker active-jump highlight.</summary>
     private void DrawLegSegments(LegSegmentDraw draw)
     {
         if (draw.Leg.RequiresBoost)
@@ -266,7 +266,7 @@ public sealed class JumpRouteProgressControl : Control
         );
     }
 
-    /// <summary>Draws the marker identifying a boosted route leg.</summary>
+    /// <summary>Draws destination nodes, the active-target diamond, and scoopable-star markers.</summary>
     private void DrawLegMarker(
         DrawingContext context,
         JumpInfoRouteLeg leg,

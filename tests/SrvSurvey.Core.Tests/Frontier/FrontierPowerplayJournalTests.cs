@@ -100,14 +100,16 @@ public sealed class FrontierPowerplayJournalTests
     }
 
     /// <summary>Verifies that a different name without a confirmed FID cannot overwrite the previous commander's status.</summary>
-    [Fact]
-    public void FidlessIdentityChangeDoesNotBorrowThePreviousCommandersFrontierId()
+    [Theory]
+    [InlineData("""{"event":"Commander","Name":"Fenris","FID":"F123"}""")]
+    [InlineData("""{"event":"Commander","FID":"F123"}""")]
+    public void FidlessIdentityChangeDoesNotBorrowThePreviousCommandersFrontierId(string commander)
     {
         FrontierPowerplaySnapshot previous = Previous();
         FrontierPowerplaySnapshot? result = FrontierPowerplayJournal.Apply(
             previous,
             [
-                Entry("""{"event":"Commander","Name":"Fenris","FID":"F123"}"""),
+                Entry(commander),
                 Entry("""{"event":"LoadGame","Commander":"Second"}"""),
                 Entry("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayLeave"}"""),
             ],

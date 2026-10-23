@@ -326,6 +326,72 @@ public sealed partial class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that a recovered baseline remains sufficient after a later partial update changes the pledged power.</summary>
+    [Theory]
+    [InlineData(
+        """{"timestamp":"2026-10-22T03:00:00Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1000}"""
+    )]
+    [InlineData("""{"timestamp":"2026-10-22T03:00:00Z","event":"Powerplay","Power":""}""")]
+    public async Task RecoveredBaselineSurvivesAPartialPowerChange(string baseline)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-powerplay-baseline-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var now = DateTimeOffset.Parse(
+            "2026-10-23T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var requests = new List<string>();
+        var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+        try
+        {
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                {
+                    now = now.AddSeconds(1);
+                    string path = request.RequestUri!.AbsolutePath;
+                    requests.Add(path);
+                    return path switch
+                    {
+                        "/profile" => Json(HttpStatusCode.OK, """{"commander":{"name":"Fenris"}}"""),
+                        "/journal/2026/10/23" => Json(
+                            HttpStatusCode.OK,
+                            """
+                            {"event":"Commander","FID":"F123"}
+                            {"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayRank","Power":"Aisling Duval","Rank":161}
+                            """
+                        ),
+                        "/journal/2026/10/22" => Json(
+                            HttpStatusCode.OK,
+                            """{"event":"Commander","FID":"F123"}""" + "\n" + baseline
+                        ),
+                        "/journal/2026/10/21" => Json(HttpStatusCode.ServiceUnavailable, "older history unavailable"),
+                        _ => Json(HttpStatusCode.NoContent, ""),
+                    };
+                },
+                root,
+                () => now
+            );
+
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
+
+            Assert.NotNull(snapshot.Powerplay);
+            Assert.Equal("Aisling Duval", snapshot.Powerplay.Power);
+            Assert.Equal(161, snapshot.Powerplay.Rank);
+            Assert.Null(snapshot.Powerplay.Merits);
+            Assert.Empty(snapshot.PowerplayError);
+            Assert.Equal(2, requests.Count(path => path.StartsWith("/journal/", StringComparison.Ordinal)));
+            Assert.Equal(
+                snapshot.Powerplay,
+                (await new FrontierProfileCacheStore(Path.Combine(root, "cache.json")).LoadAsync())!.Powerplay
+            );
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     /// <summary>Verifies that an incomplete journal response cannot overwrite credentials renewed after an authorization challenge.</summary>
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
