@@ -658,7 +658,10 @@ public sealed class OverlayLivePanelSizingTests
             layout.SetPlacement(plotter, layout.Placements[plotter] with { SizeOverride = new(820, 600) });
             using WriteableBitmap? resizedFrame = host.CaptureRenderedFrame();
             Assert.Equal(820, presentation.Bounds.Width);
-            Assert.True(presentation.Bounds.Height < 600);
+            Assert.True(double.IsNaN(presentation.Height));
+            // Natural content height varies with the runner's fonts and can exceed the old saved height.
+            presentation.Measure(new Size(820, double.PositiveInfinity));
+            Assert.InRange(Math.Abs(presentation.Bounds.Height - presentation.DesiredSize.Height), 0, 1);
             Size resizedSize = presentation.Bounds.Size;
             host.Remove(presenter);
             presenter.Content = null;

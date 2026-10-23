@@ -40,9 +40,9 @@ content.
   destination marker identify the active jump, including with monochrome overlay
   themes. Other route legs retain their theme colors.
 - **Recognize scoopable stars.** Filled star markers replace the hollow ovals.
-  The route legend identifies these as scoopable stars and explains the next-jump
-  marker. They describe the star's fuel-scooping capability, rather than fuel
-  level or whether the system has been visited.
+  The legend sits at the top right beside the panel title, identifying
+  scoopable stars and the next-jump marker. They describe the star's fuel-scooping
+  capability, rather than fuel level or whether the system has been visited.
 
 ## Commander Powerplay status
 
