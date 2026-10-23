@@ -39029,6 +39029,10 @@
       "translation": "{0} Materialhändler · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0} Vorzüge"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} Nachrichten • {1} ungelesen"
     },
@@ -39415,10 +39419,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} Einträge"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · {1} Verdienste"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -78763,6 +78763,10 @@
       "translation": "{0} comerciantes de materiales · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Méritos {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensajes • {1} no leídos"
     },
@@ -79149,10 +79153,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entradas"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · {1} méritos"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -118497,6 +118497,10 @@
       "translation": "{0} commerçants de matériaux · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Avantages de {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} messages • {1} non lus"
     },
@@ -118883,10 +118887,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entrées"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · Avantages de {1}"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -158231,6 +158231,10 @@
       "translation": "Comerciantes de materiais {0} · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Méritos {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensagens • {1} não lidas"
     },
@@ -158617,10 +158621,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entradas"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · Méritos {1}"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -197965,6 +197965,10 @@
       "translation": "{0} Торговцы материалами · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0} достоинства"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} сообщения • {1} непрочитано"
     },
@@ -198351,10 +198355,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} записи"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · {1} достоинства"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -237699,6 +237699,10 @@
       "translation": "{0} 物料贸易商 · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0}优点"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} 消息 • {1} 未读"
     },
@@ -238085,10 +238089,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} 条目"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "{0} · {1} 优点"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -277433,6 +277433,10 @@
       "translation": "* {0} MATERIAL TRADERS · {1}{2} >>>!"
     },
     {
+      "source": "{0} merits",
+      "translation": "* {0} MERITS >>>!"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "* {0} MESSAGES • {1} UNREAD >>>!"
     },
@@ -277819,10 +277823,6 @@
     {
       "source": "{0} · {1} entries",
       "translation": "* {0} · {1} ENTRIES >>>!"
-    },
-    {
-      "source": "{0} · {1} merits",
-      "translation": "* {0} · {1} MERITS >>>!"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",

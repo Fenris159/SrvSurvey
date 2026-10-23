@@ -28801,7 +28801,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Joined stream overlay",
@@ -34894,7 +34894,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Name",
@@ -78253,6 +78253,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "{0} merits",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "{0} messages \u2022 {1} unread",
     "IsFormat": true,
     "SourceKinds": [
@@ -79027,14 +79035,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
-  },
-  {
-    "Text": "{0} \u00B7 {1} merits",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 {1} recorded \u00B7 highest suffix {2} \u00B7 {3}",

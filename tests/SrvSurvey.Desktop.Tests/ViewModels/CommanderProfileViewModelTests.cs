@@ -1,3 +1,4 @@
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -9,24 +10,24 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class CommanderProfileViewModelTests
 {
     [Theory]
-    [InlineData("Aisling Duval", "aisling-duval")]
-    [InlineData("Archon Delaine", "archon-delaine")]
-    [InlineData("A. Lavigny-Duval", "arissa-lavigny-duval")]
-    [InlineData("Arissa Lavigny-Duval", "arissa-lavigny-duval")]
-    [InlineData(" arissa lavigny duval ", "arissa-lavigny-duval")]
-    [InlineData("Denton Patreus", "denton-patreus")]
-    [InlineData("Edmund Mahon", "edmund-mahon")]
-    [InlineData("Felicia Winters", "felicia-winters")]
-    [InlineData("Li Yong-Rui", "li-yong-rui")]
-    [InlineData("Pranav Antal", "pranav-antal")]
-    [InlineData("Yuri Grom", "yuri-grom")]
-    [InlineData("Zachary Hudson", "zachary-hudson")]
-    [InlineData("Zemina Torval", "zemina-torval")]
-    [InlineData("Jerome Archer", null)]
-    [InlineData("Nakato Kaine", null)]
-    [InlineData("Future Power", null)]
-    [InlineData("", null)]
-    public async Task PowerplayCardUsesThePledgedPowersBundledEmblem(string power, string? emblem)
+    [InlineData("Aisling Duval", "aisling-duval", "#0099FF")]
+    [InlineData("Archon Delaine", "archon-delaine", "#FF0000")]
+    [InlineData("A. Lavigny-Duval", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData("Arissa Lavigny-Duval", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData(" arissa lavigny duval ", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData("Denton Patreus", "denton-patreus", "#00FFFF")]
+    [InlineData("Edmund Mahon", "edmund-mahon", "#019C00")]
+    [InlineData("Felicia Winters", "felicia-winters", "#FFC400")]
+    [InlineData("Li Yong-Rui", "li-yong-rui", "#33D688")]
+    [InlineData("Pranav Antal", "pranav-antal", "#FFFF00")]
+    [InlineData("Yuri Grom", "yuri-grom", "#FF8000")]
+    [InlineData("Zachary Hudson", "zachary-hudson", "#FF0000")]
+    [InlineData("Zemina Torval", "zemina-torval", "#0040FF")]
+    [InlineData("Jerome Archer", "jerome-archer", "#DF1DE4")]
+    [InlineData("Nakato Kaine", "nakato-kaine", "#A3F127")]
+    [InlineData("Future Power", null, null)]
+    [InlineData("", null, null)]
+    public async Task PowerplayCardUsesThePledgedPowersBundledEmblem(string power, string? emblem, string? color)
     {
         FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UnixEpoch) with
         {
@@ -44,10 +45,48 @@ public sealed partial class CommanderProfileViewModelTests
             : $"Assets/Frontier/Powers/{emblem}.png";
         Assert.Equal("avares://SrvSurvey.Desktop/" + expected, card.IconPath);
         Assert.Equal(emblem is not null, card.HasIconTint);
-        if (emblem == "arissa-lavigny-duval")
+        Assert.Equal(color, card.IconTint);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(19, 1)]
+    [InlineData(20, 2)]
+    [InlineData(39, 2)]
+    [InlineData(40, 3)]
+    [InlineData(59, 3)]
+    [InlineData(60, 4)]
+    [InlineData(79, 4)]
+    [InlineData(80, 5)]
+    [InlineData(99, 5)]
+    [InlineData(100, 5)]
+    [InlineData(160, 5)]
+    [InlineData(int.MaxValue, 5)]
+    [InlineData(null, null)]
+    public async Task PowerplayRankBadgeUsesTwentyRankBandsWithoutCappingTheDisplayedRank(int? rank, int? badge)
+    {
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UnixEpoch) with
         {
-            Assert.Equal("#7F00FF", card.IconTint);
-        }
+            Ranks = [],
+            Powerplay = new("Jerome Archer", rank, null, DateTimeOffset.UnixEpoch),
+        };
+        using var model = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await model.OpenAsync();
+
+        FrontierRankCardViewModel card = Assert.Single(model.Ranks);
+        Assert.Equal(badge.HasValue, card.HasRankBadge);
+        Assert.Equal(
+            badge is { } tier
+                ? $"avares://SrvSurvey.Desktop/Assets/Frontier/Ranks/powerplay/rank-{tier}.png"
+                : string.Empty,
+            card.RankBadgeIconPath
+        );
+        Assert.Equal(rank is { } level ? $"Rank {level:N0}" : "Rank unavailable", card.RankText);
+        Assert.Equal(card.RankText, card.Detail);
+        Assert.False(card.HasMerits);
+        Assert.Equal(string.Empty, card.MeritsText);
     }
 
     [Fact]
@@ -128,6 +167,8 @@ public sealed partial class CommanderProfileViewModelTests
         card = Assert.Single(viewModel.Ranks);
         Assert.Equal("Unpledged", card.Name);
         Assert.False(card.HasDetail);
+        Assert.False(card.HasRankBadge);
+        Assert.False(card.HasMerits);
     }
 
     [Fact]
@@ -1522,7 +1563,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-reputation-{Guid.NewGuid():N}");
@@ -1588,7 +1629,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task MainJournalRefreshUpdatesAndClearsCurrentCarrierJumpImmediately()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-carrier-jump-{Guid.NewGuid():N}");

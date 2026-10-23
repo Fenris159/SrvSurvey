@@ -126,9 +126,20 @@
                           </Border>
                         </Panel>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                          <TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" />
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                            <TextBlock Classes="muted" FontSize="10" VerticalAlignment="Center" Text="{Binding Category}" />
+                            <Image Grid.Column="1" Width="28" Height="28"
+                                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                                   IsVisible="{Binding HasRankBadge}"
+                                   Source="{Binding RankBadgeIconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality"
+                                   Stretch="Uniform" />
+                          </Grid>
                           <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />
-                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Detail}" IsVisible="{Binding HasDetail}" />
+                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap"
+                                     Text="{Binding RankText}" IsVisible="{Binding HasDetail}" />
+                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap"
+                                     Text="{Binding MeritsText}" IsVisible="{Binding HasMerits}" />
                         </StackPanel>
                       </Grid>
                     </Border>

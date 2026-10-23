@@ -66,6 +66,24 @@ Elite Dangerous and its related marks and artwork are the property of Frontier
 Developments plc. SrvSurvey is a community project and is not endorsed by or
 affiliated with Frontier Developments.
 
+## Inara Powerplay emblems
+
+The Frontier commander dashboard bundles the Jerome Archer and Nakato Kaine
+emblems obtained from Inara on 23 October 2026:
+
+- [Jerome Archer](https://inara.cz/elite/power/12/):
+  [original PNG](https://inara.cz/sites/elite/images/powers/logo_12.png),
+  bundled as `Assets/Frontier/Powers/jerome-archer.png`.
+- [Nakato Kaine](https://inara.cz/elite/power/13/):
+  [original PNG](https://inara.cz/sites/elite/images/powers/logo_13.png),
+  bundled as `Assets/Frontier/Powers/nakato-kaine.png`.
+
+The original transparent PNG files are bundled without modification and tinted
+at display time with the corresponding power's color. These files are sourced
+separately from EDAssets and are not covered by its MIT license. Inara credits
+Elite Dangerous and related artwork to Frontier Developments plc; all
+respective artwork and trademark rights remain with their owners.
+
 ## EDMC-VoxStellar
 
 SrvSurvey's optional VoxStellar journal uploader adapts the event selection,

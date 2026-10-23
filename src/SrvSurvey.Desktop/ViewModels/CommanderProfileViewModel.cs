@@ -25,7 +25,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         "Denton Patreus",
         "Edmund Mahon",
         "Felicia Winters",
+        "Jerome Archer",
         "Li Yong-Rui",
+        "Nakato Kaine",
         "Pranav Antal",
         "Yuri Grom",
         "Zachary Hudson",
@@ -463,20 +465,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         if (powerplay is not null)
         {
-            (string iconPath, string? iconTint) = PowerplayIcon(powerplay.Power);
-            rows.Add(
-                new FrontierRankCardViewModel(
-                    "Powerplay",
-                    powerplay.Power.Length == 0 ? "Unpledged" : powerplay.Power,
-                    powerplay.Rank ?? 0,
-                    iconPath,
-                    powerplay.Power.Length == 0 ? string.Empty : PowerplayDetail(powerplay),
-                    (fromLocalJournal ? "Local journal" : "Frontier journal")
-                        + " · "
-                        + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture),
-                    iconTint
-                )
-            );
+            rows.Add(BuildPowerplayRankCard(powerplay, fromLocalJournal));
         }
         else if (Snapshot.Ranks.FirstOrDefault(rank => rank.Key == PowerplayRankKey) is { } legacy)
         {
@@ -495,10 +484,32 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return rows;
     }
 
-    private static string PowerplayDetail(FrontierPowerplaySnapshot powerplay)
+    private static FrontierRankCardViewModel BuildPowerplayRankCard(
+        FrontierPowerplaySnapshot powerplay,
+        bool fromLocalJournal
+    )
     {
-        string rank = powerplay.Rank is { } level ? $"Rank {level:N0}" : "Rank unavailable";
-        return powerplay.Merits is { } merits ? $"{rank} · {merits:N0} merits" : rank;
+        (string iconPath, string? iconTint) = PowerplayIcon(powerplay.Power);
+        bool pledged = powerplay.Power.Length > 0;
+        string rankText = powerplay.Rank is { } level ? $"Rank {level:N0}" : "Rank unavailable";
+        string meritsText = pledged && powerplay.Merits is { } merits ? $"{merits:N0} merits" : string.Empty;
+        string rankBadge =
+            pledged && powerplay.Rank is { } rank
+                ? RankAsset("powerplay", Math.Clamp(rank / 20 + 1, 1, 5))
+                : string.Empty;
+        return new FrontierRankCardViewModel(
+            "Powerplay",
+            pledged ? powerplay.Power : "Unpledged",
+            powerplay.Rank ?? 0,
+            iconPath,
+            pledged ? rankText : string.Empty,
+            (fromLocalJournal ? "Local journal" : "Frontier journal")
+                + " · "
+                + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture),
+            iconTint,
+            meritsText,
+            rankBadge
+        );
     }
 
     public void UpdateJournalPowerplay(string? frontierId, IReadOnlyList<JournalEventEnvelope> journalEvents)
@@ -3737,14 +3748,22 @@ public sealed record FrontierRankCardViewModel(
     string Name,
     int Level,
     string IconPath,
-    string Detail = "",
+    string RankText = "",
     string Source = "",
-    string? IconTint = null
+    string? IconTint = null,
+    string MeritsText = "",
+    string RankBadgeIconPath = ""
 )
 {
-    public bool HasDetail => Detail.Length > 0;
+    public string Detail => HasMerits ? $"{RankText} · {MeritsText}" : RankText;
+
+    public bool HasDetail => RankText.Length > 0;
 
     public bool HasIconTint => IconTint is not null;
+
+    public bool HasMerits => MeritsText.Length > 0;
+
+    public bool HasRankBadge => RankBadgeIconPath.Length > 0;
 }
 
 public sealed record FrontierDetailRowViewModel(string Label, string Value, string Detail = "");

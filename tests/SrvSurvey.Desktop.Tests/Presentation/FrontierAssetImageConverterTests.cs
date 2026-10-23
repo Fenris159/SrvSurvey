@@ -6,6 +6,11 @@ public sealed class FrontierAssetImageConverterTests
 {
     [Theory]
     [InlineData("Assets/Frontier/Ranks/exploration/rank-9.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-1.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-2.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-3.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-4.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-5.png")]
     [InlineData("Assets/Frontier/Factions/federation.png")]
     [InlineData("Assets/Frontier/Powers/aisling-duval.png")]
     [InlineData("Assets/Frontier/Powers/archon-delaine.png")]
@@ -13,7 +18,9 @@ public sealed class FrontierAssetImageConverterTests
     [InlineData("Assets/Frontier/Powers/denton-patreus.png")]
     [InlineData("Assets/Frontier/Powers/edmund-mahon.png")]
     [InlineData("Assets/Frontier/Powers/felicia-winters.png")]
+    [InlineData("Assets/Frontier/Powers/jerome-archer.png")]
     [InlineData("Assets/Frontier/Powers/li-yong-rui.png")]
+    [InlineData("Assets/Frontier/Powers/nakato-kaine.png")]
     [InlineData("Assets/Frontier/Powers/pranav-antal.png")]
     [InlineData("Assets/Frontier/Powers/yuri-grom.png")]
     [InlineData("Assets/Frontier/Powers/zachary-hudson.png")]
@@ -41,7 +48,7 @@ public sealed class FrontierAssetImageConverterTests
         string views = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views");
         string commander = File.ReadAllText(Path.Combine(views, "FrontierCommanderTabView.axaml"));
 
-        Assert.Equal(4, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
+        Assert.Equal(5, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
     }
 
     private static int CountOccurrences(string value, string search)
