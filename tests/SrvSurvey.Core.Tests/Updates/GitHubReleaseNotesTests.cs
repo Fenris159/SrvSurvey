@@ -4,6 +4,7 @@ namespace SrvSurvey.Core.Tests.Updates;
 
 public sealed class GitHubReleaseNotesTests
 {
+    /// <summary>Verifies that updater excerpts include the introduction and changes while excluding packaging and testing sections.</summary>
     [Fact]
     public void ExtractChangesIncludesIntroductionAndFirstChangesSectionOnly()
     {
@@ -34,6 +35,28 @@ public sealed class GitHubReleaseNotesTests
         Assert.DoesNotContain("Testing notice", result);
     }
 
+    /// <summary>Verifies that published notes expose every feature group and an absolute setup-guide permalink.</summary>
+    [Fact]
+    public void CurrentReleaseNotesExposeAllFeatureGroupsAndAPublishedGuideLink()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "SrvSurvey.slnx")))
+        {
+            directory = directory.Parent;
+        }
+        Assert.NotNull(directory);
+        string markdown = File.ReadAllText(Path.Combine(directory.FullName, "CurrentReleaseNotes.md"));
+
+        string excerpt = GitHubReleaseNotes.ExtractChanges(markdown);
+
+        Assert.Contains("Steam Deck Gaming Mode", excerpt);
+        Assert.Contains("Next Jump overlay", excerpt);
+        Assert.Contains("Commander Powerplay status", excerpt);
+        Assert.Contains("](https://github.com/Fenris159/SrvSurvey/blob/", excerpt);
+        Assert.DoesNotContain("## Update channel", excerpt);
+    }
+
+    /// <summary>Verifies that notes without a recognized changes section produce no updater excerpt.</summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]

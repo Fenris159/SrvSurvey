@@ -195,6 +195,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         operations[JournalProjectionOperation.FrontierJournal] = Sync(
             (context, tick) =>
             {
+                dependencies.FrontierProfile.UpdateJournalPowerplay(
+                    tick.PreviousFrontierId,
+                    context.JournalEvents,
+                    tick.PreviousCommanderName
+                );
                 dependencies.FrontierProfile.UpdateJournalReputation(
                     state.Session.CommanderName,
                     context.JournalEvents

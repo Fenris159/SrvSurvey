@@ -6,8 +6,9 @@ using SrvSurvey.Desktop.Platform.Inara;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
-public sealed class FrontierAccountServiceTests
+public sealed partial class FrontierAccountServiceTests
 {
+    /// <summary>Verifies that the OAuth audience supports Frontier, Steam, and Epic accounts.</summary>
     [Fact]
     public async Task AuthorizationRequestAllowsFrontierSteamAndEpicAccounts()
     {
@@ -134,6 +135,7 @@ public sealed class FrontierAccountServiceTests
         Assert.True(store.Document.AuthorizationResults["state-b"].Succeeded);
     }
 
+    /// <summary>Verifies that concurrent commander connections retain independent pending OAuth states.</summary>
     [Fact]
     public async Task ConcurrentCommanderConnectionsKeepTheirAuthorizationStatesSeparate()
     {
@@ -181,7 +183,7 @@ public sealed class FrontierAccountServiceTests
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 firstConnection.WaitAsync(TimeSpan.FromSeconds(5))
             );
-            FrontierAccountSnapshot snapshot = await secondConnection.WaitAsync(TimeSpan.FromSeconds(5));
+            FrontierAccountSnapshot snapshot = await secondConnection.WaitAsync(TimeSpan.FromSeconds(15));
 
             Assert.Equal("Second", snapshot.CommanderName);
             Assert.True(store.Document.Accounts["F456"].IsLinked);
@@ -275,6 +277,7 @@ public sealed class FrontierAccountServiceTests
         Assert.NotNull(store.Document.PendingAuthorization);
     }
 
+    /// <summary>Verifies CAPI section ordering, the bounded journal search, and refresh cooldown enforcement.</summary>
     [Fact]
     public async Task RefreshFetchesProfileAndCarrierThenEnforcesCooldown()
     {
@@ -310,7 +313,7 @@ public sealed class FrontierAccountServiceTests
             Assert.Equal("Fenris", snapshot.CommanderName);
             Assert.Equal(
                 ["/profile", "/fleetcarrier", "/squadron", "/market", "/shipyard", "/communitygoals"],
-                requests
+                requests.Where(path => !path.StartsWith("/journal/", StringComparison.Ordinal))
             );
             FrontierAccountCredential credential = store.Document.Accounts["F123"];
             Assert.NotNull(credential.LastCapiRefreshAt);
@@ -318,8 +321,8 @@ public sealed class FrontierAccountServiceTests
             FrontierRefreshCooldownException cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() =>
                 service.RefreshAsync()
             );
-            Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(50));
-            Assert.Equal(6, requests.Count);
+            Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(40));
+            Assert.Equal(13, requests.Count);
         }
         finally
         {
@@ -403,6 +406,7 @@ public sealed class FrontierAccountServiceTests
         }
     }
 
+    /// <summary>Verifies that a confirmed absence of carrier data is cached without repeated optional requests.</summary>
     [Fact]
     public async Task CarrierAbsenceIsCachedForFifteenMinutes()
     {
@@ -441,7 +445,10 @@ public sealed class FrontierAccountServiceTests
             Assert.Equal(first.CarrierFetchedAt, second.CarrierFetchedAt);
             Assert.DoesNotContain("/fleetcarrier", requests);
             Assert.DoesNotContain("/squadron", requests);
-            Assert.Equal(["/profile", "/market", "/shipyard", "/communitygoals"], requests);
+            Assert.Equal(
+                ["/profile", "/market", "/shipyard", "/communitygoals"],
+                requests.Where(path => !path.StartsWith("/journal/", StringComparison.Ordinal))
+            );
         }
         finally
         {

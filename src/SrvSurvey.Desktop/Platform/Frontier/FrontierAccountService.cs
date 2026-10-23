@@ -85,7 +85,7 @@ public sealed class FrontierRefreshCooldownException(TimeSpan remaining)
     public TimeSpan Remaining { get; } = remaining;
 }
 
-public sealed class FrontierAccountService : IFrontierAccountService
+public sealed partial class FrontierAccountService : IFrontierAccountService
 {
     public const string ClientId = "66818020-d5ee-4c33-b909-b2632506a937";
 
@@ -421,6 +421,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .ConfigureAwait(false);
     }
 
+    /// <summary>Refreshes the selected commander's CAPI sections and Powerplay status while retaining updated credentials.</summary>
     private async Task<FrontierAccountSnapshot> RefreshAsync(
         FrontierCommanderIdentity commander,
         bool forceCarrierRefresh,
@@ -564,6 +565,15 @@ public sealed class FrontierAccountService : IFrontierAccountService
         snapshot = ApplyMarketResult(snapshot, previousSnapshot, market, fetchedAt);
         snapshot = ApplyShipyardResult(snapshot, previousSnapshot, shipyard, fetchedAt);
         snapshot = ApplyCommunityGoalsResult(snapshot, previousSnapshot, communityGoals, fetchedAt);
+        (snapshot, credential) = await RefreshPowerplayAsync(
+                snapshot,
+                previousSnapshot,
+                commander,
+                credential,
+                loaded.IsLegacy,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
         snapshot = await TryEnrichCommunityGoalsAsync(snapshot, cancellationToken).ConfigureAwait(false);
         await cache.SaveAsync(snapshot, cancellationToken).ConfigureAwait(false);
         await SaveAccountCredentialAsync(
@@ -580,6 +590,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         return snapshot;
     }
 
+    /// <summary>Converts optional endpoint failures into section errors while recovering any renewed credentials.</summary>
     private async Task<OptionalCapiResponse> TryRequestOptionalCapiAsync(
         string endpoint,
         FrontierCommanderIdentity commander,
@@ -601,8 +612,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 .ConfigureAwait(false);
             return new OptionalCapiResponse(response.Credential, response.Content, string.Empty, true, true);
         }
-        catch (HttpRequestException exception)
-            when (exception.StatusCode is not HttpStatusCode.Unauthorized and not HttpStatusCode.UnprocessableEntity)
+        catch (Exception exception)
+            when (exception
+                    is InvalidDataException
+                        or HttpRequestException
+                        {
+                            StatusCode: not HttpStatusCode.Unauthorized and not HttpStatusCode.UnprocessableEntity
+                        }
+            )
         {
             FrontierCredentialDocument? latestDocument = await credentials
                 .LoadAsync(cancellationToken)
@@ -616,12 +633,9 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 false
             );
         }
-        catch (InvalidDataException exception)
-        {
-            return new OptionalCapiResponse(credential, null, exception.Message, true, false);
-        }
     }
 
+    /// <summary>Applies optional carrier data while keeping cached state scoped to the same commander.</summary>
     private static FrontierAccountSnapshot ApplyCarrierResult(
         FrontierAccountSnapshot snapshot,
         FrontierAccountSnapshot? previous,
@@ -1094,6 +1108,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         }
     }
 
+    /// <summary>Requests bounded complete CAPI content, renewing credentials once when authorization requires it.</summary>
     private async Task<CapiResponse> RequestCapiAsync(
         string endpoint,
         FrontierCommanderIdentity commander,
@@ -1146,6 +1161,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
                     null,
                     response.StatusCode
                 );
+            }
+
+            if (response.StatusCode == HttpStatusCode.PartialContent)
+            {
+                throw new InvalidDataException("Frontier returned incomplete data. Try refreshing again later.");
             }
 
             string content = await ReadBoundedStringAsync(response.Content, MaximumCapiResponseBytes, cancellationToken)

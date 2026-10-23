@@ -7,6 +7,11 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class JumpRouteProgressControl : Control
 {
+    private static readonly Geometry TargetMarker = Geometry.Parse("M 0,-7 L 7,0 L 0,7 L -7,0 Z");
+    private static readonly Geometry ScoopableMarker = Geometry.Parse(
+        "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z"
+    );
+
     public static readonly StyledProperty<IReadOnlyList<JumpInfoRouteLeg>?> LegsProperty = AvaloniaProperty.Register<
         JumpRouteProgressControl,
         IReadOnlyList<JumpInfoRouteLeg>?
@@ -35,7 +40,12 @@ public sealed class JumpRouteProgressControl : Control
         JumpRouteProgressControl,
         IBrush?
     >(nameof(BackgroundLineBrush));
+    public static readonly StyledProperty<IBrush?> ScoopableBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(ScoopableBrush));
 
+    /// <summary>Registers route properties that invalidate the progress drawing when the route changes.</summary>
     static JumpRouteProgressControl()
     {
         AffectsRender<JumpRouteProgressControl>(
@@ -45,7 +55,8 @@ public sealed class JumpRouteProgressControl : Control
             BehindBrushProperty,
             TargetBrushProperty,
             BoostBrushProperty,
-            BackgroundLineBrushProperty
+            BackgroundLineBrushProperty,
+            ScoopableBrushProperty
         );
     }
 
@@ -91,6 +102,13 @@ public sealed class JumpRouteProgressControl : Control
         set => SetValue(BackgroundLineBrushProperty, value);
     }
 
+    public IBrush? ScoopableBrush
+    {
+        get => GetValue(ScoopableBrushProperty);
+        set => SetValue(ScoopableBrushProperty, value);
+    }
+
+    /// <summary>Draws route legs and star markers within the control's available bounds.</summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -118,14 +136,18 @@ public sealed class JumpRouteProgressControl : Control
         context.DrawEllipse(behind, null, new Point(left, y), 3, 3);
 
         var layout = new LegLayout(left, right, y, width, totalDistance);
-        var brushes = new LegBrushes(behind, ahead, target, boost);
+        var brushes = new LegBrushes(behind, ahead, target, boost, ScoopableBrush ?? Brushes.LightGreen);
+        double[] endpoints = new double[legs.Count];
         double x = left;
         for (int index = 0; index < legs.Count; index++)
         {
             x = DrawLeg(context, legs, index, x, layout, brushes);
+            endpoints[index] = x;
         }
+        DrawMarkers(context, legs, endpoints, layout, brushes);
     }
 
+    /// <summary>Draws one route leg with its active, completed, or boosted presentation.</summary>
     private double DrawLeg(
         DrawingContext context,
         IReadOnlyList<JumpInfoRouteLeg> legs,
@@ -152,10 +174,49 @@ public sealed class JumpRouteProgressControl : Control
                 Brush = brush,
             }
         );
-        DrawLegMarker(context, leg, index, nextX, layout, brushes, brush);
         return nextX;
     }
 
+    /// <summary>Draws route stars and keeps the active destination marker visible above adjacent legs.</summary>
+    private void DrawMarkers(
+        DrawingContext context,
+        IReadOnlyList<JumpInfoRouteLeg> legs,
+        double[] endpoints,
+        LegLayout layout,
+        LegBrushes brushes
+    )
+    {
+        for (int index = 0; index < legs.Count; index++)
+        {
+            if (index != TargetLegIndex)
+            {
+                DrawLegMarker(
+                    context,
+                    legs[index],
+                    index,
+                    endpoints[index],
+                    layout,
+                    brushes,
+                    ResolveLegBrush(index, brushes)
+                );
+            }
+        }
+        // Keep the active diamond above following legs and nearby ordinary nodes.
+        if (TargetLegIndex >= 0 && TargetLegIndex < legs.Count)
+        {
+            DrawLegMarker(
+                context,
+                legs[TargetLegIndex],
+                TargetLegIndex,
+                endpoints[TargetLegIndex],
+                layout,
+                brushes,
+                brushes.Target
+            );
+        }
+    }
+
+    /// <summary>Selects a leg's themed brush while preserving the dedicated active-jump highlight.</summary>
     private IBrush ResolveLegBrush(int index, LegBrushes brushes)
     {
         if (index == TargetLegIndex)
@@ -178,24 +239,34 @@ public sealed class JumpRouteProgressControl : Control
         public required IBrush Brush { get; init; }
     }
 
+    /// <summary>Draws solid route segments with boost underlays and a thicker active-jump highlight.</summary>
     private void DrawLegSegments(LegSegmentDraw draw)
     {
         if (draw.Leg.RequiresBoost)
         {
             draw.Context.DrawLine(
-                new Pen(draw.Brushes.Boost, draw.Index == TargetLegIndex ? 7 : 5),
+                new Pen(draw.Brushes.Boost, draw.Index == TargetLegIndex ? 12 : 7),
                 new Point(draw.X, draw.Layout.Y),
                 new Point(draw.NextX, draw.Layout.Y)
             );
         }
 
+        if (draw.Index == TargetLegIndex)
+        {
+            draw.Context.DrawLine(
+                new Pen(Brushes.Black, 10),
+                new Point(draw.X, draw.Layout.Y),
+                new Point(draw.NextX, draw.Layout.Y)
+            );
+        }
         draw.Context.DrawLine(
-            new Pen(draw.Brush, draw.Index == TargetLegIndex ? 4 : 2.5),
+            new Pen(draw.Brush, draw.Index == TargetLegIndex ? 6 : 3),
             new Point(draw.X, draw.Layout.Y),
             new Point(draw.NextX, draw.Layout.Y)
         );
     }
 
+    /// <summary>Draws destination nodes, the active-target diamond, and scoopable-star markers.</summary>
     private void DrawLegMarker(
         DrawingContext context,
         JumpInfoRouteLeg leg,
@@ -206,15 +277,37 @@ public sealed class JumpRouteProgressControl : Control
         IBrush brush
     )
     {
-        double radius = index == TargetLegIndex ? 5d : 3.5;
-        context.DrawEllipse(brush, null, new Point(nextX, layout.Y), radius, radius);
+        if (index == TargetLegIndex)
+        {
+            using (context.PushTransform(Matrix.CreateTranslation(nextX, layout.Y)))
+            {
+                context.DrawGeometry(brush, new Pen(Brushes.Black, 2), TargetMarker);
+            }
+        }
+        else
+        {
+            context.DrawEllipse(brush, null, new Point(nextX, layout.Y), 3.5, 3.5);
+        }
         if (leg.IsScoopable)
         {
-            context.DrawEllipse(null, new Pen(brushes.Target, 1.5), new Point(nextX, layout.Y - 9), 4, 2.5);
+            using (context.PushTransform(Matrix.CreateTranslation(nextX, layout.Y - 12)))
+            {
+                context.DrawGeometry(
+                    index < TargetLegIndex ? brushes.Behind : brushes.Scoopable,
+                    null,
+                    ScoopableMarker
+                );
+            }
         }
     }
 
     private readonly record struct LegLayout(double Left, double Right, double Y, double Width, double TotalDistance);
 
-    private readonly record struct LegBrushes(IBrush Behind, IBrush Ahead, IBrush Target, IBrush Boost);
+    private readonly record struct LegBrushes(
+        IBrush Behind,
+        IBrush Ahead,
+        IBrush Target,
+        IBrush Boost,
+        IBrush Scoopable
+    );
 }

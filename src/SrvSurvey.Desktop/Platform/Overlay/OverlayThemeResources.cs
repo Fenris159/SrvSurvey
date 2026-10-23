@@ -12,7 +12,14 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal interface IOverlayPanelSizeAware
 {
+    /// <summary>Marks editor sizing overrides so content-height panels continue to honor their requested width.</summary>
     void SetPanelSizeOverrideActive(bool active);
+}
+
+/// <summary>A panel whose saved width applies while visible content determines its height.</summary>
+internal interface IOverlayPanelSizePolicy
+{
+    bool AutoHeight { get; }
 }
 
 public static class OverlayThemeResources
@@ -982,6 +989,7 @@ public static class OverlayThemeResources
         private readonly List<IDisposable> overrides = [];
         private OverlayPanelSize? appliedSize;
 
+        /// <summary>Applies configured panel dimensions while allowing content-height presentations to measure their own height.</summary>
         public void ApplySize(OverlayPanelSize? size)
         {
             if (size == appliedSize)
@@ -1005,7 +1013,12 @@ public static class OverlayThemeResources
                 Override(Control.MaxWidthProperty, double.PositiveInfinity);
                 Override(Control.MaxHeightProperty, double.PositiveInfinity);
                 Override(Control.HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Stretch);
-                Override(Control.VerticalAlignmentProperty, Avalonia.Layout.VerticalAlignment.Stretch);
+                Override(
+                    Control.VerticalAlignmentProperty,
+                    content is IOverlayPanelSizePolicy { AutoHeight: true }
+                        ? Avalonia.Layout.VerticalAlignment.Top
+                        : Avalonia.Layout.VerticalAlignment.Stretch
+                );
                 if (content is ContentControl)
                 {
                     Override(
@@ -1018,7 +1031,10 @@ public static class OverlayThemeResources
                     );
                 }
                 Override(Control.WidthProperty, size.Width);
-                Override(Control.HeightProperty, size.Height);
+                if (content is not IOverlayPanelSizePolicy { AutoHeight: true })
+                {
+                    Override(Control.HeightProperty, size.Height);
+                }
             }
             content.InvalidateMeasure();
         }

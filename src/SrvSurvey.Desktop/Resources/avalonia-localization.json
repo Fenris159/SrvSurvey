@@ -2505,6 +2505,10 @@
       "translation": "Bist du sicher? Nicht gespeicherte Änderungen im Arbeitsbereich gehen verloren. Gespeicherte Routendateien werden nicht gelöscht."
     },
     {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
+    },
+    {
       "source": "Arissa Lavigny-Duval",
       "translation": "Arissa Lavigny-Duval"
     },
@@ -9077,6 +9081,10 @@
       "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "Ziehen Sie, um die Breite zu ändern. Die Höhe folgt dem Inhalt."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Ziehen Sie, um die Größe dieses Overlay-Panels zu ändern"
     },
@@ -11685,6 +11693,10 @@
       "translation": "Frontier ist ratenbegrenzende Anfragen. Bitte warten Sie {0} Sekunden, bevor Sie es erneut versuchen."
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier Zeitschrift · {0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Durch die Verknüpfung Frontier werden Informationen zu Kommandanten, Schiffen, Märkten und Flottenträgern für das aktive Profil bereitgestellt."
     },
@@ -11705,6 +11717,10 @@
       "translation": "Die Antwort von Frontier hat die {0}-Byte-Sicherheitsgrenze überschritten."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier hat unvollständige Daten zurückgegeben. Versuchen Sie es später noch einmal."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier Werftdaten konnten nicht gelesen werden: {0}"
     },
@@ -11723,6 +11739,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier aktualisiert {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Das Profil von Frontier meldet keinen modernen Powerplay-Status. Aktualisieren Sie Frontier Daten oder laden Sie ein Kommandantenjournal."
     },
     {
       "source": "Frutexa Metallicum",
@@ -15693,6 +15713,10 @@
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "Lokale Zeitschrift · {0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "Die Überprüfung des lokalen Marktes ist fehlgeschlagen. Die Auswahl der Rohstoffe wurde beibehalten; versuchen Sie es erneut."
     },
@@ -15831,6 +15855,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "Lynx Highliner"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "M 0,-4 L 1,3,-1,3 L 4,0 L 1,3,1,3 L 0,4 L -1,3,1,3 L -4,0 L -1,3,-1,3 Z"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "M 0,-7 L 7,0 L 0,7 L -7,0 Z"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -17647,6 +17679,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "Nächstes unvollständiges Suffix im aktuellen Boxel."
+    },
+    {
+      "source": "Next jump",
+      "translation": "Nächster Sprung"
     },
     {
       "source": "Next or active direction",
@@ -22089,6 +22125,14 @@
       "translation": "Reichweite (LY)"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "Rang nicht verfügbar"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rang {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "Ränge"
     },
@@ -25523,6 +25567,10 @@
     {
       "source": "Scoopable",
       "translation": "Schaufelbar"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "Stern zum Treibstoffsammeln"
     },
     {
       "source": "Score",
@@ -32961,6 +33009,10 @@
       "translation": "Unbesetzt"
     },
     {
+      "source": "Unpledged",
+      "translation": "Nicht verpfändet"
+    },
+    {
       "source": "Unrated",
       "translation": "Ohne Bewertung"
     },
@@ -34907,6 +34959,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "ZOOM {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
     },
     {
       "source": "Zemina Torval",
@@ -38973,6 +39029,10 @@
       "translation": "{0} Materialhändler · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0} Vorzüge"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} Nachrichten • {1} ungelesen"
     },
@@ -42177,6 +42237,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "¿Estás seguro? Se perderán los cambios no guardados en el espacio de trabajo. Los archivos de ruta guardados no se eliminarán."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -48751,6 +48815,10 @@
       "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "Arrastre para cambiar el ancho. La altura sigue al contenido."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Arrastre para cambiar el tamaño de este panel superpuesto"
     },
@@ -51359,6 +51427,10 @@
       "translation": "Frontier es la tasa que limita las solicitudes. Espere {0} segundos antes de volver a intentarlo."
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier diario · {0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier el enlace proporciona información del comandante, barco, mercado y transportista de flota para el perfil activo."
     },
@@ -51379,6 +51451,10 @@
       "translation": "La respuesta de Frontier superó el límite de seguridad de {0} bytes."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier devolvió datos incompletos. Intente actualizar nuevamente más tarde."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier no se pudieron leer los datos del astillero: {0}"
     },
@@ -51397,6 +51473,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier actualizado {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "El perfil de Frontier no informa el estado moderno de Powerplay. Actualizar datos Frontier o cargar un diario del comandante."
     },
     {
       "source": "Frutexa Metallicum",
@@ -55367,6 +55447,10 @@
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "Revista local · {0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "La verificación del mercado local falló. Se mantuvieron las selecciones de productos básicos; intentar otra vez."
     },
@@ -55505,6 +55589,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "Lince Highliner"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "M 0,-4 L 1,3,-1,3 L 4,0 L 1,3,1,3 L 0,4 L -1,3,1,3 L -4,0 L -1,3,-1,3 Z"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "M 0,-7 L 7,0 L 0,7 L -7,0 Z"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -57321,6 +57413,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "Siguiente sufijo incompleto en el cuadro actual."
+    },
+    {
+      "source": "Next jump",
+      "translation": "siguiente salto"
     },
     {
       "source": "Next or active direction",
@@ -61763,6 +61859,14 @@
       "translation": "Rango (LY)"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "Clasificación no disponible"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rango {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "Rangos"
     },
@@ -65197,6 +65301,10 @@
     {
       "source": "Scoopable",
       "translation": "Recolectable"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "Estrella apta para repostar"
     },
     {
       "source": "Score",
@@ -72635,6 +72743,10 @@
       "translation": "Desocupado"
     },
     {
+      "source": "Unpledged",
+      "translation": "no comprometido"
+    },
+    {
       "source": "Unrated",
       "translation": "Sin clasificar"
     },
@@ -74581,6 +74693,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "AMPLIAR {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
     },
     {
       "source": "Zemina Torval",
@@ -78647,6 +78763,10 @@
       "translation": "{0} comerciantes de materiales · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Méritos {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensajes • {1} no leídos"
     },
@@ -81851,6 +81971,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Etes-vous sûr ? Les modifications non enregistrées dans l'espace de travail seront perdues. Les fichiers d'itinéraire enregistrés ne seront pas supprimés."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny-Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -88425,6 +88549,10 @@
       "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "Faites glisser pour modifier la largeur. La hauteur suit le contenu."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Faites glisser pour redimensionner ce panneau de superposition"
     },
@@ -91033,6 +91161,10 @@
       "translation": "Frontier correspond aux requêtes de limitation de débit. Veuillez patienter {0} secondes avant de réessayer."
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier journal · {0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier fournit des informations sur le commandant, le navire, le marché et le transporteur de flotte pour le profil actif."
     },
@@ -91053,6 +91185,10 @@
       "translation": "La réponse de Frontier a dépassé la limite de sécurité de {0} octets."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier a renvoyé des données incomplètes. Réessayez d'actualiser plus tard."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier les données du chantier naval n'ont pas pu être lues : {0}"
     },
@@ -91071,6 +91207,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier mis à jour {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Le profil de Frontier ne signale pas le statut Powerplay moderne. Actualisez les données Frontier ou chargez un journal du commandant."
     },
     {
       "source": "Frutexa Metallicum",
@@ -95041,6 +95181,10 @@
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "Journal local · {0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "La vérification du marché local a échoué. Les sélections de produits ont été conservées ; essayer à nouveau."
     },
@@ -95179,6 +95323,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "Lynx Highliner"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "M 0,-4 L 1,3,-1,3 L 4,0 L 1,3,1,3 L 0,4 L -1,3,1,3 L -4,0 L -1,3,-1,3 Z"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "M 0,-7 L 7,0 L 0,7 L -7,0Z"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -96995,6 +97147,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "Prochain suffixe incomplet dans le boxel actuel."
+    },
+    {
+      "source": "Next jump",
+      "translation": "prochain saut"
     },
     {
       "source": "Next or active direction",
@@ -101437,6 +101593,14 @@
       "translation": "Portée (LY)"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "Classement indisponible"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rang {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "Rangs"
     },
@@ -104871,6 +105035,10 @@
     {
       "source": "Scoopable",
       "translation": "Scoopable"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "Étoile permettant le ravitaillement"
     },
     {
       "source": "Score",
@@ -112309,6 +112477,10 @@
       "translation": "Inoccupé"
     },
     {
+      "source": "Unpledged",
+      "translation": "Non promis"
+    },
+    {
       "source": "Unrated",
       "translation": "Non classé"
     },
@@ -114255,6 +114427,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "ZOOM {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
     },
     {
       "source": "Zemina Torval",
@@ -118321,6 +118497,10 @@
       "translation": "{0} commerçants de matériaux · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Avantages de {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} messages • {1} non lus"
     },
@@ -121525,6 +121705,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Você tem certeza? As alterações não salvas na área de trabalho serão perdidas. Os arquivos de rota salvos não serão excluídos."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -128099,6 +128283,10 @@
       "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "Arraste para alterar a largura. A altura segue o conteúdo."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Arraste para redimensionar este painel de sobreposição"
     },
@@ -130707,6 +130895,10 @@
       "translation": "Frontier é uma solicitação de limitação de taxa. Aguarde {0} segundos antes de tentar novamente."
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier diário · {0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier fornece informações de comandante, navio, mercado e transportador de frota para o perfil ativo."
     },
@@ -130727,6 +130919,10 @@
       "translation": "A resposta de Frontier excedeu o limite de segurança de {0} bytes."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier retornou dados incompletos. Tente atualizar novamente mais tarde."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier dados do estaleiro não puderam ser lidos: {0}"
     },
@@ -130745,6 +130941,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier atualizado {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "O perfil de Frontier não informa o status moderno do Powerplay. Atualize os dados Frontier ou carregue um diário do comandante."
     },
     {
       "source": "Frutexa Metallicum",
@@ -134715,6 +134915,10 @@
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "Jornal local · {0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "A verificação do mercado local falhou. As seleções de commodities foram mantidas; tente novamente."
     },
@@ -134853,6 +135057,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "Lince Highliner"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "M 0,-4 L 1,3,-1,3 L 4,0 L 1,3,1,3 L 0,4 L -1,3,1,3 L -4,0 L -1,3,-1,3 Z"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "M 0,-7 L 7,0 L 0,7 L -7,0 Z"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -136669,6 +136881,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "Próximo sufixo incompleto no boxel atual."
+    },
+    {
+      "source": "Next jump",
+      "translation": "Próximo salto"
     },
     {
       "source": "Next or active direction",
@@ -141111,6 +141327,14 @@
       "translation": "Alcance (LY)"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "Classificação indisponível"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Classificação {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "Classificações"
     },
@@ -144545,6 +144769,10 @@
     {
       "source": "Scoopable",
       "translation": "Scoopable"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "Estrela para coleta de combustível"
     },
     {
       "source": "Score",
@@ -151983,6 +152211,10 @@
       "translation": "Desocupado"
     },
     {
+      "source": "Unpledged",
+      "translation": "Não comprometido"
+    },
+    {
       "source": "Unrated",
       "translation": "Sem classificação"
     },
@@ -153929,6 +154161,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "ZOOM {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
     },
     {
       "source": "Zemina Torval",
@@ -157995,6 +158231,10 @@
       "translation": "Comerciantes de materiais {0} · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "Méritos {0}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensagens • {1} não lidas"
     },
@@ -161199,6 +161439,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Вы уверены? Несохраненные изменения в рабочей области будут потеряны. Сохраненные файлы маршрутов не будут удалены."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Арисса Лавиньи Дюваль"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -167773,6 +168017,10 @@
       "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "Перетащите, чтобы изменить ширину. Высота соответствует содержанию."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Перетащите, чтобы изменить размер этой наложенной панели."
     },
@@ -170381,6 +170629,10 @@
       "translation": "Frontier — это запросы ограничения скорости. Подождите {0} секунд, прежде чем повторить попытку."
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier журнал · {0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier привязка предоставляет информацию о командире, корабле, рынке и авианосце для активного профиля."
     },
@@ -170401,6 +170653,10 @@
       "translation": "Ответ Frontier превысил безопасный лимит в {0}-байт."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier вернул неполные данные. Попробуйте обновить позже."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier данные верфи не удалось прочитать: {0}"
     },
@@ -170419,6 +170675,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier обновлен {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "В профиле Frontier не указан современный статус Powerplay. Обновите данные Frontier или загрузите журнал командира."
     },
     {
       "source": "Frutexa Metallicum",
@@ -174389,6 +174649,10 @@
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "Местный журнал · {0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "Проверка местного рынка не удалась. Выбор товаров был сохранен; Попробуйте еще раз."
     },
@@ -174527,6 +174791,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "Рысь Хайлайнер"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "М 0,-4 Л 1,3,-1,3 Л 4,0 Л 1,3,1,3 Л 0,4 Л -1,3,1,3 Л -4,0 Л -1,3,-1,3 З"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "М 0,-7 Л 7,0 Л 0,7 Л -7,0 З"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -176343,6 +176615,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "Следующий неполный суффикс в текущем боксе."
+    },
+    {
+      "source": "Next jump",
+      "translation": "Следующий прыжок"
     },
     {
       "source": "Next or active direction",
@@ -180785,6 +181061,14 @@
       "translation": "Диапазон (ЛИ)"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "Ранг недоступен"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Ранг {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "Звания"
     },
@@ -184219,6 +184503,10 @@
     {
       "source": "Scoopable",
       "translation": "можно черпать"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "Звезда для дозаправки"
     },
     {
       "source": "Score",
@@ -191657,6 +191945,10 @@
       "translation": "незанятый"
     },
     {
+      "source": "Unpledged",
+      "translation": "Незаложенный"
+    },
+    {
       "source": "Unrated",
       "translation": "Без рейтинга"
     },
@@ -193603,6 +193895,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "МАСШТАБ {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "Закари Хадсон"
     },
     {
       "source": "Zemina Torval",
@@ -197669,6 +197965,10 @@
       "translation": "{0} Торговцы материалами · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0} достоинства"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} сообщения • {1} непрочитано"
     },
@@ -200873,6 +201173,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "你确定吗？工作区中未保存的更改将会丢失。保存的路线文件不会被删除。"
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "阿里萨·拉维尼·杜瓦尔"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -207447,6 +207751,10 @@
       "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "拖动以更改宽度。高度跟随内容。"
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "拖动以调整此覆盖面板的大小"
     },
@@ -210055,6 +210363,10 @@
       "translation": "Frontier 是速率限制请求。请等待 {0} 秒后再重试。"
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier期刊·{0}"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier 链接提供活动配置文件的指挥官、船舶、市场和舰队承运人信息。"
     },
@@ -210075,6 +210387,10 @@
       "translation": "Frontier 响应超出了 {0} 字节安全限制。"
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier返回的数据不完整。稍后再尝试刷新。"
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier 无法读取造船厂数据：{0}"
     },
@@ -210093,6 +210409,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier更新{0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Frontier 的配置文件不报告现代 Powerplay 状态。刷新Frontier数据或加载指挥官日志。"
     },
     {
       "source": "Frutexa Metallicum",
@@ -214063,6 +214383,10 @@
       "translation": "无法保存本地焦点首选项：{0}"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "本地期刊·{0}"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "当地市场检查失败。保留商品选择；再试一次。"
     },
@@ -214201,6 +214525,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "山猫 Highliner"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "M 0,-7 L 7,0 L 0,7 L -7,0 Z"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -216017,6 +216349,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "当前 boxel 中的下一个不完整后缀。"
+    },
+    {
+      "source": "Next jump",
+      "translation": "下一跳"
     },
     {
       "source": "Next or active direction",
@@ -220459,6 +220795,14 @@
       "translation": "射程（LY）"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "排名不可用"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "排名 {0}"
+    },
+    {
       "source": "Ranks",
       "translation": "等级"
     },
@@ -223893,6 +224237,10 @@
     {
       "source": "Scoopable",
       "translation": "可舀取"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "可采集燃料的恒星"
     },
     {
       "source": "Score",
@@ -231331,6 +231679,10 @@
       "translation": "无人居住"
     },
     {
+      "source": "Unpledged",
+      "translation": "未质押"
+    },
+    {
       "source": "Unrated",
       "translation": "未评级"
     },
@@ -233277,6 +233629,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "缩放 {0}×"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "扎卡里·哈德森"
     },
     {
       "source": "Zemina Torval",
@@ -237343,6 +237699,10 @@
       "translation": "{0} 物料贸易商 · {1}{2}"
     },
     {
+      "source": "{0} merits",
+      "translation": "{0}优点"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} 消息 • {1} 未读"
     },
@@ -240547,6 +240907,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "* ARE YOU SURE? UNSAVED CHANGES IN THE WORKSPACE WILL BE LOST. SAVED ROUTE FILES WILL NOT BE DELETED. >>>!"
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "* ARISSA LAVIGNY DUVAL >>>!"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -247121,6 +247485,10 @@
       "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
     },
     {
+      "source": "Drag to change width. Height follows content.",
+      "translation": "* DRAG TO CHANGE WIDTH. HEIGHT FOLLOWS CONTENT. >>>!"
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "* DRAG TO RESIZE THIS OVERLAY PANEL >>>!"
     },
@@ -249729,6 +250097,10 @@
       "translation": "* FRONTIER IS RATE LIMITING REQUESTS. PLEASE WAIT {0} SECONDS BEFORE TRYING AGAIN. >>>!"
     },
     {
+      "source": "Frontier journal · {0}",
+      "translation": "* FRONTIER JOURNAL · {0} >>>!"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "* FRONTIER LINKING PROVIDES COMMANDER, SHIP, MARKET, AND FLEET CARRIER INFORMATION FOR THE ACTIVE PROFILE. >>>!"
     },
@@ -249749,6 +250121,10 @@
       "translation": "* FRONTIER RESPONSE EXCEEDED THE {0}-BYTE SAFETY LIMIT. >>>!"
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "* FRONTIER RETURNED INCOMPLETE DATA. TRY REFRESHING AGAIN LATER. >>>!"
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "* FRONTIER SHIPYARD DATA COULD NOT BE READ: {0} >>>!"
     },
@@ -249767,6 +250143,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "* FRONTIER UPDATED {0} >>>!"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "* FRONTIER'S PROFILE DOES NOT REPORT MODERN POWERPLAY STATUS. REFRESH FRONTIER DATA OR LOAD A COMMANDER JOURNAL. >>>!"
     },
     {
       "source": "Frutexa Metallicum",
@@ -253737,6 +254117,10 @@
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "Local journal · {0}",
+      "translation": "* LOCAL JOURNAL · {0} >>>!"
+    },
+    {
       "source": "Local market check failed. Commodity selections were kept; try again.",
       "translation": "* LOCAL MARKET CHECK FAILED. COMMODITY SELECTIONS WERE KEPT; TRY AGAIN. >>>!"
     },
@@ -253875,6 +254259,14 @@
     {
       "source": "Lynx Highliner",
       "translation": "* LYNX HIGHLINER >>>!"
+    },
+    {
+      "source": "M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z",
+      "translation": "* M 0,-4 L 1.3,-1.3 L 4,0 L 1.3,1.3 L 0,4 L -1.3,1.3 L -4,0 L -1.3,-1.3 Z >>>!"
+    },
+    {
+      "source": "M 0,-7 L 7,0 L 0,7 L -7,0 Z",
+      "translation": "* M 0,-7 L 7,0 L 0,7 L -7,0 Z >>>!"
     },
     {
       "source": "M 0,{0} H {1}",
@@ -255691,6 +256083,10 @@
     {
       "source": "Next incomplete suffix in the current boxel.",
       "translation": "* NEXT INCOMPLETE SUFFIX IN THE CURRENT BOXEL. >>>!"
+    },
+    {
+      "source": "Next jump",
+      "translation": "* NEXT JUMP >>>!"
     },
     {
       "source": "Next or active direction",
@@ -260133,6 +260529,14 @@
       "translation": "* RANGE (LY) >>>!"
     },
     {
+      "source": "Rank unavailable",
+      "translation": "* RANK UNAVAILABLE >>>!"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "* RANK {0} >>>!"
+    },
+    {
       "source": "Ranks",
       "translation": "* RANKS >>>!"
     },
@@ -263567,6 +263971,10 @@
     {
       "source": "Scoopable",
       "translation": "* SCOOPABLE >>>!"
+    },
+    {
+      "source": "Scoopable star",
+      "translation": "* SCOOPABLE STAR >>>!"
     },
     {
       "source": "Score",
@@ -271005,6 +271413,10 @@
       "translation": "* UNOCCUPIED >>>!"
     },
     {
+      "source": "Unpledged",
+      "translation": "* UNPLEDGED >>>!"
+    },
+    {
       "source": "Unrated",
       "translation": "* UNRATED >>>!"
     },
@@ -272951,6 +273363,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "* ZOOM {0}× >>>!"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "* ZACHARY HUDSON >>>!"
     },
     {
       "source": "Zemina Torval",
@@ -277015,6 +277431,10 @@
     {
       "source": "{0} material traders · {1}{2}",
       "translation": "* {0} MATERIAL TRADERS · {1}{2} >>>!"
+    },
+    {
+      "source": "{0} merits",
+      "translation": "* {0} MERITS >>>!"
     },
     {
       "source": "{0} messages • {1} unread",

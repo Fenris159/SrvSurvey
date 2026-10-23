@@ -609,6 +609,7 @@ public sealed class OverlayLivePanelSizingTests
         Assert.Equal(600, panel.Height);
     }
 
+    /// <summary>Verifies natural panel height and retained typography when Next Jump moves between overlay hosts.</summary>
     [AvaloniaFact]
     public void NextJumpKeepsItsSizeAndTypographyWhenMovedToACombinedHost()
     {
@@ -657,7 +658,12 @@ public sealed class OverlayLivePanelSizingTests
             Assert.Equal(originalSize, presentation.Bounds.Size);
             layout.SetPlacement(plotter, layout.Placements[plotter] with { SizeOverride = new(820, 600) });
             using WriteableBitmap? resizedFrame = host.CaptureRenderedFrame();
-            Assert.Equal(new Size(820, 600), presentation.Bounds.Size);
+            Assert.Equal(820, presentation.Bounds.Width);
+            Assert.True(double.IsNaN(presentation.Height));
+            // Natural content height varies with the runner's fonts and can exceed the old saved height.
+            presentation.Measure(new Size(820, double.PositiveInfinity));
+            Assert.InRange(Math.Abs(presentation.Bounds.Height - presentation.DesiredSize.Height), 0, 1);
+            Size resizedSize = presentation.Bounds.Size;
             host.Remove(presenter);
             presenter.Content = null;
             // Complete the old host's queued layout before attaching to another window.
@@ -665,7 +671,7 @@ public sealed class OverlayLivePanelSizingTests
             window.Content = content;
             using WriteableBitmap? restoredFrame = window.CaptureRenderedFrame();
             Assert.Equal(headerSize, header.FontSize);
-            Assert.Equal(new Size(820, 600), presentation.Bounds.Size);
+            Assert.Equal(resizedSize, presentation.Bounds.Size);
         }
         finally
         {

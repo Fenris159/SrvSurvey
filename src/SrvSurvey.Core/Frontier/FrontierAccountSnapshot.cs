@@ -38,7 +38,10 @@ public sealed record FrontierAccountSnapshot(
     FrontierCarrierSnapshot? SquadronCarrier = null,
     DateTimeOffset? SquadronCarrierFetchedAt = null,
     string SquadronCarrierError = "",
-    IReadOnlyList<FrontierDataPointSnapshot>? SquadronEndpointData = null
+    IReadOnlyList<FrontierDataPointSnapshot>? SquadronEndpointData = null,
+    FrontierPowerplaySnapshot? Powerplay = null,
+    DateTimeOffset? PowerplayFetchedAt = null,
+    string PowerplayError = ""
 )
 {
     public long FleetValue => Ships.Sum(ship => ship.Value);

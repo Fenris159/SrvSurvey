@@ -167,7 +167,7 @@ public static partial class FrontierCapiSnapshotParser
             "Prince",
             "King",
         ],
-        ["power"] = ["None", "Rating 1", "Rating 2", "Rating 3", "Rating 4", "Rating 5"],
+        ["power"] = ["Unavailable", "Rating 1", "Rating 2", "Rating 3", "Rating 4", "Rating 5"],
     };
 
     private static readonly IReadOnlyDictionary<string, string> RankCategories = new Dictionary<string, string>(

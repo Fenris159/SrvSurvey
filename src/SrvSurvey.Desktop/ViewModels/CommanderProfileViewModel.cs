@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Frontier;
 
@@ -15,6 +16,23 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 {
     private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
     private const string UnavailableLabel = "Unavailable";
+    private const string PowerplayRankKey = "power";
+    private static readonly HashSet<string> PowerplayEmblemNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Aisling Duval",
+        "Archon Delaine",
+        "Arissa Lavigny-Duval",
+        "Denton Patreus",
+        "Edmund Mahon",
+        "Felicia Winters",
+        "Jerome Archer",
+        "Li Yong-Rui",
+        "Nakato Kaine",
+        "Pranav Antal",
+        "Yuri Grom",
+        "Zachary Hudson",
+        "Zemina Torval",
+    };
     private const string DecalPrefix = "decal";
     private const string UtilityMountsGroup = "Utility Mounts";
     private const string FederationFaction = "federation";
@@ -85,6 +103,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
     private IReadOnlyList<FrontierLockerCategoryViewModel> currentShipLockerGroups = [];
     private IReadOnlyList<FrontierRankCardViewModel>? rankRows;
+    private FrontierPowerplaySnapshot? journalPowerplay;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipValueRows;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipConditionRows;
     private IReadOnlyList<FrontierShipModuleRowViewModel>? currentShipModuleRows;
@@ -416,17 +435,125 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<string> StationServices => Snapshot?.LastStationDetails?.Services ?? [];
 
-    public IReadOnlyList<FrontierRankCardViewModel> Ranks =>
-        rankRows ??=
-            Snapshot
-                ?.Ranks.Select(rank => new FrontierRankCardViewModel(
-                    rank.Category,
-                    rank.Name,
-                    rank.Level,
-                    RankIcon(rank.Key, rank.Level)
-                ))
-                .ToArray()
-            ?? [];
+    public IReadOnlyList<FrontierRankCardViewModel> Ranks => rankRows ??= BuildRanks();
+
+    /// <summary>Combines Frontier ranks with the applicable remote or newer local Powerplay membership.</summary>
+    private List<FrontierRankCardViewModel> BuildRanks()
+    {
+        if (Snapshot is null)
+        {
+            return [];
+        }
+
+        var rows = Snapshot
+            .Ranks.Where(rank => rank.Key != PowerplayRankKey)
+            .Select(rank => new FrontierRankCardViewModel(
+                rank.Category,
+                rank.Name,
+                rank.Level,
+                RankIcon(rank.Key, rank.Level)
+            ))
+            .ToList();
+        FrontierPowerplaySnapshot? powerplay = Snapshot.Powerplay;
+        bool fromLocalJournal =
+            IsViewingJournalCommander
+            && journalPowerplay is not null
+            && (powerplay is null || journalPowerplay.UpdatedAt >= powerplay.UpdatedAt);
+        if (fromLocalJournal)
+        {
+            powerplay = journalPowerplay;
+        }
+
+        if (powerplay is not null)
+        {
+            rows.Add(BuildPowerplayRankCard(powerplay, fromLocalJournal));
+        }
+        else if (Snapshot.Ranks.FirstOrDefault(rank => rank.Key == PowerplayRankKey) is { } legacy)
+        {
+            rows.Add(
+                new FrontierRankCardViewModel(
+                    legacy.Category,
+                    legacy.Level == 0 ? UnavailableLabel : legacy.Name,
+                    legacy.Level,
+                    RankIcon(legacy.Key, legacy.Level),
+                    string.Empty,
+                    "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal."
+                )
+            );
+        }
+
+        return rows;
+    }
+
+    /// <summary>Builds a power-colored membership card with numeric status, badge tier, and translatable source.</summary>
+    private static FrontierRankCardViewModel BuildPowerplayRankCard(
+        FrontierPowerplaySnapshot powerplay,
+        bool fromLocalJournal
+    )
+    {
+        (string iconPath, string? iconTint) = PowerplayIcon(powerplay.Power);
+        bool pledged = powerplay.Power.Length > 0;
+        string rankText = powerplay.Rank is { } level ? $"Rank {level:N0}" : "Rank unavailable";
+        string meritsText = pledged && powerplay.Merits is { } merits ? $"{merits:N0} merits" : string.Empty;
+        string rankBadge =
+            pledged && powerplay.Rank is { } rank
+                ? RankAsset("powerplay", Math.Clamp(rank / 20 + 1, 1, 5))
+                : string.Empty;
+        string updatedAt = powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+        return new FrontierRankCardViewModel(
+            "Powerplay",
+            pledged ? powerplay.Power : "Unpledged",
+            powerplay.Rank ?? 0,
+            iconPath,
+            pledged ? rankText : string.Empty,
+            fromLocalJournal ? $"Local journal · {updatedAt}" : $"Frontier journal · {updatedAt}",
+            iconTint,
+            meritsText,
+            rankBadge
+        );
+    }
+
+    /// <summary>Applies identity-attributed local Powerplay events and invalidates the displayed rank cards when status changes.</summary>
+    public void UpdateJournalPowerplay(
+        string? frontierId,
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? initialCommanderName = null
+    )
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        if (detectedFrontierId is null)
+        {
+            return;
+        }
+
+        FrontierPowerplaySnapshot? current = journalPowerplay;
+        if (
+            IsViewingJournalCommander
+            && Snapshot?.Powerplay is { } remote
+            && (current is null || remote.UpdatedAt > current.UpdatedAt)
+        )
+        {
+            current = remote;
+        }
+
+        FrontierPowerplaySnapshot? seed = current;
+        current = FrontierPowerplayJournal.Apply(
+            current,
+            journalEvents,
+            detectedFrontierId,
+            NormalizeFrontierId(frontierId),
+            initialCommanderName
+        );
+
+        if (ReferenceEquals(current, seed) || current == journalPowerplay)
+        {
+            return;
+        }
+
+        journalPowerplay = current;
+        rankRows = null;
+        OnPropertyChanged(nameof(Ranks));
+    }
 
     public IReadOnlyList<FrontierDataPointSnapshot> ProfileData => Snapshot?.ProfileData ?? [];
 
@@ -1409,6 +1536,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return item.Bonus > 0 ? $"Reward: {FormatCredits(item.Bonus)}" : string.Empty;
     }
 
+    /// <summary>Switches the detected commander and clears local projections before activating the selected Frontier account.</summary>
     public async Task SetCommanderContextAsync(
         string? frontierId,
         string? commanderName,
@@ -1432,6 +1560,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         OnPropertyChanged(nameof(IsViewingJournalCommander));
         if (detectedIdentityChanged)
         {
+            journalPowerplay = null;
+            rankRows = null;
+            OnPropertyChanged(nameof(Ranks));
             journalReputationCommanderName = normalizedName;
             journalReputation = [];
             journalReputationUpdatedAt = null;
@@ -3203,6 +3334,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
     }
 
+    /// <summary>Converts journal identifiers into readable labels by separating words and normalizing case.</summary>
     private static string HumanizeIdentifier(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -3232,6 +3364,25 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         );
     }
 
+    /// <summary>Resolves a pledged power's bundled emblem and color with a generic fallback for unknown powers.</summary>
+    private static (string Path, string? Tint) PowerplayIcon(string power)
+    {
+        string name = PowerplayPlan.InaraPowerName(
+            power.Trim().Replace("Arissa Lavigny Duval", "Arissa Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
+        );
+        if (!PowerplayEmblemNames.Contains(name))
+        {
+            return (RankIcon(PowerplayRankKey, 0), null);
+        }
+
+        string asset = name.ToLowerInvariant().Replace(' ', '-');
+        return (
+            $"avares://SrvSurvey.Desktop/Assets/Frontier/Powers/{asset}.png",
+            PowerplayPowerLineViewModel.ColorFor(name)
+        );
+    }
+
+    /// <summary>Selects a bundled legacy rank or faction asset within its supported rating range.</summary>
     private static string RankIcon(string key, int level)
     {
         int rank = Math.Clamp(level + 1, 1, 9);
@@ -3241,7 +3392,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "trade" => RankAsset("trade", rank),
             "explore" => RankAsset("exploration", rank),
             "cqc" => RankAsset("cqc", rank),
-            "power" => RankAsset("powerplay", Math.Clamp(level + 1, 1, 5)),
+            PowerplayRankKey => RankAsset("powerplay", Math.Clamp(level + 1, 1, 5)),
             FederationFaction => FactionAsset(FederationFaction),
             EmpireFaction => FactionAsset(EmpireFaction),
             _ => RankAsset("pilots-federation", rank),
@@ -3602,7 +3753,28 @@ public sealed record FrontierInventoryRowViewModel(string Category, string Name,
 
 public sealed record FrontierOrderRowViewModel(string Category, string Name, string Quantity, string Price);
 
-public sealed record FrontierRankCardViewModel(string Category, string Name, int Level, string IconPath);
+public sealed record FrontierRankCardViewModel(
+    string Category,
+    string Name,
+    int Level,
+    string IconPath,
+    string RankText = "",
+    string Source = "",
+    string? IconTint = null,
+    string MeritsText = "",
+    string RankBadgeIconPath = ""
+)
+{
+    public string Detail => HasMerits ? $"{RankText} · {MeritsText}" : RankText;
+
+    public bool HasDetail => RankText.Length > 0;
+
+    public bool HasIconTint => IconTint is not null;
+
+    public bool HasMerits => MeritsText.Length > 0;
+
+    public bool HasRankBadge => RankBadgeIconPath.Length > 0;
+}
 
 public sealed record FrontierDetailRowViewModel(string Label, string Value, string Detail = "");
 

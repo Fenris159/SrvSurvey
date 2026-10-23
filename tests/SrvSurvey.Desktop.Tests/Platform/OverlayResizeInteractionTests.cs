@@ -52,7 +52,10 @@ public sealed class OverlayResizeInteractionTests
                 using WriteableBitmap? frame = preview.CaptureRenderedFrame();
                 Point actual = grip.TranslatePoint(new Point(11, 11), preview)!.Value;
                 Assert.True(
-                    Math.Abs(actual.X - pointer.X) <= 1 && Math.Abs(actual.Y - pointer.Y) <= 1,
+                    Math.Abs(actual.X - pointer.X) <= 1
+                        && (
+                            panel is IOverlayPanelSizePolicy { AutoHeight: true } || Math.Abs(actual.Y - pointer.Y) <= 1
+                        ),
                     $"{plotterName} step {step}: pointer={pointer}, grip={actual}; original={original}, panel={panel.Bounds.Size}"
                 );
             }

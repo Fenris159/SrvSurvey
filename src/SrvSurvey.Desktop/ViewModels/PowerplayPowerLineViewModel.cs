@@ -22,6 +22,7 @@ public sealed record PowerplayPowerLineViewModel(string Name, double? Progress)
         ["Li Yong-Rui"] = "#33D688",
         ["Archon Delaine"] = "#FF0000",
         ["Yuri Grom"] = "#FF8000",
+        ["Zachary Hudson"] = "#FF0000",
     };
 
     public string Display =>

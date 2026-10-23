@@ -65,8 +65,52 @@ shared-file inventories whenever more than one Elite game process is running,
 because it cannot then attribute the files to one commander reliably.
 
 SrvSurvey intentionally does not request `/visitedstars`. The application's
-existing local journal pipeline remains the source for travel history; the
-dashboard also does not request the remote `/journal` endpoint.
+existing local journal pipeline remains the source for travel history.
+
+Powerplay 2.0 status comes from timestamped `Powerplay`, `PowerplayRank`,
+`PowerplayMerits`, join, defect, and leave journal events. The profile's legacy
+`commander.rank.power` value is not a reliable pledge indicator: a zero is shown
+as **Unavailable**, rather than **None**, when journal status is unknown.
+Refreshing Frontier data checks the remote daily `/journal/YYYY/MM/DD` endpoint,
+starting today and looking back at most seven UTC days until the collected
+records define the current membership or the cached snapshot's UTC day is
+reached. Matching rank and merit deltas can establish status across days; a
+valid join, defection, or leave also supplies a baseline without older history.
+Relevant Powerplay records are replayed oldest first, so a new merits update
+cannot skip an intervening rank update. Unrelated travel records are discarded
+as each response is read rather than retaining entire daily journals. This check runs at most once per 15 minutes after a
+successful check. The last-check timestamp does not shorten future lookbacks,
+so older dates remain eligible after an empty search. Only the small
+pledge/rank/merits snapshot is cached; remote
+travel journals are not stored or imported into travel history.
+
+The rank card shows the pledged power, numeric rank (including ranks above 100),
+and available merits. Its tooltip identifies the journal source and event time.
+All twelve current powers have their own emblem in their power's color.
+Ten come from EDAssets; Jerome Archer and Nakato Kaine use original transparent
+PNGs from Inara. Arissa's abbreviated journal name resolves to her purple emblem.
+The original Zachary Hudson emblem is retained in red for historical journal
+data. Unknown future powers use the generic Powerplay emblem.
+
+A 28-pixel legacy rank badge appears in the card’s top-right corner with high-quality scaling: badge 1 for
+ranks 0–19, badge 2 for 20–39, badge 3 for 40–59, badge 4 for 60–79, and badge 5
+for 80 and above, including ranks 100+. This visual tier never caps or changes
+the actual numeric rank. Unknown ranks and unpledged commanders show no small
+badge. Merits appear on the next line.
+Newer local journal events update the active commander's card during play.
+Identity boundaries and the commander active before each batch attribute pending
+events correctly when journal files rotate. A FID-less LoadGame retains the
+confirmed identity of the same commander; a different name requires a new
+confirmation. Joining or defecting starts a new
+membership without inheriting an earlier membership's rank or merits, even when
+the power name matches. Blank powers in rank, merit, join, and defect events are
+ignored; an explicit unpledged full snapshot or leave event remains valid.
+Switching the viewed Frontier account never borrows the active game's Powerplay
+status. Incomplete or failed remote journal downloads preserve the last known
+status, whose event time remains visible in the tooltip. Refreshed credentials
+are preserved even when the retried journal response is incomplete. If no relevant session
+exists within seven days, SrvSurvey keeps its prior snapshot or shows
+**Unavailable**; an explicit journal leave event shows **Unpledged**.
 
 ## Storage and request policy
 

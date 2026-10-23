@@ -4,9 +4,28 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed class FrontierAssetImageConverterTests
 {
+    /// <summary>Verifies bundled assets decode successfully and power emblems retain transparent pixels.</summary>
     [Theory]
     [InlineData("Assets/Frontier/Ranks/exploration/rank-9.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-1.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-2.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-3.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-4.png")]
+    [InlineData("Assets/Frontier/Ranks/powerplay/rank-5.png")]
     [InlineData("Assets/Frontier/Factions/federation.png")]
+    [InlineData("Assets/Frontier/Powers/aisling-duval.png")]
+    [InlineData("Assets/Frontier/Powers/archon-delaine.png")]
+    [InlineData("Assets/Frontier/Powers/arissa-lavigny-duval.png")]
+    [InlineData("Assets/Frontier/Powers/denton-patreus.png")]
+    [InlineData("Assets/Frontier/Powers/edmund-mahon.png")]
+    [InlineData("Assets/Frontier/Powers/felicia-winters.png")]
+    [InlineData("Assets/Frontier/Powers/jerome-archer.png")]
+    [InlineData("Assets/Frontier/Powers/li-yong-rui.png")]
+    [InlineData("Assets/Frontier/Powers/nakato-kaine.png")]
+    [InlineData("Assets/Frontier/Powers/pranav-antal.png")]
+    [InlineData("Assets/Frontier/Powers/yuri-grom.png")]
+    [InlineData("Assets/Frontier/Powers/zachary-hudson.png")]
+    [InlineData("Assets/Frontier/Powers/zemina-torval.png")]
     public void BundledFrontierAssetIsAValidImage(string relativePath)
     {
         string desktopRoot = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
@@ -17,17 +36,24 @@ public sealed class FrontierAssetImageConverterTests
         Assert.NotNull(image);
         Assert.True(image.Width > 0);
         Assert.True(image.Height > 0);
+        Assert.Contains(image.Pixels, pixel => pixel.Alpha > 0);
+        if (relativePath.Contains("/Powers/", StringComparison.Ordinal))
+        {
+            Assert.Contains(image.Pixels, pixel => pixel.Alpha == 0);
+        }
     }
 
+    /// <summary>Verifies that commander-image bindings resolve dynamic bundled assets through the runtime converter.</summary>
     [Fact]
     public void DynamicFrontierImagesUseTheRuntimeAssetConverter()
     {
         string views = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views");
         string commander = File.ReadAllText(Path.Combine(views, "FrontierCommanderTabView.axaml"));
 
-        Assert.Equal(3, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
+        Assert.Equal(5, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
     }
 
+    /// <summary>Counts converter bindings in markup to detect newly unconverted dynamic asset paths.</summary>
     private static int CountOccurrences(string value, string search)
     {
         int count = 0;

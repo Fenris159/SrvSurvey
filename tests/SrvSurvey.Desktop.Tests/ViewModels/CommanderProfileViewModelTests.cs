@@ -1,3 +1,4 @@
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -6,8 +7,226 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class CommanderProfileViewModelTests
+public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Verifies every supported pledge resolves to its bundled emblem and assigned color.</summary>
+    [Theory]
+    [InlineData("Aisling Duval", "aisling-duval", "#0099FF")]
+    [InlineData("Archon Delaine", "archon-delaine", "#FF0000")]
+    [InlineData("A. Lavigny-Duval", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData("Arissa Lavigny-Duval", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData(" arissa lavigny duval ", "arissa-lavigny-duval", "#7F00FF")]
+    [InlineData("Denton Patreus", "denton-patreus", "#00FFFF")]
+    [InlineData("Edmund Mahon", "edmund-mahon", "#019C00")]
+    [InlineData("Felicia Winters", "felicia-winters", "#FFC400")]
+    [InlineData("Li Yong-Rui", "li-yong-rui", "#33D688")]
+    [InlineData("Pranav Antal", "pranav-antal", "#FFFF00")]
+    [InlineData("Yuri Grom", "yuri-grom", "#FF8000")]
+    [InlineData("Zachary Hudson", "zachary-hudson", "#FF0000")]
+    [InlineData("Zemina Torval", "zemina-torval", "#0040FF")]
+    [InlineData("Jerome Archer", "jerome-archer", "#DF1DE4")]
+    [InlineData("Nakato Kaine", "nakato-kaine", "#A3F127")]
+    [InlineData("Future Power", null, null)]
+    [InlineData("", null, null)]
+    public async Task PowerplayCardUsesThePledgedPowersBundledEmblem(string power, string? emblem, string? color)
+    {
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UnixEpoch) with
+        {
+            Ranks = [],
+            Powerplay = new(power, 160, 1260198, DateTimeOffset.UnixEpoch),
+        };
+        using var model = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await model.OpenAsync();
+
+        FrontierRankCardViewModel card = Assert.Single(model.Ranks);
+        string expected = emblem is null
+            ? "Assets/Frontier/Ranks/powerplay/rank-1.png"
+            : $"Assets/Frontier/Powers/{emblem}.png";
+        Assert.Equal("avares://SrvSurvey.Desktop/" + expected, card.IconPath);
+        Assert.Equal(emblem is not null, card.HasIconTint);
+        Assert.Equal(color, card.IconTint);
+    }
+
+    /// <summary>Verifies badge boundaries through large ranks while retaining the actual numeric rank.</summary>
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(19, 1)]
+    [InlineData(20, 2)]
+    [InlineData(39, 2)]
+    [InlineData(40, 3)]
+    [InlineData(59, 3)]
+    [InlineData(60, 4)]
+    [InlineData(79, 4)]
+    [InlineData(80, 5)]
+    [InlineData(99, 5)]
+    [InlineData(100, 5)]
+    [InlineData(160, 5)]
+    [InlineData(int.MaxValue, 5)]
+    [InlineData(null, null)]
+    public async Task PowerplayRankBadgeUsesTwentyRankBandsWithoutCappingTheDisplayedRank(int? rank, int? badge)
+    {
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UnixEpoch) with
+        {
+            Ranks = [],
+            Powerplay = new("Jerome Archer", rank, null, DateTimeOffset.UnixEpoch),
+        };
+        using var model = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await model.OpenAsync();
+
+        FrontierRankCardViewModel card = Assert.Single(model.Ranks);
+        Assert.Equal(badge.HasValue, card.HasRankBadge);
+        Assert.Equal(
+            badge is { } tier
+                ? $"avares://SrvSurvey.Desktop/Assets/Frontier/Ranks/powerplay/rank-{tier}.png"
+                : string.Empty,
+            card.RankBadgeIconPath
+        );
+        Assert.Equal(rank is { } level ? $"Rank {level:N0}" : "Rank unavailable", card.RankText);
+        Assert.Equal(card.RankText, card.Detail);
+        Assert.False(card.HasMerits);
+        Assert.Equal(string.Empty, card.MeritsText);
+    }
+
+    /// <summary>Verifies modern membership replaces legacy zero and follows newer account-matched journal updates.</summary>
+    [Fact]
+    public async Task ModernPowerplayCardReplacesLegacyZeroAndTracksNewerLocalEvents()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-10-23T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Ranks = [new("power", "Powerplay", 0, "None")],
+            Powerplay = new("A. Lavigny-Duval", 160, 1260198, fetchedAt.AddHours(-1)),
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, fetchedAt))
+        );
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+
+        FrontierRankCardViewModel card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("A. Lavigny-Duval", card.Name);
+        Assert.Contains("Rank 160", card.Detail);
+        Assert.Contains("1,260,198 merits", card.Detail);
+        Assert.Contains("Frontier journal", card.Source);
+        Assert.True(card.HasDetail);
+        Assert.Same(viewModel.Ranks, viewModel.Ranks);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T10:00:00Z","event":"PowerplayLeave"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal(card, Assert.Single(viewModel.Ranks));
+
+        viewModel.UpdateJournalPowerplay(
+            "F456",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayLeave"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal(card, Assert.Single(viewModel.Ranks));
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayRank","Power":"A. Lavigny-Duval","Rank":161}
+                    """
+                ),
+            ]
+        );
+        card = Assert.Single(viewModel.Ranks);
+        Assert.Contains("Rank 161", card.Detail);
+        Assert.Contains("1,260,198 merits", card.Detail);
+        Assert.Contains("Local journal", card.Source);
+        Assert.Same(viewModel.Ranks, viewModel.Ranks);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T14:00:00Z","event":"PowerplayLeave","Power":"A. Lavigny-Duval"}
+                    """
+                ),
+            ]
+        );
+        card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("Unpledged", card.Name);
+        Assert.False(card.HasDetail);
+        Assert.False(card.HasRankBadge);
+        Assert.False(card.HasMerits);
+    }
+
+    /// <summary>Verifies unknown status stays distinct from unpledged and local updates remain scoped to the active commander.</summary>
+    [Fact]
+    public async Task PowerplayUnknownDoesNotClaimUnpledgedAndLocalStatusIsScopedToTheJournalAccount()
+    {
+        DateTimeOffset fetchedAt = DateTimeOffset.UtcNow;
+        FrontierAccountSnapshot first = CreateSnapshot(fetchedAt) with
+        {
+            Ranks = [new("power", "Powerplay", 0, "None")],
+        };
+        FrontierAccountSnapshot second = first with { CommanderName = "Second", CommanderId = 456 };
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        account.SetStateForCommander("F123", new FrontierAccountState(true, first, fetchedAt));
+        account.SetStateForCommander("F456", new FrontierAccountState(true, second, fetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        viewModel.UpdateJournalPowerplay(null, []);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayJoin","Power":"Aisling Duval"}
+                    """
+                ),
+            ]
+        );
+        FrontierRankCardViewModel card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("Aisling Duval", card.Name);
+        Assert.Equal("Rank unavailable", card.Detail);
+
+        await viewModel.SelectCommanderAsync(FrontierCommanderSelectionOption.Available("F456", "Second"));
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T14:00:00Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1260198}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+
+        await viewModel.SelectCommanderAsync(viewModel.CommanderSelectionOptions.Single(option => option.IsAutomatic));
+        Assert.Equal("A. Lavigny-Duval", Assert.Single(viewModel.Ranks).Name);
+        await viewModel.SetCommanderContextAsync("F456", "Second", refreshIfOpen: true);
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+    }
+
+    /// <summary>Verifies a linked-commander catalog warning remains visible after account activation.</summary>
     [Fact]
     public async Task CatalogWarningSurvivesCommanderActivation()
     {
@@ -1302,6 +1521,7 @@ public sealed class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Verifies startup loads linked carrier data without opening the card or repeating a completed refresh.</summary>
     [Fact]
     public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
     {
@@ -1349,7 +1569,8 @@ public sealed class CommanderProfileViewModelTests
         }
     }
 
-    [Fact]
+    /// <summary>Verifies the production journal projection supplies reputation and Powerplay status without carrier data.</summary>
+    [AvaloniaFact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-reputation-{Guid.NewGuid():N}");
@@ -1361,8 +1582,9 @@ public sealed class CommanderProfileViewModelTests
                 Path.Combine(journals, "Journal.2026-07-29T120000.01.log"),
                 """
                 {"timestamp":"2026-07-29T12:00:00Z","event":"Commander","Name":"Fenris","FID":"F123"}
-                {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
+                {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","Odyssey":true}
                 {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
+                {"timestamp":"2026-07-29T12:05:01Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1260198}
 
                 """
             );
@@ -1401,6 +1623,9 @@ public sealed class CommanderProfileViewModelTests
             Assert.Null(profile.Carrier);
             Assert.Equal(4, profile.CommanderReputation.Count);
             Assert.Equal("91%", profile.CommanderReputation.Single(item => item.Faction == "Federation").Score);
+            FrontierRankCardViewModel powerplay = profile.Ranks.Single(rank => rank.Category == "Powerplay");
+            Assert.Equal("A. Lavigny-Duval", powerplay.Name);
+            Assert.Contains("Rank 160", powerplay.Detail);
         }
         finally
         {
@@ -1411,7 +1636,8 @@ public sealed class CommanderProfileViewModelTests
         }
     }
 
-    [Fact]
+    /// <summary>Verifies the production journal projection updates and clears the displayed carrier jump as events arrive.</summary>
+    [AvaloniaFact]
     public async Task MainJournalRefreshUpdatesAndClearsCurrentCarrierJumpImmediately()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-carrier-jump-{Guid.NewGuid():N}");
