@@ -28,7 +28,9 @@ public sealed partial class FrontierAccountService
         }
 
         // A new connection can recover a recent session even when no local journal is available.
-        // Once found, keep the small status snapshot; never cache the remote travel journal.
+        // Recover a complete baseline before replaying daily deltas in chronological order.
+        // Keep only the small status snapshot; never persist the remote travel journal.
+        var journals = new List<string>();
         for (int daysAgo = 0; daysAgo < 7; daysAgo++)
         {
             string date = now.AddDays(-daysAgo).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
@@ -46,20 +48,38 @@ public sealed partial class FrontierAccountService
                 return (snapshot with { PowerplayError = response.Error }, credential);
             }
 
-            FrontierPowerplaySnapshot? powerplay = response.Content is { } content
-                ? FrontierPowerplayJournal.Parse(content, commander.FrontierId, snapshot.Powerplay)
-                : null;
-            if (powerplay is not null)
+            if (response.Content is { } content)
             {
-                if (snapshot.Powerplay is null || powerplay.UpdatedAt >= snapshot.Powerplay.UpdatedAt)
+                journals.Add(content);
+                if (HasCompletePowerplayBaseline(content, commander.FrontierId))
                 {
-                    snapshot = snapshot with { Powerplay = powerplay };
+                    break;
                 }
+            }
 
+            if (
+                snapshot.Powerplay is { } cached
+                && now.AddDays(-daysAgo).UtcDateTime.Date <= cached.UpdatedAt.UtcDateTime.Date
+            )
+            {
                 break;
             }
         }
 
+        FrontierPowerplaySnapshot? powerplay = snapshot.Powerplay;
+        journals.Reverse();
+        foreach (string journal in journals)
+        {
+            powerplay = FrontierPowerplayJournal.Parse(journal, commander.FrontierId, powerplay) ?? powerplay;
+        }
+        snapshot = snapshot with { Powerplay = powerplay };
+
         return (snapshot with { PowerplayFetchedAt = now, PowerplayError = string.Empty }, credential);
+    }
+
+    private static bool HasCompletePowerplayBaseline(string journal, string frontierId)
+    {
+        FrontierPowerplaySnapshot? baseline = FrontierPowerplayJournal.Parse(journal, frontierId);
+        return baseline is { Power.Length: 0 } or { Rank: not null, Merits: not null };
     }
 }

@@ -610,8 +610,14 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
                 .ConfigureAwait(false);
             return new OptionalCapiResponse(response.Credential, response.Content, string.Empty, true, true);
         }
-        catch (HttpRequestException exception)
-            when (exception.StatusCode is not HttpStatusCode.Unauthorized and not HttpStatusCode.UnprocessableEntity)
+        catch (Exception exception)
+            when (exception
+                    is InvalidDataException
+                        or HttpRequestException
+                        {
+                            StatusCode: not HttpStatusCode.Unauthorized and not HttpStatusCode.UnprocessableEntity
+                        }
+            )
         {
             FrontierCredentialDocument? latestDocument = await credentials
                 .LoadAsync(cancellationToken)
@@ -624,10 +630,6 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
                 true,
                 false
             );
-        }
-        catch (InvalidDataException exception)
-        {
-            return new OptionalCapiResponse(credential, null, exception.Message, true, false);
         }
     }
 

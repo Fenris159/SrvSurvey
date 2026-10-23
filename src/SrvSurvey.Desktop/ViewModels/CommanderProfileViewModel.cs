@@ -497,15 +497,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             pledged && powerplay.Rank is { } rank
                 ? RankAsset("powerplay", Math.Clamp(rank / 20 + 1, 1, 5))
                 : string.Empty;
+        string updatedAt = powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
         return new FrontierRankCardViewModel(
             "Powerplay",
             pledged ? powerplay.Power : "Unpledged",
             powerplay.Rank ?? 0,
             iconPath,
             pledged ? rankText : string.Empty,
-            (fromLocalJournal ? "Local journal" : "Frontier journal")
-                + " · "
-                + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture),
+            fromLocalJournal ? $"Local journal · {updatedAt}" : $"Frontier journal · {updatedAt}",
             iconTint,
             meritsText,
             rankBadge
@@ -515,10 +514,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public void UpdateJournalPowerplay(string? frontierId, IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        if (
-            detectedFrontierId is null
-            || !string.Equals(NormalizeFrontierId(frontierId), detectedFrontierId, StringComparison.OrdinalIgnoreCase)
-        )
+        if (detectedFrontierId is null)
         {
             return;
         }
@@ -534,10 +530,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         FrontierPowerplaySnapshot? seed = current;
-        foreach (JournalEventEnvelope entry in journalEvents)
-        {
-            current = FrontierPowerplayJournal.Apply(current, entry);
-        }
+        current = FrontierPowerplayJournal.Apply(
+            current,
+            journalEvents,
+            detectedFrontierId,
+            NormalizeFrontierId(frontierId)
+        );
 
         if (ReferenceEquals(current, seed) || current == journalPowerplay)
         {

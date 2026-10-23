@@ -72,8 +72,10 @@ Powerplay 2.0 status comes from timestamped `Powerplay`, `PowerplayRank`,
 `commander.rank.power` value is not a reliable pledge indicator: a zero is shown
 as **Unavailable**, rather than **None**, when journal status is unknown.
 Refreshing Frontier data checks the remote daily `/journal/YYYY/MM/DD` endpoint,
-starting today and looking back at most seven UTC days until matching-account
-Powerplay data is found. This check runs at most once per 15 minutes after a
+starting today and looking back at most seven UTC days until a complete
+matching-account status or the cached snapshot's UTC day is reached. Daily
+changes are then replayed oldest first, so a new merits update cannot skip an
+intervening rank update. This check runs at most once per 15 minutes after a
 successful check. Only the small pledge/rank/merits snapshot is cached; remote
 travel journals are not stored or imported into travel history.
 
@@ -91,9 +93,15 @@ for 80 and above, including ranks 100+. This visual tier never caps or changes
 the actual numeric rank. Unknown ranks and unpledged commanders show no small
 badge. Merits appear on the next line.
 Newer local journal events update the active commander's card during play.
+Identity boundaries and the commander active before each batch attribute pending
+events correctly when journal files rotate. Joining or defecting starts a new
+membership without inheriting an earlier membership's rank or merits, even when
+the power name matches. Blank powers in rank, merit, join, and defect events are
+ignored; an explicit unpledged full snapshot or leave event remains valid.
 Switching the viewed Frontier account never borrows the active game's Powerplay
 status. Incomplete or failed remote journal downloads preserve the last known
-status, whose event time remains visible in the tooltip. If no relevant session
+status, whose event time remains visible in the tooltip. Refreshed credentials
+are preserved even when the retried journal response is incomplete. If no relevant session
 exists within seven days, SrvSurvey keeps its prior snapshot or shows
 **Unavailable**; an explicit journal leave event shows **Unpledged**.
 

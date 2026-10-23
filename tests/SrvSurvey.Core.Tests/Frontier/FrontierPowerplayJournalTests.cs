@@ -75,6 +75,33 @@ public sealed class FrontierPowerplayJournalTests
     }
 
     [Theory]
+    [InlineData(
+        """{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayJoin","Power":"A. Lavigny-Duval"}""",
+        null,
+        null
+    )]
+    [InlineData(
+        """{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayJoin","Power":"A. Lavigny-Duval","Rank":2}""",
+        2,
+        null
+    )]
+    [InlineData(
+        """{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayDefect","ToPower":"A. Lavigny-Duval","Merits":10}""",
+        null,
+        10L
+    )]
+    public void NewMembershipCannotInheritValuesFromAnEarlierPledgeToTheSamePower(string json, int? rank, long? merits)
+    {
+        FrontierPowerplaySnapshot result = Assert.IsType<FrontierPowerplaySnapshot>(
+            FrontierPowerplayJournal.Apply(Previous(), Entry(json))
+        );
+
+        Assert.Equal("A. Lavigny-Duval", result.Power);
+        Assert.Equal(rank, result.Rank);
+        Assert.Equal(merits, result.Merits);
+    }
+
+    [Theory]
     [InlineData("""{"event":"Powerplay","Power":"Wrong","Rank":1}""")]
     [InlineData("""{"timestamp":"2026-10-22T00:00:00Z","event":"PowerplayLeave"}""")]
     [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"Rank","Power":"Wrong"}""")]
@@ -92,6 +119,10 @@ public sealed class FrontierPowerplayJournalTests
         """{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayMerits","Power":"A. Lavigny-Duval","MeritsGained":100}"""
     )]
     [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayMerits","Power":42,"TotalMerits":100}""")]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayRank","Power":"   ","Rank":161}""")]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayMerits","Power":"","TotalMerits":10}""")]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayJoin","Power":"  "}""")]
+    [InlineData("""{"timestamp":"2026-10-23T03:00:00Z","event":"PowerplayDefect","ToPower":""}""")]
     public void InvalidOrOlderEventsCannotEraseKnownStatus(string json)
     {
         FrontierPowerplaySnapshot previous = Previous();

@@ -85,7 +85,7 @@ public sealed partial class CommanderProfileViewModelTests
                 border => border.IsVisible && border.OpacityMask is ImageBrush
             );
             var color = Color.Parse(colorHex);
-            Assert.Equal(color, Assert.IsAssignableFrom<ISolidColorBrush>(emblem.Background).Color);
+            Assert.Equal(color, Assert.IsType<ISolidColorBrush>(emblem.Background, exactMatch: false).Color);
             using var pixels = new MemoryStream();
             frame.Save(pixels, PngBitmapEncoderOptions.Default);
             using var bitmap = SKBitmap.Decode(pixels.ToArray());

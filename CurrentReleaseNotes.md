@@ -4,12 +4,14 @@ RC71 brings the SteamOS and Gamescope overlay support from PR #207 into the
 current release, with clearer Next Jump guidance and a panel that fits its
 content.
 
-## Steam Deck Gaming Mode and Gamescope
+## What's changed
+
+### Steam Deck Gaming Mode and Gamescope
 
 - **Run native SrvSurvey-XP alongside Elite through Steam/Proton.** Add the Linux
   AppImage as a non-Steam game, leave SrvSurvey running, and return to Elite.
   SrvSurvey verifies the Gamescope compositor and discovers Elite's game display
-  separately. Follow the [Steam Deck Gaming Mode guide](docs/STEAMOS_GAMING_MODE.md).
+  separately. Follow the [Steam Deck Gaming Mode guide](https://github.com/Fenris159/SrvSurvey/blob/1dee430ad5f68455582fa3e1fa7be061afed240c/docs/STEAMOS_GAMING_MODE.md).
 - **Keep gameplay input while using passive panels.** Toggle live overlay
   interaction when you need to click or reposition a panel. Live mode reserves
   pointer input across the HUD canvas while keyboard input stays with Elite.
@@ -29,7 +31,7 @@ content.
   display geometry, and compositor properties. It does not capture screenshots,
   keystrokes, journals, or full process environments, and uploads nothing.
 
-## Next Jump overlay
+### Next Jump overlay
 
 - **Fit the panel to its content.** The panel grows when destination details
   arrive and shrinks when fewer rows are available. Saved width and typography
@@ -44,7 +46,7 @@ content.
   scoopable stars and the next-jump marker. They describe the star's fuel-scooping
   capability, rather than fuel level or whether the system has been visited.
 
-## Commander Powerplay status
+### Commander Powerplay status
 
 - **Show the current pledged power, rank, and merits.** Frontier refresh now
   reads modern Powerplay status from Frontier's journal API instead of treating

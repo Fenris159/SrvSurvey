@@ -23456,8 +23456,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
-    "Text": "Frontier journal",
-    "IsFormat": false,
+    "Text": "Frontier journal \u00B7 {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -31525,8 +31525,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
   },
   {
-    "Text": "Local journal",
-    "IsFormat": false,
+    "Text": "Local journal \u00B7 {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],

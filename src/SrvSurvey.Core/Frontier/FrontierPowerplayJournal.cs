@@ -15,17 +15,22 @@ public static class FrontierPowerplayJournal
         FrontierPowerplaySnapshot? previous = null
     )
     {
-        bool matches = false;
-        FrontierPowerplaySnapshot? result = previous;
-        bool changed = false;
-        using var reader = new StringReader(journal);
-        while (reader.ReadLine() is { } line)
-        {
-            if (!JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _) || entry is null)
-            {
-                continue;
-            }
+        FrontierPowerplaySnapshot? result = Apply(previous, ReadEntries(journal), frontierId, initialFrontierId: null);
+        return ReferenceEquals(previous, result) ? null : result;
+    }
 
+    /// <summary>Attributes each event using its identity boundary and the commander active before the batch.</summary>
+    public static FrontierPowerplaySnapshot? Apply(
+        FrontierPowerplaySnapshot? previous,
+        IEnumerable<JournalEventEnvelope> entries,
+        string frontierId,
+        string? initialFrontierId
+    )
+    {
+        bool matches = string.Equals(initialFrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
+        FrontierPowerplaySnapshot? result = previous;
+        foreach (JournalEventEnvelope entry in entries)
+        {
             if (entry.EventName == "Fileheader")
             {
                 matches = false;
@@ -36,13 +41,11 @@ public static class FrontierPowerplayJournal
             }
             else if (matches)
             {
-                FrontierPowerplaySnapshot? updated = Apply(result, entry);
-                changed |= !ReferenceEquals(result, updated);
-                result = updated;
+                result = Apply(result, entry);
             }
         }
 
-        return changed ? result : null;
+        return result;
     }
 
     /// <summary>Merges absolute rank/merit updates without letting older events or another pledge overwrite newer status.</summary>
@@ -64,6 +67,7 @@ public static class FrontierPowerplayJournal
             entry.EventName
                 is not ("Powerplay" or "PowerplayJoin" or "PowerplayDefect" or "PowerplayRank" or "PowerplayMerits")
             || power is null
+            || power.Length == 0 && entry.EventName != "Powerplay"
         )
         {
             return previous;
@@ -71,15 +75,14 @@ public static class FrontierPowerplayJournal
 
         int? rank = Number(payload, "Rank") is { } value && value <= int.MaxValue ? (int)value : null;
         long? merits = Number(payload, entry.EventName == "PowerplayMerits" ? "TotalMerits" : "Merits");
-        if (
-            entry.EventName == "PowerplayRank" && rank is null
-            || entry.EventName == "PowerplayMerits" && merits is null
-        )
+        if (!HasRequiredPowerplayValue(entry.EventName, rank, merits))
         {
             return previous;
         }
 
-        return Merge(previous, power, rank, merits, timestamp);
+        return entry.EventName is "PowerplayJoin" or "PowerplayDefect"
+            ? new FrontierPowerplaySnapshot(power, rank, merits, timestamp)
+            : Merge(previous, power, rank, merits, timestamp);
     }
 
     private static FrontierPowerplaySnapshot Merge(
@@ -98,6 +101,26 @@ public static class FrontierPowerplayJournal
             timestamp
         );
     }
+
+    private static IEnumerable<JournalEventEnvelope> ReadEntries(string journal)
+    {
+        using var reader = new StringReader(journal);
+        while (reader.ReadLine() is { } line)
+        {
+            if (JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _) && entry is not null)
+            {
+                yield return entry;
+            }
+        }
+    }
+
+    private static bool HasRequiredPowerplayValue(string eventName, int? rank, long? merits) =>
+        eventName switch
+        {
+            "PowerplayRank" => rank is not null,
+            "PowerplayMerits" => merits is not null,
+            _ => true,
+        };
 
     private static string? Text(JsonElement payload, string key) =>
         payload.TryGetProperty(key, out JsonElement value) && value.ValueKind == JsonValueKind.String

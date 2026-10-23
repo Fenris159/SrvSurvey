@@ -11693,8 +11693,8 @@
       "translation": "Frontier ist ratenbegrenzende Anfragen. Bitte warten Sie {0} Sekunden, bevor Sie es erneut versuchen."
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier Zeitschrift"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier Zeitschrift · {0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -15713,8 +15713,8 @@
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
     },
     {
-      "source": "Local journal",
-      "translation": "Lokale Zeitschrift"
+      "source": "Local journal · {0}",
+      "translation": "Lokale Zeitschrift · {0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -51427,8 +51427,8 @@
       "translation": "Frontier es la tasa que limita las solicitudes. Espere {0} segundos antes de volver a intentarlo."
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier diario"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier diario · {0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -55447,8 +55447,8 @@
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
     },
     {
-      "source": "Local journal",
-      "translation": "diario local"
+      "source": "Local journal · {0}",
+      "translation": "Revista local · {0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -91161,8 +91161,8 @@
       "translation": "Frontier correspond aux requêtes de limitation de débit. Veuillez patienter {0} secondes avant de réessayer."
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier journal"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier journal · {0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -95181,8 +95181,8 @@
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
     },
     {
-      "source": "Local journal",
-      "translation": "Journal local"
+      "source": "Local journal · {0}",
+      "translation": "Journal local · {0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -130895,8 +130895,8 @@
       "translation": "Frontier é uma solicitação de limitação de taxa. Aguarde {0} segundos antes de tentar novamente."
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier diário"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier diário · {0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -134915,8 +134915,8 @@
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
     },
     {
-      "source": "Local journal",
-      "translation": "Jornal local"
+      "source": "Local journal · {0}",
+      "translation": "Jornal local · {0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -170629,8 +170629,8 @@
       "translation": "Frontier — это запросы ограничения скорости. Подождите {0} секунд, прежде чем повторить попытку."
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier журнал"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier журнал · {0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -174649,8 +174649,8 @@
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
     },
     {
-      "source": "Local journal",
-      "translation": "Местный журнал"
+      "source": "Local journal · {0}",
+      "translation": "Местный журнал · {0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -210363,8 +210363,8 @@
       "translation": "Frontier 是速率限制请求。请等待 {0} 秒后再重试。"
     },
     {
-      "source": "Frontier journal",
-      "translation": "Frontier 期刊"
+      "source": "Frontier journal · {0}",
+      "translation": "Frontier期刊·{0}"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -214383,8 +214383,8 @@
       "translation": "无法保存本地焦点首选项：{0}"
     },
     {
-      "source": "Local journal",
-      "translation": "地方期刊"
+      "source": "Local journal · {0}",
+      "translation": "本地期刊·{0}"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -250097,8 +250097,8 @@
       "translation": "* FRONTIER IS RATE LIMITING REQUESTS. PLEASE WAIT {0} SECONDS BEFORE TRYING AGAIN. >>>!"
     },
     {
-      "source": "Frontier journal",
-      "translation": "* FRONTIER JOURNAL >>>!"
+      "source": "Frontier journal · {0}",
+      "translation": "* FRONTIER JOURNAL · {0} >>>!"
     },
     {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
@@ -254117,8 +254117,8 @@
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "Local journal",
-      "translation": "* LOCAL JOURNAL >>>!"
+      "source": "Local journal · {0}",
+      "translation": "* LOCAL JOURNAL · {0} >>>!"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",

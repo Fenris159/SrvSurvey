@@ -34,6 +34,26 @@ public sealed class GitHubReleaseNotesTests
         Assert.DoesNotContain("Testing notice", result);
     }
 
+    [Fact]
+    public void CurrentReleaseNotesExposeAllFeatureGroupsAndAPublishedGuideLink()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "SrvSurvey.slnx")))
+        {
+            directory = directory.Parent;
+        }
+        Assert.NotNull(directory);
+        string markdown = File.ReadAllText(Path.Combine(directory.FullName, "CurrentReleaseNotes.md"));
+
+        string excerpt = GitHubReleaseNotes.ExtractChanges(markdown);
+
+        Assert.Contains("Steam Deck Gaming Mode", excerpt);
+        Assert.Contains("Next Jump overlay", excerpt);
+        Assert.Contains("Commander Powerplay status", excerpt);
+        Assert.Contains("](https://github.com/Fenris159/SrvSurvey/blob/", excerpt);
+        Assert.DoesNotContain("## Update channel", excerpt);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
