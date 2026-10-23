@@ -14,6 +14,10 @@ Keeping live overlays clickable after clicking Elite requires that guide's
 patched Gamescope runtime control and updated wrapper; stock
 `--force-grab-cursor` cannot pause capture for overlay interaction.
 
+For **Steam Deck Gaming Mode**, follow the separate
+[SteamOS setup and device validation guide](STEAMOS_GAMING_MODE.md). It uses the
+Deck's existing compositor and a native SrvSurvey launch alongside Steam/Proton.
+
 ## Download the package
 
 Download the AppImage or portable archive from the relevant
@@ -200,10 +204,11 @@ X11/XWayland integration in this package.
 
 Run Elite Dangerous and SrvSurvey as the same desktop user on the same display.
 Do not start SrvSurvey with `sudo` or from an unrelated SSH session. If Elite is
-inside a nested Gamescope session, SrvSurvey must be launched into the same
-session so it can see the game window and the Gamescope environment. If it
-cannot detect Elite there, first test both programs in the same normal
-X11/XWayland desktop session.
+inside Gamescope, follow the
+[Gaming Mode guide](STEAMOS_GAMING_MODE.md) or the
+[desktop Gamescope discovery instructions](Overlay_Troubleshooting.md#desktop-mode-including-normal-steamproton-launches).
+The verified compositor path can discover Elite on a separate game display;
+ordinary desktop sessions can follow a supported Gamescope outer window.
 
 ### Game screen capture on Wayland
 
@@ -374,7 +379,9 @@ Common launch and library problems are listed below. For a fuller set of issues
 - `cannot open shared object file`: install the distribution prerequisites
   above and start the application again from its complete container folder.
 - Overlays do not follow Elite: confirm `DISPLAY` is set, both applications are
-  on the same display, and neither was started as a different user.
+  accessible in the same user's graphical session. SteamOS Gaming Mode and
+  nested Gamescope can use different verified XWayland displays; see the
+  [SteamOS and Gamescope instructions](Overlay_Troubleshooting.md#steamos-gaming-mode).
   **On KDE Plasma**, current builds request KWin's advertised on-screen-display
   window type automatically. If that does not work, use the manual fallback in
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).

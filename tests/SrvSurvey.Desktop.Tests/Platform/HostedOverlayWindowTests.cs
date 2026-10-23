@@ -1140,6 +1140,69 @@ public sealed class HostedOverlayWindowTests
     }
 
     [AvaloniaFact]
+    public void NativeWaylandBridgeClosesAndRestoresOverlayOnDesktopFocusChanges()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            string focus = Path.Combine(directory, GamescopeGameWindowFocus.MarkerPrefix + Environment.ProcessId);
+            File.WriteAllText(focus, "123\n1\n");
+            File.WriteAllText(
+                Path.Combine(directory, GamescopeGameWindowBridge.MarkerPrefix + Environment.ProcessId),
+                "123\n:7\n100 80 1280 800\n"
+            );
+            bool keepVisible = false;
+            var timer = new ManualHostedOverlayTimer();
+            var tracker = new OverlayGameWindowTracker(
+                new GamescopeGameWindowTracker(
+                    new RecordingGameWindowTracker(GameWindowSnapshot.Unavailable),
+                    () => GamescopeGameWindowBridge.TryRead(directory, _ => 123),
+                    _ => new RecordingGameWindowTracker(AvailableGameWindow)
+                ),
+                () => keepVisible
+            );
+            using var session = OverlayPresentationSession.CreateForAdapters(
+                new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Native Wayland focus"),
+                new OverlayPresentationSessionDependencies(
+                    () => new RecordingOverlayPlatform(),
+                    () => tracker,
+                    _ => timer,
+                    LegacyOverlayLayout.Empty
+                )
+            );
+            using HostedOverlayWindow hosted = session.HostPassiveWindow(
+                new PassiveOverlayWindowDefinition(
+                    "PlotTrackTarget",
+                    _ => new Window { Width = 64, Height = 64 },
+                    (bounds, _) => bounds.Position
+                )
+            );
+            hosted.Reconcile(wantsWindow: true);
+            Assert.True(hosted.IsVisible);
+
+            File.WriteAllText(focus, "123\n0\n");
+            timer.Pulse();
+            Assert.False(hosted.IsVisible);
+
+            File.WriteAllText(focus, "123\n1\n");
+            timer.Pulse();
+            Assert.True(hosted.IsVisible);
+
+            keepVisible = true;
+            File.WriteAllText(focus, "123\n0\n");
+            timer.Pulse();
+            Assert.True(hosted.IsVisible);
+            keepVisible = false;
+            timer.Pulse();
+            Assert.False(hosted.IsVisible);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [AvaloniaFact]
     public void PollingClosesAndRestoresWindowAsGameEligibilityChanges()
     {
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);

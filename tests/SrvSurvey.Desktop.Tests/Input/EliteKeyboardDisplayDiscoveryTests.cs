@@ -5,6 +5,29 @@ namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class EliteKeyboardDisplayDiscoveryTests
 {
+    [Fact]
+    public void ReviewRegressionHostDiscoveryUsesCompositorFocusWithTwoEliteDisplays()
+    {
+        string root = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            WriteProcess(root, "10", "1000", "EliteDangerous6", "/game/EliteDangerous64.exe", ":2");
+            WriteProcess(root, "20", "1000", "EliteDangerous6", "/game/EliteDangerous64.exe", ":3");
+            var primaryContext = new KeyboardDisplayContext(null, [], []);
+            string? focused = ":3.0";
+            Assert.Equal(20, EliteKeyboardDisplayDiscovery.ReadForHost(root, primaryContext, () => focused)?.ProcessId);
+            focused = ":2";
+            Assert.Equal(10, EliteKeyboardDisplayDiscovery.ReadForHost(root, primaryContext, () => focused)?.ProcessId);
+            focused = null;
+            Assert.Null(EliteKeyboardDisplayDiscovery.ReadForHost(root, primaryContext, () => focused));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     /// <summary>Uses focused clients before the overlay monitor, and declines ambiguous unmapped displays.</summary>
     [Fact]
     public void MultipleClientsFollowFocusThenOverlayMonitor()
@@ -33,6 +56,9 @@ public sealed class EliteKeyboardDisplayDiscoveryTests
                     ?.ProcessId
             );
             Assert.Null(EliteKeyboardDisplayDiscovery.Read(root));
+            Assert.Equal(20, EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: ":3.0")?.ProcessId);
+            Assert.Null(EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: ":99"));
+            Assert.Null(EliteKeyboardDisplayDiscovery.Read(root, preferredDisplay: "remote:3"));
             Assert.Null(
                 EliteKeyboardDisplayDiscovery.Read(
                     root,

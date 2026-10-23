@@ -9,6 +9,315 @@ public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
 
+    [Fact]
+    public void ReviewRegressionDesktopDiscoveryDoesNotForgetAnObservedNativePublisher()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "test", "test", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/bin/gamescope", ":0");
+            string path = Path.Combine(root, GamescopeGameWindowFocus.MarkerPrefix + "20");
+            File.WriteAllText(path, "123\n0\n");
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, true);
+            using var tracker = new GamescopeGameWindowTracker(
+                new StubTracker(GameWindowSnapshot.Unavailable),
+                () => GamescopeGameWindowBridge.Discover(root, [outer], root, _ => 123),
+                _ => new StubTracker(new(42, 10, new PixelRect(0, 0, 960, 600), true, true))
+            );
+            Assert.False(tracker.GetSnapshot().IsForeground);
+            File.Delete(path);
+            Assert.False(tracker.GetSnapshot().IsForeground);
+            File.WriteAllText(path, "123\n1\n");
+            Assert.True(tracker.GetSnapshot().IsForeground);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
+    [InlineData("123\n0\n", true, false)]
+    [InlineData("123\n1\n", true, true)]
+    [InlineData("123\n1\n", false, false)]
+    [InlineData("122\n1\n", true, false)]
+    [InlineData(null, true, true)]
+    public void DesktopDiscoveryHonorsNativeFocus(string? contents, bool outerForeground, bool expected)
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            string path = Path.Combine(root, GamescopeGameWindowFocus.MarkerPrefix + "20");
+            if (contents is not null)
+            {
+                File.WriteAllText(path, contents);
+            }
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, outerForeground);
+            var bridge = GamescopeGameWindowBridge.Discover(root, [outer], root, _ => 123);
+            Assert.NotNull(bridge);
+            Assert.Equal(contents is null && outerForeground ? null : (bool?)expected, bridge.IsHostForeground);
+            Assert.Equal(contents is not null, bridge.HasNativeHostFocusPublisher);
+            foreach (string invalidRuntime in new[] { string.Empty, "relative" })
+            {
+                var legacy = GamescopeGameWindowBridge.Discover(
+                    root,
+                    [outer],
+                    invalidRuntime,
+                    _ => throw new InvalidOperationException("An invalid runtime path must not query native focus.")
+                );
+                Assert.Equal(outerForeground, legacy!.IsHostForeground);
+                Assert.Null(legacy.ProcessStartTime);
+            }
+            int reads = 0;
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [outer], root, _ => ++reads == 1 ? 123ul : 124ul));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void NormalSteamNestedSessionUsesVerifiedAncestorAndActualOuterWindow()
+    {
+        string root = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot window = new(42, 20, new PixelRect(1920, 10, 1280, 800), true, true);
+            var bridge = GamescopeGameWindowBridge.Discover(root, [window]);
+            Assert.Equal(
+                new GamescopeGameWindowBridge(20, ":7", window.ClientBounds) { IsHostForeground = true },
+                bridge
+            );
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, []));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window with { IsVisible = false }]));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window, window with { NativeHandle = 43 }]));
+            File.WriteAllText(Path.Combine(root, "20", "comm"), "other-launcher");
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window]));
+            File.Delete(Path.Combine(root, "10", "environ"));
+            Assert.Null(GamescopeGameWindowBridge.Discover(root, [window]));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void DesktopFocusOverridesNestedFocusForNormalSteamLaunch()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, false);
+            var nested = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+            using var tracker = new GamescopeGameWindowTracker(
+                new StubTracker(GameWindowSnapshot.Unavailable),
+                () => GamescopeGameWindowBridge.Discover(root, [outer]),
+                _ => nested
+            );
+            GameWindowSnapshot background = tracker.GetSnapshot();
+            Assert.True(background.IsVisible);
+            Assert.False(background.IsForeground);
+            outer = outer with { IsForeground = true };
+            Assert.True(tracker.GetSnapshot().IsForeground);
+            outer = outer with { IsVisible = false };
+            Assert.False(tracker.GetSnapshot().IsVisible);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void FindsRenamedWaylandCompositorThroughLaunchWrappers()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "SrvSurvey", "SrvSurvey", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "20",
+                "1000",
+                "gamescopereaper",
+                "/usr/bin/gamescopereaper",
+                ":0",
+                30
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "30", "1000", "gamescope-wl", "/usr/bin/gamescope", ":0");
+            GameWindowSnapshot window = new(42, 30, new PixelRect(100, 80, 1280, 800), true, true);
+
+            var bridge = GamescopeGameWindowBridge.Discover(root, [window]);
+
+            Assert.NotNull(bridge);
+            Assert.Equal(30, bridge.ProcessId);
+            Assert.Equal(":7", bridge.Display);
+            Assert.Equal(window.ClientBounds, bridge.HostBounds);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, false)]
+    [InlineData(null, true, true)]
+    [InlineData(null, false, false)]
+    public void ForegroundRequiresBothKnownDesktopAndNestedGameFocus(
+        bool? hostForeground,
+        bool nestedForeground,
+        bool expected
+    )
+    {
+        var nested = new StubTracker(
+            new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, nestedForeground)
+        );
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = hostForeground,
+        };
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => nested
+        );
+
+        Assert.Equal(expected, tracker.GetSnapshot().IsForeground);
+    }
+
+    [Fact]
+    public void NativePublisherCapabilitySurvivesBridgeInterruptionForTheSameProcessIdentity()
+    {
+        GamescopeGameWindowBridge? bridge = new(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = false,
+            HasNativeHostFocusPublisher = true,
+            ProcessStartTime = 123,
+        };
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true))
+        );
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        GamescopeGameWindowBridge original = bridge;
+        bridge = null;
+        Assert.False(tracker.GetSnapshot().IsAvailable);
+        bridge = original with { IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { IsHostForeground = true, HasNativeHostFocusPublisher = true };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { ProcessStartTime = 124, IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+    }
+
+    [Fact]
+    public void ReusedProcessIdStartsIndependentNativeFocusTracking()
+    {
+        var first = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+        var second = new StubTracker(new GameWindowSnapshot(43, 11, new PixelRect(0, 0, 960, 600), true, true));
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700))
+        {
+            IsHostForeground = false,
+            HasNativeHostFocusPublisher = true,
+            ProcessStartTime = 123,
+        };
+        int connections = 0;
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ => connections++ == 0 ? first : second
+        );
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { IsHostForeground = null, HasNativeHostFocusPublisher = false };
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        bridge = bridge with { ProcessStartTime = 124 };
+        Assert.True(tracker.GetSnapshot().IsForeground);
+        Assert.True(first.Disposed);
+        Assert.Equal(2, connections);
+    }
+
+    [Fact]
+    public void FollowsDesktopMoveAndResizeWithoutReconnectingNestedTracker()
+    {
+        var nested = new StubTracker(new GameWindowSnapshot(42, 10, new PixelRect(0, 0, 960, 600), true, true));
+        var bridge = new GamescopeGameWindowBridge(20, ":7", new PixelRect(100, 80, 900, 700));
+        int connections = 0;
+        using var tracker = new GamescopeGameWindowTracker(
+            new StubTracker(GameWindowSnapshot.Unavailable),
+            () => bridge,
+            _ =>
+            {
+                connections++;
+                return nested;
+            }
+        );
+        Assert.Equal(bridge.HostBounds, tracker.GetSnapshot().ClientBounds);
+
+        bridge = bridge with { HostBounds = new PixelRect(1920, 200, 1280, 800) };
+        Assert.Equal(bridge.HostBounds, tracker.GetSnapshot().ClientBounds);
+        Assert.Equal(1, connections);
+        Assert.False(nested.Disposed);
+    }
+
     /// <summary>Verifies that losing a nested X server leaves the game tracker usable.</summary>
     [Fact]
     public async Task NestedX11ServerShutdownLeavesTrackerRecoverable()
@@ -51,6 +360,43 @@ public sealed class GamescopeGameWindowTrackerTests
     }
 
     [Fact]
+    public void NativeWaylandFocusBridgeHidesOverlaysAfterAltTabAndRestoresThem()
+    {
+        string directory = CreateTemporaryDirectory();
+        try
+        {
+            WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
+            string focusPath = Path.Combine(directory, "GamescopeGameWindowFocus." + Environment.ProcessId);
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n1\n");
+            var nested = new StubTracker(new GameWindowSnapshot(42, 123, new PixelRect(0, 0, 3840, 2160), true, true));
+            using var tracker = new OverlayGameWindowTracker(
+                new GamescopeGameWindowTracker(
+                    new StubTracker(GameWindowSnapshot.Unavailable),
+                    () => GamescopeGameWindowBridge.TryRead(directory, _ => ProcessStartTime),
+                    _ => nested
+                ),
+                () => false
+            );
+            Assert.True(tracker.GetSnapshot().IsForeground);
+
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n0\n");
+            GameWindowSnapshot background = tracker.GetSnapshot();
+            Assert.True(background.IsAvailable);
+            Assert.True(background.IsVisible);
+            Assert.False(background.IsForeground);
+
+            File.WriteAllText(focusPath, $"{ProcessStartTime}\n1\n");
+            Assert.True(tracker.GetSnapshot().IsForeground);
+            File.Delete(focusPath);
+            Assert.False(tracker.GetSnapshot().IsForeground);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void ReadsLiveGamescopeMarkerAndDesktopBounds()
     {
         string directory = CreateTemporaryDirectory();
@@ -64,6 +410,23 @@ public sealed class GamescopeGameWindowTrackerTests
             Assert.Equal(Environment.ProcessId, bridge.ProcessId);
             Assert.Equal(":7", bridge.Display);
             Assert.Equal(new PixelRect(3840, 0, 5120, 2880), bridge.HostBounds);
+            Assert.Null(bridge.IsHostForeground);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void RejectsBridgeWhenProcessIdentityChangesDuringFocusRead()
+    {
+        string directory = CreateTemporaryDirectory();
+        try
+        {
+            WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
+            int reads = 0;
+            Assert.Null(GamescopeGameWindowBridge.TryRead(directory, _ => reads++ == 0 ? ProcessStartTime : 999));
         }
         finally
         {

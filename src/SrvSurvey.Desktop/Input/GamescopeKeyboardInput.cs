@@ -20,6 +20,7 @@ internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
     private readonly Func<string, IX11KeyboardRecord?> createRecord;
     private readonly string? desktopDisplay;
     private readonly Func<EliteKeyboardDisplay?> readDisplay;
+    private readonly Func<string?> readFocusedDisplay;
     private readonly Func<string, IGameWindowTracker?> createTracker;
     private readonly KeyPressTracker keys = new(KeyboardInputSource.NestedDisplay, usesX11Events: true);
     private readonly CancellationTokenSource pollCancellation = new();
@@ -39,10 +40,12 @@ internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
         string? desktopDisplay = null,
         Func<EliteKeyboardDisplay?>? readDisplay = null,
         Func<string, IGameWindowTracker?>? createTracker = null,
-        Func<PixelRect?>? preferredMonitorBounds = null
+        Func<PixelRect?>? preferredMonitorBounds = null,
+        Func<string?>? readFocusedDisplay = null
     )
     {
         this.readBridge = readBridge ?? (static () => null);
+        this.readFocusedDisplay = readFocusedDisplay ?? GamescopeOverlaySession.ReadCurrentFocusedDisplay;
         this.createRecord = createRecord ?? X11KeyboardRecord.TryCreate;
         this.desktopDisplay = desktopDisplay ?? Environment.GetEnvironmentVariable("DISPLAY");
         this.readDisplay =
@@ -189,12 +192,7 @@ internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
             return false;
         }
         lastBridgeCheck = now;
-        GamescopeGameWindowBridge? current = readBridge();
-        bool discovered = current is null;
-        if (current is null && readDisplay() is EliteKeyboardDisplay gameDisplay)
-        {
-            current = new GamescopeGameWindowBridge(gameDisplay.ProcessId, gameDisplay.Display, default);
-        }
+        GamescopeGameWindowBridge? current = ReadPreferredBridge(out bool discovered);
         if (current is not null && NormalizeDisplay(current.Display) == NormalizeDisplay(desktopDisplay))
         {
             current = null; // The desktop hook already listens on this server.
@@ -219,6 +217,25 @@ internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
             Trace.TraceInformation("Global keyboard input: listening on Elite display {0}.", current.Display);
         }
         return true;
+    }
+
+    private GamescopeGameWindowBridge? ReadPreferredBridge(out bool discovered)
+    {
+        GamescopeGameWindowBridge? current = readBridge();
+        string? focusedDisplay = readFocusedDisplay();
+        discovered =
+            current is null
+            || (focusedDisplay is not null && NormalizeDisplay(current.Display) != NormalizeDisplay(focusedDisplay));
+        if (!discovered)
+        {
+            return current;
+        }
+        EliteKeyboardDisplay? gameDisplay = readDisplay();
+        return
+            gameDisplay is not null
+            && (focusedDisplay is null || NormalizeDisplay(gameDisplay.Display) == NormalizeDisplay(focusedDisplay))
+            ? new GamescopeGameWindowBridge(gameDisplay.ProcessId, gameDisplay.Display, default)
+            : null;
     }
 
     /// <summary>Recognizes the default screen suffix as the same X server.</summary>

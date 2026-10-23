@@ -22,6 +22,33 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     );
 
     [Fact]
+    public void GamescopeWithoutVerifiedPointerSupportAllowsPositionEditorButRejectsLiveInput()
+    {
+        var platform = new FakeOverlayPlatform
+        {
+            Capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland) with
+            {
+                UsesGamescopeExternalOverlay = true,
+            },
+        };
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        );
+        Assert.False(viewModel.ToggleLiveOverlayInteraction());
+        Assert.Contains("Live HUD interaction", viewModel.StatusMessage);
+        Assert.Empty(platform.InteractiveStates);
+        Assert.True(viewModel.Begin());
+        Assert.True(host.IsOpen);
+    }
+
+    [Fact]
     public void CalibrationAloneCanBeSavedWithoutCreatingOverlayPlacements()
     {
         var platform = new FakeOverlayPlatform();
@@ -206,15 +233,24 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsLiveInteractionEnabled);
     }
 
-    [AvaloniaFact]
-    public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor()
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor(bool gamescope)
     {
         Directory.CreateDirectory(temporaryDirectory);
         string path = Path.Combine(temporaryDirectory, "plotters.json");
         File.WriteAllText(path, "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         LegacyOverlayLayout activeLayout = store.Load();
-        var platform = new FakeOverlayPlatform();
+        var platform = new FakeOverlayPlatform
+        {
+            Capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland) with
+            {
+                UsesGamescopeExternalOverlay = gamescope,
+                SupportsGamescopePointerInteraction = gamescope,
+            },
+        };
         var registry = new OverlayWindowRegistry();
         var host = new FakeEditorHost();
         var gameBounds = new PixelRect(100, 200, 1200, 800);
@@ -239,6 +275,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
         Assert.Equal(1, platform.VisibleCursorSessionStarts);
         Assert.Equal(1, platform.ActiveVisibleCursorSessions);
+        if (gamescope)
+        {
+            Assert.Contains("blank areas", viewModel.StatusMessage);
+        }
         window.Position = new PixelPoint(420, 310);
         registry.ReportUserPosition(window, window.Position);
         Assert.Contains("Moved live overlay", viewModel.StatusMessage);
@@ -381,6 +421,92 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         finally
         {
             window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReviewRegressionRejectedGamescopeInputCanRetryWithoutRetainingARequest(bool moveBeforeRetry)
+    {
+        var platform = new FakeOverlayPlatform { RejectInteractiveRegions = true };
+        var registry = new OverlayWindowRegistry();
+        var source = new Window
+        {
+            Width = 64,
+            Height = 64,
+            Content = new Border(),
+        };
+        registry.Register(source, "PlotJumpInfo");
+        using var controller = new CombinedOverlayPresentationController(
+            platform,
+            new FakeGameWindowTracker(new(1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
+            registry
+        );
+        try
+        {
+            source.Show();
+            Assert.True(controller.PreparePassiveWindow(source).IsPrepared);
+            Assert.False(controller.SetInteractive(source, true).IsPrepared);
+            platform.RejectInteractiveRegions = false;
+            if (moveBeforeRetry)
+            {
+                source.Position = new PixelPoint(20, 20);
+            }
+            Assert.Equal(0, platform.LastRegionCount);
+            Assert.True(controller.SetInteractive(source, true).IsInteractive);
+        }
+        finally
+        {
+            source.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void GamescopeReleasesPointerRoutingBeforeCanvasHideAndClose()
+    {
+        var platform = new FakeOverlayPlatform
+        {
+            Capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland) with
+            {
+                UsesGamescopeExternalOverlay = true,
+                SupportsGamescopePointerInteraction = true,
+            },
+        };
+        var registry = new OverlayWindowRegistry();
+        var game = new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true);
+        var tracker = new FakeGameWindowTracker(game);
+        var content = new Border();
+        var source = new Window
+        {
+            Width = 64,
+            Height = 64,
+            Content = content,
+        };
+        registry.Register(source, "PlotJumpInfo");
+        using var controller = new CombinedOverlayPresentationController(platform, tracker, registry);
+        try
+        {
+            source.Show();
+            Assert.True(controller.PreparePassiveWindow(source).IsPrepared);
+            Assert.True(controller.SetInteractive(source, true).IsInteractive);
+            CombinedOverlayWindow host = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(content));
+            tracker.Snapshot = GameWindowSnapshot.Unavailable;
+            _ = controller.PreparePassiveWindow(source);
+            Assert.True(platform.CanvasVisibleAtRelease[^1]);
+            Assert.False(host.IsVisible);
+            tracker.Snapshot = game;
+            _ = controller.PreparePassiveWindow(source);
+            Assert.True(host.IsVisible);
+            Assert.True(controller.SetInteractive(source, true).IsInteractive);
+            int releases = platform.CanvasVisibleAtRelease.Count;
+            controller.Dispose();
+            Assert.True(platform.CanvasVisibleAtRelease[releases]);
+            Assert.False(host.IsVisible);
+        }
+        finally
+        {
+            source.Close();
         }
     }
 
@@ -1077,11 +1203,12 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             ICombinedOverlayNativeService,
             IOverlayWindowManagement
     {
-        public OverlayPlatformCapabilities Capabilities { get; } =
+        public OverlayPlatformCapabilities Capabilities { get; init; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         public List<bool> InteractiveStates { get; } = [];
 
+        public List<bool> CanvasVisibleAtRelease { get; } = [];
         public List<(Window Window, bool WasVisible)> PreShowWindows { get; } = [];
 
         public void PrepareWindowForShow(Window window) => PreShowWindows.Add((window, window.IsVisible));
@@ -1121,13 +1248,25 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public OverlayInteractionResult SetInteractive(Window window, bool interactive)
         {
             InteractiveStates.Add(interactive);
+            if (window is CombinedOverlayWindow && !interactive)
+            {
+                CanvasVisibleAtRelease.Add(window.IsVisible);
+            }
             return new OverlayInteractionResult(true, interactive, "Prepared");
         }
 
         public bool SuppressNativeWindow(Window window) => true;
 
-        public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions) =>
-            new(true, regions.Count > 0, "Prepared");
+        public bool RejectInteractiveRegions { get; set; }
+        public int LastRegionCount { get; private set; }
+
+        public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions)
+        {
+            LastRegionCount = regions.Count;
+            return RejectInteractiveRegions && regions.Count > 0
+                ? new(false, false, "Steam owns input")
+                : new(true, regions.Count > 0, "Prepared");
+        }
 
         public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
         {
@@ -1181,9 +1320,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
     private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
     {
+        public GameWindowSnapshot Snapshot { get; set; } = snapshot;
+
         public GameWindowSnapshot GetSnapshot()
         {
-            return snapshot;
+            return Snapshot;
         }
 
         public void Dispose() { }

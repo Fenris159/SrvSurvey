@@ -134,6 +134,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return nativePlatform.SetInteractive(window, interactive);
         }
 
+        bool wasInteractive = interactiveWindows.Contains(window);
         if (interactive)
         {
             interactiveWindows.Add(window);
@@ -149,6 +150,12 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
         entry.Presenter.IsHitTestVisible = interactive && registry.ShouldPresent(window);
         OverlayInteractionResult result = ApplyHostInputRegion();
+        if (interactive && (!result.IsPrepared || !result.IsInteractive) && !wasInteractive)
+        {
+            interactiveWindows.Remove(window);
+            entry.Presenter.IsHitTestVisible = false;
+            _ = ApplyHostInputRegion(force: true);
+        }
         return new OverlayInteractionResult(result.IsPrepared, interactive && result.IsInteractive, result.Status);
     }
 
@@ -189,6 +196,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         if (currentHost is not null)
         {
             currentHost.Opened -= OnHostOpened;
+            ReleaseGamescopeInput(currentHost);
             currentHost.Close();
         }
 
@@ -230,7 +238,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         hostPreparation = result;
         if (!result.IsClickThrough)
         {
-            window.Hide();
+            HideHost(window);
             return;
         }
 
@@ -248,7 +256,10 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     {
         if (disposed || entries.Count == 0)
         {
-            host?.Hide();
+            if (host is not null)
+            {
+                HideHost(host);
+            }
             return;
         }
 
@@ -262,18 +273,18 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         GameWindowSnapshot gameWindow = gameWindowTracker.GetSnapshot();
         if (!gameWindow.IsAvailable || !gameWindow.IsVisible)
         {
-            window.Hide();
+            HideHost(window);
             return;
         }
 
         Screen? screen = window.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
-            window.Hide();
+            HideHost(window);
             return;
         }
 
-        hostBounds = gameWindow.ClientBounds;
+        hostBounds = gameWindow.OverlayCanvasBounds ?? gameWindow.ClientBounds;
         window.Position = hostBounds.Position;
         window.Width = hostBounds.Width / screen.Scaling;
         window.Height = hostBounds.Height / screen.Scaling;
@@ -326,6 +337,26 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         Canvas.SetTop(presenter, projection.Top);
     }
 
+    private void HideHost(CombinedOverlayWindow window)
+    {
+        if (!window.IsVisible)
+        {
+            return;
+        }
+        ReleaseGamescopeInput(window);
+        window.Hide();
+    }
+
+    private void ReleaseGamescopeInput(CombinedOverlayWindow window)
+    {
+        if (Capabilities.UsesGamescopeExternalOverlay)
+        {
+            _ = nativePlatform.SetInteractive(window, false);
+            appliedInputResult = null;
+            appliedInputRegions = [];
+        }
+    }
+
     private OverlayInteractionResult ApplyHostInputRegion(bool force = false)
     {
         CombinedOverlayWindow? window = host;
@@ -353,8 +384,9 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
 
         OverlayInteractionResult result = nativeCombined.SetInteractiveRegions(window, regions);
-        appliedInputRegions = regions;
-        appliedInputResult = result;
+        bool applied = result.IsPrepared && result.IsInteractive == (regions.Length > 0);
+        appliedInputRegions = applied ? regions : [];
+        appliedInputResult = applied ? result : null;
         return result;
     }
 

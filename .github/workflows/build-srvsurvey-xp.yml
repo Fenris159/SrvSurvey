@@ -169,7 +169,7 @@ jobs:
       - name: Restore
         run: dotnet restore SrvSurvey.slnx
 
-      - name: Test release dependency setup
+      - name: Test release and SteamOS helper scripts
         if: matrix.rid == 'linux-x64'
         shell: bash
         run: python3 -m unittest discover -s tests/scripts -v

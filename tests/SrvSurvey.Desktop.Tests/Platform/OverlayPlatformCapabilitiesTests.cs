@@ -4,6 +4,22 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class OverlayPlatformCapabilitiesTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GamescopeLiveInputRequiresVerifiedPointerSupport(bool supported)
+    {
+        OverlayPlatformCapabilities capabilities = OverlayPlatformCapabilities.ForHost(
+            OverlayHostKind.LinuxXWayland
+        ) with
+        {
+            UsesGamescopeExternalOverlay = true,
+            SupportsGamescopePointerInteraction = supported,
+        };
+        Assert.Equal(supported, capabilities.SupportsLiveOverlayInteraction);
+        Assert.Contains(supported ? "keyboard input" : "unavailable", capabilities.StatusText);
+    }
+
     [Fact]
     public void WindowsAdvertisesOnlyImplementedPassiveCapabilities()
     {
