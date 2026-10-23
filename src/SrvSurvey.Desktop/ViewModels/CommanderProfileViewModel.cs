@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Frontier;
 
@@ -16,6 +17,20 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
     private const string UnavailableLabel = "Unavailable";
     private const string PowerplayRankKey = "power";
+    private static readonly HashSet<string> PowerplayEmblemNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Aisling Duval",
+        "Archon Delaine",
+        "Arissa Lavigny-Duval",
+        "Denton Patreus",
+        "Edmund Mahon",
+        "Felicia Winters",
+        "Li Yong-Rui",
+        "Pranav Antal",
+        "Yuri Grom",
+        "Zachary Hudson",
+        "Zemina Torval",
+    };
     private const string DecalPrefix = "decal";
     private const string UtilityMountsGroup = "Utility Mounts";
     private const string FederationFaction = "federation";
@@ -448,16 +463,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         if (powerplay is not null)
         {
+            (string iconPath, string? iconTint) = PowerplayIcon(powerplay.Power);
             rows.Add(
                 new FrontierRankCardViewModel(
                     "Powerplay",
                     powerplay.Power.Length == 0 ? "Unpledged" : powerplay.Power,
                     powerplay.Rank ?? 0,
-                    RankIcon(PowerplayRankKey, 0),
+                    iconPath,
                     powerplay.Power.Length == 0 ? string.Empty : PowerplayDetail(powerplay),
                     (fromLocalJournal ? "Local journal" : "Frontier journal")
                         + " · "
-                        + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+                        + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture),
+                    iconTint
                 )
             );
         }
@@ -3328,6 +3345,23 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         );
     }
 
+    private static (string Path, string? Tint) PowerplayIcon(string power)
+    {
+        string name = PowerplayPlan.InaraPowerName(
+            power.Trim().Replace("Arissa Lavigny Duval", "Arissa Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
+        );
+        if (!PowerplayEmblemNames.Contains(name))
+        {
+            return (RankIcon(PowerplayRankKey, 0), null);
+        }
+
+        string asset = name.ToLowerInvariant().Replace(' ', '-');
+        return (
+            $"avares://SrvSurvey.Desktop/Assets/Frontier/Powers/{asset}.png",
+            PowerplayPowerLineViewModel.ColorFor(name)
+        );
+    }
+
     private static string RankIcon(string key, int level)
     {
         int rank = Math.Clamp(level + 1, 1, 9);
@@ -3704,10 +3738,13 @@ public sealed record FrontierRankCardViewModel(
     int Level,
     string IconPath,
     string Detail = "",
-    string Source = ""
+    string Source = "",
+    string? IconTint = null
 )
 {
     public bool HasDetail => Detail.Length > 0;
+
+    public bool HasIconTint => IconTint is not null;
 }
 
 public sealed record FrontierDetailRowViewModel(string Label, string Value, string Detail = "");

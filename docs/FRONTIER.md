@@ -79,6 +79,12 @@ travel journals are not stored or imported into travel history.
 
 The rank card shows the pledged power, numeric rank (including ranks above 100),
 and available merits. Its tooltip identifies the journal source and event time.
+Available EDAssets power emblems identify the pledge and use the power's color;
+Arissa's abbreviated journal name resolves to her emblem. EDAssets currently
+lacks Jerome Archer and Nakato Kaine emblems, so those powers and unknown future
+powers use the generic Powerplay badge. The original Zachary Hudson emblem is
+retained for historical journal data. The displayed numeric rank is independent
+of the power emblem.
 Newer local journal events update the active commander's card during play.
 Switching the viewed Frontier account never borrows the active game's Powerplay
 status. Incomplete or failed remote journal downloads preserve the last known

@@ -2505,6 +2505,10 @@
       "translation": "Bist du sicher? Nicht gespeicherte Änderungen im Arbeitsbereich gehen verloren. Gespeicherte Routendateien werden nicht gelöscht."
     },
     {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
+    },
+    {
       "source": "Arissa Lavigny-Duval",
       "translation": "Arissa Lavigny-Duval"
     },
@@ -34957,6 +34961,10 @@
       "translation": "ZOOM {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
     },
@@ -42229,6 +42237,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "¿Estás seguro? Se perderán los cambios no guardados en el espacio de trabajo. Los archivos de ruta guardados no se eliminarán."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -74683,6 +74695,10 @@
       "translation": "AMPLIAR {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
     },
@@ -81955,6 +81971,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Etes-vous sûr ? Les modifications non enregistrées dans l'espace de travail seront perdues. Les fichiers d'itinéraire enregistrés ne seront pas supprimés."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny-Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -114409,6 +114429,10 @@
       "translation": "ZOOM {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
     },
@@ -121681,6 +121705,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Você tem certeza? As alterações não salvas na área de trabalho serão perdidas. Os arquivos de rota salvos não serão excluídos."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Arissa Lavigny Duval"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -154135,6 +154163,10 @@
       "translation": "ZOOM {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "Zachary Hudson"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
     },
@@ -161407,6 +161439,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "Вы уверены? Несохраненные изменения в рабочей области будут потеряны. Сохраненные файлы маршрутов не будут удалены."
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "Арисса Лавиньи Дюваль"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -193861,6 +193897,10 @@
       "translation": "МАСШТАБ {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "Закари Хадсон"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "Земина Торваль"
     },
@@ -201133,6 +201173,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "你确定吗？工作区中未保存的更改将会丢失。保存的路线文件不会被删除。"
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "阿里萨·拉维尼·杜瓦尔"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -233587,6 +233631,10 @@
       "translation": "缩放 {0}×"
     },
     {
+      "source": "Zachary Hudson",
+      "translation": "扎卡里·哈德森"
+    },
+    {
       "source": "Zemina Torval",
       "translation": "泽米娜·托瓦尔"
     },
@@ -240859,6 +240907,10 @@
     {
       "source": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
       "translation": "* ARE YOU SURE? UNSAVED CHANGES IN THE WORKSPACE WILL BE LOST. SAVED ROUTE FILES WILL NOT BE DELETED. >>>!"
+    },
+    {
+      "source": "Arissa Lavigny Duval",
+      "translation": "* ARISSA LAVIGNY DUVAL >>>!"
     },
     {
       "source": "Arissa Lavigny-Duval",
@@ -273311,6 +273363,10 @@
     {
       "source": "ZOOM {0}×",
       "translation": "* ZOOM {0}× >>>!"
+    },
+    {
+      "source": "Zachary Hudson",
+      "translation": "* ZACHARY HUDSON >>>!"
     },
     {
       "source": "Zemina Torval",

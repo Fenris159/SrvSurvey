@@ -114,9 +114,17 @@
                   <DataTemplate x:DataType="vm:FrontierRankCardViewModel">
                     <Border Classes="rank-card" Width="190" MinHeight="76" Margin="0,0,8,8" ToolTip.Tip="{Binding Source}">
                       <Grid ColumnDefinitions="56,*" ColumnSpacing="10">
-                        <Image Width="52" Height="52"
-                               Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
-                               Stretch="Uniform" />
+                        <Panel Width="52" Height="52" VerticalAlignment="Center">
+                          <Image IsVisible="{Binding !HasIconTint}"
+                                 Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                                 Stretch="Uniform" />
+                          <Border IsVisible="{Binding HasIconTint}" Background="{Binding IconTint}">
+                            <Border.OpacityMask>
+                              <ImageBrush Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                                          Stretch="Uniform" />
+                            </Border.OpacityMask>
+                          </Border>
+                        </Panel>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                           <TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" />
                           <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />

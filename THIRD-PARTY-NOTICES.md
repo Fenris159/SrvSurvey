@@ -23,9 +23,9 @@ Developments, and SrvSurvey is not endorsed by EDSY or Frontier Developments.
 
 ## EDAssets
 
-The Frontier commander dashboard includes rank and faction artwork, and the
-Route Workspace neutron indicator adapts the FSD-reboot symbol, obtained from
-[EDAssets](https://edassets.org/) at repository commit
+The Frontier commander dashboard includes rank, faction, and Powerplay power
+artwork, and the Route Workspace neutron indicator adapts the FSD-reboot symbol,
+obtained from [EDAssets](https://edassets.org/) at repository commit
 `5a9b2f82796fc65abace9439aea000155f1e6eb3`.
 
 Source: [Venefilyn/EDAssets](https://github.com/Venefilyn/EDAssets)
@@ -53,8 +53,12 @@ The EDAssets repository is distributed under the MIT License:
 > SOFTWARE.
 
 EDAssets identifies the Pilots Federation rank artwork and the Alliance,
-Empire, and Federation insignias as designed by Frontier Developments plc. The
-Independent dashboard mark is a community recreation credited by EDAssets to
+Empire, and Federation insignias, and the power emblems under
+`public/static/img/powers/` (except Yuri Grom), as designed by Frontier
+Developments plc. The Yuri Grom emblem is a community recreation credited by
+EDAssets to [/u/Mat-2596](https://www.reddit.com/u/Mat-2596). Power emblems are
+bundled unmodified and tinted at display time using SrvSurvey's existing power
+colors. The Independent dashboard mark is a community recreation credited by EDAssets to
 CMDR SpyTec. The Route Workspace neutron indicator is adapted and recolored
 from `public/static/img/engineer-effects/fsd-reboot.svg`.
 

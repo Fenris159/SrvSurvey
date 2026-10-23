@@ -8,6 +8,48 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
+    [Theory]
+    [InlineData("Aisling Duval", "aisling-duval")]
+    [InlineData("Archon Delaine", "archon-delaine")]
+    [InlineData("A. Lavigny-Duval", "arissa-lavigny-duval")]
+    [InlineData("Arissa Lavigny-Duval", "arissa-lavigny-duval")]
+    [InlineData(" arissa lavigny duval ", "arissa-lavigny-duval")]
+    [InlineData("Denton Patreus", "denton-patreus")]
+    [InlineData("Edmund Mahon", "edmund-mahon")]
+    [InlineData("Felicia Winters", "felicia-winters")]
+    [InlineData("Li Yong-Rui", "li-yong-rui")]
+    [InlineData("Pranav Antal", "pranav-antal")]
+    [InlineData("Yuri Grom", "yuri-grom")]
+    [InlineData("Zachary Hudson", "zachary-hudson")]
+    [InlineData("Zemina Torval", "zemina-torval")]
+    [InlineData("Jerome Archer", null)]
+    [InlineData("Nakato Kaine", null)]
+    [InlineData("Future Power", null)]
+    [InlineData("", null)]
+    public async Task PowerplayCardUsesThePledgedPowersBundledEmblem(string power, string? emblem)
+    {
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UnixEpoch) with
+        {
+            Ranks = [],
+            Powerplay = new(power, 160, 1260198, DateTimeOffset.UnixEpoch),
+        };
+        using var model = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await model.OpenAsync();
+
+        FrontierRankCardViewModel card = Assert.Single(model.Ranks);
+        string expected = emblem is null
+            ? "Assets/Frontier/Ranks/powerplay/rank-1.png"
+            : $"Assets/Frontier/Powers/{emblem}.png";
+        Assert.Equal("avares://SrvSurvey.Desktop/" + expected, card.IconPath);
+        Assert.Equal(emblem is not null, card.HasIconTint);
+        if (emblem == "arissa-lavigny-duval")
+        {
+            Assert.Equal("#7F00FF", card.IconTint);
+        }
+    }
+
     [Fact]
     public async Task ModernPowerplayCardReplacesLegacyZeroAndTracksNewerLocalEvents()
     {

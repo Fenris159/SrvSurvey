@@ -1,8 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using SkiaSharp;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.ViewModels;
@@ -48,6 +50,18 @@ public sealed partial class CommanderProfileViewModelTests
             Assert.True(detail.Bounds.Height > 0);
             Assert.True(card.Bounds.Height >= card.DesiredSize.Height - card.Margin.Top - card.Margin.Bottom - 0.1);
             Assert.Contains("Frontier journal", Assert.IsType<string>(ToolTip.GetTip(card)));
+            Border emblem = Assert.Single(
+                card.GetVisualDescendants().OfType<Border>(),
+                border => border.IsVisible && border.OpacityMask is ImageBrush
+            );
+            Assert.Equal(Color.Parse("#7F00FF"), Assert.IsAssignableFrom<ISolidColorBrush>(emblem.Background).Color);
+            using var pixels = new MemoryStream();
+            frame.Save(pixels, PngBitmapEncoderOptions.Default);
+            using var bitmap = SKBitmap.Decode(pixels.ToArray());
+            Assert.True(
+                bitmap.Pixels.Count(pixel => pixel.Blue > 180 && pixel.Blue - pixel.Red > 60 && pixel.Green < 80) > 40,
+                "The pledged power's purple emblem was not visible in the rendered card."
+            );
 
             string? output = Environment.GetEnvironmentVariable("SRVSURVEY_POWERPLAY_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(output))

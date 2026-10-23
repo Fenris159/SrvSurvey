@@ -49,6 +49,9 @@ content.
 - **Show the current pledged power, rank, and merits.** Frontier refresh now
   reads modern Powerplay status from Frontier's journal API instead of treating
   the profile's legacy zero rating as “None.” Ranks above 100 display correctly.
+  Available EDAssets power emblems now identify the pledge in its power color;
+  Jerome Archer and Nakato Kaine retain a generic badge because EDAssets does
+  not yet provide their emblems.
 - **Follow updates during play.** Newer local journal events update the active
   commander's card. Account switching keeps each commander's status separate;
   unavailable or incomplete API journals preserve the last known status. The
