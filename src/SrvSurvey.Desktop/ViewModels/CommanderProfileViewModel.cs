@@ -15,6 +15,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 {
     private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
     private const string UnavailableLabel = "Unavailable";
+    private const string PowerplayRankKey = "power";
     private const string DecalPrefix = "decal";
     private const string UtilityMountsGroup = "Utility Mounts";
     private const string FederationFaction = "federation";
@@ -85,6 +86,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
     private IReadOnlyList<FrontierLockerCategoryViewModel> currentShipLockerGroups = [];
     private IReadOnlyList<FrontierRankCardViewModel>? rankRows;
+    private FrontierPowerplaySnapshot? journalPowerplay;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipValueRows;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipConditionRows;
     private IReadOnlyList<FrontierShipModuleRowViewModel>? currentShipModuleRows;
@@ -416,17 +418,108 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<string> StationServices => Snapshot?.LastStationDetails?.Services ?? [];
 
-    public IReadOnlyList<FrontierRankCardViewModel> Ranks =>
-        rankRows ??=
-            Snapshot
-                ?.Ranks.Select(rank => new FrontierRankCardViewModel(
-                    rank.Category,
-                    rank.Name,
-                    rank.Level,
-                    RankIcon(rank.Key, rank.Level)
-                ))
-                .ToArray()
-            ?? [];
+    public IReadOnlyList<FrontierRankCardViewModel> Ranks => rankRows ??= BuildRanks();
+
+    private List<FrontierRankCardViewModel> BuildRanks()
+    {
+        if (Snapshot is null)
+        {
+            return [];
+        }
+
+        var rows = Snapshot
+            .Ranks.Where(rank => rank.Key != PowerplayRankKey)
+            .Select(rank => new FrontierRankCardViewModel(
+                rank.Category,
+                rank.Name,
+                rank.Level,
+                RankIcon(rank.Key, rank.Level)
+            ))
+            .ToList();
+        FrontierPowerplaySnapshot? powerplay = Snapshot.Powerplay;
+        bool fromLocalJournal =
+            IsViewingJournalCommander
+            && journalPowerplay is not null
+            && (powerplay is null || journalPowerplay.UpdatedAt >= powerplay.UpdatedAt);
+        if (fromLocalJournal)
+        {
+            powerplay = journalPowerplay;
+        }
+
+        if (powerplay is not null)
+        {
+            rows.Add(
+                new FrontierRankCardViewModel(
+                    "Powerplay",
+                    powerplay.Power.Length == 0 ? "Unpledged" : powerplay.Power,
+                    powerplay.Rank ?? 0,
+                    RankIcon(PowerplayRankKey, 0),
+                    powerplay.Power.Length == 0 ? string.Empty : PowerplayDetail(powerplay),
+                    (fromLocalJournal ? "Local journal" : "Frontier journal")
+                        + " · "
+                        + powerplay.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+                )
+            );
+        }
+        else if (Snapshot.Ranks.FirstOrDefault(rank => rank.Key == PowerplayRankKey) is { } legacy)
+        {
+            rows.Add(
+                new FrontierRankCardViewModel(
+                    legacy.Category,
+                    legacy.Level == 0 ? UnavailableLabel : legacy.Name,
+                    legacy.Level,
+                    RankIcon(legacy.Key, legacy.Level),
+                    string.Empty,
+                    "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal."
+                )
+            );
+        }
+
+        return rows;
+    }
+
+    private static string PowerplayDetail(FrontierPowerplaySnapshot powerplay)
+    {
+        string rank = powerplay.Rank is { } level ? $"Rank {level:N0}" : "Rank unavailable";
+        return powerplay.Merits is { } merits ? $"{rank} · {merits:N0} merits" : rank;
+    }
+
+    public void UpdateJournalPowerplay(string? frontierId, IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        if (
+            detectedFrontierId is null
+            || !string.Equals(NormalizeFrontierId(frontierId), detectedFrontierId, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return;
+        }
+
+        FrontierPowerplaySnapshot? current = journalPowerplay;
+        if (
+            IsViewingJournalCommander
+            && Snapshot?.Powerplay is { } remote
+            && (current is null || remote.UpdatedAt > current.UpdatedAt)
+        )
+        {
+            current = remote;
+        }
+
+        FrontierPowerplaySnapshot? seed = current;
+        foreach (JournalEventEnvelope entry in journalEvents)
+        {
+            current = FrontierPowerplayJournal.Apply(current, entry);
+        }
+
+        if (ReferenceEquals(current, seed) || current == journalPowerplay)
+        {
+            return;
+        }
+
+        journalPowerplay = current;
+        rankRows = null;
+        OnPropertyChanged(nameof(Ranks));
+    }
 
     public IReadOnlyList<FrontierDataPointSnapshot> ProfileData => Snapshot?.ProfileData ?? [];
 
@@ -1432,6 +1525,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         OnPropertyChanged(nameof(IsViewingJournalCommander));
         if (detectedIdentityChanged)
         {
+            journalPowerplay = null;
+            rankRows = null;
+            OnPropertyChanged(nameof(Ranks));
             journalReputationCommanderName = normalizedName;
             journalReputation = [];
             journalReputationUpdatedAt = null;
@@ -3241,7 +3337,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "trade" => RankAsset("trade", rank),
             "explore" => RankAsset("exploration", rank),
             "cqc" => RankAsset("cqc", rank),
-            "power" => RankAsset("powerplay", Math.Clamp(level + 1, 1, 5)),
+            PowerplayRankKey => RankAsset("powerplay", Math.Clamp(level + 1, 1, 5)),
             FederationFaction => FactionAsset(FederationFaction),
             EmpireFaction => FactionAsset(EmpireFaction),
             _ => RankAsset("pilots-federation", rank),
@@ -3602,7 +3698,17 @@ public sealed record FrontierInventoryRowViewModel(string Category, string Name,
 
 public sealed record FrontierOrderRowViewModel(string Category, string Name, string Quantity, string Price);
 
-public sealed record FrontierRankCardViewModel(string Category, string Name, int Level, string IconPath);
+public sealed record FrontierRankCardViewModel(
+    string Category,
+    string Name,
+    int Level,
+    string IconPath,
+    string Detail = "",
+    string Source = ""
+)
+{
+    public bool HasDetail => Detail.Length > 0;
+}
 
 public sealed record FrontierDetailRowViewModel(string Label, string Value, string Detail = "");
 

@@ -112,7 +112,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:FrontierRankCardViewModel">
-                    <Border Classes="rank-card" Width="190" MinHeight="76" Margin="0,0,8,8">
+                    <Border Classes="rank-card" Width="190" MinHeight="76" Margin="0,0,8,8" ToolTip.Tip="{Binding Source}">
                       <Grid ColumnDefinitions="56,*" ColumnSpacing="10">
                         <Image Width="52" Height="52"
                                Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
@@ -120,6 +120,7 @@
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                           <TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" />
                           <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />
+                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Detail}" IsVisible="{Binding HasDetail}" />
                         </StackPanel>
                       </Grid>
                     </Border>

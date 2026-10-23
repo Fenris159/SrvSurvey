@@ -65,8 +65,26 @@ shared-file inventories whenever more than one Elite game process is running,
 because it cannot then attribute the files to one commander reliably.
 
 SrvSurvey intentionally does not request `/visitedstars`. The application's
-existing local journal pipeline remains the source for travel history; the
-dashboard also does not request the remote `/journal` endpoint.
+existing local journal pipeline remains the source for travel history.
+
+Powerplay 2.0 status comes from timestamped `Powerplay`, `PowerplayRank`,
+`PowerplayMerits`, join, defect, and leave journal events. The profile's legacy
+`commander.rank.power` value is not a reliable pledge indicator: a zero is shown
+as **Unavailable**, rather than **None**, when journal status is unknown.
+Refreshing Frontier data checks the remote daily `/journal/YYYY/MM/DD` endpoint,
+starting today and looking back at most seven UTC days until matching-account
+Powerplay data is found. This check runs at most once per 15 minutes after a
+successful check. Only the small pledge/rank/merits snapshot is cached; remote
+travel journals are not stored or imported into travel history.
+
+The rank card shows the pledged power, numeric rank (including ranks above 100),
+and available merits. Its tooltip identifies the journal source and event time.
+Newer local journal events update the active commander's card during play.
+Switching the viewed Frontier account never borrows the active game's Powerplay
+status. Incomplete or failed remote journal downloads preserve the last known
+status, whose event time remains visible in the tooltip. If no relevant session
+exists within seven days, SrvSurvey keeps its prior snapshot or shows
+**Unavailable**; an explicit journal leave event shows **Unpledged**.
 
 ## Storage and request policy
 

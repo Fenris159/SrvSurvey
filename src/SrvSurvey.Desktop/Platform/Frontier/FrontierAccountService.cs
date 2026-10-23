@@ -85,7 +85,7 @@ public sealed class FrontierRefreshCooldownException(TimeSpan remaining)
     public TimeSpan Remaining { get; } = remaining;
 }
 
-public sealed class FrontierAccountService : IFrontierAccountService
+public sealed partial class FrontierAccountService : IFrontierAccountService
 {
     public const string ClientId = "66818020-d5ee-4c33-b909-b2632506a937";
 
@@ -564,6 +564,15 @@ public sealed class FrontierAccountService : IFrontierAccountService
         snapshot = ApplyMarketResult(snapshot, previousSnapshot, market, fetchedAt);
         snapshot = ApplyShipyardResult(snapshot, previousSnapshot, shipyard, fetchedAt);
         snapshot = ApplyCommunityGoalsResult(snapshot, previousSnapshot, communityGoals, fetchedAt);
+        (snapshot, credential) = await RefreshPowerplayAsync(
+                snapshot,
+                previousSnapshot,
+                commander,
+                credential,
+                loaded.IsLegacy,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
         snapshot = await TryEnrichCommunityGoalsAsync(snapshot, cancellationToken).ConfigureAwait(false);
         await cache.SaveAsync(snapshot, cancellationToken).ConfigureAwait(false);
         await SaveAccountCredentialAsync(
@@ -1146,6 +1155,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
                     null,
                     response.StatusCode
                 );
+            }
+
+            if (response.StatusCode == HttpStatusCode.PartialContent)
+            {
+                throw new InvalidDataException("Frontier returned incomplete data. Try refreshing again later.");
             }
 
             string content = await ReadBoundedStringAsync(response.Content, MaximumCapiResponseBytes, cancellationToken)

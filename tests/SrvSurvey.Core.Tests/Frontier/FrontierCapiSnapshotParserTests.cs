@@ -4,6 +4,17 @@ namespace SrvSurvey.Core.Tests.Frontier;
 
 public sealed class FrontierCapiSnapshotParserTests
 {
+    [Fact]
+    public void LegacyZeroPowerRatingDoesNotClaimTheCommanderIsUnpledged()
+    {
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
+            """{"commander":{"name":"Test Commander","rank":{"power":0}}}""",
+            null,
+            DateTimeOffset.UnixEpoch
+        );
+        Assert.DoesNotContain(snapshot.Ranks, rank => rank.Key == "power" && rank.Name == "None");
+    }
+
     /// <summary>CAPI parsing resolves the new ship identity in both the active ship and stored fleet.</summary>
     [Fact]
     public void RecognizesAnacondaMkIIInTheCurrentShipAndFleet()

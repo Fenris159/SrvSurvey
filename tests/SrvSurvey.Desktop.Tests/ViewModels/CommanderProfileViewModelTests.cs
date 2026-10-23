@@ -6,8 +6,139 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class CommanderProfileViewModelTests
+public sealed partial class CommanderProfileViewModelTests
 {
+    [Fact]
+    public async Task ModernPowerplayCardReplacesLegacyZeroAndTracksNewerLocalEvents()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-10-23T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Ranks = [new("power", "Powerplay", 0, "None")],
+            Powerplay = new("A. Lavigny-Duval", 160, 1260198, fetchedAt.AddHours(-1)),
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, fetchedAt))
+        );
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+
+        FrontierRankCardViewModel card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("A. Lavigny-Duval", card.Name);
+        Assert.Contains("Rank 160", card.Detail);
+        Assert.Contains("1,260,198 merits", card.Detail);
+        Assert.Contains("Frontier journal", card.Source);
+        Assert.True(card.HasDetail);
+        Assert.Same(viewModel.Ranks, viewModel.Ranks);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T10:00:00Z","event":"PowerplayLeave"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal(card, Assert.Single(viewModel.Ranks));
+
+        viewModel.UpdateJournalPowerplay(
+            "F456",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayLeave"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal(card, Assert.Single(viewModel.Ranks));
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayRank","Power":"A. Lavigny-Duval","Rank":161}
+                    """
+                ),
+            ]
+        );
+        card = Assert.Single(viewModel.Ranks);
+        Assert.Contains("Rank 161", card.Detail);
+        Assert.Contains("1,260,198 merits", card.Detail);
+        Assert.Contains("Local journal", card.Source);
+        Assert.Same(viewModel.Ranks, viewModel.Ranks);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T14:00:00Z","event":"PowerplayLeave","Power":"A. Lavigny-Duval"}
+                    """
+                ),
+            ]
+        );
+        card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("Unpledged", card.Name);
+        Assert.False(card.HasDetail);
+    }
+
+    [Fact]
+    public async Task PowerplayUnknownDoesNotClaimUnpledgedAndLocalStatusIsScopedToTheJournalAccount()
+    {
+        DateTimeOffset fetchedAt = DateTimeOffset.UtcNow;
+        FrontierAccountSnapshot first = CreateSnapshot(fetchedAt) with
+        {
+            Ranks = [new("power", "Powerplay", 0, "None")],
+        };
+        FrontierAccountSnapshot second = first with { CommanderName = "Second", CommanderId = 456 };
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        account.SetStateForCommander("F123", new FrontierAccountState(true, first, fetchedAt));
+        account.SetStateForCommander("F456", new FrontierAccountState(true, second, fetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        viewModel.UpdateJournalPowerplay(null, []);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T13:00:00Z","event":"PowerplayJoin","Power":"Aisling Duval"}
+                    """
+                ),
+            ]
+        );
+        FrontierRankCardViewModel card = Assert.Single(viewModel.Ranks);
+        Assert.Equal("Aisling Duval", card.Name);
+        Assert.Equal("Rank unavailable", card.Detail);
+
+        await viewModel.SelectCommanderAsync(FrontierCommanderSelectionOption.Available("F456", "Second"));
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+        viewModel.UpdateJournalPowerplay(
+            "F123",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-10-23T14:00:00Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1260198}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+
+        await viewModel.SelectCommanderAsync(viewModel.CommanderSelectionOptions.Single(option => option.IsAutomatic));
+        Assert.Equal("A. Lavigny-Duval", Assert.Single(viewModel.Ranks).Name);
+        await viewModel.SetCommanderContextAsync("F456", "Second", refreshIfOpen: true);
+        Assert.Equal("Unavailable", Assert.Single(viewModel.Ranks).Name);
+    }
+
     [Fact]
     public async Task CatalogWarningSurvivesCommanderActivation()
     {
@@ -1363,6 +1494,7 @@ public sealed class CommanderProfileViewModelTests
                 {"timestamp":"2026-07-29T12:00:00Z","event":"Commander","Name":"Fenris","FID":"F123"}
                 {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
                 {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
+                {"timestamp":"2026-07-29T12:05:01Z","event":"Powerplay","Power":"A. Lavigny-Duval","Rank":160,"Merits":1260198}
 
                 """
             );
@@ -1401,6 +1533,9 @@ public sealed class CommanderProfileViewModelTests
             Assert.Null(profile.Carrier);
             Assert.Equal(4, profile.CommanderReputation.Count);
             Assert.Equal("91%", profile.CommanderReputation.Single(item => item.Faction == "Federation").Score);
+            FrontierRankCardViewModel powerplay = profile.Ranks.Single(rank => rank.Category == "Powerplay");
+            Assert.Equal("A. Lavigny-Duval", powerplay.Name);
+            Assert.Contains("Rank 160", powerplay.Detail);
         }
         finally
         {

@@ -44,6 +44,16 @@ content.
   marker. They describe the star's fuel-scooping capability, rather than fuel
   level or whether the system has been visited.
 
+## Commander Powerplay status
+
+- **Show the current pledged power, rank, and merits.** Frontier refresh now
+  reads modern Powerplay status from Frontier's journal API instead of treating
+  the profile's legacy zero rating as “None.” Ranks above 100 display correctly.
+- **Follow updates during play.** Newer local journal events update the active
+  commander's card. Account switching keeps each commander's status separate;
+  unavailable or incomplete API journals preserve the last known status. The
+  card tooltip shows its journal source and event time.
+
 ## Update channel and packages
 
 RC71 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy

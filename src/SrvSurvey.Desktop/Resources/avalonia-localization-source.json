@@ -23448,6 +23448,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Frontier journal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
     "IsFormat": false,
     "SourceKinds": [
@@ -23488,6 +23496,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Frontier returned incomplete data. Try refreshing again later.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
     "Text": "Frontier shipyard data could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -23522,6 +23538,14 @@
   {
     "Text": "Frontier updated {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Frontier\u0027s profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -31491,6 +31515,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Focus.cs"
+  },
+  {
+    "Text": "Local journal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Local market check failed. Commodity selections were kept; try again.",
@@ -44350,6 +44382,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Rank unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Rank {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Ranks",
@@ -66149,6 +66197,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Unpledged",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Unrated",
     "IsFormat": false,
     "SourceKinds": [
@@ -78955,6 +79011,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 {1} merits",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 {1} recorded \u00B7 highest suffix {2} \u00B7 {3}",

@@ -11689,6 +11689,10 @@
       "translation": "Frontier ist ratenbegrenzende Anfragen. Bitte warten Sie {0} Sekunden, bevor Sie es erneut versuchen."
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier Zeitschrift"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Durch die Verknüpfung Frontier werden Informationen zu Kommandanten, Schiffen, Märkten und Flottenträgern für das aktive Profil bereitgestellt."
     },
@@ -11709,6 +11713,10 @@
       "translation": "Die Antwort von Frontier hat die {0}-Byte-Sicherheitsgrenze überschritten."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier hat unvollständige Daten zurückgegeben. Versuchen Sie es später noch einmal."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier Werftdaten konnten nicht gelesen werden: {0}"
     },
@@ -11727,6 +11735,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier aktualisiert {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Das Profil von Frontier meldet keinen modernen Powerplay-Status. Aktualisieren Sie Frontier Daten oder laden Sie ein Kommandantenjournal."
     },
     {
       "source": "Frutexa Metallicum",
@@ -15695,6 +15707,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Lokale Fokuseinstellungen konnten nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "Local journal",
+      "translation": "Lokale Zeitschrift"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -22103,6 +22119,14 @@
     {
       "source": "Range (LY)",
       "translation": "Reichweite (LY)"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "Rang nicht verfügbar"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rang {0}"
     },
     {
       "source": "Ranks",
@@ -32981,6 +33005,10 @@
       "translation": "Unbesetzt"
     },
     {
+      "source": "Unpledged",
+      "translation": "Nicht verpfändet"
+    },
+    {
       "source": "Unrated",
       "translation": "Ohne Bewertung"
     },
@@ -39379,6 +39407,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} Einträge"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · {1} Verdienste"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -51383,6 +51415,10 @@
       "translation": "Frontier es la tasa que limita las solicitudes. Espere {0} segundos antes de volver a intentarlo."
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier diario"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier el enlace proporciona información del comandante, barco, mercado y transportista de flota para el perfil activo."
     },
@@ -51403,6 +51439,10 @@
       "translation": "La respuesta de Frontier superó el límite de seguridad de {0} bytes."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier devolvió datos incompletos. Intente actualizar nuevamente más tarde."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier no se pudieron leer los datos del astillero: {0}"
     },
@@ -51421,6 +51461,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier actualizado {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "El perfil de Frontier no informa el estado moderno de Powerplay. Actualizar datos Frontier o cargar un diario del comandante."
     },
     {
       "source": "Frutexa Metallicum",
@@ -55389,6 +55433,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "No se pudieron guardar las preferencias de enfoque local: {0}"
+    },
+    {
+      "source": "Local journal",
+      "translation": "diario local"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -61797,6 +61845,14 @@
     {
       "source": "Range (LY)",
       "translation": "Rango (LY)"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "Clasificación no disponible"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rango {0}"
     },
     {
       "source": "Ranks",
@@ -72675,6 +72731,10 @@
       "translation": "Desocupado"
     },
     {
+      "source": "Unpledged",
+      "translation": "no comprometido"
+    },
+    {
       "source": "Unrated",
       "translation": "Sin clasificar"
     },
@@ -79073,6 +79133,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entradas"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · {1} méritos"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -91077,6 +91141,10 @@
       "translation": "Frontier correspond aux requêtes de limitation de débit. Veuillez patienter {0} secondes avant de réessayer."
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier journal"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier fournit des informations sur le commandant, le navire, le marché et le transporteur de flotte pour le profil actif."
     },
@@ -91097,6 +91165,10 @@
       "translation": "La réponse de Frontier a dépassé la limite de sécurité de {0} octets."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier a renvoyé des données incomplètes. Réessayez d'actualiser plus tard."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier les données du chantier naval n'ont pas pu être lues : {0}"
     },
@@ -91115,6 +91187,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier mis à jour {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Le profil de Frontier ne signale pas le statut Powerplay moderne. Actualisez les données Frontier ou chargez un journal du commandant."
     },
     {
       "source": "Frutexa Metallicum",
@@ -95083,6 +95159,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Les préférences de focus local n'ont pas pu être enregistrées : {0}"
+    },
+    {
+      "source": "Local journal",
+      "translation": "Journal local"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -101491,6 +101571,14 @@
     {
       "source": "Range (LY)",
       "translation": "Portée (LY)"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "Classement indisponible"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Rang {0}"
     },
     {
       "source": "Ranks",
@@ -112369,6 +112457,10 @@
       "translation": "Inoccupé"
     },
     {
+      "source": "Unpledged",
+      "translation": "Non promis"
+    },
+    {
       "source": "Unrated",
       "translation": "Non classé"
     },
@@ -118767,6 +118859,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entrées"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · Avantages de {1}"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -130771,6 +130867,10 @@
       "translation": "Frontier é uma solicitação de limitação de taxa. Aguarde {0} segundos antes de tentar novamente."
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier diário"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier fornece informações de comandante, navio, mercado e transportador de frota para o perfil ativo."
     },
@@ -130791,6 +130891,10 @@
       "translation": "A resposta de Frontier excedeu o limite de segurança de {0} bytes."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier retornou dados incompletos. Tente atualizar novamente mais tarde."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier dados do estaleiro não puderam ser lidos: {0}"
     },
@@ -130809,6 +130913,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier atualizado {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "O perfil de Frontier não informa o status moderno do Powerplay. Atualize os dados Frontier ou carregue um diário do comandante."
     },
     {
       "source": "Frutexa Metallicum",
@@ -134777,6 +134885,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Não foi possível salvar as preferências de foco local: {0}"
+    },
+    {
+      "source": "Local journal",
+      "translation": "Jornal local"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -141185,6 +141297,14 @@
     {
       "source": "Range (LY)",
       "translation": "Alcance (LY)"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "Classificação indisponível"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Classificação {0}"
     },
     {
       "source": "Ranks",
@@ -152063,6 +152183,10 @@
       "translation": "Desocupado"
     },
     {
+      "source": "Unpledged",
+      "translation": "Não comprometido"
+    },
+    {
       "source": "Unrated",
       "translation": "Sem classificação"
     },
@@ -158461,6 +158585,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} entradas"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · Méritos {1}"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -170465,6 +170593,10 @@
       "translation": "Frontier — это запросы ограничения скорости. Подождите {0} секунд, прежде чем повторить попытку."
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier журнал"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier привязка предоставляет информацию о командире, корабле, рынке и авианосце для активного профиля."
     },
@@ -170485,6 +170617,10 @@
       "translation": "Ответ Frontier превысил безопасный лимит в {0}-байт."
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier вернул неполные данные. Попробуйте обновить позже."
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier данные верфи не удалось прочитать: {0}"
     },
@@ -170503,6 +170639,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier обновлен {0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "В профиле Frontier не указан современный статус Powerplay. Обновите данные Frontier или загрузите журнал командира."
     },
     {
       "source": "Frutexa Metallicum",
@@ -174471,6 +174611,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "Не удалось сохранить настройки локального фокуса: {0}."
+    },
+    {
+      "source": "Local journal",
+      "translation": "Местный журнал"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -180879,6 +181023,14 @@
     {
       "source": "Range (LY)",
       "translation": "Диапазон (ЛИ)"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "Ранг недоступен"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "Ранг {0}"
     },
     {
       "source": "Ranks",
@@ -191757,6 +191909,10 @@
       "translation": "незанятый"
     },
     {
+      "source": "Unpledged",
+      "translation": "Незаложенный"
+    },
+    {
       "source": "Unrated",
       "translation": "Без рейтинга"
     },
@@ -198155,6 +198311,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} записи"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · {1} достоинства"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -210159,6 +210319,10 @@
       "translation": "Frontier 是速率限制请求。请等待 {0} 秒后再重试。"
     },
     {
+      "source": "Frontier journal",
+      "translation": "Frontier 期刊"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "Frontier 链接提供活动配置文件的指挥官、船舶、市场和舰队承运人信息。"
     },
@@ -210179,6 +210343,10 @@
       "translation": "Frontier 响应超出了 {0} 字节安全限制。"
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "Frontier返回的数据不完整。稍后再尝试刷新。"
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier 无法读取造船厂数据：{0}"
     },
@@ -210197,6 +210365,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "Frontier更新{0}"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "Frontier 的配置文件不报告现代 Powerplay 状态。刷新Frontier数据或加载指挥官日志。"
     },
     {
       "source": "Frutexa Metallicum",
@@ -214165,6 +214337,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "无法保存本地焦点首选项：{0}"
+    },
+    {
+      "source": "Local journal",
+      "translation": "地方期刊"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -220573,6 +220749,14 @@
     {
       "source": "Range (LY)",
       "translation": "射程（LY）"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "排名不可用"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "排名 {0}"
     },
     {
       "source": "Ranks",
@@ -231451,6 +231635,10 @@
       "translation": "无人居住"
     },
     {
+      "source": "Unpledged",
+      "translation": "未质押"
+    },
+    {
       "source": "Unrated",
       "translation": "未评级"
     },
@@ -237849,6 +238037,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "{0} · {1} 条目"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "{0} · {1} 优点"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
@@ -249853,6 +250045,10 @@
       "translation": "* FRONTIER IS RATE LIMITING REQUESTS. PLEASE WAIT {0} SECONDS BEFORE TRYING AGAIN. >>>!"
     },
     {
+      "source": "Frontier journal",
+      "translation": "* FRONTIER JOURNAL >>>!"
+    },
+    {
       "source": "Frontier linking provides Commander, ship, market, and Fleet Carrier information for the active profile.",
       "translation": "* FRONTIER LINKING PROVIDES COMMANDER, SHIP, MARKET, AND FLEET CARRIER INFORMATION FOR THE ACTIVE PROFILE. >>>!"
     },
@@ -249873,6 +250069,10 @@
       "translation": "* FRONTIER RESPONSE EXCEEDED THE {0}-BYTE SAFETY LIMIT. >>>!"
     },
     {
+      "source": "Frontier returned incomplete data. Try refreshing again later.",
+      "translation": "* FRONTIER RETURNED INCOMPLETE DATA. TRY REFRESHING AGAIN LATER. >>>!"
+    },
+    {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "* FRONTIER SHIPYARD DATA COULD NOT BE READ: {0} >>>!"
     },
@@ -249891,6 +250091,10 @@
     {
       "source": "Frontier updated {0}",
       "translation": "* FRONTIER UPDATED {0} >>>!"
+    },
+    {
+      "source": "Frontier's profile does not report modern Powerplay status. Refresh Frontier data or load a commander journal.",
+      "translation": "* FRONTIER'S PROFILE DOES NOT REPORT MODERN POWERPLAY STATUS. REFRESH FRONTIER DATA OR LOAD A COMMANDER JOURNAL. >>>!"
     },
     {
       "source": "Frutexa Metallicum",
@@ -253859,6 +254063,10 @@
     {
       "source": "Local focus preferences could not be saved: {0}",
       "translation": "* LOCAL FOCUS PREFERENCES COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "Local journal",
+      "translation": "* LOCAL JOURNAL >>>!"
     },
     {
       "source": "Local market check failed. Commodity selections were kept; try again.",
@@ -260267,6 +260475,14 @@
     {
       "source": "Range (LY)",
       "translation": "* RANGE (LY) >>>!"
+    },
+    {
+      "source": "Rank unavailable",
+      "translation": "* RANK UNAVAILABLE >>>!"
+    },
+    {
+      "source": "Rank {0}",
+      "translation": "* RANK {0} >>>!"
     },
     {
       "source": "Ranks",
@@ -271145,6 +271361,10 @@
       "translation": "* UNOCCUPIED >>>!"
     },
     {
+      "source": "Unpledged",
+      "translation": "* UNPLEDGED >>>!"
+    },
+    {
       "source": "Unrated",
       "translation": "* UNRATED >>>!"
     },
@@ -277543,6 +277763,10 @@
     {
       "source": "{0} · {1} entries",
       "translation": "* {0} · {1} ENTRIES >>>!"
+    },
+    {
+      "source": "{0} · {1} merits",
+      "translation": "* {0} · {1} MERITS >>>!"
     },
     {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
