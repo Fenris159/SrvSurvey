@@ -82,6 +82,16 @@ internal sealed partial record GamescopeOverlaySession(string Display, Gamescope
         return connection?.ReadIdentity();
     }
 
+    internal static string? ReadCurrentFocusedDisplay()
+    {
+        if (Current is not { } session)
+        {
+            return null;
+        }
+        using var connection = GamescopeX11Connection.TryOpen(session.Display);
+        return connection?.ReadIdentity() == session.Identity ? connection.ReadFocusedDisplay() : null;
+    }
+
     internal static (GamescopeOverlaySession? Session, string? Error) Resolve(
         string? currentDisplay,
         IEnumerable<string> candidates,
@@ -98,6 +108,7 @@ internal sealed partial record GamescopeOverlaySession(string Display, Gamescope
             return (new GamescopeOverlaySession(currentDisplay!, current), null);
         }
         var roots = candidates
+            .Select(name => name.EndsWith(".0", StringComparison.Ordinal) ? name[..^2] : name)
             .Distinct(StringComparer.Ordinal)
             .Select(name => new { Name = name, Identity = probe(name) })
             .Where(item =>

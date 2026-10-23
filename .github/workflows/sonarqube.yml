@@ -68,11 +68,15 @@ jobs:
         if: steps.layout.outputs.available == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes desktop-file-utils xvfb libx11-6 libxext6 libxfixes3 libfontconfig1 libice6 libsm6 libpipewire-0.3-0
+          sudo apt-get install --yes desktop-file-utils xvfb libx11-6 libxext6 libxfixes3 libfontconfig1 libice6 libsm6 libpipewire-0.3-0 pkg-config libei-dev libx11-dev libxrender-dev libxext-dev
 
       - name: Verify native focus publisher failure handling
         if: steps.layout.outputs.available == 'true'
         run: python3 tests/SrvSurvey.GamescopeSmoke/run-publisher.py
+
+      - name: Verify smoke-driver fork failure handling
+        if: steps.layout.outputs.available == 'true'
+        run: python3 tests/SrvSurvey.GamescopeSmoke/run-process-failures.py
 
       - name: Test Linux desktop with coverage
         if: steps.layout.outputs.available == 'true'

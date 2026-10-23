@@ -5,6 +5,19 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class GamescopeOverlaySessionTests
 {
     [Fact]
+    public void ReviewRegressionDefaultScreenAliasesAreOnePrimaryServer()
+    {
+        (GamescopeOverlaySession? Session, string? Error) result = GamescopeOverlaySession.Resolve(
+            ":43",
+            [":42", ":42.0"],
+            display => new(display == ":43" ? 1u : 0u, 100)
+        );
+        Assert.NotNull(result.Session);
+        Assert.Equal(":42", result.Session.Display);
+        Assert.Null(result.Error);
+    }
+
+    [Fact]
     public void StartupRoutesBeforeRenderingAndReportsPassiveAndFailureStates()
     {
         var messages = new List<string>();

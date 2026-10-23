@@ -65,9 +65,14 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
         {
             return null;
         }
+        bool? hostForeground = matches[0].IsForeground;
+        if (hostForeground == true && startTime is not null)
+        {
+            hostForeground = nativeForeground;
+        }
         return new GamescopeGameWindowBridge(processId, game.Display, matches[0].ClientBounds)
         {
-            IsHostForeground = matches[0].IsForeground && nativeForeground is not false,
+            IsHostForeground = hostForeground,
             HasNativeHostFocusPublisher = nativeForeground is not null,
             ProcessStartTime = startTime,
         };

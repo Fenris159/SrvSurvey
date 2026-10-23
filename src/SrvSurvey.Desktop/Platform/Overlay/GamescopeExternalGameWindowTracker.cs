@@ -79,7 +79,11 @@ internal sealed class GamescopeExternalGameWindowTracker(
             OverlayCanvasBounds = focus.OutputBounds,
             IsVisible = snapshot.IsVisible && focused && bounds.Width > 0 && bounds.Height > 0,
             IsForeground =
-                focused && (focus.InputApp == focus.GraphicsApp || SameDisplay(game!.Display, focus.KeyboardDisplay)),
+                focused
+                && (
+                    (focus.InputApp is not null && focus.InputApp == focus.GraphicsApp)
+                    || (snapshot.IsForeground && SameDisplay(game!.Display, focus.KeyboardDisplay))
+                ),
         };
     }
 

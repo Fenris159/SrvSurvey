@@ -6,6 +6,23 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class GamescopeExternalGameWindowTrackerTests
 {
+    [Fact]
+    public void ReviewRegressionSharedServerKeyboardDisplayDoesNotOverrideSteamKeyboardOwnership()
+    {
+        var focus = new GamescopeFocusSnapshot(":7", 42, 0, 359320, new PixelRect(0, 0, 1280, 800))
+        {
+            KeyboardDisplay = ":7.0",
+        };
+        using var tracker = new GamescopeExternalGameWindowTracker(
+            () => focus,
+            _ => new(100, ":7"),
+            _ => new StubTracker(new(42, 100, new PixelRect(0, 0, 960, 600), true, false)),
+            new StubTracker(GameWindowSnapshot.Unavailable)
+        );
+        Assert.True(tracker.GetSnapshot().IsVisible);
+        Assert.False(tracker.GetSnapshot().IsForeground);
+    }
+
     [Theory]
     [InlineData(0, 1280, 720, 0, 40)]
     [InlineData(1, 960, 540, 160, 130)]
@@ -83,6 +100,8 @@ public sealed class GamescopeExternalGameWindowTrackerTests
         Assert.False(shown.IsForeground);
         Assert.Equal(focus.OutputBounds, shown.ClientBounds);
         focus = focus with { KeyboardDisplay = ":7.0" };
+        Assert.False(tracker.GetSnapshot().IsForeground);
+        first.Snapshot = first.Snapshot with { IsForeground = true };
         Assert.True(tracker.GetSnapshot().IsForeground);
         focus = focus with { KeyboardDisplay = ":6" };
         Assert.False(tracker.GetSnapshot().IsForeground);

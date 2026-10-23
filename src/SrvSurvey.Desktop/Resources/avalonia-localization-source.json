@@ -24129,6 +24129,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GameTextInputService.cs"
   },
   {
+    "Text": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GameTextInputService.cs"
+  },
+  {
     "Text": "Galaxy Map text entry is unavailable on this platform.",
     "IsFormat": false,
     "SourceKinds": [

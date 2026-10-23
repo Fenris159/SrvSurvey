@@ -29,7 +29,7 @@ internal static class GamescopeGameWindowFocus
                 .Split('\0');
             string? entry =
                 environment.FirstOrDefault(value =>
-                    value.StartsWith("GAMESCOPE_HOST_FOCUS_FILE=", StringComparison.Ordinal)
+                    value.StartsWith("GAMESCOPE_HOST_FOCUS_FILE=", StringComparison.Ordinal) && !value.EndsWith('=')
                 )
                 ?? environment.FirstOrDefault(value =>
                     value.StartsWith("ELITE_HOST_FOCUS_FILE=", StringComparison.Ordinal)

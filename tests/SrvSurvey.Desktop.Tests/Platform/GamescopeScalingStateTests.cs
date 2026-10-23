@@ -4,6 +4,48 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class GamescopeScalingStateTests
 {
+    [Fact]
+    public void ReattachedSubscriptionsPreserveObservedHistoryAndRequireFreshCommandsAfterConflicts()
+    {
+        var state = new GamescopeScalingState(0);
+        state.Observe([new(20, 1, ":game")]);
+        state.ReconcileSubscription([]);
+        Assert.Equal(1u, state.Mode);
+        state.ReconcileSubscription([1]);
+        Assert.Equal(1u, state.Mode);
+        state.ReconcileSubscription([0]);
+        Assert.Null(state.Mode);
+        state.Observe([new(10, 0, ":primary"), new(20, 1, ":game")]);
+        Assert.Null(state.Mode);
+        state.ReconcileSubscription([1]);
+        Assert.Null(state.Mode);
+        state.Observe([new(21, 3, ":primary")]);
+        Assert.Equal(3u, state.Mode);
+    }
+
+    [Fact]
+    public void ReviewRegressionOlderPollsCannotReplaceNewerScalingAndEqualTimeConflictsPersist()
+    {
+        var state = new GamescopeScalingState(0);
+        state.Observe([new(20, 3, ":game")]);
+        state.Observe([new(10, 1, ":primary")]);
+        Assert.Equal(3u, state.Mode);
+        state.Observe([new(20, 1, ":primary")]);
+        Assert.Null(state.Mode);
+        state.Observe([new(20, 3, ":game")]);
+        Assert.Null(state.Mode);
+        state.Observe([new(20, 3, ":primary")]);
+        Assert.Equal(3u, state.Mode);
+        state.Observe([new(21, 4, ":primary")]);
+        Assert.Equal(4u, state.Mode);
+
+        var wrapped = new GamescopeScalingState(0);
+        wrapped.Observe([new(uint.MaxValue, 1, ":primary")]);
+        wrapped.Observe([new(1, 3, ":game")]);
+        wrapped.Observe([new(uint.MaxValue, 1, ":primary")]);
+        Assert.Equal(3u, wrapped.Mode);
+    }
+
     [Theory]
     [InlineData("auto", 0u)]
     [InlineData("integer", 1u)]
@@ -86,6 +128,7 @@ public sealed class GamescopeScalingStateTests
         Assert.Equal(0u, state.Mode);
         state.Observe([new(40, 4), new(40, 4)]);
         Assert.Equal(4u, state.Mode);
+        state.Initialize([]);
         state.Observe([new(uint.MaxValue, 3), new(1, 1)]);
         Assert.Equal(1u, state.Mode);
     }

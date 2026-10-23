@@ -8,6 +8,9 @@ internal readonly record struct GamescopeScalingRequest(uint Timestamp, uint Mod
 internal sealed class GamescopeScalingState(uint? startupMode)
 {
     private readonly uint? startup = startupMode;
+    private uint? latestTimestamp;
+    private bool needsNewerTimestamp;
+    private readonly Dictionary<string, uint> latestModes = new(StringComparer.Ordinal);
     internal const string ScalerAtom = "GAMESCOPE_NEW_SCALING_SCALER";
     internal const string LegacyAtom = "GAMESCOPE_SCALING_FILTER";
 
@@ -15,6 +18,9 @@ internal sealed class GamescopeScalingState(uint? startupMode)
 
     public void Initialize(IEnumerable<uint> existingRequests)
     {
+        latestTimestamp = null;
+        needsNewerTimestamp = false;
+        latestModes.Clear();
         uint[] modes = existingRequests.Distinct().ToArray();
         Mode = modes.Length switch
         {
@@ -22,6 +28,15 @@ internal sealed class GamescopeScalingState(uint? startupMode)
             1 => modes[0],
             _ => null, // X11 does not retain the ordering of commands issued before subscription.
         };
+    }
+
+    public void ReconcileSubscription(IEnumerable<uint> existingRequests)
+    {
+        if (existingRequests.Any(mode => mode != Mode))
+        {
+            Mode = null;
+        }
+        needsNewerTimestamp = Mode is null && latestTimestamp is not null;
     }
 
     public void Observe(IEnumerable<GamescopeScalingRequest> requests)
@@ -34,12 +49,25 @@ internal sealed class GamescopeScalingState(uint? startupMode)
             return;
         }
         uint last = ordered[^1].Timestamp;
-        uint[] modes = ordered
-            .Where(request => request.Timestamp == last)
-            .GroupBy(request => request.Display, StringComparer.Ordinal)
-            .Select(group => group.Last().Mode) // Event order is authoritative within one X server, even at equal timestamps.
-            .Distinct()
-            .ToArray();
+        if (
+            latestTimestamp is uint previous
+            && (CompareTimestamps(last, previous) < 0 || (needsNewerTimestamp && last == previous))
+        )
+        {
+            return;
+        }
+        needsNewerTimestamp = false;
+        if (latestTimestamp != last)
+        {
+            latestTimestamp = last;
+            latestModes.Clear();
+        }
+        foreach (GamescopeScalingRequest request in ordered.Where(request => request.Timestamp == last))
+        {
+            // Retain cross-server ties across polls; only one server has a reliable event order.
+            latestModes[request.Display] = request.Mode;
+        }
+        uint[] modes = latestModes.Values.Distinct().ToArray();
         Mode = modes.Length == 1 ? modes[0] : null;
     }
 

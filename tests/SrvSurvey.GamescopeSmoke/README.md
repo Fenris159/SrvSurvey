@@ -30,7 +30,10 @@ The second run uses a synthetic same-user Steam process with a primary-server
 environment; it does not launch a real Steam client. Neither run uses mini-ed-launcher.
 Success requires a 1280×800 compositor screenshot, a green marker at (24,24),
 a red game pixel at (200,200), and a visible, foreground game in the production
-tracker. Logs and the screenshot are retained in the output directory.
+tracker. The runner rejects an existing output directory and requires a fresh
+child-success marker written only after the Avalonia exit assertion and child
+cleanup succeed. Gamescope's own zero exit status cannot substitute for those
+checks. Logs and the screenshot are retained in the output directory.
 
 The screenshot client requests **all real layers** directly through the Wayland
 protocol. Some `gamescopectl` versions silently discard the screenshot-type
@@ -183,4 +186,18 @@ does not require Gamescope or affect the current desktop.
 
 ```console
 python3 tests/SrvSurvey.GamescopeSmoke/run-publisher.py
+```
+
+## Native child-process failures
+
+This fault-injection fixture compiles the real interaction driver with link-time
+wrappers for `fork`, `kill`, and `waitpid`. On a private Xvfb display it fails the
+game, Steam, and Avalonia fork in turn and verifies prompt failure and cleanup of
+only previously created positive child PIDs. The wrappers never spawn or signal
+real child processes, so the unsafe negative-PID case can be tested safely.
+It needs the interaction harness's C development libraries and Xvfb, but does
+not need Gamescope or modify the user's display session.
+
+```console
+python3 tests/SrvSurvey.GamescopeSmoke/run-process-failures.py
 ```

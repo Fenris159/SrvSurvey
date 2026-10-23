@@ -424,6 +424,44 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReviewRegressionRejectedGamescopeInputCanRetryWithoutRetainingARequest(bool moveBeforeRetry)
+    {
+        var platform = new FakeOverlayPlatform { RejectInteractiveRegions = true };
+        var registry = new OverlayWindowRegistry();
+        var source = new Window
+        {
+            Width = 64,
+            Height = 64,
+            Content = new Border(),
+        };
+        registry.Register(source, "PlotJumpInfo");
+        using var controller = new CombinedOverlayPresentationController(
+            platform,
+            new FakeGameWindowTracker(new(1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
+            registry
+        );
+        try
+        {
+            source.Show();
+            Assert.True(controller.PreparePassiveWindow(source).IsPrepared);
+            Assert.False(controller.SetInteractive(source, true).IsPrepared);
+            platform.RejectInteractiveRegions = false;
+            if (moveBeforeRetry)
+            {
+                source.Position = new PixelPoint(20, 20);
+            }
+            Assert.Equal(0, platform.LastRegionCount);
+            Assert.True(controller.SetInteractive(source, true).IsInteractive);
+        }
+        finally
+        {
+            source.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void GamescopeReleasesPointerRoutingBeforeCanvasHideAndClose()
     {
@@ -1219,8 +1257,16 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public bool SuppressNativeWindow(Window window) => true;
 
-        public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions) =>
-            new(true, regions.Count > 0, "Prepared");
+        public bool RejectInteractiveRegions { get; set; }
+        public int LastRegionCount { get; private set; }
+
+        public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions)
+        {
+            LastRegionCount = regions.Count;
+            return RejectInteractiveRegions && regions.Count > 0
+                ? new(false, false, "Steam owns input")
+                : new(true, regions.Count > 0, "Prepared");
+        }
 
         public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
         {

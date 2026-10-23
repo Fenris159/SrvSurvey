@@ -45,6 +45,7 @@ def child(output, from_game):
                 process.terminate()
         for process in processes:
             process.wait(timeout=5)
+    (output / "child-success").write_text("PASS\n")
 
 
 def main():
@@ -61,7 +62,7 @@ def main():
     if args.protocol is None:
         parser.error("--protocol is required")
     output = (args.output or Path(tempfile.mkdtemp(prefix="srvsurvey-gamescope-smoke-"))).resolve()
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=args.output is None)
     run("dotnet", "build", str(HERE / "SrvSurvey.GamescopeSmoke.csproj"), "-v:minimal")
     run("wayland-scanner", "client-header", str(args.protocol), str(output / "gamescope-control-client.h"))
     run("wayland-scanner", "private-code", str(args.protocol), str(output / "gamescope-control-client.c"))
@@ -87,6 +88,8 @@ def main():
                 if process.poll() is None:
                     os.killpg(process.pid, signal.SIGTERM)
                     process.wait(timeout=5)
+    if not (output / "child-success").is_file() or (output / "child-success").read_text() != "PASS\n":
+        raise RuntimeError(f"Composition child did not publish success; inspect {output}")
     screenshot = output / "avalonia-overlay.png"
     dimensions = subprocess.check_output(["identify", "-format", "%wx%h", str(screenshot)], text=True)
     marker = subprocess.check_output(["convert", str(screenshot), "-format", "%[pixel:p{24,24}]", "info:"], text=True)

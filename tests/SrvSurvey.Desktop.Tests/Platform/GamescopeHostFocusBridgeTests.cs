@@ -8,6 +8,20 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class GamescopeHostFocusBridgeTests
 {
     [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", true)]
+    public void ReviewRegressionEmptyGenericVariableFallsBackToLegacyPublisher(string contents, bool expected)
+    {
+        WithDirectory(directory =>
+        {
+            string legacy = Path.Combine(directory, "legacy");
+            File.WriteAllText(legacy, contents);
+            WriteEnvironment(directory, $"GAMESCOPE_HOST_FOCUS_FILE=\0ELITE_HOST_FOCUS_FILE={legacy}\0");
+            Assert.Equal(expected, GamescopeGameWindowFocus.Read(directory, 42, 123, directory));
+        });
+    }
+
+    [Theory]
     [InlineData("123\n1\n", true)]
     [InlineData("123\n0\n", false)]
     [InlineData("122\n1\n", false)]

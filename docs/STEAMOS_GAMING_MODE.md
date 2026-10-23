@@ -123,7 +123,10 @@ Custom maximum/per-window scaling remains unsupported. If the log reports
 unknown scaling state, select the scaling mode again in Steam and collect a
 second snapshot. Image-based features such as FSS tuning cannot capture the
 composited game from the primary X11 root; use only a separately supported
-screen-sharing path. Keep the performance HUD off during acceptance testing.
+screen-sharing path. Automatic Galaxy Map text entry is unavailable in this
+mode because its text injector cannot target the separate game display. Use
+Elite's own text entry instead. Keep the performance HUD off during acceptance
+testing.
 
 See [overlay troubleshooting](Overlay_Troubleshooting.md#steamos-gaming-mode)
 for the rendering/input contract and

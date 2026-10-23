@@ -12029,6 +12029,10 @@
       "translation": "Texteingabe für die Galaxiekarte fehlgeschlagen: {0}"
     },
     {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "Die Texteingabe für die Galaxiekarte ist in Gamescope nicht verfügbar, da das Overlay und das Spiel separate X11-Displays verwenden."
+    },
+    {
       "source": "Galaxy Map text entry is unavailable on this platform.",
       "translation": "Die Texteingabe für die Galaxiekarte ist auf dieser Plattform nicht verfügbar."
     },
@@ -51697,6 +51701,10 @@
     {
       "source": "Galaxy Map text entry failed: {0}",
       "translation": "Error al ingresar texto en Galaxy Map: {0}"
+    },
+    {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "La entrada de texto de Galaxy Map no está disponible en Gamescope porque la superposición y el juego usan pantallas X11 separadas."
     },
     {
       "source": "Galaxy Map text entry is unavailable on this platform.",
@@ -91369,6 +91377,10 @@
       "translation": "Échec de la saisie du texte de la carte Galaxy : {0}"
     },
     {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "La saisie de texte Galaxy Map n'est pas disponible dans Gamescope car la superposition et le jeu utilisent des écrans X11 distincts."
+    },
+    {
       "source": "Galaxy Map text entry is unavailable on this platform.",
       "translation": "La saisie de texte Galaxy Map n’est pas disponible sur cette plate-forme."
     },
@@ -131037,6 +131049,10 @@
     {
       "source": "Galaxy Map text entry failed: {0}",
       "translation": "Falha na entrada de texto do Mapa da Galáxia: {0}"
+    },
+    {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "A entrada de texto do Galaxy Map não está disponível no Gamescope porque a sobreposição e o jogo usam monitores X11 separados."
     },
     {
       "source": "Galaxy Map text entry is unavailable on this platform.",
@@ -170709,6 +170725,10 @@
       "translation": "Не удалось ввести текст карты галактики: {0}"
     },
     {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "Ввод текста на карте Галактики недоступен в Gamescope, поскольку наложение и игра используют отдельные дисплеи X11."
+    },
+    {
       "source": "Galaxy Map text entry is unavailable on this platform.",
       "translation": "Ввод текста карты Галактики недоступен на этой платформе."
     },
@@ -210379,6 +210399,10 @@
       "translation": "银河地图文本输入失败：{0}"
     },
     {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "Galaxy 地图文本输入在 Gamescope 中不可用，因为叠加层和游戏使用单独的 X11 显示屏。"
+    },
+    {
       "source": "Galaxy Map text entry is unavailable on this platform.",
       "translation": "银河地图文本输入在此平台上不可用。"
     },
@@ -250047,6 +250071,10 @@
     {
       "source": "Galaxy Map text entry failed: {0}",
       "translation": "* GALAXY MAP TEXT ENTRY FAILED: {0} >>>!"
+    },
+    {
+      "source": "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays.",
+      "translation": "* GALAXY MAP TEXT ENTRY IS UNAVAILABLE IN GAMESCOPE BECAUSE THE OVERLAY AND GAME USE SEPARATE X11 DISPLAYS. >>>!"
     },
     {
       "source": "Galaxy Map text entry is unavailable on this platform.",

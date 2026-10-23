@@ -9,6 +9,43 @@ public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
 
+    [Fact]
+    public void ReviewRegressionDesktopDiscoveryDoesNotForgetAnObservedNativePublisher()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GamescopeOverlaySessionTests.WriteProcess(root, "self", "1000", "test", "test", ":0");
+            GamescopeOverlaySessionTests.WriteProcess(
+                root,
+                "10",
+                "1000",
+                "EliteDangerous6",
+                "/game/EliteDangerous64.exe",
+                ":7",
+                20
+            );
+            GamescopeOverlaySessionTests.WriteProcess(root, "20", "1000", "gamescope", "/bin/gamescope", ":0");
+            string path = Path.Combine(root, GamescopeGameWindowFocus.MarkerPrefix + "20");
+            File.WriteAllText(path, "123\n0\n");
+            GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, true);
+            using var tracker = new GamescopeGameWindowTracker(
+                new StubTracker(GameWindowSnapshot.Unavailable),
+                () => GamescopeGameWindowBridge.Discover(root, [outer], root, _ => 123),
+                _ => new StubTracker(new(42, 10, new PixelRect(0, 0, 960, 600), true, true))
+            );
+            Assert.False(tracker.GetSnapshot().IsForeground);
+            File.Delete(path);
+            Assert.False(tracker.GetSnapshot().IsForeground);
+            File.WriteAllText(path, "123\n1\n");
+            Assert.True(tracker.GetSnapshot().IsForeground);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     [Theory]
     [InlineData("123\n0\n", true, false)]
     [InlineData("123\n1\n", true, true)]
@@ -39,7 +76,7 @@ public sealed class GamescopeGameWindowTrackerTests
             GameWindowSnapshot outer = new(101, 20, new PixelRect(100, 80, 900, 700), true, outerForeground);
             var bridge = GamescopeGameWindowBridge.Discover(root, [outer], root, _ => 123);
             Assert.NotNull(bridge);
-            Assert.Equal(expected, bridge.IsHostForeground);
+            Assert.Equal(contents is null && outerForeground ? null : (bool?)expected, bridge.IsHostForeground);
             Assert.Equal(contents is not null, bridge.HasNativeHostFocusPublisher);
             foreach (string invalidRuntime in new[] { string.Empty, "relative" })
             {

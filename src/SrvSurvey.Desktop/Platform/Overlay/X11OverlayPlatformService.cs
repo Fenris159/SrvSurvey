@@ -425,6 +425,7 @@ internal sealed class X11OverlayPlatformService
                     }
                 }
 
+                _ = X11Native.XFlush(currentDisplay);
                 if (activate)
                 {
                     _ = ActivateWindow(

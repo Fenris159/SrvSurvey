@@ -1,10 +1,43 @@
 using SharpHook.Data;
 using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class GameTextInputServiceTests
 {
+    [Theory]
+    [InlineData(OverlayHostKind.Windows, true)]
+    [InlineData(OverlayHostKind.LinuxX11, true)]
+    [InlineData(OverlayHostKind.LinuxXWayland, true)]
+    [InlineData(OverlayHostKind.LinuxWayland, false)]
+    [InlineData(OverlayHostKind.Other, false)]
+    public void OrdinaryHostTextInputAvailabilityIsPreserved(OverlayHostKind host, bool available)
+    {
+        IGameTextInputService service = GameTextInputService.CreateForCapabilities(
+            OverlayPlatformCapabilities.ForHost(host)
+        );
+        Assert.Equal(available, service.IsAvailable);
+        if (!available)
+        {
+            Assert.False(service.EnterText("Sol").Succeeded);
+        }
+    }
+
+    [Fact]
+    public void ReviewRegressionExternalOverlayDoesNotAdvertiseTextInjectionOnThePrimaryDisplay()
+    {
+        IGameTextInputService service = GameTextInputService.CreateForCapabilities(
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland) with
+            {
+                UsesGamescopeExternalOverlay = true,
+            }
+        );
+        Assert.False(service.IsAvailable);
+        Assert.False(service.EnterText("Sol").Succeeded);
+        Assert.Contains("Gamescope", service.UnavailableReason);
+    }
+
     [Fact]
     public void SharpHookServiceReportsSuccessfulTextEntry()
     {

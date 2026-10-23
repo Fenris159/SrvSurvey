@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -11,6 +12,150 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class GamescopeX11ConnectionTests
 {
+    [Fact]
+    public async Task ReviewRegressionScalingReconcilesLateSubscriptionAndSameNameServerRestart()
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/usr/bin/Xvfb"))
+        {
+            return;
+        }
+        await using ScalingServer primary = await ScalingServer.StartAsync();
+        await using ScalingServer game = await ScalingServer.StartAsync(
+            ":" + RandomNumberGenerator.GetInt32(20000, 30000)
+        );
+        SetNumbers(game.Display, game.Root, "GAMESCOPE_XWAYLAND_SERVER_ID", [1]);
+        SetNumbers(primary.Display, primary.Root, GamescopeScalingState.ScalerAtom, [0]);
+        using GamescopeX11Connection connection = GamescopeX11Connection.TryOpen(primary.Name)!;
+        Assert.Equal(0u, connection.ReadFocus().ScalingMode);
+
+        SetNumbers(game.Display, game.Root, GamescopeScalingState.ScalerAtom, [1]);
+        byte[] name = System.Text.Encoding.ASCII.GetBytes(game.Name + "\0");
+        Array.Resize(ref name, (name.Length + 3) / 4 * 4);
+        SetNumbers(
+            primary.Display,
+            primary.Root,
+            "GAMESCOPE_FOCUS_DISPLAY",
+            name.Chunk(4).Select(chunk => BitConverter.ToUInt32(chunk)).ToArray()
+        );
+        Assert.Null(connection.ReadFocus().ScalingMode); // Untimed requests on two servers conflict.
+        SetNumbers(game.Display, game.Root, GamescopeScalingState.ScalerAtom, [1]);
+        Assert.Equal(1u, connection.ReadFocus().ScalingMode);
+
+        SetNumbers(primary.Display, primary.Root, "GAMESCOPE_FOCUS_DISPLAY", [0]);
+        Assert.Equal(1u, connection.ReadFocus().ScalingMode);
+        _ = XDeleteProperty(
+            game.Display,
+            game.Root,
+            X11Native.XInternAtom(game.Display, GamescopeScalingState.ScalerAtom, 0)
+        );
+        _ = X11Native.XSync(game.Display, 0);
+        SetNumbers(
+            primary.Display,
+            primary.Root,
+            "GAMESCOPE_FOCUS_DISPLAY",
+            name.Chunk(4).Select(chunk => BitConverter.ToUInt32(chunk)).ToArray()
+        );
+        Assert.Null(connection.ReadFocus().ScalingMode); // Primary's old auto request cannot replace observed integer mode.
+        await Task.Delay(20);
+        SetNumbers(game.Display, game.Root, GamescopeScalingState.ScalerAtom, [1]);
+        Assert.Equal(1u, connection.ReadFocus().ScalingMode);
+
+        await game.DisposeAsync();
+        _ = connection.ReadFocus();
+        await using ScalingServer restarted = await ScalingServer.StartAsync(game.Name);
+        SetNumbers(restarted.Display, restarted.Root, GamescopeScalingState.ScalerAtom, [3]);
+        Assert.Null(connection.ReadFocus().ScalingMode);
+        await Task.Delay(20);
+        SetNumbers(restarted.Display, restarted.Root, GamescopeScalingState.ScalerAtom, [4]);
+        Assert.Equal(4u, connection.ReadFocus().ScalingMode);
+    }
+
+    [LibraryImport("libX11.so.6")]
+    private static partial int XDeleteProperty(nint display, nuint window, nuint property);
+
+    private sealed class ScalingServer(Process process, string name, nint display) : IAsyncDisposable
+    {
+        private bool disposed;
+        public string Name { get; } = name;
+        public nint Display { get; private set; } = display;
+        public nuint Root => X11Native.XDefaultRootWindow(Display);
+
+        public static async Task<ScalingServer> StartAsync(string? requested = null)
+        {
+            var info = new ProcessStartInfo("/usr/bin/Xvfb")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                ArgumentList = { "-displayfd", "1", "-screen", "0", "1280x800x24", "-nolisten", "tcp" },
+            };
+            if (requested is not null)
+            {
+                info.ArgumentList.Add(requested);
+            }
+            Process process = Process.Start(info)!;
+            string? number = await process.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            if (!int.TryParse(number, out int parsed))
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                    await process.WaitForExitAsync();
+                }
+                process.Dispose();
+                throw new InvalidOperationException("Private scaling X server did not acknowledge startup.");
+            }
+            string name = ":" + parsed;
+            nint display = nint.Zero;
+            nint pointer = Marshal.StringToCoTaskMemUTF8(name);
+            try
+            {
+                display = X11Native.XOpenDisplay(pointer);
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(pointer);
+            }
+            if (display == nint.Zero)
+            {
+                process.Kill();
+                await process.WaitForExitAsync();
+                process.Dispose();
+                throw new InvalidOperationException("Private scaling X server did not start.");
+            }
+            X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+            nuint root = X11Native.XDefaultRootWindow(display);
+            nuint wm = XCreateSimpleWindow(display, root, 0, 0, 1, 1, 0, 0, 0);
+            SetNumbers(display, root, "GAMESCOPE_XWAYLAND_SERVER_ID", [requested is null ? 0u : 1u]);
+            SetNumbers(display, root, "GAMESCOPE_PID", [(uint)Environment.ProcessId]);
+            SetNumbers(display, root, "_NET_SUPPORTING_WM_CHECK", [(uint)wm], 33);
+            SetNumbers(display, wm, "_NET_SUPPORTING_WM_CHECK", [(uint)wm], 33);
+            _ = XStoreName(display, wm, "steamcompmgr");
+            _ = X11Native.XSync(display, 0);
+            return new ScalingServer(process, name, display);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (disposed)
+            {
+                return;
+            }
+            disposed = true;
+            if (Display != nint.Zero)
+            {
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(Display);
+                _ = X11Native.XCloseDisplay(Display);
+                Display = nint.Zero;
+            }
+            if (!process.HasExited)
+            {
+                process.Kill();
+                await process.WaitForExitAsync();
+            }
+            process.Dispose();
+        }
+    }
+
     [Fact]
     public void DecodesPackedNativeLongValuesAndIgnoresUpstreamTrailingGarbage()
     {
@@ -174,7 +319,10 @@ public sealed partial class GamescopeX11ConnectionTests
             Assert.True(platform.Capabilities.UsesGamescopeExternalOverlay);
             var canvas = new CombinedOverlayWindow();
             Assert.False(platform.SetInteractive(canvas, true).IsPrepared);
-            ICombinedOverlayNativeService combined = Assert.IsAssignableFrom<ICombinedOverlayNativeService>(platform);
+            ICombinedOverlayNativeService combined = Assert.IsType<ICombinedOverlayNativeService>(
+                platform,
+                exactMatch: false
+            );
             Assert.False(combined.SetInteractiveRegions(canvas, [new PixelRect(0, 0, 64, 64)]).IsPrepared);
             var editor = new Window();
             Assert.True(platform.Capabilities.SupportsLiveOverlayInteraction);

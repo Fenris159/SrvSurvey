@@ -134,6 +134,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return nativePlatform.SetInteractive(window, interactive);
         }
 
+        bool wasInteractive = interactiveWindows.Contains(window);
         if (interactive)
         {
             interactiveWindows.Add(window);
@@ -149,6 +150,12 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
         entry.Presenter.IsHitTestVisible = interactive && registry.ShouldPresent(window);
         OverlayInteractionResult result = ApplyHostInputRegion();
+        if (interactive && (!result.IsPrepared || !result.IsInteractive) && !wasInteractive)
+        {
+            interactiveWindows.Remove(window);
+            entry.Presenter.IsHitTestVisible = false;
+            _ = ApplyHostInputRegion(force: true);
+        }
         return new OverlayInteractionResult(result.IsPrepared, interactive && result.IsInteractive, result.Status);
     }
 
@@ -377,8 +384,9 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
 
         OverlayInteractionResult result = nativeCombined.SetInteractiveRegions(window, regions);
-        appliedInputRegions = regions;
-        appliedInputResult = result;
+        bool applied = result.IsPrepared && result.IsInteractive == (regions.Length > 0);
+        appliedInputRegions = applied ? regions : [];
+        appliedInputResult = applied ? result : null;
         return result;
     }
 

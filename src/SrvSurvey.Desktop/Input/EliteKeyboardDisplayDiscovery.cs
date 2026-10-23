@@ -22,17 +22,27 @@ internal static class EliteKeyboardDisplayDiscovery
 
     /// <summary>Prefers the focused game and then a verified desktop or bridge mapping on the overlay monitor.</summary>
     public static EliteKeyboardDisplay? ReadCurrent(PixelRect? overlayMonitor) =>
-        Read(
+        ReadForHost(
             "/proc",
-            context: new KeyboardDisplayContext(
+            new KeyboardDisplayContext(
                 overlayMonitor,
                 X11GameWindowTracker.ReadDesktopWindows(),
                 GamescopeGameWindowBridge.ReadAll(
                     Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR"),
                     X11OverlayInteractionMarker.TryReadProcessStartTime
                 )
-            )
+            ),
+            GamescopeOverlaySession.ReadCurrentFocusedDisplay
         );
+
+    internal static EliteKeyboardDisplay? ReadForHost(
+        string procDirectory,
+        KeyboardDisplayContext context,
+        Func<string?> readFocusedDisplay
+    )
+    {
+        return Read(procDirectory, context: context, preferredDisplay: readFocusedDisplay());
+    }
 
     /// <summary>Checks native Wayland and X11 Elite processes even when they have no accessible DISPLAY.</summary>
     public static bool IsGameRunning() => Read("/proc", requireDisplay: false) is not null;

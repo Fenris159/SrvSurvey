@@ -5,6 +5,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Threading;
 using SrvSurvey.Desktop;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.GamescopeSmoke;
@@ -35,6 +36,20 @@ internal static class Program
             .StartWithClassicDesktopLifetime(args);
     }
 
+    internal static void VerifyKeyboardDisplay(GameWindowSnapshot game)
+    {
+        if (game.IsVisible && GamescopeOverlaySession.ReadCurrentFocusedDisplay() is string focusedDisplay)
+        {
+            EliteKeyboardDisplay? keyboard = EliteKeyboardDisplayDiscovery.ReadCurrent();
+            if (keyboard is null || !GamescopeExternalGameWindowTracker.SameDisplay(keyboard.Display, focusedDisplay))
+            {
+                throw new InvalidOperationException(
+                    "Keyboard discovery did not select Gamescope's focused game display."
+                );
+            }
+        }
+    }
+
     /// <summary>Samples the production tracker and verifies the selected overlay and capture path.</summary>
     private static void RunTracking(bool desktop)
     {
@@ -61,6 +76,7 @@ internal static class Program
                 throw new InvalidOperationException("Only snapshot commands are supported.");
             }
             GameWindowSnapshot game = tracker.GetSnapshot();
+            VerifyKeyboardDisplay(game);
             Console.WriteLine(
                 JsonSerializer.Serialize(
                     new
@@ -128,6 +144,7 @@ internal sealed class SmokeApplication : Application
         timer.Tick += (_, _) =>
         {
             GameWindowSnapshot game = tracker.GetSnapshot();
+            Program.VerifyKeyboardDisplay(game);
             Console.WriteLine(
                 $"GAME visible={game.IsVisible} foreground={game.IsForeground} bounds={game.ClientBounds} canvas={game.OverlayCanvasBounds}"
             );
@@ -168,7 +185,7 @@ internal sealed class SmokeApplication : Application
             }
             if (ticks == (interactive ? 36 : 30))
             {
-                desktop.Shutdown(game.IsVisible && (!interactive || pointerCount > 0) ? 0 : 2);
+                desktop.Shutdown(game.IsVisible && game.IsForeground && (!interactive || pointerCount > 0) ? 0 : 2);
             }
         };
         timer.Start();

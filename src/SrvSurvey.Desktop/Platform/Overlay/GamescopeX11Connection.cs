@@ -94,7 +94,7 @@ internal sealed partial class GamescopeX11Connection : IDisposable
 
     public GamescopeFocusSnapshot ReadFocus()
     {
-        string? gameDisplay = DecodeDisplay(ReadNumbers("GAMESCOPE_FOCUS_DISPLAY"));
+        string? gameDisplay = ReadFocusedDisplay();
         return new GamescopeFocusSnapshot(
             gameDisplay,
             ReadNumber("GAMESCOPE_FOCUSED_WINDOW") ?? 0,
@@ -106,6 +106,8 @@ internal sealed partial class GamescopeX11Connection : IDisposable
         );
     }
 
+    internal string? ReadFocusedDisplay() => DecodeDisplay(ReadNumbers("GAMESCOPE_FOCUS_DISPLAY"));
+
     private uint? ReadScalingMode(string? gameDisplay)
     {
         if (!scalingInitialized || gameScalingName != gameDisplay)
@@ -116,7 +118,43 @@ internal sealed partial class GamescopeX11Connection : IDisposable
             GamescopeScalingState.ReadStartupMode("/proc", scalingIdentity?.ProcessId)
         );
         SubscribeScaling();
-        if (gameScalingName != gameDisplay)
+        bool attached = AttachGameScaling(gameDisplay);
+        List<GamescopeScalingRequest> requests = ReadScalingRequests();
+        requests.AddRange(gameScaling?.ReadScalingRequests() ?? []);
+        if (!scalingInitialized || attached)
+        {
+            // Newly subscribed servers retain values but no historical cross-server ordering.
+            // Include anything queued during subscription before accepting a fresh command.
+            IEnumerable<uint> existing = ReadExistingScalingRequests()
+                .Concat(gameScaling?.ReadExistingScalingRequests() ?? [])
+                .Concat(requests.Select(request => request.Mode));
+            if (scalingInitialized)
+            {
+                scaling.ReconcileSubscription(existing);
+            }
+            else
+            {
+                scaling.Initialize(existing);
+            }
+            scalingInitialized = true;
+        }
+        else
+        {
+            scaling.Observe(requests);
+        }
+        if (scaling.Mode is null && !reportedUnknownScaling)
+        {
+            Trace.TraceWarning(
+                "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays."
+            );
+        }
+        reportedUnknownScaling = scaling.Mode is null;
+        return scaling.Mode;
+    }
+
+    private bool AttachGameScaling(string? gameDisplay)
+    {
+        if (gameScalingName != gameDisplay || gameScaling is { IsAlive: false })
         {
             gameScaling?.Dispose();
             gameScaling = null;
@@ -134,26 +172,14 @@ internal sealed partial class GamescopeX11Connection : IDisposable
             {
                 gameScaling = candidate;
                 gameScaling.SubscribeScaling();
+                return true;
             }
             else
             {
                 candidate?.Dispose();
             }
         }
-        if (!scalingInitialized)
-        {
-            scaling.Initialize(ReadExistingScalingRequests().Concat(gameScaling?.ReadExistingScalingRequests() ?? []));
-            scalingInitialized = true;
-        }
-        scaling.Observe(ReadScalingRequests().Concat(gameScaling?.ReadScalingRequests() ?? []));
-        if (scaling.Mode is null && !reportedUnknownScaling)
-        {
-            Trace.TraceWarning(
-                "Gamescope scaling state is unknown. Select a scaling mode again in Steam to restore accurately placed overlays."
-            );
-        }
-        reportedUnknownScaling = scaling.Mode is null;
-        return scaling.Mode;
+        return false;
     }
 
     private void SubscribeScaling()

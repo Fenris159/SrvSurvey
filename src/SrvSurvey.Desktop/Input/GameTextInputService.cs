@@ -17,9 +17,18 @@ public sealed record GameTextInputResult(bool Succeeded, string Status);
 
 public static class GameTextInputService
 {
-    public static IGameTextInputService CreateCurrent()
+    public static IGameTextInputService CreateCurrent() =>
+        CreateForCapabilities(OverlayPlatformCapabilities.DetectCurrent());
+
+    internal static IGameTextInputService CreateForCapabilities(OverlayPlatformCapabilities capabilities)
     {
-        OverlayHostKind host = OverlayPlatformCapabilities.DetectCurrent().Host;
+        if (capabilities.UsesGamescopeExternalOverlay)
+        {
+            return new UnavailableGameTextInputService(
+                "Galaxy Map text entry is unavailable in Gamescope because the overlay and game use separate X11 displays."
+            );
+        }
+        OverlayHostKind host = capabilities.Host;
         if (host == OverlayHostKind.Windows || OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             return new SharpHookGameTextInputService();

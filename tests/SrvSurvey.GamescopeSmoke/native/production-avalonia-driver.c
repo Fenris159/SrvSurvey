@@ -17,6 +17,13 @@
 #include <time.h>
 #include <unistd.h>
 
+static void stop_child(pid_t child) {
+    if (child > 0) {
+        kill(child, SIGTERM);
+        waitpid(child, NULL, 0);
+    }
+}
+
 static void cardinal(Display *d, Window w, const char *name,
                      unsigned long value) {
     XChangeProperty(d, w, XInternAtom(d, name, False), XA_CARDINAL, 32,
@@ -49,14 +56,19 @@ static void paint(Display *d, Picture p, int marker) {
 static int shot(const char *path) {
     unlink(path);
     pid_t pid = fork();
+    if (pid < 0) {
+        perror("fork screenshot");
+        return 1;
+    }
     if (pid == 0) {
         const char *client = getenv("SCREENSHOT_CLIENT");
         if (client)
             execl(client, "screenshot-client", path, NULL);
         _exit(125);
     }
-    int status;
-    waitpid(pid, &status, 0);
+    int status = 0;
+    if (waitpid(pid, &status, 0) != pid)
+        return 1;
     if (!WIFEXITED(status) || WEXITSTATUS(status))
         return 1;
     for (int i = 0; i < 150; i++) {
@@ -105,11 +117,15 @@ static void info(Display *d, Window own, Window foreign) {
     const char *ctl = getenv("GAMESCOPECTL");
     if (ctl) {
         pid_t child = fork();
+        if (child < 0) {
+            perror("fork focus info");
+            return;
+        }
         if (child == 0) {
             execl(ctl, "gamescopectl", "focus_info", NULL);
             _exit(125);
         }
-        int status;
+        int status = 0;
         waitpid(child, &status, 0);
     }
 }
@@ -340,6 +356,10 @@ int main(int argc, char **argv) {
     snprintf(executable, sizeof executable, "%s/EliteDangerous64.exe",
              output_directory);
     pid_t game = fork();
+    if (game < 0) {
+        perror("fork game");
+        return 2;
+    }
     if (!game) {
         setenv("PRIMARY_DISPLAY", primary, 1);
         setenv("DISPLAY", game_display, 1);
@@ -348,13 +368,21 @@ int main(int argc, char **argv) {
     }
     snprintf(executable, sizeof executable, "%s/steam", output_directory);
     pid_t steam = fork();
+    if (steam < 0) {
+        perror("fork Steam");
+        stop_child(game);
+        return 2;
+    }
     if (!steam) {
         execl(executable, executable, "--steam", NULL);
         _exit(125);
     }
     Display *d = XOpenDisplay(primary);
-    if (!d)
+    if (!d) {
+        stop_child(game);
+        stop_child(steam);
         return 2;
+    }
     Picture foreign_picture;
     Window foreign = argb(d, "Simulated full-opacity inactive Steam overlay",
                           &foreign_picture);
@@ -370,9 +398,18 @@ int main(int argc, char **argv) {
     fflush(stdout);
     char path[512];
     snprintf(path, sizeof path, "%s/before-app.png", output_directory);
-    if (shot(path))
-        return 7;
-    pid_t app = fork();
+    pid_t app = 0;
+    int result = 0;
+    if (shot(path)) {
+        result = 7;
+        goto cleanup;
+    }
+    app = fork();
+    if (app < 0) {
+        perror("fork Avalonia");
+        result = 2;
+        goto cleanup;
+    }
     if (!app) {
         snprintf(path, sizeof path, "%s/avalonia.log", output_directory);
         int log = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
@@ -384,7 +421,6 @@ int main(int argc, char **argv) {
         execlp("dotnet", "dotnet", dll, "--interactive", NULL);
         _exit(125);
     }
-    int result = 0;
     if (!await_log("GAME visible=", 6)) {
         result = 3;
         goto cleanup;
@@ -449,14 +485,9 @@ cleanup:
         phase(d, foreign, "disposed");
     printf("PRODUCTION_RESULT %d\n", result);
     fflush(stdout);
-    if (app) {
-        kill(app, SIGTERM);
-        waitpid(app, NULL, 0);
-    }
-    kill(game, SIGTERM);
-    kill(steam, SIGTERM);
-    waitpid(game, NULL, 0);
-    waitpid(steam, NULL, 0);
+    stop_child(app);
+    stop_child(game);
+    stop_child(steam);
     XRenderFreePicture(d, foreign_picture);
     XDestroyWindow(d, foreign);
     XCloseDisplay(d);
