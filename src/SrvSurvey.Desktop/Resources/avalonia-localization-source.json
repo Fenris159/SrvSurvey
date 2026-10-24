@@ -17371,6 +17371,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Direct target",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Directories",
     "IsFormat": false,
     "SourceKinds": [
@@ -17587,7 +17595,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
-    "Text": "Discovered{0} on {1}",
+    "Text": "Discovered{0}{1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -32948,6 +32956,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
+    "Text": "Material Trader - Encoded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35002,6 +35018,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "NavRoute",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "NavRouteClear",
     "IsFormat": false,
     "SourceKinds": [
@@ -35243,14 +35267,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
-    "Text": "Neutron",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
     "Text": "Neutron Plotter",
     "IsFormat": false,
     "SourceKinds": [
@@ -35273,6 +35289,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "Neutron stop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "New",
@@ -35465,14 +35489,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FiregroupsView.axaml"
-  },
-  {
-    "Text": "Next hop",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Next incomplete suffix in the current boxel.",
@@ -41592,6 +41608,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Plotted route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Plugin source",
     "IsFormat": false,
     "SourceKinds": [
@@ -46650,6 +46674,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "Refuel before continuing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "Refuel destinations must also be listed as route destinations.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51285,14 +51317,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "Scoopable",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Scoopable star",
@@ -67063,14 +67087,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Use boost on B \u2192 C",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
     "Text": "Use compact/scrolling commodities list",
     "IsFormat": false,
     "SourceKinds": [
@@ -67189,6 +67205,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Use neutron boost for the following jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Use one of the five original Guardian plotter sizes.",
@@ -69196,14 +69220,6 @@
   },
   {
     "Text": "Waypoint A",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "Waypoint B",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -71948,6 +71964,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "direct-target",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "direction",
     "IsFormat": false,
     "SourceKinds": [
@@ -72626,6 +72650,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "followed-route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "foot",
@@ -74196,6 +74228,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "neutron-stop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "new:{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -74442,6 +74482,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
+  },
+  {
+    "Text": "on {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
     "Text": "on-foot",
@@ -74746,6 +74794,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "plotted-route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "plotter",

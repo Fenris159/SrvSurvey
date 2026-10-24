@@ -6,6 +6,59 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayEditorPreviewCatalogTests
 {
+    /// <summary>Prevents editor-only jump guidance rows that the live overlay never produces.</summary>
+    [Fact]
+    public void JumpInfoPreviewUsesLiveDetailRows()
+    {
+        using JumpInfoOverlayViewModel preview = Assert.IsType<JumpInfoOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotJumpInfo")
+        );
+        using JumpInfoViewModel jump = preview.JumpInfo;
+
+        Assert.Contains(jump.DetailLines, line => line.Label == "Followed route");
+        Assert.DoesNotContain(jump.DetailLines, line => line.Label is "Next hop" or "Neutron" or "Scoopable");
+        Assert.Empty(jump.DataStatus);
+    }
+
+    /// <summary>Uses the live star class and followed-hop flags for each editor scenario.</summary>
+    [Theory]
+    [InlineData(0, "K", true, false, true)]
+    [InlineData(1, "N", false, true, true)]
+    [InlineData(2, "K", false, false, true)]
+    [InlineData(3, "K", false, false, false)]
+    public void JumpInfoPreviewGuidanceMatchesItsRoute(
+        int state,
+        string starClass,
+        bool refuel,
+        bool neutron,
+        bool hasRoute
+    )
+    {
+        using JumpInfoOverlayViewModel preview = Assert.IsType<JumpInfoOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotJumpInfo", state)
+        );
+        using JumpInfoViewModel jump = preview.JumpInfo;
+
+        Assert.True(jump.PendingSummaryLoad.IsCompletedSuccessfully);
+        Assert.True(jump.HasDiscoveryText);
+        Assert.Contains("Discovered by CMDR Raven", jump.DiscoveryText);
+        Assert.Equal("STAR CLASS " + starClass, jump.StarClass);
+        Assert.Equal(starClass == "K", jump.IsScoopableStarClass);
+        Assert.Equal(refuel, jump.HasRefuelGuidance);
+        Assert.Equal(neutron, jump.HasNeutronGuidance);
+        Assert.Equal(hasRoute, jump.HasRouteLegs);
+        Assert.Equal(refuel || neutron, jump.DetailLines.Any(line => line.Label == "Followed route"));
+        string expectedProgress = state switch
+        {
+            0 or 1 => "HOP 2 / 3",
+            2 => "JUMP 2 OF 3",
+            _ => "DIRECT TARGET",
+        };
+        Assert.Equal(expectedProgress, jump.JumpProgress);
+        Assert.Equal(hasRoute ? "120.0 LY" : "40.0 LY", jump.TotalDistance);
+        Assert.Empty(jump.DataStatus);
+    }
+
     /// <summary>
     /// Checks that carrier preview shows jump based estimated time remaining.
     /// </summary>
