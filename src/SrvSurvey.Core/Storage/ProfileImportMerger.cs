@@ -86,7 +86,20 @@ internal static class ProfileImportMerger
         if (!hasCurrent)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            File.Copy(sourcePath, target);
+            if (string.Equals(relativePath, "settings.json", StringComparison.OrdinalIgnoreCase))
+            {
+                byte[] sourceBytes = await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false);
+                await File.WriteAllBytesAsync(
+                        target,
+                        ExcludeIncomingOverlayOpacity(sourceBytes, relativePath),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                File.Copy(sourcePath, target);
+            }
             return;
         }
         byte[]? merged = await MergeFileAsync(
@@ -102,6 +115,30 @@ internal static class ProfileImportMerger
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await File.WriteAllBytesAsync(target, merged, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>Keeps legacy opacity out of activation without changing the verified raw source backup.</summary>
+    private static byte[] ExcludeIncomingOverlayOpacity(byte[] sourceBytes, string relativePath)
+    {
+        if (!string.Equals(relativePath, "settings.json", StringComparison.OrdinalIgnoreCase))
+        {
+            return sourceBytes;
+        }
+        try
+        {
+            if (
+                JsonNode.Parse(sourceBytes, documentOptions: DocumentOptions) is JsonObject settings
+                && settings.Remove("plotterOpacity")
+            )
+            {
+                return JsonSerializer.SerializeToUtf8Bytes(settings, IndentedJson);
+            }
+        }
+        catch (JsonException)
+        {
+            // Preserve unreadable shared data under the existing compatibility policy.
+        }
+        return sourceBytes;
     }
 
     private static bool HasFileAncestor(
@@ -140,7 +177,10 @@ internal static class ProfileImportMerger
         }
         try
         {
-            byte[] sourceBytes = await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false);
+            byte[] sourceBytes = ExcludeIncomingOverlayOpacity(
+                await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false),
+                relativePath
+            );
             byte[] currentBytes = await File.ReadAllBytesAsync(currentPath, cancellationToken).ConfigureAwait(false);
             if (
                 JsonNode.Parse(currentBytes, documentOptions: DocumentOptions) is not JsonObject current

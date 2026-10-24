@@ -27891,7 +27891,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
+    "Text": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -27899,7 +27899,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
+    "Text": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -57876,7 +57876,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/SurfaceMiningSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ProfileImportUiSettingsPolicy.cs"
   },
   {
     "Text": "SurfaceMiningRigEnabled",
@@ -69200,7 +69200,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WaylandCaptureSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ProfileImportUiSettingsPolicy.cs"
   },
   {
     "Text": "WaylandCaptureCard",

@@ -1725,16 +1725,16 @@ public sealed class MainWindowViewModelTests
             Assert.Contains("Profile import:", await File.ReadAllTextAsync(applicationLog.CurrentLogPath));
             Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
-            Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
+            Assert.Contains("Translated 1 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
-            Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
             Assert.Equal(currentLayout, await File.ReadAllTextAsync(Path.Combine(data, "plotters.json")));
             Assert.Equal(
                 currentLayout,
                 await File.ReadAllTextAsync(Path.Combine(paths.OverlaySettingsDirectory, "plotters.json"))
             );
-            Assert.Contains("Overlay layouts were skipped", viewModel.ProfileStatusMessage);
+            Assert.Contains("Overlay settings and layouts were skipped", viewModel.ProfileStatusMessage);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
@@ -2272,11 +2272,11 @@ public sealed class MainWindowViewModelTests
             Assert.True(model.HasCompletedLegacyImport, model.ProfileStatusMessage);
             Assert.True(restarted, model.ProfileStatusMessage);
             Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
-            Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
             Assert.Empty(Directory.EnumerateFiles(paths.DataDirectory, "plotters.json", SearchOption.AllDirectories));
             string backup = Directory.GetDirectories(model.ProfileBackupDirectory, "profile-import-*").Single();
             Assert.True(File.Exists(Path.Combine(backup, "incoming-cross-platform-ui.json")));
-            Assert.Contains("Overlay layouts were skipped", model.ProfileStatusMessage);
+            Assert.Contains("Overlay settings and layouts were skipped", model.ProfileStatusMessage);
         }
         finally
         {

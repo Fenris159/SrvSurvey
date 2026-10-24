@@ -10,6 +10,10 @@ SteamOS and Gamescope overlay support.
   intact Windows profiles whose equivalent folder names use different casing,
   such as `routes` and `Routes`. File contents are still verified before the
   imported profile is activated, and recovery backups remain available.
+- **Overlay settings during profile import:** Imports now preserve current
+  overlay visibility, opacity, scale, streaming, VR, and shortcut settings as well as
+  layouts. Unsaved settings retain XP defaults instead of taking disabled
+  visibility flags from an original SrvSurvey profile.
 - **Downloaded Codex images:** Imports skip the downloadable image cache,
   reducing unnecessary copying and hashing. Personal flora photos and existing
   XP caches are preserved. Imported image preferences no longer redirect XP to

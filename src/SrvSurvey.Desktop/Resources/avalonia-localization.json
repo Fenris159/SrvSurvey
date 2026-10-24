@@ -13901,12 +13901,12 @@
       "translation": "Die UI-Einstellungen des aktuellen Formats wurden importiert."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} Verifizierte Backups: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "Importierte {0}-Dateien im aktuellen Format, prüfsummenverifizierte {1}-Bytes, beibehaltene nur lokale {2}-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Einstellungen und -Layouts wurden übersprungen; die aktuellen Einstellungen und Layouts wurden beibehalten. {4} Verifizierte Backups: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Layouts wurden übersprungen; Die aktuellen Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Importierte {0}-Legacy-Dateien, prüfsummenverifizierte {1}-Bytes, beibehaltene {2}-Nur-Aktual-Dateien und aufgezeichnete {3}-Pfadkollisionen. Overlay-Einstellungen und -Layouts wurden übersprungen; die aktuellen Einstellungen und Layouts wurden beibehalten. {4} {5}Verifizierte Backups: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -53663,12 +53663,12 @@
       "translation": "Se importó la configuración de la interfaz de usuario del formato actual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} Copias de seguridad verificadas: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "Se importaron archivos de formato actual {0}, bytes de {1} verificados con suma de comprobación, se retuvieron archivos {2} solo locales y se registraron colisiones de rutas de {3}. Se omitieron los ajustes y diseños de las superposiciones; se conservaron los ajustes y diseños actuales. {4} Copias de seguridad verificadas: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron los diseños superpuestos; Se mantuvieron los diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Se importaron archivos heredados {0}, bytes {1} verificados con suma de comprobación, archivos {2} retenidos solo actuales y colisiones de rutas {3} registradas. Se omitieron los ajustes y diseños de las superposiciones; se conservaron los ajustes y diseños actuales. {4} {5}Copias de seguridad verificadas: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -93425,12 +93425,12 @@
       "translation": "Importation des paramètres d'interface utilisateur au format actuel."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} Sauvegardes vérifiées : {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "Fichiers au format actuel {0} importés, octets {1} vérifiés par somme de contrôle, fichiers locaux uniquement {2} conservés et collisions de chemin {3} enregistrées. Les paramètres et dispositions des superpositions ont été ignorés ; les paramètres et dispositions actuels ont été conservés. {4} Sauvegardes vérifiées : {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les mises en page de superposition ont été ignorées ; les dispositions actuelles ont été conservées. {4} {5}Asauvegardes vérifiées : {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Fichiers hérités {0} importés, octets {1} vérifiés par somme de contrôle, fichiers actuels {2} conservés et collisions de chemin {3} enregistrées. Les paramètres et dispositions des superpositions ont été ignorés ; les paramètres et dispositions actuels ont été conservés. {4} {5}Asauvegardes vérifiées : {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -133187,12 +133187,12 @@
       "translation": "Importou as configurações da interface do usuário no formato atual."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} Backups verificados: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "Arquivos de formato atual {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente locais retidos e colisões de caminho {3} registradas. As configurações e os layouts de sobreposição foram ignorados; as configurações e os layouts atuais foram mantidos. {4} Backups verificados: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. Os layouts de sobreposição foram ignorados; os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Arquivos legados {0} importados, bytes {1} verificados por soma de verificação, arquivos {2} somente atuais retidos e colisões de caminho {3} registradas. As configurações e os layouts de sobreposição foram ignorados; as configurações e os layouts atuais foram mantidos. {4} {5}Backups verificados: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -172949,12 +172949,12 @@
       "translation": "Импортированы настройки пользовательского интерфейса текущего формата."
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} Проверенные резервные копии: {5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "Импортированы файлы текущего формата {0}, байты {1} с проверкой контрольной суммы, сохранены локальные файлы {2} и записаны конфликты путей {3}. Настройки и макеты оверлеев были пропущены; текущие настройки и макеты сохранены. {4} Проверенные резервные копии: {5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Макеты наложения были пропущены; текущие макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "Импортированы устаревшие файлы {0}, байты {1} с проверкой контрольной суммы, сохранены только текущие файлы {2} и записаны конфликты путей {3}. Настройки и макеты оверлеев были пропущены; текущие настройки и макеты сохранены. {4} {5}Проверенные резервные копии: {6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -212711,12 +212711,12 @@
       "translation": "导入当前格式的 UI 设置。"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} 已验证的备份：{5}"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "导入 {0} 当前格式文件，校验和验证 {1} 字节，保留 {2} 仅限本地文件，并记录 {3} 路径冲突。已跳过导入的覆盖层设置和布局；保留当前设置和布局。 {4} 已验证的备份：{5}"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。跳过了覆​​盖布局；保留当前布局。 {4} {5}已验证的备份：{6}"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "导入 {0} 旧文件、校验和验证的 {1} 字节、保留 {2} 仅当前文件，并记录 {3} 路径冲突。已跳过导入的覆盖层设置和布局；保留当前设置和布局。 {4} {5}已验证的备份：{6}"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",
@@ -252473,12 +252473,12 @@
       "translation": "* IMPORTED THE CURRENT-FORMAT UI SETTINGS. >>>!"
     },
     {
-      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} Verified backups: {5}",
-      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} VERIFIED BACKUPS: {5} >>>!"
+      "source": "Imported {0} current-format files, checksum-verified {1} bytes, retained {2} local-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} Verified backups: {5}",
+      "translation": "* IMPORTED {0} CURRENT-FORMAT FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} LOCAL-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY SETTINGS AND LAYOUTS WERE SKIPPED; CURRENT SETTINGS AND LAYOUTS WERE KEPT. {4} VERIFIED BACKUPS: {5} >>>!"
     },
     {
-      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay layouts were skipped; current layouts were kept. {4} {5}Verified backups: {6}",
-      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY LAYOUTS WERE SKIPPED; CURRENT LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
+      "source": "Imported {0} legacy files, checksum-verified {1} bytes, retained {2} current-only files, and recorded {3} path collisions. Overlay settings and layouts were skipped; current settings and layouts were kept. {4} {5}Verified backups: {6}",
+      "translation": "* IMPORTED {0} LEGACY FILES, CHECKSUM-VERIFIED {1} BYTES, RETAINED {2} CURRENT-ONLY FILES, AND RECORDED {3} PATH COLLISIONS. OVERLAY SETTINGS AND LAYOUTS WERE SKIPPED; CURRENT SETTINGS AND LAYOUTS WERE KEPT. {4} {5}VERIFIED BACKUPS: {6} >>>!"
     },
     {
       "source": "Imported {0} reports; existing sessions retained.",

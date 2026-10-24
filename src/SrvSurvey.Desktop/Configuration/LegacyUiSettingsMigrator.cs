@@ -50,7 +50,12 @@ public sealed class LegacyUiSettingsMigrator
             JsonObject existing = ReadExistingUiSettings(manifest, paths.UiSettingsPath, store);
             if (HasMigrationMarker(existing, manifest))
             {
-                return MigrateNewPreferencesIfMissing(legacy, existing, store);
+                return MigrateNewPreferencesIfMissing(
+                    legacy,
+                    existing,
+                    store,
+                    preserveOverlayPreferences: manifest.Version >= 4
+                );
             }
 
             string expectedBackupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
@@ -65,13 +70,24 @@ public sealed class LegacyUiSettingsMigrator
                 // imported document and only fill preferences introduced
                 // since it was written.
                 string? completedImportBackupPath = File.Exists(expectedBackupPath) ? expectedBackupPath : null;
-                return MigrateNewPreferencesIfMissing(legacy, existing, store, manifest, completedImportBackupPath);
+                return MigrateNewPreferencesIfMissing(
+                    legacy,
+                    existing,
+                    store,
+                    manifest,
+                    completedImportBackupPath,
+                    preserveOverlayPreferences: manifest.Version >= 4
+                );
             }
 
             string? backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
             int mappedCount = 0;
             store.Update(root =>
             {
+                if (manifest.Version >= 4)
+                {
+                    root.Clear();
+                }
                 root["Version"] = 1;
                 mappedCount += MapTheme(legacy, root);
                 mappedCount += MapSection(
@@ -308,12 +324,7 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapInput(legacy, root);
                 if (manifest.Version >= 4)
                 {
-                    JsonObject merged = ProfileJsonMerge.MergeMissing(existing, root);
-                    root.Clear();
-                    foreach (KeyValuePair<string, JsonNode?> property in merged)
-                    {
-                        root[property.Key] = property.Value?.DeepClone();
-                    }
+                    mappedCount = MergeCurrentPreferences(existing, root);
                 }
                 WriteMigrationMarker(root, manifest, mappedCount);
             });
@@ -359,6 +370,20 @@ public sealed class LegacyUiSettingsMigrator
                 )
             : store.Load();
 
+    /// <summary>Keeps current overlay sections, including unsaved defaults, while adding portable preferences.</summary>
+    private static int MergeCurrentPreferences(JsonObject existing, JsonObject incoming)
+    {
+        ProfileImportUiSettingsPolicy.ExcludeOverlays(incoming);
+        int mappedCount = ProfileImportUiSettingsPolicy.CountPreferences(incoming);
+        JsonObject merged = ProfileJsonMerge.MergeMissing(existing, incoming);
+        incoming.Clear();
+        foreach (KeyValuePair<string, JsonNode?> property in merged)
+        {
+            incoming[property.Key] = property.Value?.DeepClone();
+        }
+        return mappedCount;
+    }
+
     private static int MapTheme(JsonObject legacy, JsonObject target)
     {
         if (!TryGetBoolean(legacy, "darkTheme", out bool dark))
@@ -382,7 +407,8 @@ public sealed class LegacyUiSettingsMigrator
         JsonObject existing,
         UiSettingsDocumentStore store,
         ProfileImportManifest? manifest = null,
-        string? backupPath = null
+        string? backupPath = null,
+        bool preserveOverlayPreferences = false
     )
     {
         var mappings = new (string Section, string Legacy, string Current)[]
@@ -398,15 +424,18 @@ public sealed class LegacyUiSettingsMigrator
         };
         (string Section, string Legacy, string Current)[] pending = mappings
             .Where(mapping =>
-                legacy[mapping.Legacy] is not null
+                (!preserveOverlayPreferences || !ProfileImportUiSettingsPolicy.IsOverlaySection(mapping.Section))
+                && legacy[mapping.Legacy] is not null
                 && (existing[mapping.Section] is not JsonObject section || !section.ContainsKey(mapping.Current))
             )
             .ToArray();
         bool shouldMapColor =
-            legacy["inferColor"] is JsonObject
+            !preserveOverlayPreferences
+            && legacy["inferColor"] is JsonObject
             && (existing[FirstFootfallInferenceSection] is not JsonObject inference || !inference.ContainsKey("Color"));
         bool shouldMapOverlayScale =
-            legacy["plotterScale"] is not null
+            !preserveOverlayPreferences
+            && legacy["plotterScale"] is not null
             && (existing["OverlayScale"] is not JsonObject overlayScale || !overlayScale.ContainsKey("Index"));
         if (pending.Length == 0 && !shouldMapColor && !shouldMapOverlayScale && manifest is null)
         {

@@ -30,6 +30,8 @@ public static class CrossPlatformUiSettingsImporter
 
         byte[] importedBytes = await File.ReadAllBytesAsync(source, cancellationToken).ConfigureAwait(false);
         ValidateSettings(importedBytes);
+        JsonObject incoming = JsonNode.Parse(importedBytes)!.AsObject();
+        ProfileImportUiSettingsPolicy.ExcludeOverlays(incoming);
 
         string destinationDirectory =
             Path.GetDirectoryName(destination)
@@ -44,6 +46,7 @@ public static class CrossPlatformUiSettingsImporter
             )
             .ConfigureAwait(false);
         string? backupPath = null;
+        byte[] filteredBytes = JsonSerializer.SerializeToUtf8Bytes(incoming);
         if (File.Exists(destination))
         {
             backupPath = Path.Combine(backupDirectory, LegacyUiSettingsMigrator.BackupFileName);
@@ -52,12 +55,12 @@ public static class CrossPlatformUiSettingsImporter
             byte[] currentBytes = await File.ReadAllBytesAsync(backupPath, cancellationToken).ConfigureAwait(false);
             ValidateSettings(currentBytes);
             JsonObject current = JsonNode.Parse(currentBytes)!.AsObject();
-            JsonObject incoming = JsonNode.Parse(importedBytes)!.AsObject();
             JsonObject merged = ProfileJsonMerge.MergeMissing(current, incoming);
-            importedBytes = JsonNode.DeepEquals(current, merged)
+            filteredBytes = JsonNode.DeepEquals(current, merged)
                 ? currentBytes
                 : JsonSerializer.SerializeToUtf8Bytes(merged);
         }
+        importedBytes = filteredBytes;
 
         string stagedPath = Path.Combine(destinationDirectory, Path.GetRandomFileName());
         try

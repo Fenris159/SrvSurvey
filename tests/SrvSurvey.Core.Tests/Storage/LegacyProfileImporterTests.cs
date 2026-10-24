@@ -14,6 +14,52 @@ public sealed class LegacyProfileImporterTests : IDisposable
         $"SrvSurvey-profile-importer-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Raw legacy settings must not override current opacity or an unsaved overlay default.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{}")]
+    [InlineData("{\"plotterOpacity\":75}")]
+    [InlineData("{\"plotterOpacity\":0}")]
+    [InlineData("{\"plotterOpacity\":null}")]
+    public async Task ImportExcludesIncomingOpacityAndPreservesCurrentOpacity(string? currentSettings)
+    {
+        string source = Path.Combine(temporaryDirectory, "opacity-source");
+        string destination = Path.Combine(temporaryDirectory, "opacity-current");
+        Directory.CreateDirectory(source);
+        const string incoming = """{"plotterOpacity":0,"futureSetting":true}""";
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), incoming);
+        if (currentSettings is not null)
+        {
+            Directory.CreateDirectory(destination);
+            await File.WriteAllTextAsync(Path.Combine(destination, "settings.json"), currentSettings);
+        }
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        JsonObject activated = Assert.IsType<JsonObject>(
+            JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")))
+        );
+        JsonObject previous = currentSettings is null ? [] : JsonNode.Parse(currentSettings)!.AsObject();
+        Assert.Equal(previous.ContainsKey("plotterOpacity"), activated.ContainsKey("plotterOpacity"));
+        Assert.True(JsonNode.DeepEquals(previous["plotterOpacity"], activated["plotterOpacity"]));
+        Assert.True(activated["futureSetting"]?.GetValue<bool>());
+        Assert.Equal(incoming, await File.ReadAllTextAsync(Path.Combine(source, "settings.json")));
+        Assert.Equal(
+            incoming,
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", "settings.json"))
+        );
+        ProfileInventoryEntry importedEntry = Assert.Single(result.Manifest.GetImportedEntries());
+        ProfileInventoryEntry actual = Assert.Single(
+            (await ProfileInventory.CreateAsync(destination)).Entries,
+            entry => entry.RelativePath == "settings.json"
+        );
+        Assert.Equal(actual.Sha256, importedEntry.Sha256);
+    }
+
     /// <summary>Imports an empty legacy routes directory alongside current routes despite Windows preserving different casing.</summary>
     [Theory]
     [InlineData("routes", "Routes")]

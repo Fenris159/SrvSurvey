@@ -2317,7 +2317,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} local-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + "Overlay layouts were skipped; current layouts were kept. "
+            + "Overlay settings and layouts were skipped; current settings and layouts were kept. "
             + settingsStatus
             + $" Verified backups: {result.BackupDirectory}";
         await AppendProfileImportWarningsAsync(result, warnings);
@@ -2360,7 +2360,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + $"checksum-verified {importedBytes:N0} bytes, "
             + $"retained {retainedFiles:N0} current-only files, and recorded "
             + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
-            + "Overlay layouts were skipped; current layouts were kept. "
+            + "Overlay settings and layouts were skipped; current settings and layouts were kept. "
             + GetSettingsMigrationStatus(settingsMigration)
             + " "
             + GetOrganicMigrationStatus(organicMigration)

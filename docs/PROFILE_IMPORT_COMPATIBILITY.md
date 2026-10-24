@@ -72,7 +72,7 @@ below; raw source files always remain in the verified backup.
 | [`guardian/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/GuardianSiteData.cs), [`human/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/HumanSiteData.cs), and their `legacy` subdirectories | Retained recursively, including Guardian beacons and surveys. Existing activity-specific readers and tests cover their interpretation. |
 | [`F{FID}-colony.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/ColonyData.cs), quest state, bookmarks, caches, and unrecognized files | Retained recursively. `LegacyColonizationProfileStore` and `LegacyQuestStateStore` retain the original formats; unknown files are not discarded. |
 | Downloaded `codexImages/` cache | Excluded before inventory, hashing, backup, and activation. Existing destination caches remain intact. Personal local-flora images are preserved; legacy cache-path and bulk-download preferences are not imported. |
-| [`settings.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/Settings.cs) | Copied unchanged, then compatible preferences are translated by `LegacyUiSettingsMigrator`. Malformed preferences do not overwrite the current UI settings. |
+| [`settings.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/Settings.cs) | Backed up unchanged, then compatible non-overlay preferences are translated by `LegacyUiSettingsMigrator`. Incoming `plotterOpacity` is removed from the activated settings file; current opacity and unsaved defaults are preserved. Other overlay preferences are excluded from UI preference migration. Malformed preferences do not overwrite the current UI settings. |
 | Overlay layout files from original SrvSurvey or XP: shared `plotters.json`, `overlay-*`, `theme.json`, `vr/`, and `commanders/{FID}/overlays/` | Preserved in the verified source backup and excluded from activation for every profile import. Current desktop/VR positions, references, sizes, and calibrations remain unchanged. Fresh profiles use XP defaults. Layout publication, display-frame inference, and pending position migration are not part of profile import. |
 
 The new player/Codex regression compares every imported file with both the
@@ -94,10 +94,18 @@ claims must not resurrect a sale already completed in XP. Retired
 `scannedOrganics` claims are not added to a player that already has the modern
 claim list. New commanders, modes, and files are added.
 
-Current UI preferences also win, while missing compatible preferences can be
-filled. Overlay layouts from every imported client are backed up and skipped,
-including shared layouts and commander-specific overlay directories. Importing
-UI preferences never rewrites current overlay position references. An XP source
+Current UI preferences also win, while missing compatible non-overlay preferences
+can be filled. Both original-client and XP imports exclude incoming overlay
+preferences as well as layout files. Visibility, opacity, scale, panel content, suppression,
+streaming, VR, capture calibration, and shortcut/device settings stay with the
+current installation. Missing settings retain XP defaults; existing explicit
+choices and partial settings sections remain unchanged. This also applies when
+startup resumes a completed import. Colonization delivery recovery records and
+non-overlay service preferences remain eligible for the normal merge.
+
+Overlay layouts from every imported client are backed up and skipped, including
+shared layouts and commander-specific overlay directories. Importing UI
+preferences never rewrites current overlay position references. An XP source
 containing only layout files can still merge its selected adjacent UI preferences
 with an empty data payload; the layout files remain excluded. This keeps
 profile import focused on player/Codex data; native backup and restore remains
@@ -132,6 +140,27 @@ data is kept even when some inputs fail, and `.srv-survey-recovery.json` records
 warning details. Optional-step warnings are also persisted in the destination
 manifest so they and the report location remain visible after restart. Repeated imports are permitted and preserve progress made since
 the previous import; warning-producing imports offer a recovery retry.
+
+## Recovering overlay preferences after an older import
+
+Earlier builds excluded layout files but could still fill missing XP overlay
+preferences with disabled legacy visibility flags. Restarting does not reverse
+those saved preferences. This does not establish that any particular report has
+this cause; the affected installation's settings are needed to confirm it.
+
+Install a build with the overlay-preference import fix before restoring settings.
+The import's verified backup may contain `previous-cross-platform-ui.json`, which
+is the pre-import UI document. With XP closed, retain a copy of the current UI
+file, then restore that backup to the same active commander's
+`cross-platform-ui.json` location. Shared settings live in the config root;
+commander-specific settings live in `commanders/{FID}/` beneath it. Restoring the
+UI document also restores other UI preferences from that moment, so retain the
+current copy for comparison. It does not undo imported player/Codex data. If no
+previous UI document exists, review the overlay switches in Settings or restore
+the desired overlay defaults there. Also review opacity in the overlay position
+editor: older imports could add `plotterOpacity` to the legacy shared settings
+file, which is separate from the UI document. Do not delete the imported
+player-data tree.
 
 ## Operational limits
 
