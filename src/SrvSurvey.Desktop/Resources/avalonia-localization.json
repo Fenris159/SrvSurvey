@@ -33489,6 +33489,10 @@
       "translation": "Verwenden Sie die letzte aktualisierte Zeit von Spansh, nicht von EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Verwenden Sie lokale Pflanzenfotos oder laden Sie biologische Referenzbilder für die Offline-Nutzung herunter."
+    },
+    {
       "source": "Use local time",
       "translation": "Verwenden Sie die Ortszeit"
     },
@@ -33567,10 +33571,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Verwenden Sie die ursprünglichen SrvSurvey-Verknüpfungen, während entweder diese Anwendung oder Elite Dangerous den Fokus hat."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Verwenden Sie den ursprünglichen Namensvertrag für die lokale Flora, behalten Sie einen importierten Bildcache bei oder laden Sie Biologiereferenzen zum Offline-Browsen herunter."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -73223,6 +73223,10 @@
       "translation": "Utilice la hora de la última actualización de Spansh no EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Usa fotos de flora locales o descarga referencias biológicas para consultarlas sin conexión."
+    },
+    {
       "source": "Use local time",
       "translation": "Usar la hora local"
     },
@@ -73301,10 +73305,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Utilice los atajos originales SrvSurvey mientras esta aplicación o Elite Dangerous tengan el foco."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Utilice el contrato de nomenclatura de flora local original, conserve un caché de imágenes importadas o descargue referencias de biología para navegar sin conexión."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -112957,6 +112957,10 @@
       "translation": "Utiliser l'heure de la dernière mise à jour à partir de Spansh et non de EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Utilisez vos photos de flore locales ou téléchargez des références biologiques pour les consulter hors ligne."
+    },
+    {
       "source": "Use local time",
       "translation": "Utiliser l'heure locale"
     },
@@ -113035,10 +113039,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Utilisez les raccourcis SrvSurvey d'origine lorsque cette application ou Elite Dangerous a le focus."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Utilisez le contrat de dénomination original de la flore locale, conservez un cache d'images importé ou téléchargez des références biologiques pour une navigation hors ligne."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -152691,6 +152691,10 @@
       "translation": "Use a hora da última atualização de Spansh e não de EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Use fotos locais de flora ou baixe referências biológicas para consulta offline."
+    },
+    {
       "source": "Use local time",
       "translation": "Usar a hora local"
     },
@@ -152769,10 +152773,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Use os atalhos originais SrvSurvey enquanto este aplicativo ou Elite Dangerous estiver em foco."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Use o contrato original de nomenclatura da flora local, mantenha um cache de imagens importado ou baixe referências biológicas para navegação offline."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -192425,6 +192425,10 @@
       "translation": "Использовать время последнего обновления с Spansh, а не с EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Используйте локальные фотографии флоры или загрузите биологические справочные материалы для просмотра без подключения к сети."
+    },
+    {
       "source": "Use local time",
       "translation": "Используйте местное время"
     },
@@ -192503,10 +192507,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Используйте исходные сочетания клавиш SrvSurvey, пока это приложение или Elite Dangerous находится в фокусе."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Используйте исходный контракт на присвоение имен местной флоре, сохраняйте кэш импортированных изображений или загружайте справочники по биологии для просмотра в автономном режиме."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -232159,6 +232159,10 @@
       "translation": "使用 Spansh 的上次更新时间，而不是 EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "使用本地植物照片，或下载生物参考资料以供离线浏览。"
+    },
+    {
       "source": "Use local time",
       "translation": "使用当地时间"
     },
@@ -232237,10 +232241,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "当此应用程序或 Elite Dangerous 具有焦点时，使用原始 SrvSurvey 快捷方式。"
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "使用原始的本地植物区系命名合同，保留导入的图像缓存，或下载生物学参考文献以供离线浏览。"
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -271893,6 +271893,10 @@
       "translation": "* USE LAST UPDATED TIME FROM SPANSH NOT EDSM >>>!"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "* USE LOCAL FLORA PHOTOS OR DOWNLOAD BIOLOGY REFERENCES FOR OFFLINE BROWSING. >>>!"
+    },
+    {
       "source": "Use local time",
       "translation": "* USE LOCAL TIME >>>!"
     },
@@ -271971,10 +271975,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "* USE THE ORIGINAL SRVSURVEY SHORTCUTS WHILE EITHER THIS APPLICATION OR ELITE DANGEROUS HAS FOCUS. >>>!"
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "* USE THE ORIGINAL LOCAL-FLORA NAMING CONTRACT, RETAIN AN IMPORTED IMAGE CACHE, OR DOWNLOAD BIOLOGY REFERENCES FOR OFFLINE BROWSING. >>>!"
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",

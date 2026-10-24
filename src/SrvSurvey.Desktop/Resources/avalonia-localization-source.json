@@ -67167,6 +67167,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Use local flora photos or download biology references for offline browsing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Use local time",
     "IsFormat": false,
     "SourceKinds": [
@@ -67320,14 +67328,6 @@
   },
   {
     "Text": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"

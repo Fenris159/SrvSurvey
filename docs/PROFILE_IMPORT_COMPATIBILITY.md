@@ -27,6 +27,19 @@ The audit reproduced these selection failures and added regressions:
   containing player data. Discovery and version selection now require a profile
   signature: `settings.json` or a top-level `F*-*.json` file.
 
+Windows verification compares directory identities as sets using Windows path
+rules. An original `routes` directory and an existing XP `Routes` directory can
+therefore merge without their different sort positions causing a false
+"unexpected, missing, or changed files" error. Exact file hashes, missing/extra
+file checks, concurrent-write detection, and rollback remain enforced.
+
+The original `codexImages` download cache is excluded before traversal, hashing,
+backup, and activation. These reference images can be downloaded on demand;
+the original cache is left untouched. Import does not copy the old cache path
+or enable the legacy bulk-download preference. Current XP image preferences
+remain in place, and personal local-flora photos are still imported and their
+paths relocated.
+
 Selecting another XP profile still supports its `cross-platform` directory and
 adjacent `cross-platform-ui.json`, including folder paths with a trailing
 separator. Selecting the active destination explicitly
@@ -58,6 +71,7 @@ below; raw source files always remain in the verified backup.
 | [`routes/{FID}.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/FollowRoute.cs) | Retained; `FollowRouteStore` recognizes the original lowercase directory and compact hop representation. |
 | [`guardian/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/GuardianSiteData.cs), [`human/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/HumanSiteData.cs), and their `legacy` subdirectories | Retained recursively, including Guardian beacons and surveys. Existing activity-specific readers and tests cover their interpretation. |
 | [`F{FID}-colony.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/ColonyData.cs), quest state, bookmarks, caches, and unrecognized files | Retained recursively. `LegacyColonizationProfileStore` and `LegacyQuestStateStore` retain the original formats; unknown files are not discarded. |
+| Downloaded `codexImages/` cache | Excluded before inventory, hashing, backup, and activation. Existing destination caches remain intact. Personal local-flora images are preserved; legacy cache-path and bulk-download preferences are not imported. |
 | [`settings.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/Settings.cs) | Copied unchanged, then compatible preferences are translated by `LegacyUiSettingsMigrator`. Malformed preferences do not overwrite the current UI settings. |
 | Overlay layout files from original SrvSurvey or XP: shared `plotters.json`, `overlay-*`, `theme.json`, `vr/`, and `commanders/{FID}/overlays/` | Preserved in the verified source backup and excluded from activation for every profile import. Current desktop/VR positions, references, sizes, and calibrations remain unchanged. Fresh profiles use XP defaults. Layout publication, display-frame inference, and pending position migration are not part of profile import. |
 

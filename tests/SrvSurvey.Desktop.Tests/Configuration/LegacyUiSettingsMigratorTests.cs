@@ -718,11 +718,30 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
-    [Fact]
-    public async Task ImportedCodexImageDirectoriesMoveWithVerifiedProfile()
+    /// <summary>Imports personal flora photos without relocating downloaded caches or enabling bulk downloads.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportKeepsLocalFloraAndCurrentImagePreferencesWithoutImportingDownloadedCache(
+        bool hasCurrentPreferences
+    )
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-codex-images");
+        string defaultCache = Path.Combine(paths.CacheDirectory, "codex-images");
+        string currentCache = Path.Combine(paths.CacheDirectory, "chosen-images");
+        if (hasCurrentPreferences)
+        {
+            Directory.CreateDirectory(paths.ConfigDirectory);
+            await File.WriteAllTextAsync(
+                paths.UiSettingsPath,
+                new JsonObject
+                {
+                    ["Version"] = 1,
+                    ["CodexImages"] = new JsonObject { ["CacheDirectory"] = currentCache, ["PreDownload"] = true },
+                }.ToJsonString()
+            );
+        }
         string sourceCache = Path.Combine(source, "codexImages");
         string sourceFlora = Path.Combine(source, "local-flora");
         Directory.CreateDirectory(sourceCache);
@@ -747,17 +766,12 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
-        CodexImagePreferences preferences = new CodexImageSettingsStore(
-            paths.UiSettingsPath,
-            paths.CacheDirectory
-        ).Load();
-        Assert.Equal(Path.Combine(paths.DataDirectory, "codexImages"), preferences.CacheDirectory);
+        CodexImagePreferences preferences = new CodexImageSettingsStore(paths.UiSettingsPath, defaultCache).Load();
+        Assert.Equal(hasCurrentPreferences ? currentCache : defaultCache, preferences.CacheDirectory);
         Assert.Equal(Path.Combine(paths.DataDirectory, "local-flora"), preferences.LocalFloraDirectory);
-        Assert.True(preferences.PreDownload);
-        Assert.Equal(
-            [1, 2, 3, 4],
-            await File.ReadAllBytesAsync(Path.Combine(preferences.CacheDirectory, "2310101.jpg"))
-        );
+        Assert.Equal(hasCurrentPreferences, preferences.PreDownload);
+        Assert.False(Directory.Exists(Path.Combine(paths.DataDirectory, "codexImages")));
+        Assert.Equal([1, 2, 3, 4], await File.ReadAllBytesAsync(Path.Combine(sourceCache, "2310101.jpg")));
         Assert.Equal(
             [5, 6, 7, 8],
             await File.ReadAllBytesAsync(Path.Combine(preferences.LocalFloraDirectory!, "aleoida-arcus-yellow.png"))

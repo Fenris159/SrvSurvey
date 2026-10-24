@@ -14,6 +14,87 @@ public sealed class LegacyProfileImporterTests : IDisposable
         $"SrvSurvey-profile-importer-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Imports an empty legacy routes directory alongside current routes despite Windows preserving different casing.</summary>
+    [Theory]
+    [InlineData("routes", "Routes")]
+    [InlineData("Routes", "routes")]
+    public async Task ImportAcceptsRouteDirectoryCasingWithoutLosingCurrentRoutes(
+        string legacyRoutes,
+        string currentRoutes
+    )
+    {
+        string source = Path.Combine(temporaryDirectory, "source");
+        string destination = Path.Combine(temporaryDirectory, "current");
+        Directory.CreateDirectory(Path.Combine(source, legacyRoutes));
+        Directory.CreateDirectory(Path.Combine(source, "guardian"));
+        Directory.CreateDirectory(Path.Combine(source, "systems"));
+        Directory.CreateDirectory(Path.Combine(destination, currentRoutes, "F123"));
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{}");
+        string currentRoute = Path.Combine(currentRoutes, "F123", "route.json");
+        const string savedRoute = """{"systems":["Sol","Achenar"]}""";
+        await File.WriteAllTextAsync(Path.Combine(destination, currentRoute), savedRoute);
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        Assert.Empty(result.Warnings);
+        Assert.Equal(savedRoute, await File.ReadAllTextAsync(Path.Combine(destination, currentRoute)));
+        Assert.Equal(
+            savedRoute,
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "previous-destination", currentRoute))
+        );
+        Assert.True(Directory.Exists(Path.Combine(result.BackupDirectory, "profile", legacyRoutes)));
+        Assert.Equal("{}", await File.ReadAllTextAsync(Path.Combine(destination, "F123-live.json")));
+        Assert.True(File.Exists(Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+    }
+
+    /// <summary>Loads imported service keys through the commander reader while preserving an existing XP key.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportPreservesSavedServiceKeysAndKeepsCurrentKeys(bool hasCurrentKey)
+    {
+        string source = Path.Combine(temporaryDirectory, "keys-source");
+        string destination = Path.Combine(temporaryDirectory, "keys-current");
+        Directory.CreateDirectory(source);
+        const string incoming =
+            """{"fid":"F123","rccApiKey":"synthetic-raven-key","inaraApiKey":"synthetic-inara-key","edsmCommanderName":"Test Commander","edsmApiKey":"synthetic-edsm-key"}""";
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), incoming);
+        if (hasCurrentKey)
+        {
+            Directory.CreateDirectory(destination);
+            await File.WriteAllTextAsync(
+                Path.Combine(destination, "F123-live.json"),
+                """{"inaraApiKey":"current-inara-key"}"""
+            );
+        }
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+        CommanderProfileLoadResult loaded = await new CommanderProfileStore(destination).LoadAsync(
+            "F123",
+            isOdyssey: true
+        );
+
+        Assert.Empty(result.Warnings);
+        Assert.Null(loaded.Error);
+        Assert.NotNull(loaded.Data);
+        Assert.Equal("synthetic-raven-key", loaded.Data.RavenColonialApiKey);
+        Assert.Equal(hasCurrentKey ? "current-inara-key" : "synthetic-inara-key", loaded.Data.InaraApiKey);
+        Assert.Equal("synthetic-edsm-key", loaded.Data.EdsmApiKey);
+        Assert.Equal("Test Commander", loaded.Data.EdsmCommanderName);
+        Assert.Equal(
+            incoming,
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", "F123-live.json"))
+        );
+    }
+
     [Theory]
     [InlineData("F123-codex.json", 0)]
     [InlineData("F123-codex-18.json", 18)]

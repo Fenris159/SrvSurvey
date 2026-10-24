@@ -594,6 +594,7 @@ public sealed class LegacyProfileImporter
         long? TotalByteCount = null
     );
 
+    /// <summary>Verifies the merged directory identities and exact file contents before and after activation.</summary>
     private static async Task VerifyMergedProfileExactAsync(
         string destinationRoot,
         ProfileInventory sourceInventory,
@@ -622,7 +623,7 @@ public sealed class LegacyProfileImporter
             .Order(StringComparer.Ordinal)
             .ToArray();
         if (
-            !expectedDirectories.SequenceEqual(actual.RelativeDirectories, PathComparer)
+            !ProfileInventory.DirectoryPathsMatch(expectedDirectories, actual.RelativeDirectories, PathComparer)
             || !EntriesMatchContent(mergedEntries.Values.ToArray(), actualEntries)
         )
         {
@@ -630,6 +631,7 @@ public sealed class LegacyProfileImporter
         }
     }
 
+    /// <summary>Verifies a complete backup without relying on directory enumeration order.</summary>
     private static async Task VerifyExactProfileAsync(
         string destinationRoot,
         ProfileInventory expected,
@@ -640,8 +642,11 @@ public sealed class LegacyProfileImporter
             .CreateAsync(destinationRoot, cancellationToken)
             .ConfigureAwait(false);
         if (
-            !expected.RelativeDirectories.SequenceEqual(actual.RelativeDirectories, PathComparer)
-            || !EntriesMatchContent(expected.Entries, actual.Entries)
+            !ProfileInventory.DirectoryPathsMatch(
+                expected.RelativeDirectories,
+                actual.RelativeDirectories,
+                PathComparer
+            ) || !EntriesMatchContent(expected.Entries, actual.Entries)
         )
         {
             throw new IOException("A verified profile backup contains unexpected, missing, or changed files.");
@@ -679,6 +684,7 @@ public sealed class LegacyProfileImporter
         }
     }
 
+    /// <summary>Rejects concurrent profile writes while comparing directory identities using platform path rules.</summary>
     private static async Task VerifyInventoryUnchangedAsync(
         string root,
         ProfileInventory expected,
@@ -709,8 +715,11 @@ public sealed class LegacyProfileImporter
         }
 
         if (
-            !expected.RelativeDirectories.SequenceEqual(current.RelativeDirectories, PathComparer)
-            || !EntriesMatch(expected.Entries, current.Entries)
+            !ProfileInventory.DirectoryPathsMatch(
+                expected.RelativeDirectories,
+                current.RelativeDirectories,
+                PathComparer
+            ) || !EntriesMatch(expected.Entries, current.Entries)
         )
         {
             throw new IOException($"{errorMessage}; retry after closing the other instance.");
