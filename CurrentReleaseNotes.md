@@ -1,77 +1,49 @@
-# SrvSurvey-XP 2.1.3.0-rc.71
+# SrvSurvey-XP 2.1.3.0-rc.71.1
 
-RC71 brings the SteamOS and Gamescope overlay support from PR #207 into the
-current release, with clearer Next Jump guidance and a panel that fits its
-content.
+RC71.1 fixes original SrvSurvey profile imports, restores discovery credits in
+Next Jump, and makes mining commodity labels consistent. It builds on RC71's
+SteamOS and Gamescope overlay support.
 
 ## What's changed
 
-### Steam Deck Gaming Mode and Gamescope
-
-- **Run native SrvSurvey-XP alongside Elite through Steam/Proton.** Add the Linux
-  AppImage as a non-Steam game, leave SrvSurvey running, and return to Elite.
-  SrvSurvey verifies the Gamescope compositor and discovers Elite's game display
-  separately. Follow the [Steam Deck Gaming Mode guide](https://github.com/Fenris159/SrvSurvey/blob/1dee430ad5f68455582fa3e1fa7be061afed240c/docs/STEAMOS_GAMING_MODE.md).
-- **Keep gameplay input while using passive panels.** Toggle live overlay
-  interaction when you need to click or reposition a panel. Live mode reserves
-  pointer input across the HUD canvas while keyboard input stays with Elite.
-  Steam and Quick Access menus take input priority; rejected live-mode requests
-  can be retried after the menus close. Enable key chords before assigning the
-  shortcut in Settings → Input.
-- **Follow game focus, scaling, and restarts.** Panels track supported viewport
-  changes and reconnect after game-display interruptions. Keyboard discovery
-  follows the compositor-focused Elite display, including multiple clients.
-  Switching away from a game and returning preserves its known scaling, and
-  overlays stay hidden when native host-focus information is temporarily lost.
-- **Support nested Gamescope on desktop Linux.** Verified outer X11 windows
-  supply placement and focus. Native Wayland placement needs the documented
-  geometry bridge; accurate host Alt-Tab tracking also needs its focus publisher.
-- **Collect a device snapshot when investigating a problem.** The read-only
-  SteamOS diagnostic collector records relevant versions, process identities,
-  display geometry, and compositor properties. It does not capture screenshots,
-  keystrokes, journals, or full process environments, and uploads nothing.
-
-### Next Jump overlay
-
-- **Fit the panel to its content.** The panel grows when destination details
-  arrive and shrinks when fewer rows are available. Saved width and typography
-  still apply; old saved heights no longer leave an empty area beneath the text.
-  Live windows, combined overlays, and the position-editor preview share this
-  behavior.
-- **See the next jump clearly.** A thicker, bright cyan segment and a diamond
-  destination marker identify the active jump, including with monochrome overlay
-  themes. Other route legs retain their theme colors.
-- **Recognize scoopable stars.** Filled star markers replace the hollow ovals.
-  The legend sits at the top right beside the panel title, identifying
-  scoopable stars and the next-jump marker. They describe the star's fuel-scooping
-  capability, rather than fuel level or whether the system has been visited.
-
-### Commander Powerplay status
-
-- **Show the current pledged power, rank, and merits.** Frontier refresh now
-  reads modern Powerplay status from Frontier's journal API instead of treating
-  the profile's legacy zero rating as “None.” Ranks above 100 display correctly.
-  All twelve powers now have emblems in their own colors, with Jerome Archer
-  and Nakato Kaine sourced from Inara alongside the existing EDAssets artwork.
-  A small rank badge sits in the card’s top-right corner, using five equal 20-rank
-  bands (0–19, 20–39, 40–59, 60–79, 80+); ranks 100+ retain badge 5.
-  Merits appear below the rank.
-- **Follow updates during play.** Newer local journal events update the active
-  commander's card. Account switching keeps each commander's status separate;
-  unavailable or incomplete API journals preserve the last known status. The
-  card tooltip shows its journal source and event time.
+- **Original SrvSurvey profile imports:** Backup, verify, and merge now accepts
+  intact Windows profiles whose equivalent folder names use different casing,
+  such as `routes` and `Routes`. File contents are still verified before the
+  imported profile is activated, and recovery backups remain available.
+- **Downloaded Codex images:** Imports skip the downloadable image cache,
+  reducing unnecessary copying and hashing. Personal flora photos and existing
+  XP caches are preserved. Imported image preferences no longer redirect XP to
+  an old cache path or enable bulk image downloads.
+- **Next Jump overlay discovery credits:** Available commander names and
+  discovery dates now appear correctly, including when a name has no date.
+  Discovery and update times recognize EDSM's UTC date format, and system
+  discovery credits take priority over individual body credits.
+- **Next Jump overlay previews:** The position editor now uses the live route
+  and destination logic. Choose followed-route, neutron-stop, plotted-route,
+  or direct-target examples. Scoopable badges follow the destination's star
+  class; refuel and neutron badges follow the selected route stop. Invented
+  detail rows and the preview-only success message have been removed.
+- **Mining notifications and prospectors:** Commodity names such as Gold,
+  Silver, and Palladium now use consistent capitalization. Multiword mineral
+  and core names use their readable catalog spelling. Journal-provided
+  translations are preserved.
+- **Included RC71 features:** Steam Deck Gaming Mode and Gamescope overlays,
+  automatic Next Jump panel height, clearer route markers, and
+  Commander Powerplay status remain available. See the
+  [Steam Deck Gaming Mode guide](https://github.com/Fenris159/SrvSurvey/blob/1dee430ad5f68455582fa3e1fa7be061afed240c/docs/STEAMOS_GAMING_MODE.md)
+  for setup and compositor requirements.
 
 ## Update channel and packages
 
-RC71 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
+RC71.1 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
 compatibility bridge. Windows and Linux packages are self-contained.
 
-- Version: `2.1.3.0-rc.71`
-- Tag: `xp2-v2.1.3.0-rc.71`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.71-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.71-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.71-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.71-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.71.1`
+- Tag: `xp2-v2.1.3.0-rc.71.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.71.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.71.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.71.1-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.71.1-x86_64.AppImage.zsync`
 
 The numeric Windows `FileVersion` remains `2.1.3.0`.
 
