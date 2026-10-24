@@ -296,7 +296,7 @@
             <TextBlock Classes="card-title" Text="Codex reference images" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing." />
+                       Text="Use local flora photos or download biology references for offline browsing." />
           </StackPanel>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
             <TextBox x:Name="CodexCacheTextBox"

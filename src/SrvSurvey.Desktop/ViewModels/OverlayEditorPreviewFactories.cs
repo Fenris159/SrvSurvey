@@ -2,6 +2,7 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
@@ -433,48 +434,87 @@ internal static class OverlayEditorPreviewFactories
         return new HumanSiteOverlayViewModel(humanSite, Caps());
     }
 
-    public static JumpInfoOverlayViewModel CreateJumpInfo()
+    /// <summary>Exercises the live jump pipeline with representative route and provider data.</summary>
+    public static JumpInfoOverlayViewModel CreateJumpInfo(string previewState = "followed-route")
     {
-        var jump = new JumpInfoViewModel(
-            new EmptySystemSummaryClient(),
-            new JumpInfoSettingsStore(Path.Combine(SettingsDir("jump-info"), UiSettingsFileName))
-        );
-        var plan = new JumpInfoRoutePlan(
-            new JumpTarget(State.DestinationSystem, 99, "K"),
-            JumpInfoRouteSource.FollowedRoute,
-            TargetLegIndex: 3,
-            Legs:
-            [
-                new JumpInfoRouteLeg(State.CurrentSystem, "Waypoint A", 42.1, true, false),
-                new JumpInfoRouteLeg("Waypoint A", "Waypoint B", 38.4, true, false),
-                new JumpInfoRouteLeg("Waypoint B", "Waypoint C", 29.7, false, true),
-                new JumpInfoRouteLeg("Waypoint C", State.DestinationSystem, 28.5, true, false),
-            ],
-            TargetPosition: new GalacticCoordinate(100, 20, -40)
-        );
+        bool neutron = previewState == "neutron-stop";
+        bool direct = previewState == "direct-target";
+        bool followed = previewState is "followed-route" or "neutron-stop";
+        string starClass = neutron ? "N" : "K";
+        string routeNotes = neutron ? "Use neutron boost for the following jump" : "Refuel before continuing";
+        var origin = new GalacticCoordinate(40, 0, 0);
+        var destination = new GalacticCoordinate(80, 0, 0);
         var summary = new SystemSummary(
             State.DestinationSystem,
             99,
-            new GalacticCoordinate(100, 20, -40),
-            StarClass: "K",
+            destination,
+            StarClass: starClass,
             IsKnown: true,
             ScannedBodyCount: 12,
             TotalBodyCount: 18,
             DiscoveredBy: "CMDR Raven",
-            DiscoveredAt: DateTimeOffset.UtcNow.AddDays(-40),
-            LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-2),
+            DiscoveredAt: new DateTimeOffset(2026, 9, 13, 22, 45, 0, TimeSpan.Zero),
+            LastUpdatedAt: new DateTimeOffset(2026, 10, 23, 22, 43, 0, TimeSpan.Zero),
             Traffic: new SystemTrafficSummary(12, 84, 1200),
             PointsOfInterest: new SystemPoiSummary(18, 6, 2, 1, 1, 0, 0),
-            Specials: []
+            Specials: [new SystemSpecialSummary(State.StationName, ["Material Trader - Encoded"])]
         );
-        jump.InstallEditorPreview(
-            plan,
-            summary,
+        var jump = new JumpInfoViewModel(
+            new PreviewSystemSummaryClient(summary),
+            new JumpInfoSettingsStore(Path.Combine(SettingsDir("jump-info"), UiSettingsFileName))
+        );
+        var navRoute = new NavRouteSnapshot(
+            summary.LastUpdatedAt!.Value,
+            "NavRoute",
             [
-                new JumpInfoDetailLineViewModel("Next hop", "Waypoint C", Refuel: true),
-                new JumpInfoDetailLineViewModel("Neutron", "Use boost on B → C", Neutron: true),
-                new JumpInfoDetailLineViewModel("Scoopable", "K-class star"),
+                new NavRouteEntry("Waypoint A", 97, new GalacticCoordinate(0, 0, 0), "M"),
+                new NavRouteEntry(State.CurrentSystem, 98, origin, "G"),
+                new NavRouteEntry(State.DestinationSystem, 99, destination, starClass),
+                new NavRouteEntry("Waypoint C", 100, new GalacticCoordinate(120, 0, 0), "M"),
             ]
+        );
+        FollowRouteDocument? route = followed
+            ? new FollowRouteDocument(
+                "Preview",
+                "preview-route.json",
+                true,
+                true,
+                1,
+                [
+                    new FollowRouteHop("Waypoint A", 97, new GalacticCoordinate(0, 0, 0), null, false, false),
+                    new FollowRouteHop(State.CurrentSystem, 98, origin, null, false, false),
+                    new FollowRouteHop(
+                        State.DestinationSystem,
+                        99,
+                        destination,
+                        routeNotes,
+                        Refuel: !neutron,
+                        Neutron: neutron
+                    ),
+                    new FollowRouteHop("Waypoint C", 100, new GalacticCoordinate(120, 0, 0), null, false, false),
+                ]
+            )
+            : null;
+        jump.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                State.CurrentSystem,
+                98,
+                origin,
+                direct ? null : navRoute,
+                [],
+                new EliteStatus
+                {
+                    Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                    Flags2 = StatusFlags2.FsdChargingJump,
+                    Destination = new StatusDestination
+                    {
+                        Name = State.DestinationSystem,
+                        System = 99,
+                        Body = 0,
+                    },
+                },
+                route
+            )
         );
         return new JumpInfoOverlayViewModel(jump, Caps());
     }
@@ -741,6 +781,15 @@ internal static class OverlayEditorPreviewFactories
             }
         );
         return new GroundTargetOverlayViewModel(ground, Caps());
+    }
+
+    private sealed class PreviewSystemSummaryClient(SystemSummary summary) : ISystemSummaryClient
+    {
+        public Task<SystemSummaryLoadResult> GetAsync(
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(new SystemSummaryLoadResult(summary, []));
     }
 
     private sealed class EmptySystemSummaryClient : ISystemSummaryClient

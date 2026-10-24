@@ -7,6 +7,81 @@ namespace SrvSurvey.Core.Tests.Navigation;
 
 public sealed class SystemSummaryClientTests
 {
+    /// <summary>Preserves discovery and update timestamps in the UTC format returned by EDSM.</summary>
+    [Theory]
+    [InlineData("2024-01-02 03:04:05", "2025-02-03 04:05:06")]
+    [InlineData("2024-01-02T03:04:05Z", "2025-02-03T04:05:06Z")]
+    public async Task EdsmDiscoveryDatesReachTheSummary(string discovered, string updated)
+    {
+        var handler = new ProviderHandler
+        {
+            BodiesResponse = $$"""
+                {"id64":42,"bodyCount":1,"bodies":[{
+                  "isMainStar":true,"updateTime":"{{updated}}",
+                  "discovery":{"commander":"Pathfinder","date":"{{discovered}}"}
+                }]}
+                """,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemSummary summary = (await client.GetAsync("Test System", 0)).Summary;
+
+        Assert.Equal("Pathfinder", summary.DiscoveredBy);
+        Assert.Equal(new DateTimeOffset(2024, 1, 2, 3, 4, 5, TimeSpan.Zero), summary.DiscoveredAt);
+        Assert.Equal(new DateTimeOffset(2025, 2, 3, 4, 5, 6, TimeSpan.Zero), summary.LastUpdatedAt);
+    }
+
+    /// <summary>Uses system discovery from traffic rather than an unrelated body's discovery credit.</summary>
+    [Fact]
+    public async Task SystemDiscoveryTakesPrecedenceOverBodyDiscovery()
+    {
+        var handler = new ProviderHandler
+        {
+            TrafficResponse = """
+                {"id64":42,"discovery":{"commander":"System Pathfinder","date":"2020-06-07 08:09:10"}}
+                """,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemSummary summary = (await client.GetAsync("Test System", 0)).Summary;
+
+        Assert.Equal("System Pathfinder", summary.DiscoveredBy);
+        Assert.Equal(new DateTimeOffset(2020, 6, 7, 8, 9, 10, TimeSpan.Zero), summary.DiscoveredAt);
+    }
+
+    /// <summary>Keeps partial discovery records intact instead of borrowing another commander's body date.</summary>
+    [Theory]
+    [InlineData("null")]
+    [InlineData("42")]
+    [InlineData("\"not-a-date\"")]
+    public async Task MissingOrInvalidSystemDatesDoNotBorrowBodyDates(string dateJson)
+    {
+        var handler = new ProviderHandler
+        {
+            TrafficResponse =
+                "{\"id64\":42,\"discovery\":{\"commander\":\"System Pathfinder\",\"date\":" + dateJson + "}}",
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemSummaryLoadResult result = await client.GetAsync("Test System", 0);
+
+        Assert.Empty(result.Warnings);
+        Assert.Equal("System Pathfinder", result.Summary.DiscoveredBy);
+        Assert.Null(result.Summary.DiscoveredAt);
+    }
+
     [Fact]
     public async Task ProviderResponsesAreMergedIntoLegacyJumpSummary()
     {
@@ -152,6 +227,10 @@ public sealed class SystemSummaryClientTests
 
         public bool MalformSpansh { get; init; }
 
+        public string BodiesResponse { get; init; } = BodiesJson;
+
+        public string TrafficResponse { get; init; } = TrafficJson;
+
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -162,7 +241,7 @@ public sealed class SystemSummaryClientTests
             if (uri.AbsolutePath.EndsWith("/traffic", StringComparison.Ordinal))
             {
                 return Task.FromResult(
-                    FailTraffic ? Response("{}", HttpStatusCode.ServiceUnavailable) : Response(TrafficJson)
+                    FailTraffic ? Response("{}", HttpStatusCode.ServiceUnavailable) : Response(TrafficResponse)
                 );
             }
 
@@ -171,7 +250,7 @@ public sealed class SystemSummaryClientTests
                 return Task.FromResult(Response(MalformSpansh ? "{\"system\":[]}" : SpanshJson));
             }
 
-            return Task.FromResult(Response(BodiesJson));
+            return Task.FromResult(Response(BodiesResponse));
         }
 
         private static HttpResponseMessage Response(string content, HttpStatusCode statusCode = HttpStatusCode.OK)

@@ -528,29 +528,20 @@ public sealed class LegacyUiSettingsMigrator
         return count;
     }
 
+    /// <summary>Relocates personal flora photos while leaving image caches and bulk-download preferences machine-local.</summary>
     private static int MapCodexImages(JsonObject legacy, JsonObject target, ProfileImportManifest manifest)
     {
         JsonObject section = GetOrCreateObject(target, "CodexImages");
-        int count = Copy(legacy, "preDownloadCodexImages", section, "PreDownload");
-        count += MapImportedDirectory(
-            legacy,
-            "downloadCodexImageFolder",
-            section,
-            "CacheDirectory",
-            manifest,
-            "codexImages"
-        );
-        count += MapImportedDirectory(legacy, "localFloraFolder", section, "LocalFloraDirectory", manifest, null);
-        return count;
+        return MapImportedDirectory(legacy, "localFloraFolder", section, "LocalFloraDirectory", manifest);
     }
 
+    /// <summary>Maps an optional personal-image directory into its imported location.</summary>
     private static int MapImportedDirectory(
         JsonObject source,
         string sourceName,
         JsonObject target,
         string targetName,
-        ProfileImportManifest manifest,
-        string? conventionalImportedDirectory
+        ProfileImportManifest manifest
     )
     {
         if (
@@ -562,15 +553,12 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        target[targetName] = RelocateImportedDirectory(configuredPath, manifest, conventionalImportedDirectory);
+        target[targetName] = RelocateImportedDirectory(configuredPath, manifest);
         return 1;
     }
 
-    private static string RelocateImportedDirectory(
-        string configuredPath,
-        ProfileImportManifest manifest,
-        string? conventionalImportedDirectory
-    )
+    /// <summary>Rebases paths inside the imported profile while preserving an external personal-photo directory.</summary>
+    private static string RelocateImportedDirectory(string configuredPath, ProfileImportManifest manifest)
     {
         string configured = configuredPath.Trim();
         string? relative = GetImportedRelativePath(configured, manifest.SourceDirectory);
@@ -580,22 +568,6 @@ public sealed class LegacyUiSettingsMigrator
             if (IsSameOrChildPath(relocated, manifest.DestinationDirectory))
             {
                 return relocated;
-            }
-        }
-
-        if (
-            conventionalImportedDirectory is not null
-            && string.Equals(
-                GetCrossPlatformFileName(configured),
-                conventionalImportedDirectory,
-                StringComparison.OrdinalIgnoreCase
-            )
-        )
-        {
-            string imported = Path.Combine(manifest.DestinationDirectory, conventionalImportedDirectory);
-            if (Directory.Exists(imported))
-            {
-                return Path.GetFullPath(imported);
             }
         }
 
@@ -627,13 +599,6 @@ public sealed class LegacyUiSettingsMigrator
     private static string NormalizeDirectory(string path)
     {
         return path.Trim().Replace('\\', '/').TrimEnd('/');
-    }
-
-    private static string GetCrossPlatformFileName(string path)
-    {
-        string normalized = NormalizeDirectory(path);
-        int separator = normalized.LastIndexOf('/');
-        return separator >= 0 ? normalized[(separator + 1)..] : normalized;
     }
 
     private static bool IsSameOrChildPath(string path, string root)

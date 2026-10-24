@@ -8661,6 +8661,10 @@
       "translation": "Die direkte Synchronisierung EDSM folgt dem aktiven Commander und wird durch Speichern des persönlichen API-Schlüssels dieses Profils aktiviert."
     },
     {
+      "source": "Direct target",
+      "translation": "Direktes Ziel"
+    },
+    {
       "source": "Directories",
       "translation": "Verzeichnisse"
     },
@@ -8769,8 +8773,8 @@
       "translation": "Entdeckt von {0}{1}"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "Entdeckt{0} auf {1}"
+      "source": "Discovered{0}{1}",
+      "translation": "Entdeckt{0}{1}"
     },
     {
       "source": "Discovery",
@@ -16421,6 +16425,10 @@
       "translation": "Materialhändler"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "Materialhändler - Kodiert"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Materialpunkte können beim schnellen Sammeln zurückbleiben. POI-Markierungen werden pro Siedlung zufällig generiert und stimmen möglicherweise nicht mit den tatsächlichen Standorten überein."
     },
@@ -17441,6 +17449,10 @@
       "translation": "Naturkatastrophe"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "NavRouteClear"
     },
@@ -17561,10 +17573,6 @@
       "translation": "NetzwerkPrivatsphäre"
     },
     {
-      "source": "Neutron",
-      "translation": "Neutron"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "Neutronenplotter"
     },
@@ -17575,6 +17583,10 @@
     {
       "source": "Neutron star",
       "translation": "Neutronenstern"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "Neutronenstopp"
     },
     {
       "source": "New",
@@ -17671,10 +17683,6 @@
     {
       "source": "Next group",
       "translation": "Nächste Gruppe"
-    },
-    {
-      "source": "Next hop",
-      "translation": "Nächster Hop"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -20729,6 +20737,10 @@
       "translation": "PlotTrackTarget"
     },
     {
+      "source": "Plotted route",
+      "translation": "Geplante Route"
+    },
+    {
       "source": "Plugin source",
       "translation": "Plugin-Quelle"
     },
@@ -23253,6 +23265,10 @@
       "translation": "Tanken Sie am Zielort"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "Vor dem Weiterflug auftanken"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "Als Routenziele müssen auch Tankziele aufgeführt sein."
     },
@@ -25563,10 +25579,6 @@
     {
       "source": "Sco",
       "translation": "Sco"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "Schaufelbar"
     },
     {
       "source": "Scoopable star",
@@ -33437,10 +33449,6 @@
       "translation": "Nutzen Sie Körpertyp, Geologie und Sternhinweise, um die Suche nach einem Rohstoff aus dem Tagebau einzugrenzen."
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "Verwenden Sie Boost für B → C"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Verwenden Sie die kompakte/scrollende Warenliste"
     },
@@ -33489,12 +33497,20 @@
       "translation": "Verwenden Sie die letzte aktualisierte Zeit von Spansh, nicht von EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Verwenden Sie lokale Pflanzenfotos oder laden Sie biologische Referenzbilder für die Offline-Nutzung herunter."
+    },
+    {
       "source": "Use local time",
       "translation": "Verwenden Sie die Ortszeit"
     },
     {
       "source": "Use mapping value",
       "translation": "Zuordnungswert verwenden"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "Für den nächsten Sprung den Neutronenboost verwenden"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -33567,10 +33583,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Verwenden Sie die ursprünglichen SrvSurvey-Verknüpfungen, während entweder diese Anwendung oder Elite Dangerous den Fokus hat."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Verwenden Sie den ursprünglichen Namensvertrag für die lokale Flora, behalten Sie einen importierten Bildcache bei oder laden Sie Biologiereferenzen zum Offline-Browsen herunter."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -34503,10 +34515,6 @@
     {
       "source": "Waypoint A",
       "translation": "Wegpunkt A"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "Wegpunkt B"
     },
     {
       "source": "Waypoint C",
@@ -35877,6 +35885,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "Richtung"
     },
@@ -36215,6 +36227,10 @@
     {
       "source": "followed",
       "translation": "gefolgt"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -37001,6 +37017,10 @@
       "translation": "Neutronen-Boost-FSD-Sternroute"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "neu:{0}"
     },
@@ -37123,6 +37143,10 @@
     {
       "source": "on Discord",
       "translation": "am Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "am {0}"
     },
     {
       "source": "on-foot",
@@ -37275,6 +37299,10 @@
     {
       "source": "platinum",
       "translation": "Platin"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -48395,6 +48423,10 @@
       "translation": "La sincronización directa EDSM sigue al Commander activo y se habilita guardando la clave API personal de ese perfil."
     },
     {
+      "source": "Direct target",
+      "translation": "Destino directo"
+    },
+    {
       "source": "Directories",
       "translation": "Directorios"
     },
@@ -48503,8 +48535,8 @@
       "translation": "Descubierto por {0}{1}"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "Descubierto{0} el {1}"
+      "source": "Discovered{0}{1}",
+      "translation": "Descubierto{0}{1}"
     },
     {
       "source": "Discovery",
@@ -56155,6 +56187,10 @@
       "translation": "Comerciante de materiales"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "Comerciante de materiales - Codificados"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Los puntos de material pueden retrasarse al recolectarse rápidamente. Los marcadores de puntos de interés se generan aleatoriamente por asentamiento y es posible que no coincidan con las ubicaciones reales."
     },
@@ -57175,6 +57211,10 @@
       "translation": "desastre natural"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "NavRutaBorrar"
     },
@@ -57295,10 +57335,6 @@
       "translation": "RedPrivacidad"
     },
     {
-      "source": "Neutron",
-      "translation": "Neutrón"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "Trazador de neutrones"
     },
@@ -57309,6 +57345,10 @@
     {
       "source": "Neutron star",
       "translation": "Estrella de neutrones"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "Parada en estrella de neutrones"
     },
     {
       "source": "New",
@@ -57405,10 +57445,6 @@
     {
       "source": "Next group",
       "translation": "Siguiente grupo"
-    },
-    {
-      "source": "Next hop",
-      "translation": "Siguiente salto"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -60463,6 +60499,10 @@
       "translation": "PlotTrackTarget"
     },
     {
+      "source": "Plotted route",
+      "translation": "Ruta trazada"
+    },
+    {
       "source": "Plugin source",
       "translation": "Fuente del complemento"
     },
@@ -62987,6 +63027,10 @@
       "translation": "Repostar combustible en destinos"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "Repostar antes de continuar"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "Los destinos de repostaje también deben figurar como destinos de ruta."
     },
@@ -65297,10 +65341,6 @@
     {
       "source": "Sco",
       "translation": "esco"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "Recolectable"
     },
     {
       "source": "Scoopable star",
@@ -73171,10 +73211,6 @@
       "translation": "Utilice el tipo de cuerpo, la geología y las pistas estelares para limitar la búsqueda de un producto de minería a cielo abierto."
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "Usar impulso en B → C"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Utilice una lista de productos compacta/desplazable"
     },
@@ -73223,12 +73259,20 @@
       "translation": "Utilice la hora de la última actualización de Spansh no EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Usa fotos de flora locales o descarga referencias biológicas para consultarlas sin conexión."
+    },
+    {
       "source": "Use local time",
       "translation": "Usar la hora local"
     },
     {
       "source": "Use mapping value",
       "translation": "Usar valor de mapeo"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "Usar impulso de neutrones para el siguiente salto"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -73301,10 +73345,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Utilice los atajos originales SrvSurvey mientras esta aplicación o Elite Dangerous tengan el foco."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Utilice el contrato de nomenclatura de flora local original, conserve un caché de imágenes importadas o descargue referencias de biología para navegar sin conexión."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -74237,10 +74277,6 @@
     {
       "source": "Waypoint A",
       "translation": "Punto de ruta A"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "Punto de referencia B"
     },
     {
       "source": "Waypoint C",
@@ -75611,6 +75647,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "dirección"
     },
@@ -75949,6 +75989,10 @@
     {
       "source": "followed",
       "translation": "seguido"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -76735,6 +76779,10 @@
       "translation": "impulso de neutrones ruta de la estrella fsd"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "nuevo:{0}"
     },
@@ -76857,6 +76905,10 @@
     {
       "source": "on Discord",
       "translation": "en Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "el {0}"
     },
     {
       "source": "on-foot",
@@ -77009,6 +77061,10 @@
     {
       "source": "platinum",
       "translation": "platino"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -88129,6 +88185,10 @@
       "translation": "La synchronisation directe EDSM suit le Commander actif et est activée en enregistrant la clé API personnelle de ce profil."
     },
     {
+      "source": "Direct target",
+      "translation": "Cible directe"
+    },
+    {
       "source": "Directories",
       "translation": "Annuaires"
     },
@@ -88237,8 +88297,8 @@
       "translation": "Découvert par {0}{1}"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "Découvert{0} sur {1}"
+      "source": "Discovered{0}{1}",
+      "translation": "Découvert{0}{1}"
     },
     {
       "source": "Discovery",
@@ -95889,6 +95949,10 @@
       "translation": "Négociant en matériaux"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "Marchand de matériaux - Encodés"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Les points de matériaux peuvent être en retard lors d'une collecte rapide. Les marqueurs de POI sont générés aléatoirement par colonie et peuvent ne pas correspondre aux emplacements réels."
     },
@@ -96909,6 +96973,10 @@
       "translation": "Catastrophe naturelle"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "NavRouteEffacer"
     },
@@ -97029,10 +97097,6 @@
       "translation": "RéseauConfidentialité"
     },
     {
-      "source": "Neutron",
-      "translation": "Neutron"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "Traceur de neutrons"
     },
@@ -97043,6 +97107,10 @@
     {
       "source": "Neutron star",
       "translation": "Étoile à neutrons"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "Étape à étoile à neutrons"
     },
     {
       "source": "New",
@@ -97139,10 +97207,6 @@
     {
       "source": "Next group",
       "translation": "Groupe suivant"
-    },
-    {
-      "source": "Next hop",
-      "translation": "Saut suivant"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -100197,6 +100261,10 @@
       "translation": "PlotTrackCible"
     },
     {
+      "source": "Plotted route",
+      "translation": "Itinéraire tracé"
+    },
+    {
       "source": "Plugin source",
       "translation": "Source du plugin"
     },
@@ -102721,6 +102789,10 @@
       "translation": "Faire le plein à destination"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "Faire le plein avant de continuer"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "Les destinations de ravitaillement doivent également être répertoriées comme destinations d'itinéraire."
     },
@@ -105031,10 +105103,6 @@
     {
       "source": "Sco",
       "translation": "Sco"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "Scoopable"
     },
     {
       "source": "Scoopable star",
@@ -112905,10 +112973,6 @@
       "translation": "Utilisez le type de corps, la géologie et les indices stellaires pour affiner la recherche d'un produit minier à ciel ouvert."
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "Utiliser boost sur B → C"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Utiliser une liste de produits compacte/déroulante"
     },
@@ -112957,12 +113021,20 @@
       "translation": "Utiliser l'heure de la dernière mise à jour à partir de Spansh et non de EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Utilisez vos photos de flore locales ou téléchargez des références biologiques pour les consulter hors ligne."
+    },
+    {
       "source": "Use local time",
       "translation": "Utiliser l'heure locale"
     },
     {
       "source": "Use mapping value",
       "translation": "Utiliser la valeur de mappage"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "Utiliser le boost neutronique pour le saut suivant"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -113035,10 +113107,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Utilisez les raccourcis SrvSurvey d'origine lorsque cette application ou Elite Dangerous a le focus."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Utilisez le contrat de dénomination original de la flore locale, conservez un cache d'images importé ou téléchargez des références biologiques pour une navigation hors ligne."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -113971,10 +114039,6 @@
     {
       "source": "Waypoint A",
       "translation": "Point de cheminement A"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "Point de cheminement B"
     },
     {
       "source": "Waypoint C",
@@ -115345,6 +115409,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "direction"
     },
@@ -115683,6 +115751,10 @@
     {
       "source": "followed",
       "translation": "suivi"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -116469,6 +116541,10 @@
       "translation": "route des étoiles FSD avec boost de neutrons"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "nouveau : {0}"
     },
@@ -116591,6 +116667,10 @@
     {
       "source": "on Discord",
       "translation": "activé Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "le {0}"
     },
     {
       "source": "on-foot",
@@ -116743,6 +116823,10 @@
     {
       "source": "platinum",
       "translation": "platine"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -127863,6 +127947,10 @@
       "translation": "A sincronização direta EDSM segue o Commander ativo e é habilitada salvando a chave de API pessoal desse perfil."
     },
     {
+      "source": "Direct target",
+      "translation": "Destino direto"
+    },
+    {
       "source": "Directories",
       "translation": "Diretórios"
     },
@@ -127971,8 +128059,8 @@
       "translation": "Descoberto por {0}{1}"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "Descoberto{0} em {1}"
+      "source": "Discovered{0}{1}",
+      "translation": "Descoberto{0}{1}"
     },
     {
       "source": "Discovery",
@@ -135623,6 +135711,10 @@
       "translation": "Comerciante de Materiais"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "Comerciante de materiais - Codificados"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Os pontos de material podem ficar atrasados durante a coleta rápida. Os marcadores de POI são gerados aleatoriamente por assentamento e podem não corresponder aos locais verdadeiros."
     },
@@ -136643,6 +136735,10 @@
       "translation": "Desastre Natural"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "NavRouteClear"
     },
@@ -136763,10 +136859,6 @@
       "translation": "Privacidade da rede"
     },
     {
-      "source": "Neutron",
-      "translation": "Nêutron"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "Plotador de nêutrons"
     },
@@ -136777,6 +136869,10 @@
     {
       "source": "Neutron star",
       "translation": "Estrela de nêutrons"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "Parada em estrela de nêutrons"
     },
     {
       "source": "New",
@@ -136873,10 +136969,6 @@
     {
       "source": "Next group",
       "translation": "Próximo grupo"
-    },
-    {
-      "source": "Next hop",
-      "translation": "Próximo salto"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -139931,6 +140023,10 @@
       "translation": "PlotTrackTarget"
     },
     {
+      "source": "Plotted route",
+      "translation": "Rota traçada"
+    },
+    {
       "source": "Plugin source",
       "translation": "Fonte do plug-in"
     },
@@ -142455,6 +142551,10 @@
       "translation": "Reabasteça nos destinos"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "Reabasteça antes de continuar"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "Os destinos de reabastecimento também devem ser listados como destinos de rota."
     },
@@ -144765,10 +144865,6 @@
     {
       "source": "Sco",
       "translation": "Sco"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "Scoopable"
     },
     {
       "source": "Scoopable star",
@@ -152639,10 +152735,6 @@
       "translation": "Use tipo de corpo, geologia e pistas estelares para restringir a busca por uma commodity de mineração de superfície."
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "Use impulso em B → C"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Use lista de mercadorias compacta/rolagem"
     },
@@ -152691,12 +152783,20 @@
       "translation": "Use a hora da última atualização de Spansh e não de EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Use fotos locais de flora ou baixe referências biológicas para consulta offline."
+    },
+    {
       "source": "Use local time",
       "translation": "Usar a hora local"
     },
     {
       "source": "Use mapping value",
       "translation": "Usar valor de mapeamento"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "Use o impulso de nêutrons no próximo salto"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -152769,10 +152869,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Use os atalhos originais SrvSurvey enquanto este aplicativo ou Elite Dangerous estiver em foco."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Use o contrato original de nomenclatura da flora local, mantenha um cache de imagens importado ou baixe referências biológicas para navegação offline."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -153705,10 +153801,6 @@
     {
       "source": "Waypoint A",
       "translation": "Ponto de referência A"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "Ponto de referência B"
     },
     {
       "source": "Waypoint C",
@@ -155079,6 +155171,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "direção"
     },
@@ -155417,6 +155513,10 @@
     {
       "source": "followed",
       "translation": "seguido"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -156203,6 +156303,10 @@
       "translation": "impulso de nêutrons fsd rota estelar"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "novo:{0}"
     },
@@ -156325,6 +156429,10 @@
     {
       "source": "on Discord",
       "translation": "ligado Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "em {0}"
     },
     {
       "source": "on-foot",
@@ -156477,6 +156585,10 @@
     {
       "source": "platinum",
       "translation": "platina"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -167597,6 +167709,10 @@
       "translation": "Прямая синхронизация EDSM следует за активным Commander и включается путем сохранения личного ключа API этого профиля."
     },
     {
+      "source": "Direct target",
+      "translation": "Прямая цель"
+    },
+    {
       "source": "Directories",
       "translation": "Каталоги"
     },
@@ -167705,8 +167821,8 @@
       "translation": "Обнаружено {0}{1}"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "Обнаружено{0} на {1}"
+      "source": "Discovered{0}{1}",
+      "translation": "Открыто{0}{1}"
     },
     {
       "source": "Discovery",
@@ -175357,6 +175473,10 @@
       "translation": "Торговец материалами"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "Торговец материалами — данные"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Точки материала могут отставать при быстром сборе. Маркеры POI генерируются случайным образом для каждого поселения и могут не соответствовать реальным местоположениям."
     },
@@ -176377,6 +176497,10 @@
       "translation": "Стихийное бедствие"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "NavRouteОчистить"
     },
@@ -176497,10 +176621,6 @@
       "translation": "СетьКонфиденциальность"
     },
     {
-      "source": "Neutron",
-      "translation": "Нейтрон"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "Нейтронный плоттер"
     },
@@ -176511,6 +176631,10 @@
     {
       "source": "Neutron star",
       "translation": "Нейтронная звезда"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "Нейтронная остановка"
     },
     {
       "source": "New",
@@ -176607,10 +176731,6 @@
     {
       "source": "Next group",
       "translation": "Следующая группа"
-    },
-    {
-      "source": "Next hop",
-      "translation": "Следующий прыжок"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -179665,6 +179785,10 @@
       "translation": "PlotTrackTarget"
     },
     {
+      "source": "Plotted route",
+      "translation": "Проложенный маршрут"
+    },
+    {
       "source": "Plugin source",
       "translation": "Источник плагина"
     },
@@ -182189,6 +182313,10 @@
       "translation": "Заправляйтесь в пунктах назначения"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "Заправьтесь перед продолжением"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "Пункты дозаправки также должны быть указаны в качестве пунктов назначения маршрута."
     },
@@ -184499,10 +184627,6 @@
     {
       "source": "Sco",
       "translation": "Ско"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "можно черпать"
     },
     {
       "source": "Scoopable star",
@@ -192373,10 +192497,6 @@
       "translation": "Используйте тип телосложения, геологию и звездные подсказки, чтобы сузить круг поиска добычи полезных ископаемых."
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "Используйте усиление на B → C."
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "Использовать компактный/прокручиваемый список товаров"
     },
@@ -192425,12 +192545,20 @@
       "translation": "Использовать время последнего обновления с Spansh, а не с EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "Используйте локальные фотографии флоры или загрузите биологические справочные материалы для просмотра без подключения к сети."
+    },
+    {
       "source": "Use local time",
       "translation": "Используйте местное время"
     },
     {
       "source": "Use mapping value",
       "translation": "Использовать значение сопоставления"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "Используйте нейтронное усиление для следующего прыжка"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -192503,10 +192631,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "Используйте исходные сочетания клавиш SrvSurvey, пока это приложение или Elite Dangerous находится в фокусе."
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "Используйте исходный контракт на присвоение имен местной флоре, сохраняйте кэш импортированных изображений или загружайте справочники по биологии для просмотра в автономном режиме."
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -193439,10 +193563,6 @@
     {
       "source": "Waypoint A",
       "translation": "Маршрутная точка А"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "Маршрутная точка Б"
     },
     {
       "source": "Waypoint C",
@@ -194813,6 +194933,10 @@
       "translation": "алмазбакксл"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "направление"
     },
@@ -195151,6 +195275,10 @@
     {
       "source": "followed",
       "translation": "подписан"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -195937,6 +196065,10 @@
       "translation": "Нейтронный импульс, звездный маршрут ФСД"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "новый: {0}"
     },
@@ -196059,6 +196191,10 @@
     {
       "source": "on Discord",
       "translation": "на Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "от {0}"
     },
     {
       "source": "on-foot",
@@ -196211,6 +196347,10 @@
     {
       "source": "platinum",
       "translation": "платина"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -207331,6 +207471,10 @@
       "translation": "直接 EDSM 同步遵循活动指挥官，并通过保存该配置文件的个人 API 密钥来启用。"
     },
     {
+      "source": "Direct target",
+      "translation": "直接目标"
+    },
+    {
       "source": "Directories",
       "translation": "目录"
     },
@@ -207439,8 +207583,8 @@
       "translation": "由{0}{1}发现"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "在 {1} 上发现了 {0}"
+      "source": "Discovered{0}{1}",
+      "translation": "已发现{0}{1}"
     },
     {
       "source": "Discovery",
@@ -215091,6 +215235,10 @@
       "translation": "材料贸易商"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "材料商人 - 编码"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "快速收集时材料点可能会滞后。 POI 标记是根据定居点随机生成的，可能与真实位置不匹配。"
     },
@@ -216111,6 +216259,10 @@
       "translation": "自然灾害"
     },
     {
+      "source": "NavRoute",
+      "translation": "NavRoute"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "导航路线清除"
     },
@@ -216231,10 +216383,6 @@
       "translation": "网络隐私"
     },
     {
-      "source": "Neutron",
-      "translation": "中子"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "中子绘图仪"
     },
@@ -216245,6 +216393,10 @@
     {
       "source": "Neutron star",
       "translation": "中子星"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "中子星停靠点"
     },
     {
       "source": "New",
@@ -216341,10 +216493,6 @@
     {
       "source": "Next group",
       "translation": "下一组"
-    },
-    {
-      "source": "Next hop",
-      "translation": "下一跳"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -219399,6 +219547,10 @@
       "translation": "绘图跟踪目标"
     },
     {
+      "source": "Plotted route",
+      "translation": "已规划航线"
+    },
+    {
       "source": "Plugin source",
       "translation": "插件源码"
     },
@@ -221923,6 +222075,10 @@
       "translation": "到达目的地加油"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "继续前先加油"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "加油目的地也必须列为航线目的地。"
     },
@@ -224233,10 +224389,6 @@
     {
       "source": "Sco",
       "translation": "斯科"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "可舀取"
     },
     {
       "source": "Scoopable star",
@@ -232107,10 +232259,6 @@
       "translation": "利用体型、地质和恒星线索来缩小对露天采矿商品的搜索范围。"
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "在 B → C 上使用升压"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "使用紧凑/滚动商品列表"
     },
@@ -232159,12 +232307,20 @@
       "translation": "使用 Spansh 的上次更新时间，而不是 EDSM"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "使用本地植物照片，或下载生物参考资料以供离线浏览。"
+    },
+    {
       "source": "Use local time",
       "translation": "使用当地时间"
     },
     {
       "source": "Use mapping value",
       "translation": "使用映射值"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "下一跳使用中子星增压"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -232237,10 +232393,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "当此应用程序或 Elite Dangerous 具有焦点时，使用原始 SrvSurvey 快捷方式。"
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "使用原始的本地植物区系命名合同，保留导入的图像缓存，或下载生物学参考文献以供离线浏览。"
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -233173,10 +233325,6 @@
     {
       "source": "Waypoint A",
       "translation": "航点A"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "航路点 B"
     },
     {
       "source": "Waypoint C",
@@ -234547,6 +234695,10 @@
       "translation": "菱形背心XL"
     },
     {
+      "source": "direct-target",
+      "translation": "direct-target"
+    },
+    {
       "source": "direction",
       "translation": "方向"
     },
@@ -234885,6 +235037,10 @@
     {
       "source": "followed",
       "translation": "已关注"
+    },
+    {
+      "source": "followed-route",
+      "translation": "followed-route"
     },
     {
       "source": "foot",
@@ -235671,6 +235827,10 @@
       "translation": "中子助推FSD星际航线"
     },
     {
+      "source": "neutron-stop",
+      "translation": "neutron-stop"
+    },
+    {
       "source": "new:{0}",
       "translation": "新：{0}"
     },
@@ -235793,6 +235953,10 @@
     {
       "source": "on Discord",
       "translation": "上Discord"
+    },
+    {
+      "source": "on {0}",
+      "translation": "于 {0}"
     },
     {
       "source": "on-foot",
@@ -235945,6 +236109,10 @@
     {
       "source": "platinum",
       "translation": "铂"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "plotted-route"
     },
     {
       "source": "plotter",
@@ -247065,6 +247233,10 @@
       "translation": "* DIRECT EDSM SYNCHRONIZATION FOLLOWS THE ACTIVE COMMANDER AND IS ENABLED BY SAVING THAT PROFILE'S PERSONAL API KEY. >>>!"
     },
     {
+      "source": "Direct target",
+      "translation": "* DIRECT TARGET >>>!"
+    },
+    {
       "source": "Directories",
       "translation": "* DIRECTORIES >>>!"
     },
@@ -247173,8 +247345,8 @@
       "translation": "* DISCOVERED BY {0}{1} >>>!"
     },
     {
-      "source": "Discovered{0} on {1}",
-      "translation": "* DISCOVERED{0} ON {1} >>>!"
+      "source": "Discovered{0}{1}",
+      "translation": "* DISCOVERED{0}{1} >>>!"
     },
     {
       "source": "Discovery",
@@ -254825,6 +254997,10 @@
       "translation": "* MATERIAL TRADER >>>!"
     },
     {
+      "source": "Material Trader - Encoded",
+      "translation": "* MATERIAL TRADER - ENCODED >>>!"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "* MATERIAL DOTS CAN LAG WHEN COLLECTING QUICKLY. POI MARKERS ARE RANDOMLY GENERATED PER SETTLEMENT AND MAY NOT MATCH TRUE LOCATIONS. >>>!"
     },
@@ -255845,6 +256021,10 @@
       "translation": "* NATURAL DISASTER >>>!"
     },
     {
+      "source": "NavRoute",
+      "translation": "* NAVROUTE >>>!"
+    },
+    {
       "source": "NavRouteClear",
       "translation": "* NAVROUTECLEAR >>>!"
     },
@@ -255965,10 +256145,6 @@
       "translation": "* NETWORKPRIVACY >>>!"
     },
     {
-      "source": "Neutron",
-      "translation": "* NEUTRON >>>!"
-    },
-    {
       "source": "Neutron Plotter",
       "translation": "* NEUTRON PLOTTER >>>!"
     },
@@ -255979,6 +256155,10 @@
     {
       "source": "Neutron star",
       "translation": "* NEUTRON STAR >>>!"
+    },
+    {
+      "source": "Neutron stop",
+      "translation": "* NEUTRON STOP >>>!"
     },
     {
       "source": "New",
@@ -256075,10 +256255,6 @@
     {
       "source": "Next group",
       "translation": "* NEXT GROUP >>>!"
-    },
-    {
-      "source": "Next hop",
-      "translation": "* NEXT HOP >>>!"
     },
     {
       "source": "Next incomplete suffix in the current boxel.",
@@ -259133,6 +259309,10 @@
       "translation": "* PLOTTRACKTARGET >>>!"
     },
     {
+      "source": "Plotted route",
+      "translation": "* PLOTTED ROUTE >>>!"
+    },
+    {
       "source": "Plugin source",
       "translation": "* PLUGIN SOURCE >>>!"
     },
@@ -261657,6 +261837,10 @@
       "translation": "* REFUEL AT DESTINATIONS >>>!"
     },
     {
+      "source": "Refuel before continuing",
+      "translation": "* REFUEL BEFORE CONTINUING >>>!"
+    },
+    {
       "source": "Refuel destinations must also be listed as route destinations.",
       "translation": "* REFUEL DESTINATIONS MUST ALSO BE LISTED AS ROUTE DESTINATIONS. >>>!"
     },
@@ -263967,10 +264151,6 @@
     {
       "source": "Sco",
       "translation": "* SCO >>>!"
-    },
-    {
-      "source": "Scoopable",
-      "translation": "* SCOOPABLE >>>!"
     },
     {
       "source": "Scoopable star",
@@ -271841,10 +272021,6 @@
       "translation": "* USE BODY TYPE, GEOLOGY, AND STELLAR CLUES TO NARROW THE SEARCH FOR A SURFACE-MINING COMMODITY. >>>!"
     },
     {
-      "source": "Use boost on B → C",
-      "translation": "* USE BOOST ON B → C >>>!"
-    },
-    {
       "source": "Use compact/scrolling commodities list",
       "translation": "* USE COMPACT/SCROLLING COMMODITIES LIST >>>!"
     },
@@ -271893,12 +272069,20 @@
       "translation": "* USE LAST UPDATED TIME FROM SPANSH NOT EDSM >>>!"
     },
     {
+      "source": "Use local flora photos or download biology references for offline browsing.",
+      "translation": "* USE LOCAL FLORA PHOTOS OR DOWNLOAD BIOLOGY REFERENCES FOR OFFLINE BROWSING. >>>!"
+    },
+    {
       "source": "Use local time",
       "translation": "* USE LOCAL TIME >>>!"
     },
     {
       "source": "Use mapping value",
       "translation": "* USE MAPPING VALUE >>>!"
+    },
+    {
+      "source": "Use neutron boost for the following jump",
+      "translation": "* USE NEUTRON BOOST FOR THE FOLLOWING JUMP >>>!"
     },
     {
       "source": "Use one of the five original Guardian plotter sizes.",
@@ -271971,10 +272155,6 @@
     {
       "source": "Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus.",
       "translation": "* USE THE ORIGINAL SRVSURVEY SHORTCUTS WHILE EITHER THIS APPLICATION OR ELITE DANGEROUS HAS FOCUS. >>>!"
-    },
-    {
-      "source": "Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing.",
-      "translation": "* USE THE ORIGINAL LOCAL-FLORA NAMING CONTRACT, RETAIN AN IMPORTED IMAGE CACHE, OR DOWNLOAD BIOLOGY REFERENCES FOR OFFLINE BROWSING. >>>!"
     },
     {
       "source": "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
@@ -272907,10 +273087,6 @@
     {
       "source": "Waypoint A",
       "translation": "* WAYPOINT A >>>!"
-    },
-    {
-      "source": "Waypoint B",
-      "translation": "* WAYPOINT B >>>!"
     },
     {
       "source": "Waypoint C",
@@ -274281,6 +274457,10 @@
       "translation": "* DIAMONDBACKXL >>>!"
     },
     {
+      "source": "direct-target",
+      "translation": "* DIRECT-TARGET >>>!"
+    },
+    {
       "source": "direction",
       "translation": "* DIRECTION >>>!"
     },
@@ -274619,6 +274799,10 @@
     {
       "source": "followed",
       "translation": "* FOLLOWED >>>!"
+    },
+    {
+      "source": "followed-route",
+      "translation": "* FOLLOWED-ROUTE >>>!"
     },
     {
       "source": "foot",
@@ -275405,6 +275589,10 @@
       "translation": "* NEUTRON BOOST FSD STAR ROUTE >>>!"
     },
     {
+      "source": "neutron-stop",
+      "translation": "* NEUTRON-STOP >>>!"
+    },
+    {
       "source": "new:{0}",
       "translation": "* NEW:{0} >>>!"
     },
@@ -275527,6 +275715,10 @@
     {
       "source": "on Discord",
       "translation": "* ON DISCORD >>>!"
+    },
+    {
+      "source": "on {0}",
+      "translation": "* ON {0} >>>!"
     },
     {
       "source": "on-foot",
@@ -275679,6 +275871,10 @@
     {
       "source": "platinum",
       "translation": "* PLATINUM >>>!"
+    },
+    {
+      "source": "plotted-route",
+      "translation": "* PLOTTED-ROUTE >>>!"
     },
     {
       "source": "plotter",

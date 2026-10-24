@@ -154,8 +154,7 @@ public sealed class MiningWorkspaceState
         MiningPreferences settings = Data.Settings;
         string? text = entry.EventName switch
         {
-            "MiningRefined" when settings.NotifyRefined =>
-                $"{(MiningJson.Text(json, "Type_Localised") is { Length: > 0 } localized ? localized : MiningJson.Text(json, "Type"))} ×1",
+            "MiningRefined" when settings.NotifyRefined => $"{RefinedCommodityName(json)} ×1",
             "MaterialCollected" when settings.NotifyMaterials =>
                 $"Collected: {MiningJson.Text(json, "Name")} ×{MiningJson.Number(json, "Count")}",
             "ProspectedAsteroid" when settings.NotifyProspecting => FormatProspect(),
@@ -177,6 +176,14 @@ public sealed class MiningWorkspaceState
         {
             Notices.RemoveAt(Notices.Count - 1);
         }
+    }
+
+    /// <summary>Uses catalog display casing while retaining translated names supplied by the journal.</summary>
+    private static string RefinedCommodityName(JsonElement data)
+    {
+        string localized = MiningJson.Text(data, "Type_Localised");
+        string name = string.IsNullOrWhiteSpace(localized) ? MiningJson.Text(data, "Type") : localized;
+        return MiningCommodityName.Canonical(name);
     }
 
     private string? FormatProspect()
@@ -202,8 +209,8 @@ public sealed class MiningWorkspaceState
             return null;
         }
 
-        return string.Join(" · ", selected.Select(m => $"{m.Name} {m.Percentage:0.0}%"))
-            + (string.IsNullOrEmpty(last.Core) ? "" : $" · Core: {last.Core}")
+        return string.Join(" · ", selected.Select(m => $"{MiningCommodityName.Canonical(m.Name)} {m.Percentage:0.0}%"))
+            + (string.IsNullOrEmpty(last.Core) ? "" : $" · Core: {MiningCommodityName.Canonical(last.Core)}")
             + (last.Remaining <= 0 ? " · Remaining depleted" : $" · Remaining {last.Remaining:0.#}%");
     }
 
@@ -215,10 +222,12 @@ public sealed class MiningWorkspaceState
             return null;
         }
 
-        var parts = prospect.Materials.Select(material => $"{material.Name} {material.Percentage:0.0}%").ToList();
+        var parts = prospect
+            .Materials.Select(material => $"{MiningCommodityName.Canonical(material.Name)} {material.Percentage:0.0}%")
+            .ToList();
         if (!string.IsNullOrEmpty(prospect.Core))
         {
-            parts.Add($"Core: {prospect.Core}");
+            parts.Add($"Core: {MiningCommodityName.Canonical(prospect.Core)}");
         }
 
         parts.Add(prospect.Remaining <= 0 ? "Remaining depleted" : $"Remaining {prospect.Remaining:0.#}%");

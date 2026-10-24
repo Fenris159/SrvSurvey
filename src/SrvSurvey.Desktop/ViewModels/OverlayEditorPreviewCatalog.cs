@@ -52,6 +52,12 @@ internal static class OverlayEditorPreviewCatalog
             ("no-point", "No nearby point"),
             ("glide", "Glide approach")
         ),
+        ["PlotJumpInfo"] = CreatePreviewStates(
+            ("followed-route", "Followed route"),
+            ("neutron-stop", "Neutron stop"),
+            ("plotted-route", "Plotted route"),
+            ("direct-target", "Direct target")
+        ),
         ["PlotFleetCarrierRoute"] = CreatePreviewStates(
             ("cooldown", "Jump cooldown"),
             ("scheduled", "Jump scheduled"),
@@ -136,7 +142,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotSurfaceMiningSurvey" => CreateSurfaceMiningSurveyPreview(ParseSurfaceMiningSurveyPhase(previewState)),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
-            "PlotJumpInfo" => CreateJumpInfoPreview(),
+            "PlotJumpInfo" => CreateJumpInfoPreview(previewState),
             "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(ParseFleetCarrierRouteState(previewState)),
             "PlotMultiGameCommander" => CreateMultiCommanderPreview(),
             "PlotPriorScans" => CreatePriorScansPreview(),
@@ -785,7 +791,8 @@ internal static class OverlayEditorPreviewCatalog
     private static HumanSiteOverlayViewModel CreateHumanSitePreview() =>
         OverlayEditorPreviewFactories.CreateHumanSite();
 
-    private static JumpInfoOverlayViewModel CreateJumpInfoPreview() => OverlayEditorPreviewFactories.CreateJumpInfo();
+    private static JumpInfoOverlayViewModel CreateJumpInfoPreview(string state) =>
+        OverlayEditorPreviewFactories.CreateJumpInfo(state);
 
     private static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoutePreview(
         FleetCarrierRouteEditorPreviewState state

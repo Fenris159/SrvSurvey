@@ -427,11 +427,12 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private MiningProspectOverlayRowViewModel ToOverlayProspect(MiningProspect prospect)
     {
         bool core = !string.IsNullOrEmpty(prospect.Core);
+        string coreName = MiningCommodityName.Canonical(prospect.Core);
         bool notificationsEnabled =
             Settings.NotifyProspecting && (core ? Settings.AnnounceCores : Settings.AnnounceNonCores);
         MiningProspectMaterialViewModel[] materials = prospect
             .Materials.Select(material => new MiningProspectMaterialViewModel(
-                $"{material.Name} {material.Percentage:0.0}%",
+                $"{MiningCommodityName.Canonical(material.Name)} {material.Percentage:0.0}%",
                 notificationsEnabled && MaterialMeetsThreshold(material)
             ))
             .ToArray();
@@ -439,13 +440,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         string summary = string.Join(" · ", materials.Select(material => material.Text));
         if (core)
         {
-            summary += (summary.Length == 0 ? "" : " · ") + $"Core: {prospect.Core}";
+            summary += (summary.Length == 0 ? "" : " · ") + $"Core: {coreName}";
         }
 
         var details = new List<MiningProspectMaterialViewModel>(materials);
         if (core)
         {
-            details.Add(new MiningProspectMaterialViewModel($"Core: {prospect.Core}", qualifies));
+            details.Add(new MiningProspectMaterialViewModel($"Core: {coreName}", qualifies));
         }
 
         return new MiningProspectOverlayRowViewModel(

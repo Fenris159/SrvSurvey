@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 
@@ -5,6 +6,65 @@ namespace SrvSurvey.Core.Tests.Mining;
 
 public sealed class MiningWorkspaceStateTests
 {
+    /// <summary>Formats refined goods with catalog casing without changing journal identities or translated labels.</summary>
+    [Theory]
+    [InlineData("gold", null, "Gold")]
+    [InlineData("silver", null, "Silver")]
+    [InlineData("palladium", null, "Palladium")]
+    [InlineData("platinum", null, "Platinum")]
+    [InlineData("gold", "", "Gold")]
+    [InlineData("gold", "   ", "Gold")]
+    [InlineData("gold", "gold", "Gold")]
+    [InlineData("gold", "Or", "Or")]
+    [InlineData("palladium", "Palladium", "Palladium")]
+    [InlineData("lowtemperaturediamond", null, "Low Temperature Diamonds")]
+    [InlineData("$Gold_Name;", null, "Gold")]
+    public void RefinedNoticesUseDisplayNames(string commodity, string? localized, string expected)
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Session.Start(new DateTimeOffset(2026, 9, 6, 12, 0, 0, TimeSpan.Zero), "Sol", "Ring", "Python");
+        string json = JsonSerializer.Serialize(
+            new
+            {
+                @event = "MiningRefined",
+                timestamp = "2026-09-06T12:01:00Z",
+                Type = commodity,
+                Type_Localised = localized,
+            }
+        );
+
+        state.Apply(Parse(json), false, "Sol", "Ring", "Python");
+
+        MiningNotice notice = Assert.Single(state.Notices);
+        Assert.Equal("Refined", notice.Kind);
+        Assert.Equal(expected + " ×1", notice.Text);
+        Assert.Equal(commodity, Assert.Single(state.Session.Current!.Collections).Name);
+    }
+
+    /// <summary>Uses the same commodity casing for transient and persistent prospect reports.</summary>
+    [Fact]
+    public void ProspectNoticesUseDisplayNamesWithoutChangingStoredMaterials()
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Data.Settings.Thresholds.Clear();
+        state.Data.Settings.AnnounceCores = true;
+        state.Session.Start(new DateTimeOffset(2026, 9, 6, 12, 0, 0, TimeSpan.Zero), "Sol", "Ring", "Python");
+        JournalEventEnvelope prospect = Parse(
+            """
+            {"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z",
+             "Materials":[{"Name":"gold","Proportion":35}],"MotherlodeMaterial":"lowtemperaturediamond"}
+            """
+        );
+
+        state.Apply(prospect, false, "Sol", "Ring", "Python");
+
+        Assert.Equal("Gold 35.0% · Core: Low Temperature Diamonds · Remaining 100%", state.CurrentProspectText);
+        Assert.Equal(state.CurrentProspectText, Assert.Single(state.Notices).Text);
+        MiningProspect stored = Assert.Single(state.Session.Current!.Prospects);
+        Assert.Equal("gold", Assert.Single(stored.Materials).Name);
+        Assert.Equal("lowtemperaturediamond", stored.Core);
+    }
+
     [Fact]
     public void BootstrapDoesNotAutoStartButLiveProspectorDoesAndReplayedEventsAreNotCountedTwice()
     {

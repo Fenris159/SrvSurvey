@@ -3,8 +3,10 @@
 Last audited: 2026-07-26
 
 The migration boundary is the original SrvSurvey data directory selected by the
-player. Import is recursive and content-agnostic: every regular file and empty
-directory is inventoried, size- and SHA-256-identified, copied into a permanent
+player. The downloadable `codexImages` reference cache is excluded before
+traversal and hashing; the source cache is left untouched. Personal local-flora
+photos remain eligible for import. Other regular files and empty directories
+are recursively inventoried, size- and SHA-256-identified, copied into a permanent
 backup, verified, merged with current-only Avalonia data in an isolated staging
 directory, rechecked against the unchanged source and destination, and only
 then activated. Symbolic links and junctions are rejected rather than followed.
@@ -26,7 +28,7 @@ typed conversion is skipped.
 | System/body exploration history | Read directly through the lossless legacy system store and merge with journal-authoritative state | Body/parent/ring/organism/geology projections, unknown-field retention, serialized atomic writes |
 | Guardian surveys | Imported compatible survey files are read after byte-identical source/backup/activation verification | Legacy POI/obelisk/material forms, anomaly preservation, lossless editor/store tests |
 | Local development quests | Legacy definitions and progress remain readable and are updated only through verified atomic saves | Complete known-field loading, unknown-field retention, definition preservation, malformed-file refusal |
-| Cached Codex images and local flora | Imported folders move inside the new data root and migrated paths are rewritten to those verified copies | Byte fixtures and path-rebinding tests |
+| Codex image cache and personal local flora | Downloaded `codexImages` are excluded before backup and activation; personal flora folders are imported and their paths relocated. Existing image preferences remain in place, and legacy bulk-download settings are not enabled. | Locked-cache exclusion, personal-photo preservation, current-cache retention, and settings migration tests |
 
 `ProfileThemeImportTests` exercises the control-group boundary the
 application presents to users: it imports a custom overlay palette and layout,

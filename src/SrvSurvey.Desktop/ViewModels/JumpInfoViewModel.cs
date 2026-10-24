@@ -980,15 +980,17 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return string.Empty;
         }
 
+        if (!string.IsNullOrWhiteSpace(value.DiscoveredBy) || value.DiscoveredAt is not null)
+        {
+            return AppendUpdatedSuffix(value, FormatDiscoveredText(value));
+        }
+
         if (value.IsKnown == false || value.TotalBodyCount == 0 && value.LastUpdatedAt is null)
         {
             return "Undiscovered system";
         }
 
-        string discovered = value.DiscoveredAt is { } discoveredAt
-            ? FormatDiscoveredText(value, discoveredAt)
-            : FormatScanStatusText(value);
-        return AppendUpdatedSuffix(value, discovered);
+        return AppendUpdatedSuffix(value, FormatScanStatusText(value));
     }
 
     private static string FormatScanStatusText(SystemSummary value)
@@ -1003,10 +1005,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             : $"{value.ScannedBodyCount:N0} of {value.TotalBodyCount:N0} bodies reported";
     }
 
-    private static string FormatDiscoveredText(SystemSummary value, DateTimeOffset discoveredAt)
+    private static string FormatDiscoveredText(SystemSummary value)
     {
         string byline = string.IsNullOrWhiteSpace(value.DiscoveredBy) ? string.Empty : " by " + value.DiscoveredBy;
-        return "Discovered" + byline + $" on {discoveredAt.ToLocalTime():g}";
+        string date = value.DiscoveredAt is { } discoveredAt ? $" on {discoveredAt.ToLocalTime():g}" : string.Empty;
+        return "Discovered" + byline + date;
     }
 
     private static string AppendUpdatedSuffix(SystemSummary value, string discovered)

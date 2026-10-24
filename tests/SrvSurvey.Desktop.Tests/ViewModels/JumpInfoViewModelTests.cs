@@ -9,6 +9,37 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class JumpInfoViewModelTests : IDisposable
 {
+    /// <summary>Shows an available commander credit even when its discovery date or body census is missing.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(7)]
+    public async Task DiscoveryCreditDoesNotRequireADateOrBodyCount(int bodies)
+    {
+        SystemSummary summary = CreateSummary() with
+        {
+            DiscoveredAt = null,
+            LastUpdatedAt = null,
+            TotalBodyCount = bodies,
+        };
+        using JumpInfoViewModel model = CreateViewModel(new FakeSummaryClient(summary));
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await model.PendingSummaryLoad;
+
+        Assert.Equal("Discovered by Pathfinder", model.DiscoveryText);
+        Assert.True(model.HasDiscoveryText);
+        Assert.True(model.HasDiscoveryOrRouteGuidance);
+    }
+
     /// <summary>Calculates an individually selected jump from existing system metadata without requiring a plotted route.</summary>
     [Fact]
     public async Task IndividualTargetUsesExistingSummaryCoordinatesForDistance()

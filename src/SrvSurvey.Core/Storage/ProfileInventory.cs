@@ -8,18 +8,29 @@ public sealed record ProfileInventory(
     IReadOnlyList<ProfileInventoryEntry> Entries
 )
 {
+    /// <summary>Inventories every existing file for verification and current-profile preservation.</summary>
     public static Task<ProfileInventory> CreateAsync(string rootPath, CancellationToken cancellationToken = default) =>
-        CreateCoreAsync(rootPath, null, cancellationToken);
+        CreateCoreAsync(rootPath, null, excludeDownloadedImages: false, cancellationToken);
 
+    /// <summary>Inventories incoming data while excluding downloaded images and recording recoverable read failures.</summary>
     internal static Task<ProfileInventory> CreateForImportAsync(
         string rootPath,
         ICollection<ProfileImportWarning> warnings,
         CancellationToken cancellationToken
-    ) => CreateCoreAsync(rootPath, warnings, cancellationToken);
+    ) => CreateCoreAsync(rootPath, warnings, excludeDownloadedImages: true, cancellationToken);
 
+    /// <summary>Compares directory inventories using the destination platform's path identity rules.</summary>
+    internal static bool DirectoryPathsMatch(
+        IEnumerable<string> expected,
+        IEnumerable<string> actual,
+        StringComparer pathComparer
+    ) => expected.ToHashSet(pathComparer).SetEquals(actual);
+
+    /// <summary>Builds a hashed inventory, optionally excluding incoming downloadable reference images.</summary>
     private static async Task<ProfileInventory> CreateCoreAsync(
         string rootPath,
         ICollection<ProfileImportWarning>? warnings,
+        bool excludeDownloadedImages,
         CancellationToken cancellationToken
     )
     {
@@ -34,7 +45,7 @@ public sealed record ProfileInventory(
         RejectReparsePoint(new DirectoryInfo(root));
 
         (List<string> directories, List<string> files) = await Task.Run(
-                () => EnumerateProfile(root, warnings, cancellationToken),
+                () => EnumerateProfile(root, warnings, excludeDownloadedImages, cancellationToken),
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -66,9 +77,11 @@ public sealed record ProfileInventory(
         return new ProfileInventory(root, directories, entries);
     }
 
+    /// <summary>Walks profile data while avoiding links and skipping the incoming Codex cache before traversing it.</summary>
     private static (List<string> Directories, List<string> Files) EnumerateProfile(
         string root,
         ICollection<ProfileImportWarning>? warnings,
+        bool excludeDownloadedImages,
         CancellationToken cancellationToken
     )
     {
@@ -84,6 +97,17 @@ public sealed record ProfileInventory(
 
             foreach (string directory in EnumeratePaths(root, current, true, warnings))
             {
+                if (
+                    excludeDownloadedImages
+                    && string.Equals(
+                        NormalizeRelativePath(root, directory),
+                        "codexImages",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    continue;
+                }
                 var directoryInfo = new DirectoryInfo(directory);
                 if (!AcceptEntry(root, directoryInfo, warnings))
                 {

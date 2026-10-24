@@ -191,6 +191,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         SystemPoiSummary points =
             spansh.Value?.PointsOfInterest ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
         points = points with { Bodies = totalBodyCount };
+        bool hasSystemDiscovery =
+            !string.IsNullOrWhiteSpace(traffic.Value?.DiscoveredBy) || traffic.Value?.DiscoveredAt is not null;
         var summary = new SystemSummary(
             normalizedName,
             resolvedAddress,
@@ -199,8 +201,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             isKnown,
             scannedBodyCount,
             totalBodyCount,
-            bodies.Value?.DiscoveredBy ?? traffic.Value?.DiscoveredBy,
-            bodies.Value?.DiscoveredAt ?? traffic.Value?.DiscoveredAt,
+            hasSystemDiscovery ? traffic.Value?.DiscoveredBy : bodies.Value?.DiscoveredBy,
+            hasSystemDiscovery ? traffic.Value?.DiscoveredAt : bodies.Value?.DiscoveredAt,
             useSpanshLastUpdated() ? spansh.Value?.LastUpdatedAt : bodies.Value?.LastUpdatedAt,
             traffic.Value?.Traffic,
             points,
@@ -781,10 +783,24 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
     private static DateTimeOffset? GetDateTimeOffset(JsonElement element, string propertyName)
     {
-        return
-            element.TryGetProperty(propertyName, out JsonElement value)
-            && value.ValueKind == JsonValueKind.String
-            && value.TryGetDateTimeOffset(out DateTimeOffset result)
+        if (!element.TryGetProperty(propertyName, out JsonElement value) || value.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        if (value.TryGetDateTimeOffset(out DateTimeOffset result))
+        {
+            return result;
+        }
+
+        // EDSM also returns UTC timestamps with a space separator and no explicit offset.
+        return DateTimeOffset.TryParseExact(
+            value.GetString(),
+            "yyyy-MM-dd HH:mm:ss",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out result
+        )
             ? result
             : null;
     }
