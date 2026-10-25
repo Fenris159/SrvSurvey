@@ -32,11 +32,16 @@ public sealed partial class MiningWorkspaceViewModel
 
     private void RefreshMissionTimes()
     {
+        DateTimeOffset now = clock.GetUtcNow();
         foreach (MiningMissionCardViewModel card in MissionCards)
         {
-            card.UpdateTime(clock.GetUtcNow());
+            card.UpdateTime(now);
         }
-        cachedTrackedMissionCards = null;
+        MiningMissionCardViewModel[] tracked = ReadTrackedMissionCards();
+        if (cachedTrackedMissionCards is null || !cachedTrackedMissionCards.SequenceEqual(tracked))
+        {
+            cachedTrackedMissionCards = tracked;
+        }
     }
 
     private MiningMissionCardViewModel CreateMissionCard(MiningMission mission)

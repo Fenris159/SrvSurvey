@@ -12,6 +12,49 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class MiningWorkspaceViewModelTests
 {
     [Fact]
+    public void MissionOverlayRetainsItsListAcrossIdleTicksAndRemovesExpiredMissions()
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Accept(1);
+        DateTimeOffset firstExpiry = fixture.Now.AddDays(1);
+        fixture.Now = fixture.Now.AddHours(1);
+        fixture.Accept(2);
+        using var overlay = new MiningMissionsOverlayViewModel(fixture.Workspace);
+        IReadOnlyList<MiningMissionCardViewModel> original = overlay.Missions;
+        MiningMissionCardViewModel first = original.Single(card => card.Id == 1);
+        string remaining = first.TimeRemaining;
+
+        fixture.Now = fixture.Now.AddMinutes(1);
+        fixture.Workspace.Tick();
+
+        Assert.Same(original, overlay.Missions);
+        Assert.NotEqual(remaining, first.TimeRemaining);
+
+        fixture.Now = firstExpiry;
+        fixture.Workspace.Tick();
+
+        IReadOnlyList<MiningMissionCardViewModel> afterExpiry = overlay.Missions;
+        Assert.NotSame(original, afterExpiry);
+        Assert.Equal(2, Assert.Single(afterExpiry).Id);
+        Assert.False(first.IsActive);
+        Assert.True(fixture.Workspace.ShouldShowMissions);
+
+        fixture.Now = fixture.Now.AddMinutes(1);
+        fixture.Workspace.Tick();
+
+        Assert.Same(afterExpiry, overlay.Missions);
+
+        fixture.Now = firstExpiry.AddHours(1);
+        fixture.Workspace.Tick();
+
+        IReadOnlyList<MiningMissionCardViewModel> empty = overlay.Missions;
+        Assert.Empty(empty);
+        Assert.False(fixture.Workspace.ShouldShowMissions);
+        fixture.Workspace.Tick();
+        Assert.Same(empty, overlay.Missions);
+    }
+
+    [Fact]
     public void MissionCardsTrackDeliveriesCargoAndPersistCommanderChoices()
     {
         using var fixture = new MiningMissionFixture();

@@ -1,119 +1,67 @@
 # SrvSurvey-XP 2.1.3.0-rc.71.1
 
-RC71.1 fixes original SrvSurvey profile imports, restores discovery credits in
-Next Jump, and makes mining commodity labels consistent. It builds on RC71's
-SteamOS and Gamescope overlay support.
+This update covers [PR #250](https://github.com/Fenris159/SrvSurvey/pull/250):
+preserving overlay settings during profile imports, adding mining mission
+tracking and session prospecting yields, and improving combat, colonization,
+and overlay presentation.
 
 ## What's changed
 
-- **Mining missions:** Mining → Missions now uses themed cards with cargo aboard,
-  cumulative deliveries, expiry, rewards, hotspot search, and click-to-copy
-  destination systems. Each card has a tracking checkbox; new missions are
-  tracked by default and choices are saved per commander. The dedicated
-  **Mining Missions** overlay shows selected active missions during collection
-  and return trips, including outside a mining session. Its height follows
-  the selected missions, with a bounded list for larger mission stacks.
-
-- **Mission overlay sizing:** Mining Missions and Massacre Missions expand and
-  contract with their mission rows while retaining the selected left or right
-  growth edge. Long lists scroll within the available viewport at the current
-  display and overlay scale; saved heights no longer leave empty massacre panels.
-  Both mission overlays default to the top-right corner; saved custom positions
-  are preserved.
-
-- **Combat and colonization overlays:** The combat suppression option now
-  applies only while the colonization commodities panel is visible. Loaded
-  projects alone no longer hide combat panels, and hiding or clearing the
-  colony panel restores eligible combat overlays without interrupting tracking.
-- **Massacre mission progress:** Rows show completed kills out of the required
-  total, such as **0/6** through **6/6**, and use the commodities panel's green
-  checkmark when the objective is complete.
-- **On-foot overlay suppression:** Dominator and Maverick suit switches now
-  hide non-combat overlays while keeping ground combat and massacre mission
-  panels eligible to appear. Both suit choices are grouped together on the left.
-- **Overlay editor:** Each text role can select a brush from the overlay
-  appearance swatches alongside its size slider. Brush overrides follow theme
-  changes, save per panel, and reset with the panel's text settings.
-- **Next Jump text roles:** The subtitle uses Caption, destination detail labels
-  use Title, and the route legend uses Header.
-- **Carrier manifests:** Guardian salvage aliases now match local inventory.
-  Local CAPI, carrier-market stock, and journal transfers provide the comparison
-  totals, and locally held goods missing from Raven appear in the editor. All
-  goods are visible by default; the colony-only filter remains available.
-  Partial or delayed market updates no longer restore quantities superseded
-  by a newer accepted CAPI inventory.
-- **Colonization overlays and market search:** Commodity panels contract as rows
-  disappear, including with a saved panel size. Outdated local markets appears
-  beside Ardent, while the carrier, surface-port, and full-supply filters stay
-  visible above the ShoppingList instructions after a search.
-- **Mining overlays:** Surface panels and calibration have a separate
-  **Mining (surface)** editor category. The new **Session** panel shows the
-  active or paused session's location, yield, duration, activity, limpets, and
-  prospecting breakdown (finds, quality hits, average and best yields), with
-  normal theme, sizing, and availability controls. It expands and contracts
-  with its content, retains the selected left or right growth edge, and scrolls
-  long sessions within the available viewport, including at increased scale.
+- **Overlay settings during profile import:** Imports preserve the current
+  installation's overlay visibility, opacity, scale, layouts, shortcuts, and
+  integration settings. Settings that have never been saved retain XP defaults.
+  XP mining imports also preserve mining overlay preferences while importing
+  history, missions, and portable preferences. Verified source backups remain
+  available for recovery.
+- **Mining mission cards:** Mining → Missions uses themed cards with cargo
+  aboard, cumulative deliveries, expiry, rewards, and hotspot search. Click the
+  destination to copy its system name. Each mission has a tracking checkbox;
+  new missions are tracked by default and choices are saved per commander.
+- **Mining Missions overlay:** Selected active missions show cargo and delivery
+  progress during collection and return trips, including outside a mining
+  session. Unchecked, expired, and finished missions are excluded. Idle updates
+  refresh expiry times without replacing an unchanged mission list, preserving
+  the overlay's scroll position.
+- **Mission overlay sizing and placement:** Mining Missions and Massacre
+  Missions expand and contract with their content. Long lists scroll within
+  the available game or screen height at the current display and overlay scale.
+  Saved widths and left/right growth choices are respected; saved heights no
+  longer force empty space. Both panels default to the top-right corner with
+  8-pixel margins, while saved custom positions are preserved.
+- **Mining Session overlay:** The new Session panel shows the active or paused
+  session's location, duration, activity, limpets, and prospecting yields. The
+  per-mineral breakdown includes finds, quality hits, average yield, and best
+  yield. It sizes to its content, preserves the selected growth edge, and scrolls
+  longer breakdowns within the available height.
 - **Mining session controls:** Start, Pause / Resume, and End Session shortcuts
-  share their saved bindings with Settings → Input. The new default-on
-  **Stop sessions automatically after FSD jump or docking** option ends sessions
-  on live travel events, including paused sessions, without ending them during
-  historical journal recovery.
-
-
-- **Original SrvSurvey profile imports:** Backup, verify, and merge now accepts
-  intact Windows profiles whose equivalent folder names use different casing,
-  such as `routes` and `Routes`. File contents are still verified before the
-  imported profile is activated, and recovery backups remain available.
-- **Overlay settings during profile import:** Imports now preserve current
-  overlay visibility, opacity, scale, streaming, VR, and shortcut settings as well as
-  layouts. Unsaved settings retain XP defaults instead of taking disabled
-  visibility flags from an original SrvSurvey profile. XP imports also retain
-  mining overlay settings without excluding mining history or missions.
-- **Downloaded Codex images:** Imports skip the downloadable image cache,
-  reducing unnecessary copying and hashing. Personal flora photos and existing
-  XP caches are preserved. Imported image preferences no longer redirect XP to
-  an old cache path or enable bulk image downloads.
-- **Next Jump overlay discovery credits:** Available commander names and
-  discovery dates now appear correctly, including when a name has no date.
-  Discovery and update times recognize EDSM's UTC date format, and system
-  discovery credits take priority over individual body credits.
-- **Next Jump overlay previews:** The position editor now uses the live route
-  and destination logic. Choose followed-route, neutron-stop, plotted-route,
-  or direct-target examples. Scoopable badges follow the destination's star
-  class; refuel and neutron badges follow the selected route stop. Invented
-  detail rows and the preview-only success message have been removed.
-- **Mining notifications and prospectors:** Commodity names such as Gold,
-  Silver, and Palladium now use consistent capitalization. Multiword mineral
-  and core names use their readable catalog spelling. Journal-provided
-  translations are preserved.
-- **Included RC71 features:** Steam Deck Gaming Mode and Gamescope overlays,
-  automatic Next Jump panel height, clearer route markers, and
-  Commander Powerplay status remain available. See the
-  [Steam Deck Gaming Mode guide](https://github.com/Fenris159/SrvSurvey/blob/1dee430ad5f68455582fa3e1fa7be061afed240c/docs/STEAMOS_GAMING_MODE.md)
-  for setup and compositor requirements.
-
-## Update channel and packages
-
-RC71.1 uses the schema-2 `xp2-v` development channel. RC51 remains the legacy
-compatibility bridge. Windows and Linux packages are self-contained.
-
-- Version: `2.1.3.0-rc.71.1`
-- Tag: `xp2-v2.1.3.0-rc.71.1`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.71.1-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.71.1-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.71.1-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.71.1-x86_64.AppImage.zsync`
-
-The numeric Windows `FileVersion` remains `2.1.3.0`.
-
-## Testing notice and SteamOS limits
-
-This remains a development preview. Private Gamescope compositor tests pass;
-actual Deck touch, trackpad, controller, suspend/resume, docking, and SteamOS
-version differences still need device validation.
-
-Turn the Deck performance HUD off because it competes for the single external
-overlay slot. Custom maximum/per-window scaling is unsupported. If scaling
-becomes unknown, select a scaling mode again in Steam. Automatic Galaxy Map text
-entry is unavailable in external Gamescope sessions, and primary-root X11
-capture cannot supply the composited game image for image-based features.
+  share their saved bindings with Settings → Input. The default-on
+  **Stop sessions automatically after FSD jump or docking** option ends active
+  and paused sessions on live travel events. Historical journal recovery does
+  not trigger automatic stops.
+- **Mining surface settings:** Surface panels and calibration have a separate
+  **Mining (surface)** category in the overlay editor.
+- **On-foot suit suppression:** Dominator and Maverick suit switches hide
+  non-combat overlays while keeping ground combat and massacre mission panels
+  eligible to appear. Both suit choices are grouped together on the left.
+- **Combat and colonization priority:** The combat suppression option applies
+  while the colonization commodities panel is visible. Hiding the panel or
+  clearing its focused content restores eligible combat overlays. Mission
+  tracking continues while the combat panel is hidden.
+- **Massacre mission progress:** Rows show completed kills out of the required
+  total, such as **0/6** through **6/6**. Completed objectives use the same green
+  checkmark as colonization commodity rows.
+- **Carrier manifests:** Guardian salvage aliases match local inventory.
+  Local CAPI, carrier-market stock, and journal transfers supply comparison
+  totals, including locally held goods missing from Raven. All goods are
+  visible by default; the colony-only filter remains available. Partial or
+  delayed market snapshots cannot restore quantities superseded by a newer
+  accepted CAPI inventory.
+- **Colonization overlays and market search:** Commodity panels contract as
+  rows disappear, including with a saved panel size. The outdated-local-markets
+  option appears beside Ardent, and carrier, surface-port, and full-supply
+  filters remain visible above the ShoppingList instructions after a search.
+- **Overlay text customization:** Each text role can select a brush from the
+  overlay appearance swatches beside its size slider. Overrides follow theme
+  changes, save per panel, and reset with the panel's text settings. In Next
+  Jump, the subtitle uses Caption, destination detail labels use Title, and
+  the route legend uses Header.
