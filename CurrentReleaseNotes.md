@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.71.1
+# SrvSurvey-XP 2.1.3.0-rc.72
 
 This update covers [PR #250](https://github.com/Fenris159/SrvSurvey/pull/250):
 preserving overlay settings during profile imports, adding mining mission
