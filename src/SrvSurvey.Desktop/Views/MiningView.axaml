@@ -275,38 +275,7 @@
           <TextBlock Text="Missions"/>
         </TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Spacing="14" Margin="4,20,4,16">
-            <TextBlock Text="Mining missions" TextWrapping="Wrap" Classes="card-title"/>
-            <TextBlock Text="Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events." TextWrapping="Wrap" Classes="muted"/>
-            <ScrollViewer x:Name="MissionsHorizontalScroller"
-              HorizontalScrollBarVisibility="Auto"
-              VerticalScrollBarVisibility="Disabled"
-              IsScrollChainingEnabled="True">
-              <Grid RowDefinitions="Auto,*">
-                <Grid x:Name="MissionsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Missions0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions5" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions6" /></Grid.ColumnDefinitions>
-              <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Commodity"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COMMODITY" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Commodity}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Required"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="REQUIRED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Required}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Delivered"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DELIVERED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Delivered}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="OnBoard"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ON BOARD" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=OnBoard}" /></StackPanel></Button>
-              <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Remaining"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="NEEDED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Remaining}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Destination"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DESTINATION" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Destination}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Status"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATUS" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Status}" /></StackPanel></Button>
-            </Grid>
-                <ListBox Grid.Row="1" x:Name="MissionRows" Classes="table-rows" ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-              <ListBox.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Header="Find hotspots for this commodity" Command="{Binding MissionHotspotsCommand}"/>
-                </ContextMenu>
-              </ListBox.ContextMenu>
-              <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="mining:MiningMission">
-                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Missions0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions5" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions6" /></Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding Commodity}"/><TextBlock Grid.Column="1" Text="{Binding Required}"/><TextBlock Grid.Column="2" Text="{Binding Delivered}"/>
-                    <TextBlock Grid.Column="3" Text="{Binding OnBoard}"/><TextBlock Grid.Column="4" Text="{Binding Remaining}"/>
-                    <TextBlock Grid.Column="5" Text="{Binding Destination}" ToolTip.Tip="{Binding Destination}"/><TextBlock Grid.Column="6" Text="{Binding Status}"/>
-                  </Grid>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-              </Grid>
-            </ScrollViewer>
-            <Button Content="Find hotspots" Command="{Binding MissionHotspotsCommand}" Margin="0,0,8,8"/>
-          </StackPanel>
+          <views:MiningMissionCardsView DataContext="{Binding}" Margin="4,20,4,16" />
         </ScrollViewer>
       </TabItem>
       <TabItem Classes="mining-workspace-tab">
@@ -453,6 +422,18 @@
               <TabItem Header="Session">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <ItemsControl ItemsSource="{Binding SessionBindings}">
+                      <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:InputBindingViewModel">
+                        <Grid ColumnDefinitions="*,220" Margin="0,4" ColumnSpacing="12">
+                          <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                          <StackPanel Grid.Column="1">
+                            <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}" PlaceholderText="Click, then hold keys or controller buttons" />
+                            <TextBlock Text="{Binding ValidationMessage}" IsVisible="{Binding HasValidationError}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <CheckBox Content="Stop sessions automatically after FSD jump or docking" IsChecked="{Binding Settings.AutoStopAfterTravel}"/>
                     <CheckBox Content="Start a session when a prospector limpet launches" IsChecked="{Binding Settings.AutoStart}"/>
                     <CheckBox Content="Switch to Session on prospecting and Hotspots on completion" IsChecked="{Binding Settings.AutoSwitchTabs}"/>
                     <CheckBox Content="Refresh hotspot search after jumps and scans" IsChecked="{Binding Settings.AutoSearch}"/>

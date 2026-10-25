@@ -14,6 +14,50 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayThemeResourcesTests
 {
+    [AvaloniaTheory]
+    [InlineData(OverlayTypographyRole.Header, "type-header")]
+    [InlineData(OverlayTypographyRole.Title, "type-title")]
+    [InlineData(OverlayTypographyRole.Value, "type-value")]
+    [InlineData(OverlayTypographyRole.Body, "type-body")]
+    [InlineData(OverlayTypographyRole.Detail, "type-detail")]
+    [InlineData(OverlayTypographyRole.Caption, "type-caption")]
+    public void RoleBrushOverridesUseThemeSwatchesAndResetToOriginalBrush(OverlayTypographyRole role, string cssClass)
+    {
+        var text = new TextBlock
+        {
+            Text = "Example",
+            Foreground = Brushes.Blue,
+            FontSize = 17,
+        };
+        text.Classes.Add(cssClass);
+        var root = new StackPanel();
+        root.Children.Add(text);
+        var window = new Window { Content = root };
+        window.Resources["LegacyTheme.cyan"] = Brushes.Red;
+        try
+        {
+            window.Show();
+            OverlayTypographyScale scale = OverlayTypographyScale.Default with
+            {
+                Brushes = OverlayTypographyBrushes.Default.With(role, "cyan"),
+            };
+            OverlayTypographyResources.Apply(root, scale);
+            Assert.Equal(Colors.Red, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(17, text.FontSize);
+            window.Resources["LegacyTheme.cyan"] = Brushes.Green;
+            OverlayTypographyResources.Apply(root, scale);
+            Assert.Equal(Colors.Green, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            OverlayTypographyResources.Apply(root, scale with { Brushes = scale.Brushes.With(role, "unknown") });
+            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            OverlayTypographyResources.Apply(root, OverlayTypographyScale.Default);
+            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static readonly IReadOnlyDictionary<string, string> ExpectedConfigurationBindings = new Dictionary<
         string,
         string
@@ -32,6 +76,8 @@ public sealed class OverlayThemeResourcesTests
         ["PlotGalMap"] = "GalaxyMap.AutoShow",
         ["PlotExplorationPois"] = "ExplorationPois.AutoShow",
         ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
+        ["PlotMiningSession"] = "MiningWorkspace.ShouldShowSession",
+        ["PlotMiningMissions"] = "MiningWorkspace.ShouldShowMissions",
         ["PlotMiningCargo"] = "MiningWorkspace.ShouldShowCargo",
         ["PlotMiningReference"] = "MineMap.ShouldShowMiningReference",
         ["PlotMiningFiregroups"] = "Firegroups.ShouldShow",
@@ -534,7 +580,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(39, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(41, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

@@ -134,6 +134,8 @@ internal static class OverlayEditorPreviewCatalog
             "PlotGalMap" => CreateGalaxyMapPreview(),
             "PlotExplorationPois" => OverlayEditorPreviewFactories.CreateExplorationPois(),
             "PlotMiningNotifications" => new MiningActivityOverlayViewModel(null, false),
+            "PlotMiningSession" => new MiningSessionOverlayViewModel(null),
+            "PlotMiningMissions" => new MiningMissionsOverlayViewModel(null),
             "PlotMiningCargo" => new MiningCargoOverlayViewModel(null),
             "PlotMiningReference" => CreateMiningReferencePreview(),
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),

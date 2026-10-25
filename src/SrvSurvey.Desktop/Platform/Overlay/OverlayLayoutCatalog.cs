@@ -9,6 +9,7 @@ public static class OverlayLayoutCatalog
     [
         new(OverlayLayoutCategory.ExplorationAndNavigation, "Exploration & navigation"),
         new(OverlayLayoutCategory.Mining, "Mining"),
+        new(OverlayLayoutCategory.SurfaceMining, "Mining (surface)"),
         new(OverlayLayoutCategory.BiologyAndSurface, "Biology & surface"),
         new(OverlayLayoutCategory.Guardian, "Guardian"),
         new(OverlayLayoutCategory.SitesAndQuests, "Sites & quests"),
@@ -151,6 +152,24 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 100)
         ),
         Define(
+            "PlotMiningSession",
+            "Session",
+            "MiningWorkspace.ShouldShowSession",
+            OverlayLayoutCategory.Mining,
+            OverlaySettingsCategory.Mining,
+            new(340, 300),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0)
+        ),
+        Define(
+            "PlotMiningMissions",
+            "Mining Missions",
+            "MiningWorkspace.ShouldShowMissions",
+            OverlayLayoutCategory.Mining,
+            OverlaySettingsCategory.Mining,
+            new(360, 420),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)
+        ),
+        Define(
             "PlotMiningCargo",
             "Mining cargo hold",
             "MiningWorkspace.ShouldShowCargo",
@@ -163,7 +182,7 @@ public static class OverlayLayoutCatalog
             "PlotMiningReference",
             "Mining Ref",
             "MineMap.ShouldShowMiningReference",
-            OverlayLayoutCategory.Mining,
+            OverlayLayoutCategory.SurfaceMining,
             OverlaySettingsCategory.Mining,
             new(360, 160),
             new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 380)
@@ -181,7 +200,7 @@ public static class OverlayLayoutCatalog
             "PlotMiningWarning",
             "Mining rig range warning",
             "Mining.ShouldShowRigWarning",
-            OverlayLayoutCategory.Mining,
+            OverlayLayoutCategory.SurfaceMining,
             OverlaySettingsCategory.MineMap,
             new(300, 80),
             new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 90)
@@ -190,7 +209,7 @@ public static class OverlayLayoutCatalog
             "PlotMineMap",
             "Mining overview map",
             "MineMap.ShouldShowOverlay",
-            OverlayLayoutCategory.Mining,
+            OverlayLayoutCategory.SurfaceMining,
             OverlaySettingsCategory.MineMap,
             new(420, 440),
             new(
@@ -205,7 +224,7 @@ public static class OverlayLayoutCatalog
             "PlotSurfaceMiningSurvey",
             "Surface mining survey guide",
             "MineMap.ShouldShowSurveyGuideOverlay",
-            OverlayLayoutCategory.Mining,
+            OverlayLayoutCategory.SurfaceMining,
             OverlaySettingsCategory.MineMap,
             new(520, 126),
             new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)
@@ -214,7 +233,7 @@ public static class OverlayLayoutCatalog
             "PlotSurfaceMining",
             "Surface mining",
             "Mining.ShouldShow",
-            OverlayLayoutCategory.Mining,
+            OverlayLayoutCategory.SurfaceMining,
             OverlaySettingsCategory.MineMap,
             new(320, 530),
             new(
@@ -557,4 +576,5 @@ public enum OverlayLayoutCategory
     CombatAndColonization,
     StatusAndUtilities,
     Mining,
+    SurfaceMining,
 }

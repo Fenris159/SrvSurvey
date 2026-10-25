@@ -217,7 +217,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         editSession = session;
         ClosePreviews();
-        if (category == OverlayLayoutCategory.Mining && viewModel?.MiningDetection is { } detection)
+        if (category == OverlayLayoutCategory.SurfaceMining && viewModel?.MiningDetection is { } detection)
         {
             miningCalibration = new MiningCalibrationWindow(detection, hostBounds, hostScaling);
             detection.PropertyChanged += OnMiningDetectionChanged;

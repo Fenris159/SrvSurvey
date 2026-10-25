@@ -1,6 +1,8 @@
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -11,6 +13,54 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ColonizationCommodityOverlayCoordinatorTests : IDisposable
 {
+    [AvaloniaFact]
+    public async Task CombatReturnsWhenTheColonyPanelIsDeactivatedOrItsFocusedContentIsCleared()
+    {
+        var registry = new OverlayWindowRegistry();
+        registry.SetPriorityFacts(OverlayPriorityFacts.HideCombatForColonization);
+        OverlayPanelVisibilityViewModel availability = CreateAvailability(registry);
+        var overlay = new ColonizationCommodityOverlayViewModel();
+        overlay.ApplyPreferences(ColonizationOverlayPreferences.Default with { AutoShow = false });
+        var status = new EliteStatus { Flags = StatusFlags.InMainShip };
+        overlay.Apply(Plan(), status);
+        using var host = new HostedOverlayTestHarness(registry);
+        using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
+        var combat = new CombatViewModel(
+            new CombatSettingsStore(Path.Combine(directory, "combat.json")),
+            new CommanderProfileStore(directory)
+        );
+        combat.AutoShowMassacreMissions = true;
+        combat.SuppressForActiveBuildProjects = true;
+        combat.LoadProfile(null, null, true, new CombatSnapshot([new(123, "Giver", "Enemy", null, 6, 6)]));
+        await combat.ApplyUpdateAsync([], status, true);
+        using var combatCoordinator = new CombatOverlayCoordinator(combat, host.Session);
+        host.Tick();
+        Assert.True(coordinator.IsVisible);
+        Assert.False(combatCoordinator.IsMassacreVisible);
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"Bounty","VictimFaction":"Enemy"}""",
+                out JournalEventEnvelope? bounty,
+                out _
+            )
+        );
+        await combat.ApplyUpdateAsync([bounty!], status, true);
+        Assert.Equal("1/6", Assert.Single(combat.MassacreMissions).ProgressText);
+        coordinator.ToggleVisibility(availability);
+        host.Tick();
+        Assert.False(coordinator.IsVisible);
+        Assert.True(combatCoordinator.IsMassacreVisible);
+        coordinator.ToggleVisibility(availability);
+        host.Tick();
+        Assert.True(coordinator.IsVisible);
+        Assert.False(combatCoordinator.IsMassacreVisible);
+        overlay.Apply(Plan() with { ProjectNames = [], Rows = [] }, status);
+        host.Tick();
+        Assert.False(coordinator.IsVisible);
+        Assert.True(combatCoordinator.IsMassacreVisible);
+        Assert.Equal("1/6", Assert.Single(combat.MassacreMissions).ProgressText);
+    }
+
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-colonization-visibility-{Guid.NewGuid():N}"

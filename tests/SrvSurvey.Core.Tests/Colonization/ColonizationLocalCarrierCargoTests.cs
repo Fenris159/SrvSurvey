@@ -8,6 +8,133 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationLocalCarrierCargoTests
 {
     [Fact]
+    public void PartialAndDelayedMarketsCannotRestoreSupersededCommodityCounts()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        var relic = new MarketItem(
+            1,
+            "ancientrelic",
+            "Guardian Relic",
+            "Salvage",
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            false,
+            false,
+            false
+        );
+        var market = new MarketSnapshot(At(20), "Market", 42, "ABC-123", "FleetCarrier", "All", "Sol", [relic]);
+        local.Observe(market);
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Commodity", "ancientrelic", 4, 0)), At(30));
+        local.Observe(market with { Timestamp = At(40), Items = [relic with { Name = "water", Stock = 10 }] });
+        Assert.Equal(4, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+        Assert.Equal(10, local.GetQuantity(RavenCarrier, "water"));
+
+        local.Observe(market with { Items = [relic with { Stock = 99 }] });
+        Assert.Equal(4, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+        local.Observe(
+            Event(
+                "CargoTransfer",
+                41,
+                "\"Transfers\":[{\"Type\":\"ancientrelic\",\"Count\":3,\"Direction\":\"tocarrier\"}]"
+            ),
+            Dock,
+            true
+        );
+        Assert.Equal(7, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+        local.Observe(market with { Timestamp = At(42), Items = [relic with { Stock = 8 }] });
+        Assert.Equal(8, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+        local.Observe(market with { Timestamp = At(43), Items = [] });
+        Assert.Equal(8, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+    }
+
+    [Fact]
+    public void BuyOrdersWithZeroStockDoNotEraseStoredCarrierCargo()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Commodity", "ancientrelic", 2, 0)), At(10));
+        var item = new MarketItem(
+            1,
+            "ancientrelic",
+            "Guardian Relic",
+            "Salvage",
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            100,
+            false,
+            true,
+            false
+        );
+        local.Observe(new MarketSnapshot(At(20), "Market", 42, "ABC-123", "FleetCarrier", "All", "Sol", [item]));
+        Assert.Equal(2, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+    }
+
+    [Fact]
+    public void LocalMarketStockAndNewerTransfersTakePriorityOverDockedCapiLag()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        var item = new MarketItem(
+            1,
+            "ancientrelic",
+            "Guardian Relic",
+            "Salvage",
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            false,
+            false,
+            false
+        );
+        var market = new MarketSnapshot(At(20), "Market", 42, "ABC-123", "FleetCarrier", "All", "Sol", [item]);
+        local.Observe(market);
+        Assert.Equal(2, local.GetQuantity(RavenCarrier, "Guardian Relic"));
+        Assert.Null(local.GetQuantity(RavenCarrier, "water"));
+        local.Observe(
+            Event(
+                "CargoTransfer",
+                21,
+                "\"Transfers\":[{\"Type\":\"ancientrelic\",\"Count\":3,\"Direction\":\"tocarrier\"}]"
+            ),
+            Dock,
+            true
+        );
+        local.Observe(market with { Timestamp = At(19), Items = [item with { Stock = 99 }] });
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Commodity", "ancientrelic", 2, 0)), At(22), true);
+        Assert.Equal(5, local.GetQuantity(RavenCarrier, "guardianrelic"));
+        Assert.Contains("ancientrelic", local.GetCommodities(RavenCarrier));
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Commodity", "ancientrelic", 4, 0)), At(30));
+        Assert.Equal(4, local.GetQuantity(RavenCarrier, "guardianrelic"));
+        local.Observe(market with { StationType = "Orbis", Timestamp = At(40) });
+        Assert.Equal(4, local.GetQuantity(RavenCarrier, "guardianrelic"));
+    }
+
+    [Theory]
+    [InlineData("Guardian Relic")]
+    [InlineData("guardianrelic")]
+    [InlineData("$AncientRelic_Name;")]
+    public void SalvageAliasesMatchLocalCarrierInventory(string ravenName)
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Commodity", "ancientrelic", 2, 0)), At(10));
+        Assert.Equal(2, local.GetQuantity(RavenCarrier, ravenName));
+    }
+
+    [Fact]
     public void DockedCapiRefreshDoesNotOverwriteLiveJournalTotals()
     {
         var local = new ColonizationLocalCarrierCargo();

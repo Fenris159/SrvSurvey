@@ -6,6 +6,46 @@ namespace SrvSurvey.Core.Tests.Mining;
 
 public sealed class MiningWorkspaceStateTests
 {
+    [Theory]
+    [InlineData("FSDJump")]
+    [InlineData("Docked")]
+    public void TravelEndsActiveSessionByDefault(string eventName)
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Session.Start(new DateTimeOffset(2026, 10, 25, 12, 0, 0, TimeSpan.Zero), "Sol", "Ring", "Python");
+        state.Apply(
+            Parse($$"""{"event":"{{eventName}}","timestamp":"2026-10-25T12:01:00Z"}"""),
+            false,
+            "Sol",
+            "Ring",
+            "Python"
+        );
+        Assert.Null(state.Session.Current);
+        Assert.Single(state.Data.History);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void TravelRespectsAutoStopBootstrapAndPausedSessions(bool autoStop, bool bootstrap)
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Data.Settings.AutoStopAfterTravel = autoStop;
+        DateTimeOffset start = new(2026, 10, 25, 12, 0, 0, TimeSpan.Zero);
+        state.Session.Start(start, "Sol", "Ring", "Python");
+        state.Session.Pause(start.AddSeconds(10));
+        state.Apply(
+            Parse("""{"event":"Docked","timestamp":"2026-10-25T12:01:00Z"}"""),
+            bootstrap,
+            "Sol",
+            "Ring",
+            "Python"
+        );
+        Assert.Equal(autoStop && !bootstrap, state.Session.Current is null);
+        Assert.Equal(autoStop && !bootstrap ? 1 : 0, state.Data.History.Count);
+    }
+
     /// <summary>Formats refined goods with catalog casing without changing journal identities or translated labels.</summary>
     [Theory]
     [InlineData("gold", null, "Gold")]

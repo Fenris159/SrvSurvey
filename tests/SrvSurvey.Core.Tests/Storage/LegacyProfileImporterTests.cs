@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Storage;
@@ -13,6 +14,123 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-profile-importer-tests-{Guid.NewGuid():N}"
     );
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{}")]
+    [InlineData("{\"NotificationSeconds\":30,\"HideInSupercruise\":false}")]
+    [InlineData("{\"PersistentProspectSlots\":2,\"HideProspectsBelowThreshold\":true}")]
+    public async Task XpImportKeepsMiningOverlayChoicesAndDefaultsWhileImportingPlayerData(string? currentSettings)
+    {
+        string source = Path.Combine(temporaryDirectory, "mining-source");
+        string destination = Path.Combine(temporaryDirectory, "mining-current");
+        var incoming = new MiningCommanderData
+        {
+            Settings = new()
+            {
+                HideInSupercruise = false,
+                OverlaysOnlyDuringSession = false,
+                NotificationSeconds = 120,
+                PersistentProspectSlots = 8,
+                HideProspectsBelowThreshold = true,
+                AutoStart = false,
+                AutoStopAfterTravel = false,
+                HomeSystem = "Sol",
+            },
+            Missions =
+            [
+                new()
+                {
+                    Id = 42,
+                    Commodity = "Gold",
+                    Required = 10,
+                },
+            ],
+            History = [new() { Started = DateTimeOffset.UnixEpoch, Ended = DateTimeOffset.UnixEpoch.AddHours(1) }],
+        };
+        new MiningStore(source).Save("F123", incoming);
+        string sourceFile = Assert.Single(Directory.GetFiles(Path.Combine(source, "mining")));
+        string relativePath = Path.GetRelativePath(source, sourceFile);
+        if (currentSettings is not null)
+        {
+            Directory.CreateDirectory(Path.Combine(destination, "mining"));
+            await File.WriteAllTextAsync(
+                Path.Combine(destination, relativePath),
+                "{\"SchemaVersion\":1,\"Settings\":" + currentSettings + "}"
+            );
+        }
+        MiningPreferences previous = new MiningStore(destination).Load("F123").Settings;
+        string original = await File.ReadAllTextAsync(sourceFile);
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            new ProfileImportSource(source, ProfileImportSourceKind.CrossPlatform, null),
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        MiningCommanderData activated = new MiningStore(destination).Load("F123");
+        Assert.Equal(previous.HideInSupercruise, activated.Settings.HideInSupercruise);
+        Assert.Equal(previous.OverlaysOnlyDuringSession, activated.Settings.OverlaysOnlyDuringSession);
+        Assert.Equal(previous.NotificationSeconds, activated.Settings.NotificationSeconds);
+        Assert.Equal(previous.PersistentProspectSlots, activated.Settings.PersistentProspectSlots);
+        Assert.Equal(previous.HideProspectsBelowThreshold, activated.Settings.HideProspectsBelowThreshold);
+        Assert.False(activated.Settings.AutoStart);
+        Assert.False(activated.Settings.AutoStopAfterTravel);
+        Assert.Equal("Sol", activated.Settings.HomeSystem);
+        Assert.Equal(42, Assert.Single(activated.Missions).Id);
+        Assert.Single(activated.History);
+        Assert.Equal(original, await File.ReadAllTextAsync(sourceFile));
+        Assert.Equal(
+            original,
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", relativePath))
+        );
+        Assert.Empty(result.Warnings);
+    }
+
+    /// <summary>Raw legacy settings must not override current opacity or an unsaved overlay default.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("{}")]
+    [InlineData("{\"plotterOpacity\":75}")]
+    [InlineData("{\"plotterOpacity\":0}")]
+    [InlineData("{\"plotterOpacity\":null}")]
+    public async Task ImportExcludesIncomingOpacityAndPreservesCurrentOpacity(string? currentSettings)
+    {
+        string source = Path.Combine(temporaryDirectory, "opacity-source");
+        string destination = Path.Combine(temporaryDirectory, "opacity-current");
+        Directory.CreateDirectory(source);
+        const string incoming = """{"plotterOpacity":0,"futureSetting":true}""";
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), incoming);
+        if (currentSettings is not null)
+        {
+            Directory.CreateDirectory(destination);
+            await File.WriteAllTextAsync(Path.Combine(destination, "settings.json"), currentSettings);
+        }
+
+        ProfileImportResult result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        JsonObject activated = Assert.IsType<JsonObject>(
+            JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")))
+        );
+        JsonObject previous = currentSettings is null ? [] : JsonNode.Parse(currentSettings)!.AsObject();
+        Assert.Equal(previous.ContainsKey("plotterOpacity"), activated.ContainsKey("plotterOpacity"));
+        Assert.True(JsonNode.DeepEquals(previous["plotterOpacity"], activated["plotterOpacity"]));
+        Assert.True(activated["futureSetting"]?.GetValue<bool>());
+        Assert.Equal(incoming, await File.ReadAllTextAsync(Path.Combine(source, "settings.json")));
+        Assert.Equal(
+            incoming,
+            await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "profile", "settings.json"))
+        );
+        ProfileInventoryEntry importedEntry = Assert.Single(result.Manifest.GetImportedEntries());
+        ProfileInventoryEntry actual = Assert.Single(
+            (await ProfileInventory.CreateAsync(destination)).Entries,
+            entry => entry.RelativePath == "settings.json"
+        );
+        Assert.Equal(actual.Sha256, importedEntry.Sha256);
+    }
 
     /// <summary>Imports an empty legacy routes directory alongside current routes despite Windows preserving different casing.</summary>
     [Theory]

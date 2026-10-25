@@ -10,6 +10,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Persistent session recovery per commander | `MiningStore`, paused recovery | Restart and isolation tested |
 | Prospector results, core hits, yields, quality thresholds | Session statistics, persistent multi-prospector overlay and announcement filters | Configurable visible-result limit; only a matching depletion report retires an active asteroid |
 | Cargo and limpet counts | Dedicated Mining cargo overlay backed by the existing `CargoInventoryState` snapshot | Shows used/capacity/remaining, limpets and all cargo; configured target minerals are highlighted |
+| Mining mission tracking | Mining → Missions themed cards and Mining Missions overlay | Normal/rush/wing journal detection, separate cargo and cumulative delivery progress, per-commander tracking toggles (default on), destination-system copy and hotspot search |
 | Refined and collected notifications | `MiningWorkspaceState`, dedicated Mining panel | Separate groups; ship-only gate tested |
 | Engineering raw materials and grades | Raw collection totals and grades 1–4 | Connected to collection events |
 | Refinery bins | Manual refinery estimates, matching reference input | Kept separate from proven refined tonnage |

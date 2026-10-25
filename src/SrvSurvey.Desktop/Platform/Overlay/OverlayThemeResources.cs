@@ -22,6 +22,12 @@ internal interface IOverlayPanelSizePolicy
     bool AutoHeight { get; }
 }
 
+/// <summary>Bounds scrolling content without imposing a fixed height on the shared presentation.</summary>
+internal interface IOverlayPanelViewportAware
+{
+    void SetAvailableHeight(double height);
+}
+
 public static class OverlayThemeResources
 {
     internal const string OverlayTypographyClass = "srv-overlay";

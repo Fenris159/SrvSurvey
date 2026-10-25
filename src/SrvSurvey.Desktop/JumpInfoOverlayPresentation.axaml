@@ -21,15 +21,15 @@
                     VerticalAlignment="Center" Spacing="12"
                     IsVisible="{Binding JumpInfo.HasRouteLegs}">
           <StackPanel Orientation="Horizontal" Spacing="4">
-            <TextBlock Classes="type-detail" Text="◆" Foreground="{Binding ElementName=RouteProgress, Path=TargetBrush}" />
-            <TextBlock FontSize="9" Classes="type-detail" VerticalAlignment="Center" Text="Next jump" />
+            <TextBlock Classes="type-header" Text="◆" Foreground="{Binding ElementName=RouteProgress, Path=TargetBrush}" />
+            <TextBlock FontSize="9" Classes="type-header" VerticalAlignment="Center" Text="Next jump" />
           </StackPanel>
           <StackPanel Orientation="Horizontal" Spacing="4">
-            <TextBlock Classes="type-detail" Text="✦" Foreground="{Binding ElementName=RouteProgress, Path=ScoopableBrush}" />
-            <TextBlock FontSize="9" Classes="type-detail" VerticalAlignment="Center" Text="Scoopable star" />
+            <TextBlock Classes="type-header" Text="✦" Foreground="{Binding ElementName=RouteProgress, Path=ScoopableBrush}" />
+            <TextBlock FontSize="9" Classes="type-header" VerticalAlignment="Center" Text="Scoopable star" />
           </StackPanel>
         </StackPanel>
-        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" FontSize="11" Classes="muted type-detail"
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" FontSize="11" Classes="muted type-caption"
                    Text="Route and destination intelligence" />
       </Grid>
 
@@ -152,7 +152,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:JumpInfoDetailLineViewModel">
               <Grid Margin="0,2" ColumnDefinitions="Auto,*" ColumnSpacing="7">
-                <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenAccentBrush}"
+                <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"
                            Text="{Binding Label, StringFormat={}{0}:}" />
                 <TextBlock Classes="type-value" Grid.Column="1"

@@ -192,15 +192,10 @@
             <StackPanel Orientation="Horizontal" Spacing="12">
               <CheckBox x:Name="UseSpanshMarkets" Content="Spansh" IsChecked="{Binding UseSpansh, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}" />
               <CheckBox x:Name="UseArdentMarkets" Content="Ardent" IsChecked="{Binding UseArdent, Mode=TwoWay}" IsEnabled="{Binding !IsBusy}" />
+              <CheckBox x:Name="IncludeOutdatedLocalMarkets" Content="Include outdated local markets" IsChecked="{Binding IncludeOutdatedLocalMarkets, Mode=TwoWay}" Margin="0,0,12,0"
+                        ToolTip.Tip="Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age." />
             </StackPanel>
           </StackPanel>
-        </WrapPanel>
-        <WrapPanel>
-          <CheckBox Content="Exclude Fleet Carriers" IsChecked="{Binding ExcludeCarriers, Mode=TwoWay}" Margin="0,0,12,0" />
-          <CheckBox Content="Exclude surface ports" IsChecked="{Binding ExcludeSurface, Mode=TwoWay}" Margin="0,0,12,0" />
-          <CheckBox x:Name="IncludeOutdatedLocalMarkets" Content="Include outdated local markets" IsChecked="{Binding IncludeOutdatedLocalMarkets, Mode=TwoWay}" Margin="0,0,12,0"
-                    ToolTip.Tip="Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age." />
-          <CheckBox Content="Can fulfill all selected needs" IsChecked="{Binding RequireFullSupply, Mode=TwoWay}" />
         </WrapPanel>
       </StackPanel>
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="2" Margin="0,4,0,0" />
@@ -213,6 +208,11 @@
                     ToolTip.Tip="Keep ShoppingList when starting or clearing market searches." Margin="0,0,8,4" />
       <Button x:Name="ClearShoppingList" Content="Clear List" Command="{Binding ClearWishListCommand}"
               ToolTip.Tip="Remove all items from ShoppingList." Margin="0,0,0,4" />
+    </WrapPanel>
+    <WrapPanel>
+      <CheckBox Content="Exclude Fleet Carriers" IsChecked="{Binding ExcludeCarriers, Mode=TwoWay}" Margin="0,0,12,0" />
+      <CheckBox Content="Exclude surface ports" IsChecked="{Binding ExcludeSurface, Mode=TwoWay}" Margin="0,0,12,0" />
+      <CheckBox Content="Can fulfill all selected needs" IsChecked="{Binding RequireFullSupply, Mode=TwoWay}" />
     </WrapPanel>
     <TextBlock x:Name="ShoppingListInstructions" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}"
                Text="Click a commodity tag to add it to ShoppingList; click again to remove it. Highlighted tags are on your ShoppingList." />

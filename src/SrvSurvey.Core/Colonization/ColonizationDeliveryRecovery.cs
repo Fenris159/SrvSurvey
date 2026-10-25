@@ -231,6 +231,7 @@ public sealed partial class ColonizationDeliveryRecovery
     public void UpdateMarket(MarketSnapshot market)
     {
         currentMarket = market ?? throw new ArgumentNullException(nameof(market));
+        LocalCarrierCargo.Observe(market);
     }
 
     /// <summary>Installs a freshly loaded commander workspace without notifying the observer.</summary>

@@ -237,6 +237,8 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotExplorationPois"] = typeof(ExplorationPoiOverlayWindow),
         ["PlotMiningNotifications"] = typeof(MiningActivityOverlayWindow),
         ["PlotMiningFiregroups"] = typeof(MiningActivityOverlayWindow),
+        ["PlotMiningSession"] = typeof(MiningSessionOverlayWindow),
+        ["PlotMiningMissions"] = typeof(MiningMissionsOverlayWindow),
         ["PlotMiningCargo"] = typeof(MiningCargoOverlayWindow),
         ["PlotMiningReference"] = typeof(MiningReferenceOverlayWindow),
         ["PlotMiningWarning"] = typeof(MiningWarningOverlayWindow),

@@ -9,6 +9,7 @@ public sealed record MiningPreferences
     public bool ReceiveCommunityData { get; set; }
     public MiningSearchPreferences SearchOptions { get; set; } = new();
     public bool AutoStart { get; set; } = true;
+    public bool AutoStopAfterTravel { get; set; } = true;
     public bool SpeakAnnouncements { get; set; }
     public bool PlayProspectChime { get; set; }
     public string Chime { get; set; } = "Two-tone";
@@ -161,7 +162,15 @@ public sealed class MiningStore(string directory)
             state.History.Any(InvalidSession)
             || (state.Current is { } current && InvalidSession(current))
             || state.Rings.Any(r => r is null || r.Hotspots is null || r.System is null || r.Body is null)
-            || state.Missions.Any(m => m is null || m.Commodity is null)
+            || state.Missions.Any(m =>
+                m is null
+                || m.Commodity is null
+                || m.Destination is null
+                || m.DestinationSystem is null
+                || m.DestinationStation is null
+                || m.Expiry is null
+                || m.Status is null
+            )
         )
         {
             throw new JsonException("Invalid records in mining backup.");

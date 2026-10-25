@@ -21,7 +21,6 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool autoShowFootCombat;
     private bool autoShowMassacreMissions;
     private bool suppressForActiveBuildProjects;
-    private bool hasActiveBuildProjects;
     private bool footSessionActive;
     private string statusMessage = string.Empty;
     private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
@@ -75,6 +74,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Keeps the legacy saved preference; shared priority applies it only to a visible colony panel.</summary>
     public bool SuppressForActiveBuildProjects
     {
         get => suppressForActiveBuildProjects;
@@ -86,7 +86,6 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             }
 
             SavePreferences();
-            UpdateFootSession();
             NotifyOverlayState();
         }
     }
@@ -118,12 +117,10 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     public bool HasMassacreMissions => state.MassacreMissions.Count > 0;
 
     public bool ShouldShowFootCombat =>
-        AutoShowFootCombat && !ShouldSuppressOverlays && state.IsAtWarSettlement && IsFootCombatStatusEligible(status);
+        AutoShowFootCombat && state.IsAtWarSettlement && IsFootCombatStatusEligible(status);
 
     public bool ShouldShowMassacreMissions =>
-        AutoShowMassacreMissions && !ShouldSuppressOverlays && HasMassacreMissions && IsMassacreStatusEligible(status);
-
-    private bool ShouldSuppressOverlays => SuppressForActiveBuildProjects && hasActiveBuildProjects;
+        AutoShowMassacreMissions && HasMassacreMissions && IsMassacreStatusEligible(status);
 
     public void LoadProfile(
         string? profileFrontierId,
@@ -140,18 +137,6 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         footSessionActive = false;
         StatusMessage = string.Empty;
         NotifyAllState();
-    }
-
-    public void SetActiveBuildProjects(bool value)
-    {
-        if (value == hasActiveBuildProjects)
-        {
-            return;
-        }
-
-        hasActiveBuildProjects = value;
-        UpdateFootSession();
-        NotifyOverlayState();
     }
 
     /// <summary>
@@ -403,7 +388,9 @@ public sealed class MassacreMissionViewModel(MassacreMissionSnapshot mission)
 
     public bool IsComplete => Remaining == 0;
 
-    public string RemainingText => IsComplete ? "COMPLETE" : $"{Remaining:N0}";
+    public int Completed => Math.Clamp(KillCount - Remaining, 0, KillCount);
+
+    public string ProgressText => $"{Completed:N0}/{KillCount:N0}";
 
     public double RowOpacity => IsComplete ? 0.58 : 1;
 }

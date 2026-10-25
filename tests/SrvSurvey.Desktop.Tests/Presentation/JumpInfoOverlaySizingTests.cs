@@ -17,6 +17,33 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class JumpInfoOverlaySizingTests
 {
+    [AvaloniaFact]
+    public void NextJumpRolesMatchTheEditorCategories()
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotJumpInfo"));
+        try
+        {
+            preview.Show();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            TextBlock caption = preview
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(text => text.Text == "Route and destination intelligence");
+            Assert.Contains("type-caption", caption.Classes);
+            foreach (string label in new[] { "Next jump", "Scoopable star" })
+            {
+                Assert.Contains(
+                    "type-header",
+                    preview.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == label).Classes
+                );
+            }
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
     /// <summary>Verifies that editor resizing changes Next Jump width while content determines its height.</summary>
     [AvaloniaFact]
     public void EditorResizeChangesWidthWhileHeightFollowsContent()

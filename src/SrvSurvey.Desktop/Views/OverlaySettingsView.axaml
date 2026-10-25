@@ -77,18 +77,18 @@
                   Content="Keep overlays visible when Elite loses focus" />
         <CheckBox IsChecked="{Binding OverlayBehavior.HideMultiGameCommanderOverlay, Mode=TwoWay}"
                   Content="Hide the multi-game Commander overlay" />
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
-          <StackPanel Spacing="6">
-            <TextBlock Classes="muted" Text="Disable overlays when on foot in:" />
-            <CheckBox IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
+        <StackPanel x:Name="SuitOverlaySuppressionSetting" Spacing="6">
+          <TextBlock Classes="muted" Text="Hide non-combat overlays when on foot in:" TextWrapping="Wrap" />
+          <WrapPanel x:Name="SuitOverlaySuppressionOptions" HorizontalAlignment="Left">
+            <CheckBox x:Name="DominatorSuitOverlaySuppressionCheckBox"
+                      IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
+                      Margin="0,0,24,0"
                       Content="Dominator suit" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="6">
-            <TextBlock Classes="muted" Text=" " />
-            <CheckBox IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
+            <CheckBox x:Name="MaverickSuitOverlaySuppressionCheckBox"
+                      IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
                       Content="Maverick suit" />
-          </StackPanel>
-        </Grid>
+          </WrapPanel>
+        </StackPanel>
         <Grid ColumnDefinitions="*,240" ColumnSpacing="20">
           <StackPanel Spacing="2">
             <TextBlock FontWeight="SemiBold" Text="Overlay scale" />
@@ -297,9 +297,9 @@
     <Border x:Name="MiningActivityCard" Classes="card raised">
       <StackPanel Spacing="12">
         <TextBlock Classes="card-title" Text="Ship mining overlays" />
-        <TextBlock Classes="muted" Text="Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
+        <TextBlock Classes="muted" Text="Mining notifications, session progress, cargo, and missions appear aboard your main ship. Tracked missions remain visible during collection and return trips, including outside a mining session. Use the panel controls below to show or hide each overlay." TextWrapping="Wrap" />
         <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
-        <CheckBox Content="Show only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
+        <CheckBox Content="Show notifications and cargo only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
         <TextBlock Text="Notification duration (seconds)" />
         <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
         <TextBlock Text="Persistent prospector results" />
@@ -781,11 +781,11 @@
                       Content="Massacre mission helper (Experimental)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile." />
+                       Text="Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile." />
           </StackPanel>
         </Grid>
         <CheckBox IsChecked="{Binding Combat.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                  Content="Hide combat overlays while Raven Colonial build projects are active" />
+                  Content="Hide combat overlays while the colonization commodities panel is visible" />
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    IsVisible="{Binding Combat.HasStatusMessage}"
                    TextWrapping="Wrap"

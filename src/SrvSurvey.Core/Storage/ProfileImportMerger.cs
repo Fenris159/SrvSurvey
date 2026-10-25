@@ -1,11 +1,20 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Mining;
 
 namespace SrvSurvey.Core.Storage;
 
 internal static class ProfileImportMerger
 {
     private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+    private static readonly string[] MiningOverlayPreferences =
+    [
+        nameof(MiningPreferences.HideInSupercruise),
+        nameof(MiningPreferences.OverlaysOnlyDuringSession),
+        nameof(MiningPreferences.NotificationSeconds),
+        nameof(MiningPreferences.PersistentProspectSlots),
+        nameof(MiningPreferences.HideProspectsBelowThreshold),
+    ];
     private static readonly JsonDocumentOptions DocumentOptions = new()
     {
         AllowTrailingCommas = true,
@@ -86,7 +95,20 @@ internal static class ProfileImportMerger
         if (!hasCurrent)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            File.Copy(sourcePath, target);
+            if (HasOverlayPreferences(relativePath))
+            {
+                byte[] sourceBytes = await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false);
+                await File.WriteAllBytesAsync(
+                        target,
+                        ExcludeIncomingOverlayPreferences(sourceBytes, relativePath),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                File.Copy(sourcePath, target);
+            }
             return;
         }
         byte[]? merged = await MergeFileAsync(
@@ -102,6 +124,48 @@ internal static class ProfileImportMerger
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await File.WriteAllBytesAsync(target, merged, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static bool HasOverlayPreferences(string relativePath) =>
+        string.Equals(relativePath, "settings.json", StringComparison.OrdinalIgnoreCase)
+        || relativePath.StartsWith("mining/", StringComparison.OrdinalIgnoreCase)
+            && relativePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Keeps overlay preferences out of activation without changing verified raw source backups.</summary>
+    private static byte[] ExcludeIncomingOverlayPreferences(byte[] sourceBytes, string relativePath)
+    {
+        if (!HasOverlayPreferences(relativePath))
+        {
+            return sourceBytes;
+        }
+        try
+        {
+            if (JsonNode.Parse(sourceBytes, documentOptions: DocumentOptions) is not JsonObject settings)
+            {
+                return sourceBytes;
+            }
+            bool changed = false;
+            if (string.Equals(relativePath, "settings.json", StringComparison.OrdinalIgnoreCase))
+            {
+                changed = settings.Remove("plotterOpacity");
+            }
+            else if (settings["Settings"] is JsonObject mining)
+            {
+                foreach (string preference in MiningOverlayPreferences)
+                {
+                    changed |= mining.Remove(preference);
+                }
+            }
+            if (changed)
+            {
+                return JsonSerializer.SerializeToUtf8Bytes(settings, IndentedJson);
+            }
+        }
+        catch (JsonException)
+        {
+            // Preserve unreadable shared data under the existing compatibility policy.
+        }
+        return sourceBytes;
     }
 
     private static bool HasFileAncestor(
@@ -140,7 +204,10 @@ internal static class ProfileImportMerger
         }
         try
         {
-            byte[] sourceBytes = await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false);
+            byte[] sourceBytes = ExcludeIncomingOverlayPreferences(
+                await File.ReadAllBytesAsync(sourcePath, cancellationToken).ConfigureAwait(false),
+                relativePath
+            );
             byte[] currentBytes = await File.ReadAllBytesAsync(currentPath, cancellationToken).ConfigureAwait(false);
             if (
                 JsonNode.Parse(currentBytes, documentOptions: DocumentOptions) is not JsonObject current

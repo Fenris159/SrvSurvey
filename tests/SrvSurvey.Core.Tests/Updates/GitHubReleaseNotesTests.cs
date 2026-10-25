@@ -35,25 +35,39 @@ public sealed class GitHubReleaseNotesTests
         Assert.DoesNotContain("Testing notice", result);
     }
 
-    /// <summary>Verifies that published notes expose every feature group and an absolute setup-guide permalink.</summary>
+    /// <summary>Verifies that updater excerpts retain grouped features and absolute Markdown links.</summary>
     [Fact]
-    public void CurrentReleaseNotesExposeAllFeatureGroupsAndAPublishedGuideLink()
+    public void ExtractChangesPreservesFeatureSubheadingsAndAbsoluteLinks()
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "SrvSurvey.slnx")))
-        {
-            directory = directory.Parent;
-        }
-        Assert.NotNull(directory);
-        string markdown = File.ReadAllText(Path.Combine(directory.FullName, "CurrentReleaseNotes.md"));
+        const string markdown = """
+            # SrvSurvey-XP
+
+            Changes in [PR #250](https://github.com/Fenris159/SrvSurvey/pull/250).
+
+            ## What's changed
+
+            ### Mining
+
+            - Mission tracking and session yields.
+
+            ### Combat
+
+            - Mission progress and overlay priority.
+
+            ## Update channel
+
+            Hidden package detail.
+            """;
 
         string excerpt = GitHubReleaseNotes.ExtractChanges(markdown);
 
-        Assert.Contains("Steam Deck Gaming Mode", excerpt);
-        Assert.Contains("Next Jump overlay", excerpt);
-        Assert.Contains("Commander Powerplay status", excerpt);
-        Assert.Contains("](https://github.com/Fenris159/SrvSurvey/blob/", excerpt);
+        Assert.Contains("[PR #250](https://github.com/Fenris159/SrvSurvey/pull/250)", excerpt);
+        Assert.Contains("### Mining", excerpt);
+        Assert.Contains("- Mission tracking and session yields.", excerpt);
+        Assert.Contains("### Combat", excerpt);
+        Assert.Contains("- Mission progress and overlay priority.", excerpt);
         Assert.DoesNotContain("## Update channel", excerpt);
+        Assert.DoesNotContain("Hidden package detail.", excerpt);
     }
 
     /// <summary>Verifies that notes without a recognized changes section produce no updater excerpt.</summary>

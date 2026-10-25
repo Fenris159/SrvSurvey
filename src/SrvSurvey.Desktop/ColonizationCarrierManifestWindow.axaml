@@ -102,7 +102,7 @@
             <Grid ColumnDefinitions="*,74,64,26" Margin="0,3,0,3">
               <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="Commodity:" FontWeight="SemiBold" VerticalAlignment="Center" /><Button Classes="manifest-icon" Content="{Binding SortLabel}" Command="{Binding SortCommand}" ToolTip.Tip="Toggle category / alphabetical order" /></StackPanel>
               <TextBlock Grid.Column="1" Text="Amount:" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" />
-              <TextBlock Grid.Column="2" Text="Journal" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available." />
+              <TextBlock Grid.Column="2" Text="Local" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available." />
             </Grid>
             <ItemsControl x:Name="ManifestGroups" ItemsSource="{Binding Groups}">
               <ItemsControl.ItemTemplate>

@@ -552,6 +552,58 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         );
     }
 
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("{\"body\":42}")]
+    [InlineData("{\"title\":\"\"}")]
+    public void InvalidSavedBrushesReportLayoutErrorsWithoutChangingTheFile(string brushes)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        const string fontValues = """{"header":0,"title":0,"value":0,"body":0,"detail":0,"caption":0}""";
+        System.Text.Json.Nodes.JsonObject typography = System.Text.Json.Nodes.JsonNode.Parse(fontValues)!.AsObject();
+        typography["brushes"] = System.Text.Json.Nodes.JsonNode.Parse(brushes);
+        var document = new System.Text.Json.Nodes.JsonObject { ["PlotJumpInfo"] = typography };
+        string path = Path.Combine(temporaryDirectory, "overlay-typography-overrides.json");
+        string original = document.ToJsonString();
+        File.WriteAllText(path, original);
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+        Assert.Contains("brush", layout.Error!, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(OverlayTypographyScale.Default, layout.GetTypographyScale("PlotJumpInfo"));
+        Assert.Equal(original, File.ReadAllText(path));
+    }
+
+    [Theory]
+    [InlineData(OverlayTypographyRole.Header)]
+    [InlineData(OverlayTypographyRole.Title)]
+    [InlineData(OverlayTypographyRole.Value)]
+    [InlineData(OverlayTypographyRole.Body)]
+    [InlineData(OverlayTypographyRole.Detail)]
+    [InlineData(OverlayTypographyRole.Caption)]
+    public void PerRoleBrushesPersistWithoutChangingTextScale(OverlayTypographyRole role)
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayPlacement placement = OverlayLayoutCatalog.GetRequired("PlotJumpInfo").DefaultPlacement;
+        OverlayTypographyScale typography = OverlayTypographyScale.Default with
+        {
+            Brushes = OverlayTypographyBrushes.Default.With(role, "cyan"),
+        };
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = placement with { TypographyScale = typography },
+            }
+        );
+        Assert.Equal("cyan", store.Load().GetTypographyScale("PlotJumpInfo").Brushes.Get(role));
+        Assert.Equal(0, store.Load().GetTypographyScale("PlotJumpInfo").GetPercent(role));
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = placement with { TypographyScale = OverlayTypographyScale.Default },
+            }
+        );
+        Assert.Equal(OverlayTypographyScale.Default, store.Load().GetTypographyScale("PlotJumpInfo"));
+    }
+
     [Fact]
     public void PerOverlayTypographyIsStoredSeparatelyAndDefaultsToBaseline()
     {

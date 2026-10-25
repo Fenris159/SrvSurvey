@@ -9,6 +9,92 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class LegacyUiSettingsMigratorTests : IDisposable
 {
+    /// <summary>A player-data import must leave unsaved overlay visibility and output defaults in effect.</summary>
+    [Fact]
+    public async Task ProfileImportPreservesOverlayDefaultsAlongsideCurrentPreferences()
+    {
+        AppDataPaths paths = CreatePaths();
+        string source = Path.Combine(temporaryDirectory, "overlay-disabled-source");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(paths.ConfigDirectory);
+        await File.WriteAllTextAsync(paths.UiSettingsPath, """{"Version":1,"Theme":"blue-dark"}""");
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            """
+            {"autoShowPlotJumpInfo":false,"autoShowPlotBodyInfo":false,
+             "hidePlottersFromCombatSuits":true,"streamOneOverlay":true,"displayVR":true}
+            """
+        );
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+        Assert.True(new SystemSurveySettingsStore(paths.UiSettingsPath).Load().AutoShowBodyInfo);
+        Assert.False(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideInDominatorSuit);
+        Assert.False(new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.False(new VrOverlaySettingsStore(paths.UiSettingsPath).Load().Enabled);
+    }
+
+    /// <summary>Reopening after import must preserve the active commander's saved overlay choices.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportAndSubsequentStartupPreserveCommanderOverlaySettings(bool autoShow)
+    {
+        AppDataPaths paths = CreatePaths() with { SettingsFrontierId = "F123" };
+        string source = Path.Combine(temporaryDirectory, "commander-source");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(Path.GetDirectoryName(paths.UiSettingsPath)!);
+        const string sharedSettings = """{"Version":1,"Theme":"orange-dark"}""";
+        await File.WriteAllTextAsync(paths.SharedUiSettingsPath, sharedSettings);
+        string current = $$"""
+            {"Version":1,"JumpInfo":{"AutoShow":{{autoShow.ToString().ToLowerInvariant()}} },
+             "SystemSurvey":{"AutoShowBodyInfo":true},"OverlayScale":{"Index":4},
+             "Colonization":{"Overlay":{"AutoShow":true} },"Input":{"Bindings":{"showJumpInfo":"CTRL J"} } }
+            """;
+        await File.WriteAllTextAsync(paths.UiSettingsPath, current);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            """
+            {"autoShowPlotJumpInfo":false,"plotJumpInfoMinimal":true,"autoShowPlotBodyInfo":false,
+             "plotterScale":22.0,"hideMultiFloatie":true,"streamOneOverlay":true,"displayVR":true,
+             "autoShowPlotBuildCommodities":false,"keyActions_TEST":{"showJumpInfo":"ALT J"}}
+            """
+        );
+        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups")
+        );
+
+        Assert.True(new LegacyUiSettingsMigrator().MigrateIfNeeded(paths).Migrated);
+        byte[] afterImport = await File.ReadAllBytesAsync(paths.UiSettingsPath);
+        Assert.False(new LegacyUiSettingsMigrator().MigrateIfNeeded(paths).Migrated);
+
+        Assert.Equal(afterImport, await File.ReadAllBytesAsync(paths.UiSettingsPath));
+        JsonObject original = Assert.IsType<JsonObject>(JsonNode.Parse(current));
+        JsonObject migrated = Assert.IsType<JsonObject>(JsonNode.Parse(afterImport));
+        foreach (string section in new[] { "JumpInfo", "SystemSurvey", "OverlayScale", "Colonization", "Input" })
+        {
+            Assert.True(JsonNode.DeepEquals(original[section], migrated[section]), section);
+        }
+        Assert.Equal(autoShow, new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+        Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().Minimal);
+        Assert.False(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
+        Assert.False(new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.False(new VrOverlaySettingsStore(paths.UiSettingsPath).Load().Enabled);
+        Assert.Equal(sharedSettings, await File.ReadAllTextAsync(paths.SharedUiSettingsPath));
+        Assert.Equal(
+            current,
+            await File.ReadAllTextAsync(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName))
+        );
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-legacy-ui-migration-tests-{Guid.NewGuid():N}"
@@ -170,23 +256,12 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
-        Assert.True(result.MappedPreferenceCount >= 45);
+        Assert.True(result.MappedPreferenceCount >= 10);
         string backupPath = Assert.IsType<string>(result.PreviousSettingsBackupPath);
         Assert.Equal(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName), backupPath);
         Assert.Equal(currentSettings, await File.ReadAllTextAsync(backupPath));
         Assert.Equal("green-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Equal("de", new LocalizationSettingsStore(paths.UiSettingsPath, paths.DataDirectory).Load());
-        Assert.Equal(
-            new JumpInfoPreferences(false, true, true, true),
-            new JumpInfoSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(new GalaxyMapPreferences(false, false), new GalaxyMapSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(new PulseOverlayPreferences(false), new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new OverlayBehaviorPreferences(true, true, false, true),
-            new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(new OverlayScalePreferences(16), new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new DesktopBehaviorPreferences(false, false, true, true),
             new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load()
@@ -204,71 +279,6 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new RavenServiceSettingsStore(paths.UiSettingsPath).LoadServiceUri()
         );
 
-        SystemSurveyPreferences survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
-        Assert.False(survey.AutoShowBodyInfo);
-        Assert.Equal(321, survey.BodyInfoBubbleSizeLy);
-        Assert.Equal(2.75, survey.HighGravityWarningLevel);
-        Assert.False(survey.UseExternalData);
-        Assert.True(survey.UseExternalBioData);
-        Assert.False(survey.AutoHideBioPlotOnRepeat);
-        Assert.False(survey.KeepBioPlottersVisibleAfterDss);
-        Assert.Equal(345, survey.BioPlotterDssDurationSeconds);
-        Assert.True(survey.ShowTemperatureRangeDebug);
-        Assert.Equal(
-            new FssTuningDetectorSettings(
-                true,
-                true,
-                new FssPixelColor(12, 13, 14, 11),
-                77,
-                new FssPixelColor(22, 23, 24, 21),
-                new FssPixelColor(32, 33, 34, 31),
-                new FssPixelColor(42, 43, 44, 41)
-            ),
-            survey.FssTuningDetector
-        );
-        Assert.Equal(4, survey.SurfaceRadarSize);
-        Assert.False(survey.HighlightDssCandidates);
-        Assert.Equal(7_654_321, survey.DssValueFloor);
-        Assert.True(survey.SuppressForActiveBuildProjects);
-        Assert.Equal(
-            new BiologyPredictionsPreferences(true, 3),
-            new BiologyPredictionsSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(
-            new BiologyRewardThresholds(2.5, 6.5, 11.5),
-            new BiologyRewardSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(new CombatPreferences(true, true, true), new CombatSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new GuardianOverlayPreferences(false, false, false, true, false, true, true, 3, true, true, false, false),
-            new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(
-            new GuardianGesturePreferences(StatusFlags.HudInAnalysisMode, 2_500),
-            new GuardianGestureSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(
-            new HumanSitePreferences(
-                false,
-                720,
-                640,
-                1.25,
-                2.5,
-                3.5,
-                false,
-                5.5,
-                false,
-                7.5,
-                false,
-                false,
-                false,
-                false,
-                true,
-                true
-            ),
-            new HumanSiteSettingsStore(paths.UiSettingsPath).Load()
-        );
-        Assert.Equal(new StationInfoPreferences(false), new StationInfoSettingsStore(paths.UiSettingsPath).Load());
         Assert.True(new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
@@ -292,36 +302,41 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             ),
             new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Load()
         );
-        Assert.Equal(
-            new NotificationPreferences(false, false, false, false, false, false),
-            new NotificationSettingsStore(paths.UiSettingsPath).Load()
-        );
-
-        var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
-        Assert.True(colonization.LoadEnabled());
-        Assert.True(colonization.LoadShipCargoPublishingEnabled());
-        Assert.True(colonization.LoadFleetCarrierCargoSyncEnabled());
-        Assert.Equal(
-            new ColonizationOverlayPreferences(false, false, false, true, true, false, true, false),
-            colonization.LoadOverlayPreferences()
-        );
-
-        GlobalInputSettings input = new GlobalInputSettingsStore(paths.UiSettingsPath).Load();
-        Assert.True(input.KeyboardEnabled);
-        Assert.True(input.ControllerEnabled);
-        Assert.Equal("b7bd7df1-251e-4335-a994-8ce36011eeb2", input.ControllerDeviceId);
-        Assert.Equal("CTRL J", input.Bindings[GlobalInputAction.ShowJumpInfo]);
-        Assert.Equal("SHIFT C", input.Bindings[GlobalInputAction.CopyNextBoxel]);
-        Assert.True(new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
-        Assert.Equal(
-            new VrOverlayPreferences(true, "custom-openvr", "vrcompositor"),
-            new VrOverlaySettingsStore(paths.UiSettingsPath).Load()
-        );
         Assert.True(new DockToDockSettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.True(new ColonizationSettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.True(new ColonizationSettingsStore(paths.UiSettingsPath).LoadShipCargoPublishingEnabled());
 
         JsonObject migrated = Assert.IsType<JsonObject>(
             JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath))
         );
+        foreach (
+            string excluded in new[]
+            {
+                "OverlayBehavior",
+                "OverlayScale",
+                "SystemSurvey",
+                "GalaxyMap",
+                "PulseOverlay",
+                "BiologyPredictions",
+                "BiologyRewards",
+                "Combat",
+                "GuardianOverlays",
+                "GuardianGestures",
+                "HumanSite",
+                "StationInfo",
+                "Notifications",
+                "Streaming",
+                "VirtualReality",
+            }
+        )
+        {
+            Assert.False(migrated.ContainsKey(excluded), $"Imported overlay section {excluded}.");
+        }
+        Assert.Null(migrated["JumpInfo"]?["AutoShow"]);
+        Assert.Null(migrated["Colonization"]?["Overlay"]);
+        Assert.Null(migrated["Input"]?["KeyboardEnabled"]);
+        Assert.Null(migrated["Input"]?["Bindings"]?["showJumpInfo"]);
+        Assert.True(migrated["Colonization"]?["FleetCarrierCargoSyncEnabled"]?.GetValue<bool>());
         Assert.True(migrated["FutureRoot"]?["Enabled"]?.GetValue<bool>());
         Assert.Equal(42, migrated["JumpInfo"]?["FutureOption"]?.GetValue<int>());
         Assert.Equal("keep", migrated["Input"]?["FutureOption"]?.GetValue<string>());
@@ -369,7 +384,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             await File.ReadAllTextAsync(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName))
         );
         Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
-        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
+        Assert.False(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
         JsonObject migrated = Assert.IsType<JsonObject>(
             JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath))
         );
@@ -411,7 +426,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
     }
 
     [Fact]
-    public async Task ExplicitlyDisabledLegacyFssDetectorRemainsDisabled()
+    public async Task ImportedLegacyFssDetectorDoesNotDisableTheXpDefault()
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-disabled-fss");
@@ -426,7 +441,10 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
-        Assert.False(new SystemSurveySettingsStore(paths.UiSettingsPath).Load().FssTuningDetector.Enabled);
+        Assert.Equal(
+            SystemSurveyPreferences.Default.FssTuningDetector.Enabled,
+            new SystemSurveySettingsStore(paths.UiSettingsPath).Load().FssTuningDetector.Enabled
+        );
     }
 
     [Fact]
@@ -489,7 +507,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
     }
 
     [Fact]
-    public async Task ExistingImportMarkerReceivesMissingOverlayScaleOnly()
+    public async Task ExistingImportMarkerPreservesMissingOverlayScaleOnly()
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-scale-upgrade");
@@ -514,15 +532,15 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         LegacyUiSettingsMigrationResult result = migrator.MigrateIfNeeded(paths);
 
-        Assert.True(result.Migrated);
-        Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.Equal(new OverlayScalePreferences(22), new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
+        Assert.False(result.Migrated);
+        Assert.Equal(0, result.MappedPreferenceCount);
+        Assert.Equal(OverlayScalePreferences.Default, new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
     [Fact]
-    public async Task ExistingImportMarkerReceivesMissingMultiGamePreferenceOnly()
+    public async Task ExistingImportMarkerPreservesMissingMultiGamePreferenceOnly()
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-multi-game-upgrade");
@@ -541,16 +559,15 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
         document.Update(root =>
         {
-            JsonObject behavior = Assert.IsType<JsonObject>(root["OverlayBehavior"]);
-            behavior.Remove("HideMultiGameCommanderOverlay");
+            root.Remove("OverlayBehavior");
             root["Theme"] = "green-light";
         });
 
         LegacyUiSettingsMigrationResult result = migrator.MigrateIfNeeded(paths);
 
-        Assert.True(result.Migrated);
-        Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
+        Assert.False(result.Migrated);
+        Assert.Equal(0, result.MappedPreferenceCount);
+        Assert.False(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
         Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
@@ -592,7 +609,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
     }
 
     [Fact]
-    public async Task ExistingImportMarkerReceivesMissingTimestampProviderOnly()
+    public async Task ExistingImportMarkerPreservesMissingTimestampProviderOnly()
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-timestamp-upgrade");
@@ -611,22 +628,21 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
         document.Update(root =>
         {
-            JsonObject jumpInfo = Assert.IsType<JsonObject>(root["JumpInfo"]);
-            jumpInfo.Remove("UseSpanshLastUpdated");
+            root.Remove("JumpInfo");
             root["Theme"] = "green-light";
         });
 
         LegacyUiSettingsMigrationResult result = migrator.MigrateIfNeeded(paths);
 
-        Assert.True(result.Migrated);
-        Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().UseSpanshLastUpdated);
+        Assert.False(result.Migrated);
+        Assert.Equal(0, result.MappedPreferenceCount);
+        Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().UseSpanshLastUpdated);
         Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
     [Fact]
-    public async Task ExistingImportMarkerReceivesMissingFirstFootfallInference()
+    public async Task ExistingImportMarkerPreservesMissingFirstFootfallInference()
     {
         AppDataPaths paths = CreatePaths();
         string source = Path.Combine(temporaryDirectory, "legacy-footfall-upgrade");
@@ -653,17 +669,10 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         LegacyUiSettingsMigrationResult result = migrator.MigrateIfNeeded(paths);
 
-        Assert.True(result.Migrated);
-        Assert.Equal(5, result.MappedPreferenceCount);
+        Assert.False(result.Migrated);
+        Assert.Equal(0, result.MappedPreferenceCount);
         Assert.Equal(
-            FirstFootfallInferencePreferences.Default with
-            {
-                Red = 12,
-                Green = 34,
-                Blue = 56,
-                Tolerance = 17,
-                Threshold = 0.004,
-            },
+            FirstFootfallInferencePreferences.Default,
             new FirstFootfallInferenceSettingsStore(paths.UiSettingsPath).Load()
         );
         Assert.Null(result.PreviousSettingsBackupPath);

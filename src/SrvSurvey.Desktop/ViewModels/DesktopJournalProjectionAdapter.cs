@@ -412,7 +412,6 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             (_, _) =>
             {
                 dependencies.SystemSurvey.SetActiveBuildProjects(dependencies.Colonization.HasProjects);
-                dependencies.Combat.SetActiveBuildProjects(dependencies.Colonization.HasProjects);
                 dependencies.Guardian.SetActiveBuildProjects(dependencies.Colonization.HasProjects);
                 dependencies.HumanSite.SetActiveBuildProjects(dependencies.Colonization.HasProjects);
             }

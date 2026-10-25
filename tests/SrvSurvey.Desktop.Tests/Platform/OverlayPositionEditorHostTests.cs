@@ -23,6 +23,67 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
 
+    [AvaloniaFact]
+    public void TextBrushComboboxCommitsAndReloadsTheSelectedSwatch()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1920, 1080), true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        try
+        {
+            Assert.True(model.Begin());
+            model.OpenOverlaySettings("PlotJumpInfo");
+            model.ToggleTypographySettingsCommand.Execute(null);
+            OverlayPositionEditorWindow toolbar = Assert.IsType<OverlayPositionEditorWindow>(host.EditorToolbar);
+            using WriteableBitmap? initial = toolbar.CaptureRenderedFrame();
+            ComboBox chooser = toolbar
+                .GetVisualDescendants()
+                .OfType<ComboBox>()
+                .Single(combo =>
+                    combo.DataContext is OverlayTypographyRoleViewModel { Role: OverlayTypographyRole.Header }
+                );
+            OverlayTypographyRoleViewModel role = model.TypographyRoles.Single(item =>
+                item.Role == OverlayTypographyRole.Header
+            );
+            chooser.SelectedItem = role.BrushChoices.Single(choice => choice.Key == "cyan");
+            using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
+            Assert.Equal("cyan", role.SelectedBrush.Key);
+            Assert.NotNull(frame);
+            frame.Save(
+                Path.Combine(Path.GetTempPath(), "srvsurvey-overlay-brush-editor.png"),
+                PngBitmapEncoderOptions.Default
+            );
+            model.SaveCommand.Execute(null);
+            Assert.Equal("cyan", store.Load().GetTypographyScale("PlotJumpInfo").Brushes.Header);
+            Assert.True(model.Begin());
+            model.OpenOverlaySettings("PlotJumpInfo");
+            model.ToggleTypographySettingsCommand.Execute(null);
+            using WriteableBitmap? reloaded = Assert
+                .IsType<OverlayPositionEditorWindow>(host.EditorToolbar)
+                .CaptureRenderedFrame();
+            Assert.Equal(
+                "cyan",
+                model.TypographyRoles.Single(item => item.Role == OverlayTypographyRole.Header).SelectedBrush.Key
+            );
+            model.ResetTypographyCommand.Execute(null);
+            model.SaveCommand.Execute(null);
+            Assert.Equal(OverlayTypographyScale.Default, store.Load().GetTypographyScale("PlotJumpInfo"));
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
     /// <summary>Manual resizing keeps the top-left fixed and the bottom-right grip beneath the pointer.</summary>
     [AvaloniaTheory]
     [InlineData("PlotBuildCommodities", false)]
@@ -88,7 +149,11 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 using WriteableBitmap? frame = preview.CaptureRenderedFrame();
                 PixelPoint actual = preview.PointToScreen(grip.TranslatePoint(new Point(11, 11), preview)!.Value);
                 Assert.True(
-                    Math.Abs(actual.X - pointer.X) <= 1 && Math.Abs(actual.Y - pointer.Y) <= 1,
+                    Math.Abs(actual.X - pointer.X) <= 1
+                        && (
+                            preview.RuntimePresentation is IOverlayPanelSizePolicy { AutoHeight: true }
+                            || Math.Abs(actual.Y - pointer.Y) <= 1
+                        ),
                     $"{name} right={right} step {step}: pointer={pointer}, grip={actual}; origin={origin}, current={preview.GetPanelScreenOrigin(preview.RenderScaling)}"
                 );
             }
@@ -1275,7 +1340,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             host
         );
         viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
-            candidate.Category == OverlayLayoutCategory.Mining
+            candidate.Category == OverlayLayoutCategory.SurfaceMining
         );
         try
         {
@@ -1391,7 +1456,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         {
             MiningDetection = detection,
         };
-        vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
+        vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.SurfaceMining);
         Assert.True(vm.Begin());
         MiningCalibrationWindow calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
         Assert.Same(host.EditorToolbar, calibration.Owner);

@@ -89,7 +89,7 @@ public sealed class ProfileThemeImportTests : IDisposable
         Assert.Equal(2, importedLayout.Placements.Count);
         Assert.Equal(0.45, importedLayout.GetOpacity("PlotBodyInfo"));
         Assert.Equal(currentLayout, await File.ReadAllBytesAsync(Path.Combine(data, "plotters.json")));
-        Assert.Equal(0.55, importedLayout.GetOpacity("FutureOverlay"));
+        Assert.Null(importedLayout.GetOpacity("FutureOverlay"));
         Assert.Equal(themeBytes, await File.ReadAllBytesAsync(Path.Combine(source, "theme.json")));
         Assert.Equal(
             themeBytes,

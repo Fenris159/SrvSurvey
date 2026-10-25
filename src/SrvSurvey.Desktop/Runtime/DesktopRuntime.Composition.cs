@@ -436,6 +436,7 @@ internal sealed partial class DesktopRuntime
         );
 
         viewModel.SystemSurvey.PropertyChanged += HandleOverlayPriorityFactsChanged;
+        viewModel.Combat.PropertyChanged += HandleOverlayPriorityFactsChanged;
         SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator = new ColonizationCommodityOverlayCoordinator(
             viewModel.Colonization.CommodityOverlay,
@@ -913,6 +914,7 @@ internal sealed partial class DesktopRuntime
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
+            viewModel.Combat.PropertyChanged -= HandleOverlayPriorityFactsChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
             viewModel.ReferenceDataUpdates.SetRestartHandler(null);
             viewModel.Localization.SetRestartHandler(null);
@@ -1416,6 +1418,11 @@ internal sealed partial class DesktopRuntime
             facts |= OverlayPriorityFacts.BodyInfoForced;
         }
 
+        if (viewModel.Combat.SuppressForActiveBuildProjects)
+        {
+            facts |= OverlayPriorityFacts.HideCombatForColonization;
+        }
+
         OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
     }
 
@@ -1428,6 +1435,7 @@ internal sealed partial class DesktopRuntime
             eventArgs.PropertyName
             is nameof(SystemSurveyViewModel.IsFssInfoForced)
                 or nameof(SystemSurveyViewModel.IsBodyInfoForced)
+                or nameof(CombatViewModel.SuppressForActiveBuildProjects)
         )
         {
             SynchronizeOverlayPriorityFacts();
@@ -1446,7 +1454,9 @@ internal sealed partial class DesktopRuntime
         bool suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
         bool suppressForSession = viewModel.OverlayBehavior.ShouldSuppressForSession;
         OverlayWindowRegistry.Shared.SetGlobalSuppression(manualOverlaySuppressed, suppressForSuit, suppressForSession);
-        bool suppress = manualOverlaySuppressed || suppressForSuit || suppressForSession;
+        bool suppress = manualOverlaySuppressed || suppressForSession;
+        combatOverlayCoordinator?.SetSuppressed(suppress);
+        suppress |= suppressForSuit;
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
@@ -1455,7 +1465,6 @@ internal sealed partial class DesktopRuntime
         surfaceMiningOverlayCoordinator?.SetSuppressed(suppress);
         mineMapOverlayCoordinator?.SetSuppressed(suppress);
         groundTargetOverlayCoordinator?.SetSuppressed(suppress);
-        combatOverlayCoordinator?.SetSuppressed(suppress);
         guardianOverlayCoordinator?.SetSuppressed(suppress);
         stationInfoOverlayCoordinator?.SetSuppressed(suppress);
         humanSiteOverlayCoordinator?.SetSuppressed(suppress);
@@ -1553,6 +1562,9 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.CopyNextBoxel => await CopyNextBoxelAsync(),
             GlobalInputAction.PasteGalMap => await PasteGalaxyMapAsync(),
             GlobalInputAction.ToggleFirstFootfall => await viewModel.ToggleCurrentBodyFirstFootfallAsync(),
+            GlobalInputAction.StartMiningSession
+            or GlobalInputAction.PauseResumeMiningSession
+            or GlobalInputAction.EndMiningSession => viewModel.MiningWorkspace.ExecuteSessionControl(action),
             GlobalInputAction.StreamOne => streamOverlayCoordinator?.Toggle() == true,
             GlobalInputAction.AdjustVr => BeginVrAdjustment(),
             GlobalInputAction.ResetVr => vrOverlayCoordinator?.ResetOrientation() == true,

@@ -35,6 +35,28 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.Same(arrivalField.Parent, sources.Parent);
             Assert.Equal(arrivalField.Bounds.Y, sources.Bounds.Y);
             Assert.True(sources.Bounds.X >= arrivalField.Bounds.Right);
+            CheckBox includeOutdated = window.FindControl<CheckBox>("IncludeOutdatedLocalMarkets")!;
+            CheckBox ardentPosition = window.FindControl<CheckBox>("UseArdentMarkets")!;
+            Assert.Same(ardentPosition.Parent, includeOutdated.Parent);
+            Assert.True(includeOutdated.Bounds.Left > ardentPosition.Bounds.Left);
+            model.ShowSearchCriteria = false;
+            using WriteableBitmap? resultFrame = window.CaptureRenderedFrame();
+            foreach (
+                string label in new[]
+                {
+                    "Exclude Fleet Carriers",
+                    "Exclude surface ports",
+                    "Can fulfill all selected needs",
+                }
+            )
+            {
+                CheckBox filter = window
+                    .GetVisualDescendants()
+                    .OfType<CheckBox>()
+                    .Single(box => Equals(box.Content, label));
+                Assert.True(filter.IsEffectivelyVisible);
+            }
+            model.ShowSearchCriteria = true;
             CheckBox spansh = window.FindControl<CheckBox>("UseSpanshMarkets")!;
             CheckBox ardent = window.FindControl<CheckBox>("UseArdentMarkets")!;
             Assert.True(spansh.IsChecked);

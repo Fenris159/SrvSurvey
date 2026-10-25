@@ -32,7 +32,8 @@ public sealed class MiningWorkspaceState
         string system,
         string body,
         string ship,
-        GalacticCoordinate? position = null
+        GalacticCoordinate? position = null,
+        string station = ""
     )
     {
         if (!RelevantEvents.Contains(entry.EventName))
@@ -59,15 +60,31 @@ public sealed class MiningWorkspaceState
         }
 
         bool changed = Session.Apply(entry);
-        Missions.Apply(entry);
+        Missions.Apply(entry, system, station);
         ApplyRing(entry, system, position);
         if (changed && !bootstrap && !IsProspectProgress(entry))
         {
             AddNotice(entry);
         }
 
+        StopSessionForTravel(entry, bootstrap);
         Synchronize();
         return true;
+    }
+
+    private void StopSessionForTravel(JournalEventEnvelope entry, bool bootstrap)
+    {
+        if (
+            !bootstrap
+            && Data.Settings.AutoStopAfterTravel
+            && entry.EventName is "FSDJump" or "Docked"
+            && entry.Timestamp is { } time
+            && Session.Current is { } session
+            && time >= session.Started
+        )
+        {
+            Stop(time);
+        }
     }
 
     private void ActivateSessionForProspector(JournalEventEnvelope entry, string system, string body, string ship)
@@ -322,5 +339,6 @@ public sealed class MiningWorkspaceState
         "StartJump",
         "SupercruiseEntry",
         "FSDJump",
+        "Docked",
     ];
 }

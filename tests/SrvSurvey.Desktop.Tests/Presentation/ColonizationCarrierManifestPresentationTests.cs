@@ -69,7 +69,10 @@ public sealed class ColonizationCarrierManifestPresentationTests
             using WriteableBitmap? initial = window.CaptureRenderedFrame();
             Assert.NotNull(initial);
             ToggleButton filter = window.FindControl<ToggleButton>("HideNonColonyCommodities")!;
+            Assert.False(filter.IsChecked);
+            Click(window, filter);
             Assert.True(filter.IsChecked);
+            using WriteableBitmap? filtered = window.CaptureRenderedFrame();
             ContentPresenter presenter = filter
                 .GetVisualDescendants()
                 .OfType<ContentPresenter>()

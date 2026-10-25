@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Avalonia;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -7,6 +8,8 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
 {
+    private static readonly string[] PortableSections = ["Colonization", "Localization", "Theme", "Version"];
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-current-ui-import-tests-{Guid.NewGuid():N}"
@@ -34,7 +37,7 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
 
         Assert.True(result.Imported);
         Assert.Equal("blue-dark", new ThemePreferenceStore(destination).LoadThemeKey());
-        Assert.False(new JumpInfoSettingsStore(destination).Load().AutoShow);
+        Assert.True(new JumpInfoSettingsStore(destination).Load().AutoShow);
         Assert.Equal(
             await File.ReadAllBytesAsync(source),
             await File.ReadAllBytesAsync(Path.Combine(backup, "incoming-cross-platform-ui.json"))
@@ -44,6 +47,121 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
             await File.ReadAllTextAsync(Path.Combine(backup, LegacyUiSettingsMigrator.BackupFileName))
         );
         Assert.True(File.Exists(Path.Combine(backup, CrossPlatformUiSettingsImporter.CompletionSignalFileName)));
+    }
+
+    /// <summary>Missing overlay settings must keep XP defaults, even in a brand-new profile.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportSkipsOverlaySectionsAndRetainsPortablePlayerPreferences(bool hasCurrentSettings)
+    {
+        string source = Path.Combine(temporaryDirectory, "source", "cross-platform-ui.json");
+        string destination = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
+        string backup = Path.Combine(temporaryDirectory, "backup");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        await File.WriteAllTextAsync(
+            source,
+            """
+            {
+              "Version": 1,
+              "Theme": "orange-dark",
+              "Localization": { "Language": "de" },
+              "JumpInfo": { "AutoShow": false },
+              "SystemSurvey": { "AutoShowBodyInfo": false },
+              "GalaxyMap": { "AutoShow": false },
+              "ExplorationPois": { "AutoShow": false },
+              "BiologyPredictions": { "CurrentBodyOnly": true },
+              "BiologyRewards": { "BucketOneMillions": 5 },
+              "Combat": { "AutoShowFootCombat": false },
+              "GuardianGestures": { "BlinkTrigger": 42 },
+              "HumanSite": { "AutoShow": false },
+              "MineMap": { "OnlyShowWhileOnGround": true },
+              "Notifications": { "Enabled": false },
+              "StationInfo": { "AutoShow": false },
+              "Streaming": { "JoinedOverlayEnabled": true },
+              "SurfaceMining": { "Detection": { "Enabled": false } },
+              "VirtualReality": { "Enabled": true },
+              "WaylandCapture": { "Enabled": false },
+              "FirstFootfallInference": { "Enabled": false },
+              "Input": { "KeyboardEnabled": false, "Bindings": { "showJumpInfo": "ALT J" } },
+              "OverlayBehavior": { "HideInDominatorSuit": true },
+              "OverlayScale": { "Index": 22 },
+              "OverlayPanelVisibility": { "PlotJumpInfo": false },
+              "FutureOverlay": { "Enabled": false },
+              "Colonization": {
+                "Enabled": true,
+                "Overlay": { "AutoShow": false },
+                "BuildSiteRepairVisits": [{ "MarketId": 123, "StationKey": "test" }]
+              }
+            }
+            """
+        );
+        if (hasCurrentSettings)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            await File.WriteAllTextAsync(destination, """{"Version":1,"Theme":"blue-dark"}""");
+        }
+
+        await CrossPlatformUiSettingsImporter.ImportAsync(source, destination, backup);
+
+        JsonObject imported = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(destination)));
+        Assert.Equal(hasCurrentSettings ? "blue-dark" : "orange-dark", imported["Theme"]?.GetValue<string>());
+        Assert.Equal("de", imported["Localization"]?["Language"]?.GetValue<string>());
+        Assert.True(new JumpInfoSettingsStore(destination).Load().AutoShow);
+        Assert.True(new SystemSurveySettingsStore(destination).Load().AutoShowBodyInfo);
+        Assert.False(new StreamOverlaySettingsStore(destination).LoadEnabled());
+        Assert.False(new VrOverlaySettingsStore(destination).Load().Enabled);
+        Assert.False(new OverlayBehaviorSettingsStore(destination).Load().HideInDominatorSuit);
+        Assert.Equal(OverlayScalePreferences.Default, new OverlayScaleSettingsStore(destination).Load());
+        Assert.Equal(PortableSections, imported.Select(property => property.Key).Order(StringComparer.Ordinal));
+        Assert.Null(imported["Colonization"]?["Overlay"]);
+        Assert.True(new ColonizationSettingsStore(destination).LoadEnabled());
+        Assert.Single(new ColonizationSettingsStore(destination).LoadBuildSiteRepairVisits());
+        Assert.Equal(
+            await File.ReadAllBytesAsync(source),
+            await File.ReadAllBytesAsync(Path.Combine(backup, "incoming-cross-platform-ui.json"))
+        );
+    }
+
+    /// <summary>Existing choices win in both directions, and partial sections must not gain foreign defaults.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportLeavesSavedOverlaySettingsByteForByteUnchanged(bool autoShow)
+    {
+        string source = Path.Combine(temporaryDirectory, "source", "cross-platform-ui.json");
+        string destination = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        await File.WriteAllTextAsync(
+            source,
+            """
+            {"Version":1,"JumpInfo":{"AutoShow":false,"Minimal":true},
+             "Streaming":{"JoinedOverlayEnabled":true},"VirtualReality":{"Enabled":true},
+             "OverlayScale":{"Index":22},"Colonization":{"Overlay":{"AutoShow":false}}}
+            """
+        );
+        string current = $$"""
+            { "Version": 1, "JumpInfo": { "AutoShow": {{autoShow.ToString().ToLowerInvariant()}} },
+              "Streaming": { "JoinedOverlayEnabled": false }, "Colonization": { "Overlay": { "FutureSetting": 42 } } }
+            """;
+        await File.WriteAllTextAsync(destination, current);
+
+        await CrossPlatformUiSettingsImporter.ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backup")
+        );
+        await CrossPlatformUiSettingsImporter.ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "repeat-backup")
+        );
+
+        Assert.Equal(current, await File.ReadAllTextAsync(destination));
+        Assert.Equal(autoShow, new JumpInfoSettingsStore(destination).Load().AutoShow);
+        Assert.False(new JumpInfoSettingsStore(destination).Load().Minimal);
+        Assert.True(new ColonizationSettingsStore(destination).LoadOverlayPreferences().AutoShow);
     }
 
     [Fact]
