@@ -14,6 +14,11 @@ SteamOS and Gamescope overlay support.
   and return trips, including outside a mining session. Its height follows
   the selected missions, with a bounded list for larger mission stacks.
 
+- **Mission overlay sizing:** Mining Missions and Massacre Missions expand and
+  contract with their mission rows while retaining the selected left or right
+  growth edge. Long lists scroll within the available viewport at the current
+  display and overlay scale; saved heights no longer leave empty massacre panels.
+
 - **Combat and colonization overlays:** The combat suppression option now
   applies only while the colonization commodities panel is visible. Loaded
   projects alone no longer hide combat panels, and hiding or clearing the

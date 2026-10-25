@@ -1,11 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.MiningMissionsOverlayPresentation"
  x:DataType="vm:MiningMissionsOverlayViewModel" Width="360">
- <Border Background="{DynamicResource RavenWindowBrush}" CornerRadius="5" Padding="8">
-  <StackPanel Spacing="8">
+ <Border x:Name="MissionPanel" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5" Padding="8" MaxHeight="600">
+  <Grid RowDefinitions="Auto,*" RowSpacing="8">
+   <StackPanel Spacing="8">
    <TextBlock Classes="overlay-header type-header" Text="MINING MISSIONS" />
    <TextBlock Classes="type-detail muted" Text="No tracked mining missions." IsVisible="{Binding !HasMissions}" />
-   <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   </StackPanel>
+   <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
    <ItemsControl ItemsSource="{Binding Missions}">
     <ItemsControl.ItemTemplate>
      <DataTemplate x:DataType="vm:MiningMissionCardViewModel">
@@ -28,6 +30,6 @@
     </ItemsControl.ItemTemplate>
    </ItemsControl>
    </ScrollViewer>
-  </StackPanel>
+  </Grid>
  </Border>
 </UserControl>

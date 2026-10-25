@@ -10,16 +10,17 @@
              HorizontalAlignment="Left"
              MaxWidth="360"
              ClipToBounds="True">
-  <Border Margin="0"
+  <Border x:Name="MissionPanel" MaxHeight="600" Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
-    <StackPanel Spacing="4">
+    <Grid RowDefinitions="Auto,*" RowSpacing="4">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header type-header"
                    Text="MASSACRE MISSIONS" />
       </Grid>
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <ItemsControl ItemsSource="{Binding Combat.MassacreMissions}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:MassacreMissionViewModel">
@@ -68,6 +69,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-    </StackPanel>
+      </ScrollViewer>
+    </Grid>
   </Border>
 </UserControl>
