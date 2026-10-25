@@ -7,6 +7,59 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayWindowRegistryTests
 {
+    [AvaloniaTheory]
+    [InlineData("PlotFootCombat", true, false)]
+    [InlineData("PlotFootCombat", true, true)]
+    [InlineData("PlotMassacre", true, false)]
+    [InlineData("PlotMassacre", true, true)]
+    [InlineData("PlotJumpInfo", false, false)]
+    [InlineData("PlotJumpInfo", false, true)]
+    public void SuitSuppressionAllowsCombatForSeparateAndCombinedPresentations(
+        string plotterName,
+        bool isCombat,
+        bool combinedPresentation
+    )
+    {
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        try
+        {
+            registry.Register(window, plotterName);
+            if (combinedPresentation)
+            {
+                registry.SetPresentationVisual(window, new Border());
+            }
+            else
+            {
+                window.Show();
+            }
+
+            registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: true, sessionSuppressed: false);
+            OverlayVisibilityDecision decision = registry.GetDecision(window);
+            Assert.Equal(isCombat, decision.ShouldHost);
+            Assert.Equal(isCombat, decision.ShouldPresent);
+            Assert.Equal(isCombat, registry.ShouldPresent(plotterName));
+            Assert.Equal(isCombat, registry.ShouldHost(plotterName));
+            Assert.Equal(isCombat, Assert.Single(registry.Snapshot()).IsVisible);
+            Assert.Equal(
+                isCombat ? OverlayVisibilityReasons.None : OverlayVisibilityReasons.SuitSuppressed,
+                decision.Reasons
+            );
+
+            registry.SetGlobalSuppression(manualSuppressed: true, suitSuppressed: true, sessionSuppressed: false);
+            Assert.False(registry.GetDecision(window).ShouldPresent);
+            Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
+            registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: true, sessionSuppressed: true);
+            Assert.False(registry.GetDecision(window).ShouldPresent);
+            registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: false, sessionSuppressed: false);
+            Assert.True(registry.GetDecision(window).ShouldPresent);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>Auxiliary map controls retain their owner after suppression regardless of registration order.</summary>
     [AvaloniaTheory]
     [InlineData(false, false)]

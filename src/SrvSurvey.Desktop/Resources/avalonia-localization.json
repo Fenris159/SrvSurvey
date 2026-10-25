@@ -2993,6 +2993,10 @@
       "translation": "Durchschnittlich"
     },
     {
+      "source": "Average / Best",
+      "translation": "Durchschnittlich / Am besten"
+    },
+    {
       "source": "Average yield",
       "translation": "Durchschnittlicher Ertrag"
     },
@@ -3503,6 +3507,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandit"
+    },
+    {
+      "source": "Best",
+      "translation": "Am besten"
     },
     {
       "source": "Best Sell Station",
@@ -4987,10 +4995,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "Cargo-Updates bleiben im Speicher erhalten, ihre Wiederherstellungsdatei konnte jedoch nicht gespeichert werden: {0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "Ladung: 64 / 192 t"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -8729,10 +8733,6 @@
       "translation": "Deaktivieren Sie Organismenvorhersagen"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "Deaktivieren Sie Overlays zu Fuß in:"
-    },
-    {
       "source": "Disable quests",
       "translation": "Quests deaktivieren"
     },
@@ -11165,6 +11165,10 @@
       "translation": "Einstellungen finden"
     },
     {
+      "source": "Finds",
+      "translation": "Funde"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Passen Sie die kommandantspezifische Markierung an, nachdem Sie sie auf der Karte ausgewählt haben."
     },
@@ -13209,6 +13213,10 @@
       "translation": "Verstecke meine eigenen Scans. Deaktivieren Sie das Kontrollkästchen, um die Signale nach dem Tod erneut aufzurufen"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "Blenden Sie Nicht-Kampf-Overlays aus, wenn Sie zu Fuß unterwegs sind in:"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "Alle losgelösten Overlays ausblenden oder anzeigen."
     },
@@ -13279,6 +13287,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "Hierarchiesteuerelemente werden zwischen verschachtelten Cubes verschoben, nicht zwischen Systemen in der aktuellen Tabelle."
+    },
+    {
+      "source": "High",
+      "translation": "Hoch"
     },
     {
       "source": "High Tech",
@@ -18413,6 +18425,10 @@
       "translation": "Keine Projekte entsprechen diesen Filtern."
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "Noch keine Prospektionsdaten."
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "Keine veröffentlichten Standorte erfüllten diese Kriterien. Es wurde keine Entfernungsbegrenzung angewendet."
     },
@@ -20641,6 +20657,10 @@
       "translation": "Platin-Spots++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "Platin · 2 Funde · 2 Qualitätstreffer"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "Platin ×1"
     },
@@ -21751,6 +21771,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "SCHNELLER ZUGRIFF"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "Qualitätstreffer"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -42883,6 +42907,10 @@
       "translation": "Promedio"
     },
     {
+      "source": "Average / Best",
+      "translation": "Promedio / Mejor"
+    },
+    {
       "source": "Average yield",
       "translation": "Rendimiento medio"
     },
@@ -43393,6 +43421,10 @@
     {
       "source": "Bertrandite",
       "translation": "bertrandita"
+    },
+    {
+      "source": "Best",
+      "translation": "Mejor"
     },
     {
       "source": "Best Sell Station",
@@ -44877,10 +44909,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "Las actualizaciones de carga se conservan en la memoria, pero su archivo de recuperación no se pudo guardar: {0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "Carga: 64 / 192 t"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -48619,10 +48647,6 @@
       "translation": "Deshabilitar las predicciones del organismo."
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "Desactive las superposiciones cuando esté a pie en:"
-    },
-    {
       "source": "Disable quests",
       "translation": "Desactivar misiones"
     },
@@ -51055,6 +51079,10 @@
       "translation": "Encontrar configuraciones"
     },
     {
+      "source": "Finds",
+      "translation": "encuentra"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Ajusta el marcador específico del comandante después de seleccionarlo en el mapa."
     },
@@ -53099,6 +53127,10 @@
       "translation": "Ocultar mis propios escaneos. Desmarque para volver a visitar las señales después de morir"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "Ocultar superposiciones que no sean de combate cuando estés a pie en:"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "Oculta o muestra todas las superposiciones separadas."
     },
@@ -53169,6 +53201,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "Los controles de jerarquía se mueven entre cubos anidados, no entre sistemas en la tabla actual."
+    },
+    {
+      "source": "High",
+      "translation": "Alto"
     },
     {
       "source": "High Tech",
@@ -58303,6 +58339,10 @@
       "translation": "Ningún proyecto coincide con estos filtros."
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "Aún no hay datos de prospección."
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "Ninguna ubicación publicada coincidió con estos criterios. No se aplicó ningún límite de distancia."
     },
@@ -60531,6 +60571,10 @@
       "translation": "Puntos de platino++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "Platino · 2 hallazgos · 2 éxitos de calidad"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "Platino ×1"
     },
@@ -61641,6 +61685,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "ACCESO RÁPIDO"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "Golpes de calidad"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -82773,6 +82821,10 @@
       "translation": "Moyenne"
     },
     {
+      "source": "Average / Best",
+      "translation": "Moyen / Meilleur"
+    },
+    {
       "source": "Average yield",
       "translation": "Rendement moyen"
     },
@@ -83283,6 +83335,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandite"
+    },
+    {
+      "source": "Best",
+      "translation": "Meilleur"
     },
     {
       "source": "Best Sell Station",
@@ -84767,10 +84823,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "Les mises à jour de Cargo sont conservées en mémoire, mais leur fichier de récupération n'a pas pu être enregistré : {0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "Cargaison : 64 / 192 t"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -88509,10 +88561,6 @@
       "translation": "Désactiver les prédictions d'organismes"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "Désactivez les superpositions lorsque vous êtes à pied dans :"
-    },
-    {
       "source": "Disable quests",
       "translation": "Désactiver les quêtes"
     },
@@ -90945,6 +90993,10 @@
       "translation": "Recherche de paramètres"
     },
     {
+      "source": "Finds",
+      "translation": "Trouve"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Affinez le marqueur spécifique au commandant après l’avoir sélectionné sur la carte."
     },
@@ -92989,6 +93041,10 @@
       "translation": "Cacher mes propres scans. Décochez pour revoir les signaux après la mort"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "Masquer les superpositions hors combat lorsque vous êtes à pied dans :"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "Masquer ou afficher toutes les superpositions détachées."
     },
@@ -93059,6 +93115,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "Les contrôles hiérarchiques se déplacent entre les cubes imbriqués, et non entre les systèmes de la table actuelle."
+    },
+    {
+      "source": "High",
+      "translation": "Haut"
     },
     {
       "source": "High Tech",
@@ -98193,6 +98253,10 @@
       "translation": "Aucun projet ne correspond à ces filtres."
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "Aucune donnée de prospection pour l'instant."
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "Aucun emplacement publié ne correspond à ces critères. Aucune limite de distance n’a été appliquée."
     },
@@ -100421,6 +100485,10 @@
       "translation": "Points Platine++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "Platine · 2 trouvailles · 2 hits de qualité"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "Platine ×1"
     },
@@ -101531,6 +101599,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "ACCÈS RAPIDE"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "Des succès de qualité"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -122663,6 +122735,10 @@
       "translation": "Média"
     },
     {
+      "source": "Average / Best",
+      "translation": "Média / Melhor"
+    },
+    {
       "source": "Average yield",
       "translation": "Rendimento médio"
     },
@@ -123173,6 +123249,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandite"
+    },
+    {
+      "source": "Best",
+      "translation": "Melhor"
     },
     {
       "source": "Best Sell Station",
@@ -124657,10 +124737,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "As atualizações de carga são retidas na memória, mas não foi possível salvar seu arquivo de recuperação: {0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "Carga: 64/192 t"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -128399,10 +128475,6 @@
       "translation": "Desativar previsões do organismo"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "Desative as sobreposições quando estiver a pé em:"
-    },
-    {
       "source": "Disable quests",
       "translation": "Desativar missões"
     },
@@ -130835,6 +130907,10 @@
       "translation": "Encontrando configurações"
     },
     {
+      "source": "Finds",
+      "translation": "Descobertas"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Ajuste o marcador específico do comandante após selecioná-lo no mapa."
     },
@@ -132879,6 +132955,10 @@
       "translation": "Ocultar minhas próprias varreduras. Desmarque para revisitar os sinais após morrer"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "Ocultar sobreposições que não sejam de combate quando estiver a pé em:"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "Oculte ou mostre todas as sobreposições desanexadas."
     },
@@ -132949,6 +133029,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "Os controles de hierarquia movem-se entre cubos aninhados, não entre sistemas na tabela atual."
+    },
+    {
+      "source": "High",
+      "translation": "Alto"
     },
     {
       "source": "High Tech",
@@ -138083,6 +138167,10 @@
       "translation": "Nenhum projeto corresponde a esses filtros."
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "Ainda não há dados de prospecção."
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "Nenhum local publicado atendeu a esses critérios. Nenhum corte de distância foi aplicado."
     },
@@ -140311,6 +140399,10 @@
       "translation": "Pontos Platina++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "Platina · 2 descobertas · 2 sucessos de qualidade"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "Platina ×1"
     },
@@ -141421,6 +141513,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "ACESSO RÁPIDO"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "Sucessos de qualidade"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -162553,6 +162649,10 @@
       "translation": "Средний"
     },
     {
+      "source": "Average / Best",
+      "translation": "Средний/Лучший"
+    },
+    {
       "source": "Average yield",
       "translation": "Средняя доходность"
     },
@@ -163063,6 +163163,10 @@
     {
       "source": "Bertrandite",
       "translation": "Бертрандит"
+    },
+    {
+      "source": "Best",
+      "translation": "Лучший"
     },
     {
       "source": "Best Sell Station",
@@ -164547,10 +164651,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "Обновления Cargo сохраняются в памяти, но файл их восстановления сохранить не удалось: {0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "Груз: 64/192 т."
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -168289,10 +168389,6 @@
       "translation": "Отключить прогнозирование организма"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "Отключить наложения, когда идете пешком:"
-    },
-    {
       "source": "Disable quests",
       "translation": "Отключить квесты"
     },
@@ -170725,6 +170821,10 @@
       "translation": "Поиск настроек"
     },
     {
+      "source": "Finds",
+      "translation": "Находки"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Точная настройка маркера командира после его выбора на карте."
     },
@@ -172769,6 +172869,10 @@
       "translation": "Скрыть мои собственные сканы. Снимите флажок, чтобы вернуться к сигналам после смерти."
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "Скрыть небоевые наложения, когда вы идете пешком:"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "Скрыть или показать все отдельные наложения."
     },
@@ -172839,6 +172943,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "Элементы управления иерархией перемещаются между вложенными кубами, а не между системами в текущей таблице."
+    },
+    {
+      "source": "High",
+      "translation": "Высокий"
     },
     {
       "source": "High Tech",
@@ -177973,6 +178081,10 @@
       "translation": "Ни один проект не соответствует этим фильтрам."
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "Данных о разведке пока нет."
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "Ни одно из опубликованных местоположений не соответствовало этим критериям. Ограничение по расстоянию не применялось."
     },
@@ -180201,6 +180313,10 @@
       "translation": "Платиновые споты++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "Платина · 2 находки · 2 качественных попадания"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "Платина ×1"
     },
@@ -181311,6 +181427,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "БЫСТРЫЙ ДОСТУП"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "Качественные хиты"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -202443,6 +202563,10 @@
       "translation": "平均"
     },
     {
+      "source": "Average / Best",
+      "translation": "平均/最佳"
+    },
+    {
       "source": "Average yield",
       "translation": "平均产量"
     },
@@ -202953,6 +203077,10 @@
     {
       "source": "Bertrandite",
       "translation": "伯特兰石"
+    },
+    {
+      "source": "Best",
+      "translation": "最好的"
     },
     {
       "source": "Best Sell Station",
@@ -204437,10 +204565,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "货物更新保留在内存中，但无法保存其恢复文件：{0}"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "货物：64 / 192 吨"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -208179,10 +208303,6 @@
       "translation": "禁用有机体预测"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "步行时禁用覆盖："
-    },
-    {
       "source": "Disable quests",
       "translation": "禁用任务"
     },
@@ -210615,6 +210735,10 @@
       "translation": "查找设置"
     },
     {
+      "source": "Finds",
+      "translation": "发现"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "在地图上选择指挥官特定标记后对其进行微调。"
     },
@@ -212659,6 +212783,10 @@
       "translation": "隐藏我自己的扫描。取消选中以在死亡后重新访问信号"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "步行时隐藏非战斗覆盖层："
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "隐藏或显示所有分离的叠加层。"
     },
@@ -212729,6 +212857,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "层次结构控件在嵌套多维数据集之间移动，而不是在当前表中的系统之间移动。"
+    },
+    {
+      "source": "High",
+      "translation": "高的"
     },
     {
       "source": "High Tech",
@@ -217863,6 +217995,10 @@
       "translation": "没有项目符合这些过滤器。"
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "尚无探矿数据。"
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "没有发布的位置符合这些标准。没有应用距离截止。"
     },
@@ -220091,6 +220227,10 @@
       "translation": "白金点++"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "白金 · 2 个发现 · 2 个优质热门"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "白金×1"
     },
@@ -221201,6 +221341,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "快速访问"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "优质点击"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",
@@ -242333,6 +242477,10 @@
       "translation": "* AVERAGE >>>!"
     },
     {
+      "source": "Average / Best",
+      "translation": "* AVERAGE / BEST >>>!"
+    },
+    {
       "source": "Average yield",
       "translation": "* AVERAGE YIELD >>>!"
     },
@@ -242843,6 +242991,10 @@
     {
       "source": "Bertrandite",
       "translation": "* BERTRANDITE >>>!"
+    },
+    {
+      "source": "Best",
+      "translation": "* BEST >>>!"
     },
     {
       "source": "Best Sell Station",
@@ -244327,10 +244479,6 @@
     {
       "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
       "translation": "* CARGO UPDATES ARE RETAINED IN MEMORY, BUT THEIR RECOVERY FILE COULD NOT BE SAVED: {0} >>>!"
-    },
-    {
-      "source": "Cargo: 64 / 192 t",
-      "translation": "* CARGO: 64 / 192 T >>>!"
     },
     {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
@@ -248069,10 +248217,6 @@
       "translation": "* DISABLE ORGANISM PREDICTIONS >>>!"
     },
     {
-      "source": "Disable overlays when on foot in:",
-      "translation": "* DISABLE OVERLAYS WHEN ON FOOT IN: >>>!"
-    },
-    {
       "source": "Disable quests",
       "translation": "* DISABLE QUESTS >>>!"
     },
@@ -250505,6 +250649,10 @@
       "translation": "* FINDING SETTINGS >>>!"
     },
     {
+      "source": "Finds",
+      "translation": "* FINDS >>>!"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "* FINE-TUNE THE COMMANDER-SPECIFIC MARKER AFTER SELECTING IT ON THE MAP. >>>!"
     },
@@ -252549,6 +252697,10 @@
       "translation": "* HIDE MY OWN SCANS. UNCHECK TO REVISIT SIGNALS AFTER DYING >>>!"
     },
     {
+      "source": "Hide non-combat overlays when on foot in:",
+      "translation": "* HIDE NON-COMBAT OVERLAYS WHEN ON FOOT IN: >>>!"
+    },
+    {
       "source": "Hide or show all detached overlays.",
       "translation": "* HIDE OR SHOW ALL DETACHED OVERLAYS. >>>!"
     },
@@ -252619,6 +252771,10 @@
     {
       "source": "Hierarchy controls move between nested cubes, not between systems in the current table.",
       "translation": "* HIERARCHY CONTROLS MOVE BETWEEN NESTED CUBES, NOT BETWEEN SYSTEMS IN THE CURRENT TABLE. >>>!"
+    },
+    {
+      "source": "High",
+      "translation": "* HIGH >>>!"
     },
     {
       "source": "High Tech",
@@ -257753,6 +257909,10 @@
       "translation": "* NO PROJECTS MATCH THESE FILTERS. >>>!"
     },
     {
+      "source": "No prospecting data yet.",
+      "translation": "* NO PROSPECTING DATA YET. >>>!"
+    },
+    {
       "source": "No published locations matched these criteria. No distance cutoff was applied.",
       "translation": "* NO PUBLISHED LOCATIONS MATCHED THESE CRITERIA. NO DISTANCE CUTOFF WAS APPLIED. >>>!"
     },
@@ -259981,6 +260141,10 @@
       "translation": "* PLATINUM SPOTS++ >>>!"
     },
     {
+      "source": "Platinum · 2 finds · 2 quality hits",
+      "translation": "* PLATINUM · 2 FINDS · 2 QUALITY HITS >>>!"
+    },
+    {
       "source": "Platinum ×1",
       "translation": "* PLATINUM ×1 >>>!"
     },
@@ -261091,6 +261255,10 @@
     {
       "source": "QUICK ACCESS",
       "translation": "* QUICK ACCESS >>>!"
+    },
+    {
+      "source": "Quality hits",
+      "translation": "* QUALITY HITS >>>!"
     },
     {
       "source": "Quality-hit adjustment saved; journal observations are unchanged.",

@@ -328,7 +328,8 @@ public sealed class OverlayWindowRegistry
             GalaxyMapAllowed: !galaxyMapContextActive || definition.ShowInGalaxyMap,
             EditorSuppressed: editorSuppressed,
             ManualSuppressed: manualSuppressed,
-            SuitSuppressed: suitSuppressed,
+            // Suit preferences hide other activities while combat panels keep their own visibility rules.
+            SuitSuppressed: suitSuppressed && definition.Name is not ("PlotFootCombat" or "PlotMassacre"),
             SessionSuppressed: sessionSuppressed,
             PriorityObscured: OverlayPriorityRules.IsObscured(definition.Id, IsAnyPresented, priorityFacts),
             VehicleAllowed: !vehicleExcludedPlotters.Contains(definition.Name)

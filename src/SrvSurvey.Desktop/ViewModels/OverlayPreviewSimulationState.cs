@@ -120,7 +120,9 @@ internal static class OverlayPreviewSimulationProjector
                 "Session",
                 "Active mining session",
                 "64 t · 153.6 t/h",
-                Row("Activity", "18 asteroids · 22 prospectors")
+                Row("Activity", "18 asteroids · 22 prospectors"),
+                Row("Prospecting yields", "Platinum · 2 finds · 2 quality hits"),
+                Row("Average / Best", "43.6% / 52.4%")
             ),
             "PlotMiningCargo" => Content(
                 "CARGO HOLD",

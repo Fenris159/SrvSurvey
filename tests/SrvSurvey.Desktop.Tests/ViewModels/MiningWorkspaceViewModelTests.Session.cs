@@ -10,6 +10,80 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class MiningWorkspaceViewModelTests
 {
     [Fact]
+    public void SessionOverviewShowsLiveProspectingTotalsAndClearsThemWhenTheSessionEnds()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var workspace = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory),
+                clock: new Clock(),
+                announcementOutputs: new MiningAnnouncementOutputs(new SpeechRecorder(), new ChimeRecorder())
+            );
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Feed(string json)
+            {
+                JournalEventEnvelope entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                context.Apply(entry);
+                workspace.Apply(new(null, [entry], ship, null, null, null, [], false), context, null, ship);
+            }
+
+            Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"Python"}""");
+            workspace.StartCommand.Execute(null);
+            workspace.Settings.Thresholds["Platinum"] = 30;
+            workspace.Settings.Thresholds["Osmium"] = 20;
+            using var overview = new MiningSessionOverlayViewModel(workspace);
+            var changed = new List<string?>();
+            overview.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+            Assert.False(overview.HasProspectingYields);
+
+            Feed(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:01Z","Materials":[{"Name":"Platinum","Proportion":40},{"Name":"Osmium","Proportion":10}],"Remaining":100}"""
+            );
+            Feed(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:02Z","Materials":[{"Name":"Platinum","Proportion":20},{"Name":"Osmium","Proportion":30}],"MotherlodeMaterial":"Monazite","Remaining":100}"""
+            );
+            Assert.True(overview.HasProspectingYields);
+            Assert.Equal(workspace.Materials, overview.ProspectingYields);
+            Assert.Equal(
+                new MiningMaterialSummary("Platinum", 2, 1, 30, 40, 0),
+                overview.ProspectingYields.Single(row => row.Name == "Platinum")
+            );
+            Assert.Equal(
+                new MiningMaterialSummary("Osmium", 2, 1, 20, 30, 0),
+                overview.ProspectingYields.Single(row => row.Name == "Osmium")
+            );
+            Assert.Equal(1, overview.ProspectingYields.Single(row => row.Name == "Monazite").QualityHits);
+            Assert.Contains(nameof(overview.ProspectingYields), changed);
+            Assert.Contains(nameof(overview.HasProspectingYields), changed);
+
+            workspace.Settings.Thresholds["Platinum"] = 45;
+            workspace.SaveSettingsCommand.Execute(null);
+            Assert.Equal(0, overview.ProspectingYields.Single(row => row.Name == "Platinum").QualityHits);
+            workspace.PauseCommand.Execute(null);
+            MiningMaterialSummary[] paused = overview.ProspectingYields.ToArray();
+            Feed(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:03Z","Materials":[{"Name":"Platinum","Proportion":60}],"Remaining":100}"""
+            );
+            Assert.Equal(paused, overview.ProspectingYields);
+            workspace.StopCommand.Execute(null);
+            Assert.NotNull(workspace.SelectedSession);
+            Assert.Empty(overview.ProspectingYields);
+            Assert.False(overview.HasProspectingYields);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
     public void ManualSessionControlsShareMasterBindingsAndUpdateTheOverview()
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
@@ -83,7 +157,8 @@ public sealed partial class MiningWorkspaceViewModelTests
             Assert.Contains("0 t", overview.Yield);
             Assert.Contains("asteroids", overview.Activity);
             Assert.Contains("prospectors", overview.Limpets);
-            Assert.Contains("Cargo", overview.Cargo);
+            Assert.Empty(overview.ProspectingYields);
+            Assert.False(overview.HasProspectingYields);
             Assert.False(overview.HasNotes);
             Assert.True(workspace.ExecuteSessionControl(GlobalInputAction.PauseResumeMiningSession));
             Assert.Equal("Paused", overview.State);

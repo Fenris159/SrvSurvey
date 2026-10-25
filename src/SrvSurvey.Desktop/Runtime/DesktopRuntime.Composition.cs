@@ -1446,7 +1446,9 @@ internal sealed partial class DesktopRuntime
         bool suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
         bool suppressForSession = viewModel.OverlayBehavior.ShouldSuppressForSession;
         OverlayWindowRegistry.Shared.SetGlobalSuppression(manualOverlaySuppressed, suppressForSuit, suppressForSession);
-        bool suppress = manualOverlaySuppressed || suppressForSuit || suppressForSession;
+        bool suppress = manualOverlaySuppressed || suppressForSession;
+        combatOverlayCoordinator?.SetSuppressed(suppress);
+        suppress |= suppressForSuit;
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
@@ -1455,7 +1457,6 @@ internal sealed partial class DesktopRuntime
         surfaceMiningOverlayCoordinator?.SetSuppressed(suppress);
         mineMapOverlayCoordinator?.SetSuppressed(suppress);
         groundTargetOverlayCoordinator?.SetSuppressed(suppress);
-        combatOverlayCoordinator?.SetSuppressed(suppress);
         guardianOverlayCoordinator?.SetSuppressed(suppress);
         stationInfoOverlayCoordinator?.SetSuppressed(suppress);
         humanSiteOverlayCoordinator?.SetSuppressed(suppress);

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Storage;
@@ -15,6 +16,64 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
 {
+    [AvaloniaFact]
+    public void SuitSuppressionChoicesShareALeftAlignedGroupAndKeepTheirSavedPreferences()
+    {
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(temporaryDirectory, "journals"),
+            builder =>
+                builder.WithAppDataPaths(
+                    new AppDataPaths(
+                        Path.Combine(temporaryDirectory, "config"),
+                        Path.Combine(temporaryDirectory, "data"),
+                        Path.Combine(temporaryDirectory, "cache"),
+                        []
+                    )
+                )
+        );
+        var settings = new OverlaySettingsView { DataContext = viewModel };
+        var window = new Window
+        {
+            Width = 1100,
+            Height = 800,
+            Content = settings,
+        };
+        try
+        {
+            window.Show();
+            WrapPanel options = settings.FindControl<WrapPanel>("SuitOverlaySuppressionOptions")!;
+            CheckBox dominator = settings.FindControl<CheckBox>("DominatorSuitOverlaySuppressionCheckBox")!;
+            CheckBox maverick = settings.FindControl<CheckBox>("MaverickSuitOverlaySuppressionCheckBox")!;
+            Assert.Equal(HorizontalAlignment.Left, options.HorizontalAlignment);
+            Assert.Same(options, dominator.Parent);
+            Assert.Same(options, maverick.Parent);
+            Assert.Contains(
+                settings.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "Hide non-combat overlays when on foot in:"
+            );
+            dominator.IsChecked = true;
+            maverick.IsChecked = true;
+            OverlayBehaviorPreferences saved = new OverlayBehaviorSettingsStore(
+                viewModel.AppDataPaths.UiSettingsPath
+            ).Load();
+            Assert.True(saved.HideInDominatorSuit);
+            Assert.True(saved.HideInMaverickSuit);
+            using Avalonia.Media.Imaging.WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            Point origin = options.TranslatePoint(default, window)!.Value;
+            Assert.True(origin.X < window.Bounds.Width / 2);
+            Assert.True(options.Bounds.Width < window.Bounds.Width / 2);
+            frame.Save(
+                Path.Combine(Path.GetTempPath(), "srvsurvey-suit-overlay-settings-preview.png"),
+                Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-desktop-behavior-presentation-{Guid.NewGuid():N}"

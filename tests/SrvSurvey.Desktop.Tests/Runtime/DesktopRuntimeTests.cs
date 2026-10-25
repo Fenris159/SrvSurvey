@@ -23,6 +23,55 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    [AvaloniaTheory]
+    [InlineData(OdysseySuitType.Dominator)]
+    [InlineData(OdysseySuitType.Maverick)]
+    public async Task SuitSuppressionKeepsCombatCoordinatorEligibleWhileManualAndSessionSuppressionStillApply(
+        OdysseySuitType suit
+    )
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        using var overlays = new HostedOverlayTestHarness();
+        using var combat = new CombatOverlayCoordinator(main.Combat, overlays.Session);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        FieldInfo viewModelField = typeof(DesktopRuntime).GetField("mainViewModel", flags)!;
+        FieldInfo coordinatorField = typeof(DesktopRuntime).GetField("combatOverlayCoordinator", flags)!;
+        FieldInfo manualField = typeof(DesktopRuntime).GetField("manualOverlaySuppressed", flags)!;
+        MethodInfo applySuppression = typeof(DesktopRuntime).GetMethod("ApplyOverlaySuppression", flags)!;
+        viewModelField.SetValue(runtime, main);
+        coordinatorField.SetValue(runtime, combat);
+        try
+        {
+            main.OverlayBehavior.HideInDominatorSuit = true;
+            main.OverlayBehavior.HideInMaverickSuit = true;
+            main.OverlayBehavior.UpdateContext(suit, onFoot: true);
+            main.OverlayBehavior.UpdateSessionContext(true, true, false, false);
+            Assert.True(main.OverlayBehavior.ShouldSuppressForSuit);
+            applySuppression.Invoke(runtime, null);
+            Assert.False(combat.IsSuppressed);
+            Assert.False(OverlayWindowRegistry.Shared.ShouldHost("PlotJumpInfo"));
+            Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotFootCombat"));
+
+            manualField.SetValue(runtime, true);
+            applySuppression.Invoke(runtime, null);
+            Assert.True(combat.IsSuppressed);
+            manualField.SetValue(runtime, false);
+            main.OverlayBehavior.UpdateSessionContext(false, true, false, false);
+            applySuppression.Invoke(runtime, null);
+            Assert.True(combat.IsSuppressed);
+        }
+        finally
+        {
+            OverlayWindowRegistry.Shared.SetGlobalSuppression(false, false, false);
+            viewModelField.SetValue(runtime, null);
+            coordinatorField.SetValue(runtime, null);
+        }
+    }
+
     /// <summary>The app always passes resolved paths; doing so must still initialize an automatic commander's private settings.</summary>
     [AvaloniaTheory]
     [InlineData(false)]

@@ -5990,6 +5990,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Average / Best",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "Average yield",
     "IsFormat": false,
     "SourceKinds": [
@@ -7014,6 +7022,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Best",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Best Sell Station",
@@ -10000,14 +10016,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
-  },
-  {
-    "Text": "Cargo: 64 / 192 t",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "Cargo: 72 / 128 t \u00B7 Limpets: 34",
@@ -17507,14 +17515,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Disable overlays when on foot in:",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Disable quests",
     "IsFormat": false,
     "SourceKinds": [
@@ -22398,6 +22398,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Finds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
+  },
+  {
     "Text": "Fine-tune the commander-specific marker after selecting it on the map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26497,6 +26505,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Hide non-combat overlays when on foot in:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Hide or show all detached overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26639,6 +26655,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "High",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "High Tech",
@@ -33630,7 +33654,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Mineral / metal",
@@ -36946,6 +36970,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "No prospecting data yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "No published locations matched these criteria. No distance cutoff was applied.",
@@ -41416,6 +41448,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Platinum \u00B7 2 finds \u00B7 2 quality hits",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "Platinum \u00D71",
     "IsFormat": false,
     "SourceKinds": [
@@ -43273,9 +43313,10 @@
     "Text": "Prospecting yields",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Prospector",
@@ -43644,6 +43685,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Quality hits",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Quality-hit adjustment saved; journal observations are unchanged.",

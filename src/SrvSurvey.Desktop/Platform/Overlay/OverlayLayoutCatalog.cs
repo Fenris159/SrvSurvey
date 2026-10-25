@@ -157,8 +157,8 @@ public static class OverlayLayoutCatalog
             "MiningWorkspace.ShouldShowSession",
             OverlayLayoutCategory.Mining,
             OverlaySettingsCategory.Mining,
-            new(340, 180),
-            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 380)
+            new(340, 300),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0)
         ),
         Define(
             "PlotMiningCargo",

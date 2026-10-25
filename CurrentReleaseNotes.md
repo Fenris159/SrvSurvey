@@ -6,6 +6,9 @@ SteamOS and Gamescope overlay support.
 
 ## What's changed
 
+- **On-foot overlay suppression:** Dominator and Maverick suit switches now
+  hide non-combat overlays while keeping ground combat and massacre mission
+  panels eligible to appear. Both suit choices are grouped together on the left.
 - **Overlay editor:** Each text role can select a brush from the overlay
   appearance swatches alongside its size slider. Brush overrides follow theme
   changes, save per panel, and reset with the panel's text settings.
@@ -22,7 +25,8 @@ SteamOS and Gamescope overlay support.
 - **Mining overlays:** Surface panels and calibration have a separate
   **Mining (surface)** editor category. The new **Session** panel shows the
   active or paused session's location, yield, duration, activity, limpets, and
-  cargo, with normal theme, sizing, and availability controls.
+  prospecting breakdown (finds, quality hits, average and best yields), with
+  normal theme, sizing, and availability controls.
 - **Mining session controls:** Start, Pause / Resume, and End Session shortcuts
   share their saved bindings with Settings → Input. The new default-on
   **Stop sessions automatically after FSD jump or docking** option ends sessions

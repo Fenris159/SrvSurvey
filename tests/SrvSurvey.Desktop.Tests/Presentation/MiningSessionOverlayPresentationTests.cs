@@ -32,6 +32,16 @@ public sealed class MiningSessionOverlayPresentationTests
                 preview.GetVisualDescendants().OfType<TextBlock>(),
                 text => text.Text != null && text.Text.Contains("64 t", StringComparison.Ordinal)
             );
+            TextBlock[] textBlocks = preview.GetVisualDescendants().OfType<TextBlock>().ToArray();
+            Assert.Contains(textBlocks, text => text.Text == "Prospecting yields");
+            Assert.Contains(textBlocks, text => text.Text == "Platinum");
+            Assert.Contains(textBlocks, text => text.Text == "Osmium");
+            Assert.Contains(textBlocks, text => text.Text == "Quality hits");
+            Assert.Contains(textBlocks, text => text.Text == $"{43.6:0.0}%");
+            Assert.DoesNotContain(textBlocks, text => text.Text?.Contains("Cargo", StringComparison.Ordinal) == true);
+            Assert.True(previewModel.HasProspectingYields);
+            Assert.Equal(2, previewModel.ProspectingYields.Count);
+            Assert.Equal(2, previewModel.ProspectingYields[0].QualityHits);
             frame.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-mining-session-preview.png"),
                 PngBitmapEncoderOptions.Default

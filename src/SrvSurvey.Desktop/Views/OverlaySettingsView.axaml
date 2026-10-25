@@ -77,18 +77,18 @@
                   Content="Keep overlays visible when Elite loses focus" />
         <CheckBox IsChecked="{Binding OverlayBehavior.HideMultiGameCommanderOverlay, Mode=TwoWay}"
                   Content="Hide the multi-game Commander overlay" />
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
-          <StackPanel Spacing="6">
-            <TextBlock Classes="muted" Text="Disable overlays when on foot in:" />
-            <CheckBox IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
+        <StackPanel x:Name="SuitOverlaySuppressionSetting" Spacing="6">
+          <TextBlock Classes="muted" Text="Hide non-combat overlays when on foot in:" TextWrapping="Wrap" />
+          <WrapPanel x:Name="SuitOverlaySuppressionOptions" HorizontalAlignment="Left">
+            <CheckBox x:Name="DominatorSuitOverlaySuppressionCheckBox"
+                      IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
+                      Margin="0,0,24,0"
                       Content="Dominator suit" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="6">
-            <TextBlock Classes="muted" Text=" " />
-            <CheckBox IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
+            <CheckBox x:Name="MaverickSuitOverlaySuppressionCheckBox"
+                      IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
                       Content="Maverick suit" />
-          </StackPanel>
-        </Grid>
+          </WrapPanel>
+        </StackPanel>
         <Grid ColumnDefinitions="*,240" ColumnSpacing="20">
           <StackPanel Spacing="2">
             <TextBlock FontWeight="SemiBold" Text="Overlay scale" />

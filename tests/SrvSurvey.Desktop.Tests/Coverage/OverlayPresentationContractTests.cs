@@ -145,7 +145,19 @@ public sealed class OverlayPresentationContractTests
                 "src/SrvSurvey.Desktop/MiningSessionOverlayWindow.axaml",
                 "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml",
             ],
-            ["SESSION", "Duration", "Yield", "Activity", "Limpets", "Cargo", "RavenWindowBrush"]
+            [
+                "SESSION",
+                "Duration",
+                "Yield",
+                "Activity",
+                "Limpets",
+                "ProspectingYields",
+                "Finds",
+                "QualityHits",
+                "Average",
+                "Best",
+                "RavenWindowBrush",
+            ]
         ),
         Contract(
             "PlotMiningCargo",
