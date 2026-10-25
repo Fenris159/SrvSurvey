@@ -781,11 +781,11 @@
                       Content="Massacre mission helper (Experimental)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile." />
+                       Text="Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile." />
           </StackPanel>
         </Grid>
         <CheckBox IsChecked="{Binding Combat.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                  Content="Hide combat overlays while Raven Colonial build projects are active" />
+                  Content="Hide combat overlays while the colonization commodities panel is visible" />
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    IsVisible="{Binding Combat.HasStatusMessage}"
                    TextWrapping="Wrap"

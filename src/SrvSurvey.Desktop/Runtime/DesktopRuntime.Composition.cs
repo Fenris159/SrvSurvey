@@ -436,6 +436,7 @@ internal sealed partial class DesktopRuntime
         );
 
         viewModel.SystemSurvey.PropertyChanged += HandleOverlayPriorityFactsChanged;
+        viewModel.Combat.PropertyChanged += HandleOverlayPriorityFactsChanged;
         SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator = new ColonizationCommodityOverlayCoordinator(
             viewModel.Colonization.CommodityOverlay,
@@ -913,6 +914,7 @@ internal sealed partial class DesktopRuntime
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
+            viewModel.Combat.PropertyChanged -= HandleOverlayPriorityFactsChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
             viewModel.ReferenceDataUpdates.SetRestartHandler(null);
             viewModel.Localization.SetRestartHandler(null);
@@ -1416,6 +1418,11 @@ internal sealed partial class DesktopRuntime
             facts |= OverlayPriorityFacts.BodyInfoForced;
         }
 
+        if (viewModel.Combat.SuppressForActiveBuildProjects)
+        {
+            facts |= OverlayPriorityFacts.HideCombatForColonization;
+        }
+
         OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
     }
 
@@ -1428,6 +1435,7 @@ internal sealed partial class DesktopRuntime
             eventArgs.PropertyName
             is nameof(SystemSurveyViewModel.IsFssInfoForced)
                 or nameof(SystemSurveyViewModel.IsBodyInfoForced)
+                or nameof(CombatViewModel.SuppressForActiveBuildProjects)
         )
         {
             SynchronizeOverlayPriorityFacts();

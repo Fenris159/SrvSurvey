@@ -6,13 +6,15 @@ internal enum OverlayPriorityFacts
     None = 0,
     FssInfoForced = 1 << 0,
     BodyInfoForced = 1 << 1,
+    HideCombatForColonization = 1 << 2,
 }
 
 internal sealed record OverlayPriorityRule(
     OverlayId Target,
     IReadOnlyList<OverlayId> PresentedBlockers,
     OverlayPriorityFacts FactBlockers = OverlayPriorityFacts.None,
-    OverlayPriorityFacts UnlessFacts = OverlayPriorityFacts.None
+    OverlayPriorityFacts UnlessFacts = OverlayPriorityFacts.None,
+    OverlayPriorityFacts RequiredFacts = OverlayPriorityFacts.None
 );
 
 internal static class OverlayPriorityRules
@@ -29,6 +31,8 @@ internal static class OverlayPriorityRules
         Rule("PlotPriorScans", [Guardians, HumanSite, "PlotStationInfo"]),
         Rule("PlotGrounded", [Guardians, HumanSite]),
         Rule("PlotGuardianStatus", ["PlotJumpInfo"]),
+        Rule("PlotFootCombat", ["PlotBuildCommodities"], requiredFacts: OverlayPriorityFacts.HideCombatForColonization),
+        Rule("PlotMassacre", ["PlotBuildCommodities"], requiredFacts: OverlayPriorityFacts.HideCombatForColonization),
         Rule(
             "PlotGuardianSystem",
             [],
@@ -45,7 +49,7 @@ internal static class OverlayPriorityRules
     {
         ArgumentNullException.ThrowIfNull(isPresented);
         OverlayPriorityRule? rule = rules.SingleOrDefault(candidate => candidate.Target == target);
-        if (rule is null)
+        if (rule is null || (facts & rule.RequiredFacts) != rule.RequiredFacts)
         {
             return false;
         }
@@ -110,14 +114,16 @@ internal static class OverlayPriorityRules
         string target,
         IReadOnlyList<string> presentedBlockers,
         OverlayPriorityFacts factBlockers = OverlayPriorityFacts.None,
-        OverlayPriorityFacts unlessFacts = OverlayPriorityFacts.None
+        OverlayPriorityFacts unlessFacts = OverlayPriorityFacts.None,
+        OverlayPriorityFacts requiredFacts = OverlayPriorityFacts.None
     )
     {
         return new OverlayPriorityRule(
             GetId(target),
             presentedBlockers.Select(GetId).ToArray(),
             factBlockers,
-            unlessFacts
+            unlessFacts,
+            requiredFacts
         );
     }
 

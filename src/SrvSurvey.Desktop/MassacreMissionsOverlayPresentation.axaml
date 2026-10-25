@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              x:DataType="vm:CombatOverlayViewModel"
              mc:Ignorable="d"
              HorizontalAlignment="Left"
@@ -24,12 +25,13 @@
           <DataTemplate x:DataType="vm:MassacreMissionViewModel">
             <Grid Margin="0,1"
                   ColumnDefinitions="Auto,*,Auto"
-                  ColumnSpacing="6"
-                  Opacity="{Binding RowOpacity}">
+                  ColumnSpacing="6">
               <TextBlock Classes="type-icon" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
+                         Opacity="{Binding RowOpacity}"
                          Text="&#x25B6;" />
               <StackPanel Grid.Column="1"
+                          Opacity="{Binding RowOpacity}"
                           Spacing="0">
                 <TextBlock FontSize="11" Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"
@@ -46,12 +48,22 @@
                            Text="{Binding MissionGiver}"
                            TextTrimming="CharacterEllipsis" />
               </StackPanel>
-              <TextBlock FontSize="11" Grid.Column="2"
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+               <TextBlock FontSize="11"
                          Classes="monospace type-value"
                          VerticalAlignment="Center"
                          Foreground="{DynamicResource RavenWarningBrush}"
+                         Opacity="{Binding RowOpacity}"
                          FontWeight="Bold"
-                         Text="{Binding RemainingText}" />
+                         Text="{Binding ProgressText}" />
+               <controls:OverlayRowIconHost VerticalAlignment="Center" ClipToBounds="False" IsVisible="{Binding IsComplete}">
+                <Viewbox Height="{Binding #MissionCompletionCheckmark.FontSize}">
+                 <TextBlock x:Name="MissionCompletionCheckmark" FontSize="16.5" Classes="type-icon" FontWeight="Bold"
+                            FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2"
+                            Foreground="{DynamicResource RavenColoniseSurplusBrush}" Text="&#x2713;" />
+                </Viewbox>
+               </controls:OverlayRowIconHost>
+              </StackPanel>
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

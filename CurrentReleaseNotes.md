@@ -6,6 +6,13 @@ SteamOS and Gamescope overlay support.
 
 ## What's changed
 
+- **Combat and colonization overlays:** The combat suppression option now
+  applies only while the colonization commodities panel is visible. Loaded
+  projects alone no longer hide combat panels, and hiding or clearing the
+  colony panel restores eligible combat overlays without interrupting tracking.
+- **Massacre mission progress:** Rows show completed kills out of the required
+  total, such as **0/6** through **6/6**, and use the commodities panel's green
+  checkmark when the objective is complete.
 - **On-foot overlay suppression:** Dominator and Maverick suit switches now
   hide non-combat overlays while keeping ground combat and massacre mission
   panels eligible to appear. Both suit choices are grouped together on the left.

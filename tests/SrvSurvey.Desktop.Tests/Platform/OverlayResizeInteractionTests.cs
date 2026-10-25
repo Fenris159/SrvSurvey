@@ -109,7 +109,7 @@ public sealed class OverlayResizeInteractionTests
             TextBlock[] counts = panel
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
-                .Where(text => Grid.GetColumn(text) == 2)
+                .Where(text => text.Classes.Contains("type-value"))
                 .ToArray();
             Assert.NotEmpty(counts);
             foreach (TextBlock count in counts)

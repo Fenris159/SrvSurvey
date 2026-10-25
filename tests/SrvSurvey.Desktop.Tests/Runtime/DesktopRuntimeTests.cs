@@ -24,6 +24,56 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 public sealed class DesktopRuntimeTests
 {
     [AvaloniaTheory]
+    [InlineData("PlotFootCombat")]
+    [InlineData("PlotMassacre")]
+    public async Task CombatSuppressionPreferenceAppliesOnlyWhileTheColonyPanelIsPresented(string plotter)
+    {
+        List<string> events = [];
+        var phases = new RecordingDesktopRuntimePhases(events);
+        phases.AllowProducerStop.SetResult();
+        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        FieldInfo viewModelField = typeof(DesktopRuntime).GetField("mainViewModel", flags)!;
+        MethodInfo synchronize = typeof(DesktopRuntime).GetMethod("SynchronizeOverlayPriorityFacts", flags)!;
+        viewModelField.SetValue(runtime, main);
+        OverlayWindowRegistry registry = OverlayWindowRegistry.Shared;
+        var colony = new Window();
+        var combat = new Window();
+        try
+        {
+            main.Combat.SuppressForActiveBuildProjects = true;
+            synchronize.Invoke(runtime, null);
+            registry.Register(combat, plotter);
+            registry.SetPresentationVisual(combat, new Border());
+            registry.Register(colony, "PlotBuildCommodities");
+            registry.SetVehicleExcludedPlotters(["PlotBuildCommodities"]);
+            Assert.True(registry.ShouldPresent(combat));
+            registry.SetPresentationVisual(colony, new Border());
+            Assert.False(registry.ShouldPresent(colony));
+            Assert.True(registry.ShouldPresent(combat));
+            registry.SetVehicleExcludedPlotters([]);
+            Assert.True(registry.ShouldPresent(colony), registry.GetDecision(colony).Reasons.ToString());
+            Assert.False(registry.ShouldPresent(combat));
+            registry.SetPresentationVisible(colony, false);
+            Assert.True(registry.ShouldPresent(combat));
+            registry.SetPresentationVisible(colony, true);
+            Assert.False(registry.ShouldPresent(combat));
+            main.Combat.SuppressForActiveBuildProjects = false;
+            synchronize.Invoke(runtime, null);
+            Assert.True(registry.ShouldPresent(combat));
+        }
+        finally
+        {
+            colony.Close();
+            combat.Close();
+            registry.SetPriorityFacts(default);
+            registry.SetVehicleExcludedPlotters([]);
+            viewModelField.SetValue(runtime, null);
+        }
+    }
+
+    [AvaloniaTheory]
     [InlineData(OdysseySuitType.Dominator)]
     [InlineData(OdysseySuitType.Maverick)]
     public async Task SuitSuppressionKeepsCombatCoordinatorEligibleWhileManualAndSessionSuppressionStillApply(

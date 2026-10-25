@@ -452,7 +452,13 @@ public sealed class OverlayPresentationContractTests
                 "src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml",
                 "src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml",
             ],
-            ["TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\""]
+            [
+                "TargetFaction",
+                "MissionGiver",
+                "ProgressText",
+                "MissionCompletionCheckmark",
+                "TextDecorations=\"Strikethrough\"",
+            ]
         ),
         Contract(
             "PlotPriorScans",

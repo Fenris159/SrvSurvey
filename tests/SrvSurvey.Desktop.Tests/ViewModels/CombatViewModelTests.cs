@@ -8,6 +8,17 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class CombatViewModelTests : IDisposable
 {
+    [Theory]
+    [InlineData(6, "0/6", false)]
+    [InlineData(3, "3/6", false)]
+    [InlineData(0, "6/6", true)]
+    public void MassacreRowsShowCompletedKillsOutOfRequiredTotal(int remaining, string text, bool complete)
+    {
+        var row = new MassacreMissionViewModel(new(123, "Giver", "Enemy", null, 6, remaining));
+        Assert.Equal(text, row.ProgressText);
+        Assert.Equal(complete, row.IsComplete);
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-combat-vm-tests-{Guid.NewGuid():N}"
@@ -164,7 +175,7 @@ public sealed class CombatViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task ActiveBuildProjectCanSuppressBothCombatOverlays()
+    public async Task BuildSuppressionPreferenceDoesNotGateFootCombatIntent()
     {
         CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowFootCombat = true;
@@ -182,9 +193,44 @@ public sealed class CombatViewModelTests : IDisposable
         );
         Assert.True(viewModel.ShouldShowFootCombat);
 
-        viewModel.SetActiveBuildProjects(true);
+        viewModel.SuppressForActiveBuildProjects = false;
+        Assert.True(viewModel.ShouldShowFootCombat);
+        viewModel.SuppressForActiveBuildProjects = true;
+        Assert.True(viewModel.ShouldShowFootCombat);
+    }
 
-        Assert.False(viewModel.ShouldShowFootCombat);
+    [Fact]
+    public async Task SixKillMissionProgressContinuesWhileTheColonySuppressionPreferenceIsEnabled()
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        viewModel.SuppressForActiveBuildProjects = true;
+        viewModel.LoadProfile("F123", "Test", true, CombatSnapshot.Empty);
+        var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"event":"MissionAccepted","Name":"Mission_Massacre","Faction":"Giver","TargetFaction":"Enemy","KillCount":6,"MissionID":123}"""
+                ),
+            ],
+            ship,
+            processHistoricalProgress: true
+        );
+        Assert.Equal("0/6", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        await viewModel.ApplyUpdateAsync([Parse("""{"event":"Bounty","VictimFaction":"Other"}""")], ship, true);
+        Assert.Equal("0/6", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        for (int completed = 1; completed <= 6; completed++)
+        {
+            await viewModel.ApplyUpdateAsync([Parse("""{"event":"Bounty","VictimFaction":"Enemy"}""")], ship, true);
+            MassacreMissionViewModel row = Assert.Single(viewModel.MassacreMissions);
+            Assert.Equal($"{completed}/6", row.ProgressText);
+            Assert.Equal(completed == 6, row.IsComplete);
+            Assert.True(viewModel.ShouldShowMassacreMissions);
+        }
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        Assert.Equal(0, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
+        await viewModel.ApplyUpdateAsync([Parse("""{"event":"MissionCompleted","MissionID":123}""")], ship, true);
+        Assert.Empty(viewModel.MassacreMissions);
     }
 
     [Fact]

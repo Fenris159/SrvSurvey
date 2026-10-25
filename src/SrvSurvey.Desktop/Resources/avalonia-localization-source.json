@@ -26441,7 +26441,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Hide combat overlays while Raven Colonial build projects are active",
+    "Text": "Hide combat overlays while the colonization commodities panel is visible",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -54787,7 +54787,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
-    "Text": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+    "Text": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -54795,7 +54795,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
+    "Text": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"

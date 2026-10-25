@@ -13181,8 +13181,8 @@
       "translation": "Reduzierte Gruppen ausblenden"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Kampf-Overlays ausblenden, während Raven Colonial Build-Projekte aktiv sind"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "Blenden Sie Kampfeinblendungen aus, während das Feld „Kolonisierungsgüter“ sichtbar ist"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -27309,12 +27309,12 @@
       "translation": "Zeigt Durchschnittswerte erst an, wenn so viele Systeme Statistiken aufgezeichnet haben. Zählungen und gespeicherte Daten ändern sich nicht."
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "Zeigt bekannte Sehenswürdigkeiten nach der Ankunft an. Versteckt sich im Hyperraum und während Galaxy Map oder FSS geöffnet ist. Verwenden Sie den Schalter und die Verknüpfung unten im Bedienfeld „Erkundungs-POIs“, um die Sichtbarkeit zu steuern."
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "Zeigt abgeschlossene/erforderliche Kills im Flug, Supercruise, Stationsdiensten und im Navigationsfeld an. Für abgeschlossene Ziele wird bis zur Abgabe ein grünes Häkchen angezeigt. Der Fortschritt wird im Kommandantenprofil gespeichert."
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "Zeigt verbleibende Abschüsse im Flug, Supercruise, Stationsdiensten und im Navigationsfeld an. Der Fortschritt wird im Kommandantenprofil gespeichert."
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "Zeigt bekannte Sehenswürdigkeiten nach der Ankunft an. Versteckt sich im Hyperraum und während Galaxy Map oder FSS geöffnet ist. Verwenden Sie den Schalter und die Verknüpfung unten im Bedienfeld „Erkundungs-POIs“, um die Sichtbarkeit zu steuern."
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -53095,8 +53095,8 @@
       "translation": "Ocultar grupos colapsados"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Ocultar superposiciones de combate mientras los proyectos de construcción Raven Colonial están activos"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "Ocultar superposiciones de combate mientras el panel de productos de colonización esté visible"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -67223,12 +67223,12 @@
       "translation": "Muestra promedios sólo después de que muchos sistemas hayan registrado estadísticas. Los recuentos y los datos almacenados no cambian."
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "Muestra atracciones conocidas después de la llegada. Se oculta durante el hiperespacio y mientras Galaxy Map o FSS está abierto. Utilice el botón de alternancia y el acceso directo del panel de puntos de interés de exploración a continuación para controlar la visibilidad."
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "Muestra derribos completados/requeridos en vuelo, supercrucero, servicios de estación y el panel de navegación. Los objetivos completados utilizan una marca de verificación verde hasta su entrega. El progreso se almacena en el perfil del comandante."
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "Muestra los derribos restantes en vuelo, supercrucero, servicios de la estación y el panel de navegación. El progreso se almacena en el perfil del comandante."
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "Muestra atracciones conocidas después de la llegada. Se oculta durante el hiperespacio y mientras Galaxy Map o FSS está abierto. Utilice el botón de alternancia y el acceso directo del panel de puntos de interés de exploración a continuación para controlar la visibilidad."
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -93009,8 +93009,8 @@
       "translation": "Masquer les groupes réduits"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Masquer les superpositions de combat pendant que les projets de build Raven Colonial sont actifs"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "Masquer les superpositions de combat lorsque le panneau des produits de colonisation est visible"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -107137,12 +107137,12 @@
       "translation": "Affiche les moyennes seulement après que de nombreux systèmes aient enregistré des statistiques. Les décomptes et les données stockées ne changent pas."
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "Montre les attractions connues après l'arrivée. Se cache pendant l'hyperespace et lorsque Galaxy Map ou FSS est ouvert. Utilisez la bascule et le raccourci du panneau POI d’exploration ci-dessous pour contrôler la visibilité."
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "Affiche les éliminations terminées/requises en vol, en supercroisière, les services de la station et le panneau de navigation. Les objectifs terminés utilisent une coche verte jusqu'à la remise. La progression est stockée dans le profil du commandant."
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "Affiche les victimes restantes en vol, en super-croisière, dans les services de la station et dans le panneau de navigation. La progression est stockée dans le profil du commandant."
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "Montre les attractions connues après l'arrivée. Se cache pendant l'hyperespace et lorsque Galaxy Map ou FSS est ouvert. Utilisez la bascule et le raccourci du panneau POI d’exploration ci-dessous pour contrôler la visibilité."
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -132923,8 +132923,8 @@
       "translation": "Ocultar grupos recolhidos"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Ocultar sobreposições de combate enquanto os projetos de construção Raven Colonial estão ativos"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "Ocultar sobreposições de combate enquanto o painel de mercadorias de colonização estiver visível"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -147051,12 +147051,12 @@
       "translation": "Mostra médias somente depois que muitos sistemas registraram estatísticas. As contagens e os dados armazenados não mudam."
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "Mostra atrações conhecidas após a chegada. Esconde-se durante o hiperespaço e enquanto o Galaxy Map ou FSS está aberto. Use o botão de alternância e atalho do painel POIs de exploração abaixo para controlar a visibilidade."
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "Mostra mortes concluídas/necessárias em voo, supercruise, serviços de estação e painel de navegação. Os objetivos concluídos usam uma marca de seleção verde até a entrega. O progresso é armazenado no perfil do comandante."
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "Mostra as mortes restantes em voo, supercruzeiro, serviços da estação e painel de navegação. O progresso é armazenado no perfil do comandante."
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "Mostra atrações conhecidas após a chegada. Esconde-se durante o hiperespaço e enquanto o Galaxy Map ou FSS está aberto. Use o botão de alternância e atalho do painel POIs de exploração abaixo para controlar a visibilidade."
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -172837,8 +172837,8 @@
       "translation": "Скрыть свернутые группы"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Скрыть наложения боевых действий, пока активны проекты сборки Raven Colonial"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "Скрыть боевые наложения, пока видна панель товаров колонизации."
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -186965,12 +186965,12 @@
       "translation": "Показывает средние значения только после того, как многие системы записали статистику. Счетчики и сохраненные данные не изменяются."
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "Показывает известные достопримечательности после прибытия. Скрывается в гиперпространстве и когда открыта Карта Галактики или FSS. Используйте переключатель и ярлык на панели «Объекты исследования» ниже, чтобы управлять видимостью."
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "Показывает выполненные/необходимые убийства в полете, суперкруизе, службах станции и на навигационной панели. Выполненные задачи отмечаются зеленой галочкой до сдачи. Прогресс сохраняется в профиле командира."
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "Показывает оставшиеся убийства в полете, суперкруизе, службах станции и на навигационной панели. Прогресс сохраняется в профиле командира."
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "Показывает известные достопримечательности после прибытия. Скрывается в гиперпространстве и когда открыта Карта Галактики или FSS. Используйте переключатель и ярлык на панели «Объекты исследования» ниже, чтобы управлять видимостью."
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -212751,8 +212751,8 @@
       "translation": "隐藏折叠的组"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "Raven Colonial 构建项目处于活动状态时隐藏战斗叠加层"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "当殖民商品面板可见时隐藏战斗覆盖层"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -226879,12 +226879,12 @@
       "translation": "仅在这么多系统记录统计数据后才显示平均值。计数和存储的数据不会改变。"
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "抵达后显示已知景点。在超空间期间以及 Galaxy Map 或 FSS 打开时隐藏。使用下面的“探索 POI”面板切换和快捷方式来控制可见性。"
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "显示飞行、超级巡航、空间站服务和导航面板中已完成/所需的击杀。已完成的目标在上交之前会使用绿色复选标记。进度存储在指挥官配置文件中。"
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "显示飞行、超级巡航、空间站服务和导航面板中的剩余击杀数。进度存储在指挥官配置文件中。"
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "抵达后显示已知景点。在超空间期间以及 Galaxy Map 或 FSS 打开时隐藏。使用下面的“探索 POI”面板切换和快捷方式来控制可见性。"
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
@@ -252665,8 +252665,8 @@
       "translation": "* HIDE COLLAPSED GROUPS >>>!"
     },
     {
-      "source": "Hide combat overlays while Raven Colonial build projects are active",
-      "translation": "* HIDE COMBAT OVERLAYS WHILE RAVEN COLONIAL BUILD PROJECTS ARE ACTIVE >>>!"
+      "source": "Hide combat overlays while the colonization commodities panel is visible",
+      "translation": "* HIDE COMBAT OVERLAYS WHILE THE COLONIZATION COMMODITIES PANEL IS VISIBLE >>>!"
     },
     {
       "source": "Hide completed biology overlays on repeat visits",
@@ -266793,12 +266793,12 @@
       "translation": "* SHOWS AVERAGES ONLY AFTER THIS MANY SYSTEMS HAVE RECORDED STATISTICS. COUNTS AND STORED DATA DO NOT CHANGE. >>>!"
     },
     {
-      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
-      "translation": "* SHOWS KNOWN ATTRACTIONS AFTER ARRIVAL. HIDES DURING HYPERSPACE AND WHILE GALAXY MAP OR FSS IS OPEN. USE THE EXPLORATION POIS PANEL TOGGLE AND SHORTCUT BELOW TO CONTROL VISIBILITY. >>>!"
+      "source": "Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile.",
+      "translation": "* SHOWS COMPLETED / REQUIRED KILLS IN FLIGHT, SUPERCRUISE, STATION SERVICES, AND THE NAVIGATION PANEL. COMPLETED OBJECTIVES USE A GREEN CHECKMARK UNTIL TURN-IN. PROGRESS IS STORED IN THE COMMANDER PROFILE. >>>!"
     },
     {
-      "source": "Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile.",
-      "translation": "* SHOWS REMAINING KILLS IN FLIGHT, SUPERCRUISE, STATION SERVICES, AND THE NAVIGATION PANEL. PROGRESS IS STORED IN THE COMMANDER PROFILE. >>>!"
+      "source": "Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility.",
+      "translation": "* SHOWS KNOWN ATTRACTIONS AFTER ARRIVAL. HIDES DURING HYPERSPACE AND WHILE GALAXY MAP OR FSS IS OPEN. USE THE EXPLORATION POIS PANEL TOGGLE AND SHORTCUT BELOW TO CONTROL VISIBILITY. >>>!"
     },
     {
       "source": "Shows statistics and per-boxel fields for only the boxel currently open above.",
