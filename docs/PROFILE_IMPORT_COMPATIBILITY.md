@@ -102,6 +102,10 @@ current installation. Missing settings retain XP defaults; existing explicit
 choices and partial settings sections remain unchanged. This also applies when
 startup resumes a completed import. Colonization delivery recovery records and
 non-overlay service preferences remain eligible for the normal merge.
+Commander mining files also exclude incoming overlay visibility, session-only
+suppression, notification duration, prospect-slot count, and below-threshold
+display settings. Mining history, missions, and portable mining preferences
+remain eligible for import; their original settings stay in the verified backup.
 
 Overlay layouts from every imported client are backed up and skipped, including
 shared layouts and commander-specific overlay directories. Importing UI

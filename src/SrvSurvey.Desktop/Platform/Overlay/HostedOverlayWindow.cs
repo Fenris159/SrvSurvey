@@ -82,7 +82,14 @@ internal sealed class HostedOverlayPlacement
 
     public PixelSize PrepareSize()
     {
-        return OverlayWindowMetrics.PrepareForPlacement(Window, overlayLayout, definition.PlotterName, Screen.Scaling);
+        PixelRect viewport = VisibleBounds ?? OverlayWindowPlacement.GetUsableBounds(GameBounds, Screen.WorkingArea);
+        return OverlayWindowMetrics.PrepareForPlacement(
+            Window,
+            overlayLayout,
+            definition.PlotterName,
+            Screen.Scaling,
+            viewport.Height
+        );
     }
 
     public PixelPoint GetPosition(PixelSize size)

@@ -570,7 +570,8 @@ internal static class OverlayWindowMetrics
         Window window,
         LegacyOverlayLayout layout,
         string plotterName,
-        double targetScaling
+        double targetScaling,
+        int? viewportHeight = null
     )
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -580,8 +581,13 @@ internal static class OverlayWindowMetrics
         double scaling = NormalizeScaling(OverlayThemeResources.GetPresentationScaling(window, targetScaling));
         int scaleIndex = layout.GetScaleIndex(plotterName);
         OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
-        window.UpdateLayout();
         double fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
+        if (OverlayThemeResources.GetPresentationRoot(window) is IOverlayPanelViewportAware panel)
+        {
+            int height = viewportHeight ?? window.Screens.ScreenFromWindow(window)?.WorkingArea.Height ?? 1080;
+            panel.SetAvailableHeight(Math.Max(1, height - 16) / Math.Max(0.01, fallbackScale));
+        }
+        window.UpdateLayout();
         PixelSize fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
         return GetMeasuredPresentationSize(window, scaling) ?? GetPixelSize(window, fallback, scaling);
     }

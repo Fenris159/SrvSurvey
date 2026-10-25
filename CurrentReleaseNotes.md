@@ -33,6 +33,8 @@ SteamOS and Gamescope overlay support.
   Local CAPI, carrier-market stock, and journal transfers provide the comparison
   totals, and locally held goods missing from Raven appear in the editor. All
   goods are visible by default; the colony-only filter remains available.
+  Partial or delayed market updates no longer restore quantities superseded
+  by a newer accepted CAPI inventory.
 - **Colonization overlays and market search:** Commodity panels contract as rows
   disappear, including with a saved panel size. Outdated local markets appears
   beside Ardent, while the carrier, surface-port, and full-supply filters stay
@@ -41,7 +43,9 @@ SteamOS and Gamescope overlay support.
   **Mining (surface)** editor category. The new **Session** panel shows the
   active or paused session's location, yield, duration, activity, limpets, and
   prospecting breakdown (finds, quality hits, average and best yields), with
-  normal theme, sizing, and availability controls.
+  normal theme, sizing, and availability controls. It expands and contracts
+  with its content, retains the selected left or right growth edge, and scrolls
+  long sessions within the available viewport, including at increased scale.
 - **Mining session controls:** Start, Pause / Resume, and End Session shortcuts
   share their saved bindings with Settings → Input. The new default-on
   **Stop sessions automatically after FSD jump or docking** option ends sessions
@@ -56,7 +60,8 @@ SteamOS and Gamescope overlay support.
 - **Overlay settings during profile import:** Imports now preserve current
   overlay visibility, opacity, scale, streaming, VR, and shortcut settings as well as
   layouts. Unsaved settings retain XP defaults instead of taking disabled
-  visibility flags from an original SrvSurvey profile.
+  visibility flags from an original SrvSurvey profile. XP imports also retain
+  mining overlay settings without excluding mining history or missions.
 - **Downloaded Codex images:** Imports skip the downloadable image cache,
   reducing unnecessary copying and hashing. Personal flora photos and existing
   XP caches are preserved. Imported image preferences no longer redirect XP to

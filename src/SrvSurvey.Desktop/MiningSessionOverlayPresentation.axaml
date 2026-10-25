@@ -2,12 +2,14 @@
  xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining"
  x:Class="SrvSurvey.Desktop.MiningSessionOverlayPresentation"
  x:DataType="vm:MiningSessionOverlayViewModel" Width="340">
- <Border Padding="8" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5">
-  <StackPanel Spacing="6">
+ <Border x:Name="SessionPanel" Padding="8" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5" MaxHeight="600">
+  <Grid RowDefinitions="Auto,*" RowSpacing="6">
    <Grid ColumnDefinitions="*,Auto">
     <TextBlock Classes="overlay-header type-header" Text="SESSION" />
     <TextBlock Grid.Column="1" Classes="type-caption" Foreground="{DynamicResource RavenWarningBrush}" Text="{Binding State}" />
    </Grid>
+   <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <StackPanel Spacing="6">
    <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Location}" TextWrapping="Wrap" />
    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
     <TextBlock Classes="type-value" Text="{Binding Yield}" />
@@ -53,5 +55,7 @@
    </StackPanel>
    <TextBlock Classes="type-caption" Text="{Binding Notes}" IsVisible="{Binding HasNotes}" TextWrapping="Wrap" />
   </StackPanel>
+   </ScrollViewer>
+  </Grid>
  </Border>
 </UserControl>

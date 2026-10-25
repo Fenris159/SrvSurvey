@@ -31,9 +31,18 @@ public sealed class ColonizationLocalCarrierCargo
         {
             return;
         }
-        local.PreferMarket = isDocked;
         local.BaselineAt = fetchedAt;
         local.Baseline = Totals(carrier.Cargo);
+        if (!isDocked)
+        {
+            local.AuthoritativeBaselineAt = fetchedAt;
+            foreach (
+                string key in local.Markets.Where(item => item.Value.At <= fetchedAt).Select(item => item.Key).ToArray()
+            )
+            {
+                local.Markets.Remove(key);
+            }
+        }
 
         local.Recalculate();
         Changed?.Invoke();
@@ -48,7 +57,10 @@ public sealed class ColonizationLocalCarrierCargo
             return;
         }
         CarrierCargo local = FindOrCreate(market.MarketId, market.StationName);
-        local.PreferMarket = true;
+        if (market.Timestamp <= local.AuthoritativeBaselineAt)
+        {
+            return;
+        }
         foreach (
             MarketItem item in market.Items.Where(item =>
                 item.Stock >= 0 && (item.Producer || item.Stock > 0) && !string.IsNullOrWhiteSpace(item.Name)
@@ -188,14 +200,13 @@ public sealed class ColonizationLocalCarrierCargo
         public string Callsign { get; } = callsign;
         public long? MarketId { get; set; }
         public DateTimeOffset? BaselineAt { get; set; }
-        public bool PreferMarket { get; set; }
+
+        // An accepted undocked CAPI baseline also invalidates delayed rereads of older Market.json rows.
+        public DateTimeOffset? AuthoritativeBaselineAt { get; set; }
         public Dictionary<string, MarketBaseline> Markets { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public DateTimeOffset? GetBaselineTimestamp(string key) =>
-            Markets.TryGetValue(key, out MarketBaseline? market)
-            && (PreferMarket || BaselineAt is null || market.At > BaselineAt)
-                ? market.At
-                : BaselineAt;
+            Markets.TryGetValue(key, out MarketBaseline? market) ? market.At : BaselineAt;
 
         public Dictionary<string, long> Baseline { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, long> Current { get; private set; } = new(StringComparer.OrdinalIgnoreCase);
