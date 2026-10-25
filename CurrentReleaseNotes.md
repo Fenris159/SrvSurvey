@@ -18,6 +18,8 @@ SteamOS and Gamescope overlay support.
   contract with their mission rows while retaining the selected left or right
   growth edge. Long lists scroll within the available viewport at the current
   display and overlay scale; saved heights no longer leave empty massacre panels.
+  Both mission overlays default to the top-right corner; saved custom positions
+  are preserved.
 
 - **Combat and colonization overlays:** The combat suppression option now
   applies only while the colonization commodities panel is visible. Loaded

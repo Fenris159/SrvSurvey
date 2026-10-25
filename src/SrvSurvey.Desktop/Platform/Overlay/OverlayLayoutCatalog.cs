@@ -167,7 +167,7 @@ public static class OverlayLayoutCatalog
             OverlayLayoutCategory.Mining,
             OverlaySettingsCategory.Mining,
             new(360, 420),
-            new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0)
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)
         ),
         Define(
             "PlotMiningCargo",

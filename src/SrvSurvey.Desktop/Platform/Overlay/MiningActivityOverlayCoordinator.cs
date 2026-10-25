@@ -32,7 +32,7 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
             new PassiveOverlayWindowDefinition(
                 "PlotMiningMissions",
                 _ => new MiningMissionsOverlayWindow(missionsModel),
-                (bounds, size) => OverlayWindowPlacement.MiddleLeft(bounds, size)
+                (bounds, size) => OverlayWindowPlacement.TopRight(bounds, size, 8)
             )
         );
         sessionModel = new(workspace);
