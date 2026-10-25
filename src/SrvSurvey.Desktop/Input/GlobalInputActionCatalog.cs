@@ -78,6 +78,7 @@ public enum GlobalInputAction
     StartMiningSession,
     PauseResumeMiningSession,
     EndMiningSession,
+    ToggleMiningMissionsVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -274,6 +275,12 @@ public static class GlobalInputActionCatalog
             "toggleMiningSessionVisibility",
             "Mining Session",
             "PlotMiningSession"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleMiningMissionsVisibility,
+            "toggleMiningMissionsVisibility",
+            "Mining Missions",
+            "PlotMiningMissions"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleMiningCargoVisibility,

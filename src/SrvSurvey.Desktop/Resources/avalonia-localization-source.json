@@ -281,6 +281,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "0/236 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "015 degrees | 1.24 km",
     "IsFormat": false,
     "SourceKinds": [
@@ -2864,6 +2872,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Accept a mining mission in game to track its cargo and deliveries here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -8331,7 +8347,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
   },
   {
     "Text": "Browse Codex",
@@ -9904,14 +9920,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Cargo is full. End the session when ready.",
@@ -13416,6 +13424,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Completed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
+  },
+  {
     "Text": "Completed build-site repair",
     "IsFormat": false,
     "SourceKinds": [
@@ -15845,14 +15861,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
-    "Text": "DELIVERED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "DEMAND",
     "IsFormat": false,
     "SourceKinds": [
@@ -16715,9 +16723,18 @@
     "Text": "Delivered",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "Delivered: {0}/{1} t",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
   },
   {
     "Text": "Delivery and local storage",
@@ -20695,6 +20712,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Expired",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
+  },
+  {
+    "Text": "Expiry",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+  },
+  {
     "Text": "Explain last system available",
     "IsFormat": false,
     "SourceKinds": [
@@ -22258,15 +22291,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
-    "Text": "Find hotspots for this commodity",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Find landmarks",
@@ -27164,6 +27189,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "Huss Port",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
+  },
+  {
+    "Text": "Huss Port @ Ngolona",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Hydrogen Peroxide",
@@ -32265,6 +32306,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
+    "Text": "MINING MISSIONS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
     "Text": "MINING NOTIFICATIONS",
     "IsFormat": false,
     "SourceKinds": [
@@ -33891,6 +33941,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Mining Missions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Mining Ref",
     "IsFormat": false,
     "SourceKinds": [
@@ -34032,7 +34090,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Mining notifications",
@@ -34181,6 +34239,14 @@
   },
   {
     "Text": "MiningWorkspace.ShouldShowCargo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "MiningWorkspace.ShouldShowMissions",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -34846,14 +34912,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCommodityOverlayPresentation.axaml"
   },
   {
-    "Text": "NEEDED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "NEEDS ATTENTION",
     "IsFormat": false,
     "SourceKinds": [
@@ -35345,6 +35403,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "Needed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Needed for the active Ram Tah mission.",
@@ -35881,6 +35947,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
+  },
+  {
+    "Text": "Ngolona",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
   },
   {
     "Text": "No",
@@ -36594,6 +36668,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "No expiry reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
   },
   {
     "Text": "No factory calibration exists for this overlay.",
@@ -37397,6 +37479,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "No tracked mining missions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
     "Text": "No unfiltered Canonn biology coordinates remain for this body.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37847,14 +37937,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
-    "Text": "ON BOARD",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "OPACITY",
     "IsFormat": false,
     "SourceKinds": [
@@ -38110,6 +38192,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "On board",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+  },
+  {
+    "Text": "On board: 73/236 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "On board: {0}/{1} t",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
   },
   {
     "Text": "On foot",
@@ -41696,6 +41802,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "PlotMiningMissions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "PlotMiningNotifications",
     "IsFormat": false,
     "SourceKinds": [
@@ -42215,7 +42329,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
   },
   {
     "Text": "Pre-download all available biology images",
@@ -43327,14 +43441,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
-    "Text": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Provider page (0 first)",
     "IsFormat": false,
     "SourceKinds": [
@@ -44271,14 +44377,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
-  },
-  {
-    "Text": "REQUIRED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "REQUIRED ARTIFACTS",
@@ -47761,6 +47859,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Required",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Requirements not reported",
@@ -54235,20 +54341,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Show notifications and cargo only during a mining session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
-  },
-  {
-    "Text": "Show only during a mining session",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Show only logs still needed",
@@ -54449,6 +54555,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Show this mission in the Mining Missions overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Show when looking at right-hand panel",
@@ -55233,6 +55347,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Sort by:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Sort needs from least to greatest while docked at FCs",
@@ -56076,6 +56198,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MiningCargoOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey mining missions overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayWindow.axaml"
   },
   {
     "Text": "SrvSurvey mining notifications overlay",
@@ -57225,6 +57355,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
   },
   {
+    "Text": "StationName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.Missions.cs"
+  },
+  {
     "Text": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57247,6 +57385,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
     "Text": "Status \u0026 utilities",
@@ -65270,6 +65416,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "Track",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+  },
+  {
     "Text": "Track Guardian component materials",
     "IsFormat": false,
     "SourceKinds": [
@@ -66229,6 +66383,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Undocked",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.Missions.cs"
   },
   {
     "Text": "Unhandled process exception: {0}",
@@ -79094,6 +79256,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusDetailViewModel.cs"
+  },
+  {
+    "Text": "{0} t needed",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
   },
   {
     "Text": "{0} t of linked cargo \u00B7 capacity unavailable from RavenColonial",

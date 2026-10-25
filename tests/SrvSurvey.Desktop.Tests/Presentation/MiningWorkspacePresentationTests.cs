@@ -804,11 +804,13 @@ public sealed class MiningWorkspacePresentationTests
 
                 model.MiningWorkspace.SelectedTab = 2;
                 using WriteableBitmap? missionsFrame = window.CaptureRenderedFrame();
-                AssertMiningTable(
-                    miningView,
-                    "MissionsHeader",
-                    "MissionRows",
-                    ["COMMODITY", "REQUIRED", "DELIVERED", "ON BOARD", "NEEDED", "DESTINATION", "STATUS"]
+                Assert.Contains(
+                    miningView.GetVisualDescendants().OfType<Views.MiningMissionCardsView>(),
+                    cards => cards.IsEffectivelyVisible
+                );
+                Assert.Contains(
+                    miningView.GetVisualDescendants().OfType<CheckBox>(),
+                    check => Equals(check.Content, "Track")
                 );
 
                 model.MiningWorkspace.SelectedTab = 4;

@@ -141,6 +141,10 @@
       "translation": "0,08 atm"
     },
     {
+      "source": "0/236 t",
+      "translation": "0/236 t"
+    },
+    {
       "source": "015 degrees | 1.24 km",
       "translation": "015 Grad | 1,24 km"
     },
@@ -1431,6 +1435,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "Akzeptieren Sie eine Bergbaumission in Elite und überprüfen Sie deren Ware, erforderliche Menge, gelieferte Menge, Bordzuteilung und verbleibenden Bedarf."
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "Nehmen Sie im Spiel eine Bergbaumission an, um die Fracht und Lieferungen hier zu verfolgen."
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -4941,10 +4949,6 @@
       "translation": "Die Fracht wird in der Annahmereihenfolge zugeteilt, sodass eine Einheit nicht für mehrere Missionen gezählt wird. Der Missionsfortschritt hängt vom Tagebuch ab; SrvSurvey sendet die Mission nicht für Sie."
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "Die Fracht wird in der Annahmereihenfolge den aktiven Missionen zugewiesen. Die gelieferten Zählungen sind kumulativ. Abschluss, Scheitern und Abbruch folgen den Tagebuchereignissen."
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "Ladung ist voll. Beenden Sie die Sitzung, wenn Sie bereit sind."
     },
@@ -6689,6 +6693,10 @@
       "translation": "Schließe die Mission in Elite ab, breche sie ab oder scheitere sie. Journalereignisse aktualisieren die Liste."
     },
     {
+      "source": "Completed",
+      "translation": "Vollendet"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "Reparatur auf der Baustelle abgeschlossen"
     },
@@ -7901,10 +7909,6 @@
       "translation": "VERSCHOBEN"
     },
     {
-      "source": "DELIVERED",
-      "translation": "GELIEFERT"
-    },
-    {
       "source": "DEMAND",
       "translation": "NACHFRAGE"
     },
@@ -8335,6 +8339,10 @@
     {
       "source": "Delivered",
       "translation": "Geliefert"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "Geliefert: {0}/{1} t"
     },
     {
       "source": "Delivery and local storage",
@@ -10317,6 +10325,14 @@
       "translation": "Nur für Experten"
     },
     {
+      "source": "Expired",
+      "translation": "Abgelaufen"
+    },
+    {
+      "source": "Expiry",
+      "translation": "Ablauf"
+    },
+    {
       "source": "Explain last system available",
       "translation": "Erklären Sie das letzte verfügbare System"
     },
@@ -11095,10 +11111,6 @@
     {
       "source": "Find hotspots",
       "translation": "Finden Sie Hotspots"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "Finden Sie Hotspots für diesen Artikel"
     },
     {
       "source": "Find landmarks",
@@ -13539,6 +13551,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "Huss Port"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "Huss Port @ Ngolona"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -16081,6 +16101,10 @@
       "translation": "Bergbau"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "Bergbaumissionen"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "Bergbaubenachrichtigungen"
     },
@@ -16889,6 +16913,10 @@
       "translation": "Bergbaustandortsignal 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "Bergbaumissionen"
+    },
+    {
       "source": "Mining Ref",
       "translation": "Bergbau Ref"
     },
@@ -17035,6 +17063,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -17365,10 +17397,6 @@
       "translation": "BRAUCHEN"
     },
     {
-      "source": "NEEDED",
-      "translation": "BENÖTIGT"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "BRAUCHT AUFMERKSAMKEIT"
     },
@@ -17611,6 +17639,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "Bei vertikalem Schub ist mehr Vorsicht geboten"
+    },
+    {
+      "source": "Needed",
+      "translation": "Benötigt"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -17879,6 +17911,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Nexus-Systeme aktualisiert."
+    },
+    {
+      "source": "Ngolona",
+      "translation": "Ngolona"
     },
     {
       "source": "No",
@@ -18235,6 +18271,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "Es wurde kein vorhandenes Profil gefunden; Die Sitzungssummen werden unter {0} gespeichert."
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "Kein Ablauf gemeldet"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -18637,6 +18677,10 @@
       "translation": "Noch keine Sendungen mit Sendungsverfolgung."
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "Keine verfolgten Bergbaumissionen."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Für diesen Körper sind keine ungefilterten Canonn-Biologiekoordinaten übrig."
     },
@@ -18861,10 +18905,6 @@
       "translation": "AUS"
     },
     {
-      "source": "ON BOARD",
-      "translation": "AN BORD"
-    },
-    {
       "source": "OPACITY",
       "translation": "OPAZITÄT"
     },
@@ -18991,6 +19031,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "Aktivieren Sie auf Wayland auch die Wayland-Bildschirmaufnahme und die Surface Mining Rhino-Rig-Verfolgung unter Einstellungen > Anwendung. Wählen Sie die Anzeige mit Elite aus."
+    },
+    {
+      "source": "On board",
+      "translation": "An Bord"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "An Bord: 73/236 t"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "An Bord: {0}/{1} t"
     },
     {
       "source": "On foot",
@@ -20781,6 +20833,10 @@
       "translation": "PlotMiningFiregroups"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "PlotMiningMissions"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "PlotMiningNotifications"
     },
@@ -21593,10 +21649,6 @@
       "translation": "Prospektor"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Prospektorbenachrichtigungen und der Frachtraum-Tracker werden nur an Bord Ihres Hauptschiffs angezeigt. Verwenden Sie die Steuerelemente für die Sichtbarkeit des Bedienfelds unten, um jede Überlagerung anzuzeigen oder auszublenden."
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "Anbieterseite (0 zuerst)"
     },
@@ -22063,10 +22115,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "ÜBRIGE WAREN"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "ERFORDERLICH"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -23807,6 +23855,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Fordern Sie FSS auf, alle Leichen vor der Fertigstellung zu melden"
+    },
+    {
+      "source": "Required",
+      "translation": "Erforderlich"
     },
     {
       "source": "Requirements not reported",
@@ -27033,12 +27085,12 @@
       "translation": "Notizen anzeigen"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "Zeigen Sie ältere Marktschätzungen im Referenzsystem mit der Warnung „Veraltet“ an. „Lokale Waren ausschließen“ ignoriert immer das Marktalter."
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "Benachrichtigungen und Fracht nur während einer Mining-Sitzung anzeigen"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "Wird nur während einer Mining-Sitzung angezeigt"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Zeigen Sie ältere Marktschätzungen im Referenzsystem mit der Warnung „Veraltet“ an. „Lokale Waren ausschließen“ ignoriert immer das Marktalter."
     },
     {
       "source": "Show only logs still needed",
@@ -27139,6 +27191,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "Zeigen Sie diesen Rohstoff im Mining Ref-Overlay an"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "Zeigen Sie diese Mission im Overlay „Bergbaumissionen“ an"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -27531,6 +27587,10 @@
     {
       "source": "Sort by",
       "translation": "Sortieren nach"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "Sortieren nach:"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -27951,6 +28011,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey Bergbau-Fracht-Overlay"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey Bergbaumissionen-Overlay"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -28525,6 +28589,10 @@
       "translation": "StationKey"
     },
     {
+      "source": "StationName",
+      "translation": "Stationsname"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "Wählen Sie stationär und vorausschauend Testen aus. Setzen Sie zuerst Bohrgerät 1 aus, um den Anker zu befestigen, und überprüfen Sie dann die anderen fünf Schlitzwerte. Wiederholen Sie den Test nach jeder Ausrichtungsänderung."
     },
@@ -28535,6 +28603,10 @@
     {
       "source": "Statistics settings",
       "translation": "Statistikeinstellungen"
+    },
+    {
+      "source": "Status",
+      "translation": "Status"
     },
     {
       "source": "Status & utilities",
@@ -32541,6 +32613,10 @@
       "translation": "Zeichnen Sie den gesamten Splat-Rand nach."
     },
     {
+      "source": "Track",
+      "translation": "Schiene"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Verfolgen Sie die Komponentenmaterialien des Wächters"
     },
@@ -33019,6 +33095,10 @@
     {
       "source": "Undo terminal",
       "translation": "Terminal rückgängig machen"
+    },
+    {
+      "source": "Undocked",
+      "translation": "Nicht angedockt"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -39449,6 +39529,10 @@
       "translation": "{0} t geliefert · {1} t verbleibend · {2} t auf Nexus-Trägern"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} t erforderlich"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t verknüpfte Fracht · Kapazität von RavenColonial nicht verfügbar"
     },
@@ -40053,6 +40137,10 @@
     {
       "source": "0.08 atm",
       "translation": "0,08 atmósferas"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "0/236 toneladas"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -41345,6 +41433,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "Acepte una misión minera en Elite y verifique su producto, la cantidad requerida, la cantidad entregada, la asignación a bordo y las necesidades restantes."
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "Acepta una misión minera en el juego para rastrear su carga y entregas aquí."
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -44855,10 +44947,6 @@
       "translation": "La carga se asigna en orden de aceptación, por lo que una unidad no cuenta para varias misiones. El progreso de la misión depende del diario; SrvSurvey no envía la misión por usted."
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "La carga se asigna a misiones activas en orden de aceptación. Los recuentos entregados son acumulativos. La culminación, el fracaso y el abandono siguen a los acontecimientos del diario."
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "La carga está llena. Finalice la sesión cuando esté listo."
     },
@@ -46603,6 +46691,10 @@
       "translation": "Completa, abandona o falla la misión en Elite; Los eventos del diario actualizan la lista."
     },
     {
+      "source": "Completed",
+      "translation": "Terminado"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "Reparación del sitio de construcción completada"
     },
@@ -47815,10 +47907,6 @@
       "translation": "APLAZADO"
     },
     {
-      "source": "DELIVERED",
-      "translation": "ENTREGADO"
-    },
-    {
       "source": "DEMAND",
       "translation": "DEMANDA"
     },
@@ -48249,6 +48337,10 @@
     {
       "source": "Delivered",
       "translation": "Entregado"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "Entregado: {0}/{1} t"
     },
     {
       "source": "Delivery and local storage",
@@ -50231,6 +50323,14 @@
       "translation": "Sólo expertos"
     },
     {
+      "source": "Expired",
+      "translation": "Venció"
+    },
+    {
+      "source": "Expiry",
+      "translation": "Expiración"
+    },
+    {
       "source": "Explain last system available",
       "translation": "Explicar último sistema disponible"
     },
@@ -51009,10 +51109,6 @@
     {
       "source": "Find hotspots",
       "translation": "encontrar puntos de acceso"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "Encuentre puntos de acceso para este producto"
     },
     {
       "source": "Find landmarks",
@@ -53453,6 +53549,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "Puerto de Huss"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "Puerto Huss @ Ngolona"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -55995,6 +56099,10 @@
       "translation": "Minería"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "Misiones Mineras"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "Notificaciones mineras"
     },
@@ -56803,6 +56911,10 @@
       "translation": "Señal de ubicación minera 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "Misiones Mineras"
+    },
+    {
       "source": "Mining Ref",
       "translation": "Referencia Minera"
     },
@@ -56949,6 +57061,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -57279,10 +57395,6 @@
       "translation": "NECESIDAD"
     },
     {
-      "source": "NEEDED",
-      "translation": "NECESARIO"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "NECESITA ATENCIÓN"
     },
@@ -57525,6 +57637,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "Necesita más cuidado con el empuje vertical."
+    },
+    {
+      "source": "Needed",
+      "translation": "Necesario"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -57793,6 +57909,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Sistemas Nexus actualizados."
+    },
+    {
+      "source": "Ngolona",
+      "translation": "Ngolona"
     },
     {
       "source": "No",
@@ -58149,6 +58269,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "No se encontró ningún perfil existente; los totales de la sesión se guardarán en {0}."
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "No se ha informado de vencimiento"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -58551,6 +58675,10 @@
       "translation": "Aún no hay entregas rastreadas."
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "No hay misiones mineras rastreadas."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "No quedan coordenadas biológicas Canonn sin filtrar para este cuerpo."
     },
@@ -58775,10 +58903,6 @@
       "translation": "APAGADO"
     },
     {
-      "source": "ON BOARD",
-      "translation": "A BORDO"
-    },
-    {
       "source": "OPACITY",
       "translation": "OPACIDAD"
     },
@@ -58905,6 +59029,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "En Wayland, habilite también la captura de pantalla de Wayland y el seguimiento del equipo Surface Mining Rhino en Configuración > Aplicación. Seleccione la pantalla que contiene Elite."
+    },
+    {
+      "source": "On board",
+      "translation": "a bordo"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "A bordo: 73/236 t"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "A bordo: {0}/{1} t"
     },
     {
       "source": "On foot",
@@ -60695,6 +60831,10 @@
       "translation": "TramaMineríaGrupos De Fuego"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "TramaMineríaMisiones"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "PlotMiningNotificaciones"
     },
@@ -61507,10 +61647,6 @@
       "translation": "Prospector"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Las notificaciones del prospector y el rastreador de bodegas de carga aparecen solo a bordo de su barco principal. Utilice los controles de visibilidad del panel a continuación para mostrar u ocultar cada superposición."
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "Página del proveedor (0 primero)"
     },
@@ -61977,10 +62113,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "PRODUCTOS RESTANTES"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "REQUERIDO"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -63721,6 +63853,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Requerir que FSS informe todos los cuerpos antes de su finalización"
+    },
+    {
+      "source": "Required",
+      "translation": "Requerido"
     },
     {
       "source": "Requirements not reported",
@@ -66947,12 +67083,12 @@
       "translation": "Mostrar notas"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "Muestra estimaciones de mercado más antiguas en el sistema de referencia con una advertencia desactualizada. Excluir productos locales siempre ignora la antigüedad del mercado."
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "Mostrar notificaciones y carga solo durante una sesión de minería"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "Mostrar solo durante una sesión de minería"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Muestra estimaciones de mercado más antiguas en el sistema de referencia con una advertencia desactualizada. Excluir productos locales siempre ignora la antigüedad del mercado."
     },
     {
       "source": "Show only logs still needed",
@@ -67053,6 +67189,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "Mostrar este producto en la superposición de Referencia Minera"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "Mostrar esta misión en la superposición de Misiones Mineras"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -67445,6 +67585,10 @@
     {
       "source": "Sort by",
       "translation": "Ordenar por"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "Ordenar por:"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -67865,6 +68009,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey superposición de carga minera"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey superposición de misiones mineras"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -68439,6 +68587,10 @@
       "translation": "Clave de estación"
     },
     {
+      "source": "StationName",
+      "translation": "Nombre de la estación"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "Estacionario y mirando hacia adelante, seleccione Prueba. Implemente el equipo 1 primero para establecer el ancla, luego verifique las otras cinco lecturas de ranura. Repita la prueba después de cualquier cambio de alineación."
     },
@@ -68449,6 +68601,10 @@
     {
       "source": "Statistics settings",
       "translation": "Configuración de estadísticas"
+    },
+    {
+      "source": "Status",
+      "translation": "Estado"
     },
     {
       "source": "Status & utilities",
@@ -72455,6 +72611,10 @@
       "translation": "Traza el borde completo del símbolo."
     },
     {
+      "source": "Track",
+      "translation": "Pista"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Seguimiento de los materiales de los componentes de Guardian"
     },
@@ -72933,6 +73093,10 @@
     {
       "source": "Undo terminal",
       "translation": "Deshacer terminal"
+    },
+    {
+      "source": "Undocked",
+      "translation": "Desacoplado"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -79363,6 +79527,10 @@
       "translation": "{0} t entregadas · {1} t restantes · {2} t en operadores Nexus"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} t necesario"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de carga vinculada · capacidad no disponible de RavenColonial"
     },
@@ -79967,6 +80135,10 @@
     {
       "source": "0.08 atm",
       "translation": "0,08 guichet automatique"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "0/236 tonnes"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -81259,6 +81431,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "Acceptez une mission minière dans Elite et vérifiez sa marchandise, la quantité requise, la quantité livrée, l'allocation à bord et le besoin restant."
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "Acceptez une mission minière en jeu pour suivre sa cargaison et ses livraisons ici."
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -84769,10 +84945,6 @@
       "translation": "Le fret est attribué dans l'ordre d'acceptation, de sorte qu'une unité n'est pas prise en compte dans plusieurs missions. La progression de la mission dépend du journal ; SrvSurvey ne soumet pas la mission à votre place."
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "Le fret est affecté aux missions actives dans l'ordre d'acceptation. Les décomptes livrés sont cumulatifs. L'achèvement, l'échec et l'abandon suivent les événements du journal."
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "La cargaison est pleine. Terminez la session lorsque vous êtes prêt."
     },
@@ -86517,6 +86689,10 @@
       "translation": "Terminez, abandonnez ou échouez la mission en Élite ; les événements du journal mettent à jour la liste."
     },
     {
+      "source": "Completed",
+      "translation": "Complété"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "Réparation sur chantier terminée"
     },
@@ -87729,10 +87905,6 @@
       "translation": "DIFFÉRÉ"
     },
     {
-      "source": "DELIVERED",
-      "translation": "LIVRÉ"
-    },
-    {
       "source": "DEMAND",
       "translation": "DEMANDE"
     },
@@ -88163,6 +88335,10 @@
     {
       "source": "Delivered",
       "translation": "Livré"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "Livré : {0}/{1} t"
     },
     {
       "source": "Delivery and local storage",
@@ -90145,6 +90321,14 @@
       "translation": "Expert uniquement"
     },
     {
+      "source": "Expired",
+      "translation": "Expiré"
+    },
+    {
+      "source": "Expiry",
+      "translation": "Expiration"
+    },
+    {
       "source": "Explain last system available",
       "translation": "Expliquer le dernier système disponible"
     },
@@ -90923,10 +91107,6 @@
     {
       "source": "Find hotspots",
       "translation": "Trouver des points chauds"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "Trouver des points chauds pour ce produit"
     },
     {
       "source": "Find landmarks",
@@ -93367,6 +93547,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "Port de Huss"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "Port Huss @ Ngolona"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -95909,6 +96097,10 @@
       "translation": "Exploitation minière"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "Missions minières"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "Notifications minières"
     },
@@ -96717,6 +96909,10 @@
       "translation": "Signal de localisation minière 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "Missions minières"
+    },
+    {
       "source": "Mining Ref",
       "translation": "Réf minière"
     },
@@ -96863,6 +97059,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -97193,10 +97393,6 @@
       "translation": "BESOIN"
     },
     {
-      "source": "NEEDED",
-      "translation": "NÉCESSAIRE"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "A BESOIN D'ATTENTION"
     },
@@ -97439,6 +97635,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "Besoin de plus de soins avec la poussée verticale"
+    },
+    {
+      "source": "Needed",
+      "translation": "Nécessaire"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -97707,6 +97907,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Systèmes Nexus mis à jour."
+    },
+    {
+      "source": "Ngolona",
+      "translation": "Ngolona"
     },
     {
       "source": "No",
@@ -98063,6 +98267,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "Aucun profil existant n'a été trouvé ; les totaux des sessions seront enregistrés dans {0}."
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "Aucune expiration signalée"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -98465,6 +98673,10 @@
       "translation": "Pas de livraisons suivies pour l'instant."
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "Aucune mission minière suivie."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Il ne reste aucune coordonnée biologique Canonn non filtrée pour ce corps."
     },
@@ -98689,10 +98901,6 @@
       "translation": "DÉSACTIVÉ"
     },
     {
-      "source": "ON BOARD",
-      "translation": "À BORD"
-    },
-    {
       "source": "OPACITY",
       "translation": "OPACITÉ"
     },
@@ -98819,6 +99027,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "Sur Wayland, activez également la capture d'écran Wayland et le suivi des plates-formes Surface Mining Rhino dans Paramètres > Application. Sélectionnez l'affichage contenant Elite."
+    },
+    {
+      "source": "On board",
+      "translation": "À bord"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "A bord : 73/236 t"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "À bord : {0}/{1}"
     },
     {
       "source": "On foot",
@@ -100609,6 +100829,10 @@
       "translation": "PlotMiningFiregroups"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "Missions d'exploitation minière"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "PlotMiningNotifications"
     },
@@ -101421,10 +101645,6 @@
       "translation": "Prospecteur"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Les notifications des prospecteurs et le suivi des soutes n'apparaissent qu'à bord de votre navire principal. Utilisez les commandes de visibilité du panneau ci-dessous pour afficher ou masquer chaque superposition."
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "Page du fournisseur (0 en premier)"
     },
@@ -101891,10 +102111,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "PRODUITS RESTANTS"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "REQUIS"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -103635,6 +103851,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exiger que la FSS signale tous les corps avant la fin"
+    },
+    {
+      "source": "Required",
+      "translation": "Requis"
     },
     {
       "source": "Requirements not reported",
@@ -106861,12 +107081,12 @@
       "translation": "Afficher les notes"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "Afficher les anciennes estimations du marché dans le système de référence avec un avertissement obsolète. Exclure les produits locaux ignore toujours l’âge du marché."
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "Afficher les notifications et la cargaison uniquement pendant une session minière"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "Afficher uniquement pendant une session de minage"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Afficher les anciennes estimations du marché dans le système de référence avec un avertissement obsolète. Exclure les produits locaux ignore toujours l’âge du marché."
     },
     {
       "source": "Show only logs still needed",
@@ -106967,6 +107187,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "Afficher cette marchandise dans la superposition Mining Ref"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "Afficher cette mission dans la superposition des missions minières"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -107359,6 +107583,10 @@
     {
       "source": "Sort by",
       "translation": "Trier par"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "Trier par:"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -107779,6 +108007,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey superposition de cargaison minière"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey superposition des missions minières"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -108353,6 +108585,10 @@
       "translation": "Clé de gare"
     },
     {
+      "source": "StationName",
+      "translation": "Nom de la station"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "À l’arrêt et impatient, sélectionnez Test. Déployez d'abord la plate-forme 1 pour établir l'ancre, puis vérifiez les cinq autres lectures de fente. Répétez le test après tout changement d’alignement."
     },
@@ -108363,6 +108599,10 @@
     {
       "source": "Statistics settings",
       "translation": "Paramètres des statistiques"
+    },
+    {
+      "source": "Status",
+      "translation": "Statut"
     },
     {
       "source": "Status & utilities",
@@ -112369,6 +112609,10 @@
       "translation": "Tracez la bordure complète des éclaboussures."
     },
     {
+      "source": "Track",
+      "translation": "Piste"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Matériaux des composants Track Guardian"
     },
@@ -112847,6 +113091,10 @@
     {
       "source": "Undo terminal",
       "translation": "Annuler la borne"
+    },
+    {
+      "source": "Undocked",
+      "translation": "Déconnecté"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -119277,6 +119525,10 @@
       "translation": "{0} t livré · {1} t restant · {2} t sur les transporteurs Nexus"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} n'est pas nécessaire"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de fret lié · capacité indisponible auprès de RavenColonial"
     },
@@ -119881,6 +120133,10 @@
     {
       "source": "0.08 atm",
       "translation": "0,08 atm"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "0/236 toneladas"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -121173,6 +121429,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "Aceite uma missão de mineração no Elite e verifique sua mercadoria, quantidade necessária, quantidade entregue, alocação a bordo e necessidade restante."
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "Aceite uma missão de mineração no jogo para rastrear sua carga e entregas aqui."
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -124683,10 +124943,6 @@
       "translation": "A carga é alocada por ordem de aceitação, de forma que uma unidade não seja contabilizada para diversas missões. O progresso da missão depende do diário; SrvSurvey não envia a missão para você."
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "A carga é alocada para missões ativas em ordem de aceitação. As contagens entregues são cumulativas. Conclusão, fracasso e abandono seguem os eventos do diário."
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "A carga está cheia. Encerre a sessão quando estiver pronto."
     },
@@ -126431,6 +126687,10 @@
       "translation": "Complete, abandone ou falhe a missão em Elite; eventos de diário atualizam a lista."
     },
     {
+      "source": "Completed",
+      "translation": "Concluído"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "Reparo do canteiro de obras concluído"
     },
@@ -127643,10 +127903,6 @@
       "translation": "DIFERIDO"
     },
     {
-      "source": "DELIVERED",
-      "translation": "ENTREGUE"
-    },
-    {
       "source": "DEMAND",
       "translation": "DEMANDA"
     },
@@ -128077,6 +128333,10 @@
     {
       "source": "Delivered",
       "translation": "Entregue"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "Entregue: {0}/{1} t"
     },
     {
       "source": "Delivery and local storage",
@@ -130059,6 +130319,14 @@
       "translation": "Apenas especialista"
     },
     {
+      "source": "Expired",
+      "translation": "Expirado"
+    },
+    {
+      "source": "Expiry",
+      "translation": "Termo"
+    },
+    {
       "source": "Explain last system available",
       "translation": "Explique o último sistema disponível"
     },
@@ -130837,10 +131105,6 @@
     {
       "source": "Find hotspots",
       "translation": "Encontre pontos de acesso"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "Encontre pontos de acesso para esta mercadoria"
     },
     {
       "source": "Find landmarks",
@@ -133281,6 +133545,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "Porto Huss"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "Porto Huss @ Ngolona"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -135823,6 +136095,10 @@
       "translation": "Mineração"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "Missões de Mineração"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "Notificações de mineração"
     },
@@ -136631,6 +136907,10 @@
       "translation": "Sinal de localização de mineração 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "Missões de Mineração"
+    },
+    {
       "source": "Mining Ref",
       "translation": "Referência de mineração"
     },
@@ -136777,6 +137057,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -137107,10 +137391,6 @@
       "translation": "NECESSIDADE"
     },
     {
-      "source": "NEEDED",
-      "translation": "NECESSÁRIO"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "PRECISA DE ATENÇÃO"
     },
@@ -137353,6 +137633,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "Precisa de mais cuidado com o impulso vertical"
+    },
+    {
+      "source": "Needed",
+      "translation": "Necessário"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -137621,6 +137905,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Sistemas Nexus atualizados."
+    },
+    {
+      "source": "Ngolona",
+      "translation": "Ngolona"
     },
     {
       "source": "No",
@@ -137977,6 +138265,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "Nenhum perfil existente foi encontrado; os totais da sessão serão salvos em {0}."
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "Nenhuma expiração relatada"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -138379,6 +138671,10 @@
       "translation": "Nenhuma entrega rastreada ainda."
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "Nenhuma missão de mineração rastreada."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Nenhuma coordenada biológica Canonn não filtrada permanece para este corpo."
     },
@@ -138603,10 +138899,6 @@
       "translation": "DESLIGADO"
     },
     {
-      "source": "ON BOARD",
-      "translation": "A BORDO"
-    },
-    {
       "source": "OPACITY",
       "translation": "OPACIDADE"
     },
@@ -138733,6 +139025,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "No Wayland, ative também a captura de tela do Wayland e o rastreamento da plataforma Surface Mining Rhino em Configurações> Aplicativo. Selecione o display que contém Elite."
+    },
+    {
+      "source": "On board",
+      "translation": "A bordo"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "A bordo: 73/236 t"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "A bordo: {0}/{1} t"
     },
     {
       "source": "On foot",
@@ -140523,6 +140827,10 @@
       "translation": "PlotMiningFiregroups"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "PlotMineraçãoMissões"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "PlotMiningNotificações"
     },
@@ -141335,10 +141643,6 @@
       "translation": "Prospector"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "As notificações do prospector e o rastreador do porão de carga aparecem apenas a bordo do seu navio principal. Use os controles de visibilidade do painel abaixo para mostrar ou ocultar cada sobreposição."
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "Página do provedor (0 primeiro)"
     },
@@ -141805,10 +142109,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "RESTANTES DE COMODIDADES"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "OBRIGATÓRIO"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -143549,6 +143849,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exigir que o FSS relate todos os órgãos antes da conclusão"
+    },
+    {
+      "source": "Required",
+      "translation": "Obrigatório"
     },
     {
       "source": "Requirements not reported",
@@ -146775,12 +147079,12 @@
       "translation": "Mostrar notas"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "Mostre estimativas de mercado mais antigas no sistema de referência com um aviso desatualizado. Excluir commodities locais sempre ignora a idade do mercado."
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "Mostrar notificações e carga apenas durante uma sessão de mineração"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "Mostrar apenas durante uma sessão de mineração"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Mostre estimativas de mercado mais antigas no sistema de referência com um aviso desatualizado. Excluir commodities locais sempre ignora a idade do mercado."
     },
     {
       "source": "Show only logs still needed",
@@ -146881,6 +147185,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "Mostrar esta mercadoria na sobreposição de referência de mineração"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "Mostre esta missão na sobreposição de Missões de Mineração"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -147273,6 +147581,10 @@
     {
       "source": "Sort by",
       "translation": "Ordenar por"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "Ordenar por:"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -147693,6 +148005,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey sobreposição de carga de mineração"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey sobreposição de missões de mineração"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -148267,6 +148583,10 @@
       "translation": "EstaçãoKey"
     },
     {
+      "source": "StationName",
+      "translation": "Nome da Estação"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "Parado e ansioso, selecione Testar. Implante o equipamento 1 primeiro para estabelecer a âncora e depois verifique as outras cinco leituras do slot. Repita o teste após qualquer alteração de alinhamento."
     },
@@ -148277,6 +148597,10 @@
     {
       "source": "Statistics settings",
       "translation": "Configurações de estatísticas"
+    },
+    {
+      "source": "Status",
+      "translation": "Status"
     },
     {
       "source": "Status & utilities",
@@ -152283,6 +152607,10 @@
       "translation": "Trace a borda completa do splat."
     },
     {
+      "source": "Track",
+      "translation": "Acompanhar"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Rastrear materiais componentes do Guardian"
     },
@@ -152761,6 +153089,10 @@
     {
       "source": "Undo terminal",
       "translation": "Desfazer terminal"
+    },
+    {
+      "source": "Undocked",
+      "translation": "Desencaixado"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -159191,6 +159523,10 @@
       "translation": "{0} t entregue · {1} t restante · {2} t em operadoras Nexus"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} é necessário"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} t de carga vinculada · capacidade indisponível da RavenColonial"
     },
@@ -159795,6 +160131,10 @@
     {
       "source": "0.08 atm",
       "translation": "0,08 атм"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "0/236 т"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -161087,6 +161427,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "Примите миссию по добыче полезных ископаемых в Elite и проверьте ее сырье, необходимое количество, доставленное количество, распределение на борту и оставшуюся потребность."
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "Примите миссию по добыче полезных ископаемых в игре, чтобы отслеживать ее груз и доставку здесь."
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -164597,10 +164941,6 @@
       "translation": "Грузы распределяются в порядке приемки, поэтому одна единица не засчитывается в несколько миссий. Прогресс миссии зависит от журнала; SrvSurvey не отправляет вам задание."
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "Груз распределяется по активным миссиям в порядке поступления. Количество доставленных товаров суммируется. Завершение, неудача и отказ следуют за событиями в журнале."
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "Груз полный. Завершите сеанс, когда будете готовы."
     },
@@ -166345,6 +166685,10 @@
       "translation": "Завершите, завершите или провалите миссию в режиме Elite; события журнала обновляют список."
     },
     {
+      "source": "Completed",
+      "translation": "Завершенный"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "Завершен ремонт на строительной площадке"
     },
@@ -167557,10 +167901,6 @@
       "translation": "ОТЛОЖЕНО"
     },
     {
-      "source": "DELIVERED",
-      "translation": "ДОСТАВЛЕННЫЙ"
-    },
-    {
       "source": "DEMAND",
       "translation": "СПРОС"
     },
@@ -167991,6 +168331,10 @@
     {
       "source": "Delivered",
       "translation": "Доставленный"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "Доставлено: {0}/{1} t"
     },
     {
       "source": "Delivery and local storage",
@@ -169973,6 +170317,14 @@
       "translation": "Только эксперт"
     },
     {
+      "source": "Expired",
+      "translation": "Истекший"
+    },
+    {
+      "source": "Expiry",
+      "translation": "Срок действия"
+    },
+    {
       "source": "Explain last system available",
       "translation": "Объясните последнюю доступную систему"
     },
@@ -170751,10 +171103,6 @@
     {
       "source": "Find hotspots",
       "translation": "Найти точки доступа"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "Найдите горячие точки для этого товара"
     },
     {
       "source": "Find landmarks",
@@ -173195,6 +173543,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.Автошоу"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "Хус Порт"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "Хусс-Порт @ Нголона"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -175737,6 +176093,10 @@
       "translation": "Горное дело"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "Горнодобывающие миссии"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "Уведомления о майнинге"
     },
@@ -176545,6 +176905,10 @@
       "translation": "Сигнал местоположения добычи полезных ископаемых 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "Горнодобывающие миссии"
+    },
+    {
       "source": "Mining Ref",
       "translation": "Горное дело"
     },
@@ -176691,6 +177055,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -177021,10 +177389,6 @@
       "translation": "НУЖНО"
     },
     {
-      "source": "NEEDED",
-      "translation": "НУЖНЫЙ"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "ТРЕБУЕТ ВНИМАНИЯ"
     },
@@ -177267,6 +177631,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "Требуется больше осторожности при вертикальной тяге"
+    },
+    {
+      "source": "Needed",
+      "translation": "Нужный"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -177535,6 +177903,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Обновлены системы Nexus."
+    },
+    {
+      "source": "Ngolona",
+      "translation": "Нголона"
     },
     {
       "source": "No",
@@ -177891,6 +178263,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "Ни один существующий профиль не найден; итоги сеанса будут сохранены в {0}."
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "Срок действия не указан"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -178293,6 +178669,10 @@
       "translation": "Отслеживаемых поставок пока нет."
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "Никаких отслеживаемых миссий по добыче полезных ископаемых."
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Для этого тела не осталось нефильтрованных биологических координат Canonn ."
     },
@@ -178517,10 +178897,6 @@
       "translation": "ВЫКЛЮЧЕННЫЙ"
     },
     {
-      "source": "ON BOARD",
-      "translation": "НА БОРТУ"
-    },
-    {
       "source": "OPACITY",
       "translation": "НЕпрозрачность"
     },
@@ -178647,6 +179023,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "В Wayland также включите захват экрана Wayland и отслеживание буровых установок Surface Mining Rhino в меню «Настройки» > «Приложение». Выберите дисплей, содержащий Elite."
+    },
+    {
+      "source": "On board",
+      "translation": "На борту"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "На борту: 73/236 т."
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "На борту: {0}/{1} t"
     },
     {
       "source": "On foot",
@@ -180437,6 +180825,10 @@
       "translation": "СюжетГорное делоПожарные группы"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "СюжетГорное делоМиссии"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "Уведомления о майнинге"
     },
@@ -181249,10 +181641,6 @@
       "translation": "Старатель"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Уведомления геологоразведчика и трекер грузового трюма появляются только на борту вашего основного корабля. Используйте элементы управления видимостью панели ниже, чтобы показать или скрыть каждое наложение."
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "Страница провайдера (сначала 0)"
     },
@@ -181719,10 +182107,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "ОСТАЛЬНЫЕ ТОВАРЫ"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "НЕОБХОДИМЫЙ"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -183463,6 +183847,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Требовать от ФСС сообщать обо всех телах до завершения строительства."
+    },
+    {
+      "source": "Required",
+      "translation": "Необходимый"
     },
     {
       "source": "Requirements not reported",
@@ -186689,12 +187077,12 @@
       "translation": "Показать заметки"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "Показывать более старые рыночные оценки в базовой системе с предупреждением «Устарело». Параметр «Исключить местные товары» всегда игнорирует возраст рынка."
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "Показывать уведомления и грузы только во время сеанса майнинга"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "Показывать только во время сеанса майнинга"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "Показывать более старые рыночные оценки в базовой системе с предупреждением «Устарело». Параметр «Исключить местные товары» всегда игнорирует возраст рынка."
     },
     {
       "source": "Show only logs still needed",
@@ -186795,6 +187183,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "Показать этот товар в наложении Mining Ref"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "Показать эту миссию в наложении Mining Missions."
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -187187,6 +187579,10 @@
     {
       "source": "Sort by",
       "translation": "Сортировать по"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "Сортировать по:"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -187607,6 +188003,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey наложение горнодобывающего груза"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey наложение миссий по добыче полезных ископаемых"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -188181,6 +188581,10 @@
       "translation": "Станционный ключ"
     },
     {
+      "source": "StationName",
+      "translation": "Имя станции"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "Неподвижно и глядя вперед, выберите «Тест». Сначала разверните буровую установку 1, чтобы установить якорь, затем проверьте показания остальных пяти слотов. Повторите проверку после любого изменения центровки."
     },
@@ -188191,6 +188595,10 @@
     {
       "source": "Statistics settings",
       "translation": "Настройки статистики"
+    },
+    {
+      "source": "Status",
+      "translation": "Статус"
     },
     {
       "source": "Status & utilities",
@@ -192197,6 +192605,10 @@
       "translation": "Обведите полную границу знака."
     },
     {
+      "source": "Track",
+      "translation": "Отслеживать"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Отслеживание материалов компонентов Guardian"
     },
@@ -192675,6 +193087,10 @@
     {
       "source": "Undo terminal",
       "translation": "Отменить терминал"
+    },
+    {
+      "source": "Undocked",
+      "translation": "Отстыкован"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -199105,6 +199521,10 @@
       "translation": "{0} т доставлено · {1} т осталось · {2} т на носителях Nexus"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} т необходим"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} т связанного груза · мощность недоступна в RavenColonial"
     },
@@ -199709,6 +200129,10 @@
     {
       "source": "0.08 atm",
       "translation": "0.08 个大气压"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "0/236吨"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -201001,6 +201425,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "在精英中接受挖矿任务，并查看其商品、所需数量、已交付数量、船上分配和剩余需求。"
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "接受游戏中的采矿任务以跟踪此处的货物和交付情况。"
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -204511,10 +204939,6 @@
       "translation": "货物按照接收顺序进行分配，因此一个单位不计入多个任务。任务进度取决于期刊； SrvSurvey不为您提交任务。"
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "货物按照验收顺序分配给现役特派团。交付的数量是累积的。完成、失败和放弃遵循日记事件。"
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "货物已满。准备好后结束会话。"
     },
@@ -206259,6 +206683,10 @@
       "translation": "完成、放弃或失败精英中的任务；日记事件更新列表。"
     },
     {
+      "source": "Completed",
+      "translation": "完全的"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "完成工地修复"
     },
@@ -207471,10 +207899,6 @@
       "translation": "延期"
     },
     {
-      "source": "DELIVERED",
-      "translation": "发表"
-    },
-    {
       "source": "DEMAND",
       "translation": "需求"
     },
@@ -207905,6 +208329,10 @@
     {
       "source": "Delivered",
       "translation": "发表"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "已交付：{0}/{1}"
     },
     {
       "source": "Delivery and local storage",
@@ -209887,6 +210315,14 @@
       "translation": "仅限专家"
     },
     {
+      "source": "Expired",
+      "translation": "已到期"
+    },
+    {
+      "source": "Expiry",
+      "translation": "到期日"
+    },
+    {
       "source": "Explain last system available",
       "translation": "解释最后一个可用的系统"
     },
@@ -210665,10 +211101,6 @@
     {
       "source": "Find hotspots",
       "translation": "寻找热点"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "寻找该商品的热点"
     },
     {
       "source": "Find landmarks",
@@ -213109,6 +213541,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "人类网站.车展"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "胡斯港"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "胡斯港@Ngolona"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -215651,6 +216091,10 @@
       "translation": "矿业"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "采矿任务"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "挖矿通知"
     },
@@ -216459,6 +216903,10 @@
       "translation": "采矿位置信号 4"
     },
     {
+      "source": "Mining Missions",
+      "translation": "采矿任务"
+    },
+    {
       "source": "Mining Ref",
       "translation": "采矿参考"
     },
@@ -216605,6 +217053,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "MiningWorkspace.ShouldShowCargo"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "MiningWorkspace.ShouldShowMissions"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -216935,10 +217387,6 @@
       "translation": "需要"
     },
     {
-      "source": "NEEDED",
-      "translation": "需要"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "需要注意"
     },
@@ -217181,6 +217629,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "需要更加小心垂直推力"
+    },
+    {
+      "source": "Needed",
+      "translation": "需要"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -217449,6 +217901,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "Nexus 系统已更新。"
+    },
+    {
+      "source": "Ngolona",
+      "translation": "恩戈洛纳"
     },
     {
       "source": "No",
@@ -217805,6 +218261,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "未找到现有的配置文件；会话总计将保存到 {0}。"
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "没有过期报告"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -218207,6 +218667,10 @@
       "translation": "尚无跟踪的交货情况。"
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "没有履带式采矿任务。"
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "该机构不存在未过滤的 Canonn 生物坐标。"
     },
@@ -218431,10 +218895,6 @@
       "translation": "离开"
     },
     {
-      "source": "ON BOARD",
-      "translation": "船上"
-    },
-    {
       "source": "OPACITY",
       "translation": "不透明度"
     },
@@ -218561,6 +219021,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "在 Wayland 上，还可以在“设置”>“应用程序”中启用 Wayland 屏幕捕获和 Surface Mining Rhino 钻机跟踪。选择包含 Elite 的显示。"
+    },
+    {
+      "source": "On board",
+      "translation": "船上"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "船上：73/236 吨"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "船上：{0}/{1}"
     },
     {
       "source": "On foot",
@@ -220351,6 +220823,10 @@
       "translation": "情节采矿火组"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "情节采矿任务"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "绘图挖掘通知"
     },
@@ -221163,10 +221639,6 @@
       "translation": "探矿者"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "探矿者通知和货舱跟踪器仅出现在您的主船上。使用下面的面板可见性控件来显示或隐藏每个叠加层。"
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "提供商页面（第 0 个）"
     },
@@ -221633,10 +222105,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "剩余商品"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "必需的"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -223377,6 +223845,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "要求 FSS 在完成前报告所有机构"
+    },
+    {
+      "source": "Required",
+      "translation": "必需的"
     },
     {
       "source": "Requirements not reported",
@@ -226603,12 +227075,12 @@
       "translation": "显示注释"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "在参考系统中显示较旧的市场估计，并带有“过时”警告。排除本地商品总是忽略市场年龄。"
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "仅在采矿会话期间显示通知和货物"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "仅在挖矿会话期间显示"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "在参考系统中显示较旧的市场估计，并带有“过时”警告。排除本地商品总是忽略市场年龄。"
     },
     {
       "source": "Show only logs still needed",
@@ -226709,6 +227181,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "在采矿参考叠加层中显示该商品"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "在采矿任务叠加层中显示此任务"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -227101,6 +227577,10 @@
     {
       "source": "Sort by",
       "translation": "排序方式"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "排序方式："
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -227521,6 +228001,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "SrvSurvey采矿货物叠加"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "SrvSurvey 采矿任务叠加"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -228095,6 +228579,10 @@
       "translation": "站键"
     },
     {
+      "source": "StationName",
+      "translation": "站名"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "静止并向前看，选择“测试”。首先部署钻机 1 以建立锚点，然后检查其他五个槽位读数。任何对齐更改后重复测试。"
     },
@@ -228105,6 +228593,10 @@
     {
       "source": "Statistics settings",
       "translation": "统计设置"
+    },
+    {
+      "source": "Status",
+      "translation": "地位"
     },
     {
       "source": "Status & utilities",
@@ -232111,6 +232603,10 @@
       "translation": "追踪完整的 splat 边界。"
     },
     {
+      "source": "Track",
+      "translation": "追踪"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "Track Guardian 组件材料"
     },
@@ -232589,6 +233085,10 @@
     {
       "source": "Undo terminal",
       "translation": "撤消终端"
+    },
+    {
+      "source": "Undocked",
+      "translation": "未连接"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -239019,6 +239519,10 @@
       "translation": "{0} t 已交付 · {1} t 剩余 · {2} t 在 Nexus 运营商上"
     },
     {
+      "source": "{0} t needed",
+      "translation": "{0} 不需要"
+    },
+    {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",
       "translation": "{0} 吨链接货物 · RavenColonial 无法提供容量"
     },
@@ -239623,6 +240127,10 @@
     {
       "source": "0.08 atm",
       "translation": "* 0.08 ATM >>>!"
+    },
+    {
+      "source": "0/236 t",
+      "translation": "* 0/236 T >>>!"
     },
     {
       "source": "015 degrees | 1.24 km",
@@ -240915,6 +241423,10 @@
     {
       "source": "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
       "translation": "* ACCEPT A MINING MISSION IN ELITE AND CHECK ITS COMMODITY, REQUIRED AMOUNT, DELIVERED AMOUNT, ONBOARD ALLOCATION, AND REMAINING NEED. >>>!"
+    },
+    {
+      "source": "Accept a mining mission in game to track its cargo and deliveries here.",
+      "translation": "* ACCEPT A MINING MISSION IN GAME TO TRACK ITS CARGO AND DELIVERIES HERE. >>>!"
     },
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
@@ -244425,10 +244937,6 @@
       "translation": "* CARGO IS ALLOCATED IN ACCEPTANCE ORDER SO ONE UNIT IS NOT COUNTED TOWARD SEVERAL MISSIONS. MISSION PROGRESS DEPENDS ON THE JOURNAL; SRVSURVEY DOES NOT SUBMIT THE MISSION FOR YOU. >>>!"
     },
     {
-      "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
-      "translation": "* CARGO IS ALLOCATED TO ACTIVE MISSIONS IN ACCEPTANCE ORDER. DELIVERED COUNTS ARE CUMULATIVE. COMPLETION, FAILURE AND ABANDONMENT FOLLOW JOURNAL EVENTS. >>>!"
-    },
-    {
       "source": "Cargo is full. End the session when ready.",
       "translation": "* CARGO IS FULL. END THE SESSION WHEN READY. >>>!"
     },
@@ -246173,6 +246681,10 @@
       "translation": "* COMPLETE, ABANDON, OR FAIL THE MISSION IN ELITE; JOURNAL EVENTS UPDATE THE LIST. >>>!"
     },
     {
+      "source": "Completed",
+      "translation": "* COMPLETED >>>!"
+    },
+    {
       "source": "Completed build-site repair",
       "translation": "* COMPLETED BUILD-SITE REPAIR >>>!"
     },
@@ -247385,10 +247897,6 @@
       "translation": "* DEFERRED >>>!"
     },
     {
-      "source": "DELIVERED",
-      "translation": "* DELIVERED >>>!"
-    },
-    {
       "source": "DEMAND",
       "translation": "* DEMAND >>>!"
     },
@@ -247819,6 +248327,10 @@
     {
       "source": "Delivered",
       "translation": "* DELIVERED >>>!"
+    },
+    {
+      "source": "Delivered: {0}/{1} t",
+      "translation": "* DELIVERED: {0}/{1} T >>>!"
     },
     {
       "source": "Delivery and local storage",
@@ -249801,6 +250313,14 @@
       "translation": "* EXPERT ONLY >>>!"
     },
     {
+      "source": "Expired",
+      "translation": "* EXPIRED >>>!"
+    },
+    {
+      "source": "Expiry",
+      "translation": "* EXPIRY >>>!"
+    },
+    {
       "source": "Explain last system available",
       "translation": "* EXPLAIN LAST SYSTEM AVAILABLE >>>!"
     },
@@ -250579,10 +251099,6 @@
     {
       "source": "Find hotspots",
       "translation": "* FIND HOTSPOTS >>>!"
-    },
-    {
-      "source": "Find hotspots for this commodity",
-      "translation": "* FIND HOTSPOTS FOR THIS COMMODITY >>>!"
     },
     {
       "source": "Find landmarks",
@@ -253023,6 +253539,14 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "* HUMANSITE.AUTOSHOW >>>!"
+    },
+    {
+      "source": "Huss Port",
+      "translation": "* HUSS PORT >>>!"
+    },
+    {
+      "source": "Huss Port @ Ngolona",
+      "translation": "* HUSS PORT @ NGOLONA >>>!"
     },
     {
       "source": "Hydrogen Peroxide",
@@ -255565,6 +256089,10 @@
       "translation": "* MINING >>>!"
     },
     {
+      "source": "MINING MISSIONS",
+      "translation": "* MINING MISSIONS >>>!"
+    },
+    {
       "source": "MINING NOTIFICATIONS",
       "translation": "* MINING NOTIFICATIONS >>>!"
     },
@@ -256373,6 +256901,10 @@
       "translation": "* MINING LOCATION SIGNAL 4 >>>!"
     },
     {
+      "source": "Mining Missions",
+      "translation": "* MINING MISSIONS >>>!"
+    },
+    {
       "source": "Mining Ref",
       "translation": "* MINING REF >>>!"
     },
@@ -256519,6 +257051,10 @@
     {
       "source": "MiningWorkspace.ShouldShowCargo",
       "translation": "* MININGWORKSPACE.SHOULDSHOWCARGO >>>!"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowMissions",
+      "translation": "* MININGWORKSPACE.SHOULDSHOWMISSIONS >>>!"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -256849,10 +257385,6 @@
       "translation": "* NEED >>>!"
     },
     {
-      "source": "NEEDED",
-      "translation": "* NEEDED >>>!"
-    },
-    {
       "source": "NEEDS ATTENTION",
       "translation": "* NEEDS ATTENTION >>>!"
     },
@@ -257095,6 +257627,10 @@
     {
       "source": "Need more care with vertical thrust",
       "translation": "* NEED MORE CARE WITH VERTICAL THRUST >>>!"
+    },
+    {
+      "source": "Needed",
+      "translation": "* NEEDED >>>!"
     },
     {
       "source": "Needed for the active Ram Tah mission.",
@@ -257363,6 +257899,10 @@
     {
       "source": "Nexus systems updated.",
       "translation": "* NEXUS SYSTEMS UPDATED. >>>!"
+    },
+    {
+      "source": "Ngolona",
+      "translation": "* NGOLONA >>>!"
     },
     {
       "source": "No",
@@ -257719,6 +258259,10 @@
     {
       "source": "No existing profile was found; session totals will be saved to {0}.",
       "translation": "* NO EXISTING PROFILE WAS FOUND; SESSION TOTALS WILL BE SAVED TO {0}. >>>!"
+    },
+    {
+      "source": "No expiry reported",
+      "translation": "* NO EXPIRY REPORTED >>>!"
     },
     {
       "source": "No factory calibration exists for this overlay.",
@@ -258121,6 +258665,10 @@
       "translation": "* NO TRACKED DELIVERIES YET. >>>!"
     },
     {
+      "source": "No tracked mining missions.",
+      "translation": "* NO TRACKED MINING MISSIONS. >>>!"
+    },
+    {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "* NO UNFILTERED CANONN BIOLOGY COORDINATES REMAIN FOR THIS BODY. >>>!"
     },
@@ -258345,10 +258893,6 @@
       "translation": "* OFF >>>!"
     },
     {
-      "source": "ON BOARD",
-      "translation": "* ON BOARD >>>!"
-    },
-    {
       "source": "OPACITY",
       "translation": "* OPACITY >>>!"
     },
@@ -258475,6 +259019,18 @@
     {
       "source": "On Wayland, also enable Wayland screen capture and Surface Mining Rhino rig tracking in Settings > Application. Select the display containing Elite.",
       "translation": "* ON WAYLAND, ALSO ENABLE WAYLAND SCREEN CAPTURE AND SURFACE MINING RHINO RIG TRACKING IN SETTINGS > APPLICATION. SELECT THE DISPLAY CONTAINING ELITE. >>>!"
+    },
+    {
+      "source": "On board",
+      "translation": "* ON BOARD >>>!"
+    },
+    {
+      "source": "On board: 73/236 t",
+      "translation": "* ON BOARD: 73/236 T >>>!"
+    },
+    {
+      "source": "On board: {0}/{1} t",
+      "translation": "* ON BOARD: {0}/{1} T >>>!"
     },
     {
       "source": "On foot",
@@ -260265,6 +260821,10 @@
       "translation": "* PLOTMININGFIREGROUPS >>>!"
     },
     {
+      "source": "PlotMiningMissions",
+      "translation": "* PLOTMININGMISSIONS >>>!"
+    },
+    {
       "source": "PlotMiningNotifications",
       "translation": "* PLOTMININGNOTIFICATIONS >>>!"
     },
@@ -261077,10 +261637,6 @@
       "translation": "* PROSPECTOR >>>!"
     },
     {
-      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "* PROSPECTOR NOTIFICATIONS AND THE CARGO HOLD TRACKER APPEAR ONLY ABOARD YOUR MAIN SHIP. USE THE PANEL VISIBILITY CONTROLS BELOW TO SHOW OR HIDE EACH OVERLAY. >>>!"
-    },
-    {
       "source": "Provider page (0 first)",
       "translation": "* PROVIDER PAGE (0 FIRST) >>>!"
     },
@@ -261547,10 +262103,6 @@
     {
       "source": "REMAINING COMMODITIES",
       "translation": "* REMAINING COMMODITIES >>>!"
-    },
-    {
-      "source": "REQUIRED",
-      "translation": "* REQUIRED >>>!"
     },
     {
       "source": "REQUIRED ARTIFACTS",
@@ -263291,6 +263843,10 @@
     {
       "source": "Require FSS to report all bodies before completion",
       "translation": "* REQUIRE FSS TO REPORT ALL BODIES BEFORE COMPLETION >>>!"
+    },
+    {
+      "source": "Required",
+      "translation": "* REQUIRED >>>!"
     },
     {
       "source": "Requirements not reported",
@@ -266517,12 +267073,12 @@
       "translation": "* SHOW NOTES >>>!"
     },
     {
-      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
-      "translation": "* SHOW OLDER MARKET ESTIMATES IN THE REFERENCE SYSTEM WITH AN OUTDATED WARNING. EXCLUDE LOCAL COMMODITIES ALWAYS IGNORES MARKET AGE. >>>!"
+      "source": "Show notifications and cargo only during a mining session",
+      "translation": "* SHOW NOTIFICATIONS AND CARGO ONLY DURING A MINING SESSION >>>!"
     },
     {
-      "source": "Show only during a mining session",
-      "translation": "* SHOW ONLY DURING A MINING SESSION >>>!"
+      "source": "Show older market estimates in the reference system with an Outdated warning. Exclude Local Commodities always ignores market age.",
+      "translation": "* SHOW OLDER MARKET ESTIMATES IN THE REFERENCE SYSTEM WITH AN OUTDATED WARNING. EXCLUDE LOCAL COMMODITIES ALWAYS IGNORES MARKET AGE. >>>!"
     },
     {
       "source": "Show only logs still needed",
@@ -266623,6 +267179,10 @@
     {
       "source": "Show this commodity in the Mining Ref overlay",
       "translation": "* SHOW THIS COMMODITY IN THE MINING REF OVERLAY >>>!"
+    },
+    {
+      "source": "Show this mission in the Mining Missions overlay",
+      "translation": "* SHOW THIS MISSION IN THE MINING MISSIONS OVERLAY >>>!"
     },
     {
       "source": "Show when looking at right-hand panel",
@@ -267015,6 +267575,10 @@
     {
       "source": "Sort by",
       "translation": "* SORT BY >>>!"
+    },
+    {
+      "source": "Sort by:",
+      "translation": "* SORT BY: >>>!"
     },
     {
       "source": "Sort needs from least to greatest while docked at FCs",
@@ -267435,6 +267999,10 @@
     {
       "source": "SrvSurvey mining cargo overlay",
       "translation": "* SRVSURVEY MINING CARGO OVERLAY >>>!"
+    },
+    {
+      "source": "SrvSurvey mining missions overlay",
+      "translation": "* SRVSURVEY MINING MISSIONS OVERLAY >>>!"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -268009,6 +268577,10 @@
       "translation": "* STATIONKEY >>>!"
     },
     {
+      "source": "StationName",
+      "translation": "* STATIONNAME >>>!"
+    },
+    {
       "source": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
       "translation": "* STATIONARY AND LOOKING FORWARD, SELECT TEST. DEPLOY RIG 1 FIRST TO ESTABLISH THE ANCHOR, THEN CHECK THE OTHER FIVE SLOT READINGS. REPEAT TEST AFTER ANY ALIGNMENT CHANGE. >>>!"
     },
@@ -268019,6 +268591,10 @@
     {
       "source": "Statistics settings",
       "translation": "* STATISTICS SETTINGS >>>!"
+    },
+    {
+      "source": "Status",
+      "translation": "* STATUS >>>!"
     },
     {
       "source": "Status & utilities",
@@ -272025,6 +272601,10 @@
       "translation": "* TRACE THE COMPLETE SPLAT BORDER. >>>!"
     },
     {
+      "source": "Track",
+      "translation": "* TRACK >>>!"
+    },
+    {
       "source": "Track Guardian component materials",
       "translation": "* TRACK GUARDIAN COMPONENT MATERIALS >>>!"
     },
@@ -272503,6 +273083,10 @@
     {
       "source": "Undo terminal",
       "translation": "* UNDO TERMINAL >>>!"
+    },
+    {
+      "source": "Undocked",
+      "translation": "* UNDOCKED >>>!"
     },
     {
       "source": "Unhandled process exception: {0}",
@@ -278931,6 +279515,10 @@
     {
       "source": "{0} t delivered · {1} t remaining · {2} t on Nexus carriers",
       "translation": "* {0} T DELIVERED · {1} T REMAINING · {2} T ON NEXUS CARRIERS >>>!"
+    },
+    {
+      "source": "{0} t needed",
+      "translation": "* {0} T NEEDED >>>!"
     },
     {
       "source": "{0} t of linked cargo · capacity unavailable from RavenColonial",

@@ -12,6 +12,7 @@ public sealed record MiningAnnouncementOutputs(Platform.IMiningSpeechOutput Spee
 
 public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
+    private const string FsdJumpEvent = "FSDJump";
     private readonly MiningStore store;
     private IReadOnlyList<string> journalDirectories = [];
     private readonly FiregroupsWorkspaceViewModel? firegroups;
@@ -42,6 +43,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     private string? commander;
     private bool storageAvailable;
     private bool sessionAvailable;
+    private string station = "";
     private string system = "",
         body = "",
         ship = "",
@@ -132,11 +134,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         {
             if (SelectedMission is { } mission)
             {
-                Filter = mission.Commodity;
-                string mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
-                Search.Mineral = mineral;
-                Search.RingMineralChips.Add(mineral);
-                SelectedTab = 4;
+                FindMissionHotspots(mission);
             }
         });
         AddAsteroidCommand = new WorkspaceCommand(() => AdjustAsteroids(1));
@@ -585,6 +583,11 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         {
             tableSorter.Toggle(parameter);
             Changed(rowsProperty);
+            if (rowsProperty == nameof(Missions))
+            {
+                InvalidateMissionCards();
+                Changed(nameof(MissionCards));
+            }
             Changed(indicatorsProperty);
         });
 
@@ -659,7 +662,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             Refresh();
             return;
         }
-        if (commander != context.FrontierId)
+        bool commanderChanged = commander != context.FrontierId;
+        if (commanderChanged)
         {
             Load(context.FrontierId!, context.CommanderName);
         }
@@ -678,22 +682,23 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         foreach (JournalEventEnvelope entry in update.JournalEvents)
         {
             ApplyContext(entry);
-            dirty |= state.Apply(entry, update.IsBootstrapRead, system, body, ship, position);
+            dirty |= state.Apply(entry, update.IsBootstrapRead, system, body, ship, position, station);
         }
+        station = context.StationName ?? "";
         system = context.SystemName ?? system;
         body = context.BodyName ?? body;
         ship = context.ShipType ?? ship;
         position = context.StarPosition ?? position;
         Search.UpdateCurrentLocation(system);
 
-        state.Missions.UpdateCargo(Cargo);
+        cargoChanged |= state.Missions.UpdateCargo(Cargo, clock.GetUtcNow());
         if (dirty)
         {
             Save();
         }
 
         ApplyAutomation(update, previousNotice);
-        if (dirty || cargoChanged)
+        if (dirty || cargoChanged || commanderChanged)
         {
             Refresh();
         }
@@ -704,7 +709,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     private void ApplyContext(JournalEventEnvelope entry)
     {
         JsonElement json = entry.Payload;
-        if (entry.EventName is "Location" or "FSDJump" or "CarrierJump")
+        ApplyMissionLocation(entry);
+        if (entry.EventName is "Location" or FsdJumpEvent or "CarrierJump")
         {
             system = Text(json, "StarSystem");
             body = Text(json, "Body");
@@ -723,7 +729,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 capacity = count;
             }
         }
-        if (entry.EventName is "FSDJump" or "Location" or "CarrierJump")
+        if (entry.EventName is FsdJumpEvent or "Location" or "CarrierJump")
         {
             var broadcast = new Dictionary<string, object>
             {
@@ -778,7 +784,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             Settings.AutoSearch
             && !update.IsBootstrapRead
             && clock.GetUtcNow() - lastAutoSearch > TimeSpan.FromSeconds(10)
-            && update.JournalEvents.Any(e => e.EventName is "FSDJump" or "SAASignalsFound")
+            && update.JournalEvents.Any(e => e.EventName is FsdJumpEvent or "SAASignalsFound")
         )
         {
             lastAutoSearch = clock.GetUtcNow();
@@ -1428,6 +1434,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         selectedSession = null;
         selectedRing = null;
         selectedMission = null;
+        station = "";
         try
         {
             state = new MiningWorkspaceState(store.Load(id));
@@ -1579,6 +1586,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         cachedVisibleNotices = null;
         if (!dataChanged)
         {
+            RefreshMissionTimes();
             foreach (
                 string? name in new[]
                 {
@@ -1587,6 +1595,9 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                     nameof(ShouldShowNotifications),
                     nameof(ShouldShowCargo),
                     nameof(ShouldShowSession),
+                    nameof(ShouldShowMissions),
+                    nameof(MissionCards),
+                    nameof(HasMissionCards),
                     nameof(VisibleNotices),
                     nameof(CurrentProspectText),
                     nameof(HasCurrentProspect),
@@ -1604,6 +1615,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
             return;
         }
+        InvalidateMissionCards();
         cachedPresetNames = null;
         cachedAnnouncementPresets = null;
         cachedThresholdRows = null;
@@ -1643,6 +1655,9 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 nameof(ShouldShowNotifications),
                 nameof(ShouldShowCargo),
                 nameof(ShouldShowSession),
+                nameof(ShouldShowMissions),
+                nameof(MissionCards),
+                nameof(HasMissionCards),
                 nameof(VisibleNotices),
                 nameof(CurrentProspectText),
                 nameof(HasCurrentProspect),

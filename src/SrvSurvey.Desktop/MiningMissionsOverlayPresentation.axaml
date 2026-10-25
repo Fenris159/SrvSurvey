@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.MiningMissionsOverlayPresentation"
+ x:DataType="vm:MiningMissionsOverlayViewModel" Width="360">
+ <Border Background="{DynamicResource RavenWindowBrush}" CornerRadius="5" Padding="8">
+  <StackPanel Spacing="8">
+   <TextBlock Classes="overlay-header type-header" Text="MINING MISSIONS" />
+   <TextBlock Classes="type-detail muted" Text="No tracked mining missions." IsVisible="{Binding !HasMissions}" />
+   <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <ItemsControl ItemsSource="{Binding Missions}">
+    <ItemsControl.ItemTemplate>
+     <DataTemplate x:DataType="vm:MiningMissionCardViewModel">
+      <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,0,0,8">
+       <StackPanel Spacing="4">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+         <TextBlock Classes="type-title" Text="{Binding Commodity}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap" />
+         <TextBlock Grid.Column="1" Classes="type-icon" Text="&#x2713;" IsVisible="{Binding IsComplete}" FontWeight="Bold" FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2" Foreground="{DynamicResource RavenColoniseSurplusBrush}" />
+        </Grid>
+        <TextBlock Classes="type-body" Text="{Binding CargoProgress}" />
+        <ProgressBar Height="4" Value="{Binding CargoPercentage}" Maximum="100" Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+        <TextBlock Classes="type-body" Text="{Binding DeliveryProgress}" Foreground="{DynamicResource RavenSuccessBrush}" />
+        <ProgressBar Height="4" Value="{Binding DeliveryPercentage}" Maximum="100" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+        <TextBlock Classes="type-detail" Text="{Binding Needed}" />
+        <TextBlock Classes="type-detail" Text="{Binding Destination}" TextWrapping="Wrap" />
+        <TextBlock Classes="type-caption muted" Text="{Binding TimeRemaining}" />
+       </StackPanel>
+      </Border>
+     </DataTemplate>
+    </ItemsControl.ItemTemplate>
+   </ItemsControl>
+   </ScrollViewer>
+  </StackPanel>
+ </Border>
+</UserControl>

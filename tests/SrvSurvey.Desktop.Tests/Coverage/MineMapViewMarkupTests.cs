@@ -631,7 +631,7 @@ public sealed class MineMapViewMarkupTests
     }
 
     [Theory]
-    [InlineData("MiningView.axaml", 8)]
+    [InlineData("MiningView.axaml", 7)]
     [InlineData("MiningSearchView.axaml", 4)]
     public void MiningTableHeadersAreClickableAndShareCompactContentWidths(string fileName, int expectedTables)
     {

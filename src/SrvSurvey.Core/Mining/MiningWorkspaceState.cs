@@ -32,7 +32,8 @@ public sealed class MiningWorkspaceState
         string system,
         string body,
         string ship,
-        GalacticCoordinate? position = null
+        GalacticCoordinate? position = null,
+        string station = ""
     )
     {
         if (!RelevantEvents.Contains(entry.EventName))
@@ -59,7 +60,7 @@ public sealed class MiningWorkspaceState
         }
 
         bool changed = Session.Apply(entry);
-        Missions.Apply(entry);
+        Missions.Apply(entry, system, station);
         ApplyRing(entry, system, position);
         if (changed && !bootstrap && !IsProspectProgress(entry))
         {

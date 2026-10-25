@@ -9,13 +9,15 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
     private readonly HostedOverlayWindow notifications,
         cargo,
         firegroups,
-        sessionOverview;
+        sessionOverview,
+        missions;
     private readonly MiningActivityOverlayViewModel notificationModel,
         firegroupModel;
     private readonly MiningCargoOverlayViewModel cargoModel;
     private readonly FiregroupsWorkspaceViewModel firegroupsWorkspace;
     private bool suppressed;
     private readonly MiningSessionOverlayViewModel sessionModel;
+    private readonly MiningMissionsOverlayViewModel missionsModel;
 
     public MiningActivityOverlayCoordinator(
         MiningWorkspaceViewModel workspace,
@@ -25,6 +27,14 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
     {
         this.workspace = workspace;
         this.firegroupsWorkspace = firegroupsWorkspace;
+        missionsModel = new(workspace);
+        missions = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotMiningMissions",
+                _ => new MiningMissionsOverlayWindow(missionsModel),
+                (bounds, size) => OverlayWindowPlacement.MiddleLeft(bounds, size)
+            )
+        );
         sessionModel = new(workspace);
         sessionOverview = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
@@ -75,6 +85,7 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
             is nameof(MiningWorkspaceViewModel.ShouldShowNotifications)
                 or nameof(MiningWorkspaceViewModel.ShouldShowCargo)
                 or nameof(MiningWorkspaceViewModel.ShouldShowSession)
+                or nameof(MiningWorkspaceViewModel.ShouldShowMissions)
                 or nameof(FiregroupsWorkspaceViewModel.ShouldShow)
         )
         {
@@ -85,6 +96,7 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
     private void Synchronize()
     {
         notifications.Reconcile(!suppressed && workspace.ShouldShowNotifications);
+        missions.Reconcile(!suppressed && workspace.ShouldShowMissions);
         sessionOverview.Reconcile(!suppressed && workspace.ShouldShowSession);
         cargo.Reconcile(!suppressed && workspace.ShouldShowCargo);
         firegroups.Reconcile(!suppressed && firegroupsWorkspace.ShouldShow);
@@ -95,6 +107,8 @@ public sealed class MiningActivityOverlayCoordinator : IDisposable
         workspace.PropertyChanged -= OnChanged;
         firegroupsWorkspace.PropertyChanged -= OnChanged;
         notifications.Dispose();
+        missions.Dispose();
+        missionsModel.Dispose();
         sessionOverview.Dispose();
         sessionModel.Dispose();
         cargo.Dispose();

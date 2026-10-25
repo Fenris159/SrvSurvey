@@ -160,6 +160,14 @@ public sealed class OverlayPresentationContractTests
             ]
         ),
         Contract(
+            "PlotMiningMissions",
+            [
+                "src/SrvSurvey.Desktop/MiningMissionsOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml",
+            ],
+            ["MINING MISSIONS", "CargoProgress", "DeliveryProgress", "Destination", "TimeRemaining", "RavenWindowBrush"]
+        ),
+        Contract(
             "PlotMiningCargo",
             [
                 "src/SrvSurvey.Desktop/MiningCargoOverlayWindow.axaml",
@@ -552,7 +560,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         string root = FindRepositoryRoot();
-        Assert.Equal(30, Contracts.Length);
+        Assert.Equal(31, Contracts.Length);
         foreach (PresentationContract contract in Contracts)
         {
             string production = string.Join(

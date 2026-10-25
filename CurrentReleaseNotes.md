@@ -6,6 +6,14 @@ SteamOS and Gamescope overlay support.
 
 ## What's changed
 
+- **Mining missions:** Mining → Missions now uses themed cards with cargo aboard,
+  cumulative deliveries, expiry, rewards, hotspot search, and click-to-copy
+  destination systems. Each card has a tracking checkbox; new missions are
+  tracked by default and choices are saved per commander. The dedicated
+  **Mining Missions** overlay shows selected active missions during collection
+  and return trips, including outside a mining session. Its height follows
+  the selected missions, with a bounded list for larger mission stacks.
+
 - **Combat and colonization overlays:** The combat suppression option now
   applies only while the colonization commodities panel is visible. Loaded
   projects alone no longer hide combat panels, and hiding or clearing the

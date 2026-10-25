@@ -161,6 +161,15 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0)
         ),
         Define(
+            "PlotMiningMissions",
+            "Mining Missions",
+            "MiningWorkspace.ShouldShowMissions",
+            OverlayLayoutCategory.Mining,
+            OverlaySettingsCategory.Mining,
+            new(360, 420),
+            new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0)
+        ),
+        Define(
             "PlotMiningCargo",
             "Mining cargo hold",
             "MiningWorkspace.ShouldShowCargo",

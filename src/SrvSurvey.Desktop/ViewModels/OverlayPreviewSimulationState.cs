@@ -124,6 +124,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Prospecting yields", "Platinum · 2 finds · 2 quality hits"),
                 Row("Average / Best", "43.6% / 52.4%")
             ),
+            "PlotMiningMissions" => Content(
+                "MINING MISSIONS",
+                "Bromellite",
+                "On board: 73/236 t",
+                Row("Delivered", "0/236 t"),
+                Row("Destination", "Huss Port @ Ngolona")
+            ),
             "PlotMiningCargo" => Content(
                 "CARGO HOLD",
                 "431 / 960 T",

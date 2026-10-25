@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+ x:Class="SrvSurvey.Desktop.Views.MiningMissionCardsView" x:DataType="vm:MiningWorkspaceViewModel">
+ <StackPanel Spacing="12">
+  <TextBlock Text="Mining missions" Classes="card-title" />
+  <TextBlock Text="Track missions in the overlay using each card's checkbox. Cargo is shared in acceptance order; delivered tonnes are counted separately." Classes="muted" TextWrapping="Wrap" />
+  <WrapPanel>
+   <TextBlock Text="Sort by:" VerticalAlignment="Center" Margin="0,0,12,8" />
+   <Button Content="Commodity" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Commodity" Margin="0,0,12,8" />
+   <Button Content="Required" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Required" Margin="0,0,12,8" />
+   <Button Content="Delivered" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Delivered" Margin="0,0,12,8" />
+   <Button Content="On board" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="OnBoard" Margin="0,0,12,8" />
+   <Button Content="Status" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Status" Margin="0,0,12,8" />
+   <Button Content="Expiry" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Expiry" Margin="0,0,12,8" />
+   <Button Content="Destination" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Destination" Margin="0,0,12,8" />
+   <Button Content="Needed" Classes="link" Command="{Binding MissionsSortCommand}" CommandParameter="Remaining" Margin="0,0,12,8" />
+  </WrapPanel>
+  <TextBlock Text="Accept a mining mission in game to track its cargo and deliveries here." Classes="muted" TextWrapping="Wrap" IsVisible="{Binding !HasMissionCards}" />
+  <ItemsControl x:Name="MissionCards" ItemsSource="{Binding MissionCards}">
+   <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel SizeChanged="Cards_SizeChanged" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+   <ItemsControl.ItemTemplate>
+    <DataTemplate x:DataType="vm:MiningMissionCardViewModel">
+     <Border Classes="mining-mission-card" Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1" CornerRadius="5" Padding="16" Margin="0,0,12,12">
+      <StackPanel Spacing="10">
+       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock Text="{Binding Commodity}" Classes="card-title" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <CheckBox Grid.Column="1" IsChecked="{Binding IsTracked, Mode=TwoWay}" IsEnabled="{Binding IsActive}" Content="Track" ToolTip.Tip="Show this mission in the Mining Missions overlay" />
+       </Grid>
+       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBlock Text="{Binding CargoProgress}" TextWrapping="Wrap" />
+        <TextBlock Grid.Column="1" Text="{Binding Needed}" Classes="muted" />
+       </Grid>
+       <ProgressBar Value="{Binding CargoPercentage}" Maximum="100" Height="4" Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+       <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding DeliveryProgress}" Foreground="{DynamicResource RavenSuccessBrush}" />
+        <TextBlock Grid.Column="1" Text="&#x2713;" IsVisible="{Binding IsComplete}" FontSize="18" FontWeight="Bold" FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2" Foreground="{DynamicResource RavenSuccessBrush}" />
+       </Grid>
+       <ProgressBar Value="{Binding DeliveryPercentage}" Maximum="100" Height="4" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+       <Button Classes="link" HorizontalAlignment="Left" Padding="0" IsEnabled="{Binding HasSystem}" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
+        <TextBlock Text="{Binding Destination}" TextWrapping="Wrap" />
+       </Button>
+       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock Text="{Binding TimeRemaining}" Classes="muted" TextWrapping="Wrap" />
+        <TextBlock Grid.Column="1" Text="{Binding Status}" Classes="muted" />
+       </Grid>
+       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel>
+         <TextBlock Text="{Binding Reward}" FontWeight="SemiBold" />
+         <TextBlock Text="{Binding RewardPerTon}" Classes="muted" />
+        </StackPanel>
+        <Button Grid.Column="1" Content="Find hotspots" Command="{Binding FindHotspotsCommand}" VerticalAlignment="Center" />
+       </Grid>
+      </StackPanel>
+     </Border>
+    </DataTemplate>
+   </ItemsControl.ItemTemplate>
+  </ItemsControl>
+ </StackPanel>
+</UserControl>

@@ -297,9 +297,9 @@
     <Border x:Name="MiningActivityCard" Classes="card raised">
       <StackPanel Spacing="12">
         <TextBlock Classes="card-title" Text="Ship mining overlays" />
-        <TextBlock Classes="muted" Text="Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
+        <TextBlock Classes="muted" Text="Mining notifications, session progress, cargo, and missions appear aboard your main ship. Tracked missions remain visible during collection and return trips, including outside a mining session. Use the panel controls below to show or hide each overlay." TextWrapping="Wrap" />
         <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
-        <CheckBox Content="Show only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
+        <CheckBox Content="Show notifications and cargo only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
         <TextBlock Text="Notification duration (seconds)" />
         <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
         <TextBlock Text="Persistent prospector results" />
