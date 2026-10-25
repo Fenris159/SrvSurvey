@@ -1553,6 +1553,9 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.CopyNextBoxel => await CopyNextBoxelAsync(),
             GlobalInputAction.PasteGalMap => await PasteGalaxyMapAsync(),
             GlobalInputAction.ToggleFirstFootfall => await viewModel.ToggleCurrentBodyFirstFootfallAsync(),
+            GlobalInputAction.StartMiningSession
+            or GlobalInputAction.PauseResumeMiningSession
+            or GlobalInputAction.EndMiningSession => viewModel.MiningWorkspace.ExecuteSessionControl(action),
             GlobalInputAction.StreamOne => streamOverlayCoordinator?.Toggle() == true,
             GlobalInputAction.AdjustVr => BeginVrAdjustment(),
             GlobalInputAction.ResetVr => vrOverlayCoordinator?.ResetOrientation() == true,

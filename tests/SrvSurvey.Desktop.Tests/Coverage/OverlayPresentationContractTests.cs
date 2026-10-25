@@ -18,6 +18,7 @@ public sealed class OverlayPresentationContractTests
         ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
         ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
         ["HumanSiteOverlayPresentation.axaml"] = "HUMAN SETTLEMENT",
+        ["MiningSessionOverlayPresentation.axaml"] = "SESSION",
         ["JumpInfoOverlayPresentation.axaml"] = "NEXT JUMP",
         ["LastFssBodyOverlayPresentation.axaml"] = "LAST FSS SCAN",
         ["MassacreMissionsOverlayPresentation.axaml"] = "MASSACRE MISSIONS",
@@ -137,6 +138,14 @@ public sealed class OverlayPresentationContractTests
                 "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml",
             ],
             ["Refined", "RavenWindowBrush"]
+        ),
+        Contract(
+            "PlotMiningSession",
+            [
+                "src/SrvSurvey.Desktop/MiningSessionOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml",
+            ],
+            ["SESSION", "Duration", "Yield", "Activity", "Limpets", "Cargo", "RavenWindowBrush"]
         ),
         Contract(
             "PlotMiningCargo",
@@ -525,7 +534,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         string root = FindRepositoryRoot();
-        Assert.Equal(29, Contracts.Length);
+        Assert.Equal(30, Contracts.Length);
         foreach (PresentationContract contract in Contracts)
         {
             string production = string.Join(

@@ -7,6 +7,35 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationCarrierManifestTests
 {
+    [Fact]
+    public async Task LocalSalvageMissingFromRavenAppearsWithoutReplacingRavenAmounts()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        local.Observe(
+            LocalCarrier(50) with
+            {
+                Cargo = [new FrontierInventorySnapshot("Commodity", "ancientrelic", 2, 0)],
+            },
+            DateTimeOffset.UnixEpoch
+        );
+        var client = new ManifestClient();
+        using ColonizationCarrierManifestViewModel model = Create(client, localCargo: local);
+        await model.InitializeAsync();
+        CarrierManifestRowViewModel relic = Row(model, "ancientrelic");
+        Assert.Equal("Guardian Relic", relic.Name);
+        Assert.Equal("2", relic.JournalAmount);
+        Assert.Equal(0, relic.Amount);
+        local.Observe(
+            LocalCarrier(50) with
+            {
+                Cargo = [new FrontierInventorySnapshot("Commodity", "ancientrelic", 3, 0)],
+            },
+            DateTimeOffset.UnixEpoch.AddMinutes(1)
+        );
+        Assert.Equal("3", relic.JournalAmount);
+        Assert.Equal(0, relic.Amount);
+    }
+
     [Theory]
     [InlineData("initialize")]
     [InlineData("load")]
@@ -183,7 +212,8 @@ public sealed class ColonizationCarrierManifestTests
         };
         using ColonizationCarrierManifestViewModel model = Create(client);
         await model.InitializeAsync();
-        Assert.True(model.HideNonColonyCommodities);
+        Assert.False(model.HideNonColonyCommodities);
+        model.HideNonColonyCommodities = true;
         Assert.Single(Assert.Single(model.Groups).Rows);
         model.HideNonColonyCommodities = false;
         Assert.Equal("Metals", Row(model, "platinum").Category);
@@ -220,7 +250,7 @@ public sealed class ColonizationCarrierManifestTests
     }
 
     [Fact]
-    public async Task DefaultTableHidesNonColonyCargoButSavingPreservesIt()
+    public async Task OptionalColonyFilterHidesCargoWithoutLosingItOnSave()
     {
         var client = new ManifestClient
         {
@@ -234,6 +264,8 @@ public sealed class ColonizationCarrierManifestTests
         };
         using ColonizationCarrierManifestViewModel model = Create(client);
         await model.InitializeAsync();
+        Assert.False(model.HideNonColonyCommodities);
+        model.HideNonColonyCommodities = true;
         Assert.DoesNotContain(model.Groups.SelectMany(group => group.Rows), row => row.Key == "platinum");
         await model.SaveAsync();
         Assert.Equal(7, client.SentCargo!["platinum"]);
@@ -376,7 +408,7 @@ public sealed class ColonizationCarrierManifestTests
         Assert.Equal("Sol", model.SystemName);
         Assert.Equal("175", model.Total);
         Assert.True(model.CanSave);
-        Assert.DoesNotContain(model.Groups, group => group.Name == "Other");
+        Assert.Contains(model.Groups, group => group.Name == "Other");
         model.SelectedCarrier = model.Carriers[1];
         Assert.False(model.HasCarrier);
         await model.LoadSelectedAsync();

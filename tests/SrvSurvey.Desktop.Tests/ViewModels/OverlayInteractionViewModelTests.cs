@@ -1060,6 +1060,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             role.Role == OverlayTypographyRole.Title
         );
         title.Percent = 25;
+        title.SelectedBrush = title.BrushChoices.Single(choice => choice.Key == "cyan");
 
         viewModel.SaveCommand.Execute(null);
 
@@ -1069,8 +1070,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(0.34, activeLayout.Placements["PlotJumpInfo"].Opacity);
         Assert.Equal(OverlayScaleCatalog.GetIndex(150), activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
         Assert.Equal(25, activeLayout.GetTypographyScale("PlotJumpInfo").Title);
+        Assert.Equal("cyan", store.Load().GetTypographyScale("PlotJumpInfo").Brushes.Title);
         Assert.Equal(OverlayGrowthDirection.Left, activeLayout.Placements["PlotJumpInfo"].GrowthDirection);
-        Assert.Equal(1, host.TypographyRefreshCount);
+        Assert.Equal(2, host.TypographyRefreshCount);
 
         Assert.True(viewModel.Begin());
         viewModel.OpenOverlaySettings("PlotJumpInfo");

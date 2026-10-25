@@ -87,6 +87,44 @@ public sealed class ColonizationOverlayStabilityTests
         );
     }
 
+    [AvaloniaFact]
+    public void SavedPanelHeightDoesNotPreventShrinkingWithTheCommodityList()
+    {
+        const string plotter = "PlotBuildCommodities";
+        var model = new ColonizationCommodityOverlayViewModel();
+        model.ApplyPreferences(ColonizationOverlayPreferences.Default with { CollapseCoveredGroups = false });
+        var window = new ColonizationCommodityOverlayWindow(model);
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [plotter] = OverlayLayoutCatalog.GetRequired(plotter).DefaultPlacement with
+                {
+                    SizeOverride = new(500, 800),
+                },
+            },
+            null,
+            null
+        );
+        try
+        {
+            OverlayThemeResources.Apply(window, layout, plotter, new OverlayWindowRegistry());
+            model.Apply(CreatePlan(), null);
+            window.Show();
+            Settle(window);
+            double expanded = window.ClientSize.Height;
+            model.Apply(CreatePlan() with { Rows = CreatePlan().Rows.Take(1).ToArray() }, null);
+            Settle(window);
+            Assert.True(
+                window.ClientSize.Height < expanded - 50,
+                $"Height stayed at {window.ClientSize.Height} after removing rows from {expanded}."
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static void Settle(Window window)
     {
         Dispatcher.UIThread.RunJobs();

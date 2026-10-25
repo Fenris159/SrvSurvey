@@ -9,6 +9,7 @@ public sealed record MiningPreferences
     public bool ReceiveCommunityData { get; set; }
     public MiningSearchPreferences SearchOptions { get; set; } = new();
     public bool AutoStart { get; set; } = true;
+    public bool AutoStopAfterTravel { get; set; } = true;
     public bool SpeakAnnouncements { get; set; }
     public bool PlayProspectChime { get; set; }
     public string Chime { get; set; } = "Two-tone";

@@ -26,7 +26,7 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     private string bulkText = string.Empty;
     private string status = string.Empty;
     private ColonizationManifestCommodity? newCommodity;
-    private bool hideNonColonyCommodities = true;
+    private bool hideNonColonyCommodities;
 
     public bool HideNonColonyCommodities
     {
@@ -282,8 +282,33 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
         return createdRow;
     }
 
+    private void AddLocalCommodities()
+    {
+        if (carrier is null)
+        {
+            return;
+        }
+
+        bool added = false;
+        foreach (string key in localCargo.GetCommodities(carrier))
+        {
+            if (rows.Any(row => ColonizationManifestCommodity.ForKey(row.Key).Key == key))
+            {
+                continue;
+            }
+
+            rows.Add(CreateRow(key, 0));
+            added = true;
+        }
+        if (added)
+        {
+            RebuildGroups();
+        }
+    }
+
     private void RefreshJournalQuantities()
     {
+        AddLocalCommodities();
         foreach (CarrierManifestRowViewModel row in rows)
         {
             row.UpdateJournalQuantity(carrier is null ? null : localCargo.GetQuantity(carrier, row.Key));
@@ -304,6 +329,7 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     {
         rows.Clear();
         rows.AddRange(cargo.Select(pair => CreateRow(pair.Key, pair.Value)));
+        AddLocalCommodities();
         RebuildGroups();
     }
 

@@ -125,6 +125,10 @@
       "translation": "0 Proben"
     },
     {
+      "source": "0 t",
+      "translation": "0 t"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0 % unentdeckt"
     },
@@ -307,6 +311,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18 / 27 Punkte"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 Asteroiden · 22 Prospektoren"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -571,6 +579,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610 Bedarf | 180 FC | 24 Schiff"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64 t · 153,6 t/h"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -1497,6 +1509,10 @@
       "translation": "Aktive Reise: {0}."
     },
     {
+      "source": "Active mining session",
+      "translation": "Aktive Mining-Sitzung"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "Der aktive Obelisk {0} ist dupliziert."
     },
@@ -1543,6 +1559,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "Aktivitäten → Bergbau kombiniert Schiffsbergbauwerkzeuge mit dem vorhandenen Fracht- und Journal-Feed."
+    },
+    {
+      "source": "Activity",
+      "translation": "Aktivität"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -4969,6 +4989,10 @@
       "translation": "Cargo-Updates bleiben im Speicher erhalten, ihre Wiederherstellungsdatei konnte jedoch nicht gespeichert werden: {0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "Ladung: 64 / 192 t"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Ladung: 72 / 128 t · Napfschnecken: 34"
     },
@@ -5507,6 +5531,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "Wählen Sie eine Textdatei mit Systemnamen"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "Wählen Sie einen gültigen Overlay-Themenpinsel."
     },
     {
       "source": "Choose a valid starting system.",
@@ -8317,6 +8345,14 @@
       "translation": "Lieferhistorie nicht verfügbar."
     },
     {
+      "source": "Delkar",
+      "translation": "Delkar"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "Delkar 7 Ein Ring"
+    },
+    {
       "source": "Demand:",
       "translation": "Nachfrage:"
     },
@@ -9827,6 +9863,14 @@
     {
       "source": "End Date:",
       "translation": "Enddatum:"
+    },
+    {
+      "source": "End Session",
+      "translation": "Sitzung beenden"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "Beenden und speichern Sie die aktuelle Mining-Sitzung."
     },
     {
       "source": "End path here",
@@ -15193,6 +15237,10 @@
       "translation": "LegacyProfilePathTextBox"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "LegacyTheme."
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "LegacyTheme.{0}"
     },
@@ -16809,6 +16857,10 @@
       "translation": "Bergbau"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "Bergbau (Oberfläche)"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "Bergbau > Suchen > Platin listet Kandidatenringe für eine Platinreise auf."
     },
@@ -16827,6 +16879,10 @@
     {
       "source": "Mining Ref",
       "translation": "Bergbau Ref"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "Bergbausitzung"
     },
     {
       "source": "Mining System",
@@ -16971,6 +17027,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -20009,6 +20069,18 @@
       "translation": "Die Überschreibungsmaße für die Überlagerungsgröße müssen positiv sein."
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "Überlagerungstextpinsel müssen ein Objekt sein."
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "Overlay-Textpinsel müssen Themenfeldnamen enthalten."
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "Overlay-Textpinsel müssen gültige Design-Farbfeldnamen enthalten."
+    },
+    {
       "source": "Overlay theme",
       "translation": "Overlay-Thema"
     },
@@ -20095,6 +20167,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "Überschreiben Sie die globale Overlay-Deckkraft"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "Überschreiben Sie diese Textrolle mit einem Overlay-Darstellungspinsel"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -20381,8 +20457,16 @@
       "translation": "Pause"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "Pause / Fortsetzen"
+    },
+    {
       "source": "Pause / resume",
       "translation": "Pause/Fortsetzung"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "Unterbrechen Sie die aktuelle Mining-Sitzung oder setzen Sie sie fort."
     },
     {
       "source": "Paused",
@@ -20683,6 +20767,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "PlotMiningReference"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "PlotMiningSession"
     },
     {
       "source": "PlotMiningWarning",
@@ -22761,12 +22849,12 @@
       "translation": "Lesen Sie {0} von {1} Systemdateien, {2} Körpern und {3} Organismen; {4} lokalisierte Arten gefunden.{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Schreibgeschützter Verlauf aus dem aktiven Journalordner. Beim Exportieren wird ein portables, versioniertes Wiedergabepaket erstellt, ohne dass Profildaten geändert werden."
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "Schreibgeschützte Frachtsummen von CAPI, lokalen Spediteurmärkten und nachfolgenden Journaltransaktionen. N/A bedeutet, dass keine lokale Gesamtsumme verfügbar ist."
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "Schreibgeschützte lokale Frachtsummen aus CAPI und nachfolgenden Journaltransaktionen. N/A bedeutet, dass keine lokale Gesamtsumme verfügbar ist."
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "Schreibgeschützter Verlauf aus dem aktiven Journalordner. Beim Exportieren wird ein portables, versioniertes Wiedergabepaket erstellt, ohne dass Profildaten geändert werden."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -23785,10 +23873,6 @@
       "translation": "Koordinaten zurücksetzen"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "Setzen Sie alle Text- und Symbolskalen in diesem Bereich auf 0 % zurück."
-    },
-    {
       "source": "Reset input detection",
       "translation": "Eingangserkennung zurücksetzen"
     },
@@ -23799,6 +23883,10 @@
     {
       "source": "Reset selected",
       "translation": "Zurücksetzen ausgewählt"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "Setzen Sie Text- und Symbolskalen sowie Pinselüberschreibungen in diesem Bedienfeld zurück"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -24791,6 +24879,10 @@
     {
       "source": "SELL",
       "translation": "VERKAUFEN"
+    },
+    {
+      "source": "SESSION",
+      "translation": "SITZUNG"
     },
     {
       "source": "SHIFT",
@@ -27857,6 +27949,10 @@
       "translation": "SrvSurvey Überlagerung der Reichweitenwarnung für Mining-Rigs"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey Mining-Sitzungs-Overlay"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey Overlay für den nächsten Sprung"
     },
@@ -28217,6 +28313,10 @@
       "translation": "Beginnen Sie eine Reise, um Systeme, Scans, Notizen, Screenshots und Belohnungen zu verfolgen."
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "Starten Sie manuell eine Mining-Sitzung."
+    },
+    {
       "source": "Start a new route?",
       "translation": "Eine neue Route starten?"
     },
@@ -28515,6 +28615,10 @@
     {
       "source": "Stop search",
       "translation": "Stoppen Sie die Suche"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "Stoppen Sie Sitzungen automatisch nach dem FSD-Sprung oder Andocken"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -31891,6 +31995,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "„Thema“ > „Overlay-Einstellungen“ steuert die Anzeigeplatzierung für Live-Panels und den Positionseditor."
+    },
+    {
+      "source": "Theme default",
+      "translation": "Theme-Standard"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -35453,6 +35561,10 @@
       "translation": "Pause"
     },
     {
+      "source": "brushes",
+      "translation": "Bürsten"
+    },
+    {
       "source": "build",
       "translation": "bauen"
     },
@@ -36495,6 +36607,10 @@
     {
       "source": "helium",
       "translation": "Helium"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "hh\\:mm\\:ss"
     },
     {
       "source": "high",
@@ -38717,6 +38833,10 @@
       "translation": "{0} wie gescannt · {1} falls zugeordnet"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "{0} Asteroiden · {1} Kerne"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} bei '{1}': {2}"
     },
@@ -39165,6 +39285,10 @@
       "translation": "{0} Preise für {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "{0} Prospektoren · {1} Sammler"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} wird neu erstellt"
     },
@@ -39319,6 +39443,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t verbleibend · {1} t insgesamt"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} t · {1} t/h"
     },
     {
       "source": "{0} tonnes delivered",
@@ -39887,6 +40015,10 @@
       "translation": "0 muestras"
     },
     {
+      "source": "0 t",
+      "translation": "0 toneladas"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0% SIN DESCUBRIR"
     },
@@ -40069,6 +40201,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18 / 27 puntos"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 asteroides · 22 buscadores"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -40333,6 +40469,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610 necesidad | 180 FC | 24 barco"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64 t · 153,6 t/h"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -41259,6 +41399,10 @@
       "translation": "Viaje activo: {0}."
     },
     {
+      "source": "Active mining session",
+      "translation": "Sesión de minería activa"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "El obelisco activo {0} está duplicado."
     },
@@ -41305,6 +41449,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "Actividades → Minería combina herramientas de minería de barcos con la carga existente y la alimentación de revistas."
+    },
+    {
+      "source": "Activity",
+      "translation": "Actividad"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -44731,6 +44879,10 @@
       "translation": "Las actualizaciones de carga se conservan en la memoria, pero su archivo de recuperación no se pudo guardar: {0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "Carga: 64 / 192 t"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Carga: 72 / 128 t · Lapas: 34"
     },
@@ -45269,6 +45421,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "Elija un archivo de texto con el nombre del sistema"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "Elija un pincel de tema de superposición válido."
     },
     {
       "source": "Choose a valid starting system.",
@@ -48079,6 +48235,14 @@
       "translation": "Historial de entrega no disponible."
     },
     {
+      "source": "Delkar",
+      "translation": "Delkar"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "Anillo Delkar 7 A"
+    },
+    {
       "source": "Demand:",
       "translation": "Demanda:"
     },
@@ -49589,6 +49753,14 @@
     {
       "source": "End Date:",
       "translation": "Fecha de finalización:"
+    },
+    {
+      "source": "End Session",
+      "translation": "Finalizar sesión"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "Finalice y guarde la sesión de minería actual."
     },
     {
       "source": "End path here",
@@ -54955,6 +55127,10 @@
       "translation": "LegacyProfilePathTextBox"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "Tema heredado."
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "Tema heredado.{0}"
     },
@@ -56571,6 +56747,10 @@
       "translation": "Minería"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "Minería (superficie)"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "Minería > Buscar > Platino clasifica los anillos candidatos para un viaje de platino."
     },
@@ -56589,6 +56769,10 @@
     {
       "source": "Mining Ref",
       "translation": "Referencia Minera"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "Sesión Minera"
     },
     {
       "source": "Mining System",
@@ -56733,6 +56917,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -59771,6 +59959,18 @@
       "translation": "Las dimensiones de anulación del tamaño de superposición deben ser positivas."
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "Los pinceles de texto superpuesto deben ser un objeto."
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "Los pinceles de texto superpuesto deben contener nombres de muestras de temas."
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "Los pinceles de texto superpuesto deben contener nombres de muestras de temas válidos."
+    },
+    {
       "source": "Overlay theme",
       "translation": "Tema de superposición"
     },
@@ -59857,6 +60057,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "Anular la opacidad de superposición global"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "Anule esta función de texto con un pincel de apariencia superpuesta"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -60143,8 +60347,16 @@
       "translation": "Pausa"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "Pausar / Reanudar"
+    },
+    {
       "source": "Pause / resume",
       "translation": "Pausar/reanudar"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "Pausa o reanuda la sesión de minería actual."
     },
     {
       "source": "Paused",
@@ -60445,6 +60657,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "TramaMineríaReferencia"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "Trazar sesión de minería"
     },
     {
       "source": "PlotMiningWarning",
@@ -62523,12 +62739,12 @@
       "translation": "Leer {0} de {1} archivo(s) del sistema, {2} cuerpos y {3} organismos; encontradas {4} especies localizadas.{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Historial de solo lectura de la carpeta del diario activo. Exportar crea un paquete de reproducción versionado y portátil sin cambiar los datos del perfil."
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "Totales de carga de solo lectura de CAPI, mercados de transportistas locales y transacciones de diario posteriores. N/A significa que no hay ningún total local disponible."
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "Totales de carga local de solo lectura de CAPI y transacciones de diario posteriores. N/A significa que no hay ningún total local disponible."
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "Historial de solo lectura de la carpeta del diario activo. Exportar crea un paquete de reproducción versionado y portátil sin cambiar los datos del perfil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -63547,10 +63763,6 @@
       "translation": "Restablecer coordenadas"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "Restablece cada escala de texto e ícono en este panel al 0%"
-    },
-    {
       "source": "Reset input detection",
       "translation": "Restablecer detección de entrada"
     },
@@ -63561,6 +63773,10 @@
     {
       "source": "Reset selected",
       "translation": "Restablecer seleccionado"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "Restablecer escalas de texto e íconos y anulaciones de pincel en este panel"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -64553,6 +64769,10 @@
     {
       "source": "SELL",
       "translation": "VENDER"
+    },
+    {
+      "source": "SESSION",
+      "translation": "SESIÓN"
     },
     {
       "source": "SHIFT",
@@ -67619,6 +67839,10 @@
       "translation": "SrvSurvey superposición de advertencia de alcance de plataforma minera"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey superposición de sesión de minería"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey superposición del siguiente salto"
     },
@@ -67979,6 +68203,10 @@
       "translation": "Inicie un viaje para rastrear sistemas, escaneos, notas, capturas de pantalla y recompensas."
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "Inicie una sesión de minería manualmente."
+    },
+    {
       "source": "Start a new route?",
       "translation": "¿Iniciar una nueva ruta?"
     },
@@ -68277,6 +68505,10 @@
     {
       "source": "Stop search",
       "translation": "detener la búsqueda"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "Detenga las sesiones automáticamente después del salto o acoplamiento del FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -71653,6 +71885,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "Tema > Configuración de superposición controla la ubicación de los paneles en vivo y el editor de posición."
+    },
+    {
+      "source": "Theme default",
+      "translation": "Tema predeterminado"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -75215,6 +75451,10 @@
       "translation": "romper"
     },
     {
+      "source": "brushes",
+      "translation": "cepillos"
+    },
+    {
       "source": "build",
       "translation": "construir"
     },
@@ -76257,6 +76497,10 @@
     {
       "source": "helium",
       "translation": "helio"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "hh\\:mm\\:ss"
     },
     {
       "source": "high",
@@ -78479,6 +78723,10 @@
       "translation": "{0} como escaneado · {1} si está asignado"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "Asteroides {0} · Núcleos {1}"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} en '{1}': {2}"
     },
@@ -78927,6 +79175,10 @@
       "translation": "Precios de {0} para {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "{0} buscadores · {1} recolectores"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} reconstruye"
     },
@@ -79081,6 +79333,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t restantes · {1} t totales"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} t · {1} t/h"
     },
     {
       "source": "{0} tonnes delivered",
@@ -79649,6 +79905,10 @@
       "translation": "0 échantillons"
     },
     {
+      "source": "0 t",
+      "translation": "0 t"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0% NON DÉCOUVERT"
     },
@@ -79831,6 +80091,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18 / 27 points"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 astéroïdes · 22 prospecteurs"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -80095,6 +80359,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610 besoin | 180 FC | 24 navires"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64 t · 153,6 t/h"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -81021,6 +81289,10 @@
       "translation": "Parcours actif : {0}."
     },
     {
+      "source": "Active mining session",
+      "translation": "Session de minage active"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "L'obélisque actif {0} est dupliqué."
     },
@@ -81067,6 +81339,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "Activités → L'exploitation minière combine les outils d'exploitation minière des navires avec le flux de marchandises et de journaux existant."
+    },
+    {
+      "source": "Activity",
+      "translation": "Activité"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -84493,6 +84769,10 @@
       "translation": "Les mises à jour de Cargo sont conservées en mémoire, mais leur fichier de récupération n'a pas pu être enregistré : {0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "Cargaison : 64 / 192 t"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Cargaison : 72 / 128 t · Patelles : 34"
     },
@@ -85031,6 +85311,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "Choisissez un fichier texte de nom de système"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "Choisissez un pinceau de thème de superposition valide."
     },
     {
       "source": "Choose a valid starting system.",
@@ -87841,6 +88125,14 @@
       "translation": "Historique de livraison indisponible."
     },
     {
+      "source": "Delkar",
+      "translation": "Delkar"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "Delkar 7A Anneau"
+    },
+    {
       "source": "Demand:",
       "translation": "Demande:"
     },
@@ -89351,6 +89643,14 @@
     {
       "source": "End Date:",
       "translation": "Date de fin :"
+    },
+    {
+      "source": "End Session",
+      "translation": "Fin de session"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "Terminez et enregistrez la session de minage en cours."
     },
     {
       "source": "End path here",
@@ -94717,6 +95017,10 @@
       "translation": "LegacyProfilePathTextBox"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "Thème hérité."
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "Thème hérité.{0}"
     },
@@ -96333,6 +96637,10 @@
       "translation": "Exploitation minière"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "Exploitation minière (à ciel ouvert)"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "Exploitation minière > Rechercher > Platine classe les bagues candidates pour un voyage platine."
     },
@@ -96351,6 +96659,10 @@
     {
       "source": "Mining Ref",
       "translation": "Réf minière"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "Séance minière"
     },
     {
       "source": "Mining System",
@@ -96495,6 +96807,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -99533,6 +99849,18 @@
       "translation": "Les dimensions de remplacement de la taille de superposition doivent être positives."
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "Les pinceaux de texte superposés doivent être un objet."
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "Les pinceaux de texte superposés doivent contenir des noms d’échantillons de thème."
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "Les pinceaux de texte superposés doivent contenir des noms d’échantillons de thème valides."
+    },
+    {
       "source": "Overlay theme",
       "translation": "Thème de superposition"
     },
@@ -99619,6 +99947,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "Remplacer l'opacité globale de la superposition"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "Remplacez ce rôle de texte par un pinceau d'apparence de superposition"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -99905,8 +100237,16 @@
       "translation": "Pause"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "Pause/Reprise"
+    },
+    {
       "source": "Pause / resume",
       "translation": "Pause / reprise"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "Suspendez ou reprenez la session de minage en cours."
     },
     {
       "source": "Paused",
@@ -100207,6 +100547,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "PlotMiningRéférence"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "PlotMiningSession"
     },
     {
       "source": "PlotMiningWarning",
@@ -102285,12 +102629,12 @@
       "translation": "Lire {0} de {1} fichier(s) système, {2} corps et {3} organismes ; trouvé {4} espèces localisées.{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Historique en lecture seule du dossier de journal actif. L'exportation crée un package de relecture portable et versionné sans modifier les données de profil."
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "Totaux de fret en lecture seule provenant du CAPI, des marchés des transporteurs locaux et des transactions de journaux ultérieures. N/A signifie qu’aucun total local n’est disponible."
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "Totaux de fret locaux en lecture seule issus du CAPI et des transactions de journaux ultérieures. N/A signifie qu’aucun total local n’est disponible."
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "Historique en lecture seule du dossier de journal actif. L'exportation crée un package de relecture portable et versionné sans modifier les données de profil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -103309,10 +103653,6 @@
       "translation": "Réinitialiser les coordonnées"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "Réinitialisez chaque échelle de texte et d'icône de ce panneau à 0 %"
-    },
-    {
       "source": "Reset input detection",
       "translation": "Réinitialiser la détection d'entrée"
     },
@@ -103323,6 +103663,10 @@
     {
       "source": "Reset selected",
       "translation": "Réinitialiser la sélection"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "Réinitialiser les échelles de texte et d'icônes et les remplacements de pinceaux dans ce panneau"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -104315,6 +104659,10 @@
     {
       "source": "SELL",
       "translation": "VENDRE"
+    },
+    {
+      "source": "SESSION",
+      "translation": "SESSION"
     },
     {
       "source": "SHIFT",
@@ -107381,6 +107729,10 @@
       "translation": "SrvSurvey superposition d'avertissement de plage de plate-forme minière"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey superposition de session d'exploration de données"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey superposition du saut suivant"
     },
@@ -107741,6 +108093,10 @@
       "translation": "Commencez un voyage pour suivre les systèmes, les analyses, les notes, les captures d'écran et les récompenses."
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "Démarrez une session de minage manuellement."
+    },
+    {
       "source": "Start a new route?",
       "translation": "Commencer un nouvel itinéraire ?"
     },
@@ -108039,6 +108395,10 @@
     {
       "source": "Stop search",
       "translation": "Arrêter la recherche"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "Arrêtez automatiquement les sessions après un saut ou un amarrage FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -111415,6 +111775,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "Thème > Paramètres de superposition contrôle le placement de l'affichage des panneaux dynamiques et de l'éditeur de position."
+    },
+    {
+      "source": "Theme default",
+      "translation": "Thème par défaut"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -114977,6 +115341,10 @@
       "translation": "pause"
     },
     {
+      "source": "brushes",
+      "translation": "pinceaux"
+    },
+    {
       "source": "build",
       "translation": "construire"
     },
@@ -116019,6 +116387,10 @@
     {
       "source": "helium",
       "translation": "hélium"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "hh\\:mm\\:ss"
     },
     {
       "source": "high",
@@ -118241,6 +118613,10 @@
       "translation": "{0} tel qu'analysé · {1} si mappé"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "Astéroïdes {0} · Noyaux {1}"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} à '{1}' : {2}"
     },
@@ -118689,6 +119065,10 @@
       "translation": "{0} prix pour {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "Prospecteurs {0} · Collectionneurs {1}"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} reconstructions"
     },
@@ -118843,6 +119223,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t restants · {1} t total"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} t · {1} t/h"
     },
     {
       "source": "{0} tonnes delivered",
@@ -119411,6 +119795,10 @@
       "translation": "0 amostras"
     },
     {
+      "source": "0 t",
+      "translation": "0t"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0% NÃO DESCOBERTO"
     },
@@ -119593,6 +119981,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18/27 pontos"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 asteroides · 22 garimpeiros"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -119857,6 +120249,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610 necessidade | 180 FC | 24 navio"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64 t · 153,6 t/h"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -120783,6 +121179,10 @@
       "translation": "Jornada ativa: {0}."
     },
     {
+      "source": "Active mining session",
+      "translation": "Sessão de mineração ativa"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "O obelisco ativo {0} está duplicado."
     },
@@ -120829,6 +121229,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "Atividades → A mineração combina ferramentas de mineração de navios com a carga existente e o feed de diário."
+    },
+    {
+      "source": "Activity",
+      "translation": "Atividade"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -124255,6 +124659,10 @@
       "translation": "As atualizações de carga são retidas na memória, mas não foi possível salvar seu arquivo de recuperação: {0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "Carga: 64/192 t"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Carga: 72 / 128 t · Lapas: 34"
     },
@@ -124793,6 +125201,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "Escolha um arquivo de texto com o nome do sistema"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "Escolha um pincel de tema de sobreposição válido."
     },
     {
       "source": "Choose a valid starting system.",
@@ -127603,6 +128015,14 @@
       "translation": "Histórico de entrega indisponível."
     },
     {
+      "source": "Delkar",
+      "translation": "Delkar"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "Anel Delkar 7 A"
+    },
+    {
       "source": "Demand:",
       "translation": "Demanda:"
     },
@@ -129113,6 +129533,14 @@
     {
       "source": "End Date:",
       "translation": "Data de término:"
+    },
+    {
+      "source": "End Session",
+      "translation": "Encerrar sessão"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "Encerre e salve a sessão de mineração atual."
     },
     {
       "source": "End path here",
@@ -134479,6 +134907,10 @@
       "translation": "LegacyProfilePathTextBox"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "Tema legado."
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "Tema legado.{0}"
     },
@@ -136095,6 +136527,10 @@
       "translation": "Mineração"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "Mineração (superfície)"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "Mineração > Encontrar > Platina classifica anéis candidatos para uma viagem de platina."
     },
@@ -136113,6 +136549,10 @@
     {
       "source": "Mining Ref",
       "translation": "Referência de mineração"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "Sessão de Mineração"
     },
     {
       "source": "Mining System",
@@ -136257,6 +136697,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -139295,6 +139739,18 @@
       "translation": "As dimensões de substituição do tamanho da sobreposição devem ser positivas."
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "Os pincéis de texto de sobreposição devem ser um objeto."
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "Os pincéis de texto de sobreposição devem conter nomes de amostras de temas."
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "Os pincéis de texto de sobreposição devem conter nomes de amostras de tema válidos."
+    },
+    {
       "source": "Overlay theme",
       "translation": "Tema de sobreposição"
     },
@@ -139381,6 +139837,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "Substituir a opacidade da sobreposição global"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "Substitua esta função de texto por um pincel de aparência de sobreposição"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -139667,8 +140127,16 @@
       "translation": "Pausa"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "Pausar/Retomar"
+    },
+    {
       "source": "Pause / resume",
       "translation": "Pausar / retomar"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "Pause ou retome a sessão de mineração atual."
     },
     {
       "source": "Paused",
@@ -139969,6 +140437,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "Referência de PlotMining"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "PlotMiningSession"
     },
     {
       "source": "PlotMiningWarning",
@@ -142047,12 +142519,12 @@
       "translation": "Leia {0} de {1} arquivo(s) de sistema, {2} corpos e {3} organismos; encontrou {4} espécies localizadas.{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Histórico somente leitura da pasta do diário ativo. A exportação cria um pacote de reprodução portátil e versionado sem alterar os dados do perfil."
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "Totais de carga somente leitura do CAPI, mercados de transportadoras locais e transações de diário subsequentes. N/A significa que nenhum total local está disponível."
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "Totais de carga local somente leitura do CAPI e transações de diário subsequentes. N/A significa que nenhum total local está disponível."
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "Histórico somente leitura da pasta do diário ativo. A exportação cria um pacote de reprodução portátil e versionado sem alterar os dados do perfil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -143071,10 +143543,6 @@
       "translation": "Redefinir coordenadas"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "Redefina cada escala de texto e ícone neste painel para 0%"
-    },
-    {
       "source": "Reset input detection",
       "translation": "Redefinir detecção de entrada"
     },
@@ -143085,6 +143553,10 @@
     {
       "source": "Reset selected",
       "translation": "Redefinir selecionado"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "Redefinir escalas de texto e ícones e substituições de pincel neste painel"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -144077,6 +144549,10 @@
     {
       "source": "SELL",
       "translation": "VENDER"
+    },
+    {
+      "source": "SESSION",
+      "translation": "SESSÃO"
     },
     {
       "source": "SHIFT",
@@ -147143,6 +147619,10 @@
       "translation": "SrvSurvey sobreposição de aviso de alcance da plataforma de mineração"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey sobreposição de sessão de mineração"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey sobreposição do próximo salto"
     },
@@ -147503,6 +147983,10 @@
       "translation": "Comece uma jornada para rastrear sistemas, verificações, notas, capturas de tela e recompensas."
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "Inicie uma sessão de mineração manualmente."
+    },
+    {
       "source": "Start a new route?",
       "translation": "Iniciar uma nova rota?"
     },
@@ -147801,6 +148285,10 @@
     {
       "source": "Stop search",
       "translation": "Parar pesquisa"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "Interrompa as sessões automaticamente após o salto ou acoplamento do FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -151177,6 +151665,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "Tema > Configurações de sobreposição controla o posicionamento da exibição dos painéis ativos e do editor de posição."
+    },
+    {
+      "source": "Theme default",
+      "translation": "Padrão do tema"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -154739,6 +155231,10 @@
       "translation": "quebrar"
     },
     {
+      "source": "brushes",
+      "translation": "pincéis"
+    },
+    {
       "source": "build",
       "translation": "construir"
     },
@@ -155781,6 +156277,10 @@
     {
       "source": "helium",
       "translation": "hélio"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "hh\\:mm\\:ss"
     },
     {
       "source": "high",
@@ -158003,6 +158503,10 @@
       "translation": "{0} conforme verificado · {1} se mapeado"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "Asteróides {0} · Núcleos {1}"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} em '{1}': {2}"
     },
@@ -158451,6 +158955,10 @@
       "translation": "Preços {0} para {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "Prospectores {0} · Coletores {1}"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} reconstruções"
     },
@@ -158605,6 +159113,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t restante · {1} t total"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} t · {1} t/h"
     },
     {
       "source": "{0} tonnes delivered",
@@ -159173,6 +159685,10 @@
       "translation": "0 образцов"
     },
     {
+      "source": "0 t",
+      "translation": "0 т"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0% НЕРАСКРЫТЫЕ"
     },
@@ -159355,6 +159871,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18/27 баллов"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 астероидов · 22 старателя"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -159619,6 +160139,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610 нужно | 180 ФК | 24 корабля"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64 т · 153,6 т/ч"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -160545,6 +161069,10 @@
       "translation": "Активное путешествие: {0}."
     },
     {
+      "source": "Active mining session",
+      "translation": "Активная сессия майнинга"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "Активный обелиск {0} дублируется."
     },
@@ -160591,6 +161119,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "Действия → Горное дело объединяет корабельные инструменты для добычи полезных ископаемых с существующими грузами и журналами."
+    },
+    {
+      "source": "Activity",
+      "translation": "Активность"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -164017,6 +164549,10 @@
       "translation": "Обновления Cargo сохраняются в памяти, но файл их восстановления сохранить не удалось: {0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "Груз: 64/192 т."
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Груз: 72 / 128 т · Блюдечки: 34"
     },
@@ -164555,6 +165091,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "Выберите текстовый файл с именем системы"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "Выберите действующую кисть темы наложения."
     },
     {
       "source": "Choose a valid starting system.",
@@ -167365,6 +167905,14 @@
       "translation": "История доставки недоступна."
     },
     {
+      "source": "Delkar",
+      "translation": "Делкар"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "Делкар 7 Кольцо А"
+    },
+    {
       "source": "Demand:",
       "translation": "Требовать:"
     },
@@ -168875,6 +169423,14 @@
     {
       "source": "End Date:",
       "translation": "Дата окончания:"
+    },
+    {
+      "source": "End Session",
+      "translation": "Завершить сеанс"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "Завершите и сохраните текущий сеанс майнинга."
     },
     {
       "source": "End path here",
@@ -174241,6 +174797,10 @@
       "translation": "LegacyProfilePathTextBox"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "Устаревшая тема."
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "LegacyTheme.{0}"
     },
@@ -175857,6 +176417,10 @@
       "translation": "Горное дело"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "Горное дело (поверхностное)"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "Горное дело > Найти > Платина оценивает кольца кандидатов на платиновое путешествие."
     },
@@ -175875,6 +176439,10 @@
     {
       "source": "Mining Ref",
       "translation": "Горное дело"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "Майнинг-сессия"
     },
     {
       "source": "Mining System",
@@ -176019,6 +176587,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -179057,6 +179629,18 @@
       "translation": "Размеры переопределения размера наложения должны быть положительными."
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "Наложенные текстовые кисти должны быть объектом."
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "Наложенные текстовые кисти должны содержать имена образцов тем."
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "Кисти наложения текста должны содержать допустимые имена образцов тем."
+    },
+    {
       "source": "Overlay theme",
       "translation": "Наложение темы"
     },
@@ -179143,6 +179727,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "Переопределить глобальную непрозрачность наложения"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "Переопределите эту текстовую роль с помощью наложенной кисти внешнего вида."
     },
     {
       "source": "Oversized EDDN frame.",
@@ -179429,8 +180017,16 @@
       "translation": "Пауза"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "Пауза/возобновить"
+    },
+    {
       "source": "Pause / resume",
       "translation": "Пауза/возобновление"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "Приостановите или возобновите текущий сеанс майнинга."
     },
     {
       "source": "Paused",
@@ -179731,6 +180327,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "УчастокМайнингСправочник"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "Сюжет MiningSession"
     },
     {
       "source": "PlotMiningWarning",
@@ -181809,12 +182409,12 @@
       "translation": "Прочитайте {0} из {1} системных файлов, {2} тел и {3} организмов; найден {4} локализованный вид.{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Доступная только для чтения история из активной папки журнала. Экспорт создает переносимый пакет воспроизведения с поддержкой версий без изменения данных профиля."
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "Доступные только для чтения общие данные о грузах из CAPI, местных рынков перевозчиков и последующих журнальных транзакций. N/A означает, что локальная сумма недоступна."
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "Доступные только для чтения итоговые данные о местных грузах из CAPI и последующих журнальных транзакций. N/A означает, что локальная сумма недоступна."
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "Доступная только для чтения история из активной папки журнала. Экспорт создает переносимый пакет воспроизведения с поддержкой версий без изменения данных профиля."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -182833,10 +183433,6 @@
       "translation": "Сбросить координаты"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "Сбросьте масштаб каждого текста и значков на этой панели до 0 %."
-    },
-    {
       "source": "Reset input detection",
       "translation": "Сбросить обнаружение входа"
     },
@@ -182847,6 +183443,10 @@
     {
       "source": "Reset selected",
       "translation": "Сбросить выбранное"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "Сброс масштабов текста и значков, а также переопределение кистей на этой панели."
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -183839,6 +184439,10 @@
     {
       "source": "SELL",
       "translation": "ПРОДАВАТЬ"
+    },
+    {
+      "source": "SESSION",
+      "translation": "СЕССИЯ"
     },
     {
       "source": "SHIFT",
@@ -186905,6 +187509,10 @@
       "translation": "SrvSurvey наложение предупреждения о дальности действия горнодобывающей установки"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey наложение сеанса майнинга"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey наложение следующего перехода"
     },
@@ -187265,6 +187873,10 @@
       "translation": "Начните путешествие по отслеживанию систем, сканированию, заметкам, снимкам экрана и наградам."
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "Запустите сеанс майнинга вручную."
+    },
+    {
       "source": "Start a new route?",
       "translation": "Начать новый маршрут?"
     },
@@ -187563,6 +188175,10 @@
     {
       "source": "Stop search",
       "translation": "Остановить поиск"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "Автоматически останавливать сеансы после прыжка или стыковки FSD."
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -190939,6 +191555,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "Тема > Настройки наложения управляет размещением отображения живых панелей и редактора положения."
+    },
+    {
+      "source": "Theme default",
+      "translation": "Тема по умолчанию"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -194501,6 +195121,10 @@
       "translation": "сломать"
     },
     {
+      "source": "brushes",
+      "translation": "кисти"
+    },
+    {
       "source": "build",
       "translation": "строить"
     },
@@ -195543,6 +196167,10 @@
     {
       "source": "helium",
       "translation": "гелий"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "чч\\:мм\\:сс"
     },
     {
       "source": "high",
@@ -197765,6 +198393,10 @@
       "translation": "{0} при сканировании · {1} при сопоставлении"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "Астероиды {0} · Ядра {1}"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} в '{1}': {2}"
     },
@@ -198213,6 +198845,10 @@
       "translation": "{0} цены на {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "Старатели {0} · Коллекционеры {1}"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} перестраивает"
     },
@@ -198367,6 +199003,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t осталось · {1} t всего"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} т · {1} т/ч"
     },
     {
       "source": "{0} tonnes delivered",
@@ -198935,6 +199575,10 @@
       "translation": "0 个样品"
     },
     {
+      "source": "0 t",
+      "translation": "0吨"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "0% 未被发现"
     },
@@ -199117,6 +199761,10 @@
     {
       "source": "18 / 27 points",
       "translation": "18 / 27 点"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "18 颗小行星 · 22 名探矿者"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -199381,6 +200029,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "610需要| 180 足球俱乐部 | 24艘船"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "64吨·153.6吨/小时"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -200307,6 +200959,10 @@
       "translation": "活跃旅程：{0}。"
     },
     {
+      "source": "Active mining session",
+      "translation": "活跃挖矿会话"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "活动方尖碑 {0} 已重复。"
     },
@@ -200353,6 +201009,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "活动 → 采矿将船舶采矿工具与现有的货物和日志饲料结合起来。"
+    },
+    {
+      "source": "Activity",
+      "translation": "活动"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -203779,6 +204439,10 @@
       "translation": "货物更新保留在内存中，但无法保存其恢复文件：{0}"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "货物：64 / 192 吨"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "货物：72 / 128 吨 · 帽贝：34"
     },
@@ -204317,6 +204981,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "选择系统名称文本文件"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "选择有效的覆盖主题画笔。"
     },
     {
       "source": "Choose a valid starting system.",
@@ -207127,6 +207795,14 @@
       "translation": "交货历史记录不可用。"
     },
     {
+      "source": "Delkar",
+      "translation": "德尔卡"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "德尔卡 7 A 环"
+    },
+    {
       "source": "Demand:",
       "translation": "要求："
     },
@@ -208637,6 +209313,14 @@
     {
       "source": "End Date:",
       "translation": "结束日期："
+    },
+    {
+      "source": "End Session",
+      "translation": "结束会议"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "结束并保存当前挖矿会话。"
     },
     {
       "source": "End path here",
@@ -214003,6 +214687,10 @@
       "translation": "旧版配置文件路径文本框"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "旧版主题。"
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "旧版主题。{0}"
     },
@@ -215619,6 +216307,10 @@
       "translation": "矿业"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "采矿（地表）"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "采矿 > 查找 > 铂金对铂金之旅的候选戒指进行排名。"
     },
@@ -215637,6 +216329,10 @@
     {
       "source": "Mining Ref",
       "translation": "采矿参考"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "挖矿专场"
     },
     {
       "source": "Mining System",
@@ -215781,6 +216477,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "MiningWorkspace.ShouldShowNotifications"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "MiningWorkspace.ShouldShowSession"
     },
     {
       "source": "Missing",
@@ -218819,6 +219519,18 @@
       "translation": "覆盖尺寸覆盖尺寸必须为正值。"
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "覆盖文本画笔必须是一个对象。"
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "覆盖文本画笔必须包含主题样本名称。"
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "覆盖文本画笔必须包含有效的主题样本名称。"
+    },
+    {
       "source": "Overlay theme",
       "translation": "叠加主题"
     },
@@ -218905,6 +219617,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "覆盖全局覆盖不透明度"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "使用覆盖外观画笔覆盖此文本角色"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -219191,8 +219907,16 @@
       "translation": "暂停"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "暂停/恢复"
+    },
+    {
       "source": "Pause / resume",
       "translation": "暂停/恢复"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "暂停或恢复当前挖矿会话。"
     },
     {
       "source": "Paused",
@@ -219493,6 +220217,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "绘图挖掘参考"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "绘图采矿会议"
     },
     {
       "source": "PlotMiningWarning",
@@ -221571,12 +222299,12 @@
       "translation": "读取 {1} 系统文件的 {0}、{2} 主体和 {3} 生物体；发现了 {4} 本地化物种。{5}"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "活动日志文件夹中的只读历史记录。导出会创建一个可移植的、版本化的重放包，而无需更改配置文件数据。"
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "来自 CAPI、当地承运商市场和后续日记账交易的只读货运总量。 N/A 表示没有可用的本地总数。"
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "只读来自 CAPI 和后续日记帐交易的本地货物总计。 N/A 表示没有可用的本地总数。"
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "活动日志文件夹中的只读历史记录。导出会创建一个可移植的、版本化的重放包，而无需更改配置文件数据。"
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -222595,10 +223323,6 @@
       "translation": "重置坐标"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "将此面板中的所有文本和图标比例重置为 0%"
-    },
-    {
       "source": "Reset input detection",
       "translation": "复位输入检测"
     },
@@ -222609,6 +223333,10 @@
     {
       "source": "Reset selected",
       "translation": "重置所选"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "在此面板中重置文本和图标比例以及画笔覆盖"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -223601,6 +224329,10 @@
     {
       "source": "SELL",
       "translation": "卖出"
+    },
+    {
+      "source": "SESSION",
+      "translation": "会议"
     },
     {
       "source": "SHIFT",
@@ -226667,6 +227399,10 @@
       "translation": "SrvSurvey 采矿设备范围警告叠加"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "SrvSurvey 挖矿会话叠加"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "SrvSurvey 下一跳叠加"
     },
@@ -227027,6 +227763,10 @@
       "translation": "开始跟踪系统、扫描、笔记、屏幕截图和奖励的旅程。"
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "手动启动挖掘会话。"
+    },
+    {
       "source": "Start a new route?",
       "translation": "开始一条新路线？"
     },
@@ -227325,6 +228065,10 @@
     {
       "source": "Stop search",
       "translation": "停止搜索"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "FSD 跳转或对接后自动停止会话"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -230701,6 +231445,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "主题 > 叠加设置控制实时面板和位置编辑器的显示位置。"
+    },
+    {
+      "source": "Theme default",
+      "translation": "主题默认"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -234263,6 +235011,10 @@
       "translation": "打破"
     },
     {
+      "source": "brushes",
+      "translation": "刷子"
+    },
+    {
       "source": "build",
       "translation": "建造"
     },
@@ -235305,6 +236057,10 @@
     {
       "source": "helium",
       "translation": "氦"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "时\\:分\\:秒"
     },
     {
       "source": "high",
@@ -237527,6 +238283,10 @@
       "translation": "{0} 扫描 · {1} 如果映射"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "{0} 小行星 · {1} 核心"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} 在“{1}”：{2}"
     },
@@ -237975,6 +238735,10 @@
       "translation": "{0} 价格为 {1}.{2}"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "{0} 探矿者 · {1} 收藏家"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "{0} 重建"
     },
@@ -238129,6 +238893,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "{0} t 剩余 · {1} t 总计"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "{0} t · {1} t/h"
     },
     {
       "source": "{0} tonnes delivered",
@@ -238697,6 +239465,10 @@
       "translation": "* 0 SAMPLES >>>!"
     },
     {
+      "source": "0 t",
+      "translation": "* 0 T >>>!"
+    },
+    {
       "source": "0% UNDISCOVERED",
       "translation": "* 0% UNDISCOVERED >>>!"
     },
@@ -238879,6 +239651,10 @@
     {
       "source": "18 / 27 points",
       "translation": "* 18 / 27 POINTS >>>!"
+    },
+    {
+      "source": "18 asteroids · 22 prospectors",
+      "translation": "* 18 ASTEROIDS · 22 PROSPECTORS >>>!"
     },
     {
       "source": "18.4216°S 74.0921°E",
@@ -239143,6 +239919,10 @@
     {
       "source": "610 need | 180 FC | 24 ship",
       "translation": "* 610 NEED | 180 FC | 24 SHIP >>>!"
+    },
+    {
+      "source": "64 t · 153.6 t/h",
+      "translation": "* 64 T · 153.6 T/H >>>!"
     },
     {
       "source": "65 m | TOO CLOSE",
@@ -240069,6 +240849,10 @@
       "translation": "* ACTIVE JOURNEY: {0}. >>>!"
     },
     {
+      "source": "Active mining session",
+      "translation": "* ACTIVE MINING SESSION >>>!"
+    },
+    {
       "source": "Active obelisk {0} is duplicated.",
       "translation": "* ACTIVE OBELISK {0} IS DUPLICATED. >>>!"
     },
@@ -240115,6 +240899,10 @@
     {
       "source": "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
       "translation": "* ACTIVITIES → MINING COMBINES SHIP MINING TOOLS WITH THE EXISTING CARGO AND JOURNAL FEED. >>>!"
+    },
+    {
+      "source": "Activity",
+      "translation": "* ACTIVITY >>>!"
     },
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -243541,6 +244329,10 @@
       "translation": "* CARGO UPDATES ARE RETAINED IN MEMORY, BUT THEIR RECOVERY FILE COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "Cargo: 64 / 192 t",
+      "translation": "* CARGO: 64 / 192 T >>>!"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "* CARGO: 72 / 128 T · LIMPETS: 34 >>>!"
     },
@@ -244079,6 +244871,10 @@
     {
       "source": "Choose a system-name text file",
       "translation": "* CHOOSE A SYSTEM-NAME TEXT FILE >>>!"
+    },
+    {
+      "source": "Choose a valid overlay theme brush.",
+      "translation": "* CHOOSE A VALID OVERLAY THEME BRUSH. >>>!"
     },
     {
       "source": "Choose a valid starting system.",
@@ -246889,6 +247685,14 @@
       "translation": "* DELIVERY HISTORY UNAVAILABLE. >>>!"
     },
     {
+      "source": "Delkar",
+      "translation": "* DELKAR >>>!"
+    },
+    {
+      "source": "Delkar 7 A Ring",
+      "translation": "* DELKAR 7 A RING >>>!"
+    },
+    {
       "source": "Demand:",
       "translation": "* DEMAND: >>>!"
     },
@@ -248399,6 +249203,14 @@
     {
       "source": "End Date:",
       "translation": "* END DATE: >>>!"
+    },
+    {
+      "source": "End Session",
+      "translation": "* END SESSION >>>!"
+    },
+    {
+      "source": "End and save the current mining session.",
+      "translation": "* END AND SAVE THE CURRENT MINING SESSION. >>>!"
     },
     {
       "source": "End path here",
@@ -253765,6 +254577,10 @@
       "translation": "* LEGACYPROFILEPATHTEXTBOX >>>!"
     },
     {
+      "source": "LegacyTheme.",
+      "translation": "* LEGACYTHEME. >>>!"
+    },
+    {
       "source": "LegacyTheme.{0}",
       "translation": "* LEGACYTHEME.{0} >>>!"
     },
@@ -255381,6 +256197,10 @@
       "translation": "* MINING >>>!"
     },
     {
+      "source": "Mining (surface)",
+      "translation": "* MINING (SURFACE) >>>!"
+    },
+    {
       "source": "Mining > Find > Platinum ranks candidate rings for a platinum trip.",
       "translation": "* MINING > FIND > PLATINUM RANKS CANDIDATE RINGS FOR A PLATINUM TRIP. >>>!"
     },
@@ -255399,6 +256219,10 @@
     {
       "source": "Mining Ref",
       "translation": "* MINING REF >>>!"
+    },
+    {
+      "source": "Mining Session",
+      "translation": "* MINING SESSION >>>!"
     },
     {
       "source": "Mining System",
@@ -255543,6 +256367,10 @@
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
       "translation": "* MININGWORKSPACE.SHOULDSHOWNOTIFICATIONS >>>!"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowSession",
+      "translation": "* MININGWORKSPACE.SHOULDSHOWSESSION >>>!"
     },
     {
       "source": "Missing",
@@ -258581,6 +259409,18 @@
       "translation": "* OVERLAY SIZE OVERRIDE DIMENSIONS MUST BE POSITIVE. >>>!"
     },
     {
+      "source": "Overlay text brushes must be an object.",
+      "translation": "* OVERLAY TEXT BRUSHES MUST BE AN OBJECT. >>>!"
+    },
+    {
+      "source": "Overlay text brushes must contain theme-swatch names.",
+      "translation": "* OVERLAY TEXT BRUSHES MUST CONTAIN THEME-SWATCH NAMES. >>>!"
+    },
+    {
+      "source": "Overlay text brushes must contain valid theme-swatch names.",
+      "translation": "* OVERLAY TEXT BRUSHES MUST CONTAIN VALID THEME-SWATCH NAMES. >>>!"
+    },
+    {
       "source": "Overlay theme",
       "translation": "* OVERLAY THEME >>>!"
     },
@@ -258667,6 +259507,10 @@
     {
       "source": "Override the global overlay opacity",
       "translation": "* OVERRIDE THE GLOBAL OVERLAY OPACITY >>>!"
+    },
+    {
+      "source": "Override this text role with an overlay appearance brush",
+      "translation": "* OVERRIDE THIS TEXT ROLE WITH AN OVERLAY APPEARANCE BRUSH >>>!"
     },
     {
       "source": "Oversized EDDN frame.",
@@ -258953,8 +259797,16 @@
       "translation": "* PAUSE >>>!"
     },
     {
+      "source": "Pause / Resume",
+      "translation": "* PAUSE / RESUME >>>!"
+    },
+    {
       "source": "Pause / resume",
       "translation": "* PAUSE / RESUME >>>!"
+    },
+    {
+      "source": "Pause or resume the current mining session.",
+      "translation": "* PAUSE OR RESUME THE CURRENT MINING SESSION. >>>!"
     },
     {
       "source": "Paused",
@@ -259255,6 +260107,10 @@
     {
       "source": "PlotMiningReference",
       "translation": "* PLOTMININGREFERENCE >>>!"
+    },
+    {
+      "source": "PlotMiningSession",
+      "translation": "* PLOTMININGSESSION >>>!"
     },
     {
       "source": "PlotMiningWarning",
@@ -261333,12 +262189,12 @@
       "translation": "* READ {0} OF {1} SYSTEM FILE(S), {2} BODIES, AND {3} ORGANISMS; FOUND {4} LOCALIZED SPECIES.{5} >>>!"
     },
     {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "* READ-ONLY HISTORY FROM THE ACTIVE JOURNAL FOLDER. EXPORT CREATES A PORTABLE, VERSIONED REPLAY PACKAGE WITHOUT CHANGING PROFILE DATA. >>>!"
+      "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+      "translation": "* READ-ONLY CARGO TOTALS FROM CAPI, LOCAL CARRIER MARKETS, AND SUBSEQUENT JOURNAL TRANSACTIONS. N/A MEANS NO LOCAL TOTAL IS AVAILABLE. >>>!"
     },
     {
-      "source": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-      "translation": "* READ-ONLY LOCAL CARGO TOTALS FROM CAPI AND SUBSEQUENT JOURNAL TRANSACTIONS. N/A MEANS NO LOCAL TOTAL IS AVAILABLE. >>>!"
+      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
+      "translation": "* READ-ONLY HISTORY FROM THE ACTIVE JOURNAL FOLDER. EXPORT CREATES A PORTABLE, VERSIONED REPLAY PACKAGE WITHOUT CHANGING PROFILE DATA. >>>!"
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -262357,10 +263213,6 @@
       "translation": "* RESET COORDINATES >>>!"
     },
     {
-      "source": "Reset every text and icon scale in this panel to 0%",
-      "translation": "* RESET EVERY TEXT AND ICON SCALE IN THIS PANEL TO 0% >>>!"
-    },
-    {
       "source": "Reset input detection",
       "translation": "* RESET INPUT DETECTION >>>!"
     },
@@ -262371,6 +263223,10 @@
     {
       "source": "Reset selected",
       "translation": "* RESET SELECTED >>>!"
+    },
+    {
+      "source": "Reset text and icon scales and brush overrides in this panel",
+      "translation": "* RESET TEXT AND ICON SCALES AND BRUSH OVERRIDES IN THIS PANEL >>>!"
     },
     {
       "source": "Reset the captured VR headset orientation.",
@@ -263363,6 +264219,10 @@
     {
       "source": "SELL",
       "translation": "* SELL >>>!"
+    },
+    {
+      "source": "SESSION",
+      "translation": "* SESSION >>>!"
     },
     {
       "source": "SHIFT",
@@ -266429,6 +267289,10 @@
       "translation": "* SRVSURVEY MINING RIG RANGE WARNING OVERLAY >>>!"
     },
     {
+      "source": "SrvSurvey mining session overlay",
+      "translation": "* SRVSURVEY MINING SESSION OVERLAY >>>!"
+    },
+    {
       "source": "SrvSurvey next-jump overlay",
       "translation": "* SRVSURVEY NEXT-JUMP OVERLAY >>>!"
     },
@@ -266789,6 +267653,10 @@
       "translation": "* START A JOURNEY TO TRACK SYSTEMS, SCANS, NOTES, SCREENSHOTS, AND REWARDS. >>>!"
     },
     {
+      "source": "Start a mining session manually.",
+      "translation": "* START A MINING SESSION MANUALLY. >>>!"
+    },
+    {
       "source": "Start a new route?",
       "translation": "* START A NEW ROUTE? >>>!"
     },
@@ -267087,6 +267955,10 @@
     {
       "source": "Stop search",
       "translation": "* STOP SEARCH >>>!"
+    },
+    {
+      "source": "Stop sessions automatically after FSD jump or docking",
+      "translation": "* STOP SESSIONS AUTOMATICALLY AFTER FSD JUMP OR DOCKING >>>!"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -270463,6 +271335,10 @@
     {
       "source": "Theme > Overlay Settings controls display placement for live panels and the position editor.",
       "translation": "* THEME > OVERLAY SETTINGS CONTROLS DISPLAY PLACEMENT FOR LIVE PANELS AND THE POSITION EDITOR. >>>!"
+    },
+    {
+      "source": "Theme default",
+      "translation": "* THEME DEFAULT >>>!"
     },
     {
       "source": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -274025,6 +274901,10 @@
       "translation": "* BREAK >>>!"
     },
     {
+      "source": "brushes",
+      "translation": "* BRUSHES >>>!"
+    },
+    {
       "source": "build",
       "translation": "* BUILD >>>!"
     },
@@ -275067,6 +275947,10 @@
     {
       "source": "helium",
       "translation": "* HELIUM >>>!"
+    },
+    {
+      "source": "hh\\:mm\\:ss",
+      "translation": "* HH\\:MM\\:SS >>>!"
     },
     {
       "source": "high",
@@ -277289,6 +278173,10 @@
       "translation": "* {0} AS SCANNED · {1} IF MAPPED >>>!"
     },
     {
+      "source": "{0} asteroids · {1} cores",
+      "translation": "* {0} ASTEROIDS · {1} CORES >>>!"
+    },
+    {
       "source": "{0} at '{1}': {2}",
       "translation": "* {0} AT '{1}': {2} >>>!"
     },
@@ -277737,6 +278625,10 @@
       "translation": "* {0} PRICES FOR {1}.{2} >>>!"
     },
     {
+      "source": "{0} prospectors · {1} collectors",
+      "translation": "* {0} PROSPECTORS · {1} COLLECTORS >>>!"
+    },
+    {
       "source": "{0} rebuilds",
       "translation": "* {0} REBUILDS >>>!"
     },
@@ -277891,6 +278783,10 @@
     {
       "source": "{0} t remaining · {1} t total",
       "translation": "* {0} T REMAINING · {1} T TOTAL >>>!"
+    },
+    {
+      "source": "{0} t · {1} t/h",
+      "translation": "* {0} T · {1} T/H >>>!"
     },
     {
       "source": "{0} tonnes delivered",

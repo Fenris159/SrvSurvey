@@ -1593,6 +1593,7 @@ public sealed class LegacyOverlayLayoutStore
             ["detail"] = scale.Detail,
             ["caption"] = scale.Caption,
             ["icons"] = scale.Icons,
+            ["brushes"] = scale.Brushes.ToJson(),
         };
 
     private static OverlayTypographyScale? ReadTypographyOverride(JsonNode? node, string name)
@@ -1615,7 +1616,10 @@ public sealed class LegacyOverlayLayoutStore
             ReadTypographyPercent(value, "detail", name),
             ReadTypographyPercent(value, "caption", name),
             ReadTypographyPercent(value, "icons", name, defaultValue: 0)
-        );
+        )
+        {
+            Brushes = OverlayTypographyBrushes.Parse(value["brushes"]),
+        };
         return NormalizeTypographyScale(scale);
     }
 

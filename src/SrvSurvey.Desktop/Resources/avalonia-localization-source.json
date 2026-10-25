@@ -249,6 +249,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "0 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "0% UNDISCOVERED",
     "IsFormat": false,
     "SourceKinds": [
@@ -610,6 +618,14 @@
   },
   {
     "Text": "18 / 27 points",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "18 asteroids \u00B7 22 prospectors",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1138,6 +1154,14 @@
   },
   {
     "Text": "610 need | 180 FC | 24 ship",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "64 t \u00B7 153.6 t/h",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -2994,6 +3018,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Active mining session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "Active obelisk {0} is duplicated.",
     "IsFormat": true,
     "SourceKinds": [
@@ -3088,6 +3120,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Activity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
@@ -9962,6 +10002,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Cargo: 64 / 192 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "Cargo: 72 / 128 t \u00B7 Limpets: 34",
     "IsFormat": false,
     "SourceKinds": [
@@ -11045,6 +11093,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml.cs"
   },
   {
+    "Text": "Choose a valid overlay theme brush.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
+  },
+  {
     "Text": "Choose a valid starting system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11746,7 +11802,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Click, then hold shortcut keys",
@@ -16680,6 +16736,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "Delkar",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
+    "Text": "Delkar 7 A Ring",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "Demand:",
     "IsFormat": false,
     "SourceKinds": [
@@ -19716,6 +19788,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "End Session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "End and save the current mining session.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "End path here",
@@ -28831,10 +28919,9 @@
     "Text": "Journal",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/JournalSettingsStore.cs"
   },
   {
     "Text": "Journal Screenshot events are matched to completed BMP files; each PNG is decoded and verified before it replaces or removes anything.",
@@ -30485,12 +30572,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "LegacyTheme.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "LegacyTheme.{0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
   },
   {
     "Text": "Legal",
@@ -31432,9 +31527,10 @@
     "Text": "Local",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
     "Text": "Local Community Goal history could not be read: {0}",
@@ -33731,6 +33827,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Mining (surface)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
     "Text": "Mining \u003E Find \u003E Platinum ranks candidate rings for a platinum trip.",
     "IsFormat": false,
     "SourceKinds": [
@@ -33764,6 +33868,14 @@
   },
   {
     "Text": "Mining Ref",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Mining Session",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -34053,6 +34165,14 @@
   },
   {
     "Text": "MiningWorkspace.ShouldShowNotifications",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "MiningWorkspace.ShouldShowSession",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36041,7 +36161,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "No active settlement",
@@ -40149,6 +40269,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "Overlay text brushes must be an object.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
+  },
+  {
+    "Text": "Overlay text brushes must contain theme-swatch names.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
+  },
+  {
+    "Text": "Overlay text brushes must contain valid theme-swatch names.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
+  },
+  {
     "Text": "Overlay theme",
     "IsFormat": false,
     "SourceKinds": [
@@ -40323,6 +40467,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Override this text role with an overlay appearance brush",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "Oversized EDDN frame.",
@@ -40894,6 +41046,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "Pause / Resume",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Pause / resume",
     "IsFormat": false,
     "SourceKinds": [
@@ -40902,12 +41062,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Pause or resume the current mining session.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Paused",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "Peach",
@@ -41497,6 +41665,14 @@
   },
   {
     "Text": "PlotMiningReference",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotMiningSession",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -45664,20 +45840,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
+  },
+  {
     "Text": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
-    "Text": "Read-only local cargo totals from CAPI and subsequent journal transactions. N/A means no local total is available.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
     "Text": "Read-only lookups are unaffected.",
@@ -47714,14 +47890,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Reset every text and icon scale in this panel to 0%",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
-  },
-  {
     "Text": "Reset input detection",
     "IsFormat": false,
     "SourceKinds": [
@@ -47744,6 +47912,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Reset text and icon scales and brush overrides in this panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "Reset the captured VR headset orientation.",
@@ -49734,6 +49910,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
+    "Text": "SESSION",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "SHIFT",
@@ -52727,6 +52911,7 @@
     "Text": "Session",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
@@ -55884,6 +56069,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey mining session overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayWindow.axaml"
+  },
+  {
     "Text": "SrvSurvey next-jump overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -56604,6 +56797,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Start a mining session manually.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Start a new route?",
     "IsFormat": false,
     "SourceKinds": [
@@ -56735,6 +56936,7 @@
     "Text": "Start session",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
@@ -57204,6 +57406,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Stop sessions automatically after FSD jump or docking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Stopping after the current journal operation...",
@@ -63967,6 +64177,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Theme default",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
@@ -71100,6 +71318,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "brushes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "build",
     "IsFormat": false,
     "SourceKinds": [
@@ -73186,6 +73412,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "hh\\:mm\\:ss",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "high",
@@ -77629,6 +77863,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "{0} asteroids \u00B7 {1} cores",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} at \u0027{1}\u0027: {2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -78525,6 +78767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "{0} prospectors \u00B7 {1} collectors",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} rebuilds",
     "IsFormat": true,
     "SourceKinds": [
@@ -78835,6 +79085,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0} t \u00B7 {1} t/h",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
   },
   {
     "Text": "{0} tonnes delivered",

@@ -74,6 +74,10 @@ public enum GlobalInputAction
     ToggleExplorationPoisVisibility,
     ToggleColonizationWishListVisibility,
     ToggleCollapseCoveredColonyGroups,
+    ToggleMiningSessionVisibility,
+    StartMiningSession,
+    PauseResumeMiningSession,
+    EndMiningSession,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -243,6 +247,33 @@ public static class GlobalInputActionCatalog
             "toggleMiningNotificationsVisibility",
             "Mining notifications",
             "PlotMiningNotifications"
+        ),
+        Define(
+            GlobalInputAction.StartMiningSession,
+            "startMiningSession",
+            "Start session",
+            "Start a mining session manually.",
+            string.Empty
+        ),
+        Define(
+            GlobalInputAction.PauseResumeMiningSession,
+            "pauseResumeMiningSession",
+            "Pause / Resume",
+            "Pause or resume the current mining session.",
+            string.Empty
+        ),
+        Define(
+            GlobalInputAction.EndMiningSession,
+            "endMiningSession",
+            "End Session",
+            "End and save the current mining session.",
+            string.Empty
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleMiningSessionVisibility,
+            "toggleMiningSessionVisibility",
+            "Mining Session",
+            "PlotMiningSession"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleMiningCargoVisibility,

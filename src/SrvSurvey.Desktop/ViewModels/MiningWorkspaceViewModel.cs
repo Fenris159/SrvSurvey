@@ -10,7 +10,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed record MiningAnnouncementOutputs(Platform.IMiningSpeechOutput Speech, Platform.IMiningChimeOutput Chime);
 
-public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
+public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningStore store;
     private IReadOnlyList<string> journalDirectories = [];
@@ -1586,6 +1586,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                     nameof(SessionSummary),
                     nameof(ShouldShowNotifications),
                     nameof(ShouldShowCargo),
+                    nameof(ShouldShowSession),
                     nameof(VisibleNotices),
                     nameof(CurrentProspectText),
                     nameof(HasCurrentProspect),
@@ -1641,6 +1642,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                 nameof(AnnouncementPresets),
                 nameof(ShouldShowNotifications),
                 nameof(ShouldShowCargo),
+                nameof(ShouldShowSession),
                 nameof(VisibleNotices),
                 nameof(CurrentProspectText),
                 nameof(HasCurrentProspect),

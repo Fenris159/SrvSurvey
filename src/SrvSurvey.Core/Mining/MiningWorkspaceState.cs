@@ -66,8 +66,24 @@ public sealed class MiningWorkspaceState
             AddNotice(entry);
         }
 
+        StopSessionForTravel(entry, bootstrap);
         Synchronize();
         return true;
+    }
+
+    private void StopSessionForTravel(JournalEventEnvelope entry, bool bootstrap)
+    {
+        if (
+            !bootstrap
+            && Data.Settings.AutoStopAfterTravel
+            && entry.EventName is "FSDJump" or "Docked"
+            && entry.Timestamp is { } time
+            && Session.Current is { } session
+            && time >= session.Started
+        )
+        {
+            Stop(time);
+        }
     }
 
     private void ActivateSessionForProspector(JournalEventEnvelope entry, string system, string body, string ship)
@@ -322,5 +338,6 @@ public sealed class MiningWorkspaceState
         "StartJump",
         "SupercruiseEntry",
         "FSDJump",
+        "Docked",
     ];
 }

@@ -504,7 +504,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         OverlayTypographyScale typographyScale = editSession.GetTypographyScale(plotterName);
         foreach (OverlayTypographyRoleViewModel role in TypographyRoles)
         {
-            role.Load(typographyScale.GetPercent(role.Role));
+            role.Load(typographyScale.GetPercent(role.Role), typographyScale.Brushes.Get(role.Role));
         }
         updatingSelectedOverlaySettings = false;
         OnPropertyChanged(nameof(IsOverlaySettingsOpen));
@@ -1380,12 +1380,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private IReadOnlyList<OverlayTypographyRoleViewModel> CreateTypographyRoles() =>
         [
-            new(OverlayTypographyRole.Header, "Header", SetTypographyPercent),
-            new(OverlayTypographyRole.Title, "Title", SetTypographyPercent),
-            new(OverlayTypographyRole.Value, "Value", SetTypographyPercent),
-            new(OverlayTypographyRole.Body, "Body", SetTypographyPercent),
-            new(OverlayTypographyRole.Detail, "Detail", SetTypographyPercent),
-            new(OverlayTypographyRole.Caption, "Caption", SetTypographyPercent),
+            new(OverlayTypographyRole.Header, "Header", SetTypographyPercent, SetTypographyBrush),
+            new(OverlayTypographyRole.Title, "Title", SetTypographyPercent, SetTypographyBrush),
+            new(OverlayTypographyRole.Value, "Value", SetTypographyPercent, SetTypographyBrush),
+            new(OverlayTypographyRole.Body, "Body", SetTypographyPercent, SetTypographyBrush),
+            new(OverlayTypographyRole.Detail, "Detail", SetTypographyPercent, SetTypographyBrush),
+            new(OverlayTypographyRole.Caption, "Caption", SetTypographyPercent, SetTypographyBrush),
             new(OverlayTypographyRole.Icons, "Icons", SetTypographyPercent),
         ];
 
@@ -1486,6 +1486,25 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = $"Restored {displayName} to its original measured size. Use the top ✓ to save and close.";
     }
 
+    private void SetTypographyBrush(OverlayTypographyRole role, string? brush)
+    {
+        if (
+            !IsEditing
+            || updatingSelectedOverlaySettings
+            || editSession is null
+            || selectedOverlaySettingsPlotterName is not { } plotterName
+        )
+        {
+            return;
+        }
+
+        OverlayTypographyScale current = editSession.GetTypographyScale(plotterName);
+        if (editSession.SetTypographyScale(plotterName, current with { Brushes = current.Brushes.With(role, brush) }))
+        {
+            editorHost?.RefreshPreviewTypography(editSession);
+        }
+    }
+
     private void SetTypographyPercent(OverlayTypographyRole role, int percent)
     {
         if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
@@ -1571,17 +1590,55 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
 {
     private readonly Action<OverlayTypographyRole, int> changed;
+    private readonly Action<OverlayTypographyRole, string?>? brushChanged;
+    private OverlayBrushChoice selectedBrush = OverlayBrushChoice.Default;
     private int percent;
+    public bool CanOverrideBrush => Role != OverlayTypographyRole.Icons;
+    public IReadOnlyList<OverlayBrushChoice> BrushChoices { get; private set; } = CreateBrushChoices();
+    public OverlayBrushChoice SelectedBrush
+    {
+        get => selectedBrush;
+        set
+        {
+            value ??= OverlayBrushChoice.Default;
+            if (selectedBrush == value)
+            {
+                return;
+            }
+
+            selectedBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedBrush)));
+            brushChanged?.Invoke(Role, value.Key);
+        }
+    }
+
+    private static OverlayBrushChoice[] CreateBrushChoices() =>
+        new[] { OverlayBrushChoice.Default }
+            .Concat(
+                OverlayThemeSettingsViewModel.Definitions.Select(definition => new OverlayBrushChoice(
+                    definition.Key,
+                    $"{definition.Category}: {definition.DisplayName}"
+                ))
+            )
+            .Concat(
+                (Application.Current?.Resources.Keys.OfType<string>() ?? [])
+                    .Where(key => key.StartsWith("LegacyTheme.", StringComparison.Ordinal))
+                    .Select(key => new OverlayBrushChoice(key[12..], key[12..]))
+            )
+            .DistinctBy(choice => choice.Key)
+            .ToArray();
 
     public OverlayTypographyRoleViewModel(
         OverlayTypographyRole role,
         string displayName,
-        Action<OverlayTypographyRole, int> changed
+        Action<OverlayTypographyRole, int> changed,
+        Action<OverlayTypographyRole, string?>? brushChanged = null
     )
     {
         Role = role;
         DisplayName = displayName;
         this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
+        this.brushChanged = brushChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -1610,8 +1667,12 @@ public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
 
     public string Label => $"{Percent:+0;-0;0}%";
 
-    internal void Load(int value)
+    internal void Load(int value, string? brush = null)
     {
+        BrushChoices = CreateBrushChoices();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BrushChoices)));
+        selectedBrush = BrushChoices.FirstOrDefault(choice => choice.Key == brush) ?? OverlayBrushChoice.Default;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedBrush)));
         int normalized = OverlayTypographyScale.Normalize(value);
         if (percent == normalized)
         {
@@ -1622,4 +1683,9 @@ public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Percent)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
     }
+}
+
+public sealed record OverlayBrushChoice(string? Key, string DisplayName)
+{
+    public static OverlayBrushChoice Default { get; } = new(null, "Theme default");
 }

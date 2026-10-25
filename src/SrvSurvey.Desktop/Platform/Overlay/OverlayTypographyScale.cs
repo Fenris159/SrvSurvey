@@ -34,6 +34,8 @@ public sealed record OverlayTypographyScale(
 
     public static OverlayTypographyScale Default { get; } = new(0, 0, 0, 0, 0, 0, 0);
 
+    public OverlayTypographyBrushes Brushes { get; init; } = OverlayTypographyBrushes.Default;
+
     public bool IsDefault => this == Default;
 
     public int GetPercent(OverlayTypographyRole role) =>
@@ -83,6 +85,7 @@ public sealed record OverlayTypographyScale(
 internal static class OverlayTypographyResources
 {
     private static readonly ConditionalWeakTable<Control, RealizedTypographyRegistration> RealizedRegistrations = [];
+    private static readonly ConditionalWeakTable<TextBlock, BrushOverride> BrushOverrides = [];
     private static readonly AttachedProperty<OverlayTypographyScale> PendingScaleProperty =
         AvaloniaProperty.RegisterAttached<Control, Control, OverlayTypographyScale>(
             nameof(PendingScaleProperty),
@@ -172,6 +175,26 @@ internal static class OverlayTypographyResources
         OverlayTypographyScale scale = text.GetValue(ScaleProperty);
         double factor = 1d + (scale.GetPercent(role.Value) / 100d);
         text.SetCurrentValue(TextBlock.FontSizeProperty, baseline * factor);
+        BrushOverrides.GetValue(text, static _ => new BrushOverride()).UpdateBrush(text, scale.Brushes.Get(role.Value));
+    }
+
+    private sealed class BrushOverride
+    {
+        private IDisposable? current;
+
+        public void UpdateBrush(TextBlock text, string? key)
+        {
+            current?.Dispose();
+            current = null;
+            if (
+                key is not null
+                && text.TryFindResource($"LegacyTheme.{key}", out object? resource)
+                && resource is IBrush brush
+            )
+            {
+                current = text.SetValue(TextBlock.ForegroundProperty, brush, Avalonia.Data.BindingPriority.Animation);
+            }
+        }
     }
 
     private static void ApplyToIcon(LayoutTransformControl control)

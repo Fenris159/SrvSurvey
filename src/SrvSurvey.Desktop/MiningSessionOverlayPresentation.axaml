@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.MiningSessionOverlayPresentation"
+ x:DataType="vm:MiningSessionOverlayViewModel" Width="340">
+ <Border Padding="8" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5">
+  <StackPanel Spacing="6">
+   <Grid ColumnDefinitions="*,Auto">
+    <TextBlock Classes="overlay-header type-header" Text="SESSION" />
+    <TextBlock Grid.Column="1" Classes="type-caption" Foreground="{DynamicResource RavenWarningBrush}" Text="{Binding State}" />
+   </Grid>
+   <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Location}" TextWrapping="Wrap" />
+   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+    <TextBlock Classes="type-value" Text="{Binding Yield}" />
+    <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding Duration}" />
+   </Grid>
+   <TextBlock Classes="type-body" Text="{Binding Activity}" />
+   <TextBlock Classes="type-detail" Text="{Binding Limpets}" />
+   <TextBlock Classes="type-body" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Cargo}" TextWrapping="Wrap" />
+   <TextBlock Classes="type-caption" Text="{Binding Notes}" IsVisible="{Binding HasNotes}" TextWrapping="Wrap" />
+  </StackPanel>
+ </Border>
+</UserControl>

@@ -15,7 +15,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private const string CategoryGuardian = "Guardian";
     private const string HeaderKey = "header";
 
-    private static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
+    internal static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
     [
         new(CategoryGeneral, HeaderKey, "Header"),
         new(CategoryGeneral, "orange", "Primary accent"),

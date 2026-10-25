@@ -597,6 +597,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 externalNetworkClient,
                 firegroups: Firegroups
             );
+            MiningWorkspace.UseSessionBindings(InputSettings);
             MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);
             MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
             rollback.Add(MiningWorkspace.Dispose);

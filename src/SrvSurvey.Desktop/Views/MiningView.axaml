@@ -453,6 +453,18 @@
               <TabItem Header="Session">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
+                    <ItemsControl ItemsSource="{Binding SessionBindings}">
+                      <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:InputBindingViewModel">
+                        <Grid ColumnDefinitions="*,220" Margin="0,4" ColumnSpacing="12">
+                          <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                          <StackPanel Grid.Column="1">
+                            <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}" PlaceholderText="Click, then hold keys or controller buttons" />
+                            <TextBlock Text="{Binding ValidationMessage}" IsVisible="{Binding HasValidationError}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <CheckBox Content="Stop sessions automatically after FSD jump or docking" IsChecked="{Binding Settings.AutoStopAfterTravel}"/>
                     <CheckBox Content="Start a session when a prospector limpet launches" IsChecked="{Binding Settings.AutoStart}"/>
                     <CheckBox Content="Switch to Session on prospecting and Hotspots on completion" IsChecked="{Binding Settings.AutoSwitchTabs}"/>
                     <CheckBox Content="Refresh hotspot search after jumps and scans" IsChecked="{Binding Settings.AutoSearch}"/>

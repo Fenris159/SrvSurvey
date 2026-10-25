@@ -6,6 +6,30 @@ SteamOS and Gamescope overlay support.
 
 ## What's changed
 
+- **Overlay editor:** Each text role can select a brush from the overlay
+  appearance swatches alongside its size slider. Brush overrides follow theme
+  changes, save per panel, and reset with the panel's text settings.
+- **Next Jump text roles:** The subtitle uses Caption, destination detail labels
+  use Title, and the route legend uses Header.
+- **Carrier manifests:** Guardian salvage aliases now match local inventory.
+  Local CAPI, carrier-market stock, and journal transfers provide the comparison
+  totals, and locally held goods missing from Raven appear in the editor. All
+  goods are visible by default; the colony-only filter remains available.
+- **Colonization overlays and market search:** Commodity panels contract as rows
+  disappear, including with a saved panel size. Outdated local markets appears
+  beside Ardent, while the carrier, surface-port, and full-supply filters stay
+  visible above the ShoppingList instructions after a search.
+- **Mining overlays:** Surface panels and calibration have a separate
+  **Mining (surface)** editor category. The new **Session** panel shows the
+  active or paused session's location, yield, duration, activity, limpets, and
+  cargo, with normal theme, sizing, and availability controls.
+- **Mining session controls:** Start, Pause / Resume, and End Session shortcuts
+  share their saved bindings with Settings → Input. The new default-on
+  **Stop sessions automatically after FSD jump or docking** option ends sessions
+  on live travel events, including paused sessions, without ending them during
+  historical journal recovery.
+
+
 - **Original SrvSurvey profile imports:** Backup, verify, and merge now accepts
   intact Windows profiles whose equivalent folder names use different casing,
   such as `routes` and `Routes`. File contents are still verified before the
