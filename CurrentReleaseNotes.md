@@ -24,7 +24,8 @@ Spansh searches and mission overlay sizing.
   later journal fuel observations replace that estimate.
 - **Next Jump neutron badge:** Class-N destinations show the **NEUTRON** pill
   beside the star class even without a pre-planned route or with details hidden.
-  Existing route guidance continues to supply the badge when applicable.
+  Existing route guidance continues to supply the badge when applicable. Long
+  system names trim before the badges instead of overlapping them.
 - **Mining session commodity names:** Prospecting yield summaries use consistent
   catalog casing, including **Gold**, **Silver**, and **Palladium**. Existing
   session history gains the same display names without rewriting journal data.
@@ -45,7 +46,8 @@ Spansh searches and mission overlay sizing.
   projects. Tracking and delivering to an unaffiliated project still reports
   contributions to Raven and refreshes its requirements and completion. If a
   focused project's retained data cannot be saved, the warning remains visible
-  and **Refresh projects** can retry the save.
+  and **Refresh projects** can retry the save. Cancelling auto-refresh preserves
+  unsaved Show choices while retained projects are being fetched.
 - **Existing colonization data cleanup:** A successful project refresh removes
   previously discovered unaffiliated projects that you have not explicitly
   chosen to retain. Focused projects, shopping selections, and local drafts
@@ -65,4 +67,5 @@ Spansh searches and mission overlay sizing.
   content. Long text wraps at the available game width, and longer mission
   lists scroll within the available height. Saved left/right growth choices
   and custom positions remain effective. Saved fixed sizes no longer leave
-  unnecessary empty space, and the editor preview uses the same sizing rules.
+  unnecessary empty space, wide displays retain a readable maximum panel width,
+  and the editor preview uses the same sizing rules.

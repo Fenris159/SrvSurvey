@@ -7,6 +7,41 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationViewModelTests
 {
+    /// <summary>Cancelling a retained-project read cannot replace an unsaved Show selection with server state.</summary>
+    [Fact]
+    public async Task CancelledRetainedProjectRefreshPreservesUnsavedSelectionForSave()
+    {
+        var clock = new AutoRefreshClock();
+        StubRavenColonialClient client = LocalScopeClient();
+        using ColonizationViewModel model = Create(client, clock.DelayAsync);
+        model.IsEnabled = true;
+        model.SetCommanderProfile("F123", true, "test-key");
+        await model.SetCommanderAsync("Test Cmdr");
+        model.UpdateSystemContext("Visitor", null, 42);
+        model.ShowUnaffiliatedProjectsInCurrentSystem = true;
+        await model.CurrentSystemPlanningTask;
+        await model.ToggleFocusProjectAsync(model.Projects.Single(row => row.Project.BuildId == "visitor-live"));
+        await model.CurrentSystemPlanningTask;
+        model.Projects.Single(row => row.Project.BuildId == "own").IsShown = false;
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.LoadProject = (_, token) =>
+        {
+            entered.TrySetResult();
+            return new TaskCompletionSource<ColonizationProject?>().Task.WaitAsync(token);
+        };
+        model.IsAutoRefreshEnabled = true;
+        (await clock.NextTickAsync()).SetResult();
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        model.IsAutoRefreshEnabled = false;
+        await model.AutoRefreshTask.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(model.Projects.Single(row => row.Project.BuildId == "own").IsShown);
+        Assert.True(model.HasUnsavedProjectVisibility);
+        client.LoadProject = null;
+        await model.SaveProjectVisibilityAsync();
+        Assert.Contains("own", client.LastSavedHiddenIds);
+        Assert.False(model.Projects.Single(row => row.Project.BuildId == "own").IsShown);
+    }
+
     private static StubRavenColonialClient LocalScopeClient()
     {
         ColonizationSystemRecord home = FilterPlanningSystem("Home", 1);

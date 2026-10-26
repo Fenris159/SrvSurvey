@@ -1,4 +1,5 @@
 using System.Net;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -16,6 +17,82 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class JumpInfoOverlayPresentationTests
 {
+    /// <summary>Long neutron destinations trim inside their header cell in either overlay host.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LongNeutronTargetCannotOverlapItsGuidanceBadges(bool combined)
+    {
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"jump-neutron-long-{Guid.NewGuid():N}.json");
+        string target = "Synuefe " + string.Join(" ", Enumerable.Repeat("Long Neutron Destination", 8));
+        using var http = new HttpClient(new DiscoveryHandler(Task.CompletedTask));
+        using var jump = new JumpInfoViewModel(new SystemSummaryClient(http), new JumpInfoSettingsStore(settingsPath));
+        jump.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                null,
+                [
+                    Parse(
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new
+                            {
+                                @event = "FSDTarget",
+                                Name = target,
+                                SystemAddress = 3,
+                                StarClass = "N",
+                            }
+                        )
+                    ),
+                ],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        using var model = new JumpInfoOverlayViewModel(jump, OverlayPlatformCapabilities.DetectCurrent());
+        var window = new JumpInfoOverlayWindow(model);
+        var host = new CombinedOverlayWindow { Width = 800, Height = 600 };
+        Window surface = window;
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            if (combined)
+            {
+                Control content = Assert.IsType<Control>(window.Content, exactMatch: false);
+                window.Content = null;
+                host.Add(new ContentControl { Content = content, DataContext = model });
+                OverlayThemeResources.Apply(host);
+                surface = host;
+            }
+            surface.Show();
+            using WriteableBitmap? frame = surface.CaptureRenderedFrame();
+            TextBlock name = Assert.Single(
+                surface.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == target
+            );
+            TextBlock neutron = Assert.Single(
+                surface.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "NEUTRON"
+            );
+            Control badge = neutron.GetVisualAncestors().OfType<LayoutTransformControl>().First();
+            Point nameEnd = Assert.IsType<Point>(name.TranslatePoint(new Point(name.Bounds.Width, 0), surface));
+            Point badgeStart = Assert.IsType<Point>(badge.TranslatePoint(default, surface));
+            Assert.True(name.Bounds.Width > 0);
+            Assert.True(neutron.IsEffectivelyVisible);
+            Assert.True(
+                nameEnd.X <= badgeStart.X - 9,
+                $"Target ends at {nameEnd.X}; neutron badge starts at {badgeStart.X}."
+            );
+        }
+        finally
+        {
+            host.Close();
+            window.Close();
+            File.Delete(settingsPath);
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]

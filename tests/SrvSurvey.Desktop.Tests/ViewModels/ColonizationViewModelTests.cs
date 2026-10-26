@@ -3297,8 +3297,15 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             return Task.FromResult(LastSavedHiddenIds);
         }
 
+        /// <summary>Controls retained-project reads for cancellation and selection-preservation regressions.</summary>
+        public Func<string, CancellationToken, Task<ColonizationProject?>>? LoadProject { get; set; }
+
         public Task<ColonizationProject?> GetProjectAsync(string buildId, CancellationToken cancellationToken = default)
         {
+            if (LoadProject is not null)
+            {
+                return LoadProject(buildId, cancellationToken);
+            }
             return Task.FromResult(
                 Workspace.Projects.FirstOrDefault(project => project.BuildId == buildId)
                     ?? (SiteProjectResponse?.BuildId == buildId ? SiteProjectResponse : null)

@@ -19,6 +19,36 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MissionOverlaySizingTests
 {
+    /// <summary>Wide viewports keep the presentation cap, and narrowing then widening restores it.</summary>
+    [AvaloniaTheory]
+    [InlineData("PlotMiningMissions")]
+    [InlineData("PlotMassacre")]
+    public void MissionPanelsRetainTheirNaturalWidthCapAcrossViewportChanges(string plotter)
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(1);
+        fixture.AddLongMission(string.Join(" ", Enumerable.Repeat("Independent Outer Colonies Cooperative", 20)));
+        Window window = fixture.Window;
+        LegacyOverlayLayout layout = CreateLayout(plotter, OverlayGrowthDirection.Left);
+        OverlayThemeResources.Apply(window, layout, plotter, new OverlayWindowRegistry());
+        window.Show();
+        foreach ((int viewport, double maximum) in new[] { (3840, 1000d), (320, 304d), (3840, 1000d) })
+        {
+            OverlayWindowMetrics.PrepareForPlacement(window, layout, plotter, 1, 2160, viewport);
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Control panel = Assert.IsType<Control>(
+                OverlayThemeResources.GetPresentationRoot(window),
+                exactMatch: false
+            );
+            Assert.Equal(maximum, panel.MaxWidth);
+            Assert.InRange(panel.Bounds.Width, 1, maximum);
+            if (viewport == 3840)
+            {
+                Assert.True(panel.Bounds.Width > 950);
+            }
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData("PlotMiningMissions")]
     [InlineData("PlotMassacre")]
@@ -249,7 +279,10 @@ public sealed class MissionOverlaySizingTests
                 Assert.InRange(size.Height, 1, height - 15);
                 Assert.InRange(size.Width, 1, width - 15);
                 Assert.True(size.Width > width / 2, $"Long mission text did not use the available width: {size}");
-                Control panel = Assert.IsAssignableFrom<Control>(OverlayThemeResources.GetPresentationRoot(window));
+                Control panel = Assert.IsType<Control>(
+                    OverlayThemeResources.GetPresentationRoot(window),
+                    exactMatch: false
+                );
                 ScrollViewer scroller = Assert.Single(panel.GetVisualDescendants().OfType<ScrollViewer>());
                 Assert.True(scroller.Viewport.Height > 0);
                 if (height == 480)

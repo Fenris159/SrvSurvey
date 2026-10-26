@@ -1330,14 +1330,15 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             {
                 return false;
             }
-            hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
-            primaryProjectId = result.PrimaryProjectId;
-            hasCurrentShoppingProjects = true;
             await RefreshRetainedProjectsAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (!IsCurrentProjectProfile(version))
             {
                 return false;
             }
+            hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            primaryProjectId = result.PrimaryProjectId;
+            hasCurrentShoppingProjects = true;
             recovery.ReplaceWorkspace(LiveWorkspaceProjects(result.Projects), result.FleetCarriers);
             RebuildProjectRows();
             SaveLocalProjects();

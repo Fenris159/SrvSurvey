@@ -566,7 +566,9 @@ public static class OverlayThemeResources
     {
         if (content is IOverlayPanelSizePolicy { AutoWidth: true })
         {
-            content.MaxWidth = Math.Max(1, width);
+            PanelSizeRegistrations
+                .GetValue(content, control => new PanelSizeRegistration(control))
+                .ApplyViewportWidth(width);
         }
     }
 
@@ -1004,7 +1006,12 @@ public static class OverlayThemeResources
     private sealed class PanelSizeRegistration(Control content)
     {
         private readonly List<IDisposable> overrides = [];
+        private readonly double naturalMaximumWidth = content.MaxWidth;
         private OverlayPanelSize? appliedSize;
+
+        /// <summary>Retains the presentation's own cap while adapting to narrower or wider viewports.</summary>
+        public void ApplyViewportWidth(double width) =>
+            content.MaxWidth = Math.Min(naturalMaximumWidth, Math.Max(1, width));
 
         /// <summary>Applies saved dimensions only on axes that do not follow content.</summary>
         public void ApplySize(OverlayPanelSize? size)
