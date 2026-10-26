@@ -255,6 +255,11 @@ public sealed partial class ColonizationViewModel
         shoppingSelectionVersion++;
         CloseMarketSearchWorkspace();
         localFocusProjectId = CommanderName is null ? null : settingsStore.LoadLocalProjectFocus(CommanderName);
+        projectScope = new ColonizationProjectScope(
+            CommanderName is null ? null : settingsStore.LoadLocalProjects(CommanderName)
+        );
+        projectScope.EnterSystem(recovery.CurrentSystemName);
+        OnPropertyChanged(nameof(ShowUnaffiliatedProjectsInCurrentSystem));
         shoppingSession = CommanderName is null ? null : settingsStore.LoadShopping(CommanderName);
         plannedSystems.Clear();
         authoritativePlanningPrefixes.Clear();

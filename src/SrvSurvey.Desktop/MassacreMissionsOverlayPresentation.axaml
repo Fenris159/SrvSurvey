@@ -8,7 +8,7 @@
              x:DataType="vm:CombatOverlayViewModel"
              mc:Ignorable="d"
              HorizontalAlignment="Left"
-             MaxWidth="360"
+             MaxWidth="1000"
              ClipToBounds="True">
   <Border x:Name="MissionPanel" MaxHeight="600" Margin="0"
           Padding="4"
@@ -18,7 +18,7 @@
     <Grid RowDefinitions="Auto,*" RowSpacing="4">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header type-header"
-                   Text="MASSACRE MISSIONS" />
+                   Text="MASSACRE MISSIONS" TextWrapping="Wrap" />
       </Grid>
       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <ItemsControl ItemsSource="{Binding Combat.MassacreMissions}">
@@ -38,16 +38,16 @@
                            FontWeight="SemiBold"
                            IsVisible="{Binding !IsComplete}"
                            Text="{Binding TargetFaction}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextWrapping="Wrap" />
                 <TextBlock FontSize="11" Classes="muted type-body"
                            FontWeight="SemiBold"
                            IsVisible="{Binding IsComplete}"
                            Text="{Binding TargetFaction}"
                            TextDecorations="Strikethrough"
-                           TextTrimming="CharacterEllipsis" />
+                           TextWrapping="Wrap" />
                 <TextBlock FontSize="8" Classes="muted type-detail"
                            Text="{Binding MissionGiver}"
-                           TextTrimming="CharacterEllipsis" />
+                           TextWrapping="Wrap" />
               </StackPanel>
               <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
                <TextBlock FontSize="11"

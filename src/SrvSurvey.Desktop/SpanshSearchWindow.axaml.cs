@@ -35,6 +35,13 @@ public sealed partial class SpanshSearchWindow : Window
         DataContext = viewModel;
     }
 
+    /// <summary>Reloads the latest ship range when a retained search form is reopened.</summary>
+    protected override void OnOpened(EventArgs e)
+    {
+        viewModel.PrepareForOpen();
+        base.OnOpened(e);
+    }
+
     /// <summary>
     /// Submits the current form and closes the window after a successful itinerary import.
     /// </summary>

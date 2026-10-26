@@ -59,7 +59,8 @@ public sealed partial class ColonizationViewModel
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "The planned site requirements could not be saved to disk.";
+            plannedReadWarning = "The planned site requirements could not be saved to disk.";
+            StatusMessage = plannedReadWarning;
         }
     }
 }

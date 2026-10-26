@@ -34,19 +34,19 @@
       </Grid>
 
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.IsQuestTagged}">
+        <Grid ColumnDefinitions="Auto,*">
+          <LayoutTransformControl Classes="type-icon" Margin="0,0,8,0" IsVisible="{Binding JumpInfo.IsQuestTagged}">
             <Border Classes="badge">
               <TextBlock FontSize="9" Foreground="{DynamicResource RavenWarningBrush}"
                          FontWeight="Bold"
                          Text="Q" />
             </Border>
           </LayoutTransformControl>
-          <TextBlock FontSize="16" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
+          <TextBlock Grid.Column="1" FontSize="16" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding TargetName}"
                      TextTrimming="CharacterEllipsis" />
-        </StackPanel>
+        </Grid>
         <StackPanel Grid.Column="1"
                     Orientation="Horizontal"
                     Spacing="6"
@@ -59,6 +59,21 @@
               <TextBlock FontSize="9" VerticalAlignment="Center"
                          Foreground="{DynamicResource RavenWarningBrush}"
                          Text="SCOOPABLE" />
+            </Border>
+          </LayoutTransformControl>
+          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasNeutronGuidance}">
+            <Border Classes="badge"
+                    Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                    Padding="7,2">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Image Width="14"
+                       Height="14"
+                       Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+                       Stretch="Uniform" />
+                <TextBlock FontSize="9" VerticalAlignment="Center"
+                           Foreground="#4A9EE8"
+                           Text="NEUTRON" />
+              </StackPanel>
             </Border>
           </LayoutTransformControl>
           <TextBlock FontSize="12" Classes="monospace type-value"
@@ -106,7 +121,7 @@
                       Orientation="Horizontal"
                       HorizontalAlignment="Right"
                       Spacing="6"
-                      IsVisible="{Binding JumpInfo.HasRouteGuidanceBadges}">
+                      IsVisible="{Binding JumpInfo.HasRefuelGuidance}">
             <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasRefuelGuidance}">
               <Border Classes="badge"
                       Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
@@ -122,21 +137,7 @@
                 </StackPanel>
               </Border>
             </LayoutTransformControl>
-            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasNeutronGuidance}">
-              <Border Classes="badge"
-                      Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
-                      Padding="7,2">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Image Width="14"
-                         Height="14"
-                         Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
-                         Stretch="Uniform" />
-                  <TextBlock FontSize="9" VerticalAlignment="Center"
-                             Foreground="#4A9EE8"
-                             Text="NEUTRON" />
-                </StackPanel>
-              </Border>
-            </LayoutTransformControl>
+
           </StackPanel>
         </Grid>
         <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasTraffic}"

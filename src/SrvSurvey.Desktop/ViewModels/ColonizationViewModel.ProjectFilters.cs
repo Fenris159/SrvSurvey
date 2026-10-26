@@ -81,6 +81,11 @@ public sealed partial class ColonizationViewModel
             AllProjectSystems,
             .. Projects
                 .Select(row => row.SystemName.Trim())
+                .Concat(
+                    ShowUnaffiliatedProjectsInCurrentSystem && recovery.CurrentSystemName is { } current
+                        ? [current]
+                        : []
+                )
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .Select(name => new ColonizationProjectSystemOption(name, name.Length == 0 ? "Unknown system" : name)),

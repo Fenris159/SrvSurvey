@@ -39,6 +39,8 @@ public sealed record MiningSession
     public DateTimeOffset Started { get; init; }
     public DateTimeOffset? Ended { get; set; }
     public DateTimeOffset? PausedAt { get; set; }
+    public bool PausedForTravel { get; set; }
+    public DateTimeOffset? LastSupercruiseEntryAt { get; set; }
     public TimeSpan PausedDuration { get; set; }
     public string System { get; set; } = "";
     public string Ring { get; set; } = "";
@@ -73,7 +75,7 @@ public sealed record MiningSession
             .SelectMany(MaterialFinds)
             .GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
             .Select(group => new MiningMaterialSummary(
-                group.Key,
+                MiningCommodityName.Canonical(group.Key),
                 group.Count(),
                 Math.Clamp(
                     group.Count(m =>
@@ -162,7 +164,28 @@ public sealed class MiningSessionTracker
         if (Current is { PausedAt: null } session)
         {
             session.PausedAt = now;
+            session.PausedForTravel = false;
         }
+    }
+
+    public bool PauseForTravel(DateTimeOffset now)
+    {
+        if (
+            Current is not { } session
+            || now < session.Started
+            || session.LastSupercruiseEntryAt is { } previous && now <= previous
+        )
+        {
+            return false;
+        }
+        // Keep the consumed travel boundary after resuming and across recovery.
+        session.LastSupercruiseEntryAt = now;
+        if (session.PausedAt is null)
+        {
+            Pause(now);
+            session.PausedForTravel = true;
+        }
+        return true;
     }
 
     public void Resume(DateTimeOffset now)
@@ -174,6 +197,7 @@ public sealed class MiningSessionTracker
 
         session.PausedDuration += now > paused ? now - paused : TimeSpan.Zero;
         session.PausedAt = null;
+        session.PausedForTravel = false;
     }
 
     public MiningSession Stop(DateTimeOffset now)

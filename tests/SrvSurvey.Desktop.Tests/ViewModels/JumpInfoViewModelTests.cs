@@ -41,6 +41,32 @@ public sealed class JumpInfoViewModelTests : IDisposable
     }
 
     /// <summary>Calculates an individually selected jump from existing system metadata without requiring a plotted route.</summary>
+    [Theory]
+    [InlineData("N", true)]
+    [InlineData(" n ", true)]
+    [InlineData("K", false)]
+    [InlineData("D", false)]
+    public async Task DirectTargetShowsNeutronBadgeFromItsStarClass(string starClass, bool expected)
+    {
+        using JumpInfoViewModel model = CreateViewModel(
+            new FakeSummaryClient(CreateSummary() with { StarClass = null })
+        );
+        model.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                null,
+                [FsdTarget("Beta", 3, starClass)],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await model.PendingSummaryLoad;
+        Assert.Equal(expected, model.HasNeutronGuidance);
+        Assert.DoesNotContain(model.DetailLines, line => line.Neutron);
+    }
+
     [Fact]
     public async Task IndividualTargetUsesExistingSummaryCoordinatesForDistance()
     {

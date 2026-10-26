@@ -15,6 +15,33 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
         $"SrvSurvey-current-ui-import-tests-{Guid.NewGuid():N}"
     );
 
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("{}", true)]
+    [InlineData("{\"ShowInformation\":true}", true)]
+    [InlineData("{\"ShowInformation\":false}", false)]
+    public async Task ImportPreservesCarrierVisibilityIncludingUnsavedDefaults(string? currentSection, bool expected)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string source = Path.Combine(temporaryDirectory, "incoming.json");
+        string destination = Path.Combine(temporaryDirectory, "current.json");
+        await File.WriteAllTextAsync(source, """{"Version":1,"CarrierNextJump":{"ShowInformation":false}}""");
+        var current = new JsonObject { ["Version"] = 1 };
+        if (currentSection is not null)
+        {
+            current["CarrierNextJump"] = JsonNode.Parse(currentSection);
+        }
+        await File.WriteAllTextAsync(destination, current.ToJsonString());
+        await CrossPlatformUiSettingsImporter.ImportAsync(
+            source,
+            destination,
+            Path.Combine(temporaryDirectory, "backup")
+        );
+        Assert.Equal(expected, new CarrierNextJumpSettingsStore(destination).Load());
+        JsonNode activated = JsonNode.Parse(await File.ReadAllTextAsync(destination))!;
+        Assert.Equal(current["CarrierNextJump"]?.ToJsonString(), activated["CarrierNextJump"]?.ToJsonString());
+    }
+
     [Fact]
     public async Task ImportKeepsCurrentSettingsAndBacksUpBothVersions()
     {

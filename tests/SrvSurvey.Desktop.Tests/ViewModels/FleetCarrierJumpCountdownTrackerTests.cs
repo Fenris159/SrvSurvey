@@ -6,6 +6,36 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class FleetCarrierJumpCountdownTrackerTests
 {
     [Fact]
+    public void LocationMustMatchTheRequestedDestinationBeforeConfirmingArrival()
+    {
+        var tracker = new FleetCarrierJumpCountdownTracker();
+        var start = new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","SystemAddress":42,"DepartureTime":"2026-08-01T12:15:00Z"}"""
+            ),
+            start
+        );
+        tracker.Refresh(start.AddMinutes(15));
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:15:10Z","event":"CarrierLocation","CarrierID":123,"StarSystem":"Sol","SystemAddress":1}"""
+            ),
+            start.AddMinutes(15).AddSeconds(10)
+        );
+        Assert.Equal(FleetCarrierJumpCountdownKind.InTransit, tracker.Current.Kind);
+        Assert.Equal("Colonia", tracker.Current.Destination);
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:15:20Z","event":"CarrierLocation","CarrierID":123,"StarSystem":"Colonia","SystemAddress":42}"""
+            ),
+            start.AddMinutes(15).AddSeconds(20)
+        );
+        Assert.Equal(FleetCarrierJumpCountdownKind.PostJumpCooldown, tracker.Current.Kind);
+        Assert.Equal(42, tracker.Current.SystemAddress);
+    }
+
+    [Fact]
     public void JumpRequestMovesThroughInitiationLockdownAndCooldownPhases()
     {
         var tracker = new FleetCarrierJumpCountdownTracker();
@@ -41,6 +71,12 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
         Assert.False(tracker.Current.HasPhaseCountdown);
 
         tracker.Refresh(start.AddMinutes(15));
+        Assert.Equal("JUMP IN PROGRESS", tracker.Current.Title);
+        Assert.Equal("AWAITING ARRIVAL", tracker.Current.PhaseLabel);
+        tracker.Apply(
+            Parse("""{"timestamp":"2026-08-01T12:15:00Z","event":"CarrierJump","StarSystem":"Colonia"}"""),
+            start.AddMinutes(15)
+        );
         Assert.Equal("JUMP COOLDOWN", tracker.Current.Title);
         Assert.Equal("5:00", tracker.Current.Countdown);
         Assert.Equal("CARRIER ARRIVED", tracker.Current.PhaseLabel);

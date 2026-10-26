@@ -28,6 +28,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private double resizeHeight;
     private double minimumResizeWidth;
     private double minimumResizeHeight;
+    private int? viewportWidth;
+    private int? viewportHeight;
 
     /// <summary>Creates the default sample-data preview with shared presentation scaling.</summary>
     public OverlayPositionPreviewWindow()
@@ -251,6 +253,10 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return;
         }
 
+        if (runtimePresentation is IOverlayPanelSizePolicy { AutoWidth: true })
+        {
+            size = null;
+        }
         EditorFolderTab.MaxWidth = size is null
             ? double.PositiveInfinity
             : Math.Max(
@@ -264,6 +270,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         OverlayThemeResources.ApplyPanelSize(runtimePresentation, size);
         PreviewSurface.InvalidateMeasure();
         InvalidateMeasure();
+    }
+
+    /// <summary>Uses the edited game's viewport to bound shared content sizing and scrolling.</summary>
+    internal void ConfigureViewport(int width, int? height = null)
+    {
+        viewportWidth = width;
+        viewportHeight = height;
+        ApplyConfiguredScale();
     }
 
     /// <summary>Applies the live colonization settings to the shared presentation without replacing its sample plan.</summary>
@@ -367,7 +381,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         runtimePresentation = presentation;
-        if (presentation is IOverlayPanelSizePolicy { AutoHeight: true })
+        if (presentation is IOverlayPanelSizePolicy { AutoWidth: true, AutoHeight: true })
+        {
+            PanelResizeThumb.IsVisible = false;
+        }
+        else if (presentation is IOverlayPanelSizePolicy { AutoHeight: true })
         {
             PanelResizeThumb.Cursor = new Cursor(StandardCursorType.SizeWestEast);
             ToolTip.SetTip(PanelResizeThumb, "Drag to change width. Height follows content.");
@@ -438,6 +456,28 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         double scaling = OverlayThemeResources.GetPresentationScaling(this, scaleRenderScaling);
         scaleFactor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
         OverlayThemeResources.ApplyScale(this, scaleIndex, scaling);
+        int width = Math.Min(viewportWidth ?? int.MaxValue, Screens.ScreenFromWindow(this)?.WorkingArea.Width ?? 1920);
+        OverlayThemeResources.ApplyPanelViewportWidth(
+            runtimePresentation,
+            Math.Max(1, width - 16) / Math.Max(0.01, scaling * scaleFactor)
+        );
+        if (runtimePresentation is IOverlayPanelViewportAware panel)
+        {
+            int height = Math.Min(
+                viewportHeight ?? int.MaxValue,
+                Screens.ScreenFromWindow(this)?.WorkingArea.Height ?? 1080
+            );
+            EditorFolderTab.Measure(Size.Infinity);
+            double chrome =
+                EditorFolderTab.DesiredSize.Height
+                + PreviewBody.Padding.Top
+                + PreviewBody.Padding.Bottom
+                + PreviewBody.BorderThickness.Top
+                + PreviewBody.BorderThickness.Bottom
+                + PreviewBody.Margin.Top
+                + PreviewBody.Margin.Bottom;
+            panel.SetAvailableHeight(Math.Max(1, (height - 16) / Math.Max(0.01, scaling * scaleFactor) - chrome));
+        }
     }
 
     /// <summary>Resolves legacy and relative scale settings on the monitor actually rendering this preview.</summary>

@@ -106,6 +106,8 @@ public sealed partial class ColonizationViewModelTests
         var client = new StubRavenColonialClient
         {
             Workspace = new([], [], null, []),
+            LoadPlanningDiscovery = (commander, _) =>
+                Task.FromResult<IReadOnlyList<ColonizationSystemRecord>>(commander == "Test Cmdr" ? [home] : []),
             PlanningSystems = new(StringComparer.OrdinalIgnoreCase)
             {
                 ["Sol"] = home,
@@ -120,6 +122,7 @@ public sealed partial class ColonizationViewModelTests
                     ColonizationShoppingViewModelTests.Quote(1, "steel", 100),
                 ]);
             model.IsEnabled = true;
+            model.SetCommanderProfile("F123", true, "test-key");
             await model.SetCommanderAsync("Test Cmdr");
             model.UpdateSystemContext("Sol", null, 42);
             ColonizationProjectRowViewModel plan = Assert.Single(model.Projects);
@@ -138,6 +141,7 @@ public sealed partial class ColonizationViewModelTests
         }
         using ColonizationViewModel reopened = Create(client);
         reopened.IsEnabled = true;
+        reopened.SetCommanderProfile("F123", true, "test-key");
         await reopened.SetCommanderAsync("Test Cmdr");
         ColonizationProjectRowViewModel restored = Assert.Single(reopened.Projects);
         Assert.True(restored.IsShoppingSelected);

@@ -433,7 +433,7 @@
                         </Grid>
                       </DataTemplate></ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <CheckBox Content="Stop sessions automatically after FSD jump or docking" IsChecked="{Binding Settings.AutoStopAfterTravel}"/>
+                    <CheckBox Content="Pause sessions in supercruise; end after hyperspace arrival or docking" IsChecked="{Binding Settings.AutoStopAfterTravel}"/>
                     <CheckBox Content="Start a session when a prospector limpet launches" IsChecked="{Binding Settings.AutoStart}"/>
                     <CheckBox Content="Switch to Session on prospecting and Hotspots on completion" IsChecked="{Binding Settings.AutoSwitchTabs}"/>
                     <CheckBox Content="Refresh hotspot search after jumps and scans" IsChecked="{Binding Settings.AutoSearch}"/>

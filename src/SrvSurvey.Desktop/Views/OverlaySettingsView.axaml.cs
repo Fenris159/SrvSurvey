@@ -59,6 +59,7 @@ public sealed partial class OverlaySettingsView : UserControl
         HumanSettlementCard.IsVisible = category == OverlaySettingsCategory.Quests;
         HumanTemplateAuthoringExpander.IsVisible = category == OverlaySettingsCategory.Quests;
         JumpInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;
+        CarrierNextJumpCard.IsVisible = category == OverlaySettingsCategory.Travel;
         ColonizationShoppingCard.IsVisible = category == OverlaySettingsCategory.Colonization;
         CollapseCoveredGroupsShortcutRow.IsVisible = category == OverlaySettingsCategory.Colonization;
 

@@ -232,7 +232,7 @@ public sealed partial class ColonizationViewModelTests
         ) = await StartDelayedPlanningPublicationAsync();
         using (model)
         {
-            client.DiscoveredPlanningSystems = [server with { Revision = 1 }];
+            client.DiscoveredPlanningSystems = [server with { Revision = 1 }, client.PlanningSystems!["Achenar"]];
             var systemEntered = new TaskCompletionSource();
             var systemResponse = new TaskCompletionSource<ColonizationSystemRecord>();
             var waiting = new TaskCompletionSource();
@@ -253,7 +253,7 @@ public sealed partial class ColonizationViewModelTests
             await publish.WaitAsync(TimeSpan.FromSeconds(5));
             systemResponse.SetException(new HttpRequestException("offline system"));
             await waiting.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            finish.SetResult(client.PlanningSystems!["Achenar"]);
+            finish.SetResult(client.PlanningSystems["Achenar"]);
             await refresh.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.DoesNotContain(model.Projects, row => row.Project.IsPlanned);
         }

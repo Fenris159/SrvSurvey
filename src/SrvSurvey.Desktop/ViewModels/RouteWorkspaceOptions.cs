@@ -1,5 +1,8 @@
 using SrvSurvey.Core.Frontier;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Routes;
+using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -10,5 +13,12 @@ public sealed record RouteWorkspaceOptions(
     ISpanshPlannerClient? PlannerClient = null,
     CurrentShipExportViewModel? CurrentShip = null,
     Func<FrontierAccountSnapshot?>? CarrierSnapshotSource = null,
-    Func<Task>? RefreshCarrierSnapshot = null
+    Func<Task>? RefreshCarrierSnapshot = null,
+    CarrierNextJumpDependencies? CarrierNextJump = null
+);
+
+public sealed record CarrierNextJumpDependencies(
+    ISystemSummaryClient SummaryClient,
+    CarrierNextJumpSettingsStore SettingsStore,
+    IStarSystemResolver? Resolver = null
 );

@@ -193,6 +193,118 @@ public sealed class SpanshSearchPresentationTests
         }
     }
 
+    /// <summary>Reopening the actual search window refreshes retained fields and follows a newly selected ship.</summary>
+    [AvaloniaTheory]
+    [InlineData("73.456789", "73.456789")]
+    [InlineData("8.25", null)]
+    [InlineData("105.5", null)]
+    public async Task ReopeningSearchRefreshesAllPlannerRangesFromTheCurrentShip(
+        string reportedRange,
+        string? expectedRange
+    )
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Spansh-Range-" + Guid.NewGuid().ToString("N"));
+        var ship = new CurrentShipExportViewModel();
+        var client = new Client();
+        var route = new RouteWorkspaceViewModel(
+            new FollowRouteService(new FollowRouteStore(directory)),
+            new RouteNameImporter(new Resolver()),
+            client,
+            plannerClient: client,
+            currentShip: ship
+        );
+        var window = new RouteWindow(route);
+        try
+        {
+            ship.Update(ShipSession("sidewinder", 1, reportedRange), null, false);
+            await route.UpdateContextAsync("F1", "Sol", 100, new(0, 0, 0));
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Button launcher = window
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Spansh Search"));
+            launcher.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            SpanshSearchWindow dialog = Assert.Single(window.OwnedWindows.OfType<SpanshSearchWindow>());
+            SpanshSearchViewModel search = route.SpanshSearch!;
+            foreach (
+                SpanshPlannerDefinition planner in search.Planners.Where(planner =>
+                    planner.Fields.Any(field => field.Key == "range")
+                )
+            )
+            {
+                search.SelectedPlanner = planner;
+                using WriteableBitmap? plannerFrame = dialog.CaptureRenderedFrame();
+                NumericUpDown range = dialog
+                    .GetVisualDescendants()
+                    .OfType<NumericUpDown>()
+                    .Single(control => control.DataContext is SpanshPlannerFieldViewModel { Definition.Key: "range" });
+                SpanshPlannerFieldViewModel field = search.Fields.Single(field => field.Definition.Key == "range");
+                Assert.Equal(expectedRange ?? string.Empty, field.Value);
+                Assert.Equal(field.Number, range.Value);
+                range.Value = 35m;
+                Assert.Equal(35m, field.Number);
+            }
+            dialog.Close();
+            launcher.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            dialog = Assert.Single(window.OwnedWindows.OfType<SpanshSearchWindow>());
+            foreach (
+                SpanshPlannerDefinition planner in search.Planners.Where(planner =>
+                    planner.Fields.Any(field => field.Key == "range")
+                )
+            )
+            {
+                search.SelectedPlanner = planner;
+                Assert.Equal(
+                    expectedRange ?? string.Empty,
+                    search.Fields.Single(field => field.Definition.Key == "range").Value
+                );
+            }
+            dialog.Close();
+            ship.Update(ShipSession("python", 2, "48.125"), null, false);
+            launcher.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            dialog = Assert.Single(window.OwnedWindows.OfType<SpanshSearchWindow>());
+            using WriteableBitmap? reopenedFrame = dialog.CaptureRenderedFrame();
+            Assert.Equal(48.125m, search.Fields.Single(field => field.Definition.Key == "range").Number);
+            Assert.Equal(
+                48.125m,
+                dialog
+                    .GetVisualDescendants()
+                    .OfType<NumericUpDown>()
+                    .Single(control => control.DataContext is SpanshPlannerFieldViewModel { Definition.Key: "range" })
+                    .Value
+            );
+        }
+        finally
+        {
+            window.Close();
+            route.SpanshSearch!.Dispose();
+            await route.FlushWorkspaceAsync();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    /// <summary>Creates a selected ship with a journal-reported maximum range.</summary>
+    private static JournalSessionState ShipSession(string ship, int id, string range)
+    {
+        var session = new JournalSessionState();
+        foreach (
+            string json in new[]
+            {
+                $$"""{"event":"LoadGame","FID":"F1","Ship":"{{ship}}","ShipID":{{id}}}""",
+                $$"""{"event":"Loadout","Ship":"{{ship}}","ShipID":{{id}},"MaxJumpRange":{{range}},"Modules":[{"Slot":"FrameShiftDrive","Item":"Int_Hyperdrive_Size2_Class5"}]}""",
+            }
+        )
+        {
+            Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);
+            session.Apply(entry!);
+        }
+        return session;
+    }
+
     /// <summary>
     /// Checks that design window and close and cancel controls are usable.
     /// </summary>

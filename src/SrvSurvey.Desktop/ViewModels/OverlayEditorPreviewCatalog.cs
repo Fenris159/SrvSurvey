@@ -61,7 +61,8 @@ internal static class OverlayEditorPreviewCatalog
         ["PlotFleetCarrierRoute"] = CreatePreviewStates(
             ("cooldown", "Jump cooldown"),
             ("scheduled", "Jump scheduled"),
-            ("route-only", "Route only")
+            ("route-only", "Route only"),
+            ("passive", "Carrier next jump")
         ),
         ["PlotPulse"] = CreatePreviewStates(
             ("cooling", "SCO cooling"),
@@ -838,6 +839,7 @@ internal static class OverlayEditorPreviewCatalog
         {
             "scheduled" => FleetCarrierRouteEditorPreviewState.Scheduled,
             "route-only" => FleetCarrierRouteEditorPreviewState.RouteOnly,
+            "passive" => FleetCarrierRouteEditorPreviewState.Passive,
             _ => FleetCarrierRouteEditorPreviewState.Cooldown,
         };
 

@@ -9,6 +9,172 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MiningWorkspaceViewModelTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task MonitoredCompletedJumpEndsTheSessionAcrossJournalLocations(bool configured, bool replayedFirst)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            var clock = new Clock();
+            using var workspace = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory),
+                clock: clock
+            );
+            string journalDirectory = Path.Combine(
+                directory,
+                configured ? "custom-journals" : "Saved Games/Frontier Developments/Elite Dangerous"
+            );
+            Directory.CreateDirectory(journalDirectory);
+            string journal = Path.Combine(journalDirectory, "Journal.2026-09-06T120000.01.log");
+            await File.WriteAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","FID":"F1","Commander":"Test","Ship":"Python"}"""
+                    + "\n"
+            );
+            IReadOnlyList<string> folders = [Path.Combine(directory, "other-provider"), journalDirectory];
+            if (configured)
+            {
+                var settings = new JournalSettingsStore(Path.Combine(directory, "ui.json"));
+                settings.Save(new(journalDirectory));
+                folders = settings.Load().Directories;
+            }
+            var monitor = new JournalDirectoryMonitor(folders, "F1");
+            var context = new JournalSessionState();
+            var status = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Apply(JournalMonitorUpdate update)
+            {
+                foreach (JournalEventEnvelope entry in update.JournalEvents)
+                {
+                    context.Apply(entry);
+                }
+                workspace.Apply(update, context, null, status);
+            }
+            Apply(await monitor.PollAsync());
+            workspace.StartCommand.Execute(null);
+            Assert.NotNull(workspace.Current);
+            clock.Now = clock.Now.AddMinutes(1);
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:00:30Z","event":"SupercruiseEntry","StarSystem":"Sol"}""" + "\n"
+            );
+            JournalMonitorUpdate cruise = await monitor.PollAsync();
+            if (replayedFirst)
+            {
+                Apply(cruise with { IsBootstrapRead = true });
+                Assert.Null(workspace.Current.PausedAt);
+            }
+            Guid sessionId = workspace.Current.Id;
+            using var overlay = new MiningSessionOverlayViewModel(workspace);
+            Apply(cruise);
+            Assert.NotNull(workspace.Current.PausedAt);
+            Assert.Equal("Paused", overlay.State);
+            Assert.True(workspace.ShouldShowSession);
+            Assert.Empty(workspace.History);
+            Assert.NotNull(new MiningStore(directory).Load("F1").Current!.PausedAt);
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:00:45Z","event":"MiningRefined","Type":"platinum"}""" + "\n"
+            );
+            Apply(await monitor.PollAsync());
+            Assert.Equal(sessionId, workspace.Current.Id);
+            Assert.Null(workspace.Current.PausedAt);
+            Assert.Equal("Active", overlay.State);
+            Assert.Equal(TimeSpan.FromSeconds(15), workspace.Current.PausedDuration);
+            Assert.Equal(1, workspace.Current.RefinedTons);
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:01:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Beta"}"""
+                    + "\n"
+            );
+            Apply(await monitor.PollAsync());
+            Assert.NotNull(workspace.Current);
+            clock.Now = clock.Now.AddMinutes(1);
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:02:00Z","event":"FSDJump","StarSystem":"Beta","SystemAddress":2,"StarPos":[1,2,3]}"""
+                    + "\n"
+            );
+            JournalMonitorUpdate completed = await monitor.PollAsync();
+            Assert.False(completed.IsBootstrapRead);
+            Assert.Contains(completed.JournalEvents, entry => entry.EventName == "FSDJump");
+            if (replayedFirst)
+            {
+                Apply(completed with { IsBootstrapRead = true });
+                Assert.NotNull(workspace.Current);
+            }
+            Apply(completed);
+            Assert.Null(workspace.Current);
+            Assert.Equal(clock.Now, Assert.Single(workspace.History).Ended);
+            Assert.Equal(TimeSpan.FromSeconds(105), workspace.History[0].ActiveDuration);
+            Assert.Null(new MiningStore(directory).Load("F1").Current);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ConfirmedFsdArrivalEndsSessionButStartingAndCancellingAJumpDoesNot()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            var clock = new Clock();
+            using var workspace = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory),
+                clock: clock
+            );
+            var context = new JournalSessionState();
+            var status = new EliteStatus { Flags = StatusFlags.InMainShip };
+            void Feed(string json, bool bootstrap = false)
+            {
+                System.Text.Json.Nodes.JsonNode node = System.Text.Json.Nodes.JsonNode.Parse(json)!;
+                node["timestamp"] = clock.Now.ToString("O");
+                JournalEventEnvelope entry = FiregroupsWorkspaceViewModelTests.Event(node.ToJsonString());
+                context.Apply(entry);
+                workspace.Apply(new(null, [entry], status, null, null, null, [], bootstrap), context, null, status);
+            }
+            Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"Python"}""", true);
+            workspace.StartCommand.Execute(null);
+            Assert.NotNull(workspace.Current);
+            clock.Now = clock.Now.AddMinutes(1);
+            status = new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.FsdCharging };
+            Feed("""{"event":"FSDTarget","Name":"Beta","SystemAddress":2,"StarClass":"K"}""");
+            status = new EliteStatus { Flags = StatusFlags.InMainShip };
+            Feed("""{"event":"FSDTarget","Name":"Gamma","SystemAddress":3,"StarClass":"N"}""");
+            Assert.NotNull(workspace.Current);
+            Feed("""{"event":"StartJump","JumpType":"Supercruise","StarSystem":"Sol"}""");
+            Assert.Null(workspace.Current.PausedAt);
+            clock.Now = clock.Now.AddMinutes(1);
+            Feed("""{"event":"StartJump","JumpType":"Hyperspace","StarSystem":"Beta"}""");
+            Assert.NotNull(workspace.Current);
+            clock.Now = clock.Now.AddSeconds(20);
+            Feed("""{"event":"FSDJump","StarSystem":"Beta","SystemAddress":2,"StarPos":[1,2,3]}""");
+            Assert.Null(workspace.Current);
+            Assert.Equal(clock.Now, Assert.Single(workspace.History).Ended);
+            Assert.Null(new MiningStore(directory).Load("F1").Current);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
     [Fact]
     public void SessionOverviewShowsLiveProspectingTotalsAndClearsThemWhenTheSessionEnds()
     {

@@ -609,6 +609,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "146 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "170 m | TRACKED",
     "IsFormat": false,
     "SourceKinds": [
@@ -881,6 +889,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "239 t",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "284 m",
     "IsFormat": false,
     "SourceKinds": [
@@ -1095,6 +1111,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
+    "Text": "499.76 LY JUMP (EST.)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "499.76 LY JUMP \u2022 21,502.09 LY REMAINING",
@@ -2786,6 +2810,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "AWAITING ARRIVAL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+  },
+  {
     "Text": "Aa",
     "IsFormat": false,
     "SourceKinds": [
@@ -3673,6 +3705,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "After jump (est.)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "Aggregate completion",
@@ -8366,6 +8406,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8652,6 +8700,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+  },
+  {
+    "Text": "CANCELLED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "CANONN PRIOR SCANS",
@@ -9063,6 +9119,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/StationInfoOverlayPresentation.axaml"
+  },
+  {
+    "Text": "COOLDOWN",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "CORE",
@@ -10123,6 +10187,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
+    "Text": "Carrier next jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Carrier next-jump setting could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierNextJump.cs"
+  },
+  {
     "Text": "Carrier operations and cargo",
     "IsFormat": false,
     "SourceKinds": [
@@ -10193,6 +10273,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "CarrierNextJump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CarrierNextJumpSettingsStore.cs"
   },
   {
     "Text": "CarrierRefreshAttempts",
@@ -21474,13 +21562,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
+    "Text": "FLEET CARRIER NEXT JUMP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
     "Text": "FLEET CARRIER ROUTE",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "FLEET VALUE",
@@ -23780,9 +23875,17 @@
     "Text": "Fuel left",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "Fuel left (est.)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "Fuel-scoop stop",
@@ -27368,6 +27471,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "IN TRANSIT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
     "Text": "INACTIVE",
     "IsFormat": false,
     "SourceKinds": [
@@ -28236,6 +28347,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "In depot now",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+  },
+  {
     "Text": "In flight",
     "IsFormat": false,
     "SourceKinds": [
@@ -28922,7 +29041,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "JUMP IN PROGRESS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "JUMP INITIATION IN",
@@ -29346,9 +29473,17 @@
     "Text": "Jump fuel",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "Jump fuel (est.)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -30002,22 +30137,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "LOCKED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "LOCKING",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
     "Text": "LONGITUDE",
     "IsFormat": false,
     "SourceKinds": [
@@ -30032,6 +30151,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "LOW TRITIUM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "LOWEST MASS CODE",
@@ -31726,12 +31853,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
+    "Text": "Local project tracking could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.LocalProjects.cs"
+  },
+  {
     "Text": "Local ring discoveries",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Local system projects could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.SystemPlanning.cs"
   },
   {
     "Text": "Local voices loaded from {0}.",
@@ -41208,6 +41351,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Paused",
     "IsFormat": false,
     "SourceKinds": [
@@ -44430,9 +44581,9 @@
     "Text": "RESTOCK REQUIRED",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "RESTOCK?",
@@ -49827,6 +49978,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
+    "Text": "SCHEDULED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
     "Text": "SCO",
     "IsFormat": false,
     "SourceKinds": [
@@ -53997,6 +54156,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
+    "Text": "Show Carrier Next-Jump Information",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show Fleet Carrier aggregate counts",
     "IsFormat": false,
     "SourceKinds": [
@@ -54035,6 +54202,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
+  },
+  {
+    "Text": "Show Unaffiliated Projects in Current System",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Show aiming guidance to bio signals from Canonn",
@@ -54461,6 +54636,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show short supply",
     "IsFormat": false,
     "SourceKinds": [
@@ -54707,6 +54890,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/FiregroupsOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "ShowInformation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CarrierNextJumpSettingsStore.cs"
   },
   {
     "Text": "ShowMapLegend",
@@ -57603,14 +57794,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "Stop sessions automatically after FSD jump or docking",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "Stopping after the current journal operation...",
     "IsFormat": false,
     "SourceKinds": [
@@ -59022,7 +59205,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "SystemControlBackgroundChromeMediumLowBrush",
@@ -59039,6 +59222,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+  },
+  {
+    "Text": "SystemID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "SystemMap",
@@ -65472,6 +65663,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/HumanSiteSettingsStore.cs"
   },
   {
+    "Text": "Tracked local projects could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.LocalProjects.cs"
+  },
+  {
     "Text": "Tracked locations",
     "IsFormat": false,
     "SourceKinds": [
@@ -66175,6 +66374,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+  },
+  {
+    "Text": "Unaffiliated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Unassigned",
@@ -70607,6 +70814,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MineMapZoomOverlayPresentation.axaml"
+  },
+  {
+    "Text": "[ ICY BODY ]",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
   },
   {
     "Text": "[Control] PlatformImpl is null, couldn\u0027t handle input. (PresentationSource #",
@@ -75177,6 +75392,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "passive",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "path:{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -77866,7 +78089,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
-    "Text": "{0} LY JUMP \u2022 {1} LY REMAINING",
+    "Text": "{0} LY JUMP",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "{0} LY JUMP (EST.)",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "{0} LY REMAINING",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

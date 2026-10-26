@@ -88,7 +88,8 @@ internal sealed class HostedOverlayPlacement
             overlayLayout,
             definition.PlotterName,
             Screen.Scaling,
-            viewport.Height
+            viewport.Height,
+            viewport.Width
         );
     }
 

@@ -8,6 +8,10 @@ namespace SrvSurvey.Core.Routes;
 /// <summary>Records observations cheaply; reconstructs one selected carrier only when fuel inputs are requested.</summary>
 public sealed class FleetCarrierFuelJournal
 {
+    private const string CarrierIdField = "CarrierID";
+    private const string MarketIdField = "MarketID";
+    private const string StarSystemField = "StarSystem";
+
     private readonly List<JournalEventEnvelope> events = [];
     private readonly HashSet<string> seen = new(StringComparer.Ordinal);
 
@@ -95,7 +99,7 @@ public sealed class FleetCarrierFuelJournal
                 && type.GetString() == "SquadronCarrier";
             if (
                 squadron != (kind == FollowRouteCarrierKind.Squadron)
-                || !data.TryGetProperty("CarrierID", out JsonElement id)
+                || !data.TryGetProperty(CarrierIdField, out JsonElement id)
                 || id.ValueKind != JsonValueKind.Number
                 || !id.TryGetInt64(out long number)
                 || !data.TryGetProperty("Callsign", out JsonElement callsign)
@@ -124,6 +128,8 @@ public sealed class FleetCarrierFuelJournal
             is "CarrierStats"
                 or "CarrierDepositFuel"
                 or "CarrierJump"
+                or "CarrierJumpRequest"
+                or "CarrierJumpCancelled"
                 or "CarrierLocation"
                 or "Docked"
                 or "Location"
@@ -142,6 +148,7 @@ public sealed class FleetCarrierFuelJournal
         private DateTimeOffset capacityAt = initial.ObservedAt;
         private DateTimeOffset locationAt = initial.ObservedAt;
         private long? dockedCarrier;
+        private (string Destination, DateTimeOffset Departure)? pendingJump;
         public FleetCarrierFuelSnapshot Current { get; private set; } = initial;
 
         public void Apply(JournalEventEnvelope entry)
@@ -153,7 +160,7 @@ public sealed class FleetCarrierFuelJournal
                 case "Docked":
                 case "Location":
                     dockedCarrier = Text(data, "StationType") is "FleetCarrier" or "SquadronCarrier"
-                        ? Id(data, "MarketID")
+                        ? Id(data, MarketIdField)
                         : null;
                     break;
                 case "Undocked":
@@ -165,8 +172,21 @@ public sealed class FleetCarrierFuelJournal
                 case "CarrierDepositFuel" when Matches(data):
                     SetFuel(Number(data, "Total"), at);
                     break;
-                case "CarrierJump" when Matches(data):
+                case "CarrierJumpRequest" when Matches(data):
+                    pendingJump =
+                        Text(data, "SystemName") is { Length: > 0 } destination
+                        && data.TryGetProperty("DepartureTime", out JsonElement departure)
+                        && departure.ValueKind == JsonValueKind.String
+                        && departure.TryGetDateTimeOffset(out DateTimeOffset departureTime)
+                            ? (destination, departureTime)
+                            : null;
+                    break;
+                case "CarrierJumpCancelled" when Matches(data):
+                    pendingJump = null;
+                    break;
+                case "CarrierJump" when Matches(data) || MatchesRequestedJump(data, at):
                     ApplyJump(data, at);
+                    pendingJump = null;
                     break;
                 case "CarrierLocation" when Matches(data):
                     ApplyLocation(data, at);
@@ -184,10 +204,21 @@ public sealed class FleetCarrierFuelJournal
         }
 
         private bool Matches(JsonElement data) =>
-            Current.CarrierId is { } id && (Id(data, "CarrierID") ?? Id(data, "MarketID")) == id;
+            Current.CarrierId is { } id && (Id(data, CarrierIdField) ?? Id(data, MarketIdField)) == id;
+
+        private bool MatchesRequestedJump(JsonElement data, DateTimeOffset at) =>
+            Id(data, CarrierIdField) is null
+            && Id(data, MarketIdField) is null
+            && MatchesRequestedDestination(data, at);
+
+        private bool MatchesRequestedDestination(JsonElement data, DateTimeOffset at) =>
+            pendingJump is { } request
+            && at >= request.Departure
+            && at <= request.Departure.AddMinutes(5)
+            && string.Equals(Text(data, StarSystemField), request.Destination, StringComparison.OrdinalIgnoreCase);
 
         private bool MatchesMarket(JsonElement data) =>
-            Current.CarrierId is { } id && (Id(data, "MarketID") ?? dockedCarrier) == id;
+            Current.CarrierId is { } id && (Id(data, MarketIdField) ?? dockedCarrier) == id;
 
         private bool MatchesStats(JsonElement data)
         {
@@ -198,7 +229,7 @@ public sealed class FleetCarrierFuelJournal
             {
                 return false;
             }
-            Current = Current with { CarrierId = Id(data, "CarrierID") ?? Current.CarrierId };
+            Current = Current with { CarrierId = Id(data, CarrierIdField) ?? Current.CarrierId };
             return true;
         }
 
@@ -246,7 +277,13 @@ public sealed class FleetCarrierFuelJournal
                 return;
             }
             GalacticCoordinate? position =
-                ReadPosition(data) ?? FindPosition(hops, Text(data, "StarSystem") ?? string.Empty);
+                ReadPosition(data)
+                ?? FindPosition(hops, Text(data, StarSystemField) ?? string.Empty)
+                ?? (
+                    string.Equals(Text(data, StarSystemField), Current.SystemName, StringComparison.OrdinalIgnoreCase)
+                        ? Current.Position
+                        : null
+                );
             if (at > fuelAt)
             {
                 double? tank =
@@ -261,7 +298,7 @@ public sealed class FleetCarrierFuelJournal
             Current = Current with
             {
                 Position = position,
-                SystemName = Text(data, "StarSystem") ?? Current.SystemName,
+                SystemName = Text(data, StarSystemField) ?? Current.SystemName,
                 ObservedAt = at,
             };
             locationAt = at;
@@ -269,13 +306,24 @@ public sealed class FleetCarrierFuelJournal
 
         private void ApplyLocation(JsonElement data, DateTimeOffset at)
         {
-            if (at < locationAt || Text(data, "StarSystem") is not { } system || system == Current.SystemName)
+            bool completesRequest = MatchesRequestedDestination(data, at);
+            if (completesRequest)
+            {
+                // Consume historical arrivals even when newer CAPI fuel wins.
+                pendingJump = null;
+            }
+            if (at < locationAt || Text(data, StarSystemField) is not { } system)
+            {
+                return;
+            }
+            if (string.Equals(system, Current.SystemName, StringComparison.OrdinalIgnoreCase) && !completesRequest)
             {
                 return;
             }
             if (!string.IsNullOrEmpty(Current.SystemName))
             {
                 ApplyJump(data, at);
+                pendingJump = null;
                 return;
             }
             // The login location establishes an origin; it is not evidence of a jump after CarrierStats.

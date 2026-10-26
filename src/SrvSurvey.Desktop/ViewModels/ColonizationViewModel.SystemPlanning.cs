@@ -16,6 +16,15 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
+        projectScope.EnterSystem(recovery.CurrentSystemName);
+        if (
+            !ShowUnaffiliatedProjectsInCurrentSystem
+            && !projectScope.AffiliatedSystems.Contains(recovery.CurrentSystemName)
+            && !plannedSystems.ContainsKey(recovery.CurrentSystemName)
+        )
+        {
+            return;
+        }
         if (IsBusy)
         {
             // Preserve the full refresh's ownership and coalesce travel into one destination read.
@@ -42,17 +51,39 @@ public sealed partial class ColonizationViewModel
             }
             token.ThrowIfCancellationRequested();
             plannedReadWarning = warning;
+            if (warning is not null)
+            {
+                StatusMessage = warning;
+            }
             if (snapshot is not null)
             {
-                UpdatePlannedSystem(ResolvePlanningSnapshot(KeepNewestPlanningSnapshot(snapshot)));
+                if (IsAffiliatedPlanningSystem(snapshot))
+                {
+                    UpdatePlannedSystem(ResolvePlanningSnapshot(KeepNewestPlanningSnapshot(snapshot)));
+                }
+                if (ShowUnaffiliatedProjectsInCurrentSystem)
+                {
+                    await LoadLocalSystemProjectsAsync(snapshot, token);
+                    token.ThrowIfCancellationRequested();
+                }
                 SavePlannedSystems();
                 RebuildProjectRows();
+                SelectLocalProjectSystem();
+                SaveLocalProjects();
                 UpdateProjectSummary();
             }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             // A newer system or session owns planning updates now.
+        }
+        catch (Exception exception)
+            when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
+        {
+            if (IsCurrentPlannedRead(readVersion, profileVersion))
+            {
+                StatusMessage = "Local system projects could not be refreshed: " + exception.Message;
+            }
         }
     }
 

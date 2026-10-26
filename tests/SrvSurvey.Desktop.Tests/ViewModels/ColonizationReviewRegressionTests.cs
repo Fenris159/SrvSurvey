@@ -227,10 +227,11 @@ public sealed partial class ColonizationViewModelTests
     private static StubRavenColonialClient ReviewPlanningClient()
     {
         StubRavenColonialClient client = FocusClient();
+        client.DiscoveredPlanningSystems = client.PlanningSystems!.Values.ToArray();
         client.LoadPlanningSystem = (identifier, _) =>
             Task.FromResult(
-                client.PlanningSystems!.GetValueOrDefault(identifier)
-                    ?? client.PlanningSystems!.Values.Single(system =>
+                client.PlanningSystems.GetValueOrDefault(identifier)
+                    ?? client.PlanningSystems.Values.Single(system =>
                         system.SystemAddress.ToString(CultureInfo.InvariantCulture) == identifier
                     )
             );

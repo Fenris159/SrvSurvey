@@ -233,6 +233,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
+            preview.ConfigureViewport(hostBounds.Width, hostBounds.Height);
             preview.ConfigureTypography(session.GetTypographyScale(definition.Name));
             preview.ConfigureSize(session.GetSizeOverride(definition.Name));
             PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);

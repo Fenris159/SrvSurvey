@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
@@ -17,6 +19,60 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MissionOverlaySizingTests
 {
+    /// <summary>Wide viewports keep the presentation cap, and narrowing then widening restores it.</summary>
+    [AvaloniaTheory]
+    [InlineData("PlotMiningMissions")]
+    [InlineData("PlotMassacre")]
+    public void MissionPanelsRetainTheirNaturalWidthCapAcrossViewportChanges(string plotter)
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(1);
+        fixture.AddLongMission(string.Join(" ", Enumerable.Repeat("Independent Outer Colonies Cooperative", 20)));
+        Window window = fixture.Window;
+        LegacyOverlayLayout layout = CreateLayout(plotter, OverlayGrowthDirection.Left);
+        OverlayThemeResources.Apply(window, layout, plotter, new OverlayWindowRegistry());
+        window.Show();
+        foreach ((int viewport, double maximum) in new[] { (3840, 1000d), (320, 304d), (3840, 1000d) })
+        {
+            OverlayWindowMetrics.PrepareForPlacement(window, layout, plotter, 1, 2160, viewport);
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Control panel = Assert.IsType<Control>(
+                OverlayThemeResources.GetPresentationRoot(window),
+                exactMatch: false
+            );
+            Assert.Equal(maximum, panel.MaxWidth);
+            Assert.InRange(panel.Bounds.Width, 1, maximum);
+            if (viewport == 3840)
+            {
+                Assert.True(panel.Bounds.Width > 950);
+            }
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PlotMiningMissions")]
+    [InlineData("PlotMassacre")]
+    public void EditorConstrainsMissionHeightToItsScaledGameViewport(string plotter)
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(20);
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotter));
+        try
+        {
+            (preview.RuntimePresentation!.DataContext as IDisposable)?.Dispose();
+            preview.RuntimePresentation.DataContext = fixture.Window.DataContext;
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(50), null, 1);
+            preview.ConfigureViewport(480, 480);
+            preview.Show();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Assert.InRange(preview.RuntimePresentation.Bounds.Height * 1.5, 100, 464);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData("PlotMiningMissions", OverlayGrowthDirection.Left)]
     [InlineData("PlotMiningMissions", OverlayGrowthDirection.Right)]
@@ -52,6 +108,7 @@ public sealed class MissionOverlaySizingTests
         layout.SetPlacement(plotter, layout.Placements[plotter] with { SizeOverride = new(440, 900) });
         Settle(fixture.Window, host);
         PixelSize wider = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.Equal(expanded.Width, wider.Width);
         Assert.Equal(edge, fixture.Window.Position.X + (direction == OverlayGrowthDirection.Left ? wider.Width : 0));
 
         fixture.SetMissionCount(1);
@@ -62,6 +119,115 @@ public sealed class MissionOverlaySizingTests
         layout.SetPlacement(plotter, layout.Placements[plotter] with { SizeOverride = new(360, 900) });
         Settle(fixture.Window, host);
         Assert.Equal(initial, OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter)));
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PlotMiningMissions", OverlayGrowthDirection.Left)]
+    [InlineData("PlotMiningMissions", OverlayGrowthDirection.Right)]
+    [InlineData("PlotMiningMissions", OverlayGrowthDirection.Automatic)]
+    [InlineData("PlotMassacre", OverlayGrowthDirection.Left)]
+    [InlineData("PlotMassacre", OverlayGrowthDirection.Right)]
+    [InlineData("PlotMassacre", OverlayGrowthDirection.Automatic)]
+    public void MissionTextExpandsAndContractsWidthWithoutMovingTheGrowthEdge(
+        string plotter,
+        OverlayGrowthDirection direction
+    )
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(1);
+        LegacyOverlayLayout layout = CreateLayout(plotter, direction);
+        using var host = new HostedOverlayTestHarness(new OverlayWindowRegistry(), overlayLayout: layout);
+        host.GameWindow = host.GameWindow with { ClientBounds = new PixelRect(0, 0, 1280, 720) };
+        using HostedOverlayWindow hosted = host.Session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                plotter,
+                _ => fixture.Window,
+                (bounds, size) => OverlayWindowPlacement.MiddleLeft(bounds, size)
+            )
+        );
+        hosted.Reconcile(true);
+        Settle(fixture.Window, host);
+        PixelSize initial = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        int edge = fixture.Window.Position.X + (direction == OverlayGrowthDirection.Left ? initial.Width : 0);
+
+        fixture.AddLongMission("Independent Industrial Workers of the Outer Colonies Cooperative");
+        Settle(fixture.Window, host);
+        PixelSize expanded = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.True(expanded.Width > initial.Width + 100, $"{initial} -> {expanded}");
+        Assert.Equal(edge, fixture.Window.Position.X + (direction == OverlayGrowthDirection.Left ? expanded.Width : 0));
+
+        fixture.SetMissionCount(1);
+        Settle(fixture.Window, host);
+        PixelSize contracted = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.Equal(initial, contracted);
+        Assert.Equal(
+            edge,
+            fixture.Window.Position.X + (direction == OverlayGrowthDirection.Left ? contracted.Width : 0)
+        );
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PlotMiningMissions")]
+    [InlineData("PlotMassacre")]
+    public void EditorMatchesContentWidthAndIgnoresOldFixedSizes(string plotter)
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(1);
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotter));
+        try
+        {
+            if (preview.RuntimePresentation!.DataContext is IDisposable sample)
+            {
+                sample.Dispose();
+            }
+            preview.RuntimePresentation.DataContext = fixture.Window.DataContext;
+            OverlayThemeResources.Apply(preview);
+            OverlayThemeResources.Apply(
+                fixture.Window,
+                CreateLayout(plotter, OverlayGrowthDirection.Left),
+                plotter,
+                new()
+            );
+            preview.ConfigureSize(new(900, 900));
+            preview.Show();
+            fixture.Window.Show();
+            using WriteableBitmap? initialFrame = preview.CaptureRenderedFrame();
+            using WriteableBitmap? liveFrame = fixture.Window.CaptureRenderedFrame();
+            double initial = preview.RuntimePresentation.Bounds.Width;
+            Assert.Equal(
+                OverlayThemeResources.GetPresentationRoot(fixture.Window)!.Bounds.Width,
+                initial,
+                precision: 1
+            );
+            Assert.False(preview.FindControl<Thumb>("PanelResizeThumb")!.IsVisible);
+            fixture.AddLongMission("Independent Industrial Workers of the Outer Colonies Cooperative");
+            using WriteableBitmap? expandedFrame = preview.CaptureRenderedFrame();
+            using WriteableBitmap? expandedLive = fixture.Window.CaptureRenderedFrame();
+            Assert.True(preview.RuntimePresentation.Bounds.Width > initial + 100);
+            Assert.Equal(
+                OverlayThemeResources.GetPresentationRoot(fixture.Window)!.Bounds.Width,
+                preview.RuntimePresentation.Bounds.Width,
+                precision: 1
+            );
+            expandedFrame!.Save(
+                Path.Combine(Path.GetTempPath(), $"srvsurvey-{plotter}-content-width.png"),
+                PngBitmapEncoderOptions.Default
+            );
+            double expandedHeight = preview.RuntimePresentation.Bounds.Height;
+            preview.ConfigureViewport(320);
+            using WriteableBitmap? wrapped = preview.CaptureRenderedFrame();
+            Assert.InRange(preview.RuntimePresentation.Bounds.Width, initial, 304);
+            Assert.True(preview.RuntimePresentation.Bounds.Height > expandedHeight);
+            preview.ConfigureViewport(1280);
+            fixture.SetMissionCount(1);
+            preview.ConfigureSize(new(80, 900));
+            using WriteableBitmap? contracted = preview.CaptureRenderedFrame();
+            Assert.Equal(initial, preview.RuntimePresentation.Bounds.Width);
+        }
+        finally
+        {
+            preview.Close();
+        }
     }
 
     [AvaloniaTheory]
@@ -82,6 +248,7 @@ public sealed class MissionOverlaySizingTests
     {
         using var fixture = new MissionFixture(plotter);
         fixture.SetMissionCount(20);
+        fixture.AddLongMission(string.Join(" ", Enumerable.Repeat("Independent Outer Colonies Cooperative", 20)));
         Window window = fixture.Window;
         var host = new CombinedOverlayWindow { Width = 1280 / scaling, Height = 720 / scaling };
         LegacyOverlayLayout layout = CreateLayout(plotter, OverlayGrowthDirection.Automatic, percent);
@@ -103,14 +270,19 @@ public sealed class MissionOverlaySizingTests
                 host.Show();
                 surface = host;
             }
-            foreach (int height in new[] { 720, 480, 800 })
+            foreach ((int width, int height) in new[] { (1280, 720), (480, 480), (800, 800) })
             {
-                OverlayWindowMetrics.PrepareForPlacement(window, layout, plotter, 1, height);
+                OverlayWindowMetrics.PrepareForPlacement(window, layout, plotter, 1, height, width);
                 Dispatcher.UIThread.RunJobs();
                 using WriteableBitmap? frame = surface.CaptureRenderedFrame();
                 PixelSize size = OverlayWindowMetrics.GetPixelSize(new(window, plotter));
                 Assert.InRange(size.Height, 1, height - 15);
-                Control panel = Assert.IsAssignableFrom<Control>(OverlayThemeResources.GetPresentationRoot(window));
+                Assert.InRange(size.Width, 1, width - 15);
+                Assert.True(size.Width > width / 2, $"Long mission text did not use the available width: {size}");
+                Control panel = Assert.IsType<Control>(
+                    OverlayThemeResources.GetPresentationRoot(window),
+                    exactMatch: false
+                );
                 ScrollViewer scroller = Assert.Single(panel.GetVisualDescendants().OfType<ScrollViewer>());
                 Assert.True(scroller.Viewport.Height > 0);
                 if (height == 480)
@@ -187,6 +359,39 @@ public sealed class MissionOverlaySizingTests
         }
 
         public Window Window { get; }
+
+        public void AddLongMission(string name)
+        {
+            if (combat is not null)
+            {
+                combat.LoadProfile(
+                    null,
+                    null,
+                    true,
+                    new CombatSnapshot(
+                        Enumerable
+                            .Range(1, Math.Max(1, combat.MassacreMissions.Count))
+                            .Select(index => new MassacreMissionSnapshot(index, name, name, null, 6, 6))
+                            .ToArray()
+                    )
+                );
+                return;
+            }
+            mining.Feed(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        @event = "MissionAccepted",
+                        Name = "Mission_Mining_Wing",
+                        MissionID = 100,
+                        Commodity = "$lowtemperaturediamond_name;",
+                        Count = 1000,
+                        DestinationSystem = name,
+                        DestinationStation = "Huss Port",
+                    }
+                )
+            );
+        }
 
         public void SetMissionCount(int count)
         {

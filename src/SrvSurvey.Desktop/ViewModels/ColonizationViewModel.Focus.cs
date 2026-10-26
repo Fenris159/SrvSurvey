@@ -41,11 +41,9 @@ public sealed partial class ColonizationViewModel
         try
         {
             string? persistenceWarning = null;
-            if (row.Project.IsPlanned)
+            if (row.Project.IsPlanned || projectScope.IsLocal(row.Project))
             {
-                string localId = nextId ?? string.Empty;
-                settingsStore.SaveLocalProjectFocus(commander, localId);
-                localFocusProjectId = localId;
+                SaveLocalFocus(commander, nextId, row.Project);
             }
             else
             {
@@ -58,13 +56,12 @@ public sealed partial class ColonizationViewModel
                 localFocusProjectId = null;
                 persistenceWarning = ClearSavedLocalFocus(commander);
             }
+            projectScope.ReleaseUnselected(FocusProjectId);
+            string? localTrackingWarning = SaveLocalProjects() ? null : plannedReadWarning;
             RebuildProjectRows();
             UpdateProjectSummary();
             StatusMessage = nextId is null ? "Project focus was cleared." : $"{row.BuildName} is now the focus.";
-            if (persistenceWarning is not null)
-            {
-                StatusMessage += " Local focus preferences could not be saved: " + persistenceWarning;
-            }
+            AppendFocusPersistenceWarnings(persistenceWarning, localTrackingWarning);
         }
         catch (Exception exception)
             when (exception
@@ -88,6 +85,18 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    private void AppendFocusPersistenceWarnings(string? focusWarning, string? trackingWarning)
+    {
+        if (focusWarning is not null)
+        {
+            StatusMessage += " Local focus preferences could not be saved: " + focusWarning;
+        }
+        if (trackingWarning is not null)
+        {
+            StatusMessage += " " + trackingWarning;
+        }
+    }
+
     private string? ClearSavedLocalFocus(string commander)
     {
         try
@@ -98,6 +107,17 @@ public sealed partial class ColonizationViewModel
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return exception.Message;
+        }
+    }
+
+    private void SaveLocalFocus(string commander, string? nextId, ColonizationProject project)
+    {
+        string localId = nextId ?? string.Empty;
+        settingsStore.SaveLocalProjectFocus(commander, localId);
+        localFocusProjectId = localId;
+        if (nextId is not null && projectScope.IsLocal(project))
+        {
+            projectScope.RetainFocus(project);
         }
     }
 }

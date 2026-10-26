@@ -308,7 +308,10 @@ public sealed class RouteWindowMarkupTests
         Assert.Equal("{DynamicResource RavenWarningBrush}", label.Attribute("Foreground")?.Value);
         Assert.Equal(starClass.Attribute("Foreground")?.Value, label.Attribute("Foreground")?.Value);
         Assert.DoesNotContain(badge.Descendants(), element => element.Name.LocalName == "Image");
-        Assert.Same(starClass, iconScaleHost.ElementsAfterSelf().FirstOrDefault());
+        XElement neutronScaleHost = Assert.IsType<XElement>(iconScaleHost.ElementsAfterSelf().FirstOrDefault());
+        Assert.Equal("LayoutTransformControl", neutronScaleHost.Name.LocalName);
+        Assert.Equal("{Binding JumpInfo.HasNeutronGuidance}", neutronScaleHost.Attribute("IsVisible")?.Value);
+        Assert.Same(starClass, Assert.Single(neutronScaleHost.ElementsAfterSelf()));
     }
 
     [Fact]

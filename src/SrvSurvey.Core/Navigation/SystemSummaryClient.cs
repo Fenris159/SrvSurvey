@@ -84,7 +84,11 @@ public sealed record SystemSummary(
     public IReadOnlyList<SystemStationSummary> Stations { get; init; } = [];
 
     public IReadOnlyList<SystemFactionSummary> Factions { get; init; } = [];
+
+    public SystemMiningResources MiningResources { get; init; } = new(false, false, false);
 }
+
+public sealed record SystemMiningResources(bool HasIcyRing, bool HasPristineIcyRing, bool HasIcyBody);
 
 public sealed record SystemSummaryLoadResult(SystemSummary Summary, IReadOnlyList<string> Warnings);
 
@@ -211,6 +215,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         {
             Stations = spansh.Value?.Stations ?? [],
             Factions = spansh.Value?.Factions ?? [],
+            MiningResources = spansh.Value?.MiningResources ?? new(false, false, false),
         };
         return new SystemSummaryLoadResult(summary, warnings);
     }
@@ -298,6 +303,27 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         );
     }
 
+    private static SystemMiningResources ReadMiningResources(IEnumerable<JsonElement> bodies)
+    {
+        bool icyRing = false;
+        bool pristine = false;
+        bool icyBody = false;
+        foreach (JsonElement body in bodies.Where(body => body.ValueKind == JsonValueKind.Object))
+        {
+            bool hasRing = GetArray(body, "rings")
+                .Any(ring =>
+                    ring.ValueKind == JsonValueKind.Object
+                    && string.Equals(GetString(ring, "type"), "Icy", StringComparison.OrdinalIgnoreCase)
+                );
+            icyRing |= hasRing;
+            pristine |=
+                hasRing
+                && string.Equals(GetString(body, "reserveLevel"), "Pristine", StringComparison.OrdinalIgnoreCase);
+            icyBody |= string.Equals(GetString(body, "subType"), "Icy body", StringComparison.OrdinalIgnoreCase);
+        }
+        return new(icyRing, pristine, icyBody);
+    }
+
     private static EdsmTrafficFragment ParseEdsmTraffic(JsonElement root)
     {
         RequireObject(root, "EDSM traffic response");
@@ -352,7 +378,10 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 .OrderBy(station => station.Name)
                 .ToArray(),
             factions
-        );
+        )
+        {
+            MiningResources = ReadMiningResources(bodies),
+        };
     }
 
     private static GalacticCoordinate? ReadSpanshPosition(JsonElement system)
@@ -845,5 +874,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         IReadOnlyList<SystemSpecialSummary> Specials,
         IReadOnlyList<SystemStationSummary> Stations,
         IReadOnlyList<SystemFactionSummary> Factions
-    );
+    )
+    {
+        public SystemMiningResources MiningResources { get; init; } = new(false, false, false);
+    }
 }

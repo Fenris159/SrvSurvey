@@ -55,6 +55,21 @@ Session accounting, mission allocation, and persistence live in Core. Desktop co
 
 ## Validation
 
+With travel automation enabled, live `SupercruiseEntry` pauses the same session;
+`FSDJump` and `Docked` end it. A travel pause resumes on a prospector or collector
+launch, a prospector result, or refining, counting that first activity and
+excluding paused time from session duration. The pause reason persists across
+restart, independently of automatic session creation. Manual pause controls keep
+their existing behavior. Historical travel alone does not pause or end a session;
+a later live copy still applies the travel action without repeating accounting.
+The consumed supercruise boundary persists after resuming, so repeated or older
+travel events cannot pause that session again, including after recovery.
+Charging, `StartJump`, and cancellation do not pause or end a session.
+File-monitor integration tests cover discovered folders, explicitly configured
+journal folders, and history arriving before the live completed jump.
+
+Mining Missions and Massacre Missions overlays size their width and height to the visible content. They grow and shrink from the selected growth edge, wrap long text at the game viewport width, and scroll vertically when missions exceed the available height. Their editor previews use the same behavior. Previous saved panel dimensions do not impose a fixed size on these panels; position, scaling, and growth direction remain configurable.
+
 Individual red/green tests cover session accounting, mission delivery/cargo allocation, bookmark persistence/import, backup recovery, replay idempotence, report encoding, ring-level filtering, and ship-only overlay gating. Focused Core and Desktop checks pass. The two-axis review and the corrections it produced are recorded in [the review report](mining-workspace-review.md).
 
 ## Runtime verification limits

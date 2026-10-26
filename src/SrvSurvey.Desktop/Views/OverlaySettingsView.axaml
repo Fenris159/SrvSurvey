@@ -1316,6 +1316,15 @@
       </Border>
     </Expander>
 
+    <Border x:Name="CarrierNextJumpCard" Classes="card raised">
+      <StackPanel Spacing="8">
+        <CheckBox IsChecked="{Binding FleetCarrierRoute.ShowCarrierNextJumpInformation, Mode=TwoWay}"
+                  Content="Show Carrier Next-Jump Information" />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active." />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding FleetCarrierRoute.CarrierNextJumpSettingsStatus}" />
+      </StackPanel>
+    </Border>
+
     <Border x:Name="JumpInformationCard" Classes="card raised">
       <StackPanel Spacing="14">
         <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"

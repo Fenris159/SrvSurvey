@@ -7,6 +7,68 @@ namespace SrvSurvey.Core.Tests.Navigation;
 
 public sealed class SystemSummaryClientTests
 {
+    [Theory]
+    [InlineData("Pristine", "Icy body", "Icy", true, true)]
+    [InlineData("Low", "Icy body", "Icy", true, false)]
+    [InlineData("Pristine", "Rocky Ice world", "Rocky", false, false)]
+    public async Task SpanshMiningTagsRequirePositiveBodyAndRingEvidence(
+        string reserve,
+        string type,
+        string ring,
+        bool icyRing,
+        bool pristine
+    )
+    {
+        var handler = new ProviderHandler
+        {
+            SpanshResponse = System.Text.Json.JsonSerializer.Serialize(
+                new
+                {
+                    system = new
+                    {
+                        bodies = new[]
+                        {
+                            new
+                            {
+                                subType = type,
+                                reserveLevel = reserve,
+                                rings = new[] { new { type = ring } },
+                            },
+                        },
+                    },
+                }
+            ),
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new("https://edsm.test/"),
+            new("https://spansh.test/api/")
+        );
+        SystemMiningResources resources = (await client.GetAsync("Test System", 42)).Summary.MiningResources;
+        Assert.Equal(icyRing, resources.HasIcyRing);
+        Assert.Equal(pristine, resources.HasPristineIcyRing);
+        Assert.Equal(type == "Icy body", resources.HasIcyBody);
+    }
+
+    [Fact]
+    public async Task PristineRockyRingsDoNotUpgradeAnotherBodysDepletedIcyRing()
+    {
+        var handler = new ProviderHandler
+        {
+            SpanshResponse =
+                """{"system":{"bodies":[null,42,{"reserveLevel":"Pristine","rings":[{"type":"Rocky"}]},{"reserveLevel":"Depleted","rings":[null,{"type":"Icy"}]}]}}""",
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new("https://edsm.test/"),
+            new("https://spansh.test/api/")
+        );
+        SystemMiningResources resources = (await client.GetAsync("Test System", 42)).Summary.MiningResources;
+        Assert.True(resources.HasIcyRing);
+        Assert.False(resources.HasPristineIcyRing);
+        Assert.False(resources.HasIcyBody);
+    }
+
     /// <summary>Preserves discovery and update timestamps in the UTC format returned by EDSM.</summary>
     [Theory]
     [InlineData("2024-01-02 03:04:05", "2025-02-03 04:05:06")]
@@ -230,6 +292,7 @@ public sealed class SystemSummaryClientTests
         public string BodiesResponse { get; init; } = BodiesJson;
 
         public string TrafficResponse { get; init; } = TrafficJson;
+        public string SpanshResponse { get; init; } = SpanshJson;
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -247,7 +310,7 @@ public sealed class SystemSummaryClientTests
 
             if (uri.Host == "spansh.test")
             {
-                return Task.FromResult(Response(MalformSpansh ? "{\"system\":[]}" : SpanshJson));
+                return Task.FromResult(Response(MalformSpansh ? "{\"system\":[]}" : SpanshResponse));
             }
 
             return Task.FromResult(Response(BodiesResponse));

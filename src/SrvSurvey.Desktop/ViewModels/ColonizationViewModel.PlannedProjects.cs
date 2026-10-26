@@ -189,9 +189,8 @@ public sealed partial class ColonizationViewModel
         CancelCurrentPlannedSystemRead(clearPending: false);
         int readVersion = ++plannedReadVersion;
         int profileVersion = recovery.ProfileVersion;
-        (IReadOnlyList<ColonizationSystemRecord> discovered, string? warning) = await ReadCommanderPlanningSystemsAsync(
-            token
-        );
+        (IReadOnlyList<ColonizationSystemRecord> discovered, string? warning, bool authoritativeDiscovery) =
+            await ReadCommanderPlanningSystemsAsync(token);
         if (!IsCurrentPlannedRead(readVersion, profileVersion))
         {
             return;
@@ -201,10 +200,16 @@ public sealed partial class ColonizationViewModel
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
         string[] names = freshProjects
             .Select(project => project.SystemName)
-            .Concat(plannedSystems.Keys)
+            .Concat(
+                plannedSystems
+                    .Values.Where(system =>
+                        !authoritativeDiscovery
+                        || ColonizationSiteVisibility.CommanderIsArchitect(system.Architect, CommanderName)
+                    )
+                    .Select(system => system.Name)
+            )
             .Concat(localPlanningDrafts.Keys)
             .Concat(discoveredByName.Keys)
-            .Append(recovery.CurrentSystemName ?? string.Empty)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -234,13 +239,35 @@ public sealed partial class ColonizationViewModel
         }
         token.ThrowIfCancellationRequested();
         plannedReadWarning = warning;
+        ReconcilePlanningAffiliations(freshProjects, authoritativeDiscovery ? discoveredByName.Keys : null);
         foreach ((ColonizationSystemRecord snapshot, bool authoritative) in snapshots)
         {
             ApplyRefreshedPlannedSystem(snapshot, startedEditVersion, authoritative);
         }
         SavePlannedSystems();
-        RebuildProjectRows();
-        UpdateProjectSummary();
+    }
+
+    private void ReconcilePlanningAffiliations(
+        IReadOnlyList<ColonizationProject> freshProjects,
+        IEnumerable<string>? affiliatedSystems
+    )
+    {
+        PreserveExplicitLocalProjects();
+        projectScope.SetAffiliations(freshProjects, affiliatedSystems);
+        if (!SaveLocalProjects() || affiliatedSystems is null)
+        {
+            return;
+        }
+        foreach (
+            string name in plannedSystems
+                .Where(pair => !IsAffiliatedPlanningSystem(pair.Value))
+                .Select(pair => pair.Key)
+                .ToArray()
+        )
+        {
+            plannedSystems.Remove(name);
+            latestPlanningSnapshots.Remove(name);
+        }
     }
 
     private void ApplyRefreshedPlannedSystem(
@@ -299,7 +326,8 @@ public sealed partial class ColonizationViewModel
 
     private async Task<(
         IReadOnlyList<ColonizationSystemRecord> Systems,
-        string? Error
+        string? Error,
+        bool Authoritative
     )> ReadCommanderPlanningSystemsAsync(CancellationToken token)
     {
         string? key = recovery.ApiKey;
@@ -310,11 +338,11 @@ public sealed partial class ColonizationViewModel
             || commander is null
         )
         {
-            return ([], null);
+            return ([], null, false);
         }
         try
         {
-            return (await reader.GetCommanderPlanningSystemsAsync(commander, key, token), null);
+            return (await reader.GetCommanderPlanningSystemsAsync(commander, key, token), null, true);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -323,7 +351,7 @@ public sealed partial class ColonizationViewModel
         catch (Exception exception)
             when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
         {
-            return ([], "Planned systems could not be refreshed: " + exception.Message);
+            return ([], "Planned systems could not be refreshed: " + exception.Message, false);
         }
     }
 
@@ -362,6 +390,12 @@ public sealed partial class ColonizationViewModel
 
     private void RebuildProjectRows()
     {
+        if (!IsEnabled)
+        {
+            Projects = [];
+            return;
+        }
+        UpdateDockedLocalProject();
         ColonizationProject[] plans = plannedSystems
             .Values.SelectMany(system =>
                 ColonizationPlannedProjects.Create(
@@ -375,8 +409,9 @@ public sealed partial class ColonizationViewModel
                 )
             )
             .ToArray();
-        RetireMissingPlannedFocus(plans);
-        Projects = recovery.Projects.Concat(plans).Select(CreateRow).ToArray();
+        IReadOnlyList<ColonizationProject> visible = projectScope.Merge(recovery.Projects, plans);
+        RetireMissingPlannedFocus(visible.Where(project => project.IsPlanned).ToArray());
+        Projects = visible.Select(CreateRow).ToArray();
     }
 
     private sealed class WorkspaceProjectReader(ColonizationViewModel owner, IRavenColonialProjectReader reader)

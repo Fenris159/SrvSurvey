@@ -8,12 +8,12 @@ public sealed class OverlayPresentationContractTests
 {
     private const string KdeOverlayTitlePattern = "^SrvSurvey.*overlay$";
 
-    private static readonly IReadOnlyDictionary<string, string> FixedHeaders = new Dictionary<string, string>(
+    private static readonly IReadOnlyDictionary<string, string> Headers = new Dictionary<string, string>(
         StringComparer.Ordinal
     )
     {
         ["BodyInformationOverlayPresentation.axaml"] = "BODY INFORMATION",
-        ["FleetCarrierRouteOverlayPresentation.axaml"] = "FLEET CARRIER ROUTE",
+        ["FleetCarrierRouteOverlayPresentation.axaml"] = "{Binding Header}",
         ["FssInfoOverlayPresentation.axaml"] = "FSS SURVEY",
         ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
         ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
@@ -397,7 +397,6 @@ public sealed class OverlayPresentationContractTests
                 "PointsOfInterestText",
                 "DetailLines",
                 "IsQuestTagged",
-                "HasRouteGuidanceBadges",
                 "HasRefuelGuidance",
                 "HasNeutronGuidance",
                 "Assets/Routes/refuel-star.png",
@@ -1379,11 +1378,11 @@ public sealed class OverlayPresentationContractTests
     ) => new(contractName, productionFiles, requiredTokens);
 
     [Fact]
-    public void FixedNonGuardianHeadersUseTheSharedHeaderRole()
+    public void NonGuardianHeadersUseTheSharedHeaderRole()
     {
         string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
 
-        foreach (KeyValuePair<string, string> expected in FixedHeaders)
+        foreach (KeyValuePair<string, string> expected in Headers)
         {
             var document = XDocument.Load(Path.Combine(desktop, expected.Key));
             XElement header = document
