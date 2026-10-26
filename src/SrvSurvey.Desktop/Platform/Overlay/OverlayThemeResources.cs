@@ -16,9 +16,11 @@ internal interface IOverlayPanelSizeAware
     void SetPanelSizeOverrideActive(bool active);
 }
 
-/// <summary>A panel whose saved width applies while visible content determines its height.</summary>
+/// <summary>Identifies dimensions that follow visible content instead of a saved editor size.</summary>
 internal interface IOverlayPanelSizePolicy
 {
+    bool AutoWidth => false;
+
     bool AutoHeight { get; }
 }
 
@@ -559,6 +561,15 @@ public static class OverlayThemeResources
         PanelSizeRegistrations.GetValue(content, control => new PanelSizeRegistration(control)).ApplySize(size);
     }
 
+    /// <summary>Lets content-width panels wrap at the available viewport without fixing their natural width.</summary>
+    internal static void ApplyPanelViewportWidth(Control? content, double width)
+    {
+        if (content is IOverlayPanelSizePolicy { AutoWidth: true })
+        {
+            content.MaxWidth = Math.Max(1, width);
+        }
+    }
+
     /// <summary>Uses the actual rendering surface's DPI once it is measured, including reparented combined panels.</summary>
     internal static double GetPresentationScaling(Window window, double fallback)
     {
@@ -995,7 +1006,7 @@ public static class OverlayThemeResources
         private readonly List<IDisposable> overrides = [];
         private OverlayPanelSize? appliedSize;
 
-        /// <summary>Applies configured panel dimensions while allowing content-height presentations to measure their own height.</summary>
+        /// <summary>Applies saved dimensions only on axes that do not follow content.</summary>
         public void ApplySize(OverlayPanelSize? size)
         {
             if (size == appliedSize)
@@ -1016,9 +1027,17 @@ public static class OverlayThemeResources
                 // it restores the current default, including dynamic radar/map sizes.
                 Override(Control.MinWidthProperty, 1d);
                 Override(Control.MinHeightProperty, 1d);
-                Override(Control.MaxWidthProperty, double.PositiveInfinity);
+                bool autoWidth = content is IOverlayPanelSizePolicy { AutoWidth: true };
+                if (!autoWidth)
+                {
+                    Override(Control.MaxWidthProperty, double.PositiveInfinity);
+                    Override(Control.WidthProperty, size.Width);
+                }
                 Override(Control.MaxHeightProperty, double.PositiveInfinity);
-                Override(Control.HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Stretch);
+                Override(
+                    Control.HorizontalAlignmentProperty,
+                    autoWidth ? Avalonia.Layout.HorizontalAlignment.Left : Avalonia.Layout.HorizontalAlignment.Stretch
+                );
                 Override(
                     Control.VerticalAlignmentProperty,
                     content is IOverlayPanelSizePolicy { AutoHeight: true }
@@ -1036,7 +1055,6 @@ public static class OverlayThemeResources
                         Avalonia.Layout.VerticalAlignment.Stretch
                     );
                 }
-                Override(Control.WidthProperty, size.Width);
                 if (content is not IOverlayPanelSizePolicy { AutoHeight: true })
                 {
                     Override(Control.HeightProperty, size.Height);

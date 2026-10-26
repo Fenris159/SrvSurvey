@@ -41,6 +41,12 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
         Assert.False(tracker.Current.HasPhaseCountdown);
 
         tracker.Refresh(start.AddMinutes(15));
+        Assert.Equal("JUMP IN PROGRESS", tracker.Current.Title);
+        Assert.Equal("AWAITING ARRIVAL", tracker.Current.PhaseLabel);
+        tracker.Apply(
+            Parse("""{"timestamp":"2026-08-01T12:15:00Z","event":"CarrierJump","StarSystem":"Colonia"}"""),
+            start.AddMinutes(15)
+        );
         Assert.Equal("JUMP COOLDOWN", tracker.Current.Title);
         Assert.Equal("5:00", tracker.Current.Countdown);
         Assert.Equal("CARRIER ARRIVED", tracker.Current.PhaseLabel);

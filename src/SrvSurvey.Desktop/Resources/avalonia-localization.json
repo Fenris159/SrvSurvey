@@ -305,6 +305,10 @@
       "translation": "146 m | 068 Grad"
     },
     {
+      "source": "146 t",
+      "translation": "146 t"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170 m | VERFOLGT"
     },
@@ -441,6 +445,10 @@
       "translation": "225 Grad | 3,40 km"
     },
     {
+      "source": "239 t",
+      "translation": "239 t"
+    },
+    {
       "source": "284 m",
       "translation": "284 m"
     },
@@ -547,6 +555,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431 / 960 T"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499,76 LY JUMP (EST.)"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -1393,6 +1405,10 @@
       "translation": "AW"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "Warten auf die Ankunft"
+    },
+    {
       "source": "Aa",
       "translation": "Aa"
     },
@@ -1835,6 +1851,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "AerialAltitudeGamma"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "Nach dem Sprung (geschätzt)"
     },
     {
       "source": "Aggregate completion",
@@ -4177,6 +4197,10 @@
       "translation": "Durchsuchen Sie den Verlauf, inspizieren Sie jedes besuchte System und halten Sie die aktive Expedition auf dem neuesten Stand."
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "Durchsuchen Sie Projekte in der Nähe, ohne ihnen beizutreten. Wählen Sie „Anzeigen“ oder „Fokus festlegen“, um ein Projekt beim Verlassen des Systems beizubehalten."
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "Durchsuchen Sie besuchte Cubes nach Massencode und öffnen Sie dann einen Cube nach Helium, Körperklassen und Wert."
     },
@@ -4319,6 +4343,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "Abklingzeit"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "ABGESAGT"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -4523,6 +4551,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "KONTROLLIERENDE FRAKTION"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "Abklingzeit"
     },
     {
       "source": "CORE",
@@ -5049,6 +5081,14 @@
       "translation": "Name des Anbieters:"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "Nächster Sprung des Trägers"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "Die Einstellung für den nächsten Sprung des Trägers konnte nicht gespeichert werden: {0}"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Spediteurbetrieb und Fracht"
     },
@@ -5083,6 +5123,10 @@
     {
       "source": "CarrierLocation",
       "translation": "CarrierStandort"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "CarrierNextJump"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -10705,6 +10749,10 @@
       "translation": "FLOTTENTRÄGERDEFIZIT"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "FLOTTENTRÄGER NÄCHSTER SPRUNG"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "FLOTTENTRÄGER-ROUTE"
     },
@@ -11855,6 +11903,10 @@
     {
       "source": "Fuel left",
       "translation": "Kraftstoff übrig"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "Kraftstoff übrig (geschätzt)"
     },
     {
       "source": "Fuel-scoop stop",
@@ -13641,6 +13693,10 @@
       "translation": "IN BEARBEITUNG"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "UNTERWEGS"
+    },
+    {
       "source": "INACTIVE",
       "translation": "INAKTIV"
     },
@@ -14073,6 +14129,10 @@
       "translation": "Wechseln Sie in einem Schiff oder SRV durch die Feuergruppe, um „Alpha“, „Beta“, „Gamma“, „Vorhanden“, „Abwesend“ oder „Leer“ auszuwählen. Schalten Sie dann die konfigurierte Guardian-Bestätigungssteuerung zweimal um."
     },
     {
+      "source": "In depot now",
+      "translation": "Jetzt im Depot"
+    },
+    {
       "source": "In flight",
       "translation": "Im Flug"
     },
@@ -14417,6 +14477,10 @@
       "translation": "Sprungabfahrt"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "JUMP IN FORTSCHRITT"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "Sprungeinleitung"
     },
@@ -14627,6 +14691,10 @@
     {
       "source": "Jump fuel",
       "translation": "Treibstoff springen"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "Sprungkraftstoff (geschätzt)"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -14953,20 +15021,16 @@
       "translation": "STANDORT IN SUCHE"
     },
     {
-      "source": "LOCKED",
-      "translation": "GESPERRT"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "VERRIEGELUNG"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "Längengrad"
     },
     {
       "source": "LOW",
       "translation": "NIEDRIG"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "GERINGER TRITIUM-Gehalt"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -15813,8 +15877,16 @@
       "translation": "Die Wiederherstellung des lokalen Profils ist abgeschlossen. Die automatische Cloud-Synchronisierung wird während der Update-Überprüfung verzögert; Verwenden Sie „Jetzt synchronisieren“ oder starten Sie normal neu, um Google Drive zu überprüfen."
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "Die lokale Projektverfolgung konnte nicht gespeichert werden: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "Lokale Systemprojekte konnten nicht aktualisiert werden: {0}"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -24837,6 +24909,10 @@
       "translation": "Gescannte Signale"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "GEPLANT"
+    },
+    {
       "source": "SCO",
       "translation": "Sco"
     },
@@ -26913,6 +26989,10 @@
       "translation": "Alle anzeigen"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "Informationen zum nächsten Sprung des Trägers anzeigen"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Gesamtzahl der Flottenbetreiber anzeigen"
     },
@@ -26931,6 +27011,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "Anzeigen SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "Nicht verbundene Projekte im aktuellen System anzeigen"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -27145,6 +27229,10 @@
       "translation": "Beispiel-Scan-Ausschlusszonen anzeigen"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "Zeigen Sie geplante Trägersprünge und Sprungphasen im Flottenträger-Routen-Overlay an, auch wenn keine Route aktiv ist."
+    },
+    {
       "source": "Show short supply",
       "translation": "Mangelware anzeigen"
     },
@@ -27267,6 +27355,10 @@
     {
       "source": "ShowInRightView",
       "translation": "ShowInRightView"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "Informationen anzeigen"
     },
     {
       "source": "ShowMapLegend",
@@ -29427,6 +29519,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "SystemControlForegroundBaseMediumBrush"
+    },
+    {
+      "source": "SystemID",
+      "translation": "SystemID"
     },
     {
       "source": "SystemMap",
@@ -32641,6 +32737,10 @@
       "translation": "TrackMaterialCollection"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "Verfolgte lokale Projekte konnten nicht aktualisiert werden: {0}"
+    },
+    {
       "source": "Tracked locations",
       "translation": "Verfolgte Standorte"
     },
@@ -32991,6 +33091,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "Die neue POI-Seite von EDAstro kann nicht geöffnet werden: {0}"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "Nicht verbunden"
     },
     {
       "source": "Unassigned",
@@ -35203,6 +35307,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "Vergrößern Sie die Surface Mining-Karte"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[EISIGER KÖRPER]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -37489,6 +37597,10 @@
       "translation": "panthermkii"
     },
     {
+      "source": "passive",
+      "translation": "passiv"
+    },
+    {
       "source": "path:{0}",
       "translation": "Pfad:{0}"
     },
@@ -38833,8 +38945,16 @@
       "translation": "{0} ly"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "{0} LY SPRINGEN • {1} LY VERBLEIBEND"
+      "source": "{0} LY JUMP",
+      "translation": "{0} LY SPRINGEN"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} LY JUMP (EST.)"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} LY RESTLICH"
     },
     {
       "source": "{0} M",
@@ -40303,6 +40423,10 @@
       "translation": "146 metros | 068 grados"
     },
     {
+      "source": "146 t",
+      "translation": "146 toneladas"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170 metros | SEGUIDO"
     },
@@ -40439,6 +40563,10 @@
       "translation": "225 grados | 3,40 kilómetros"
     },
     {
+      "source": "239 t",
+      "translation": "239 toneladas"
+    },
+    {
       "source": "284 m",
       "translation": "284 metros"
     },
@@ -40545,6 +40673,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431 / 960T"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499.76 SALTO LY (EST.)"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -41391,6 +41523,10 @@
       "translation": "AW"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "ESPERANDO LA LLEGADA"
+    },
+    {
       "source": "Aa",
       "translation": "Automóvil club británico"
     },
@@ -41833,6 +41969,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "AéreaAltitudGamma"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "Después del salto (est.)"
     },
     {
       "source": "Aggregate completion",
@@ -44175,6 +44315,10 @@
       "translation": "Explore el historial, inspeccione todos los sistemas visitados y mantenga actualizada la expedición activa."
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "Explora proyectos cercanos sin unirte a ellos. Seleccione Mostrar o Hacer foco para conservar un proyecto al salir del sistema."
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "Explore los cubos visitados por código de masa, luego abra un cubo para ver helio, clases de cuerpo y valor."
     },
@@ -44317,6 +44461,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "ENFRIAMIENTO DE CANCELACIÓN"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "CANCELADO"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -44521,6 +44669,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "FACCIÓN CONTROLADORA"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "ENFRIARSE"
     },
     {
       "source": "CORE",
@@ -45047,6 +45199,14 @@
       "translation": "Nombre del transportista:"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "Portador siguiente salto"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "No se pudo guardar la configuración del siguiente salto del operador: {0}"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Operaciones de transporte y carga"
     },
@@ -45081,6 +45241,10 @@
     {
       "source": "CarrierLocation",
       "translation": "Ubicación del transportista"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "TransportistaSiguienteSaltar"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -50703,6 +50867,10 @@
       "translation": "DÉFICIT DE TRANSPORTADORES DE FLOTA"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "TRANSPORTADOR DE FLOTA PRÓXIMO SALTO"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "RUTA DEL TRANSPORTADOR DE FLOTA"
     },
@@ -51853,6 +52021,10 @@
     {
       "source": "Fuel left",
       "translation": "Queda combustible"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "Combustible restante (est.)"
     },
     {
       "source": "Fuel-scoop stop",
@@ -53639,6 +53811,10 @@
       "translation": "EN CURSO"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "EN TRÁNSITO"
+    },
+    {
       "source": "INACTIVE",
       "translation": "INACTIVO"
     },
@@ -54071,6 +54247,10 @@
       "translation": "En una nave o SRV, cambie el grupo de fuego para elegir Alfa, Beta, Gamma, Presente, Ausente o Vacío; luego alterne dos veces el control de confirmación de Guardian configurado."
     },
     {
+      "source": "In depot now",
+      "translation": "En depósito ahora"
+    },
+    {
       "source": "In flight",
       "translation": "en vuelo"
     },
@@ -54415,6 +54595,10 @@
       "translation": "SALIDA DEL SALTO"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "SALTO EN CURSO"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "INICIACIÓN DEL SALTO EN"
     },
@@ -54625,6 +54809,10 @@
     {
       "source": "Jump fuel",
       "translation": "Saltar combustible"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "Salto de combustible (est.)"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -54951,20 +55139,16 @@
       "translation": "UBICACIÓN EN BÚSQUEDA"
     },
     {
-      "source": "LOCKED",
-      "translation": "BLOQUEADO"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "CIERRE"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "Longitud"
     },
     {
       "source": "LOW",
       "translation": "BAJO"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "BAJO TRICIO"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -55811,8 +55995,16 @@
       "translation": "La recuperación del perfil local está completa. La sincronización automática en la nube se difiere durante la verificación de la actualización; use Sincronizar ahora o reinicie normalmente para verificar Google Drive."
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "No se pudo guardar el seguimiento del proyecto local: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descubrimientos de anillos locales"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "No se pudieron actualizar los proyectos del sistema local: {0}"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -64835,6 +65027,10 @@
       "translation": "SEÑALES ESCANEADAS"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "PROGRAMADO"
+    },
+    {
       "source": "SCO",
       "translation": "esco"
     },
@@ -66911,6 +67107,10 @@
       "translation": "Mostrar todo"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "Mostrar información del próximo salto del operador"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Mostrar recuentos agregados de flotas de transporte"
     },
@@ -66929,6 +67129,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "Mostrar SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "Mostrar proyectos no afiliados en el sistema actual"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -67143,6 +67347,10 @@
       "translation": "Mostrar zonas de exclusión de escaneo de muestra"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "Muestra los saltos de transportistas programados y las fases de salto en la superposición de Ruta de transportistas de flota, incluso cuando no hay ninguna ruta activa."
+    },
+    {
       "source": "Show short supply",
       "translation": "Mostrar escasez de oferta"
     },
@@ -67265,6 +67473,10 @@
     {
       "source": "ShowInRightView",
       "translation": "Mostrar en vista derecha"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "Mostrar información"
     },
     {
       "source": "ShowMapLegend",
@@ -69425,6 +69637,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "SystemControlForegroundBaseMediumBrush"
+    },
+    {
+      "source": "SystemID",
+      "translation": "ID del sistema"
     },
     {
       "source": "SystemMap",
@@ -72639,6 +72855,10 @@
       "translation": "Colección de materiales de seguimiento"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "Los proyectos locales rastreados no se pudieron actualizar: {0}"
+    },
+    {
       "source": "Tracked locations",
       "translation": "Ubicaciones rastreadas"
     },
@@ -72989,6 +73209,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "No se puede abrir la página Nuevo PDI de EDAstro: {0}"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "No afiliado"
     },
     {
       "source": "Unassigned",
@@ -75201,6 +75425,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "Ampliar el mapa de minería a cielo abierto"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[ CUERPO HELADO ]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -77487,6 +77715,10 @@
       "translation": "panthermkii"
     },
     {
+      "source": "passive",
+      "translation": "pasivo"
+    },
+    {
       "source": "path:{0}",
       "translation": "ruta:{0}"
     },
@@ -78831,8 +79063,16 @@
       "translation": "{0} ly"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "{0} SALTO LY • {1} LY RESTANTE"
+      "source": "{0} LY JUMP",
+      "translation": "{0} SALTO LY"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} SALTO LY (EST.)"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} LY RESTANTE"
     },
     {
       "source": "{0} M",
@@ -80301,6 +80541,10 @@
       "translation": "146 m | 068 degrés"
     },
     {
+      "source": "146 t",
+      "translation": "146 tonnes"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170 m | SUIVI"
     },
@@ -80437,6 +80681,10 @@
       "translation": "225 degrés | 3,40km"
     },
     {
+      "source": "239 t",
+      "translation": "239 tonnes"
+    },
+    {
       "source": "284 m",
       "translation": "284 m"
     },
@@ -80543,6 +80791,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431 / 960 tonnes"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499,76 SAUT LY (EST.)"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -81389,6 +81641,10 @@
       "translation": "AW"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "EN ATTENTE D'ARRIVÉE"
+    },
+    {
       "source": "Aa",
       "translation": "Aa"
     },
@@ -81831,6 +82087,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "AérienAltitudeGamma"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "Après le saut (est.)"
     },
     {
       "source": "Aggregate completion",
@@ -84173,6 +84433,10 @@
       "translation": "Parcourez l'historique, inspectez chaque système visité et tenez à jour l'expédition active."
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "Parcourez les projets à proximité sans les rejoindre. Sélectionnez Afficher ou Mettre le focus pour conserver un projet lorsque vous quittez le système."
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "Parcourez les cubes visités par code de masse, puis ouvrez un cube pour l'hélium, les classes de corps et la valeur."
     },
@@ -84315,6 +84579,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "DÉLAI D'ANNULATION"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "ANNULÉ"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -84519,6 +84787,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "FACTION CONTRÔLANTE"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "REFROIDIR"
     },
     {
       "source": "CORE",
@@ -85045,6 +85317,14 @@
       "translation": "Nom du transporteur :"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "Prochain saut du transporteur"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "Le paramètre du prochain saut du transporteur n'a pas pu être enregistré : {0}"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Opérations de transporteur et fret"
     },
@@ -85079,6 +85359,10 @@
     {
       "source": "CarrierLocation",
       "translation": "Emplacement du transporteur"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "TransporteurSaut Suivant"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -90701,6 +90985,10 @@
       "translation": "DÉFICIT DE TRANSPORTEURS DE FLOTTE"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "FLOTTE TRANSPORTEUR PROCHAIN ​​SAUT"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "ITINÉRAIRE DES TRANSPORTEURS DE LA FLOTTE"
     },
@@ -91851,6 +92139,10 @@
     {
       "source": "Fuel left",
       "translation": "Carburant restant"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "Carburant restant (est.)"
     },
     {
       "source": "Fuel-scoop stop",
@@ -93637,6 +93929,10 @@
       "translation": "EN COURS"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "EN TRANSIT"
+    },
+    {
       "source": "INACTIVE",
       "translation": "INACTIF"
     },
@@ -94069,6 +94365,10 @@
       "translation": "Dans un vaisseau ou un SRV, faites défiler le groupe de tir pour choisir Alpha, Bêta, Gamma, Présent, Absent ou Vide ; puis basculez deux fois le contrôle de confirmation Guardian configuré."
     },
     {
+      "source": "In depot now",
+      "translation": "En dépôt maintenant"
+    },
+    {
       "source": "In flight",
       "translation": "En vol"
     },
@@ -94413,6 +94713,10 @@
       "translation": "DÉPART DE SAUT"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "SAUT EN COURS"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "INITIATION AU SAUT EN"
     },
@@ -94623,6 +94927,10 @@
     {
       "source": "Jump fuel",
       "translation": "Aller du carburant"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "Carburant de saut (est.)"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -94949,20 +95257,16 @@
       "translation": "LIEU EN RECHERCHE"
     },
     {
-      "source": "LOCKED",
-      "translation": "FERMÉ"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "VERROUILLAGE"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "Longitude"
     },
     {
       "source": "LOW",
       "translation": "FAIBLE"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "FAIBLE TRITIUM"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -95809,8 +96113,16 @@
       "translation": "La récupération du profil local est terminée. La synchronisation automatique du cloud est différée lors de la vérification de la mise à jour ; utilisez Sync maintenant ou redémarrez normalement pour vérifier Google Drive."
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "Le suivi du projet local n'a pas pu être enregistré : {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "Les projets du système local n'ont pas pu être actualisés : {0}"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -104833,6 +105145,10 @@
       "translation": "SIGNAUX SCANNÉS"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "PROGRAMMÉ"
+    },
+    {
       "source": "SCO",
       "translation": "Sco"
     },
@@ -106909,6 +107225,10 @@
       "translation": "Afficher tout"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "Afficher les informations du prochain saut du transporteur"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Afficher le nombre total de transporteurs de flotte"
     },
@@ -106927,6 +107247,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "Afficher SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "Afficher les projets non affiliés dans le système actuel"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -107141,6 +107465,10 @@
       "translation": "Afficher des exemples de zones d'exclusion d'analyse"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "Affichez les sauts de transporteur programmés et les phases de saut dans la superposition Fleet Carrier Route, y compris lorsqu'aucun itinéraire n'est actif."
+    },
+    {
       "source": "Show short supply",
       "translation": "Afficher une offre limitée"
     },
@@ -107263,6 +107591,10 @@
     {
       "source": "ShowInRightView",
       "translation": "ShowInRightView"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "AfficherInformations"
     },
     {
       "source": "ShowMapLegend",
@@ -109423,6 +109755,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "SystemControlForegroundBaseMediumBrush"
+    },
+    {
+      "source": "SystemID",
+      "translation": "ID système"
     },
     {
       "source": "SystemMap",
@@ -112637,6 +112973,10 @@
       "translation": "PisteMatérielCollection"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "Les projets locaux suivis n'ont pas pu être actualisés : {0}"
+    },
+    {
       "source": "Tracked locations",
       "translation": "Emplacements suivis"
     },
@@ -112987,6 +113327,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "Impossible d'ouvrir la page Nouveau POI d'EDAstro : {0}"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "Non affilié"
     },
     {
       "source": "Unassigned",
@@ -115199,6 +115543,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "Zoom sur la carte Surface Mining"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[ CORPS GLACÉ ]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -117485,6 +117833,10 @@
       "translation": "panthermkii"
     },
     {
+      "source": "passive",
+      "translation": "passif"
+    },
+    {
       "source": "path:{0}",
       "translation": "chemin :{0}"
     },
@@ -118829,8 +119181,16 @@
       "translation": "{0} ly"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "SAUT LY {0} • {1} LY RESTANT"
+      "source": "{0} LY JUMP",
+      "translation": "{0} SAUT LY"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} SAUT LY (EST.)"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} LY RESTANT"
     },
     {
       "source": "{0} M",
@@ -120299,6 +120659,10 @@
       "translation": "146m | 068 graus"
     },
     {
+      "source": "146 t",
+      "translation": "146 toneladas"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170m | RASTREADO"
     },
@@ -120435,6 +120799,10 @@
       "translation": "225 graus | 3,40 km"
     },
     {
+      "source": "239 t",
+      "translation": "239 toneladas"
+    },
+    {
       "source": "284 m",
       "translation": "284 metros"
     },
@@ -120541,6 +120909,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431/960T"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499,76 SALTO DE LY (EST.)"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -121387,6 +121759,10 @@
       "translation": "AW"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "AGUARDANDO CHEGADA"
+    },
+    {
       "source": "Aa",
       "translation": "Ah"
     },
@@ -121829,6 +122205,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "AéreaAltitudeGama"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "Depois do salto (est.)"
     },
     {
       "source": "Aggregate completion",
@@ -124171,6 +124551,10 @@
       "translation": "Navegue pelo histórico, inspecione todos os sistemas visitados e mantenha a expedição ativa atualizada."
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "Navegue por projetos próximos sem se juntar a eles. Selecione Mostrar ou Criar foco para reter um projeto ao sair do sistema."
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "Navegue pelos cubos visitados por código de massa e, em seguida, abra um cubo para hélio, classes de corpo e valor."
     },
@@ -124313,6 +124697,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "ESPERA DE CANCELAMENTO"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "CANCELADO"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -124517,6 +124905,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "FACÇÃO CONTROLADORA"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "ESFRIAR"
     },
     {
       "source": "CORE",
@@ -125043,6 +125435,14 @@
       "translation": "Nome da operadora:"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "Próximo salto da transportadora"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "A configuração do próximo salto da operadora não pôde ser salva: {0}"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Operações e carga do transportador"
     },
@@ -125077,6 +125477,10 @@
     {
       "source": "CarrierLocation",
       "translation": "Localização da transportadora"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "TransportadoraNextJump"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -130699,6 +131103,10 @@
       "translation": "DÉFICIT DE FROTA"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "PRÓXIMO SALTO DO TRANSPORTADOR DE FROTA"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "ROTA DO TRANSPORTADOR DE FROTA"
     },
@@ -131849,6 +132257,10 @@
     {
       "source": "Fuel left",
       "translation": "Combustível restante"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "Combustível restante (est.)"
     },
     {
       "source": "Fuel-scoop stop",
@@ -133635,6 +134047,10 @@
       "translation": "EM ANDAMENTO"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "EM TRÂNSITO"
+    },
+    {
       "source": "INACTIVE",
       "translation": "INATIVO"
     },
@@ -134067,6 +134483,10 @@
       "translation": "Em uma nave ou SRV, alterne o grupo de tiro para escolher Alfa, Beta, Gama, Presente, Ausente ou Vazio; em seguida, alterne o controle de confirmação do Guardião configurado duas vezes."
     },
     {
+      "source": "In depot now",
+      "translation": "No depósito agora"
+    },
+    {
       "source": "In flight",
       "translation": "Em vôo"
     },
@@ -134411,6 +134831,10 @@
       "translation": "SALTO PARTIDA"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "SALTAR EM ANDAMENTO"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "SALTAR INICIAÇÃO EM"
     },
@@ -134621,6 +135045,10 @@
     {
       "source": "Jump fuel",
       "translation": "Salte combustível"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "Combustível de salto (est.)"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -134947,20 +135375,16 @@
       "translation": "LOCALIZAÇÃO NA PESQUISA"
     },
     {
-      "source": "LOCKED",
-      "translation": "BLOQUEADO"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "BLOQUEIO"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "Longitude"
     },
     {
       "source": "LOW",
       "translation": "BAIXO"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "BAIXO TRÍCIO"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -135807,8 +136231,16 @@
       "translation": "A recuperação do perfil local foi concluída. A sincronização automática na nuvem é adiada durante a verificação da atualização; use Sincronizar agora ou reinicie normalmente para verificar o Google Drive."
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "Não foi possível salvar o acompanhamento do projeto local: {0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Descobertas de anéis locais"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "Os projetos do sistema local não puderam ser atualizados: {0}"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -144831,6 +145263,10 @@
       "translation": "SINAIS DIGITALIZADOS"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "AGENDADO"
+    },
+    {
       "source": "SCO",
       "translation": "Sco"
     },
@@ -146907,6 +147343,10 @@
       "translation": "Mostrar tudo"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "Mostrar informações do próximo salto da operadora"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Mostrar contagens agregadas da Fleet Carrier"
     },
@@ -146925,6 +147365,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "Mostrar SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "Mostrar projetos não afiliados no sistema atual"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -147139,6 +147583,10 @@
       "translation": "Mostrar amostras de zonas de exclusão de verificação"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "Mostre saltos e fases de salto programados da transportadora na sobreposição de Rota da Transportadora da Frota, inclusive quando nenhuma rota estiver ativa."
+    },
+    {
       "source": "Show short supply",
       "translation": "Mostrar falta de oferta"
     },
@@ -147261,6 +147709,10 @@
     {
       "source": "ShowInRightView",
       "translation": "MostrarInRightView"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "Mostrar informações"
     },
     {
       "source": "ShowMapLegend",
@@ -149421,6 +149873,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "SystemControlForegroundBaseMediumBrush"
+    },
+    {
+      "source": "SystemID",
+      "translation": "ID do sistema"
     },
     {
       "source": "SystemMap",
@@ -152635,6 +153091,10 @@
       "translation": "TrackMaterialCollection"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "Não foi possível atualizar os projetos locais rastreados: {0}"
+    },
+    {
       "source": "Tracked locations",
       "translation": "Locais rastreados"
     },
@@ -152985,6 +153445,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "Não foi possível abrir a nova página de POI do EDAstro: {0}"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "Não afiliado"
     },
     {
       "source": "Unassigned",
@@ -155197,6 +155661,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "Zoom no mapa de mineração de superfície"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[CORPO GELADO]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -157483,6 +157951,10 @@
       "translation": "panterakii"
     },
     {
+      "source": "passive",
+      "translation": "passiva"
+    },
+    {
       "source": "path:{0}",
       "translation": "caminho:{0}"
     },
@@ -158827,8 +159299,16 @@
       "translation": "{0} apenas"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "{0} SALTO LY • {1} LY RESTANTE"
+      "source": "{0} LY JUMP",
+      "translation": "{0} LY SALTAR"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} SALTO LY (EST.)"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} LY RESTANTE"
     },
     {
       "source": "{0} M",
@@ -160297,6 +160777,10 @@
       "translation": "146 м | 068 градусов"
     },
     {
+      "source": "146 t",
+      "translation": "146 т"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170 м | ОТСЛЕЖИВАЕМЫЙ"
     },
@@ -160433,6 +160917,10 @@
       "translation": "225 градусов | 3,40 км"
     },
     {
+      "source": "239 t",
+      "translation": "239 т"
+    },
+    {
       "source": "284 m",
       "translation": "284 м"
     },
@@ -160539,6 +161027,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431/960 Т"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499,76 LY JUMP (EST.)"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -161385,6 +161877,10 @@
       "translation": "АВ"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "ОЖИДАЕМ ПРИБЫТИЯ"
+    },
+    {
       "source": "Aa",
       "translation": "Аа"
     },
@@ -161827,6 +162323,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "ВоздушнаяВысотаГамма"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "После прыжка (оценка)"
     },
     {
       "source": "Aggregate completion",
@@ -164169,6 +164669,10 @@
       "translation": "Просматривайте историю, проверяйте каждую посещенную систему и следите за актуальностью активной экспедиции."
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "Просматривайте близлежащие проекты, не присоединяясь к ним. Выберите «Показать» или «Сделать фокус», чтобы сохранить проект при выходе из системы."
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "Просмотрите посещенные кубы по массовому коду, затем откройте куб для гелия, классов тела и значения."
     },
@@ -164311,6 +164815,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "ПЕРЕЗАРЯДКА ОТМЕНЫ"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "ОТМЕНЕНО"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -164515,6 +165023,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "КОНТРОЛИРУЮЩАЯ ФРАКЦИЯ"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "ОСТЫВАТЬ"
     },
     {
       "source": "CORE",
@@ -165041,6 +165553,14 @@
       "translation": "Имя перевозчика:"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "Перевозчик следующий прыжок"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "Не удалось сохранить настройку следующего перехода к несущей: {0}."
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "Перевозочные операции и грузы"
     },
@@ -165075,6 +165595,10 @@
     {
       "source": "CarrierLocation",
       "translation": "ПеревозчикМестоположение"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "ПеревозчикNextJump"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -170697,6 +171221,10 @@
       "translation": "ДЕФИЦИТ АВТОНОСНОГО ФЛОТА"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "ФЛОТ-ПЕРЕВОЗЧИК СЛЕДУЮЩИЙ ПРЫГ"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "МАРШРУТ ПЕРЕВОЗЧИКА ФЛОТА"
     },
@@ -171847,6 +172375,10 @@
     {
       "source": "Fuel left",
       "translation": "Осталось топлива"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "Осталось топлива (оценка)"
     },
     {
       "source": "Fuel-scoop stop",
@@ -173633,6 +174165,10 @@
       "translation": "В ПРОГРЕССЕ"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "В ПУТИ"
+    },
+    {
       "source": "INACTIVE",
       "translation": "НЕАКТИВНО"
     },
@@ -174065,6 +174601,10 @@
       "translation": "На корабле или SRV циклически переключайте огневую группу, чтобы выбрать «Альфа», «Бета», «Гамма», «Присутствует», «Отсутствует» или «Пусто». затем дважды переключите настроенный элемент управления подтверждением Guardian."
     },
     {
+      "source": "In depot now",
+      "translation": "Сейчас в депо"
+    },
+    {
       "source": "In flight",
       "translation": "В полете"
     },
@@ -174409,6 +174949,10 @@
       "translation": "Прыжок-вылет"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "ПРЫГ В ПРОГРЕССЕ"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "ИНИЦИАЦИЯ ПРЫЖКА В"
     },
@@ -174619,6 +175163,10 @@
     {
       "source": "Jump fuel",
       "translation": "Перейти топлива"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "Прыжковое топливо (расчетное значение)"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -174945,20 +175493,16 @@
       "translation": "МЕСТОПОЛОЖЕНИЕ В ПОИСКЕ"
     },
     {
-      "source": "LOCKED",
-      "translation": "ЗАБЛОКИРОВАНО"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "БЛОКИРОВКА"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "Долгота"
     },
     {
       "source": "LOW",
       "translation": "НИЗКИЙ"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "НИЗКИЙ ТРИТИЙ"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -175805,8 +176349,16 @@
       "translation": "Восстановление локального профиля завершено. Автоматическая синхронизация с облаком откладывается во время проверки обновлений; используйте «Синхронизировать сейчас» или перезагрузите компьютер в обычном режиме, чтобы проверить Google Диск."
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "Не удалось сохранить локальное отслеживание проекта: {0}."
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "Не удалось обновить локальные системные проекты: {0}."
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -184829,6 +185381,10 @@
       "translation": "СКАНИРОВАННЫЕ СИГНАЛЫ"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "ЗАПЛАНИРОВАНО"
+    },
+    {
       "source": "SCO",
       "translation": "Ско"
     },
@@ -186905,6 +187461,10 @@
       "translation": "Показать все"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "Показать информацию о следующем переходе от оператора связи"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Показать общее количество авиаперевозчиков"
     },
@@ -186923,6 +187483,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "Показать SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "Показать несвязанные проекты в текущей системе"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -187137,6 +187701,10 @@
       "translation": "Показать зоны исключения из сканирования образцов"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "Покажите запланированные прыжки авианосца и этапы прыжка в наложении «Маршрут авианосца», в том числе, когда ни один маршрут не активен."
+    },
+    {
       "source": "Show short supply",
       "translation": "Показать дефицит"
     },
@@ -187259,6 +187827,10 @@
     {
       "source": "ShowInRightView",
       "translation": "ШоуИнРайтВью"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "ПоказатьИнформацию"
     },
     {
       "source": "ShowMapLegend",
@@ -189419,6 +189991,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "SystemControlForegroundBaseMediumBrush"
+    },
+    {
+      "source": "SystemID",
+      "translation": "Системный идентификатор"
     },
     {
       "source": "SystemMap",
@@ -192633,6 +193209,10 @@
       "translation": "ТрекМатериалКоллекция"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "Не удалось обновить отслеживаемые локальные проекты: {0}."
+    },
+    {
       "source": "Tracked locations",
       "translation": "Отслеживаемые местоположения"
     },
@@ -192983,6 +193563,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "Невозможно открыть новую страницу POI EDAstro: {0}."
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "Неаффилированный"
     },
     {
       "source": "Unassigned",
@@ -195195,6 +195779,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "Уменьшить масштаб карты поверхностных горных работ"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[ЛЕДЯНОЕ ТЕЛО]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -197481,6 +198069,10 @@
       "translation": "пантермкии"
     },
     {
+      "source": "passive",
+      "translation": "пассивный"
+    },
+    {
       "source": "path:{0}",
       "translation": "путь:{0}"
     },
@@ -198825,8 +199417,16 @@
       "translation": "{0} ли"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "{0} LY JUMP • {1} LY ОСТАЛОСЬ"
+      "source": "{0} LY JUMP",
+      "translation": "{0} LY JUMP"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} LY JUMP (EST.)"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} LY ОСТАЛОСЬ"
     },
     {
       "source": "{0} M",
@@ -200295,6 +200895,10 @@
       "translation": "146 m | 068度"
     },
     {
+      "source": "146 t",
+      "translation": "146吨"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "170 米 |追踪"
     },
@@ -200431,6 +201035,10 @@
       "translation": "225 度 | 3.40公里"
     },
     {
+      "source": "239 t",
+      "translation": "239吨"
+    },
+    {
       "source": "284 m",
       "translation": "284 米"
     },
@@ -200537,6 +201145,10 @@
     {
       "source": "431 / 960 T",
       "translation": "431 / 960 吨"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "499.76 LY 跳跃（EST）"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -201383,6 +201995,10 @@
       "translation": "爱华"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "等待抵达"
+    },
+    {
       "source": "Aa",
       "translation": "氨基酸"
     },
@@ -201825,6 +202441,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "空中高度伽玛"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "跳跃后（预计）"
     },
     {
       "source": "Aggregate completion",
@@ -204167,6 +204787,10 @@
       "translation": "浏览历史记录，检查每个访问过的系统，并保持活动探险最新。"
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "浏览附近的项目而不加入它们。选择“显示”或“聚焦”以在离开系统时保留项目。"
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "按质量代码浏览访问的立方体，然后打开氦气、主体类别和值的立方体。"
     },
@@ -204309,6 +204933,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "取消冷却时间"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "取消"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -204513,6 +205141,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "控制派系"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "冷却"
     },
     {
       "source": "CORE",
@@ -205039,6 +205671,14 @@
       "translation": "承运人名称："
     },
     {
+      "source": "Carrier next jump",
+      "translation": "载体下一跳"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "无法保存运营商下一跳设置：{0}"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "承运人运营和货物"
     },
@@ -205073,6 +205713,10 @@
     {
       "source": "CarrierLocation",
       "translation": "运营商位置"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "承运人下一个跳跃"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -210695,6 +211339,10 @@
       "translation": "舰队承运人赤字"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "舰队承运人下一跳"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "车队运输路线"
     },
@@ -211845,6 +212493,10 @@
     {
       "source": "Fuel left",
       "translation": "剩余燃油"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "剩余燃油（预计）"
     },
     {
       "source": "Fuel-scoop stop",
@@ -213631,6 +214283,10 @@
       "translation": "进行中"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "在途中"
+    },
+    {
       "source": "INACTIVE",
       "translation": "不活跃"
     },
@@ -214063,6 +214719,10 @@
       "translation": "在船舶或 SRV 中，循环火力组以选择 Alpha、Beta、Gamma、Present、Absent 或 Empty；然后切换配置的监护人确认控件两次。"
     },
     {
+      "source": "In depot now",
+      "translation": "现在在仓库"
+    },
+    {
       "source": "In flight",
       "translation": "飞行中"
     },
@@ -214407,6 +215067,10 @@
       "translation": "跳跃出发"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "跳跃进行中"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "跳转启动"
     },
@@ -214617,6 +215281,10 @@
     {
       "source": "Jump fuel",
       "translation": "跳跃燃料"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "跳跃燃料（预计）"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -214943,20 +215611,16 @@
       "translation": "搜索位置"
     },
     {
-      "source": "LOCKED",
-      "translation": "锁定"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "锁定"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "经度"
     },
     {
       "source": "LOW",
       "translation": "低的"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "低氚"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -215803,8 +216467,16 @@
       "translation": "本地配置文件恢复已完成。更新验证期间自动云同步被推迟；使用立即同步或正常重新启动来检查 Google 云端硬盘。"
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "无法保存本地项目跟踪：{0}"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "无法刷新本地系统项目：{0}"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -224827,6 +225499,10 @@
       "translation": "扫描信号"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "预定"
+    },
+    {
       "source": "SCO",
       "translation": "斯科"
     },
@@ -226903,6 +227579,10 @@
       "translation": "显示全部"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "显示运营商下一跳信息"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "显示舰队承运商总数"
     },
@@ -226921,6 +227601,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "显示 SrvSurvey"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "显示当前系统中无关联的项目"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -227135,6 +227819,10 @@
       "translation": "显示扫描禁区示例"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "在舰队承运人航线叠加层中显示计划的承运人跳跃和跳跃阶段，包括没有活动航线时的情况。"
+    },
+    {
       "source": "Show short supply",
       "translation": "显示供不应求"
     },
@@ -227257,6 +227945,10 @@
     {
       "source": "ShowInRightView",
       "translation": "在右视图中显示"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "显示信息"
     },
     {
       "source": "ShowMapLegend",
@@ -229417,6 +230109,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "系统控制前景基础中画笔"
+    },
+    {
+      "source": "SystemID",
+      "translation": "系统ID"
     },
     {
       "source": "SystemMap",
@@ -232631,6 +233327,10 @@
       "translation": "轨迹素材集合"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "无法刷新跟踪的本地项目：{0}"
+    },
+    {
       "source": "Tracked locations",
       "translation": "追踪地点"
     },
@@ -232981,6 +233681,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "无法打开 EDAstro 的新 POI 页面：{0}"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "无隶属关系"
     },
     {
       "source": "Unassigned",
@@ -235193,6 +235897,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "缩放露天采矿地图"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "[ 冰冷的身体 ]"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -237479,6 +238187,10 @@
       "translation": "黑豹"
     },
     {
+      "source": "passive",
+      "translation": "被动的"
+    },
+    {
       "source": "path:{0}",
       "translation": "路径：{0}"
     },
@@ -238823,8 +239535,16 @@
       "translation": "{0} ly"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "{0} LY 跳转 • {1} LY 剩余"
+      "source": "{0} LY JUMP",
+      "translation": "{0} LY 跳跃"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "{0} LY JUMP（EST.）"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "{0} 剩余"
     },
     {
       "source": "{0} M",
@@ -240293,6 +241013,10 @@
       "translation": "* 146 M | 068 DEGREES >>>!"
     },
     {
+      "source": "146 t",
+      "translation": "* 146 T >>>!"
+    },
+    {
       "source": "170 m | TRACKED",
       "translation": "* 170 M | TRACKED >>>!"
     },
@@ -240429,6 +241153,10 @@
       "translation": "* 225 DEGREES | 3.40 KM >>>!"
     },
     {
+      "source": "239 t",
+      "translation": "* 239 T >>>!"
+    },
+    {
       "source": "284 m",
       "translation": "* 284 M >>>!"
     },
@@ -240535,6 +241263,10 @@
     {
       "source": "431 / 960 T",
       "translation": "* 431 / 960 T >>>!"
+    },
+    {
+      "source": "499.76 LY JUMP (EST.)",
+      "translation": "* 499.76 LY JUMP (EST.) >>>!"
     },
     {
       "source": "499.76 LY JUMP • 21,502.09 LY REMAINING",
@@ -241381,6 +242113,10 @@
       "translation": "* AW >>>!"
     },
     {
+      "source": "AWAITING ARRIVAL",
+      "translation": "* AWAITING ARRIVAL >>>!"
+    },
+    {
       "source": "Aa",
       "translation": "* AA >>>!"
     },
@@ -241823,6 +242559,10 @@
     {
       "source": "AerialAltitudeGamma",
       "translation": "* AERIALALTITUDEGAMMA >>>!"
+    },
+    {
+      "source": "After jump (est.)",
+      "translation": "* AFTER JUMP (EST.) >>>!"
     },
     {
       "source": "Aggregate completion",
@@ -244165,6 +244905,10 @@
       "translation": "* BROWSE HISTORY, INSPECT EVERY VISITED SYSTEM, AND KEEP THE ACTIVE EXPEDITION CURRENT. >>>!"
     },
     {
+      "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
+      "translation": "* BROWSE NEARBY PROJECTS WITHOUT JOINING THEM. SELECT SHOW OR MAKE FOCUS TO RETAIN A PROJECT WHEN LEAVING THE SYSTEM. >>>!"
+    },
+    {
       "source": "Browse visited cubes by mass code, then open a cube for helium, body classes, and value.",
       "translation": "* BROWSE VISITED CUBES BY MASS CODE, THEN OPEN A CUBE FOR HELIUM, BODY CLASSES, AND VALUE. >>>!"
     },
@@ -244307,6 +245051,10 @@
     {
       "source": "CANCELLATION COOLDOWN",
       "translation": "* CANCELLATION COOLDOWN >>>!"
+    },
+    {
+      "source": "CANCELLED",
+      "translation": "* CANCELLED >>>!"
     },
     {
       "source": "CANONN PRIOR SCANS",
@@ -244511,6 +245259,10 @@
     {
       "source": "CONTROLLING FACTION",
       "translation": "* CONTROLLING FACTION >>>!"
+    },
+    {
+      "source": "COOLDOWN",
+      "translation": "* COOLDOWN >>>!"
     },
     {
       "source": "CORE",
@@ -245037,6 +245789,14 @@
       "translation": "* CARRIER NAME: >>>!"
     },
     {
+      "source": "Carrier next jump",
+      "translation": "* CARRIER NEXT JUMP >>>!"
+    },
+    {
+      "source": "Carrier next-jump setting could not be saved: {0}",
+      "translation": "* CARRIER NEXT-JUMP SETTING COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
       "source": "Carrier operations and cargo",
       "translation": "* CARRIER OPERATIONS AND CARGO >>>!"
     },
@@ -245071,6 +245831,10 @@
     {
       "source": "CarrierLocation",
       "translation": "* CARRIERLOCATION >>>!"
+    },
+    {
+      "source": "CarrierNextJump",
+      "translation": "* CARRIERNEXTJUMP >>>!"
     },
     {
       "source": "CarrierRefreshAttempts",
@@ -250693,6 +251457,10 @@
       "translation": "* FLEET CARRIER DEFICIT >>>!"
     },
     {
+      "source": "FLEET CARRIER NEXT JUMP",
+      "translation": "* FLEET CARRIER NEXT JUMP >>>!"
+    },
+    {
       "source": "FLEET CARRIER ROUTE",
       "translation": "* FLEET CARRIER ROUTE >>>!"
     },
@@ -251843,6 +252611,10 @@
     {
       "source": "Fuel left",
       "translation": "* FUEL LEFT >>>!"
+    },
+    {
+      "source": "Fuel left (est.)",
+      "translation": "* FUEL LEFT (EST.) >>>!"
     },
     {
       "source": "Fuel-scoop stop",
@@ -253629,6 +254401,10 @@
       "translation": "* IN PROGRESS >>>!"
     },
     {
+      "source": "IN TRANSIT",
+      "translation": "* IN TRANSIT >>>!"
+    },
+    {
       "source": "INACTIVE",
       "translation": "* INACTIVE >>>!"
     },
@@ -254061,6 +254837,10 @@
       "translation": "* IN A SHIP OR SRV, CYCLE THE FIRE GROUP TO CHOOSE ALPHA, BETA, GAMMA, PRESENT, ABSENT, OR EMPTY; THEN TOGGLE THE CONFIGURED GUARDIAN CONFIRMATION CONTROL TWICE. >>>!"
     },
     {
+      "source": "In depot now",
+      "translation": "* IN DEPOT NOW >>>!"
+    },
+    {
       "source": "In flight",
       "translation": "* IN FLIGHT >>>!"
     },
@@ -254405,6 +255185,10 @@
       "translation": "* JUMP DEPARTURE >>>!"
     },
     {
+      "source": "JUMP IN PROGRESS",
+      "translation": "* JUMP IN PROGRESS >>>!"
+    },
+    {
       "source": "JUMP INITIATION IN",
       "translation": "* JUMP INITIATION IN >>>!"
     },
@@ -254615,6 +255399,10 @@
     {
       "source": "Jump fuel",
       "translation": "* JUMP FUEL >>>!"
+    },
+    {
+      "source": "Jump fuel (est.)",
+      "translation": "* JUMP FUEL (EST.) >>>!"
     },
     {
       "source": "Jump overlay preferences changed for this session but could not be saved: {0}",
@@ -254941,20 +255729,16 @@
       "translation": "* LOCATION IN SEARCH >>>!"
     },
     {
-      "source": "LOCKED",
-      "translation": "* LOCKED >>>!"
-    },
-    {
-      "source": "LOCKING",
-      "translation": "* LOCKING >>>!"
-    },
-    {
       "source": "LONGITUDE",
       "translation": "* LONGITUDE >>>!"
     },
     {
       "source": "LOW",
       "translation": "* LOW >>>!"
+    },
+    {
+      "source": "LOW TRITIUM",
+      "translation": "* LOW TRITIUM >>>!"
     },
     {
       "source": "LOWEST MASS CODE",
@@ -255801,8 +256585,16 @@
       "translation": "* LOCAL PROFILE RECOVERY IS COMPLETE. AUTOMATIC CLOUD SYNC IS DEFERRED DURING UPDATE VERIFICATION; USE SYNC NOW OR RESTART NORMALLY TO CHECK GOOGLE DRIVE. >>>!"
     },
     {
+      "source": "Local project tracking could not be saved: {0}",
+      "translation": "* LOCAL PROJECT TRACKING COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
       "source": "Local ring discoveries",
       "translation": "* LOCAL RING DISCOVERIES >>>!"
+    },
+    {
+      "source": "Local system projects could not be refreshed: {0}",
+      "translation": "* LOCAL SYSTEM PROJECTS COULD NOT BE REFRESHED: {0} >>>!"
     },
     {
       "source": "Local voices loaded from {0}.",
@@ -264825,6 +265617,10 @@
       "translation": "* SCANNED SIGNALS >>>!"
     },
     {
+      "source": "SCHEDULED",
+      "translation": "* SCHEDULED >>>!"
+    },
+    {
       "source": "SCO",
       "translation": "* SCO >>>!"
     },
@@ -266901,6 +267697,10 @@
       "translation": "* SHOW ALL >>>!"
     },
     {
+      "source": "Show Carrier Next-Jump Information",
+      "translation": "* SHOW CARRIER NEXT-JUMP INFORMATION >>>!"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "* SHOW FLEET CARRIER AGGREGATE COUNTS >>>!"
     },
@@ -266919,6 +267719,10 @@
     {
       "source": "Show SrvSurvey",
       "translation": "* SHOW SRVSURVEY >>>!"
+    },
+    {
+      "source": "Show Unaffiliated Projects in Current System",
+      "translation": "* SHOW UNAFFILIATED PROJECTS IN CURRENT SYSTEM >>>!"
     },
     {
       "source": "Show aiming guidance to bio signals from Canonn",
@@ -267133,6 +267937,10 @@
       "translation": "* SHOW SAMPLE SCAN EXCLUSION ZONES >>>!"
     },
     {
+      "source": "Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active.",
+      "translation": "* SHOW SCHEDULED CARRIER JUMPS AND JUMP PHASES IN THE FLEET CARRIER ROUTE OVERLAY, INCLUDING WHEN NO ROUTE IS ACTIVE. >>>!"
+    },
+    {
       "source": "Show short supply",
       "translation": "* SHOW SHORT SUPPLY >>>!"
     },
@@ -267255,6 +268063,10 @@
     {
       "source": "ShowInRightView",
       "translation": "* SHOWINRIGHTVIEW >>>!"
+    },
+    {
+      "source": "ShowInformation",
+      "translation": "* SHOWINFORMATION >>>!"
     },
     {
       "source": "ShowMapLegend",
@@ -269415,6 +270227,10 @@
     {
       "source": "SystemControlForegroundBaseMediumBrush",
       "translation": "* SYSTEMCONTROLFOREGROUNDBASEMEDIUMBRUSH >>>!"
+    },
+    {
+      "source": "SystemID",
+      "translation": "* SYSTEMID >>>!"
     },
     {
       "source": "SystemMap",
@@ -272629,6 +273445,10 @@
       "translation": "* TRACKMATERIALCOLLECTION >>>!"
     },
     {
+      "source": "Tracked local projects could not be refreshed: {0}",
+      "translation": "* TRACKED LOCAL PROJECTS COULD NOT BE REFRESHED: {0} >>>!"
+    },
+    {
       "source": "Tracked locations",
       "translation": "* TRACKED LOCATIONS >>>!"
     },
@@ -272979,6 +273799,10 @@
     {
       "source": "Unable to open EDAstro's New POI page: {0}",
       "translation": "* UNABLE TO OPEN EDASTRO'S NEW POI PAGE: {0} >>>!"
+    },
+    {
+      "source": "Unaffiliated",
+      "translation": "* UNAFFILIATED >>>!"
     },
     {
       "source": "Unassigned",
@@ -275191,6 +276015,10 @@
     {
       "source": "Zoom Surface Mining map out",
       "translation": "* ZOOM SURFACE MINING MAP OUT >>>!"
+    },
+    {
+      "source": "[ ICY BODY ]",
+      "translation": "* [ ICY BODY ] >>>!"
     },
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
@@ -277477,6 +278305,10 @@
       "translation": "* PANTHERMKII >>>!"
     },
     {
+      "source": "passive",
+      "translation": "* PASSIVE >>>!"
+    },
+    {
       "source": "path:{0}",
       "translation": "* PATH:{0} >>>!"
     },
@@ -278821,8 +279653,16 @@
       "translation": "* {0} LY >>>!"
     },
     {
-      "source": "{0} LY JUMP • {1} LY REMAINING",
-      "translation": "* {0} LY JUMP • {1} LY REMAINING >>>!"
+      "source": "{0} LY JUMP",
+      "translation": "* {0} LY JUMP >>>!"
+    },
+    {
+      "source": "{0} LY JUMP (EST.)",
+      "translation": "* {0} LY JUMP (EST.) >>>!"
+    },
+    {
+      "source": "{0} LY REMAINING",
+      "translation": "* {0} LY REMAINING >>>!"
     },
     {
       "source": "{0} M",

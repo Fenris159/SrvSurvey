@@ -382,6 +382,11 @@
                           Classes="secondary"
                           Click="OpenRavenBuilds_Click"
                           Content="Open Raven builds" />
+                  <CheckBox x:Name="ShowUnaffiliatedProjectsCheckBox" Margin="0,0,8,0"
+                            IsChecked="{Binding Colonization.ShowUnaffiliatedProjectsInCurrentSystem, Mode=TwoWay}"
+                            IsEnabled="{Binding Colonization.IsEnabled}"
+                            Content="Show Unaffiliated Projects in Current System"
+                            ToolTip.Tip="Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system." />
 
                   </WrapPanel>
                 </Grid>
@@ -491,6 +496,7 @@
                                            FontWeight="Bold"
                                            Text="{Binding FocusLabel}"
                                            TextWrapping="Wrap" />
+                                <TextBlock Classes="muted" FontSize="10" IsVisible="{Binding IsUnaffiliated}" Text="Unaffiliated" />
                               </StackPanel>
                               <TextBlock Grid.Column="2" VerticalAlignment="Center"
                                          Text="{Binding CarrierCoverageText}"

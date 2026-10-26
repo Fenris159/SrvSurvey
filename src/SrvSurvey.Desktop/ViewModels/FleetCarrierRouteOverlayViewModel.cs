@@ -33,6 +33,38 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public bool IsPassive => editorPreview?.IsPassive ?? (route.UseCarrierNextJumpInformation && !IsFinished);
+    public string Header => IsPassive ? "FLEET CARRIER NEXT JUMP" : "FLEET CARRIER ROUTE";
+    public bool HasRouteDetails => !IsPassive;
+    public bool HasJumpSummary => !string.IsNullOrEmpty(JumpSummary);
+    public string FuelLeftLabel
+    {
+        get
+        {
+            if (IsPassive && (editorPreview is not null || route.CarrierFuelAfterJump is not null))
+            {
+                return "After jump (est.)";
+            }
+            return IsPassive && route.CarrierFuelIsEstimated ? "Fuel left (est.)" : "Fuel left";
+        }
+    }
+    public string JumpFuelLabel => IsPassive ? "Jump fuel (est.)" : "Jump fuel";
+    public bool HasFuelLeft => FuelLeft != "—";
+    public bool HasMarketTritium => TritiumInMarket != "—";
+    public bool HasJumpFuel => JumpFuel != "—";
+    public string DepotFuel => editorPreview?.DepotFuel ?? FormatTonnes(route.CarrierDepotFuel);
+    public bool HasDepotFuel =>
+        IsPassive && DepotFuel != "—" && (editorPreview is not null || route.CarrierFuelAfterJump is not null);
+    public bool HasTritiumDetails => HasFuelLeft || HasMarketTritium || HasJumpFuel;
+    public string WarningLabel => IsPassive ? "LOW TRITIUM" : "RESTOCK REQUIRED";
+    public bool HasWarningAmount => RestockAmount != "—";
+    public bool HasMiningResources => HasIcyBody || HasIcyRing;
+    public bool HasIcyBody => editorPreview?.HasIcyBody ?? DestinationSummary?.MiningResources.HasIcyBody == true;
+    private SrvSurvey.Core.Navigation.SystemSummary? DestinationSummary =>
+        string.Equals(route.CarrierDestinationSummary?.SystemName, SystemName, StringComparison.OrdinalIgnoreCase)
+            ? route.CarrierDestinationSummary
+            : null;
+
     public string HopProgress
     {
         get
@@ -40,6 +72,17 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
             if (editorPreview is not null)
             {
                 return editorPreview.HopProgress;
+            }
+
+            if (IsPassive)
+            {
+                return route.CarrierJumpKind switch
+                {
+                    FleetCarrierJumpCountdownKind.Scheduled => "SCHEDULED",
+                    FleetCarrierJumpCountdownKind.InTransit => "IN TRANSIT",
+                    FleetCarrierJumpCountdownKind.CancellationCooldown => "CANCELLED",
+                    _ => "COOLDOWN",
+                };
             }
 
             if (route.RouteCount == 0)
@@ -58,9 +101,12 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
         }
     }
 
-    public string SystemName => editorPreview?.SystemName ?? DisplayedHop?.Name ?? route.NextHopName;
+    public string SystemName =>
+        editorPreview?.SystemName
+        ?? (IsPassive ? route.CarrierJumpDestination : DisplayedHop?.Name ?? route.NextHopName);
 
-    public bool ShouldShow => route.ShouldShowFleetCarrierRouteOverlay || IsFinished;
+    public bool ShouldShow =>
+        route.ShouldShowFleetCarrierRouteOverlay || route.ShouldShowCarrierNextJumpOverlay || IsFinished;
 
     public string JumpSummary
     {
@@ -71,9 +117,19 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
                 return editorPreview.JumpSummary;
             }
 
+            if (IsPassive)
+            {
+                return route.CarrierNextJumpDistance is { } distance ? $"{distance:N2} LY JUMP (EST.)" : string.Empty;
+            }
             FollowRouteCarrierHop? carrier = DisplayedHop?.Carrier;
-            return $"{FormatNumber(carrier?.DistanceLy, 2)} LY JUMP  \u2022  "
-                + $"{FormatNumber(carrier?.RemainingLy, 2)} LY REMAINING";
+            return string.Join(
+                "  •  ",
+                new[]
+                {
+                    carrier?.DistanceLy is { } jump ? $"{FormatNumber(jump, 2)} LY JUMP" : null,
+                    carrier?.RemainingLy is { } remaining ? $"{FormatNumber(remaining, 2)} LY REMAINING" : null,
+                }.Where(value => value is not null)
+            );
         }
     }
 
@@ -88,27 +144,55 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
         }
     }
 
-    public string FuelLeft => editorPreview?.FuelLeft ?? FormatTonnes(DisplayedHop?.Carrier?.FuelRemainingTonnes);
+    public string FuelLeft =>
+        editorPreview?.FuelLeft
+        ?? FormatTonnes(
+            IsPassive
+                ? route.CarrierFuelAfterJump ?? route.CarrierDepotFuel
+                : DisplayedHop?.Carrier?.FuelRemainingTonnes
+        );
 
     public string TritiumInMarket =>
-        editorPreview?.TritiumInMarket ?? FormatTonnes(DisplayedHop?.Carrier?.TritiumInMarketTonnes);
+        editorPreview?.TritiumInMarket
+        ?? FormatTonnes(IsPassive ? route.CarrierStoredTritium : DisplayedHop?.Carrier?.TritiumInMarketTonnes);
 
-    public string JumpFuel => editorPreview?.JumpFuel ?? FormatTonnes(DisplayedHop?.Carrier?.FuelUsedTonnes);
+    public string JumpFuel =>
+        editorPreview?.JumpFuel
+        ?? FormatTonnes(IsPassive ? route.CarrierNextJumpFuel : DisplayedHop?.Carrier?.FuelUsedTonnes);
 
-    public bool HasIcyRing => editorPreview?.HasIcyRing ?? DisplayedHop?.Carrier?.HasIcyRing == true;
+    public bool HasIcyRing =>
+        editorPreview?.HasIcyRing
+        ?? (
+            DisplayedHop?.Carrier?.HasIcyRing == true && !IsPassive
+            || DestinationSummary?.MiningResources.HasIcyRing == true
+        );
 
     public string IcyRingLabel =>
         editorPreview?.IcyRingLabel
-        ?? (DisplayedHop?.Carrier is { HasIcyRing: true, IsSystemPristine: true } ? "PRISTINE ICY RING" : "ICY RING");
+        ?? (
+            DisplayedHop?.Carrier is { HasIcyRing: true, IsSystemPristine: true } && !IsPassive
+            || DestinationSummary?.MiningResources.HasPristineIcyRing == true
+                ? "PRISTINE ICY RING"
+                : "ICY RING"
+        );
 
-    public bool HasRestockWarning => editorPreview?.HasRestockWarning ?? DisplayedHop?.Carrier?.MustRestock == true;
+    public bool HasRestockWarning =>
+        editorPreview?.HasRestockWarning
+        ?? (IsPassive ? route.CarrierFuelAfterJump is < 200 : DisplayedHop?.Carrier?.MustRestock == true);
 
     public string RestockAmount =>
-        editorPreview?.RestockAmount ?? FormatTonnes(DisplayedHop?.Carrier?.RestockAmountTonnes);
+        editorPreview?.RestockAmount
+        ?? FormatTonnes(IsPassive ? route.CarrierFuelAfterJump : DisplayedHop?.Carrier?.RestockAmountTonnes);
 
     public bool HasCountdown => editorPreview?.HasCountdown ?? route.HasCarrierJumpCountdown;
 
-    public string CountdownTitle => editorPreview?.CountdownTitle ?? route.CarrierJumpCountdownTitle;
+    public string CountdownTitle =>
+        editorPreview?.CountdownTitle
+        ?? (
+            IsPassive && route.CarrierJumpKind == FleetCarrierJumpCountdownKind.Scheduled
+                ? "JUMP DEPARTURE"
+                : route.CarrierJumpCountdownTitle
+        );
 
     public string Countdown => editorPreview?.Countdown ?? route.CarrierJumpCountdownValue;
 
@@ -157,6 +241,10 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
                 or nameof(RouteWorkspaceViewModel.ReachedCount)
                 or nameof(RouteWorkspaceViewModel.IsComplete)
                 or nameof(RouteWorkspaceViewModel.ShouldShowFleetCarrierRouteOverlay)
+                or nameof(RouteWorkspaceViewModel.ShouldShowCarrierNextJumpOverlay)
+                or nameof(RouteWorkspaceViewModel.CarrierDestinationSummary)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpDestination)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpKind)
         )
         {
             RaiseRouteProperties();
@@ -177,6 +265,22 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
 
     private void RaiseRouteProperties()
     {
+        Raise(nameof(IsPassive));
+        Raise(nameof(Header));
+        Raise(nameof(HasRouteDetails));
+        Raise(nameof(HasJumpSummary));
+        Raise(nameof(FuelLeftLabel));
+        Raise(nameof(JumpFuelLabel));
+        Raise(nameof(HasFuelLeft));
+        Raise(nameof(HasMarketTritium));
+        Raise(nameof(HasJumpFuel));
+        Raise(nameof(DepotFuel));
+        Raise(nameof(HasDepotFuel));
+        Raise(nameof(HasTritiumDetails));
+        Raise(nameof(WarningLabel));
+        Raise(nameof(HasWarningAmount));
+        Raise(nameof(HasMiningResources));
+        Raise(nameof(HasIcyBody));
         Raise(nameof(HopProgress));
         Raise(nameof(SystemName));
         Raise(nameof(ShouldShow));
@@ -265,7 +369,10 @@ internal sealed record FleetCarrierRouteEditorPreview(
     string Countdown,
     string CountdownPhase,
     string CountdownPhaseTime,
-    bool HasCountdownPhaseTime
+    bool HasCountdownPhaseTime,
+    bool IsPassive = false,
+    bool HasIcyBody = false,
+    string? DepotFuel = null
 );
 
 internal enum FleetCarrierRouteEditorPreviewState
@@ -273,4 +380,5 @@ internal enum FleetCarrierRouteEditorPreviewState
     Cooldown,
     Scheduled,
     RouteOnly,
+    Passive,
 }

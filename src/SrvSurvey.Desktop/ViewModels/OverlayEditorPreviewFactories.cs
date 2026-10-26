@@ -551,10 +551,33 @@ internal static class OverlayEditorPreviewFactories
             HasCountdown: state is not FleetCarrierRouteEditorPreviewState.RouteOnly,
             CountdownTitle: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "JUMP DEPARTURE" : "JUMP COOLDOWN",
             Countdown: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "12:45" : "4:32",
-            CountdownPhase: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "LOCKED" : "LOCKING",
-            CountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "0:45" : "0:18",
-            HasCountdownPhaseTime: state is not FleetCarrierRouteEditorPreviewState.RouteOnly
+            CountdownPhase: state == FleetCarrierRouteEditorPreviewState.Scheduled
+                ? "JUMP INITIATION IN"
+                : "CARRIER ARRIVED",
+            CountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "2:45" : string.Empty,
+            HasCountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled,
+            HasIcyBody: true
         );
+        if (state == FleetCarrierRouteEditorPreviewState.Passive)
+        {
+            preview = preview with
+            {
+                IsPassive = true,
+                HopProgress = "SCHEDULED",
+                JumpSummary = "499.76 LY JUMP (EST.)",
+                RemainingJumps = 0,
+                FuelLeft = "146 t",
+                DepotFuel = "239 t",
+                TritiumInMarket = "2,799 t",
+                JumpFuel = "93 t",
+                RestockAmount = "146 t",
+                CountdownTitle = "JUMP DEPARTURE",
+                Countdown = "12:45",
+                CountdownPhase = "JUMP INITIATION IN",
+                CountdownPhaseTime = "2:45",
+                HasCountdownPhaseTime = true,
+            };
+        }
         vm.InstallEditorPreview(preview);
         return vm;
     }

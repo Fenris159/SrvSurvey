@@ -75,6 +75,7 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
         if (
             eventArgs.PropertyName
             is nameof(RouteWorkspaceViewModel.ShouldShowFleetCarrierRouteOverlay)
+                or nameof(RouteWorkspaceViewModel.ShouldShowCarrierNextJumpOverlay)
                 or nameof(RouteWorkspaceViewModel.NextHop)
         )
         {

@@ -23,6 +23,15 @@ public sealed class ShipLoadout
             : null;
     public int ModuleCount => Payload.GetProperty("Modules").GetArrayLength();
 
+    /// <summary>The journal's maximum range with no cargo and only enough fuel for one jump.</summary>
+    public decimal? MaximumJumpRange =>
+        Payload.TryGetProperty("MaxJumpRange", out JsonElement range)
+        && range.ValueKind == JsonValueKind.Number
+        && range.TryGetDecimal(out decimal value)
+        && value > 0
+            ? value
+            : null;
+
     /// <summary>
     /// Requires ship and module identities while preserving the original journal fields.
     /// </summary>

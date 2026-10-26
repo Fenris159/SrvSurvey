@@ -85,7 +85,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IAsyncLifetime
         );
 
         Assert.Equal("NO ROUTE", viewModel.HopProgress);
-        Assert.Equal("\u2014 LY JUMP  \u2022  \u2014 LY REMAINING", viewModel.JumpSummary);
+        Assert.Empty(viewModel.JumpSummary);
         Assert.Equal("0 JUMPS LEFT", viewModel.JumpsLeft);
         Assert.False(route.HasCarrierEstimatedTimeRemaining);
         Assert.Equal("\u2014", viewModel.FuelLeft);
@@ -184,7 +184,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IAsyncLifetime
 
         time.Advance(TimeSpan.FromMilliseconds(1));
         viewModel.AdvanceTimedTransitions();
-        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.IsPassive);
+        Assert.Equal("COOLDOWN", viewModel.HopProgress);
     }
 
     /// <summary>
@@ -478,6 +480,11 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IAsyncLifetime
 
             now = new DateTimeOffset(2026, 10, 11, 12, 15, 0, TimeSpan.Zero);
             route.RefreshCarrierJumpCountdown();
+            Assert.Equal(string.Empty, countdown.Text);
+            Assert.Equal("AWAITING ARRIVAL", phase[0].Text);
+            route.ApplyFleetCarrierJumpEvents([
+                Parse("""{"timestamp":"2026-10-11T12:15:00Z","event":"CarrierJump","StarSystem":"Colonia"}"""),
+            ]);
             Assert.Equal("5:00", countdown.Text);
             Assert.Equal("CARRIER ARRIVED", phase[0].Text);
             Assert.Contains(window.GetVisualDescendants().OfType<TextBlock>(), block => block.Text == "JUMP COOLDOWN");

@@ -8,6 +8,8 @@ public sealed partial class MiningMissionsOverlayPresentation
         IOverlayPanelSizePolicy,
         IOverlayPanelViewportAware
 {
+    public bool AutoWidth => true;
+
     public bool AutoHeight => true;
 
     void IOverlayPanelViewportAware.SetAvailableHeight(double height) => MissionPanel.MaxHeight = height;

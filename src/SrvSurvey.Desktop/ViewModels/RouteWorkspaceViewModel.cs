@@ -130,6 +130,9 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         routeKind = options.Kind;
         carrierSnapshotSource = options.CarrierSnapshotSource;
         refreshCarrierSnapshot = options.RefreshCarrierSnapshot;
+        carrierNextJump = options.CarrierNextJump;
+        carrierDestinationLookup = carrierNextJump is null ? null : new CarrierDestinationLookup(carrierNextJump);
+        showCarrierNextJumpInformation = carrierNextJump?.SettingsStore.Load() ?? true;
         utcNow = options.UtcNow ?? (() => DateTimeOffset.UtcNow);
         openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
         refreshCommand = new AsyncCommand(RefreshAsync, HasProfileAndNotBusy);
@@ -853,6 +856,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             profileRevision++;
             SpanshSearch?.Cancel();
             ResetCarrierFuelContext();
+            ResetCarrierDestination();
         }
         frontierId = normalizedFrontierId;
         currentSystemName = nextSystemName;
@@ -1155,7 +1159,9 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         DateTimeOffset now = utcNow();
+        double? projectedFuel = CarrierFuelAfterJump;
         ObserveCarrierFuel(journalEvents);
+        ReadObservedCarrierFuel();
         bool changed = false;
         foreach (JournalEventEnvelope journalEvent in journalEvents.Where(MatchesSelectedCarrier))
         {
@@ -1164,8 +1170,16 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         if (changed)
         {
+            if (
+                carrierJumpCountdown.Current.Kind == FleetCarrierJumpCountdownKind.PostJumpCooldown
+                && CarrierJumpKind != FleetCarrierJumpCountdownKind.PostJumpCooldown
+            )
+            {
+                carrierArrivedFuelEstimate = projectedFuel;
+            }
             ApplyCarrierJumpCountdownState();
         }
+        RefreshCarrierDestination();
     }
 
     public void RefreshCarrierJumpCountdown()
@@ -2427,6 +2441,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowRouteBioOverlay));
         OnPropertyChanged(nameof(CurrentBioSystemName));
         OnPropertyChanged(nameof(ShouldShowFleetCarrierRouteOverlay));
+        RefreshCarrierDestination();
         RaiseOverlayProperties();
         RaiseCommands();
     }
@@ -2577,6 +2592,8 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
+        bool contextChanged =
+            next.Kind != carrierJumpCountdownState.Kind || next.Destination != carrierJumpCountdownState.Destination;
         carrierJumpCountdownState = next;
         OnPropertyChanged(nameof(HasCarrierJumpCountdown));
         OnPropertyChanged(nameof(CarrierJumpCountdownTitle));
@@ -2584,7 +2601,13 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CarrierJumpPhaseLabel));
         OnPropertyChanged(nameof(CarrierJumpPhaseCountdown));
         OnPropertyChanged(nameof(HasCarrierJumpPhaseCountdown));
-        OnPropertyChanged(nameof(CarrierJumpDestination));
+        if (contextChanged)
+        {
+            OnPropertyChanged(nameof(CarrierJumpDestination));
+            OnPropertyChanged(nameof(CarrierJumpKind));
+            OnPropertyChanged(nameof(ShouldShowCarrierNextJumpOverlay));
+            RefreshCarrierDestination();
+        }
     }
 
     private bool IsCurrentSystem(FollowRouteHop hop)

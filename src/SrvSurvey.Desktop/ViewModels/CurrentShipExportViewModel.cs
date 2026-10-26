@@ -9,9 +9,15 @@ public sealed class CurrentShipExportViewModel : WorkspaceObservable
     private ShipLoadout? loadout;
     private bool canExport;
     private string slefJson = "";
+    private decimal? maximumJumpRange;
 
     public string SlefJson => slefJson;
     public bool CanExport => canExport;
+    public decimal? MaximumJumpRange
+    {
+        get => maximumJumpRange;
+        private set => Set(ref maximumJumpRange, value);
+    }
     public string ShipDescription
     {
         get
@@ -36,7 +42,7 @@ public sealed class CurrentShipExportViewModel : WorkspaceObservable
     public void Update(JournalSessionState session, EliteStatus? status, bool awaitingCommander)
     {
         ShipLoadout? next = session.ShipLoadout.Current;
-        bool enabled =
+        bool isCurrentShip =
             next is not null
             && !awaitingCommander
             && !session.IsShutdown
@@ -44,10 +50,13 @@ public sealed class CurrentShipExportViewModel : WorkspaceObservable
             && !string.IsNullOrWhiteSpace(session.FrontierId)
             && next.ShipType.Equals(session.ShipType, StringComparison.OrdinalIgnoreCase)
             && next.ShipId is not null
-            && next.ShipId == session.ShipId
-            && ShipModuleCatalog.Default.FindShip(next.ShipType) is not null
+            && next.ShipId == session.ShipId;
+        bool enabled =
+            isCurrentShip
+            && ShipModuleCatalog.Default.FindShip(next!.ShipType) is not null
             && (status is null || status.InMainShip);
-        if (ReferenceEquals(loadout, next) && enabled == canExport)
+        decimal? nextJumpRange = isCurrentShip ? next!.MaximumJumpRange : null;
+        if (ReferenceEquals(loadout, next) && enabled == canExport && MaximumJumpRange == nextJumpRange)
         {
             return;
         }
@@ -57,6 +66,7 @@ public sealed class CurrentShipExportViewModel : WorkspaceObservable
         slefJson = enabled
             ? next!.ExportSlef(typeof(CurrentShipExportViewModel).Assembly.GetName().Version!.ToString())
             : "";
+        MaximumJumpRange = nextJumpRange;
         Changed(nameof(SlefJson));
         Changed(nameof(CanExport));
         Changed(nameof(ShipDescription));

@@ -15,6 +15,8 @@ public sealed class FleetCarrierJumpCountdownTracker
     private string? carrierId;
     private string destination = string.Empty;
     private DateTimeOffset targetTime;
+    private long destinationAddress;
+    private DateTimeOffset scheduledDeparture;
 
     public FleetCarrierJumpCountdownState Current { get; private set; } = FleetCarrierJumpCountdownState.Inactive;
 
@@ -52,6 +54,8 @@ public sealed class FleetCarrierJumpCountdownTracker
         carrierId = null;
         destination = string.Empty;
         targetTime = default;
+        destinationAddress = 0;
+        scheduledDeparture = default;
         if (Current == FleetCarrierJumpCountdownState.Inactive)
         {
             return false;
@@ -76,6 +80,8 @@ public sealed class FleetCarrierJumpCountdownTracker
             ?? GetString(journalEvent.Payload, "StarSystem")
             ?? string.Empty;
         targetTime = departure.Value;
+        scheduledDeparture = departure.Value;
+        destinationAddress = GetSystemAddress(journalEvent.Payload);
         return true;
     }
 
@@ -88,7 +94,6 @@ public sealed class FleetCarrierJumpCountdownTracker
 
         kind = FleetCarrierJumpCountdownKind.CancellationCooldown;
         targetTime = (journalEvent.Timestamp ?? now) + CancellationCooldown;
-        destination = string.Empty;
         return true;
     }
 
@@ -98,18 +103,24 @@ public sealed class FleetCarrierJumpCountdownTracker
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(completedAt) + PostJumpCooldown;
         destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
+        destinationAddress = GetSystemAddress(journalEvent.Payload) is > 0 and var address
+            ? address
+            : destinationAddress;
         return true;
     }
 
     private bool ApplyCarrierLocation(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
-        if (kind != FleetCarrierJumpCountdownKind.Scheduled || !MatchesCarrier(journalEvent.Payload))
+        if (
+            kind is not (FleetCarrierJumpCountdownKind.Scheduled or FleetCarrierJumpCountdownKind.InTransit)
+            || !MatchesCarrier(journalEvent.Payload)
+        )
         {
             return false;
         }
 
         DateTimeOffset observedAt = journalEvent.Timestamp ?? now;
-        if (observedAt < targetTime)
+        if (observedAt < scheduledDeparture)
         {
             return false;
         }
@@ -124,12 +135,15 @@ public sealed class FleetCarrierJumpCountdownTracker
     {
         if (kind == FleetCarrierJumpCountdownKind.Scheduled && now >= targetTime)
         {
-            kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
-            targetTime = RoundToNearestMinute(targetTime) + PostJumpCooldown;
+            kind = FleetCarrierJumpCountdownKind.InTransit;
+            targetTime += PostJumpCooldown;
         }
 
         if (
-            kind is FleetCarrierJumpCountdownKind.PostJumpCooldown or FleetCarrierJumpCountdownKind.CancellationCooldown
+            kind
+                is FleetCarrierJumpCountdownKind.PostJumpCooldown
+                    or FleetCarrierJumpCountdownKind.CancellationCooldown
+                    or FleetCarrierJumpCountdownKind.InTransit
             && now >= targetTime
         )
         {
@@ -137,6 +151,7 @@ public sealed class FleetCarrierJumpCountdownTracker
             carrierId = null;
             destination = string.Empty;
             targetTime = default;
+            destinationAddress = 0;
         }
     }
 
@@ -148,6 +163,14 @@ public sealed class FleetCarrierJumpCountdownTracker
         }
 
         int secondsRemaining = Math.Max(0, (int)Math.Ceiling((targetTime - now).TotalSeconds));
+        if (kind == FleetCarrierJumpCountdownKind.InTransit)
+        {
+            return new(true, "JUMP IN PROGRESS", string.Empty, "AWAITING ARRIVAL", string.Empty, false, destination)
+            {
+                Kind = kind,
+                SystemAddress = destinationAddress,
+            };
+        }
         if (kind == FleetCarrierJumpCountdownKind.PostJumpCooldown)
         {
             return new FleetCarrierJumpCountdownState(
@@ -158,7 +181,11 @@ public sealed class FleetCarrierJumpCountdownTracker
                 string.Empty,
                 false,
                 destination
-            );
+            )
+            {
+                Kind = kind,
+                SystemAddress = destinationAddress,
+            };
         }
 
         if (kind == FleetCarrierJumpCountdownKind.CancellationCooldown)
@@ -170,8 +197,12 @@ public sealed class FleetCarrierJumpCountdownTracker
                 "JUMP CANCELLED",
                 string.Empty,
                 false,
-                string.Empty
-            );
+                destination
+            )
+            {
+                Kind = kind,
+                SystemAddress = destinationAddress,
+            };
         }
 
         string phaseLabel;
@@ -206,7 +237,11 @@ public sealed class FleetCarrierJumpCountdownTracker
             phaseCountdown,
             hasPhaseCountdown,
             destination
-        );
+        )
+        {
+            Kind = kind,
+            SystemAddress = destinationAddress,
+        };
     }
 
     private bool MatchesCarrier(JsonElement payload)
@@ -234,6 +269,22 @@ public sealed class FleetCarrierJumpCountdownTracker
         return payload.TryGetProperty(name, out JsonElement property) && property.ValueKind == JsonValueKind.String
             ? property.GetString()
             : null;
+    }
+
+    private static long GetSystemAddress(JsonElement payload)
+    {
+        foreach (string name in new[] { "SystemAddress", "SystemID" })
+        {
+            if (
+                payload.TryGetProperty(name, out JsonElement value)
+                && value.ValueKind == JsonValueKind.Number
+                && value.TryGetInt64(out long address)
+            )
+            {
+                return address;
+            }
+        }
+        return 0;
     }
 
     private static string? GetIdentifier(JsonElement payload, string name)
@@ -275,6 +326,9 @@ public sealed record FleetCarrierJumpCountdownState(
     string Destination
 )
 {
+    public FleetCarrierJumpCountdownKind Kind { get; init; }
+    public long SystemAddress { get; init; }
+
     public static FleetCarrierJumpCountdownState Inactive { get; } =
         new(false, "CARRIER JUMP", "No jump scheduled", string.Empty, string.Empty, false, string.Empty);
 }
@@ -283,6 +337,7 @@ public enum FleetCarrierJumpCountdownKind
 {
     None,
     Scheduled,
+    InTransit,
     PostJumpCooldown,
     CancellationCooldown,
 }

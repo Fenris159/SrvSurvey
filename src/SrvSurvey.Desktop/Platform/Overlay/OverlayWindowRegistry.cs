@@ -571,7 +571,8 @@ internal static class OverlayWindowMetrics
         LegacyOverlayLayout layout,
         string plotterName,
         double targetScaling,
-        int? viewportHeight = null
+        int? viewportHeight = null,
+        int? viewportWidth = null
     )
     {
         ArgumentNullException.ThrowIfNull(window);
@@ -582,6 +583,11 @@ internal static class OverlayWindowMetrics
         int scaleIndex = layout.GetScaleIndex(plotterName);
         OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
         double fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
+        int width = viewportWidth ?? window.Screens.ScreenFromWindow(window)?.WorkingArea.Width ?? 1920;
+        OverlayThemeResources.ApplyPanelViewportWidth(
+            OverlayThemeResources.GetPresentationRoot(window),
+            Math.Max(1, width - 16) / Math.Max(0.01, fallbackScale)
+        );
         if (OverlayThemeResources.GetPresentationRoot(window) is IOverlayPanelViewportAware panel)
         {
             int height = viewportHeight ?? window.Screens.ScreenFromWindow(window)?.WorkingArea.Height ?? 1080;

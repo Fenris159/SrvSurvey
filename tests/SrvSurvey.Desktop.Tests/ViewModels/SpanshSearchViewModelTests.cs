@@ -76,6 +76,94 @@ public sealed class SpanshSearchViewModelTests : IDisposable
         Assert.Same(neutron, search.SelectedPlanner);
     }
 
+    /// <summary>Each range-based planner starts with the ship range and submits it unchanged to Spansh.</summary>
+    [Theory]
+    [InlineData(SpanshRouteKind.Neutron)]
+    [InlineData(SpanshRouteKind.Riches)]
+    [InlineData(SpanshRouteKind.Tourist)]
+    [InlineData(SpanshRouteKind.Exobiology)]
+    public async Task RangePlannersAutofillAndSubmitTheCurrentShipsMaximumRange(SpanshRouteKind kind)
+    {
+        var ship = new CurrentShipExportViewModel();
+        ship.Update(Session(), null, false);
+        var client = new Planner();
+        RouteWorkspaceViewModel route = await CreateRoute(client, ship: ship);
+        SpanshSearchViewModel search = route.SpanshSearch!;
+        search.SelectedPlanner = search.Planners.Single(planner => planner.Kind == kind);
+        Assert.Equal(73.456789m, Field(search, "range").Number);
+        Assert.False(Field(search, "range").IsReadOnly);
+        if (kind == SpanshRouteKind.Tourist)
+        {
+            Field(search, "destination").Value = "Achenar";
+        }
+        else
+        {
+            Field(search, "to").Value = "Achenar";
+        }
+        Assert.True(await search.SearchAsync());
+        Assert.Equal("73.456789", client.Request!.Parameters.Single(pair => pair.Key == "range").Value);
+    }
+
+    /// <summary>Ship changes refresh cached and newly selected planners, while unrelated updates preserve manual edits.</summary>
+    [Fact]
+    public async Task ShipChangesRefreshAllRangesAndUnrelatedShipUpdatesPreserveManualEdits()
+    {
+        var ship = new CurrentShipExportViewModel();
+        JournalSessionState session = Session();
+        ship.Update(session, null, false);
+        RouteWorkspaceViewModel route = await CreateRoute(new Planner(), ship: ship);
+        SpanshSearchViewModel search = route.SpanshSearch!;
+        SpanshPlannerFieldViewModel neutronRange = Field(search, "range");
+        neutronRange.Number = 41.25m;
+        Field(search, "to").Value = "Achenar";
+        search.SelectedPlanner = search.Planners.Single(planner => planner.Kind == SpanshRouteKind.Riches);
+        SpanshPlannerFieldViewModel richesRange = Field(search, "range");
+        richesRange.Number = 42.5m;
+        Field(search, "radius").Number = 99m;
+        search.SelectedPlanner = search.Planners[0];
+        Assert.Equal(41.25m, neutronRange.Number);
+        session.Apply(Parse("""{"event":"SetUserShipName","Ship":"sidewinder","ShipID":1,"UserShipName":"Renamed"}"""));
+        ship.Update(session, new EliteStatus(), false);
+        Assert.Equal(41.25m, neutronRange.Number);
+        Assert.Equal(42.5m, richesRange.Number);
+        search.PrepareForOpen();
+        Assert.Equal(73.456789m, neutronRange.Number);
+        Assert.Equal(73.456789m, richesRange.Number);
+        session.Apply(Parse("""{"event":"ShipyardSwap","ShipType":"python","ShipID":2}"""));
+        ship.Update(session, null, false);
+        Assert.Empty(neutronRange.Value);
+        Assert.Empty(richesRange.Value);
+        search.SelectedPlanner = search.Planners.Single(planner => planner.Kind == SpanshRouteKind.Exobiology);
+        Assert.Empty(Field(search, "range").Value);
+        ship.Update(Session("python", 2, "48.125"), null, false);
+        Assert.Equal(48.125m, neutronRange.Number);
+        Assert.Equal(48.125m, richesRange.Number);
+        Assert.Equal(48.125m, Field(search, "range").Number);
+        search.SelectedPlanner = search.Planners.Single(planner => planner.Kind == SpanshRouteKind.Tourist);
+        Assert.Equal(48.125m, Field(search, "range").Number);
+        search.SelectedPlanner = search.Planners[0];
+        Assert.Equal("Achenar", Field(search, "to").Value);
+        search.SelectedPlanner = search.Planners.Single(planner => planner.Kind == SpanshRouteKind.Riches);
+        Assert.Equal(99m, Field(search, "radius").Number);
+    }
+
+    /// <summary>A missing journal range preserves manual entry, and disposed searches stop following ship changes.</summary>
+    [Fact]
+    public async Task MissingRangeAllowsManualInputAndDisposalStopsAutomaticUpdates()
+    {
+        var ship = new CurrentShipExportViewModel();
+        RouteWorkspaceViewModel route = await CreateRoute(new Planner(), ship: ship);
+        SpanshSearchViewModel search = route.SpanshSearch!;
+        Assert.Empty(Field(search, "range").Value);
+        Field(search, "range").Number = 35m;
+        search.PrepareForOpen();
+        ship.Update(Session(jumpRange: "null"), null, false);
+        Assert.Equal(35m, Field(search, "range").Number);
+        search.Dispose();
+        ship.Update(Session(), null, false);
+        Assert.Equal(35m, Field(search, "range").Number);
+    }
+
     /// <summary>
     /// Checks that carrier workspace offers only carrier planner and conditional fuel controls.
     /// </summary>
@@ -343,13 +431,17 @@ public sealed class SpanshSearchViewModelTests : IDisposable
     /// <summary>
     /// Builds a complete journal ship session for automatic SLEF input tests.
     /// </summary>
-    private static JournalSessionState Session()
+    private static JournalSessionState Session(
+        string ship = "sidewinder",
+        int shipId = 1,
+        string jumpRange = "73.456789"
+    )
     {
         var session = new JournalSessionState();
-        session.Apply(Parse("""{"event":"LoadGame","FID":"F1","Ship":"sidewinder","ShipID":1}"""));
+        session.Apply(Parse($$"""{"event":"LoadGame","FID":"F1","Ship":"{{ship}}","ShipID":{{shipId}}}"""));
         session.Apply(
             Parse(
-                """{"event":"Loadout","Ship":"sidewinder","ShipID":1,"ShipName":"Surveyor","UnladenMass":25,"FuelCapacity":{"Main":4,"Reserve":0.3},"Modules":[{"Slot":"FrameShiftDrive","Item":"Int_Hyperdrive_Size2_Class5"}]}"""
+                $$"""{"event":"Loadout","Ship":"{{ship}}","ShipID":{{shipId}},"ShipName":"Surveyor","MaxJumpRange":{{jumpRange}},"UnladenMass":25,"FuelCapacity":{"Main":4,"Reserve":0.3},"Modules":[{"Slot":"FrameShiftDrive","Item":"Int_Hyperdrive_Size2_Class5"}]}"""
             )
         );
         return session;

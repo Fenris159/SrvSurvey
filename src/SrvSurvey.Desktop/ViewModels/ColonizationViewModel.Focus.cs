@@ -41,11 +41,9 @@ public sealed partial class ColonizationViewModel
         try
         {
             string? persistenceWarning = null;
-            if (row.Project.IsPlanned)
+            if (row.Project.IsPlanned || projectScope.IsLocal(row.Project))
             {
-                string localId = nextId ?? string.Empty;
-                settingsStore.SaveLocalProjectFocus(commander, localId);
-                localFocusProjectId = localId;
+                SaveLocalFocus(commander, nextId, row.Project);
             }
             else
             {
@@ -58,6 +56,8 @@ public sealed partial class ColonizationViewModel
                 localFocusProjectId = null;
                 persistenceWarning = ClearSavedLocalFocus(commander);
             }
+            projectScope.ReleaseUnselected(FocusProjectId);
+            SaveLocalProjects();
             RebuildProjectRows();
             UpdateProjectSummary();
             StatusMessage = nextId is null ? "Project focus was cleared." : $"{row.BuildName} is now the focus.";
@@ -98,6 +98,17 @@ public sealed partial class ColonizationViewModel
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return exception.Message;
+        }
+    }
+
+    private void SaveLocalFocus(string commander, string? nextId, ColonizationProject project)
+    {
+        string localId = nextId ?? string.Empty;
+        settingsStore.SaveLocalProjectFocus(commander, localId);
+        localFocusProjectId = localId;
+        if (nextId is not null && projectScope.IsLocal(project))
+        {
+            projectScope.RetainFocus(project);
         }
     }
 }

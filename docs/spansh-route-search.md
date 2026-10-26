@@ -58,6 +58,10 @@ from the original starting balances without charging earlier jumps twice.
 This changes transfer timing using the supplied jump costs; it does not
 recalculate the carrier's mass-dependent fuel cost or assume future mining.
 
+Travel overlay settings include **Show Carrier Next-Jump Information**, enabled by default. The Fleet Carrier Route panel can follow a journal `CarrierJumpRequest` without an active route, including its destination, initiation, pad lockdown, departure, arrival and cooldown, or cancellation. An actual off-route jump temporarily takes precedence over the planned destination without changing that route. Disable this setting to hide passive tracking while retaining the usual active-route panel.
+
+Passive tritium values come from attributable carrier journal/CAPI observations. When origin and destination coordinates, tank fuel, and used capacity are known, the existing mass-dependent carrier fuel formula estimates the jump cost and remaining depot fuel; these values are labeled as estimates. **LOW TRITIUM** appears only when the projected post-jump depot falls below 200 t. Missing values and their labels are omitted. Spansh destination data can add **ICY RING**, **PRISTINE ICY RING**, and **ICY BODY** badges; pristine reserves must belong to the body with the icy ring. The editor includes a **Carrier next jump** variation using the same presentation. Departure-time expiry indicates transit; arrival requires a journal arrival event rather than being inferred from the departure timer.
+
 Fleet-carrier route displays also show **ETR** at 20 minutes per remaining
 jump, formatted as days, hours, and minutes with zero-valued units omitted
 (for example, `ETR: 14h 40min` for 44 jumps or `ETR: 1d` for 72 jumps).
@@ -78,6 +82,21 @@ below; the entry clears for the next destination. Each row offers edit, remove,
 move up, and move down. Edit loads the name into the same autocomplete entry;
 **Save** or Enter commits it, and **Cancel edit** keeps the original. A pending
 entry must be added or saved before submitting the search.
+
+Neutron Plotter, Road to Riches, Tourist Planner, and Expressway to Exomastery
+autofill **Range (LY)** from the current ship's journal `Loadout.MaxJumpRange`.
+Opening the search window refreshes every retained planner's range. Ship changes
+and fresh loadouts update the ranges as well; invalidating the ship clears its
+previous range until a new complete loadout arrives. The fields remain editable,
+and switching planners retains manual changes until the ship's range changes or
+search reopens. Without a reported range, manual input remains available.
+This is the journal's maximum with no cargo and only enough fuel for one jump,
+rather than the ship's current laden range. Galaxy Plotter continues to use the
+complete ship build; Colonisation Plotter and Fleet Carrier Router have no ship
+jump-range field.
+The range-based planners accept 10–100 LY. A reported range outside those bounds
+leaves the field blank for manual entry instead of silently clamping the ship's
+range to a different value.
 
 Fleet-carrier destinations include per-row **Refuel** checkboxes while automatic
 starting-fuel calculation is enabled. Removing or renaming a destination also

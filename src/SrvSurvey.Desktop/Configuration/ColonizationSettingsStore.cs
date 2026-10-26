@@ -17,6 +17,7 @@ public sealed partial class ColonizationSettingsStore : IColonizationDeliveryRec
         documentStore = new UiSettingsDocumentStore(path, flushToDisk: true);
         shoppingDocumentStore = new UiSettingsDocumentStore(path + ".shopping.json");
         planningDocumentStore = new UiSettingsDocumentStore(path + ".plans.json");
+        localProjectsDocumentStore = new UiSettingsDocumentStore(path + ".local-projects.json");
         systemCatalogDocumentStore = new UiSettingsDocumentStore(path + ".systems.json");
     }
 

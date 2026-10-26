@@ -22,13 +22,14 @@ public sealed class CurrentShipExportViewModelTests
                 """
                 {"event":"Fileheader","Odyssey":true}
                 {"event":"LoadGame","FID":"F1","Commander":"Export Test","Ship":"LakonMiner","ShipID":12}
-                {"event":"Loadout","Ship":"LakonMiner","ShipID":12,"ShipName":"Surveyor","Modules":[{"Slot":"FighterBay01","Item":"Int_MkIILargeBuggyBay_Size4_Class3"}]}
+                {"event":"Loadout","Ship":"LakonMiner","ShipID":12,"ShipName":"Surveyor","MaxJumpRange":73.456789,"Modules":[{"Slot":"FighterBay01","Item":"Int_MkIILargeBuggyBay_Size4_Class3"}]}
 
                 """
             );
             using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(root);
             await viewModel.RefreshAsync();
             Assert.True(viewModel.CurrentShipExport.CanExport);
+            Assert.Equal(73.456789m, viewModel.CurrentShipExport.MaximumJumpRange);
             Assert.Equal("Surveyor · Type-11 Prospector", viewModel.CurrentShipExport.ShipDescription);
             await File.AppendAllTextAsync(
                 journal,
@@ -37,6 +38,7 @@ public sealed class CurrentShipExportViewModelTests
             );
             await viewModel.RefreshAsync();
             Assert.False(viewModel.CurrentShipExport.CanExport);
+            Assert.Null(viewModel.CurrentShipExport.MaximumJumpRange);
         }
         finally
         {
@@ -55,6 +57,7 @@ public sealed class CurrentShipExportViewModelTests
         var status = new EliteStatus { Flags = StatusFlags.InMainShip };
         viewModel.Update(session, status, false);
         Assert.True(viewModel.CanExport);
+        Assert.Equal(73.456789m, viewModel.MaximumJumpRange);
         Assert.Equal("Surveyor · Type-11 Prospector", viewModel.ShipDescription);
         Assert.Contains("EDSY", viewModel.Status);
         string export = viewModel.SlefJson;
@@ -65,6 +68,7 @@ public sealed class CurrentShipExportViewModelTests
         session.Apply(Parse("""{"event":"ModuleBuy"}"""));
         viewModel.Update(session, status, false);
         Assert.False(viewModel.CanExport);
+        Assert.Null(viewModel.MaximumJumpRange);
         Assert.Empty(viewModel.SlefJson);
         Assert.Contains("Waiting", viewModel.ShipDescription);
     }
@@ -92,6 +96,34 @@ public sealed class CurrentShipExportViewModelTests
         Assert.False(viewModel.CanExport);
         Assert.Empty(viewModel.SlefJson);
         Assert.Contains("Loadout", viewModel.Status);
+        Assert.Equal(
+            flags is StatusFlags.InSrv or StatusFlags.InFighter ? 73.456789m : (decimal?)null,
+            viewModel.MaximumJumpRange
+        );
+    }
+
+    /// <summary>Range remains usable on foot and for new ship types, but never while commander identity is pending.</summary>
+    [Fact]
+    public void RangeDoesNotRequireAnExportableShipButDoesRequireTheCurrentCommander()
+    {
+        JournalSessionState session = CreateSession();
+        session.Apply(
+            Parse(
+                """{"event":"Loadout","Ship":"future_ship","ShipID":12,"MaxJumpRange":82.5,"Modules":[{"Slot":"FrameShiftDrive","Item":"Future_Drive"}]}"""
+            )
+        );
+        var viewModel = new CurrentShipExportViewModel();
+        var status = new EliteStatus();
+        viewModel.Update(session, status, false);
+        Assert.False(viewModel.CanExport);
+        Assert.Equal(82.5m, viewModel.MaximumJumpRange);
+        viewModel.Update(session, status, true);
+        Assert.Null(viewModel.MaximumJumpRange);
+        viewModel.Update(session, status, false);
+        Assert.Equal(82.5m, viewModel.MaximumJumpRange);
+        session.Apply(Parse("""{"event":"Music","MusicTrack":"MainMenu"}"""));
+        viewModel.Update(session, status, false);
+        Assert.Null(viewModel.MaximumJumpRange);
     }
 
     /// <summary>
@@ -129,7 +161,7 @@ public sealed class CurrentShipExportViewModelTests
         session.Apply(Parse("""{"event":"LoadGame","FID":"F1","Ship":"LakonMiner","ShipID":12}"""));
         session.Apply(
             Parse(
-                """{"event":"Loadout","Ship":"LakonMiner","ShipID":12,"ShipName":"Surveyor","Modules":[{"Slot":"FighterBay01","Item":"Int_MkIILargeBuggyBay_Size4_Class3"}]}"""
+                """{"event":"Loadout","Ship":"LakonMiner","ShipID":12,"ShipName":"Surveyor","MaxJumpRange":73.456789,"Modules":[{"Slot":"FighterBay01","Item":"Int_MkIILargeBuggyBay_Size4_Class3"}]}"""
             )
         );
         return session;

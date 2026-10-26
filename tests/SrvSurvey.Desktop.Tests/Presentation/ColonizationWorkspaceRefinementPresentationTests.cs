@@ -198,6 +198,9 @@ public sealed partial class ColonizationShoppingPresentationTests
         main.Colonization.IsEnabled = true;
         await main.Colonization.SetCommanderAsync("Example Cmdr");
         main.Colonization.UpdateSystemContext("Sol", null, 42);
+        Assert.Empty(main.Colonization.Projects);
+        main.Colonization.ShowUnaffiliatedProjectsInCurrentSystem = true;
+        await main.Colonization.CurrentSystemPlanningTask;
         ColonizationProjectRowViewModel plan = Assert.Single(main.Colonization.Projects);
         using ColonizationProjectPreviewViewModel preview = main.Colonization.CreateProjectPreview(
             plan.Project.BuildId

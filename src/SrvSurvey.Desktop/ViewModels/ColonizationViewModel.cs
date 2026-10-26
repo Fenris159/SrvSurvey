@@ -714,6 +714,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
         if (recovery.ApplyJournalEvents(journalEvents, journalCommanderName))
         {
+            RebuildProjectRows();
             UpdateConstructionDisplay();
             UpdateProjectSummary();
             UpdateProjectEditorContext();
@@ -961,6 +962,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             : [];
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        selectCurrentProjectSystem = ShowUnaffiliatedProjectsInCurrentSystem;
+        UpdateLocalProjectSystem();
         RefreshCurrentPlannedSystem();
     }
 
@@ -1305,7 +1308,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             {
                 await RestoreLegacyProfileAsync(cancellationToken: cancellationToken);
             }
-            if (disposed || !IsEnabled || version != recovery.ProfileVersion)
+            if (!IsCurrentProjectProfile(version))
             {
                 return false;
             }
@@ -1323,15 +1326,22 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
             await RefreshPlannedProjectsAsync(result.Projects, startedEditVersion, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            if (disposed || !IsEnabled || version != recovery.ProfileVersion)
+            if (!IsCurrentProjectProfile(version))
             {
                 return false;
             }
             hiddenProjectIds = result.HiddenProjectIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
             hasCurrentShoppingProjects = true;
-            recovery.ReplaceWorkspace(result.Projects, result.FleetCarriers);
+            await RefreshRetainedProjectsAsync(cancellationToken);
+            if (!IsCurrentProjectProfile(version))
+            {
+                return false;
+            }
+            recovery.ReplaceWorkspace(LiveWorkspaceProjects(result.Projects), result.FleetCarriers);
             RebuildProjectRows();
+            SaveLocalProjects();
+            currentSystemPlanningPending |= ShowUnaffiliatedProjectsInCurrentSystem;
             HasUnsavedProjectVisibility = false;
             UpdateProjectSummary();
             StatusMessage = ProjectLoadStatus();
@@ -1357,6 +1367,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             await RefreshPendingAsync(CancellationToken.None);
         }
     }
+
+    private bool IsCurrentProjectProfile(int version) => !disposed && IsEnabled && version == recovery.ProfileVersion;
 
     /// <summary>Restores legacy preferences only while the initiating commander profile remains active.</summary>
     private async Task RestoreLegacyProfileAsync(CancellationToken cancellationToken = default)
@@ -1424,10 +1436,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             hiddenProjectIds = saved.ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (ColonizationProjectRowViewModel row in Projects)
             {
-                row.UpdateShown(
-                    !hiddenProjectIds.Contains(row.Project.BuildId)
-                        && !hiddenPlannedProjectIds.Contains(row.Project.BuildId)
-                );
+                row.UpdateShown(IsProjectShown(row.Project));
             }
 
             HasUnsavedProjectVisibility = false;
@@ -1461,24 +1470,35 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             project,
             type,
             string.Equals(project.BuildId, FocusProjectId, StringComparison.OrdinalIgnoreCase),
-            !hiddenProjectIds.Contains(project.BuildId) && !hiddenPlannedProjectIds.Contains(project.BuildId),
+            IsProjectShown(project),
             OnProjectShownChanged,
             ToggleFocusProjectAsync
         )
         {
             IsShoppingSelected = shoppingProjectIds.Contains(project.BuildId),
+            IsUnaffiliated = projectScope.IsLocal(project),
         };
     }
 
     /// <summary>Installs a successfully created project before optional cleanup and ignores obsolete callback results.</summary>
     private Task OnProjectCreatedAsync(ColonizationProject project)
     {
+        projectScope.AddAffiliatedProject(project);
         return recovery.InstallCreatedProjectAsync(project);
     }
 
     private void OnRecoveryProjectsChanged()
     {
+        foreach (
+            ColonizationProject project in recovery.Projects.Where(project =>
+                ColonizationSiteVisibility.CommanderIsArchitect(project.ArchitectName, CommanderName)
+            )
+        )
+        {
+            projectScope.AddAffiliatedProject(project);
+        }
         RebuildProjectRows();
+        SaveLocalProjects();
         UpdateProjectSummary();
     }
 
@@ -1519,6 +1539,14 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
 
     private void OnProjectShownChanged(ColonizationProjectRowViewModel row, bool isShown)
     {
+        if (projectScope.IsLocal(row.Project))
+        {
+            projectScope.SetShown(row.Project, isShown, FocusProjectId);
+            SaveLocalProjects();
+            RebuildProjectRows();
+            UpdateProjectSummary();
+            return;
+        }
         if (row.Project.IsPlanned)
         {
             SetPlannedProjectShown(row.Project, isShown);
@@ -1541,7 +1569,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     {
         ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals(
             Projects.Select(row => row.Project),
-            hiddenProjectIds.Concat(hiddenPlannedProjectIds),
+            EffectiveHiddenProjectIds,
             recovery.ShipCargoCapacity
         );
         string trips = totals.TripsInCurrentShip is long tripCount
@@ -1602,6 +1630,8 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         // RestoreShoppingSelection replaces both when the commander changes.
         Projects = [];
         recovery.ClearWorkspace();
+        projectScope.SetDockedProject(null);
+        projectScope.EnterSystem(null);
         hiddenProjectIds.Clear();
         primaryProjectId = null;
         HasUnsavedProjectVisibility = false;
@@ -1629,7 +1659,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                 new ColonizationCommodityPlanRequest
                 {
                     Projects = Projects.Select(row => row.Project),
-                    HiddenBuildIds = hiddenProjectIds.Concat(hiddenPlannedProjectIds).ToArray(),
+                    HiddenBuildIds = EffectiveHiddenProjectIds.ToArray(),
                     PrimaryBuildId = FocusProjectId,
                     PlanningCarrierMarketId = SelectedPlanningCarrierMarketId,
                     CommanderName = CommanderName,
@@ -1951,6 +1981,7 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
     public string TypeDescription { get; }
 
     public bool IsFocused { get; }
+    public bool IsUnaffiliated { get; init; }
 
     public string FocusLabel => IsFocused ? "FOCUS" : string.Empty;
 

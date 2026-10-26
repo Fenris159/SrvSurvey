@@ -682,6 +682,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             rollback.Add(Route.SpanshSearch!.Dispose);
             RouteManager = new RouteManagerViewModel(routeService, Route);
+            var sharedJumpInfoSettingsStore = new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
+            var sharedSystemSummaryClient = new SystemSummaryClient(
+                externalNetworkClient,
+                useSpanshLastUpdated: () => sharedJumpInfoSettingsStore.Load().UseSpanshLastUpdated
+            );
             var fleetCarrierRouteService = new FollowRouteService(
                 new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier)
             );
@@ -694,18 +699,19 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     PlannerClient: spanshPlannerClient,
                     CurrentShip: CurrentShipExport,
                     CarrierSnapshotSource: GetRouteCarrierSnapshot,
-                    RefreshCarrierSnapshot: RefreshRouteCarrierSnapshotAsync
+                    RefreshCarrierSnapshot: RefreshRouteCarrierSnapshotAsync,
+                    CarrierNextJump: new(
+                        sharedSystemSummaryClient,
+                        new CarrierNextJumpSettingsStore(AppDataPaths.UiSettingsPath),
+                        sharedSystemResolver
+                    )
                 )
             );
             rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
+            rollback.Add(FleetCarrierRoute.CancelCarrierDestinationLookup);
             FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
             routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(Route, FleetCarrierRoute, boxelSearchSession);
             rollback.Add(routeAutoCopyCoordinator.Dispose);
-            var sharedJumpInfoSettingsStore = new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
-            var sharedSystemSummaryClient = new SystemSummaryClient(
-                externalNetworkClient,
-                useSpanshLastUpdated: () => sharedJumpInfoSettingsStore.Load().UseSpanshLastUpdated
-            );
             JumpInfo = new JumpInfoViewModel(
                 sharedSystemSummaryClient,
                 sharedJumpInfoSettingsStore,
@@ -4732,6 +4738,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(routeAutoCopyCoordinator.Dispose);
         TryDispose(Route.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
+        TryDispose(FleetCarrierRoute.CancelCarrierDestinationLookup);
         await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
         await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);

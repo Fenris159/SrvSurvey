@@ -46,6 +46,32 @@ publishing continues when every project is hidden or no projects are loaded. Rav
 access, credentials, commander and ship readiness, and protection against ambiguous
 cargo from multiple game windows are still required.
 
+The normal workspace list follows projects and system plans affiliated with the
+commander through Raven's API. **Show Unaffiliated Projects in Current System**,
+after **Open Raven builds**, is off by default. Enabling it browses the current
+system and selects that system with **All Projects**. The preference is remembered
+separately for each commander. Browsed projects start with **Show** unchecked and
+are marked **Unaffiliated**.
+
+Unselected browsing results expire when leaving the system or disabling the
+option. Selecting **Show** or **Make Focus** explicitly retains a local project
+across travel and restarts. Local focus does not change Raven's primary-project
+setting or membership. Tracked live builds still report actual journal deliveries,
+refresh remaining needs, and report completion through the normal Raven workflow.
+Clearing both Show and focus releases local retention.
+
+Docking at any construction site still reveals its needs and temporarily makes
+the docked project available for focus, independently of the browsing checkbox.
+Undocking removes that temporary entry unless it has been explicitly retained.
+
+The first successful commander API refresh automatically removes unrelated plans
+accumulated by older versions, including when using **Refresh projects**. Existing
+local focus, saved market-search selections, and local planning drafts are
+preserved. A default checked Show box in an older cache cannot establish an
+explicit tracking choice. Failed or unavailable planning API reads preserve cached
+data until affiliation can be verified. Temporary browsing results are kept
+separate from affiliated plans and deliberately retained projects.
+
 The preview uses only the existing public GET endpoints:
 
 - `api/project/{buildId}`

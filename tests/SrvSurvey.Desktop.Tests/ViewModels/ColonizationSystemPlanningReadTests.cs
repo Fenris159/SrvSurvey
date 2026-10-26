@@ -12,6 +12,7 @@ public sealed partial class ColonizationViewModelTests
         using ColonizationViewModel model = Create(client);
         model.IsEnabled = true;
         await model.SetCommanderAsync("Test Cmdr");
+        model.ShowUnaffiliatedProjectsInCurrentSystem = true;
         int discoveries = client.PlanningDiscoveryCommanders.Count;
         var requests = new List<string>();
         ColonizationSystemRecord next = client.PlanningSystems!["Sol"] with

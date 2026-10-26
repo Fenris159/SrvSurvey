@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              x:DataType="vm:FleetCarrierRouteOverlayViewModel"
              mc:Ignorable="d"
              MaxWidth="260"
@@ -17,7 +18,7 @@
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <TextBlock Classes="overlay-header type-header"
-                   Text="FLEET CARRIER ROUTE" />
+                   Text="{Binding Header}" TextWrapping="Wrap" />
         <TextBlock Grid.Column="1"
                    Classes="eyebrow type-header"
                    Text="{Binding HopProgress}" />
@@ -28,41 +29,53 @@
                  Text="{Binding SystemName}"
                  TextWrapping="Wrap" />
       <TextBlock Classes="overlay-body type-body"
+                 IsVisible="{Binding HasJumpSummary}"
                  Text="{Binding JumpSummary}"
                  TextWrapping="Wrap" />
       <TextBlock Classes="muted overlay-detail type-detail"
+                 IsVisible="{Binding HasRouteDetails}"
                  Text="{Binding JumpsLeft}"
                  TextWrapping="Wrap" />
 
       <Border Classes="overlay-divider"
+              IsVisible="{Binding HasTritiumDetails}"
               Background="{DynamicResource RavenBorderBrush}" />
 
-      <TextBlock Classes="eyebrow type-header" Text="TRITIUM" />
-      <Grid ColumnDefinitions="Auto,Auto"
+      <TextBlock Classes="eyebrow type-header" Text="TRITIUM" IsVisible="{Binding HasTritiumDetails}" />
+      <Grid ColumnDefinitions="Auto,Auto" IsVisible="{Binding HasTritiumDetails}"
             ColumnSpacing="24"
             HorizontalAlignment="Left"
-            RowDefinitions="Auto,Auto,Auto">
-        <TextBlock Classes="muted overlay-detail type-caption" Text="Fuel left" />
+            RowDefinitions="Auto,Auto,Auto,Auto">
+        <TextBlock Classes="muted overlay-detail type-caption" Text="{Binding FuelLeftLabel}" IsVisible="{Binding HasFuelLeft}" />
         <TextBlock Grid.Column="1"
                    Classes="overlay-body type-value"
+                   IsVisible="{Binding HasFuelLeft}"
                    Text="{Binding FuelLeft}" />
         <TextBlock Grid.Row="1"
                    Classes="muted overlay-detail type-caption"
+                   IsVisible="{Binding HasMarketTritium}"
                    Text="In market" />
         <TextBlock Grid.Row="1"
                    Grid.Column="1"
                    Classes="overlay-body type-value"
+                   IsVisible="{Binding HasMarketTritium}"
                    Text="{Binding TritiumInMarket}" />
         <TextBlock Grid.Row="2"
                    Classes="muted overlay-detail type-caption"
-                   Text="Jump fuel" />
+                   IsVisible="{Binding HasJumpFuel}"
+                   Text="{Binding JumpFuelLabel}" />
         <TextBlock Grid.Row="2"
                    Grid.Column="1"
                    Classes="overlay-body type-value"
+                   IsVisible="{Binding HasJumpFuel}"
                    Text="{Binding JumpFuel}" />
+        <TextBlock Grid.Row="3" Classes="muted overlay-detail type-caption" Text="In depot now" IsVisible="{Binding HasDepotFuel}" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Classes="overlay-body type-value" Text="{Binding DepotFuel}" IsVisible="{Binding HasDepotFuel}" />
       </Grid>
 
+      <WrapPanel IsVisible="{Binding HasMiningResources}">
       <LayoutTransformControl Classes="type-icon"
+                              Margin="0,0,6,0"
                               HorizontalAlignment="Left"
                               IsVisible="{Binding HasIcyRing}">
         <Border Classes="badge">
@@ -72,20 +85,29 @@
                      Text="{Binding IcyRingLabel, StringFormat='[ {0} ]'}" />
         </Border>
       </LayoutTransformControl>
+      <LayoutTransformControl Classes="type-icon" IsVisible="{Binding HasIcyBody}">
+        <Border Classes="badge">
+          <TextBlock Classes="overlay-detail" Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" Text="[ ICY BODY ]" />
+        </Border>
+      </LayoutTransformControl>
+      </WrapPanel>
 
-      <Grid ColumnDefinitions="Auto,Auto"
-            ColumnSpacing="24"
+      <Grid ColumnDefinitions="Auto,*,Auto"
+            ColumnSpacing="8"
             HorizontalAlignment="Left"
             IsVisible="{Binding HasRestockWarning}">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <TextBlock Foreground="#FFFFB347" Classes="type-icon" FontWeight="Bold" Text="&#x26A0;" />
-          <TextBlock Foreground="#FFFFB347"
+        <controls:OverlayRowIconHost VerticalAlignment="Center" ClipToBounds="False">
+          <Viewbox Height="{Binding #CarrierWarningLabel.FontSize}">
+            <Path x:Name="CarrierWarningIcon" Width="24" Height="24" Stretch="Uniform" Stroke="{DynamicResource RavenWarningBrush}" StrokeThickness="2" StrokeJoin="Round" Data="M12,2 L23,22 L1,22 Z M12,8 L12,14 M12,18 L12,19" />
+          </Viewbox>
+        </controls:OverlayRowIconHost>
+          <TextBlock x:Name="CarrierWarningLabel" Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource RavenWarningBrush}"
                      Classes="overlay-body type-title"
                      FontWeight="Bold"
-                     Text="RESTOCK REQUIRED" />
-        </StackPanel>
-        <TextBlock Grid.Column="1"
-                   Foreground="#FFFFB347"
+                     TextWrapping="Wrap"
+                     Text="{Binding WarningLabel}" />
+        <TextBlock Grid.Column="2" VerticalAlignment="Center" IsVisible="{Binding HasWarningAmount}"
+                   Foreground="{DynamicResource RavenWarningBrush}"
                    Classes="overlay-body type-value"
                    FontWeight="Bold"
                    Text="{Binding RestockAmount}" />

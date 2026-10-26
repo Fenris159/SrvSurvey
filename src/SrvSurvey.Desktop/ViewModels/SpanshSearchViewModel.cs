@@ -90,6 +90,34 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         private set => Set(ref status, value);
     }
 
+    /// <summary>Refreshes retained planner ranges from the current ship each time search opens.</summary>
+    public void PrepareForOpen()
+    {
+        if (currentShip.MaximumJumpRange is not null)
+        {
+            RefreshJumpRanges();
+        }
+    }
+
+    /// <summary>Updates every initialized planner, clearing stale ranges when its ship is invalidated.</summary>
+    private void RefreshJumpRanges()
+    {
+        foreach (IReadOnlyList<SpanshPlannerFieldViewModel> form in forms.Values)
+        {
+            ApplyJumpRange(form);
+        }
+    }
+
+    /// <summary>Seeds editable jump-range fields without changing other numeric inputs.</summary>
+    private void ApplyJumpRange(IReadOnlyList<SpanshPlannerFieldViewModel> form)
+    {
+        SpanshPlannerFieldViewModel? range = form.FirstOrDefault(field => field.Definition.Key == "range");
+        range?.Value =
+            currentShip.MaximumJumpRange is { } value && value >= range.Minimum && value <= range.Maximum
+                ? value.ToString(CultureInfo.InvariantCulture)
+                : range.Definition.Default;
+    }
+
     /// <summary>Loads one selected carrier's latest observations when opening search or changing carrier.</summary>
     public void ApplyCarrierContext(FleetCarrierFuelSnapshot? snapshot)
     {
@@ -211,6 +239,7 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
         if (!forms.TryGetValue(SelectedPlanner, out IReadOnlyList<SpanshPlannerFieldViewModel>? form))
         {
             form = SelectedPlanner.Fields.Select(field => new SpanshPlannerFieldViewModel(field)).ToArray();
+            ApplyJumpRange(form);
             SpanshPlannerFieldViewModel? source = form.FirstOrDefault(field =>
                 field.Definition.Type == SpanshPlannerFieldType.System
             );
@@ -325,9 +354,16 @@ public sealed class SpanshSearchViewModel : WorkspaceObservable, IDisposable
     }
 
     /// <summary>
-    /// Refreshes automatic ship-build inputs when export readiness changes.
+    /// Refreshes automatic ship inputs while retaining manual ranges across unrelated status updates.
     /// </summary>
-    private void OnShipChanged(object? sender, PropertyChangedEventArgs e) => UpdateShipBuild();
+    private void OnShipChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CurrentShipExportViewModel.MaximumJumpRange))
+        {
+            RefreshJumpRanges();
+        }
+        UpdateShipBuild();
+    }
 
     /// <summary>
     /// Refreshes availability and cancels work when the commander context changes.

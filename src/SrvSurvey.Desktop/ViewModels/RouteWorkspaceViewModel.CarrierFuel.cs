@@ -41,6 +41,7 @@ public sealed partial class RouteWorkspaceViewModel
             profileRevision++;
             SpanshSearch?.Cancel();
             ResetCarrierJumpCountdown();
+            ResetCarrierDestination();
             ApplyCarrierKind(value.Kind);
             if (HasRoute)
             {
@@ -117,8 +118,14 @@ public sealed partial class RouteWorkspaceViewModel
     private FleetCarrierFuelSnapshot? ReadCarrierFuel(JournalEventEnvelope? through = null)
     {
         carrierAccountBaseline = carrierSnapshotSource?.Invoke() ?? carrierAccountBaseline;
+        return ReadObservedCarrierFuel(through);
+    }
+
+    private FleetCarrierFuelSnapshot? ReadObservedCarrierFuel(JournalEventEnvelope? through = null)
+    {
         latestCarrierFuel = carrierFuelJournal.Read(carrierAccountBaseline, selectedCarrierKind, draftHops, through);
         OnPropertyChanged(nameof(CarrierFuelSummary));
+        OnPropertyChanged(nameof(CarrierDestinationSummary));
         return latestCarrierFuel;
     }
 
@@ -245,6 +252,15 @@ public sealed partial class RouteWorkspaceViewModel
         }
         if (selectedId is { } selected)
         {
+            if (id is null && entry.EventName == "CarrierJump")
+            {
+                return HasCarrierJumpCountdown
+                    && string.Equals(
+                        GetString(entry.Payload, "StarSystem"),
+                        CarrierJumpDestination,
+                        StringComparison.OrdinalIgnoreCase
+                    );
+            }
             return id == selected;
         }
         string? type = GetString(entry.Payload, "CarrierType");

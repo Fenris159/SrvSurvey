@@ -95,6 +95,21 @@ public sealed partial class ColonizationShoppingPresentationTests
             Assert.InRange(Math.Abs(systemPosition.Y - uncheckPosition.Y), 0, 3);
             Assert.True(manifestPosition.Y > uncheckPosition.Y || manifestPosition.X > uncheckPosition.X);
             Assert.Equal("<--Uncheck Selection", uncheck.Content);
+            CheckBox browse = view.FindControl<CheckBox>("ShowUnaffiliatedProjectsCheckBox")!;
+            Assert.False(browse.IsChecked);
+            WrapPanel toolbar = Assert.IsType<WrapPanel>(browse.Parent);
+            Assert.Equal(
+                "Open Raven builds",
+                Assert.IsType<Button>(toolbar.Children[toolbar.Children.IndexOf(browse) - 1]).Content
+            );
+            main.Colonization.UpdateSystemContext("Achenar", null, 43);
+            browse.IsChecked = true;
+            await main.Colonization.CurrentSystemPlanningTask;
+            Assert.True(main.Colonization.ShowUnaffiliatedProjectsInCurrentSystem);
+            Assert.Equal("Achenar", main.Colonization.ProjectSystemFilter!.SystemName);
+            Assert.Equal(ColonizationProjectBuildFilter.All, main.Colonization.ProjectBuildFilter!.Value);
+            browse.IsChecked = false;
+            systems.SelectedItem = main.Colonization.ProjectSystemOptions[0];
             stages.SelectedItem = main.Colonization.ProjectBuildOptions.Single(option =>
                 option.Value == ColonizationProjectBuildFilter.Planning
             );

@@ -42,6 +42,31 @@ public sealed class ShipLoadoutTests
         Assert.Equal("LakonMiner", loadout.ShipType);
         Assert.Equal("Miner", loadout.Name);
         Assert.Equal(5, loadout.ModuleCount);
+        Assert.Null(loadout.MaximumJumpRange);
+    }
+
+    /// <summary>Reads only positive numeric journal ranges without guessing for missing or malformed data.</summary>
+    [Theory]
+    [InlineData("73.456789", "73.456789")]
+    [InlineData("8.25", "8.25")]
+    [InlineData("105.5", "105.5")]
+    [InlineData("0", null)]
+    [InlineData("-1", null)]
+    [InlineData("null", null)]
+    [InlineData("\"73.5\"", null)]
+    [InlineData("{}", null)]
+    [InlineData("1e100", null)]
+    public void MaximumJumpRangeRequiresAPositiveNumericJournalValue(string value, string? expected)
+    {
+        using var document = JsonDocument.Parse(
+            $$"""{"Ship":"python","MaxJumpRange":{{value}},"Modules":[{"Slot":"PowerPlant","Item":"Int_PowerPlant_Size3_Class5"}]}"""
+        );
+        Assert.Equal(
+            expected,
+            ShipLoadout
+                .Parse(document.RootElement)!
+                .MaximumJumpRange?.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        );
     }
 
     /// <summary>
