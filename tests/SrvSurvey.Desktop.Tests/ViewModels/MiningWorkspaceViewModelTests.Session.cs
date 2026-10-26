@@ -63,8 +63,30 @@ public sealed partial class MiningWorkspaceViewModelTests
                 journal,
                 """{"timestamp":"2026-09-06T12:00:30Z","event":"SupercruiseEntry","StarSystem":"Sol"}""" + "\n"
             );
+            JournalMonitorUpdate cruise = await monitor.PollAsync();
+            if (replayedFirst)
+            {
+                Apply(cruise with { IsBootstrapRead = true });
+                Assert.Null(workspace.Current.PausedAt);
+            }
+            Guid sessionId = workspace.Current.Id;
+            using var overlay = new MiningSessionOverlayViewModel(workspace);
+            Apply(cruise);
+            Assert.NotNull(workspace.Current.PausedAt);
+            Assert.Equal("Paused", overlay.State);
+            Assert.True(workspace.ShouldShowSession);
+            Assert.Empty(workspace.History);
+            Assert.NotNull(new MiningStore(directory).Load("F1").Current!.PausedAt);
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-09-06T12:00:45Z","event":"MiningRefined","Type":"platinum"}""" + "\n"
+            );
             Apply(await monitor.PollAsync());
-            Assert.NotNull(workspace.Current);
+            Assert.Equal(sessionId, workspace.Current.Id);
+            Assert.Null(workspace.Current.PausedAt);
+            Assert.Equal("Active", overlay.State);
+            Assert.Equal(TimeSpan.FromSeconds(15), workspace.Current.PausedDuration);
+            Assert.Equal(1, workspace.Current.RefinedTons);
             await File.AppendAllTextAsync(
                 journal,
                 """{"timestamp":"2026-09-06T12:01:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Beta"}"""
@@ -89,6 +111,7 @@ public sealed partial class MiningWorkspaceViewModelTests
             Apply(completed);
             Assert.Null(workspace.Current);
             Assert.Equal(clock.Now, Assert.Single(workspace.History).Ended);
+            Assert.Equal(TimeSpan.FromSeconds(105), workspace.History[0].ActiveDuration);
             Assert.Null(new MiningStore(directory).Load("F1").Current);
         }
         finally
@@ -132,6 +155,8 @@ public sealed partial class MiningWorkspaceViewModelTests
             status = new EliteStatus { Flags = StatusFlags.InMainShip };
             Feed("""{"event":"FSDTarget","Name":"Gamma","SystemAddress":3,"StarClass":"N"}""");
             Assert.NotNull(workspace.Current);
+            Feed("""{"event":"StartJump","JumpType":"Supercruise","StarSystem":"Sol"}""");
+            Assert.Null(workspace.Current.PausedAt);
             clock.Now = clock.Now.AddMinutes(1);
             Feed("""{"event":"StartJump","JumpType":"Hyperspace","StarSystem":"Beta"}""");
             Assert.NotNull(workspace.Current);

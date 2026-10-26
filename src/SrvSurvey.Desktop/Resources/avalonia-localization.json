@@ -20609,6 +20609,10 @@
       "translation": "Unterbrechen Sie die aktuelle Mining-Sitzung oder setzen Sie sie fort."
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "Sitzungen im Supercruise pausieren; nach einem Hyperraumsprung oder beim Andocken beenden"
+    },
+    {
       "source": "Paused",
       "translation": "Angehalten"
     },
@@ -28803,10 +28807,6 @@
     {
       "source": "Stop search",
       "translation": "Stoppen Sie die Suche"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "Stoppen Sie Sitzungen automatisch nach dem FSD-Sprung oder Andocken"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -60727,6 +60727,10 @@
       "translation": "Pausa o reanuda la sesión de minería actual."
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "Pausar sesiones en supercrucero; finalizarlas al completar un salto al hiperespacio o al atracar"
+    },
+    {
       "source": "Paused",
       "translation": "En pausa"
     },
@@ -68921,10 +68925,6 @@
     {
       "source": "Stop search",
       "translation": "detener la búsqueda"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "Detenga las sesiones automáticamente después del salto o acoplamiento del FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -100845,6 +100845,10 @@
       "translation": "Suspendez ou reprenez la session de minage en cours."
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "Mettre les sessions en pause en supercruise ; les terminer après un saut en hyperespace ou à l’amarrage"
+    },
+    {
       "source": "Paused",
       "translation": "En pause"
     },
@@ -109039,10 +109043,6 @@
     {
       "source": "Stop search",
       "translation": "Arrêter la recherche"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "Arrêtez automatiquement les sessions après un saut ou un amarrage FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -140963,6 +140963,10 @@
       "translation": "Pause ou retome a sessão de mineração atual."
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "Pausar sessões em supercruzeiro; encerrar após um salto para outro sistema ou ao atracar"
+    },
+    {
       "source": "Paused",
       "translation": "Pausado"
     },
@@ -149157,10 +149161,6 @@
     {
       "source": "Stop search",
       "translation": "Parar pesquisa"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "Interrompa as sessões automaticamente após o salto ou acoplamento do FSD"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -181081,6 +181081,10 @@
       "translation": "Приостановите или возобновите текущий сеанс майнинга."
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "Приостанавливать сеанс в суперкруизе; завершать после гиперпрыжка или стыковки"
+    },
+    {
       "source": "Paused",
       "translation": "Приостановлено"
     },
@@ -189275,10 +189279,6 @@
     {
       "source": "Stop search",
       "translation": "Остановить поиск"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "Автоматически останавливать сеансы после прыжка или стыковки FSD."
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -221199,6 +221199,10 @@
       "translation": "暂停或恢复当前挖矿会话。"
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "进入超级巡航时暂停会话；完成超空间跃迁或停靠后结束"
+    },
+    {
       "source": "Paused",
       "translation": "已暂停"
     },
@@ -229393,10 +229397,6 @@
     {
       "source": "Stop search",
       "translation": "停止搜索"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "FSD 跳转或对接后自动停止会话"
     },
     {
       "source": "Stopping after the current journal operation...",
@@ -261317,6 +261317,10 @@
       "translation": "* PAUSE OR RESUME THE CURRENT MINING SESSION. >>>!"
     },
     {
+      "source": "Pause sessions in supercruise; end after hyperspace arrival or docking",
+      "translation": "* PAUSE SESSIONS IN SUPERCRUISE; END AFTER HYPERSPACE ARRIVAL OR DOCKING >>>!"
+    },
+    {
       "source": "Paused",
       "translation": "* PAUSED >>>!"
     },
@@ -269511,10 +269515,6 @@
     {
       "source": "Stop search",
       "translation": "* STOP SEARCH >>>!"
-    },
-    {
-      "source": "Stop sessions automatically after FSD jump or docking",
-      "translation": "* STOP SESSIONS AUTOMATICALLY AFTER FSD JUMP OR DOCKING >>>!"
     },
     {
       "source": "Stopping after the current journal operation...",

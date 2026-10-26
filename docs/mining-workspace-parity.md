@@ -55,11 +55,14 @@ Session accounting, mission allocation, and persistence live in Core. Desktop co
 
 ## Validation
 
-Session auto-end responds to completed live `FSDJump` and `Docked` events,
-including when historical reading has already recorded that event. Duplicate
-filtering still prevents repeated accounting. Charging, `StartJump`, and
-cancellation do not end a session. Supercruise travel between rings keeps the
-session active; historical replay alone does not auto-end it.
+With travel automation enabled, live `SupercruiseEntry` pauses the same session;
+`FSDJump` and `Docked` end it. A travel pause resumes on a prospector or collector
+launch, a prospector result, or refining, counting that first activity and
+excluding paused time from session duration. The pause reason persists across
+restart, independently of automatic session creation. Manual pause controls keep
+their existing behavior. Historical travel alone does not pause or end a session;
+a later live copy still applies the travel action without repeating accounting.
+Charging, `StartJump`, and cancellation do not pause or end a session.
 File-monitor integration tests cover discovered folders, explicitly configured
 journal folders, and history arriving before the live completed jump.
 

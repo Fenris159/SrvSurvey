@@ -27,11 +27,13 @@ Spansh searches and mission overlay sizing.
 - **Mining session commodity names:** Prospecting yield summaries use consistent
   catalog casing, including **Gold**, **Silver**, and **Palladium**. Existing
   session history gains the same display names without rewriting journal data.
-- **Mining session auto-end:** Completed live FSD jumps end the session even
-  when the same event was already seen in a historical read. Charging,
-  initiating, or cancelling a jump does not end the session. Supercruise trips
-  between rings keep the session active. Historical replay
-  alone keeps sessions recoverable, and docking continues to end them normally.
+- **Mining session travel:** Successfully entering supercruise pauses the current
+  session. Launching a prospector or collector, prospecting, or refining resumes
+  the same session, retaining its totals and excluding paused time. The travel
+  pause survives a restart and can resume even with automatic session creation
+  disabled. Hyperspace arrival and docking still end the session when travel
+  automation is enabled. Charging, initiating, or cancelling a jump does not
+  pause or end it. Historical replay alone does not trigger travel automation.
 - **Colonization project visibility:** Your workspace primarily shows projects
   affiliated with your commander through Raven. The new **Show Unaffiliated
   Projects in Current System** checkbox is off by default. Enabling it loads

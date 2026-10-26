@@ -10,6 +10,8 @@ public sealed record MiningNotice(DateTimeOffset Time, string Kind, string Text)
 
 public sealed class MiningWorkspaceState
 {
+    private const string ProspectedAsteroidEvent = "ProspectedAsteroid";
+    private const string MiningRefinedEvent = "MiningRefined";
     private readonly HashSet<string> processed;
 
     public MiningWorkspaceState(MiningCommanderData data)
@@ -45,8 +47,8 @@ public sealed class MiningWorkspaceState
         if (!processed.Add(key))
         {
             // History can observe a completed jump before the live feed; deduplicate
-            // accounting without discarding the live session's end-of-travel action.
-            return StopSessionForTravel(entry, bootstrap);
+            // accounting without discarding the live session's travel action.
+            return ApplySessionTravel(entry, bootstrap);
         }
 
         Data.ProcessedEvents.Add(key);
@@ -56,9 +58,13 @@ public sealed class MiningWorkspaceState
             processed.Remove(Data.ProcessedEvents[0]);
             Data.ProcessedEvents.RemoveAt(0);
         }
-        if (!bootstrap && Data.Settings.AutoStart)
+        if (!bootstrap)
         {
-            ActivateSessionForProspector(entry, system, body, ship);
+            ResumeTravelPausedSession(entry);
+            if (Data.Settings.AutoStart)
+            {
+                ActivateSessionForProspector(entry, system, body, ship);
+            }
         }
 
         bool changed = Session.Apply(entry);
@@ -69,27 +75,57 @@ public sealed class MiningWorkspaceState
             AddNotice(entry);
         }
 
-        StopSessionForTravel(entry, bootstrap);
+        ApplySessionTravel(entry, bootstrap);
         Synchronize();
         return true;
     }
 
-    private bool StopSessionForTravel(JournalEventEnvelope entry, bool bootstrap)
+    private bool ApplySessionTravel(JournalEventEnvelope entry, bool bootstrap)
     {
         if (
             !bootstrap
             && Data.Settings.AutoStopAfterTravel
-            && entry.EventName is "FSDJump" or "Docked"
+            && entry.EventName is "FSDJump" or "SupercruiseEntry" or "Docked"
             && entry.Timestamp is { } time
             && Session.Current is { } session
             && time >= session.Started
         )
         {
+            if (entry.EventName == "SupercruiseEntry")
+            {
+                bool paused = Session.PauseForTravel(time);
+                Synchronize();
+                return paused;
+            }
             Stop(time);
             return true;
         }
         return false;
     }
+
+    private void ResumeTravelPausedSession(JournalEventEnvelope entry)
+    {
+        if (
+            Session.Current is { PausedForTravel: true, PausedAt: { } paused }
+            && entry.Timestamp is { } time
+            && time >= paused
+            && IsMiningActivity(entry)
+        )
+        {
+            Session.Resume(time);
+        }
+    }
+
+    private static bool IsMiningActivity(JournalEventEnvelope entry) =>
+        entry.EventName switch
+        {
+            ProspectedAsteroidEvent or MiningRefinedEvent => true,
+            "LaunchDrone" => MiningJson
+                .Text(entry.Payload, "Type")
+                .Equals("Prospector", StringComparison.OrdinalIgnoreCase)
+                || MiningJson.Text(entry.Payload, "Type").Equals("Collection", StringComparison.OrdinalIgnoreCase),
+            _ => false,
+        };
 
     private void ActivateSessionForProspector(JournalEventEnvelope entry, string system, string body, string ship)
     {
@@ -106,7 +142,7 @@ public sealed class MiningWorkspaceState
         {
             Session.Start(time, system, body, ship);
         }
-        else
+        else if (Session.Current is { PausedForTravel: false })
         {
             Session.Resume(time);
         }
@@ -175,10 +211,10 @@ public sealed class MiningWorkspaceState
         MiningPreferences settings = Data.Settings;
         string? text = entry.EventName switch
         {
-            "MiningRefined" when settings.NotifyRefined => $"{RefinedCommodityName(json)} ×1",
+            MiningRefinedEvent when settings.NotifyRefined => $"{RefinedCommodityName(json)} ×1",
             "MaterialCollected" when settings.NotifyMaterials =>
                 $"Collected: {MiningJson.Text(json, "Name")} ×{MiningJson.Number(json, "Count")}",
-            "ProspectedAsteroid" when settings.NotifyProspecting => FormatProspect(),
+            ProspectedAsteroidEvent when settings.NotifyProspecting => FormatProspect(),
             _ => null,
         };
         if (text is null)
@@ -188,7 +224,7 @@ public sealed class MiningWorkspaceState
 
         string kind = entry.EventName switch
         {
-            "MiningRefined" => "Refined",
+            MiningRefinedEvent => "Refined",
             "MaterialCollected" => "Collected",
             _ => "Prospected",
         };
@@ -256,7 +292,7 @@ public sealed class MiningWorkspaceState
     }
 
     private static bool IsProspectProgress(JournalEventEnvelope entry) =>
-        entry.EventName == "ProspectedAsteroid"
+        entry.EventName == ProspectedAsteroidEvent
         && entry.Payload.TryGetProperty("Remaining", out JsonElement remaining)
         && remaining.TryGetDouble(out double value)
         && value < 100;
@@ -330,8 +366,8 @@ public sealed class MiningWorkspaceState
     private static readonly HashSet<string> RelevantEvents =
     [
         "LaunchDrone",
-        "ProspectedAsteroid",
-        "MiningRefined",
+        ProspectedAsteroidEvent,
+        MiningRefinedEvent,
         "MaterialCollected",
         "MissionAccepted",
         "MissionCompleted",

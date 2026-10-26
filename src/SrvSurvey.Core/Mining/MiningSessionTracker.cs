@@ -39,6 +39,7 @@ public sealed record MiningSession
     public DateTimeOffset Started { get; init; }
     public DateTimeOffset? Ended { get; set; }
     public DateTimeOffset? PausedAt { get; set; }
+    public bool PausedForTravel { get; set; }
     public TimeSpan PausedDuration { get; set; }
     public string System { get; set; } = "";
     public string Ring { get; set; } = "";
@@ -162,7 +163,19 @@ public sealed class MiningSessionTracker
         if (Current is { PausedAt: null } session)
         {
             session.PausedAt = now;
+            session.PausedForTravel = false;
         }
+    }
+
+    public bool PauseForTravel(DateTimeOffset now)
+    {
+        if (Current is not { PausedAt: null } session)
+        {
+            return false;
+        }
+        Pause(now);
+        session.PausedForTravel = true;
+        return true;
     }
 
     public void Resume(DateTimeOffset now)
@@ -174,6 +187,7 @@ public sealed class MiningSessionTracker
 
         session.PausedDuration += now > paused ? now - paused : TimeSpan.Zero;
         session.PausedAt = null;
+        session.PausedForTravel = false;
     }
 
     public MiningSession Stop(DateTimeOffset now)
