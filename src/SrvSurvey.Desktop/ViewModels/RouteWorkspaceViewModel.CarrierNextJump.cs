@@ -13,6 +13,7 @@ public sealed partial class RouteWorkspaceViewModel
     private SystemSummary? carrierDestinationSummary;
     private GalacticCoordinate? carrierOrigin;
     private double? carrierArrivedFuelEstimate;
+    private string? carrierArrivedFuelSystem;
     private string? carrierOriginSystem;
 
     public Task CarrierDestinationLookup => carrierDestinationLookup?.Pending ?? Task.CompletedTask;
@@ -57,11 +58,17 @@ public sealed partial class RouteWorkspaceViewModel
 
     public SystemSummary? CarrierDestinationSummary => carrierDestinationSummary;
 
-    public double? CarrierDepotFuel => latestCarrierFuel?.TankTonnes ?? carrierArrivedFuelEstimate;
+    public double? CarrierDepotFuel =>
+        latestCarrierFuel?.TankTonnes
+        ?? (
+            string.Equals(latestCarrierFuel?.SystemName, carrierArrivedFuelSystem, StringComparison.OrdinalIgnoreCase)
+                ? carrierArrivedFuelEstimate
+                : null
+        );
 
     public bool CarrierFuelIsEstimated =>
         latestCarrierFuel?.IsEstimated == true
-        || (latestCarrierFuel?.TankTonnes is null && carrierArrivedFuelEstimate is not null);
+        || (latestCarrierFuel?.TankTonnes is null && CarrierDepotFuel is not null);
 
     public double? CarrierStoredTritium => latestCarrierFuel?.StoredTritiumTonnes;
 
@@ -150,6 +157,7 @@ public sealed partial class RouteWorkspaceViewModel
         carrierOrigin = null;
         carrierOriginSystem = null;
         carrierArrivedFuelEstimate = null;
+        carrierArrivedFuelSystem = null;
         OnPropertyChanged(nameof(CarrierDestinationSummary));
         OnPropertyChanged(nameof(ShouldShowCarrierNextJumpOverlay));
     }

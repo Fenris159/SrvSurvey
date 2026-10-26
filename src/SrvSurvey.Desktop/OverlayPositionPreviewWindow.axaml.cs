@@ -29,6 +29,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private double minimumResizeWidth;
     private double minimumResizeHeight;
     private int? viewportWidth;
+    private int? viewportHeight;
 
     /// <summary>Creates the default sample-data preview with shared presentation scaling.</summary>
     public OverlayPositionPreviewWindow()
@@ -271,10 +272,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         InvalidateMeasure();
     }
 
-    /// <summary>Uses the edited game's width as the wrapping limit for content-width panels.</summary>
-    internal void ConfigureViewportWidth(int width)
+    /// <summary>Uses the edited game's viewport to bound shared content sizing and scrolling.</summary>
+    internal void ConfigureViewport(int width, int? height = null)
     {
         viewportWidth = width;
+        viewportHeight = height;
         ApplyConfiguredScale();
     }
 
@@ -459,6 +461,23 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             runtimePresentation,
             Math.Max(1, width - 16) / Math.Max(0.01, scaling * scaleFactor)
         );
+        if (runtimePresentation is IOverlayPanelViewportAware panel)
+        {
+            int height = Math.Min(
+                viewportHeight ?? int.MaxValue,
+                Screens.ScreenFromWindow(this)?.WorkingArea.Height ?? 1080
+            );
+            EditorFolderTab.Measure(Size.Infinity);
+            double chrome =
+                EditorFolderTab.DesiredSize.Height
+                + PreviewBody.Padding.Top
+                + PreviewBody.Padding.Bottom
+                + PreviewBody.BorderThickness.Top
+                + PreviewBody.BorderThickness.Bottom
+                + PreviewBody.Margin.Top
+                + PreviewBody.Margin.Bottom;
+            panel.SetAvailableHeight(Math.Max(1, (height - 16) / Math.Max(0.01, scaling * scaleFactor) - chrome));
+        }
     }
 
     /// <summary>Resolves legacy and relative scale settings on the monitor actually rendering this preview.</summary>

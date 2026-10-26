@@ -16,6 +16,54 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class JumpInfoOverlayPresentationTests
 {
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DirectNeutronTargetKeepsItsPillVisibleWhenDetailsAreHidden(bool minimal)
+    {
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"jump-neutron-{Guid.NewGuid():N}.json");
+        using var http = new HttpClient(new DiscoveryHandler(Task.CompletedTask));
+        using var jump = new JumpInfoViewModel(new SystemSummaryClient(http), new JumpInfoSettingsStore(settingsPath));
+        jump.Minimal = minimal;
+        jump.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                null,
+                [Parse("""{"event":"FSDTarget","Name":"Beta","SystemAddress":3,"StarClass":"N"}""")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        using var model = new JumpInfoOverlayViewModel(jump, OverlayPlatformCapabilities.DetectCurrent());
+        var window = new JumpInfoOverlayWindow(model);
+        try
+        {
+            OverlayThemeResources.Apply(window);
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            TextBlock pill = Assert.Single(
+                window.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "NEUTRON"
+            );
+            Assert.True(pill.IsEffectivelyVisible);
+            Assert.Contains(window.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "STAR CLASS N");
+            Assert.Empty(jump.RouteLegs);
+        }
+        finally
+        {
+            window.Close();
+            File.Delete(settingsPath);
+        }
+    }
+
+    private static JournalEventEnvelope Parse(string json)
+    {
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
+        return entry!;
+    }
+
     /// <summary>Renders real provider discovery data arriving after the passive overlay is already visible.</summary>
     [AvaloniaTheory]
     [InlineData(false)]

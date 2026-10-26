@@ -258,6 +258,7 @@ public sealed partial class ColonizationViewModel
         projectScope = new ColonizationProjectScope(
             CommanderName is null ? null : settingsStore.LoadLocalProjects(CommanderName)
         );
+        projectScope.EnterSystem(recovery.CurrentSystemName);
         OnPropertyChanged(nameof(ShowUnaffiliatedProjectsInCurrentSystem));
         shoppingSession = CommanderName is null ? null : settingsStore.LoadShopping(CommanderName);
         plannedSystems.Clear();

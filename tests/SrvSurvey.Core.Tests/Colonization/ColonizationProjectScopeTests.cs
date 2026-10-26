@@ -16,6 +16,24 @@ public sealed class ColonizationProjectScopeTests
         };
 
     [Fact]
+    public void UnknownAffiliationsPreserveLegacyRowsButExpireNewTemporaryObservations()
+    {
+        var scope = new ColonizationProjectScope { BrowseEnabled = true };
+        ColonizationProject legacy = Project("legacy");
+        ColonizationProject docked = Project("docked");
+        ColonizationProject browsed = Project("browsed");
+        scope.Merge([legacy], []);
+        scope.EnterSystem("Colony");
+        scope.SetDockedProject(legacy);
+        scope.SetDockedProject(docked);
+        scope.SetCurrentProjects([browsed]);
+        Assert.Equal(3, scope.Merge([legacy, docked, browsed], []).Count);
+        scope.SetDockedProject(null);
+        scope.EnterSystem("Next");
+        Assert.Equal("legacy", Assert.Single(scope.Merge([legacy, docked, browsed], [])).BuildId);
+    }
+
+    [Fact]
     public void SuccessfulAffiliationsFilterLegacyProjectsAndFailedPlanningDiscoveryPreservesKnownSystems()
     {
         var scope = new ColonizationProjectScope();

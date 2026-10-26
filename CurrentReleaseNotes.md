@@ -21,6 +21,17 @@ Spansh searches and mission overlay sizing.
   **PRISTINE ICY RING**, and **ICY BODY** tags when those resources are known.
   The fuel warning icon is larger, centered with its text, and follows the
   overlay theme.
+- **Next Jump neutron badge:** Class-N destinations show the **NEUTRON** pill
+  beside the star class even without a pre-planned route or with details hidden.
+  Existing route guidance continues to supply the badge when applicable.
+- **Mining session commodity names:** Prospecting yield summaries use consistent
+  catalog casing, including **Gold**, **Silver**, and **Palladium**. Existing
+  session history gains the same display names without rewriting journal data.
+- **Mining session auto-end:** Completed live FSD jumps end the session even
+  when the same event was already seen in a historical read. Charging,
+  initiating, or cancelling a jump does not end the session. Supercruise trips
+  between rings keep the session active. Historical replay
+  alone keeps sessions recoverable, and docking continues to end them normally.
 - **Colonization project visibility:** Your workspace primarily shows projects
   affiliated with your commander through Raven. The new **Show Unaffiliated
   Projects in Current System** checkbox is off by default. Enabling it loads
@@ -35,6 +46,8 @@ Spansh searches and mission overlay sizing.
   are preserved. Failed refreshes leave saved data intact. Docking at a
   construction site continues to show its needs temporarily, independently
   of the browsing checkbox, with manual focus available for continued tracking.
+  Re-enabling Raven restores current-system browsing, and temporary docked
+  projects still expire if the initial affiliation request was unavailable.
 - **Current-ship range in Spansh searches:** Neutron, Road to Riches, Tourist,
   and Exobiology searches autofill jump range from the current ship's journal
   `MaxJumpRange`. Reopening the search after changing ships refreshes the

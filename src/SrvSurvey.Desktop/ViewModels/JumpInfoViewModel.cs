@@ -274,11 +274,16 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasRefuelGuidance => DetailLines.Any(line => line.Refuel);
 
-    public bool HasNeutronGuidance => DetailLines.Any(line => line.Neutron);
+    public bool HasNeutronGuidance =>
+        string.Equals(
+            (routePlan?.Target.StarClass ?? summary?.StarClass)?.Trim(),
+            "N",
+            StringComparison.OrdinalIgnoreCase
+        ) || DetailLines.Any(line => line.Neutron);
 
     public bool HasRouteGuidanceBadges => HasRefuelGuidance || HasNeutronGuidance;
 
-    public bool HasDiscoveryOrRouteGuidance => HasDiscoveryText || HasRouteGuidanceBadges;
+    public bool HasDiscoveryOrRouteGuidance => HasDiscoveryText || HasRefuelGuidance;
 
     public string DataStatus
     {

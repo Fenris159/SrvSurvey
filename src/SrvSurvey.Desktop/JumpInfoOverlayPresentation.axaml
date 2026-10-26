@@ -61,6 +61,21 @@
                          Text="SCOOPABLE" />
             </Border>
           </LayoutTransformControl>
+          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasNeutronGuidance}">
+            <Border Classes="badge"
+                    Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                    Padding="7,2">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Image Width="14"
+                       Height="14"
+                       Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+                       Stretch="Uniform" />
+                <TextBlock FontSize="9" VerticalAlignment="Center"
+                           Foreground="#4A9EE8"
+                           Text="NEUTRON" />
+              </StackPanel>
+            </Border>
+          </LayoutTransformControl>
           <TextBlock FontSize="12" Classes="monospace type-value"
                      Foreground="{DynamicResource RavenWarningBrush}"
                      FontWeight="SemiBold"
@@ -106,7 +121,7 @@
                       Orientation="Horizontal"
                       HorizontalAlignment="Right"
                       Spacing="6"
-                      IsVisible="{Binding JumpInfo.HasRouteGuidanceBadges}">
+                      IsVisible="{Binding JumpInfo.HasRefuelGuidance}">
             <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasRefuelGuidance}">
               <Border Classes="badge"
                       Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
@@ -122,21 +137,7 @@
                 </StackPanel>
               </Border>
             </LayoutTransformControl>
-            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasNeutronGuidance}">
-              <Border Classes="badge"
-                      Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
-                      Padding="7,2">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <Image Width="14"
-                         Height="14"
-                         Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
-                         Stretch="Uniform" />
-                  <TextBlock FontSize="9" VerticalAlignment="Center"
-                             Foreground="#4A9EE8"
-                             Text="NEUTRON" />
-                </StackPanel>
-              </Border>
-            </LayoutTransformControl>
+
           </StackPanel>
         </Grid>
         <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasTraffic}"

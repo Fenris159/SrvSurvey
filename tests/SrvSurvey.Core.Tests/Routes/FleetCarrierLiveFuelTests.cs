@@ -15,6 +15,45 @@ public sealed class FleetCarrierLiveFuelTests
         CultureInfo.InvariantCulture
     );
 
+    [Theory]
+    [InlineData(1, "B", false, 2, true)]
+    [InlineData(2, "B", false, 2, false)]
+    [InlineData(1, "Other", false, 2, false)]
+    [InlineData(1, "B", true, 2, false)]
+    [InlineData(1, "B", false, 1, false)]
+    [InlineData(1, "B", false, 303, false)]
+    public void IdlessArrivalRequiresAMatchingUncancelledCarrierRequest(
+        int requestedCarrier,
+        string destination,
+        bool cancelled,
+        int arrivalSecond,
+        bool expected
+    )
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(
+                1,
+                "CarrierJumpRequest",
+                $"\"CarrierID\":{requestedCarrier},\"SystemName\":\"B\",\"DepartureTime\":\"{Origin.AddSeconds(2):O}\""
+            ),
+        ]);
+        if (cancelled)
+        {
+            journal.Observe([Event(1, "CarrierJumpCancelled", "\"CarrierID\":1")]);
+        }
+        journal.Observe([
+            Event(arrivalSecond, "CarrierJump", $"\"StarSystem\":\"{destination}\",\"StarPos\":[100,0,0]"),
+        ]);
+        FleetCarrierFuelSnapshot snapshot = journal.Read(
+            Account(Carrier(1, "OWN-001", 1000, 500, 1000)),
+            FollowRouteCarrierKind.Personal,
+            Hops()
+        )!;
+        Assert.Equal(expected ? "B" : "A", snapshot.SystemName);
+        Assert.Equal(expected ? 981 : 1000, snapshot.TankTonnes);
+    }
+
     [Fact]
     public void CapiPreservesInvariantTritiumAndSeparatesSquadronFuelWithoutAddingSaleStockTwice()
     {

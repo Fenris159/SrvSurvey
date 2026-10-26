@@ -397,7 +397,6 @@ public sealed class OverlayPresentationContractTests
                 "PointsOfInterestText",
                 "DetailLines",
                 "IsQuestTagged",
-                "HasRouteGuidanceBadges",
                 "HasRefuelGuidance",
                 "HasNeutronGuidance",
                 "Assets/Routes/refuel-star.png",

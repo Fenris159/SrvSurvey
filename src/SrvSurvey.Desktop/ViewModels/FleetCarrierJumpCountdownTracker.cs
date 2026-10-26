@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class FleetCarrierJumpCountdownTracker
 {
+    private const string StarSystemField = "StarSystem";
     private const int JumpLockSeconds = 600;
     private const int PadLockdownSeconds = 200;
     private static readonly TimeSpan PostJumpCooldown = TimeSpan.FromMinutes(5);
@@ -77,7 +78,7 @@ public sealed class FleetCarrierJumpCountdownTracker
         carrierId = GetIdentifier(journalEvent.Payload, "CarrierID");
         destination =
             GetString(journalEvent.Payload, "SystemName")
-            ?? GetString(journalEvent.Payload, "StarSystem")
+            ?? GetString(journalEvent.Payload, StarSystemField)
             ?? string.Empty;
         targetTime = departure.Value;
         scheduledDeparture = departure.Value;
@@ -102,7 +103,7 @@ public sealed class FleetCarrierJumpCountdownTracker
         DateTimeOffset completedAt = journalEvent.Timestamp ?? now;
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(completedAt) + PostJumpCooldown;
-        destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
+        destination = GetString(journalEvent.Payload, StarSystemField) ?? destination;
         destinationAddress = GetSystemAddress(journalEvent.Payload) is > 0 and var address
             ? address
             : destinationAddress;
@@ -120,15 +121,26 @@ public sealed class FleetCarrierJumpCountdownTracker
         }
 
         DateTimeOffset observedAt = journalEvent.Timestamp ?? now;
-        if (observedAt < scheduledDeparture)
+        if (observedAt < scheduledDeparture || !MatchesDestination(journalEvent.Payload))
         {
             return false;
         }
 
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(observedAt) + PostJumpCooldown;
-        destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
+        destination = GetString(journalEvent.Payload, StarSystemField) ?? destination;
+        destinationAddress = GetSystemAddress(journalEvent.Payload) is > 0 and var address
+            ? address
+            : destinationAddress;
         return true;
+    }
+
+    private bool MatchesDestination(JsonElement payload)
+    {
+        long address = GetSystemAddress(payload);
+        return destinationAddress > 0 && address > 0
+            ? destinationAddress == address
+            : string.Equals(GetString(payload, StarSystemField), destination, StringComparison.OrdinalIgnoreCase);
     }
 
     private void Normalize(DateTimeOffset now)

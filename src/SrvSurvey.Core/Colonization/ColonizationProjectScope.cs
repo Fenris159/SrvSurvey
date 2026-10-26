@@ -5,6 +5,8 @@ public sealed class ColonizationProjectScope
 {
     private readonly Dictionary<string, ColonizationLocalProject> retained = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, ColonizationProject> current = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> temporaryBuilds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> unverifiedBuilds = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> affiliatedBuilds = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> affiliatedSystems = new(StringComparer.OrdinalIgnoreCase);
     private bool hasProjectAffiliations;
@@ -106,7 +108,22 @@ public sealed class ColonizationProjectScope
     }
 
     /// <summary>Reveals a docked site's needs without retaining it or requiring system browsing.</summary>
-    public void SetDockedProject(ColonizationProject? project) => dockedProject = project;
+    public void SetDockedProject(ColonizationProject? project)
+    {
+        if (project is not null)
+        {
+            NoteTemporaryProject(project);
+        }
+        dockedProject = project;
+    }
+
+    private void NoteTemporaryProject(ColonizationProject project)
+    {
+        if (!unverifiedBuilds.Contains(project.BuildId))
+        {
+            temporaryBuilds.Add(project.BuildId);
+        }
+    }
 
     private IEnumerable<ColonizationProject> CurrentProjects() =>
         dockedProject is null ? current.Values : current.Values.Append(dockedProject);
@@ -125,6 +142,7 @@ public sealed class ColonizationProjectScope
             )
         )
         {
+            NoteTemporaryProject(project);
             current[project.BuildId] = project;
             if (retained.TryGetValue(project.BuildId, out ColonizationLocalProject? entry))
             {
@@ -193,9 +211,17 @@ public sealed class ColonizationProjectScope
         }
         foreach (ColonizationProject project in liveProjects)
         {
-            if (!hasProjectAffiliations || IsAffiliated(project) || IsLocal(project))
+            if (
+                (!hasProjectAffiliations && !temporaryBuilds.Contains(project.BuildId))
+                || IsAffiliated(project)
+                || IsLocal(project)
+            )
             {
                 result[project.BuildId] = project;
+                if (!hasProjectAffiliations && !IsLocal(project))
+                {
+                    unverifiedBuilds.Add(project.BuildId);
+                }
             }
             if (retained.TryGetValue(project.BuildId, out ColonizationLocalProject? entry))
             {

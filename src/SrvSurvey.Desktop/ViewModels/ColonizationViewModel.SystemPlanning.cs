@@ -16,6 +16,7 @@ public sealed partial class ColonizationViewModel
         {
             return;
         }
+        projectScope.EnterSystem(recovery.CurrentSystemName);
         if (
             !ShowUnaffiliatedProjectsInCurrentSystem
             && !projectScope.AffiliatedSystems.Contains(recovery.CurrentSystemName)

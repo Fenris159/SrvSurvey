@@ -1176,6 +1176,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             )
             {
                 carrierArrivedFuelEstimate = projectedFuel;
+                carrierArrivedFuelSystem = carrierJumpCountdown.Current.Destination;
             }
             ApplyCarrierJumpCountdownState();
         }

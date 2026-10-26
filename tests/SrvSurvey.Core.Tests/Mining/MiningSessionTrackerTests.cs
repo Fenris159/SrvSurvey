@@ -5,6 +5,36 @@ namespace SrvSurvey.Core.Tests.Mining;
 
 public sealed class MiningSessionTrackerTests
 {
+    private static readonly string[] ExpectedCommodityNames =
+    [
+        "Low Temperature Diamonds",
+        "Gold",
+        "Silver",
+        "Palladium",
+        "Platinum",
+    ];
+
+    [Fact]
+    public void YieldSummaryUsesCanonicalNamesForAllCommoditiesIncludingExistingSessionData()
+    {
+        var session = new MiningSession
+        {
+            Prospects =
+            [
+                new(
+                    DateTimeOffset.UtcNow,
+                    [new("gold", 10), new("silver", 20), new("palladium", 30), new("Platinum", 40), new("GOLD", 5)],
+                    "lowtemperaturediamond",
+                    "High"
+                ),
+            ],
+        };
+        IReadOnlyList<MiningMaterialSummary> summary = session.Summarize(new Dictionary<string, double>());
+        Assert.Equal(ExpectedCommodityNames.Order(), summary.Select(row => row.Name).Order());
+        Assert.Equal(2, summary.Single(row => row.Name == "Gold").Finds);
+        Assert.Equal("gold", session.Prospects[0].Materials[0].Name);
+    }
+
     [Fact]
     public void SessionCountsRefiningRatherThanCargoTransfersAndExcludesPausedTime()
     {

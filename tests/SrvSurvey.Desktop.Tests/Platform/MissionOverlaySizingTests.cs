@@ -20,6 +20,30 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class MissionOverlaySizingTests
 {
     [AvaloniaTheory]
+    [InlineData("PlotMiningMissions")]
+    [InlineData("PlotMassacre")]
+    public void EditorConstrainsMissionHeightToItsScaledGameViewport(string plotter)
+    {
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetMissionCount(20);
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotter));
+        try
+        {
+            (preview.RuntimePresentation!.DataContext as IDisposable)?.Dispose();
+            preview.RuntimePresentation.DataContext = fixture.Window.DataContext;
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(50), null, 1);
+            preview.ConfigureViewport(480, 480);
+            preview.Show();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Assert.InRange(preview.RuntimePresentation.Bounds.Height * 1.5, 100, 464);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaTheory]
     [InlineData("PlotMiningMissions", OverlayGrowthDirection.Left)]
     [InlineData("PlotMiningMissions", OverlayGrowthDirection.Right)]
     [InlineData("PlotMiningMissions", OverlayGrowthDirection.Automatic)]
@@ -160,11 +184,11 @@ public sealed class MissionOverlaySizingTests
                 PngBitmapEncoderOptions.Default
             );
             double expandedHeight = preview.RuntimePresentation.Bounds.Height;
-            preview.ConfigureViewportWidth(320);
+            preview.ConfigureViewport(320);
             using WriteableBitmap? wrapped = preview.CaptureRenderedFrame();
             Assert.InRange(preview.RuntimePresentation.Bounds.Width, initial, 304);
             Assert.True(preview.RuntimePresentation.Bounds.Height > expandedHeight);
-            preview.ConfigureViewportWidth(1280);
+            preview.ConfigureViewport(1280);
             fixture.SetMissionCount(1);
             preview.ConfigureSize(new(80, 900));
             using WriteableBitmap? contracted = preview.CaptureRenderedFrame();

@@ -82,6 +82,22 @@ public sealed partial class ColonizationViewModelTests
     }
 
     [Fact]
+    public async Task ReenablingRavenRestoresBrowsingInTheUnchangedCurrentSystem()
+    {
+        using ColonizationViewModel model = await LocalScopeModel(LocalScopeClient());
+        model.UpdateSystemContext("Visitor", null, 42);
+        model.ShowUnaffiliatedProjectsInCurrentSystem = true;
+        await model.CurrentSystemPlanningTask;
+        Assert.Contains(model.Projects, project => project.SystemName == "Visitor");
+        model.IsEnabled = false;
+        model.IsEnabled = true;
+        await model.RefreshAsync();
+        await model.CurrentSystemPlanningTask;
+        Assert.True(model.ShowUnaffiliatedProjectsInCurrentSystem);
+        Assert.Contains(model.Projects, project => project.SystemName == "Visitor");
+    }
+
+    [Fact]
     public async Task FailedLocalRetentionSaveDoesNotDeleteTheLegacyPlansAndCanRetry()
     {
         StubRavenColonialClient client = LocalScopeClient();
@@ -275,11 +291,20 @@ public sealed partial class ColonizationViewModelTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UnfocusedDockedPreviewExpiresAndDisabledAccessCannotRepopulateProjects(bool disableAccess)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task UnfocusedDockedPreviewExpiresAndDisabledAccessCannotRepopulateProjects(
+        bool disableAccess,
+        bool failedAffiliations
+    )
     {
         StubRavenColonialClient client = LocalScopeClient();
+        if (failedAffiliations)
+        {
+            client.Failure = new HttpRequestException("offline commander affiliation");
+        }
         using ColonizationViewModel model = await LocalScopeModel(client);
         JournalEventEnvelope dock = Event(
             "Docked",

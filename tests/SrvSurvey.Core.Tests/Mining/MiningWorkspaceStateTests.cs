@@ -9,6 +9,23 @@ public sealed class MiningWorkspaceStateTests
     [Theory]
     [InlineData("FSDJump")]
     [InlineData("Docked")]
+    public void ACompletedTravelEventSeenInHistoryStillEndsItsLiveSession(string eventName)
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData());
+        state.Session.Start(new DateTimeOffset(2026, 10, 25, 12, 0, 0, TimeSpan.Zero), "Sol", "Ring", "Python");
+        JournalEventEnvelope entry = Parse($$"""{"event":"{{eventName}}","timestamp":"2026-10-25T12:01:00Z"}""");
+        state.Apply(entry, true, "Sol", "Ring", "Python");
+        Assert.NotNull(state.Session.Current);
+        Assert.True(state.Apply(entry, false, "Sol", "Ring", "Python"));
+        Assert.Null(state.Session.Current);
+        Assert.Single(state.Data.History);
+        Assert.False(state.Apply(entry, false, "Sol", "Ring", "Python"));
+        Assert.Single(state.Data.History);
+    }
+
+    [Theory]
+    [InlineData("FSDJump")]
+    [InlineData("Docked")]
     public void TravelEndsActiveSessionByDefault(string eventName)
     {
         var state = new MiningWorkspaceState(new MiningCommanderData());

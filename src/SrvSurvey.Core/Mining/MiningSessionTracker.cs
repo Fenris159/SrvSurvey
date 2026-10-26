@@ -73,7 +73,7 @@ public sealed record MiningSession
             .SelectMany(MaterialFinds)
             .GroupBy(m => m.Name, StringComparer.OrdinalIgnoreCase)
             .Select(group => new MiningMaterialSummary(
-                group.Key,
+                MiningCommodityName.Canonical(group.Key),
                 group.Count(),
                 Math.Clamp(
                     group.Count(m =>

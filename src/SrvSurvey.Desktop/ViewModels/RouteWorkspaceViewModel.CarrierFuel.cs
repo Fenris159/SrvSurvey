@@ -124,6 +124,11 @@ public sealed partial class RouteWorkspaceViewModel
     private FleetCarrierFuelSnapshot? ReadObservedCarrierFuel(JournalEventEnvelope? through = null)
     {
         latestCarrierFuel = carrierFuelJournal.Read(carrierAccountBaseline, selectedCarrierKind, draftHops, through);
+        if (!string.Equals(latestCarrierFuel?.SystemName, carrierArrivedFuelSystem, StringComparison.OrdinalIgnoreCase))
+        {
+            carrierArrivedFuelEstimate = null;
+            carrierArrivedFuelSystem = null;
+        }
         OnPropertyChanged(nameof(CarrierFuelSummary));
         OnPropertyChanged(nameof(CarrierDestinationSummary));
         return latestCarrierFuel;

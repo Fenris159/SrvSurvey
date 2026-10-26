@@ -55,6 +55,14 @@ Session accounting, mission allocation, and persistence live in Core. Desktop co
 
 ## Validation
 
+Session auto-end responds to completed live `FSDJump` and `Docked` events,
+including when historical reading has already recorded that event. Duplicate
+filtering still prevents repeated accounting. Charging, `StartJump`, and
+cancellation do not end a session. Supercruise travel between rings keeps the
+session active; historical replay alone does not auto-end it.
+File-monitor integration tests cover discovered folders, explicitly configured
+journal folders, and history arriving before the live completed jump.
+
 Mining Missions and Massacre Missions overlays size their width and height to the visible content. They grow and shrink from the selected growth edge, wrap long text at the game viewport width, and scroll vertically when missions exceed the available height. Their editor previews use the same behavior. Previous saved panel dimensions do not impose a fixed size on these panels; position, scaling, and growth direction remain configurable.
 
 Individual red/green tests cover session accounting, mission delivery/cargo allocation, bookmark persistence/import, backup recovery, replay idempotence, report encoding, ring-level filtering, and ship-only overlay gating. Focused Core and Desktop checks pass. The two-axis review and the corrections it produced are recorded in [the review report](mining-workspace-review.md).

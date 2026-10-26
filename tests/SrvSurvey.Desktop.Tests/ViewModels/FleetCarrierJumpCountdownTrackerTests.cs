@@ -6,6 +6,36 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class FleetCarrierJumpCountdownTrackerTests
 {
     [Fact]
+    public void LocationMustMatchTheRequestedDestinationBeforeConfirmingArrival()
+    {
+        var tracker = new FleetCarrierJumpCountdownTracker();
+        var start = new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","SystemAddress":42,"DepartureTime":"2026-08-01T12:15:00Z"}"""
+            ),
+            start
+        );
+        tracker.Refresh(start.AddMinutes(15));
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:15:10Z","event":"CarrierLocation","CarrierID":123,"StarSystem":"Sol","SystemAddress":1}"""
+            ),
+            start.AddMinutes(15).AddSeconds(10)
+        );
+        Assert.Equal(FleetCarrierJumpCountdownKind.InTransit, tracker.Current.Kind);
+        Assert.Equal("Colonia", tracker.Current.Destination);
+        tracker.Apply(
+            Parse(
+                """{"timestamp":"2026-08-01T12:15:20Z","event":"CarrierLocation","CarrierID":123,"StarSystem":"Colonia","SystemAddress":42}"""
+            ),
+            start.AddMinutes(15).AddSeconds(20)
+        );
+        Assert.Equal(FleetCarrierJumpCountdownKind.PostJumpCooldown, tracker.Current.Kind);
+        Assert.Equal(42, tracker.Current.SystemAddress);
+    }
+
+    [Fact]
     public void JumpRequestMovesThroughInitiationLockdownAndCooldownPhases()
     {
         var tracker = new FleetCarrierJumpCountdownTracker();

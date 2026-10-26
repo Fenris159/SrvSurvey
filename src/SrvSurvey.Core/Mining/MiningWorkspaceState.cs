@@ -44,7 +44,9 @@ public sealed class MiningWorkspaceState
         string key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
         if (!processed.Add(key))
         {
-            return false;
+            // History can observe a completed jump before the live feed; deduplicate
+            // accounting without discarding the live session's end-of-travel action.
+            return StopSessionForTravel(entry, bootstrap);
         }
 
         Data.ProcessedEvents.Add(key);
@@ -72,7 +74,7 @@ public sealed class MiningWorkspaceState
         return true;
     }
 
-    private void StopSessionForTravel(JournalEventEnvelope entry, bool bootstrap)
+    private bool StopSessionForTravel(JournalEventEnvelope entry, bool bootstrap)
     {
         if (
             !bootstrap
@@ -84,7 +86,9 @@ public sealed class MiningWorkspaceState
         )
         {
             Stop(time);
+            return true;
         }
+        return false;
     }
 
     private void ActivateSessionForProspector(JournalEventEnvelope entry, string system, string body, string ship)

@@ -16,6 +16,79 @@ public sealed class CarrierNextJumpTests
     private static readonly int[] OriginPosition = [0, 0, 0];
 
     [Fact]
+    public async Task IdlessCarrierArrivalUpdatesFuelAndOriginForTheNextJump()
+    {
+        await using Fixture fixture = await Fixture.CreateAsync();
+        await fixture.SeedFuelAsync(260);
+        await fixture.RequestAsync();
+        fixture.Now = fixture.Now.AddMinutes(15).AddSeconds(20);
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierJump",
+                    StarSystem = "Destination",
+                    StarPos = DestinationPosition,
+                }
+            ),
+        ]);
+        using FleetCarrierRouteOverlayViewModel overlay = fixture.Overlay();
+        Assert.Equal("179 t", overlay.FuelLeft);
+        Assert.Equal("Fuel left (est.)", overlay.FuelLeftLabel);
+        fixture.Now = fixture.Now.AddMinutes(6);
+        fixture.Route.RefreshCarrierJumpCountdown();
+        await fixture.RequestAsync(destination: "Destination 2");
+        Assert.Equal(500, fixture.Route.CarrierNextJumpDistance);
+        Assert.Equal("99 t", overlay.FuelLeft);
+    }
+
+    [Fact]
+    public async Task UntrackedCarrierMovementInvalidatesThePreviousArrivalFuelEstimate()
+    {
+        await using Fixture fixture = await Fixture.CreateAsync();
+        await fixture.SeedFuelAsync(260);
+        await fixture.RequestAsync();
+        fixture.Now = fixture.Now.AddMinutes(15).AddSeconds(20);
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierLocation",
+                    CarrierID = 1,
+                    StarSystem = "Destination",
+                }
+            ),
+        ]);
+        Assert.Equal(179, fixture.Route.CarrierDepotFuel);
+        fixture.Now = fixture.Now.AddMinutes(6);
+        fixture.Route.RefreshCarrierJumpCountdown();
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierLocation",
+                    CarrierID = 1,
+                    StarSystem = "Untracked",
+                }
+            ),
+        ]);
+        fixture.Now = fixture.Now.AddMinutes(20);
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierLocation",
+                    CarrierID = 1,
+                    StarSystem = "Destination",
+                }
+            ),
+        ]);
+        await fixture.RequestAsync(destination: "Destination 2");
+        Assert.Null(fixture.Route.CarrierDepotFuel);
+        Assert.Null(fixture.Route.CarrierNextJumpFuel);
+    }
+
+    [Fact]
     public async Task EstimatedDepotFuelCarriesAcrossSuccessiveJumpsWithoutCoordinates()
     {
         await using Fixture fixture = await Fixture.CreateAsync();

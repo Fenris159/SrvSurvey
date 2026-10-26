@@ -9,6 +9,7 @@ internal static class ProfileImportUiSettingsPolicy
     {
         "SystemSurvey",
         "JumpInfo",
+        "CarrierNextJump",
         "GalaxyMap",
         "ExplorationPois",
         "BiologyPredictions",
