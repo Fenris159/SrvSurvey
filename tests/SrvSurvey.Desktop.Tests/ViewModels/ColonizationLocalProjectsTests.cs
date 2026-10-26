@@ -116,6 +116,35 @@ public sealed partial class ColonizationViewModelTests
         Assert.Empty(model.Projects);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedFocusedProjectRetentionRemainsVisibleAndRefreshCanRetry(bool planned)
+    {
+        StubRavenColonialClient client = LocalScopeClient();
+        using ColonizationViewModel model = await LocalScopeModel(client);
+        model.UpdateSystemContext("Visitor", null, 42);
+        model.ShowUnaffiliatedProjectsInCurrentSystem = true;
+        await model.CurrentSystemPlanningTask;
+        ColonizationProjectRowViewModel row = model.Projects.Single(row =>
+            row.SystemName == "Visitor" && row.Project.IsPlanned == planned
+        );
+        string id = row.Project.BuildId;
+        string cache = Path.Combine(directory, "ui.json.local-projects.json");
+        File.Delete(cache);
+        Directory.CreateDirectory(cache);
+        await model.ToggleFocusProjectAsync(row);
+        Assert.Contains(model.Projects, project => project.Project.BuildId == id && project.IsFocused);
+        Assert.Contains("Local project tracking could not be saved", model.StatusMessage);
+        model.UpdateSystemContext("Next", null, 43);
+        await model.CurrentSystemPlanningTask;
+        Assert.Contains(model.Projects, project => project.Project.BuildId == id && project.IsFocused);
+        Directory.Delete(cache);
+        await model.RefreshAsync();
+        using ColonizationViewModel restarted = await LocalScopeModel(client);
+        Assert.Contains(restarted.Projects, project => project.Project.BuildId == id && project.IsFocused);
+    }
+
     [Fact]
     public async Task VisitingDoesNotLoadUnrelatedPlansUntilBrowsingIsEnabledAndTravelExpiresOnlyUnselectedData()
     {

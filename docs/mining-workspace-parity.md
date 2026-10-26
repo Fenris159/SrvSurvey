@@ -62,6 +62,8 @@ excluding paused time from session duration. The pause reason persists across
 restart, independently of automatic session creation. Manual pause controls keep
 their existing behavior. Historical travel alone does not pause or end a session;
 a later live copy still applies the travel action without repeating accounting.
+The consumed supercruise boundary persists after resuming, so repeated or older
+travel events cannot pause that session again, including after recovery.
 Charging, `StartJump`, and cancellation do not pause or end a session.
 File-monitor integration tests cover discovered folders, explicitly configured
 journal folders, and history arriving before the live completed jump.

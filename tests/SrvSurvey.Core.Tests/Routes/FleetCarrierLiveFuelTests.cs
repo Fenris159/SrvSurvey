@@ -16,6 +16,65 @@ public sealed class FleetCarrierLiveFuelTests
     );
 
     [Theory]
+    [InlineData(false, 1, 1000)]
+    [InlineData(false, 2, 995)]
+    [InlineData(false, 303, 1000)]
+    [InlineData(true, 2, 1000)]
+    public void SameSystemCarrierLocationConsumesFuelOnlyForAConfirmedJump(bool cancelled, int arrivalSecond, int fuel)
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(
+                1,
+                "CarrierJumpRequest",
+                $"\"CarrierID\":1,\"SystemName\":\"A\",\"DepartureTime\":\"{Origin.AddSeconds(2):O}\""
+            ),
+        ]);
+        if (cancelled)
+        {
+            journal.Observe([Event(1, "CarrierJumpCancelled", "\"CarrierID\":1")]);
+        }
+        journal.Observe([
+            Event(arrivalSecond, "CarrierLocation", "\"CarrierID\":1,\"StarSystem\":\"A\""),
+            Event(
+                arrivalSecond < 2 ? arrivalSecond : arrivalSecond + 1,
+                "CarrierLocation",
+                "\"CarrierID\":1,\"StarSystem\":\"A\""
+            ),
+        ]);
+        FleetCarrierFuelSnapshot snapshot = journal.Read(
+            Account(Carrier(1, "OWN-001", 1000, 500, 1000)),
+            FollowRouteCarrierKind.Personal,
+            Hops()
+        )!;
+        Assert.Equal(fuel, snapshot.TankTonnes);
+        Assert.Equal(fuel != 1000, snapshot.IsEstimated);
+        Assert.Equal(new GalacticCoordinate(0, 0, 0), snapshot.Position);
+    }
+
+    [Fact]
+    public void ANewerFuelBaselineDoesNotLeaveAHistoricalSameSystemJumpPending()
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(
+                1,
+                "CarrierJumpRequest",
+                $"\"CarrierID\":1,\"SystemName\":\"A\",\"DepartureTime\":\"{Origin.AddSeconds(2):O}\""
+            ),
+            Event(3, "CarrierLocation", "\"CarrierID\":1,\"StarSystem\":\"A\""),
+            Event(7, "CarrierLocation", "\"CarrierID\":1,\"StarSystem\":\"A\""),
+        ]);
+        FrontierAccountSnapshot baseline = Account(Carrier(1, "OWN-001", 995, 500, 1000)) with
+        {
+            CarrierFetchedAt = Origin.AddSeconds(6),
+        };
+        FleetCarrierFuelSnapshot snapshot = journal.Read(baseline, FollowRouteCarrierKind.Personal, Hops())!;
+        Assert.Equal(995, snapshot.TankTonnes);
+        Assert.False(snapshot.IsEstimated);
+    }
+
+    [Theory]
     [InlineData(1, "B", false, 2, true)]
     [InlineData(2, "B", false, 2, false)]
     [InlineData(1, "Other", false, 2, false)]

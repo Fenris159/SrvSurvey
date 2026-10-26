@@ -74,6 +74,55 @@ public sealed class MiningSessionTravelTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DuplicateSupercruiseDoesNotPauseAResumedSession(bool reload)
+    {
+        MiningWorkspaceState state = Create();
+        Apply(state, "SupercruiseEntry", 2);
+        Apply(state, "MiningRefined", 5, type: "platinum");
+        if (reload)
+        {
+            state = new MiningWorkspaceState(MiningStore.Parse(MiningStore.Export(state.Data)));
+        }
+        Apply(state, "SupercruiseEntry", 2);
+        Assert.NotNull(state.Session.Current);
+        Assert.Null(state.Session.Current.PausedAt);
+        Assert.Equal(TimeSpan.FromMinutes(3), state.Session.Current.PausedDuration);
+        Assert.Equal(2, state.Session.Current.RefinedTons);
+    }
+
+    [Fact]
+    public void OlderSupercruiseCannotPauseAfterAnotherTravelCycle()
+    {
+        MiningWorkspaceState state = Create();
+        Apply(state, "SupercruiseEntry", 2);
+        Apply(state, "MiningRefined", 5, type: "platinum");
+        Apply(state, "SupercruiseEntry", 7);
+        Apply(state, "MiningRefined", 9, type: "platinum");
+        Apply(state, "SupercruiseEntry", 2);
+        Assert.NotNull(state.Session.Current);
+        Assert.Null(state.Session.Current.PausedAt);
+        Assert.Equal(TimeSpan.FromMinutes(5), state.Session.Current.PausedDuration);
+    }
+
+    [Fact]
+    public void SupercruiseDuringManualPauseCannotReapplyAfterManualResume()
+    {
+        MiningWorkspaceState state = Create();
+        state.Session.Pause(Started.AddMinutes(2));
+        Apply(state, "SupercruiseEntry", 3);
+        state.Session.Resume(Started.AddMinutes(4));
+        Apply(state, "SupercruiseEntry", 3);
+        Assert.NotNull(state.Session.Current);
+        Assert.Null(state.Session.Current.PausedAt);
+        Assert.Equal(TimeSpan.FromMinutes(2), state.Session.Current.PausedDuration);
+        Apply(state, "SupercruiseEntry", 7);
+        Assert.Equal(Started.AddMinutes(7), state.Session.Current.PausedAt);
+        Assert.True(state.Session.Current.PausedForTravel);
+    }
+
+    [Theory]
     [InlineData("SupercruiseExit")]
     [InlineData("CargoTransfer")]
     [InlineData("MaterialCollected")]

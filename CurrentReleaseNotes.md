@@ -20,7 +20,8 @@ Spansh searches and mission overlay sizing.
   fuel falls below **200 t**. Spansh destination data adds **ICY RING**,
   **PRISTINE ICY RING**, and **ICY BODY** tags when those resources are known.
   The fuel warning icon is larger, centered with its text, and follows the
-  overlay theme.
+  overlay theme. Repositioning within the same system deducts jump fuel once;
+  later journal fuel observations replace that estimate.
 - **Next Jump neutron badge:** Class-N destinations show the **NEUTRON** pill
   beside the star class even without a pre-planned route or with details hidden.
   Existing route guidance continues to supply the badge when applicable.
@@ -33,7 +34,8 @@ Spansh searches and mission overlay sizing.
   pause survives a restart and can resume even with automatic session creation
   disabled. Hyperspace arrival and docking still end the session when travel
   automation is enabled. Charging, initiating, or cancelling a jump does not
-  pause or end it. Historical replay alone does not trigger travel automation.
+  pause or end it. Historical replay alone does not trigger travel automation,
+  and repeated travel updates cannot interrupt an already resumed session.
 - **Colonization project visibility:** Your workspace primarily shows projects
   affiliated with your commander through Raven. The new **Show Unaffiliated
   Projects in Current System** checkbox is off by default. Enabling it loads
@@ -41,7 +43,9 @@ Spansh searches and mission overlay sizing.
   replaces temporary results with the next system's projects. Explicit Show
   and Focus choices retain individual projects separately from affiliated
   projects. Tracking and delivering to an unaffiliated project still reports
-  contributions to Raven and refreshes its requirements and completion.
+  contributions to Raven and refreshes its requirements and completion. If a
+  focused project's retained data cannot be saved, the warning remains visible
+  and **Refresh projects** can retry the save.
 - **Existing colonization data cleanup:** A successful project refresh removes
   previously discovered unaffiliated projects that you have not explicitly
   chosen to retain. Focused projects, shopping selections, and local drafts

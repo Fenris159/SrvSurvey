@@ -93,9 +93,9 @@ public sealed class MiningWorkspaceState
         {
             if (entry.EventName == "SupercruiseEntry")
             {
-                bool paused = Session.PauseForTravel(time);
+                bool changed = Session.PauseForTravel(time);
                 Synchronize();
-                return paused;
+                return changed;
             }
             Stop(time);
             return true;

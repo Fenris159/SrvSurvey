@@ -57,14 +57,11 @@ public sealed partial class ColonizationViewModel
                 persistenceWarning = ClearSavedLocalFocus(commander);
             }
             projectScope.ReleaseUnselected(FocusProjectId);
-            SaveLocalProjects();
+            string? localTrackingWarning = SaveLocalProjects() ? null : plannedReadWarning;
             RebuildProjectRows();
             UpdateProjectSummary();
             StatusMessage = nextId is null ? "Project focus was cleared." : $"{row.BuildName} is now the focus.";
-            if (persistenceWarning is not null)
-            {
-                StatusMessage += " Local focus preferences could not be saved: " + persistenceWarning;
-            }
+            AppendFocusPersistenceWarnings(persistenceWarning, localTrackingWarning);
         }
         catch (Exception exception)
             when (exception
@@ -85,6 +82,18 @@ public sealed partial class ColonizationViewModel
         {
             IsBusy = false;
             await RefreshPendingAsync(CancellationToken.None);
+        }
+    }
+
+    private void AppendFocusPersistenceWarnings(string? focusWarning, string? trackingWarning)
+    {
+        if (focusWarning is not null)
+        {
+            StatusMessage += " Local focus preferences could not be saved: " + focusWarning;
+        }
+        if (trackingWarning is not null)
+        {
+            StatusMessage += " " + trackingWarning;
         }
     }
 

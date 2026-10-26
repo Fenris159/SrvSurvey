@@ -59,6 +59,9 @@ across travel and restarts. Local focus does not change Raven's primary-project
 setting or membership. Tracked live builds still report actual journal deliveries,
 refresh remaining needs, and report completion through the normal Raven workflow.
 Clearing both Show and focus releases local retention.
+If the retained-project cache cannot be saved, focusing keeps the save warning
+visible. **Refresh projects** retries retention without losing the in-memory
+focus or its project snapshot.
 
 Docking at any construction site still reveals its needs and temporarily makes
 the docked project available for focus, independently of the browsing checkbox.

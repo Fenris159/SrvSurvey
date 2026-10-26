@@ -209,7 +209,10 @@ public sealed class FleetCarrierFuelJournal
         private bool MatchesRequestedJump(JsonElement data, DateTimeOffset at) =>
             Id(data, CarrierIdField) is null
             && Id(data, MarketIdField) is null
-            && pendingJump is { } request
+            && MatchesRequestedDestination(data, at);
+
+        private bool MatchesRequestedDestination(JsonElement data, DateTimeOffset at) =>
+            pendingJump is { } request
             && at >= request.Departure
             && at <= request.Departure.AddMinutes(5)
             && string.Equals(Text(data, StarSystemField), request.Destination, StringComparison.OrdinalIgnoreCase);
@@ -274,7 +277,13 @@ public sealed class FleetCarrierFuelJournal
                 return;
             }
             GalacticCoordinate? position =
-                ReadPosition(data) ?? FindPosition(hops, Text(data, StarSystemField) ?? string.Empty);
+                ReadPosition(data)
+                ?? FindPosition(hops, Text(data, StarSystemField) ?? string.Empty)
+                ?? (
+                    string.Equals(Text(data, StarSystemField), Current.SystemName, StringComparison.OrdinalIgnoreCase)
+                        ? Current.Position
+                        : null
+                );
             if (at > fuelAt)
             {
                 double? tank =
@@ -297,13 +306,24 @@ public sealed class FleetCarrierFuelJournal
 
         private void ApplyLocation(JsonElement data, DateTimeOffset at)
         {
-            if (at < locationAt || Text(data, StarSystemField) is not { } system || system == Current.SystemName)
+            bool completesRequest = MatchesRequestedDestination(data, at);
+            if (completesRequest)
+            {
+                // Consume historical arrivals even when newer CAPI fuel wins.
+                pendingJump = null;
+            }
+            if (at < locationAt || Text(data, StarSystemField) is not { } system)
+            {
+                return;
+            }
+            if (string.Equals(system, Current.SystemName, StringComparison.OrdinalIgnoreCase) && !completesRequest)
             {
                 return;
             }
             if (!string.IsNullOrEmpty(Current.SystemName))
             {
                 ApplyJump(data, at);
+                pendingJump = null;
                 return;
             }
             // The login location establishes an origin; it is not evidence of a jump after CarrierStats.

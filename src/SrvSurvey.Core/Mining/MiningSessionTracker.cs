@@ -40,6 +40,7 @@ public sealed record MiningSession
     public DateTimeOffset? Ended { get; set; }
     public DateTimeOffset? PausedAt { get; set; }
     public bool PausedForTravel { get; set; }
+    public DateTimeOffset? LastSupercruiseEntryAt { get; set; }
     public TimeSpan PausedDuration { get; set; }
     public string System { get; set; } = "";
     public string Ring { get; set; } = "";
@@ -169,12 +170,21 @@ public sealed class MiningSessionTracker
 
     public bool PauseForTravel(DateTimeOffset now)
     {
-        if (Current is not { PausedAt: null } session)
+        if (
+            Current is not { } session
+            || now < session.Started
+            || session.LastSupercruiseEntryAt is { } previous && now <= previous
+        )
         {
             return false;
         }
-        Pause(now);
-        session.PausedForTravel = true;
+        // Keep the consumed travel boundary after resuming and across recovery.
+        session.LastSupercruiseEntryAt = now;
+        if (session.PausedAt is null)
+        {
+            Pause(now);
+            session.PausedForTravel = true;
+        }
         return true;
     }
 

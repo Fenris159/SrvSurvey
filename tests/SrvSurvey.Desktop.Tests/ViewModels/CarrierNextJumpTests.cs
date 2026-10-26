@@ -16,6 +16,51 @@ public sealed class CarrierNextJumpTests
     private static readonly int[] OriginPosition = [0, 0, 0];
 
     [Fact]
+    public async Task SameSystemRepositioningConsumesFuelOnceAndLaterStatsReplaceTheEstimate()
+    {
+        await using Fixture fixture = await Fixture.CreateAsync();
+        await fixture.SeedFuelAsync(260);
+        await fixture.RequestAsync(destination: "Origin");
+        Assert.Equal(0, fixture.Route.CarrierNextJumpDistance);
+        Assert.Equal(5, fixture.Route.CarrierNextJumpFuel);
+        fixture.Now = fixture.Now.AddMinutes(15).AddSeconds(20);
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierLocation",
+                    CarrierID = 1,
+                    StarSystem = "Origin",
+                }
+            ),
+        ]);
+        using FleetCarrierRouteOverlayViewModel overlay = fixture.Overlay();
+        Assert.Equal("COOLDOWN", overlay.HopProgress);
+        Assert.Equal("255 t", overlay.FuelLeft);
+        Assert.Equal("Fuel left (est.)", overlay.FuelLeftLabel);
+        fixture.Now = fixture.Now.AddSeconds(10);
+        await fixture.Route.ApplyJournalEventsAsync([
+            fixture.Entry(
+                new
+                {
+                    @event = "CarrierLocation",
+                    CarrierID = 1,
+                    StarSystem = "Origin",
+                }
+            ),
+        ]);
+        Assert.Equal(255, fixture.Route.CarrierDepotFuel);
+        fixture.Now = fixture.Now.AddMinutes(6);
+        fixture.Route.RefreshCarrierJumpCountdown();
+        await fixture.RequestAsync();
+        Assert.Equal(255, fixture.Route.CarrierDepotFuel);
+        Assert.Equal("174 t", overlay.FuelLeft);
+        await fixture.SeedFuelAsync(500);
+        Assert.Equal(500, fixture.Route.CarrierDepotFuel);
+        Assert.False(fixture.Route.CarrierFuelIsEstimated);
+    }
+
+    [Fact]
     public async Task IdlessCarrierArrivalUpdatesFuelAndOriginForTheNextJump()
     {
         await using Fixture fixture = await Fixture.CreateAsync();
@@ -475,7 +520,16 @@ public sealed class CarrierNextJumpTests
             new(
                 name,
                 42,
-                new(name == "Destination 2" ? 1000 : 500, 0, 0),
+                new(
+                    name switch
+                    {
+                        "Origin" => 0,
+                        "Destination 2" => 1000,
+                        _ => 500,
+                    },
+                    0,
+                    0
+                ),
                 null,
                 true,
                 0,
