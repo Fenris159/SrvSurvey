@@ -250,11 +250,16 @@ public sealed partial class ColonizationDeliveryRecovery
                 return new(ColonizationDeliveryNoticeKind.CarrierCargoPendingUncertain);
             }
             Dictionary<string, int> before = pending.Before ?? remote.Cargo;
+            Dictionary<string, int> beforeStock = ColonizationCarrierInventory.NormalizeStock(before);
+            Dictionary<string, int> remoteStock = ColonizationCarrierInventory.NormalizeStock(remote.Cargo);
             bool applied =
                 pending.Attempted
                 && pending.Delta.All(pair =>
-                    remote.Cargo.GetValueOrDefault(pair.Key)
-                    == Math.Max(0, before.GetValueOrDefault(pair.Key) + pair.Value)
+                    remoteStock.GetValueOrDefault(ColonizationCarrierInventory.CommodityKey(pair.Key))
+                    == Math.Max(
+                        0,
+                        beforeStock.GetValueOrDefault(ColonizationCarrierInventory.CommodityKey(pair.Key)) + pair.Value
+                    )
                 );
             ColonizationDeliveryNoticeKind? blockedReason = GetCargoReplayBlockReason(pending, remote, applied);
             if (blockedReason is { } reason)
@@ -292,9 +297,7 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             Attempted = true,
             OutcomeUnknown = true,
-            Before = pending.Attempted
-                ? before
-                : new Dictionary<string, int>(remote.Cargo, StringComparer.OrdinalIgnoreCase),
+            Before = pending.Attempted ? before : CopyCargo(remote.Cargo),
         };
         failedCargoAdjustments[failedCargoAdjustments.IndexOf(pending)] = attempted;
         if (!SavePendingCargoAdjustments())
@@ -304,7 +307,12 @@ public sealed partial class ColonizationDeliveryRecovery
         }
         IReadOnlyDictionary<string, int> updated = applied
             ? remote.Cargo
-            : await client.AdjustFleetCarrierCargoAsync(pending.MarketId, pending.Delta, apiKey!, cancellationToken);
+            : await client.AdjustFleetCarrierCargoAsync(
+                pending.MarketId,
+                ColonizationCarrierInventory.FromRaven(remote).CreateRavenAdjustment(pending.Delta),
+                apiKey!,
+                cancellationToken
+            );
         failedCargoAdjustments.Remove(attempted);
         SavePendingCargoAdjustments();
         if (version == profileVersion)
@@ -321,12 +329,14 @@ public sealed partial class ColonizationDeliveryRecovery
         bool applied
     )
     {
-        Dictionary<string, int> before = pending.Before ?? remote.Cargo;
+        Dictionary<string, int> before = ColonizationCarrierInventory.NormalizeStock(pending.Before ?? remote.Cargo);
+        Dictionary<string, int> remoteStock = ColonizationCarrierInventory.NormalizeStock(remote.Cargo);
         if (
             pending.Attempted
             && !applied
             && !pending.Delta.All(pair =>
-                remote.Cargo.GetValueOrDefault(pair.Key) == before.GetValueOrDefault(pair.Key)
+                remoteStock.GetValueOrDefault(ColonizationCarrierInventory.CommodityKey(pair.Key))
+                == before.GetValueOrDefault(ColonizationCarrierInventory.CommodityKey(pair.Key))
             )
         )
         {

@@ -5,6 +5,35 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationFleetCarrierCargoSynchronizerTests
 {
+    /// <summary>
+    /// Limits authoritative cleanup to observed commodities while preserving unlisted carrier inventory.
+    /// </summary>
+    [Fact]
+    public void AuthoritativeMarketStockReplacesAliasesWithoutAddingThemOrTouchingUnobservedGoods()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Cargo = new()
+            {
+                ["liquid oxygen"] = 80,
+                ["liquidoxygen"] = 60,
+                ["LIQUIDOXYGEN"] = 60,
+                ["water"] = 25,
+            },
+        };
+        IReadOnlyDictionary<string, int> replacement =
+            ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(
+                Market(42, [Item("$LiquidOxygen_Name;", stock: 75, producer: true)]),
+                carrier
+            );
+        Assert.Equal(3, replacement.Count);
+        Assert.Equal(75, replacement["liquidoxygen"]);
+        Assert.Equal(0, replacement["liquid oxygen"]);
+        Assert.Equal(0, replacement["LIQUIDOXYGEN"]);
+        Assert.False(replacement.ContainsKey("water"));
+    }
+
     [Fact]
     public void ReplacesChangedSaleStockAndClearsExhaustedStock()
     {

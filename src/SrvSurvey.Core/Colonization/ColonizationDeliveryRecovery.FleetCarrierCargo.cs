@@ -333,7 +333,11 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             IReadOnlyDictionary<string, int> updatedCargo = await client.AdjustFleetCarrierCargoAsync(
                 marketId,
-                adjustments,
+                pending.Before is { } before
+                    ? ColonizationCarrierInventory
+                        .FromRaven(new ColonizationFleetCarrier { MarketId = marketId, Cargo = before })
+                        .CreateRavenAdjustment(adjustments)
+                    : adjustments,
                 adjustApiKey,
                 cancellationToken
             );
@@ -513,8 +517,12 @@ public sealed partial class ColonizationDeliveryRecovery
         }
 
         Dictionary<string, int> totals = CreateCapiReconciliationTotals(carrier, covered);
+        ColonizationCarrierInventory? inventory = localCarrier is null
+            ? null
+            : ColonizationCarrierInventory.FromRaven(localCarrier);
         if (
             localCarrier is not null
+            && inventory?.HasAliases != true
             && covered.Length == 0
             && !ColonizationFleetCarrierCapiCargoSeeder.ManifestsDiffer(localCarrier.Cargo, totals)
         )
@@ -533,7 +541,7 @@ public sealed partial class ColonizationDeliveryRecovery
             observer.PendingFleetCarrierCargoChanged(totals.Keys);
             IReadOnlyDictionary<string, int> updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
                 linkedMarketId,
-                totals,
+                inventory?.CreateRavenUpdate(totals) ?? totals,
                 seedApiKey,
                 CancellationToken.None
             );

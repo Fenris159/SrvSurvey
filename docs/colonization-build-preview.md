@@ -29,6 +29,43 @@ commodity once even when Raven returns both its journal and display names. Missi
 carrier data is shown as unknown. A failed refresh retains the last successful
 snapshot; its status and update time make that clear.
 
+**Ready on fleet carriers** uses a segmented bar with a wrapping carrier legend
+in individual build previews, combined reports, and Nexus reports. Each legend
+entry gives the carrier name and its usable tonnes toward the current report.
+Shares are capped per commodity at the remaining requirement and divided
+proportionally between carriers holding that commodity; surplus never inflates
+the total. Whole-tonne rounding preserves the exact ready total. Missing cargo
+data stays unknown rather than producing a misleading colored share.
+
+Carrier colors are generated from their market IDs, with no ten-carrier limit.
+The same carrier keeps its hue across windows, refreshes, reordered results, and
+system filters. Swatches adjust brightness for light and dark application themes,
+and names and quantities remain available without relying on color alone.
+
+The carrier manifest editor also groups journal and display aliases into one
+editable row. When their stored amounts disagree, it initially retains the larger
+amount instead of adding the copies; the independent **Local** column remains
+available for comparison. Saving writes the edited amount under the journal key
+and clears the old aliases, including aliases of removed commodities. CAPI cargo
+synchronization uses Frontier's language-independent commodity identifier rather
+than its localized display label, so future CAPI imports and journal transactions
+use the same keys.
+
+Carrier identity and observation source remain separate from commodity identity.
+The manifest editor, commodities planner and overlay, shopping difference, Nexus
+readiness, build reports, and synchronization compare the same commodity keys.
+Each physical carrier contributes stock once, and ship cargo stays separate.
+Raven and local observations retain their own quantities and source keys, so an
+inventory action can target Raven without confusing its manifest with local cargo.
+An authoritative market update clears aliases only for the commodities it actually
+observed; it does not erase unlisted carrier stock. Relative journal transactions
+still add or subtract their individual quantities, rather than being treated as
+duplicate stock snapshots. Each transfer applies the same relative change to
+the existing source aliases in one Raven request, preserving concurrent cargo
+changes instead of replacing them with a cached count. Authoritative refreshes
+and explicit manifest saves clear aliases. Retained retries keep the logical transaction and exact
+source baseline, so a lost acknowledgement does not apply the transfer twice.
+
 Large and medium ship estimates use Raven's default preview capacities of 794 and
 400 tonnes, shown beside the estimates. The current ship's capacity and trip count
 also appear when known. Delivery progress, carrier readiness, commander totals,

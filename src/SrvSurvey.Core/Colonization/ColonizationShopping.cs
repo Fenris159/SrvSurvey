@@ -75,7 +75,7 @@ public static class ColonizationShopping
             .DistinctBy(project => project.BuildId, StringComparer.OrdinalIgnoreCase)
             .SelectMany(project => project.Commodities)
             .Where(pair => pair.Value > 0)
-            .GroupBy(pair => ColonizationMarketCommodities.Key(pair.Key), StringComparer.Ordinal)
+            .GroupBy(pair => ColonizationCarrierInventory.CommodityKey(pair.Key), StringComparer.Ordinal)
             .Where(group => group.Key.Length > 0)
             .Select(group => new ColonizationShoppingNeed(
                 group.Key,
@@ -98,9 +98,9 @@ public static class ColonizationShopping
             .DistinctBy(carrier => carrier.MarketId)
             .Where(carrier => carrier.Cargo is not null)
             .SelectMany(carrier =>
-                carrier
-                    .Cargo.GroupBy(pair => ColonizationMarketCommodities.Key(pair.Key), StringComparer.Ordinal)
-                    .Select(group => (Commodity: group.Key, Stock: Math.Max(0L, group.Max(pair => (long)pair.Value))))
+                ColonizationCarrierInventory
+                    .NormalizeStock(carrier.Cargo)
+                    .Select(pair => (Commodity: pair.Key, Stock: (long)pair.Value))
             )
             .GroupBy(item => item.Commodity, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Sum(item => item.Stock), StringComparer.Ordinal);
@@ -108,7 +108,11 @@ public static class ColonizationShopping
             .Select(need =>
                 need with
                 {
-                    Required = Math.Max(0, need.Required - stock.GetValueOrDefault(need.Commodity)),
+                    Required = Math.Max(
+                        0,
+                        need.Required
+                            - stock.GetValueOrDefault(ColonizationCarrierInventory.CommodityKey(need.Commodity))
+                    ),
                 }
             )
             .Where(need => need.Required > 0)
@@ -136,7 +140,7 @@ public static class ColonizationShopping
     public static IReadOnlyList<ColonizationMarketQuote> Merge(IEnumerable<ColonizationMarketQuote> quotes) =>
         quotes
             .Where(quote => quote.Stock > 0)
-            .GroupBy(quote => (MarketKey(quote), ColonizationMarketCommodities.Key(quote.Commodity)))
+            .GroupBy(quote => (MarketKey(quote), ColonizationCarrierInventory.CommodityKey(quote.Commodity)))
             .Select(group =>
                 group
                     .OrderByDescending(quote => quote.UpdatedAt)

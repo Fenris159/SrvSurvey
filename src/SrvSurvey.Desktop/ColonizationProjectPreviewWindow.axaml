@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         x:Class="SrvSurvey.Desktop.ColonizationProjectPreviewWindow"
         x:DataType="vm:ColonizationProjectPreviewViewModel"
         Width="1180" Height="850" MinWidth="700" MinHeight="500"
@@ -70,13 +71,33 @@
             </StackPanel>
             <StackPanel Spacing="6">
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <TextBlock Classes="card-title" Text="Ready on fleet carriers" TextWrapping="Wrap" />
+                <TextBlock Classes="card-title" Text="Ready on fleet carriers" TextWrapping="Wrap"
+                           ToolTip.Tip="Each carrier's share of cargo still needed by this report. Surplus cargo is excluded." />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                   <TextBlock Text="{Binding ReadyText}" />
                   <TextBlock Classes="muted" Text="tonnes" />
                 </StackPanel>
               </Grid>
-              <ProgressBar Minimum="0" Maximum="100" Value="{Binding ReadyProgress}" Height="12" />
+              <Border CornerRadius="3" ClipToBounds="True" BorderThickness="1"
+                      BorderBrush="{DynamicResource RavenBorderBrush}">
+                <controls:CarrierReadinessBar x:Name="CarrierReadyProgress" Carriers="{Binding ReadyCarriers}"
+                                             Maximum="{Binding Snapshot.MaximumRequired}" Height="16"
+                                             Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                                             AutomationProperties.Name="Ready on fleet carriers" />
+              </Border>
+              <ItemsControl x:Name="CarrierReadyLegend" ItemsSource="{Binding ReadyCarriers}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PreviewCarrierReadiness">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="7" MaxWidth="360" Margin="0,3,20,3"
+                          ToolTip.Tip="{Binding LegendText}">
+                      <controls:CarrierColorSwatch MarketId="{Binding MarketId}" Width="13" Height="13"
+                                                  CornerRadius="2" VerticalAlignment="Top" Margin="0,3,0,0" />
+                      <TextBlock Grid.Column="1" FontSize="13" Text="{Binding LegendText}" TextWrapping="Wrap" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
           </StackPanel>
         </Border>

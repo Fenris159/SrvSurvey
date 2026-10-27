@@ -316,6 +316,37 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal([true, false], store.LoadPendingCargoAdjustments().Select(item => item.AwaitingBaseline));
     }
 
+    /// <summary>Round-trips logical deltas and case-distinct source baselines through the real settings file.</summary>
+    [Fact]
+    public void PendingCargoKeepsExactSourceKeysAcrossADiskRoundTrip()
+    {
+        string path = Path.Combine(directory, "ui.json");
+        var store = new ColonizationSettingsStore(path);
+        store.SavePendingCargoAdjustments([
+            new(
+                "owner",
+                42,
+                new() { ["liquidoxygen"] = -10 },
+                DateTimeOffset.UtcNow,
+                new()
+                {
+                    ["liquid oxygen"] = 100,
+                    ["liquidoxygen"] = 60,
+                    ["LIQUIDOXYGEN"] = 80,
+                }
+            ),
+        ]);
+
+        ColonizationPendingCargoAdjustment loaded = Assert.Single(
+            new ColonizationSettingsStore(path).LoadPendingCargoAdjustments()
+        );
+        Assert.Equal(-10, Assert.Single(loaded.Delta).Value);
+        Assert.Equal(3, loaded.Before!.Count);
+        Assert.Equal(100, loaded.Before["liquid oxygen"]);
+        Assert.Equal(60, loaded.Before["liquidoxygen"]);
+        Assert.Equal(80, loaded.Before["LIQUIDOXYGEN"]);
+    }
+
     /// <summary>Writes valid recovery entries on either side of deliberately malformed persisted data.</summary>
     private string WritePendingEntries<T>(string key, T first, string invalid, T second)
     {

@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.73**. Its development tag
-is `xp2-v2.1.3.0-rc.73`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.73`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.74**. Its development tag
+is `xp2-v2.1.3.0-rc.74`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.74`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and
@@ -198,6 +198,13 @@ next second-level heading. Keep package details and testing notices in later
 sections so they do not become additional change bullets. The publishing
 workflow uses these checked-in notes for both new and repaired releases;
 automatically generated commit lists are disabled.
+
+The desktop build also embeds `CurrentReleaseNotes.md`. **Diagnostics > Updates >
+Installed release notes** opens that installed copy without an update check or
+network connection. **Available release notes** continues to show the newer
+release returned by an update check. **Copy details**, beside the installed
+version, copies the app version, selected release channel, OS description,
+OS/app architectures, and .NET runtime for bug reports.
 
 ## Regression contract
 

@@ -5,6 +5,53 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationFleetCarrierCapiCargoSeederTests
 {
+    /// <summary>
+    /// Keeps localized Frontier labels separate from the stable keys used for seeding and local stock.
+    /// </summary>
+    [Fact]
+    public void ParsedCapiCargoUsesJournalIdentitiesInsteadOfLocalizedDisplayNames()
+    {
+        const string profile = """{"commander":{"name":"Test Cmdr"}}""";
+        const string carrierJson = """
+            {"name":{"callsign":"ABC-123"},"market":{"id":42},"cargo":[
+              {"commodity":"fruitandvegetables","locName":"Fruit and Vegetables","qty":145},
+              {"commodity":"liquidoxygen","locName":"Sauerstoff","qty":4000},
+              {"commodity":"liquidoxygen","locName":"Sauerstoff","qty":976},
+              {"commodity":"ancientrelic","locName":"Guardian Relic","qty":2},
+              {"locName":"Water","qty":3}
+            ]}
+            """;
+        FrontierCarrierSnapshot carrier = FrontierCapiSnapshotParser
+            .Parse(profile, carrierJson, DateTimeOffset.UnixEpoch)
+            .Carrier!;
+        FrontierInventorySnapshot oxygen = Assert.Single(carrier.Cargo, item => item.CommodityKey == "liquidoxygen");
+        Assert.Equal("Sauerstoff", oxygen.Name);
+        Assert.Equal(4976, oxygen.Quantity);
+        IReadOnlyDictionary<string, int> totals = ColonizationFleetCarrierCapiCargoSeeder.CreateCargoTotals(carrier);
+        Assert.Equal(4, totals.Count);
+        Assert.Equal(145, totals["fruitandvegetables"]);
+        Assert.Equal(4976, totals["liquidoxygen"]);
+        Assert.Equal(2, totals["ancientrelic"]);
+        Assert.Equal(3, totals["water"]);
+        var local = new ColonizationLocalCarrierCargo();
+        local.Observe(carrier, DateTimeOffset.UnixEpoch);
+        var linked = new ColonizationFleetCarrier { MarketId = 42, Name = "ABC-123" };
+        Assert.Equal(4976, local.GetQuantity(linked, "liquid oxygen"));
+        Assert.Equal(3, local.GetQuantity(linked, "water"));
+    }
+
+    /// <summary>Preserves compatibility with older snapshots that contain only known display labels.</summary>
+    [Fact]
+    public void DisplayOnlySnapshotsResolveKnownNamesToJournalIdentities()
+    {
+        FrontierCarrierSnapshot carrier = Carrier(
+            "ABC-123",
+            42,
+            [new FrontierInventorySnapshot("Cargo", "Fruit and Vegetables", 145, 0)]
+        );
+        Assert.Equal(145, ColonizationFleetCarrierCapiCargoSeeder.CreateCargoTotals(carrier)["fruitandvegetables"]);
+    }
+
     [Fact]
     public void AcceptsFirstUndockedSnapshotThenIgnoresSessionRepeats()
     {

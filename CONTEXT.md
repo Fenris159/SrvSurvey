@@ -16,6 +16,12 @@ _Avoid_: Overlay Companion, Cross-Platform
 The Core module that reconciles journal deliveries with Raven cargo, retained delivery credit, absolute remaining requirements, and tracked build projects.
 _Avoid_: Colonization view-model recovery, pending contribution store
 
+**Carrier inventory**:
+The physical stock of a commodity on one Fleet Carrier. Different names or reports of that stock describe the same inventory; stock on another carrier or aboard a ship is separate.
+
+**Inventory observation**:
+A source's report of carrier inventory, such as Raven's manifest or the local cargo history. Observations retain their source and may disagree; they are not additional stock to add together.
+
 **Overlay panel**:
 An in-game surface that presents live gameplay context and is the primary feedback surface while playing.
 _Avoid_: Main-window panel, dashboard panel

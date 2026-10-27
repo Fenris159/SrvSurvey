@@ -191,6 +191,9 @@ public sealed class ColonizationCarrierManifestTests
         Assert.False(reopened.CanRefresh);
     }
 
+    /// <summary>
+    /// Preserves edits for hidden categories through sorting, bulk-text mode, and manifest persistence.
+    /// </summary>
     [Fact]
     public async Task HiddenCargoKeepsEditsAcrossSortingTextModeAndSaving()
     {
@@ -217,7 +220,7 @@ public sealed class ColonizationCarrierManifestTests
         Assert.Single(Assert.Single(model.Groups).Rows);
         model.HideNonColonyCommodities = false;
         Assert.Equal("Metals", Row(model, "platinum").Category);
-        Assert.Equal("Industrial Materials", Row(model, "metalloys").Category);
+        Assert.Equal("Industrial Materials", Row(model, "metaalloys").Category);
         Row(model, "platinum").AmountText = "9";
         model.HideNonColonyCommodities = true;
         model.SortCommand.Execute(null);
@@ -229,7 +232,8 @@ public sealed class ColonizationCarrierManifestTests
         await model.SaveAsync();
         Assert.Equal(9, client.SentCargo!["platinum"]);
         Assert.Equal(25, client.SentCargo["tritium"]);
-        Assert.Equal(3, client.SentCargo["metalloys"]);
+        Assert.Equal(0, client.SentCargo["metalloys"]);
+        Assert.Equal(3, client.SentCargo["metaalloys"]);
     }
 
     private sealed class ManifestClock : TimeProvider
@@ -271,8 +275,9 @@ public sealed class ColonizationCarrierManifestTests
         Assert.Equal(7, client.SentCargo!["platinum"]);
     }
 
+    /// <summary>Keeps alias stock singular when an edited manifest moves through bulk-text mode and back.</summary>
     [Fact]
-    public async Task TextModeRoundTripPreservesLegacyKeysWithTheSameDisplayName()
+    public async Task TextModeRoundTripConsolidatesLegacyKeysWithoutAddingTheirAmounts()
     {
         var client = new ManifestClient
         {
@@ -290,8 +295,74 @@ public sealed class ColonizationCarrierManifestTests
         Assert.True(model.TextMode);
         model.ToggleTextCommand.Execute(null);
         Assert.False(model.TextMode);
-        Assert.Equal(55, Row(model, "micro controllers").Amount);
         Assert.Equal(60, Row(model, "microcontrollers").Amount);
+        Assert.Single(model.Groups.SelectMany(group => group.Rows));
+        await model.SaveAsync();
+        Assert.Equal(0, client.SentCargo!["micro controllers"]);
+        Assert.Equal(60, client.SentCargo["microcontrollers"]);
+    }
+
+    /// <summary>
+    /// Covers the reported duplicate commodities, local comparisons, removals, and exact-case save results.
+    /// </summary>
+    [Fact]
+    public async Task ManifestAliasesHaveOneEditableRowAndSavingClearsTheOldAliases()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        local.Observe(
+            LocalCarrier(50) with
+            {
+                Cargo =
+                [
+                    new FrontierInventorySnapshot("Commodity", "liquidoxygen", 4976, 0),
+                    new FrontierInventorySnapshot("Commodity", "fruitandvegetables", 145, 0),
+                ],
+            },
+            DateTimeOffset.UnixEpoch
+        );
+        var client = new ManifestClient
+        {
+            Linked =
+            [
+                ManifestClient.First with
+                {
+                    Cargo = new()
+                    {
+                        ["liquid oxygen"] = 4976,
+                        ["liquidoxygen"] = 4976,
+                        ["LIQUIDOXYGEN"] = 4900,
+                        ["fruit and vegetables"] = 290,
+                        ["fruitandvegetables"] = 145,
+                        ["ceramic composites"] = 1110,
+                        ["ceramiccomposites"] = 1051,
+                    },
+                },
+            ],
+        };
+        ColonizationFleetCarrier? saved = null;
+        using ColonizationCarrierManifestViewModel model = Create(client, value => saved = value, local);
+        await model.InitializeAsync();
+        Assert.Equal(3, model.Groups.SelectMany(group => group.Rows).Count());
+        Assert.Equal(4976, Row(model, "liquidoxygen").Amount);
+        Assert.Equal(290, Row(model, "fruitandvegetables").Amount);
+        Assert.Equal(1110, Row(model, "ceramiccomposites").Amount);
+        Assert.Equal("4,976", Row(model, "liquidoxygen").JournalAmount);
+        Assert.DoesNotContain(model.AvailableCommodities, item => item.Key == "liquidoxygen");
+        Row(model, "fruitandvegetables").AmountText = "145";
+        Row(model, "ceramiccomposites").RemoveCommand.Execute(null);
+        model.ToggleTextCommand.Execute(null);
+        model.ToggleTextCommand.Execute(null);
+        await model.SaveAsync();
+        Assert.Equal(4976, client.SentCargo!["liquidoxygen"]);
+        Assert.Equal(145, client.SentCargo["fruitandvegetables"]);
+        Assert.Equal(0, client.SentCargo["liquid oxygen"]);
+        Assert.Equal(0, client.SentCargo["LIQUIDOXYGEN"]);
+        Assert.Equal(0, client.SentCargo["fruit and vegetables"]);
+        Assert.Equal(0, client.SentCargo["ceramic composites"]);
+        Assert.Equal(0, client.SentCargo["ceramiccomposites"]);
+        Assert.NotNull(saved);
+        Assert.Equal(4976, saved.Cargo["liquidoxygen"]);
+        Assert.Equal(0, saved.Cargo["LIQUIDOXYGEN"]);
     }
 
     [Fact]

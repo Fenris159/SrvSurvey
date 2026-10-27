@@ -10,6 +10,22 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"
     );
 
+    /// <summary>Seeds known Frontier stock even when Raven explicitly returned a null cargo map.</summary>
+    [Fact]
+    public async Task CapiSeedRecoversANullRavenManifestWithoutFailingInventoryConversion()
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        client.FleetCarrierResponse = client.FleetCarrierResponse! with { Cargo = null! };
+        client.Workspace = new([], [], null, [client.FleetCarrierResponse]);
+        ColonizationDeliveryRecovery recovery = Create(client, apiKey: "key", carrierSync: true);
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
+
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.Equal(90, client.LastReplacement!["steel"]);
+        Assert.Equal(90, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
     [Theory]
     [InlineData(false, false, 95)]
     [InlineData(true, false, 50)]
@@ -386,6 +402,44 @@ public sealed partial class ColonizationDeliveryRecoveryTests
 
         await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 40));
         Assert.Equal(1, client.ReplaceCargoCount);
+    }
+
+    /// <summary>An accepted CAPI refresh reconciles aliases while leaving commodities outside its update alone.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AcceptedCapiStockClearsRavenAliasesEvenWhenTheLargestStoredCountAlreadyMatches(
+        bool hasUnlistedStock
+    )
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        client.FleetCarrierResponse = client.FleetCarrierResponse! with
+        {
+            Cargo = new() { ["liquid oxygen"] = 75, ["liquidoxygen"] = 60 },
+        };
+        if (hasUnlistedStock)
+        {
+            client.FleetCarrierResponse.Cargo["steel"] = 20;
+        }
+        IReadOnlyDictionary<string, int>? written = null;
+        client.ReplaceCargo = cargo =>
+        {
+            written = cargo;
+            return Task.FromResult(cargo);
+        };
+        ColonizationDeliveryRecovery recovery = Create(client, apiKey: "secret-key", carrierSync: true);
+        recovery.ReplaceWorkspace([], [client.FleetCarrierResponse]);
+        global::SrvSurvey.Core.Frontier.FrontierAccountSnapshot snapshot = LinkedCarrierCapiSnapshot(false, 75);
+        snapshot = snapshot with
+        {
+            Carrier = snapshot.Carrier! with { Cargo = [new("Cargo", "Liquid oxygen", 75, 0)] },
+        };
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(snapshot);
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.NotNull(written);
+        Assert.Equal(75, written["liquidoxygen"]);
+        Assert.Equal(0, written["liquid oxygen"]);
+        Assert.False(written.ContainsKey("steel"));
     }
 
     /// <summary>A matching CAPI manifest marks the carrier seeded without a write; a failed seed is reported.</summary>

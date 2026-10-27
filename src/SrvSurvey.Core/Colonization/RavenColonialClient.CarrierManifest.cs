@@ -53,6 +53,7 @@ public sealed partial class RavenColonialClient : IRavenColonialCarrierManifestC
         CancellationToken cancellationToken
     ) => PostCarrierManifestAsync(marketId, "refresh", apiKey, cancellationToken);
 
+    /// <summary>Updates a carrier location with the route and query identifiers required by Raven.</summary>
     public Task<ColonizationFleetCarrier> SetFleetCarrierLocationAsync(
         long marketId,
         string systemName,
@@ -61,9 +62,10 @@ public sealed partial class RavenColonialClient : IRavenColonialCarrierManifestC
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
+        // Raven's location route binds this identifier from the query despite also including it in the path.
         return PostCarrierManifestAsync(
             marketId,
-            $"location/{Uri.EscapeDataString(systemName.Trim())}",
+            $"location/{Uri.EscapeDataString(systemName.Trim())}?marketIdOrName={marketId.ToString(CultureInfo.InvariantCulture)}",
             apiKey,
             cancellationToken
         );

@@ -574,8 +574,9 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
+    /// <summary>Copies raw Raven quantities without collapsing case-distinct keys needed by recovery.</summary>
     private static Dictionary<string, int> CopyCargo(IEnumerable<KeyValuePair<string, int>> cargo) =>
-        cargo.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        cargo.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
 
     private static string? GetJournalString(JsonElement root, string propertyName)
     {

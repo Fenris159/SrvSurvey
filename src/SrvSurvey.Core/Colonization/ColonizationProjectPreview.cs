@@ -83,7 +83,6 @@ public sealed partial class ColonizationProjectPreview
     private static readonly Dictionary<string, CommodityName> CommodityNames = LoadResource<
         Dictionary<string, CommodityName>
     >("colonization-commodity-names.json");
-    private static readonly IReadOnlyDictionary<string, string> CommodityAliases = CreateCommodityAliases();
     private static readonly ColonizationBuildEffects[] BuildEffects = LoadResource<ColonizationBuildEffects[]>(
         "colonization-effects.json"
     );
@@ -202,66 +201,11 @@ public sealed partial class ColonizationProjectPreview
         };
     }
 
-    /// <summary>Raven may return both journal and display aliases for the same stock; these are alternate names, not separate cargo.</summary>
-    private static Dictionary<string, int> Normalize(IReadOnlyDictionary<string, int> cargo)
-    {
-        return cargo
-            .GroupBy(pair => NormalizeCommodityKey(pair.Key), StringComparer.OrdinalIgnoreCase)
-            .Where(group => group.Key.Length > 0)
-            .ToDictionary(
-                group => group.Key,
-                group => Math.Max(0, group.Max(pair => pair.Value)),
-                StringComparer.OrdinalIgnoreCase
-            );
-    }
-
-    /// <summary>Resolves Raven's journal, display, and legacy names to a single stock identity.</summary>
-    private static string NormalizeCommodityKey(string name)
-    {
-        string key = ColonizationConstructionState
-            .NormalizeCommodityName(name)
-            .Replace(" ", string.Empty, StringComparison.Ordinal)
-            .Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace(".", string.Empty, StringComparison.Ordinal);
-        return CommodityAliases.GetValueOrDefault(key) ?? key;
-    }
-
-    /// <summary>Combines the build catalog's alternate names with renamed non-build commodities seen in Raven carrier cargo.</summary>
-    private static Dictionary<string, string> CreateCommodityAliases()
-    {
-        var aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["guardianrelic"] = "ancientrelic",
-            ["guardiancasket"] = "ancientcasket",
-            ["guardianorb"] = "ancientorb",
-            ["guardiantablet"] = "ancienttablet",
-            ["guardiantotem"] = "ancienttotem",
-            ["guardianurn"] = "ancienturn",
-            ["thargoidsensor"] = "unknownartifact",
-            ["thargoidprobe"] = "unknownartifact2",
-            ["thargoidlink"] = "unknownartifact3",
-            ["titandrivecomponent"] = "thargoidtitandrivecomponent",
-        };
-        foreach (
-            IGrouping<string, KeyValuePair<string, CommodityName>> group in CommodityNames.GroupBy(
-                pair => pair.Value.Name,
-                StringComparer.OrdinalIgnoreCase
-            )
-        )
-        {
-            string canonical = group.First().Key;
-            foreach (KeyValuePair<string, CommodityName> pair in group)
-            {
-                aliases[pair.Key] = canonical;
-            }
-            string displayKey = group
-                .Key.Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("-", string.Empty, StringComparison.Ordinal)
-                .Replace(".", string.Empty, StringComparison.Ordinal);
-            aliases[displayKey] = canonical;
-        }
-        return aliases;
-    }
+    /// <summary>
+    /// Deduplicates report stock with the same identity and maximum-count policy used by editable manifests.
+    /// </summary>
+    private static Dictionary<string, int> Normalize(IReadOnlyDictionary<string, int> cargo) =>
+        ColonizationCarrierInventory.NormalizeStock(cargo);
 
     /// <summary>Loads trusted bundled reference data, keeping public project requests independent of website markup changes.</summary>
     private static T LoadResource<T>(string name)

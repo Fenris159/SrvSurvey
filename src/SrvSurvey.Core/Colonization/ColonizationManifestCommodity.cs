@@ -21,13 +21,10 @@ public sealed record ColonizationManifestCommodity(string Key, string Name, stri
 
     public bool IsColonyCommodity => ColonyKeys.Contains(ColonizationMarketCommodities.Key(Key));
 
+    /// <summary>Resolves known commodity metadata while preserving unknown names for editable manifests.</summary>
     public static ColonizationManifestCommodity ForKey(string key)
     {
         string normalized = ColonizationMarketCommodities.Key(key);
-        if (normalized == "metalloys")
-        {
-            normalized = "metaalloys";
-        }
         return Catalog.GetValueOrDefault(normalized) ?? new(key, key, "Other");
     }
 

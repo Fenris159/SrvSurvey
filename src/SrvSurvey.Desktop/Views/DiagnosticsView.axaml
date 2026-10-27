@@ -227,21 +227,40 @@
                      Text="{Binding ReleaseUpdates.ReleaseSourceDescription}" />
 
           <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-            <TextBlock Classes="muted" Text="Installed" />
-            <TextBlock Grid.Column="1"
-                       FontWeight="SemiBold"
-                       Text="{Binding ReleaseUpdates.CurrentVersion}" />
-            <TextBlock Grid.Column="2" Classes="muted" Text="Published" />
+            <TextBlock Classes="muted" VerticalAlignment="Center" Text="Installed" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+              <TextBlock VerticalAlignment="Center"
+                         FontWeight="SemiBold"
+                         Text="{Binding ReleaseUpdates.CurrentVersion}" />
+              <Button x:Name="CopySupportDetailsButton"
+                      Classes="secondary"
+                      Padding="8,4"
+                      FontSize="12"
+                      Command="{Binding ReleaseUpdates.CopySupportDetailsCommand}"
+                      ToolTip.Tip="Copy installed version and system details for a bug report"
+                      Content="Copy details" />
+            </StackPanel>
+            <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="Published" />
             <TextBlock Grid.Column="3"
+                       VerticalAlignment="Center"
                        FontWeight="SemiBold"
                        Text="{Binding ReleaseUpdates.LatestVersion}" />
           </Grid>
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding ReleaseUpdates.HasSupportDetailsStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.SupportDetailsStatusMessage}" />
 
           <WrapPanel Orientation="Horizontal">
             <Button Classes="secondary"
                     Margin="0,0,8,8"
                     Command="{Binding ReleaseUpdates.CheckCommand}"
                     Content="{Binding ReleaseUpdates.CheckButtonText}" />
+            <Button x:Name="InstalledReleaseNotesButton"
+                    Classes="secondary"
+                    Margin="0,0,8,8"
+                    Click="InstalledReleaseNotes_Click"
+                    Content="Installed release notes" />
             <Button Classes="secondary"
                     Margin="0,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
@@ -256,7 +275,7 @@
                     Margin="8,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.HasReleaseNotes}"
                     Click="ReleaseNotes_Click"
-                    Content="Release notes" />
+                    Content="Available release notes" />
           </WrapPanel>
 
           <CheckBox IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"

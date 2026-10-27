@@ -60,6 +60,10 @@ public sealed class RavenColonialCarrierManifestTests
         Assert.Equal("Steel", ColonizationManifestCommodity.ForKey("STEEL").Name);
     }
 
+    /// <summary>
+    /// Locks refresh and location request routes, required query identity, and initiating credentials to the API
+    /// contract.
+    /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -75,6 +79,7 @@ public sealed class RavenColonialCarrierManifestTests
                     location ? "/api/fc/42/location/Alpha%20Centauri" : "/api/fc/42/refresh",
                     request.RequestUri!.AbsolutePath
                 );
+                Assert.Equal(location ? "?marketIdOrName=42" : string.Empty, request.RequestUri.Query);
                 return Json(CarrierJson);
             })
         );

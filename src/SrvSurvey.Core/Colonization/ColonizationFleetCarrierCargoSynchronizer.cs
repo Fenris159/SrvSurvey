@@ -57,6 +57,9 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return CargoInventoryDiff.InvertForFleetCarrier(shipDiff);
     }
 
+    /// <summary>
+    /// Builds authoritative updates for listed market stock and clears aliases only for those observed goods.
+    /// </summary>
     public static IReadOnlyDictionary<string, int> CreateMarketReplacement(
         MarketSnapshot market,
         ColonizationFleetCarrier carrier
@@ -69,36 +72,35 @@ public static class ColonizationFleetCarrierCargoSynchronizer
             throw new ArgumentException("The market snapshot does not belong to the Fleet Carrier.", nameof(market));
         }
 
-        var currentCargo = carrier
-            .Cargo.GroupBy(
-                pair => ColonizationConstructionState.NormalizeCommodityName(pair.Key),
-                StringComparer.OrdinalIgnoreCase
-            )
-            .ToDictionary(
-                group => group.Key,
-                group => group.Sum(pair => Math.Max(0, pair.Value)),
-                StringComparer.OrdinalIgnoreCase
-            );
-        var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var inventory = ColonizationCarrierInventory.FromRaven(carrier);
+        var currentCargo = inventory.Stock.ToDictionary(item => item.Commodity, StringComparer.OrdinalIgnoreCase);
+        var replacement = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (MarketItem item in market.Items)
         {
-            string commodity = item.Commodity;
+            string commodity = ColonizationCarrierInventory.CommodityKey(item.Commodity);
             if (commodity.Length == 0)
             {
                 continue;
             }
 
             int stock = Math.Max(0, item.Stock);
-            int tracked = currentCargo.GetValueOrDefault(commodity);
-            if ((item.Producer && tracked != stock) || (!item.Producer && !item.Consumer && tracked > 0))
+            ColonizationInventoryStock? observation = currentCargo.GetValueOrDefault(commodity);
+            long tracked = observation?.Quantity ?? 0;
+            bool hasAliases = observation?.SourceKeys.Any(key => key != commodity) == true;
+            if (
+                (item.Producer && (tracked != stock || hasAliases)) || (!item.Producer && !item.Consumer && tracked > 0)
+            )
             {
                 replacement[commodity] = stock;
             }
         }
 
-        return replacement;
+        return inventory.CreateRavenUpdate(replacement);
     }
 
+    /// <summary>
+    /// Validates the carrier market identity and converts a purchase or sale into its signed stock change.
+    /// </summary>
     private static Dictionary<string, int> CreateMarketAdjustment(
         System.Text.Json.JsonElement root,
         ColonizationDockingSnapshot dock,
@@ -111,7 +113,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
 
-        string commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(root, "Type"));
+        string commodity = ColonizationCarrierInventory.CommodityKey(GetString(root, "Type"));
         int? count = GetInt32(root, "Count");
         if (commodity.Length == 0 || count is not > 0)
         {
@@ -121,6 +123,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { [commodity] = sign * count.Value };
     }
 
+    /// <summary>Combines direction-aware journal transfers under shared commodity identities.</summary>
     private static Dictionary<string, int> CreateTransferAdjustment(System.Text.Json.JsonElement root)
     {
         if (
@@ -134,7 +137,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (JsonElement transfer in transfers.EnumerateArray())
         {
-            string commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(transfer, "Type"));
+            string commodity = ColonizationCarrierInventory.CommodityKey(GetString(transfer, "Type"));
             int? count = GetInt32(transfer, "Count");
             string? direction = GetString(transfer, "Direction");
             if (commodity.Length == 0 || count is not > 0)

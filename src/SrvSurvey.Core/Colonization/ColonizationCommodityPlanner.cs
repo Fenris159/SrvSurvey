@@ -299,12 +299,13 @@ public static class ColonizationCommodityPlanner
         );
     }
 
+    /// <summary>Counts each carrier once and treats commodity aliases as alternate stock reports.</summary>
     private static Dictionary<string, int> SumCarrierCargo(IReadOnlyList<ColonizationFleetCarrier> carriers)
     {
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (ColonizationFleetCarrier carrier in carriers)
+        foreach (ColonizationFleetCarrier carrier in carriers.DistinctBy(carrier => carrier.MarketId))
         {
-            foreach (KeyValuePair<string, int> pair in carrier.Cargo)
+            foreach (KeyValuePair<string, int> pair in ColonizationCarrierInventory.NormalizeStock(carrier.Cargo))
             {
                 string commodity = Normalize(pair.Key);
                 result[commodity] = checked(result.GetValueOrDefault(commodity) + Math.Max(0, pair.Value));
@@ -333,9 +334,10 @@ public static class ColonizationCommodityPlanner
             : $"{projects.Length:N0} projects";
     }
 
+    /// <summary>Uses the shared inventory identity for project, ship, and carrier quantities.</summary>
     private static string Normalize(string value)
     {
-        return ColonizationConstructionState.NormalizeCommodityName(value);
+        return ColonizationCarrierInventory.CommodityKey(value);
     }
 
     private static Dictionary<string, string> CreateCategories()
