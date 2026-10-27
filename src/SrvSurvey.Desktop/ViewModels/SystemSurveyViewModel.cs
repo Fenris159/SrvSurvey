@@ -1440,6 +1440,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || BiologySurvey is null
                 || status is null
                 || status.InTaxi
+                || status.Flags.HasFlag(StatusFlags.FsdJump)
                 || fsdJumping
             )
             {
@@ -1482,6 +1483,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || status.Docked
                 || status.InTaxi
                 || status.Flags.HasFlag(StatusFlags.Supercruise)
+                || status.Flags.HasFlag(StatusFlags.FsdJump)
                 || status.FsdChargingJump
                 || fsdJumping
             )
@@ -2932,6 +2934,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         RaiseVisibilityProperties();
     }
 
+    /// <summary>Projects survey events and updates session, hyperspace, and biology timing state.</summary>
     private void ApplyJournalEvent(JournalEventEnvelope journalEvent)
     {
         if (
@@ -2950,12 +2953,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             case "Fileheader":
             case "LoadGame":
                 musicTrack = null;
+                fsdJumping = false;
                 break;
 
             case "StartJump" when GetString(journalEvent.Payload, "JumpType") == "Hyperspace":
                 fsdJumping = true;
                 break;
 
+            case "Location":
             case "FSDJump":
             case "CarrierJump":
             case "Died":
