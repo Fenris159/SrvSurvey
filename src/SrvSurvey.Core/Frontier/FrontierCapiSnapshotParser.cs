@@ -610,6 +610,9 @@ public static partial class FrontierCapiSnapshotParser
         );
     }
 
+    /// <summary>
+    /// Projects carrier endpoint data while retaining each cargo stack's language-independent identity.
+    /// </summary>
     private static FrontierCarrierEndpointSnapshot ParseCarrierEndpoint(
         JsonElement root,
         DateTimeOffset fetchedAt,

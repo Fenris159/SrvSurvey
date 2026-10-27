@@ -316,6 +316,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal([true, false], store.LoadPendingCargoAdjustments().Select(item => item.AwaitingBaseline));
     }
 
+    /// <summary>Round-trips logical deltas and case-distinct source baselines through the real settings file.</summary>
     [Fact]
     public void PendingCargoKeepsExactSourceKeysAcrossADiskRoundTrip()
     {

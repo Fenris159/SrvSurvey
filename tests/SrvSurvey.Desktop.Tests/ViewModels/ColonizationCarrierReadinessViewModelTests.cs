@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationCarrierReadinessViewModelTests
 {
+    /// <summary>Keeps carrier labels meaningful and removes stale legend data when a report disappears.</summary>
     [Fact]
     public async Task LegendNamesHaveFallbacksAndMissingReportsClearAllCarrierShares()
     {
@@ -52,6 +53,9 @@ public sealed class ColonizationCarrierReadinessViewModelTests
         Assert.Empty(model.ReadyCarriers);
     }
 
+    /// <summary>
+    /// Recalculates filtered Nexus quantities without changing the carrier IDs that determine their colors.
+    /// </summary>
     [Fact]
     public async Task NexusSystemSelectionRecalculatesSharesWithoutChangingCarrierIdentity()
     {

@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    /// <summary>Exercises live transfers against legacy-only and mixed-key stock using one relative request.</summary>
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -37,6 +38,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>Replays a retained logical transfer once using the fresh remote source aliases after restart.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -67,6 +69,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>
+    /// Uses persisted exact keys to recognize a remotely applied transfer after its acknowledgement was lost.
+    /// </summary>
     [Fact]
     public async Task LostAliasAdjustmentResponseRetainsTheRawBaselineAndDoesNotApplyTheTransferTwice()
     {
@@ -104,6 +109,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         );
     }
 
+    /// <summary>
+    /// Protects a concurrent shared-carrier deposit from being overwritten by a cached alias migration.
+    /// </summary>
     [Fact]
     public async Task RelativeAliasWritesPreserveCargoAddedByAnotherClientAfterTheCachedBaseline()
     {
@@ -132,6 +140,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Empty(store.LoadPendingCargoAdjustments());
     }
 
+    /// <summary>Creates independent cached and remote inventory fixtures with optional case-distinct aliases.</summary>
     private static RecordingRavenClient AliasedCarrierClient(bool mixedKeys)
     {
         var carrier = new ColonizationFleetCarrier
@@ -148,6 +157,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         return new RecordingRavenClient { Workspace = new([], [], null, [carrier]), FleetCarrierResponse = carrier };
     }
 
+    /// <summary>
+    /// Builds a real journal transfer with the commodity token and direction used by live cargo projection.
+    /// </summary>
     private static JournalEventEnvelope OxygenTransfer(bool toCarrier) =>
         Event(
             "CargoTransfer",

@@ -22,6 +22,9 @@ public sealed partial class ColonizationProjectPreview
             .ToArray();
     }
 
+    /// <summary>
+    /// Divides capped commodity coverage proportionally, using carrier IDs to break whole-tonne remainder ties.
+    /// </summary>
     private void AllocateReadiness(ColonizationPreviewCommodity row, long[] ready)
     {
         long available = row.CarrierQuantities.Sum(quantity => (long)Math.Max(0, quantity ?? 0));

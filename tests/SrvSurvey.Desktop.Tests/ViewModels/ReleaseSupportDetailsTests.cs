@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ReleaseSupportDetailsTests
 {
+    /// <summary>Checks exact RC and runtime clipboard content, feedback, and platform-service detachment.</summary>
     [Fact]
     public async Task CopyContainsTheInstalledRcAndSystemDetailsWithoutChangingUpdateStatus()
     {
@@ -44,6 +45,9 @@ public sealed class ReleaseSupportDetailsTests
         Assert.Contains("unavailable", model.SupportDetailsStatusMessage);
     }
 
+    /// <summary>
+    /// Reads the current selected release channel at copy time without changing the installed version.
+    /// </summary>
     [Fact]
     public async Task CopiedDetailsFollowTheSelectedChannel()
     {
@@ -62,6 +66,7 @@ public sealed class ReleaseSupportDetailsTests
         Assert.Contains("SrvSurvey-XP: 2.1.3.0-rc.73", copied);
     }
 
+    /// <summary>Keeps expected desktop clipboard failures separate from update availability and commands.</summary>
     [Theory]
     [InlineData("unavailable")]
     [InlineData("io")]
@@ -89,6 +94,9 @@ public sealed class ReleaseSupportDetailsTests
         Assert.True(model.CheckCommand.CanExecute(null));
     }
 
+    /// <summary>
+    /// Keeps the embedded notes available across newer releases, channel switches, and failed network checks.
+    /// </summary>
     [Fact]
     public async Task InstalledNotesAreAvailableOfflineAndIndependentOfFutureReleaseNotesAndChannels()
     {
@@ -115,11 +123,15 @@ public sealed class ReleaseSupportDetailsTests
         Assert.Equal(installedNotes, ReleaseUpdateViewModel.InstalledReleaseNotes);
     }
 
+    /// <summary>Creates an isolated installed-RC fixture with a controlled future release provider.</summary>
     private static ReleaseUpdateViewModel Create() =>
         new(new FutureReleaseService(), ReleaseVersion.Parse("2.1.3.0-rc.73"));
 
     private sealed class FutureReleaseService : IReleaseUpdateService
     {
+        /// <summary>
+        /// Provides controlled update-check outcomes without network access for installed-notes isolation tests.
+        /// </summary>
         public Task<ReleaseUpdateResult> CheckAsync(
             ReleaseVersion currentVersion,
             ReleaseChannel channel,
@@ -140,6 +152,9 @@ public sealed class ReleaseSupportDetailsTests
 
     private sealed class OfflineService : IReleaseUpdateService
     {
+        /// <summary>
+        /// Provides controlled update-check outcomes without network access for installed-notes isolation tests.
+        /// </summary>
         public Task<ReleaseUpdateResult> CheckAsync(
             ReleaseVersion currentVersion,
             ReleaseChannel channel,

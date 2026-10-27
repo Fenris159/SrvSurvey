@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.Theming;
 /// <summary>Stable carrier colors shared by bars and legends, with no fixed palette-size limit.</summary>
 public static class CarrierColorPalette
 {
+    /// <summary>Derives a stable carrier hue and theme-specific brightness without a fixed fleet-size limit.</summary>
     public static Color GetColor(long marketId, bool isDark)
     {
         // Fibonacci hashing separates nearby carrier IDs around the hue wheel without per-refresh randomness.

@@ -5,6 +5,9 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationFleetCarrierCapiCargoSeederTests
 {
+    /// <summary>
+    /// Keeps localized Frontier labels separate from the stable keys used for seeding and local stock.
+    /// </summary>
     [Fact]
     public void ParsedCapiCargoUsesJournalIdentitiesInsteadOfLocalizedDisplayNames()
     {
@@ -37,6 +40,7 @@ public sealed class ColonizationFleetCarrierCapiCargoSeederTests
         Assert.Equal(3, local.GetQuantity(linked, "water"));
     }
 
+    /// <summary>Preserves compatibility with older snapshots that contain only known display labels.</summary>
     [Fact]
     public void DisplayOnlySnapshotsResolveKnownNamesToJournalIdentities()
     {

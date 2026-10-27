@@ -4,6 +4,7 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationCarrierReadinessTests
 {
+    /// <summary>Locks capped shares and deterministic whole-tonne remainders to the exact readiness total.</summary>
     [Theory]
     [InlineData(100, 80, 80, 50, 50)]
     [InlineData(101, 80, 80, 51, 50)]
@@ -36,6 +37,7 @@ public sealed class ColonizationCarrierReadinessTests
         Assert.Equal(expectedFirst, reordered.GetCarrierReadiness().Single(item => item.Carrier.MarketId == 1).Ready);
     }
 
+    /// <summary>Prevents unrelated surplus or repeated carrier links from inflating report readiness.</summary>
     [Fact]
     public void SurplusCannotCoverAnotherCommodityAndSharedCarriersAreOnlyRepresentedOnce()
     {
@@ -53,6 +55,7 @@ public sealed class ColonizationCarrierReadinessTests
         Assert.Equal(250, combined.GetCarrierReadiness().Sum(item => item.Ready));
     }
 
+    /// <summary>Keeps missing inventory unknown instead of presenting fabricated per-carrier shares.</summary>
     [Fact]
     public void UnavailableCargoDoesNotInventPerCarrierCoverage()
     {
@@ -71,6 +74,7 @@ public sealed class ColonizationCarrierReadinessTests
         Assert.Empty(empty.GetCarrierReadiness());
     }
 
+    /// <summary>Verifies wide Nexus requirements and filtered systems use the same exact allocation policy.</summary>
     [Fact]
     public void NexusUsesTheSameAllocationForLargeSystemNeedsAndSystemFilters()
     {
@@ -110,6 +114,9 @@ public sealed class ColonizationCarrierReadinessTests
         Assert.Equal(4_000_000_000, all.GetCarrierReadiness().Sum(item => item.Ready));
     }
 
+    /// <summary>
+    /// Builds a public-preview fixture with aligned carrier identities, stock maps, and commodity requirements.
+    /// </summary>
     private static ColonizationProjectPreviewData Data(int need, int first, int second) =>
         new(
             new()

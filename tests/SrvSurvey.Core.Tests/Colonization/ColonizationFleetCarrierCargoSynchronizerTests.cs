@@ -5,6 +5,9 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationFleetCarrierCargoSynchronizerTests
 {
+    /// <summary>
+    /// Limits authoritative cleanup to observed commodities while preserving unlisted carrier inventory.
+    /// </summary>
     [Fact]
     public void AuthoritativeMarketStockReplacesAliasesWithoutAddingThemOrTouchingUnobservedGoods()
     {

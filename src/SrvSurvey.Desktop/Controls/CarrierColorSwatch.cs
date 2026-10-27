@@ -13,6 +13,9 @@ public sealed class CarrierColorSwatch : Border
         nameof(MarketId)
     );
 
+    /// <summary>
+    /// Initializes the swatch and keeps its brightness synchronized with the active application theme.
+    /// </summary>
     public CarrierColorSwatch()
     {
         ActualThemeVariantChanged += (_, _) => UpdateColor();
@@ -25,6 +28,7 @@ public sealed class CarrierColorSwatch : Border
         set => SetValue(MarketIdProperty, value);
     }
 
+    /// <summary>Recomputes the stable swatch color when its carrier identity changes.</summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -34,6 +38,7 @@ public sealed class CarrierColorSwatch : Border
         }
     }
 
+    /// <summary>Uses the carrier hue with brightness appropriate to the inherited light or dark theme.</summary>
     private void UpdateColor() =>
         Background = new SolidColorBrush(
             CarrierColorPalette.GetColor(MarketId, ActualThemeVariant != ThemeVariant.Light)

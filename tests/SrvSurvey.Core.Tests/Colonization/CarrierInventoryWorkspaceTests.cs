@@ -4,6 +4,10 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class CarrierInventoryWorkspaceTests
 {
+    /// <summary>
+    /// Locks planner, shopping, preview, and Nexus totals to one stock quantity per carrier without consuming ship
+    /// stock.
+    /// </summary>
     [Fact]
     public void WorkspacesAgreeOnUniqueCarrierStockAndKeepShipStockSeparate()
     {
@@ -64,6 +68,7 @@ public sealed class CarrierInventoryWorkspaceTests
         Assert.Equal(90, ColonizationNexusPlan.Create(nexus).Cargo.Ready);
     }
 
+    /// <summary>Distinguishes duplicate stock observations from separate additive journal transactions.</summary>
     [Fact]
     public void SynchronizationComparesAliasesAsOneStockButAddsSeparateTransactions()
     {

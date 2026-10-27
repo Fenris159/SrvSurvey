@@ -38,6 +38,9 @@ public sealed partial class ReleaseUpdateViewModel : INotifyPropertyChanged
     private bool recheckRequested;
     private double installProgressPercent;
 
+    /// <summary>
+    /// Initializes update actions and support-copy commands for the installed version and saved release channel.
+    /// </summary>
     public ReleaseUpdateViewModel(
         IReleaseUpdateService service,
         ReleaseVersion currentVersion,

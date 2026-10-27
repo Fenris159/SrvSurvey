@@ -5,6 +5,9 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    /// <summary>
+    /// Recognizes an acknowledged transfer by physical inventory even when Raven renames its commodity key.
+    /// </summary>
     [Fact]
     public async Task ConfirmedCargoWriteIsNotReplayedWhenRavenChangesTheCommodityAlias()
     {

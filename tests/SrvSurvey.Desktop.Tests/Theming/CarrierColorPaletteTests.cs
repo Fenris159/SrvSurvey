@@ -5,6 +5,9 @@ namespace SrvSurvey.Desktop.Tests.Theming;
 
 public sealed class CarrierColorPaletteTests
 {
+    /// <summary>
+    /// Checks repeatable carrier colors beyond the original ten-carrier request in both theme variants.
+    /// </summary>
     [Fact]
     public void MoreThanTenCarriersHaveStableDistinctColorsAndThemeAppropriateBrightness()
     {
@@ -18,6 +21,7 @@ public sealed class CarrierColorPaletteTests
         Assert.NotEqual(CarrierColorPalette.GetColor(42, true), CarrierColorPalette.GetColor(42, false));
     }
 
+    /// <summary>Measures swatch contrast against each supported raised theme surface.</summary>
     [Fact]
     public void SwatchesRemainVisibleAgainstEveryApplicationThemeSurface()
     {
@@ -33,9 +37,11 @@ public sealed class CarrierColorPaletteTests
         }
     }
 
+    /// <summary>Computes relative luminance for the palette contrast checks.</summary>
     private static double Luminance(Color color) =>
         0.2126 * Linear(color.R) + 0.7152 * Linear(color.G) + 0.0722 * Linear(color.B);
 
+    /// <summary>Converts an sRGB channel to linear light before measuring contrast.</summary>
     private static double Linear(byte value)
     {
         double channel = value / 255d;

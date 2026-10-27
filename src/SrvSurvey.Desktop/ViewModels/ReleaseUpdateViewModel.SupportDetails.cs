@@ -39,12 +39,16 @@ public sealed partial class ReleaseUpdateViewModel
 
     public bool HasSupportDetailsStatusMessage => !string.IsNullOrWhiteSpace(SupportDetailsStatusMessage);
 
+    /// <summary>Connects or disconnects the desktop clipboard and refreshes copy-command availability.</summary>
     public void SetClipboardWriter(Func<string, Task>? writer)
     {
         clipboardWriter = writer;
         copySupportDetailsCommand.RaiseCanExecuteChanged();
     }
 
+    /// <summary>
+    /// Copies the installed version and runtime report while keeping clipboard failures separate from update status.
+    /// </summary>
     public async Task CopySupportDetailsAsync()
     {
         if (clipboardWriter is not { } writeClipboard)
@@ -71,6 +75,7 @@ public sealed partial class ReleaseUpdateViewModel
         }
     }
 
+    /// <summary>Reads the notes embedded in this build independently of update-channel or network state.</summary>
     private static string ReadInstalledReleaseNotes()
     {
         using Stream stream =

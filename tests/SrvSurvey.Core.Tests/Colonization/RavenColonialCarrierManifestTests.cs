@@ -60,6 +60,10 @@ public sealed class RavenColonialCarrierManifestTests
         Assert.Equal("Steel", ColonizationManifestCommodity.ForKey("STEEL").Name);
     }
 
+    /// <summary>
+    /// Locks refresh and location request routes, required query identity, and initiating credentials to the API
+    /// contract.
+    /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

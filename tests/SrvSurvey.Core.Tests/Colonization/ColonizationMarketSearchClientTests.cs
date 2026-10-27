@@ -11,6 +11,62 @@ public sealed class ColonizationMarketSearchClientTests
 {
     private static readonly string[] CombinedCommodities = ["Steel", "Water"];
 
+    /// <summary>Legacy Meta-Alloys needs must match provider stock and use Spansh's correctly cased filter name.</summary>
+    [Theory]
+    [InlineData(true, "metalloys")]
+    [InlineData(false, "metalloys")]
+    [InlineData(true, "Meta-Alloys")]
+    [InlineData(false, "metaalloys")]
+    public async Task MetaAlloysAliasesMatchShoppingNeedsAcrossMarketProviders(bool useSpansh, string reportedName)
+    {
+        var project = new ColonizationProject
+        {
+            BuildId = "build",
+            Commodities = new() { ["metalloys"] = 25 },
+        };
+        IReadOnlyList<ColonizationShoppingNeed> needs = ColonizationShopping.Aggregate([project]);
+        using var http = new HttpClient(
+            new Handler(
+                async (request, token) =>
+                {
+                    if (useSpansh)
+                    {
+                        using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+                        Assert.Equal(
+                            "Meta-Alloys",
+                            body.RootElement.GetProperty("filters")
+                                .GetProperty("marketplace")[0]
+                                .GetProperty("commodity")
+                                .GetProperty("value")[0]
+                                .GetString()
+                        );
+                        JsonObject station = Spansh(42, reportedName, 100);
+                        station["distance"] = 0;
+                        return SpanshResponse([station], 1);
+                    }
+                    return Json(new JsonArray(Ardent(42, reportedName, 100)));
+                }
+            )
+        );
+        using var client = new ColonizationMarketSearchClient(http);
+
+        ColonizationMarketSearchResult result = await client.SearchAsync(
+            Query() with
+            {
+                Needs = needs,
+                UseSpansh = useSpansh,
+                UseArdent = !useSpansh,
+                LocalOnly = true,
+            }
+        );
+
+        ColonizationMarketQuote quote = Assert.Single(result.Quotes);
+        Assert.Equal(Assert.Single(needs).Commodity, quote.Commodity);
+        Assert.Equal("metaalloys", quote.Commodity);
+        Assert.Equal("Meta-Alloys", Assert.Single(needs).DisplayName);
+        Assert.Empty(result.Warnings);
+    }
+
     [Theory]
     [InlineData(true, false, false)]
     [InlineData(false, true, false)]

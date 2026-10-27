@@ -63,6 +63,7 @@ internal static class ColonizationMarketCommodities
         ["nonlethalweapons"] = "Non-Lethal Weapons",
         ["reactivearmour"] = "Reactive Armour",
         ["tritium"] = "Tritium",
+        ["metaalloys"] = "Meta-Alloys",
     };
     private static readonly Dictionary<string, string> Keys = Names.ToDictionary(
         pair => MiningCommodityName.Key(pair.Value),
@@ -70,12 +71,16 @@ internal static class ColonizationMarketCommodities
         StringComparer.Ordinal
     );
 
+    /// <summary>
+    /// Resolves display and historical commodity aliases to the journal identity used by provider quotes.
+    /// </summary>
     public static string Key(string value)
     {
         string key = MiningCommodityName.Key(value);
         return key switch
         {
             "microbialfurnaces" => "heliostaticfurnaces",
+            "metalloys" => "metaalloys",
             "landenrichmentsystems" => "terrainenrichmentsystems",
             "muonimager" => "mutomimager",
             "combatstabilizers" => "combatstabilisers",

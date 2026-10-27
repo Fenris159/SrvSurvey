@@ -13,6 +13,7 @@ public sealed class CarrierReadinessBar : Grid
         nameof(Maximum)
     );
 
+    /// <summary>Initializes an empty bar with an unfilled remainder column.</summary>
     public CarrierReadinessBar() => Rebuild();
 
     public IReadOnlyList<PreviewCarrierReadiness>? Carriers
@@ -26,6 +27,7 @@ public sealed class CarrierReadinessBar : Grid
         set => SetValue(MaximumProperty, value);
     }
 
+    /// <summary>Rebuilds proportional columns when the carrier shares or full requirement change.</summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -35,6 +37,7 @@ public sealed class CarrierReadinessBar : Grid
         }
     }
 
+    /// <summary>Caps visible shares at the current requirement and leaves unused width unfilled.</summary>
     private void Rebuild()
     {
         Children.Clear();

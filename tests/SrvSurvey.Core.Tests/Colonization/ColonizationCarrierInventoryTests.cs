@@ -1,9 +1,29 @@
+using System.Text.Json;
 using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationCarrierInventoryTests
 {
+    /// <summary>Raven can explicitly serialize a missing manifest as null despite the model's non-nullable default.</summary>
+    [Fact]
+    public void RavenNullCargoProducesASafeEmptyObservation()
+    {
+        ColonizationFleetCarrier carrier = JsonSerializer.Deserialize<ColonizationFleetCarrier>(
+            """{"marketId":42,"cargo":null}"""
+        )!;
+
+        var inventory = ColonizationCarrierInventory.FromRaven(carrier);
+
+        Assert.Empty(inventory.Stock);
+        Assert.False(inventory.HasAliases);
+        Assert.Equal(
+            75,
+            Assert.Single(inventory.CreateRavenUpdate(new Dictionary<string, int> { ["liquidoxygen"] = 75 })).Value
+        );
+    }
+
+    /// <summary>Locks display names, journal tokens, and historical aliases to a shared inventory key.</summary>
     [Theory]
     [InlineData("$LiquidOxygen_Name;", "liquidoxygen")]
     [InlineData("Liquid oxygen", "liquidoxygen")]
@@ -18,6 +38,9 @@ public sealed class ColonizationCarrierInventoryTests
     public void SourcesResolveTheSameCommodityIdentity(string? name, string expected) =>
         Assert.Equal(expected, ColonizationCarrierInventory.CommodityKey(name));
 
+    /// <summary>
+    /// Preserves independent Raven and local observations while sharing their physical commodity identity.
+    /// </summary>
     [Fact]
     public void ObservationsKeepTheirCarrierSourceAndOriginalKeysWithoutCombiningTheirAmounts()
     {
@@ -49,6 +72,9 @@ public sealed class ColonizationCarrierInventoryTests
         Assert.Equal(43, ColonizationCarrierInventory.FromRaven(carrier with { MarketId = 43 }).MarketId);
     }
 
+    /// <summary>
+    /// Verifies exact alias cleanup, unknown goods, partial updates, and the immutability of the original observation.
+    /// </summary>
     [Fact]
     public void ReplacementTargetsAllOldAliasesAndPreservesUnrecognizedGoodsWithoutMutatingTheObservation()
     {
@@ -87,6 +113,7 @@ public sealed class ColonizationCarrierInventoryTests
         Assert.False(update.ContainsKey("unknown good"));
     }
 
+    /// <summary>Prevents duplicate snapshot names or invalid quantities from inventing additional stock.</summary>
     [Fact]
     public void SnapshotAliasesAreNotTransactionsAndMissingOrInvalidStockIsNotInvented()
     {
@@ -105,6 +132,9 @@ public sealed class ColonizationCarrierInventoryTests
         Assert.False(stock.ContainsKey("water"));
     }
 
+    /// <summary>
+    /// Preserves additive transactions across aliases while rejecting local write targets and overflowing deltas.
+    /// </summary>
     [Fact]
     public void RelativeWritesSumTransactionsAndUpdateEveryTouchedSourceKeyInOnePatch()
     {

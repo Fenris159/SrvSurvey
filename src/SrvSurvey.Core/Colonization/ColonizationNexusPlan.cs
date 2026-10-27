@@ -91,6 +91,9 @@ public sealed record ColonizationNexusPlan(
         );
     }
 
+    /// <summary>
+    /// Combines system requirements under shared commodity identities while retaining wide tonnage totals.
+    /// </summary>
     private static IEnumerable<ColonizationShoppingNeed> NormalizeNeeds(Dictionary<string, long>? needs) =>
         (needs ?? [])
             .GroupBy(pair => ColonizationCarrierInventory.CommodityKey(pair.Key), StringComparer.Ordinal)

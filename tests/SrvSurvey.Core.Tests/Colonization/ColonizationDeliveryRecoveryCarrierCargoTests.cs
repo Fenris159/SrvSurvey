@@ -10,6 +10,22 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"
     );
 
+    /// <summary>Seeds known Frontier stock even when Raven explicitly returned a null cargo map.</summary>
+    [Fact]
+    public async Task CapiSeedRecoversANullRavenManifestWithoutFailingInventoryConversion()
+    {
+        RecordingRavenClient client = CarrierClient(75);
+        client.FleetCarrierResponse = client.FleetCarrierResponse! with { Cargo = null! };
+        client.Workspace = new([], [], null, [client.FleetCarrierResponse]);
+        ColonizationDeliveryRecovery recovery = Create(client, apiKey: "key", carrierSync: true);
+
+        await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
+
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.Equal(90, client.LastReplacement!["steel"]);
+        Assert.Equal(90, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+    }
+
     [Theory]
     [InlineData(false, false, 95)]
     [InlineData(true, false, 50)]

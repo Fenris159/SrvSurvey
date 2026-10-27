@@ -7,6 +7,9 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationLocalCarrierCargoTests
 {
+    /// <summary>
+    /// Shares carrier and commodity identities without substituting remote counts for independent local stock.
+    /// </summary>
     [Fact]
     public void LocalObservationsShareRavenIdentityWithoutUsingItsCountsOrChangingItsSource()
     {

@@ -299,6 +299,7 @@ public static class ColonizationCommodityPlanner
         );
     }
 
+    /// <summary>Counts each carrier once and treats commodity aliases as alternate stock reports.</summary>
     private static Dictionary<string, int> SumCarrierCargo(IReadOnlyList<ColonizationFleetCarrier> carriers)
     {
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -333,6 +334,7 @@ public static class ColonizationCommodityPlanner
             : $"{projects.Length:N0} projects";
     }
 
+    /// <summary>Uses the shared inventory identity for project, ship, and carrier quantities.</summary>
     private static string Normalize(string value)
     {
         return ColonizationCarrierInventory.CommodityKey(value);

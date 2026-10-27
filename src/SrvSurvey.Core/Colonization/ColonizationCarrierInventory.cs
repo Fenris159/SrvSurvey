@@ -16,6 +16,9 @@ public sealed record ColonizationInventoryStock(string Commodity, long Quantity,
 /// </summary>
 public sealed class ColonizationCarrierInventory
 {
+    /// <summary>
+    /// Normalizes one source observation while retaining the original keys needed to direct later writes.
+    /// </summary>
     private ColonizationCarrierInventory(
         long marketId,
         ColonizationInventorySource source,
@@ -32,9 +35,11 @@ public sealed class ColonizationCarrierInventory
     public IReadOnlyList<ColonizationInventoryStock> Stock { get; }
     public bool HasAliases => Stock.Any(item => item.SourceKeys.Any(key => key != item.Commodity));
 
+    /// <summary>Captures Raven source keys, accepting an explicit null manifest as an empty observation.</summary>
     public static ColonizationCarrierInventory FromRaven(ColonizationFleetCarrier carrier) =>
-        new(carrier.MarketId, ColonizationInventorySource.Raven, AsLong(carrier.Cargo));
+        new(carrier.MarketId, ColonizationInventorySource.Raven, AsLong(carrier.Cargo ?? []));
 
+    /// <summary>Captures local quantities without merging them with the Raven observation.</summary>
     public static ColonizationCarrierInventory FromLocal(
         ColonizationFleetCarrier carrier,
         IEnumerable<KeyValuePair<string, long>> cargo
@@ -90,6 +95,9 @@ public sealed class ColonizationCarrierInventory
         return result;
     }
 
+    /// <summary>
+    /// Builds canonical stock updates and clears only the source aliases covered by the chosen replacement policy.
+    /// </summary>
     private Dictionary<string, int> CreateRavenWrite(IEnumerable<KeyValuePair<string, int>> edited, bool clearUnlisted)
     {
         EnsureRavenSource();
@@ -111,6 +119,7 @@ public sealed class ColonizationCarrierInventory
         return replacement;
     }
 
+    /// <summary>Rejects attempts to direct remote manifest writes through a local inventory observation.</summary>
     private void EnsureRavenSource()
     {
         if (Source != ColonizationInventorySource.Raven)
@@ -119,9 +128,13 @@ public sealed class ColonizationCarrierInventory
         }
     }
 
+    /// <summary>Widens manifest quantities for shared stock calculations without changing their source keys.</summary>
     private static IEnumerable<KeyValuePair<string, long>> AsLong(IEnumerable<KeyValuePair<string, int>> cargo) =>
         cargo.Select(item => new KeyValuePair<string, long>(item.Key, item.Value));
 
+    /// <summary>
+    /// Treats aliases as alternate reports of the same stock, retaining their maximum quantity and exact keys.
+    /// </summary>
     private static ColonizationInventoryStock[] ReadStock(IEnumerable<KeyValuePair<string, long>> cargo) =>
         cargo
             .GroupBy(item => CommodityKey(item.Key), StringComparer.OrdinalIgnoreCase)

@@ -735,6 +735,9 @@ public sealed partial class RavenColonialClientTests
         Assert.Equal(JsonValueKind.Null, json.RootElement.GetProperty("cargo").ValueKind);
     }
 
+    /// <summary>
+    /// Verifies absolute and relative cargo requests retain their HTTP method, payload, and account key.
+    /// </summary>
     [Theory]
     [InlineData("POST", false)]
     [InlineData("PATCH", true)]
@@ -767,6 +770,9 @@ public sealed partial class RavenColonialClientTests
         Assert.Equal(adjust ? -5 : 75, JsonDocument.Parse(body!).RootElement.GetProperty("steel").GetInt32());
     }
 
+    /// <summary>
+    /// Ensures cleanup payloads preserve exact alias spellings alongside their canonical replacement amount.
+    /// </summary>
     [Fact]
     public async Task CarrierManifestCleanupSendsExactSourceAliasesAlongsideTheCanonicalAmount()
     {
@@ -793,6 +799,9 @@ public sealed partial class RavenColonialClientTests
         Assert.Equal(75, Assert.Single(await client.ReplaceFleetCarrierCargoAsync(42, replacement, "key")).Value);
     }
 
+    /// <summary>
+    /// Prevents case-distinct response keys from being rejected or collapsed before inventory normalization.
+    /// </summary>
     [Fact]
     public async Task CargoResponsesPreserveExactAliasesForLaterSourceAwareWrites()
     {

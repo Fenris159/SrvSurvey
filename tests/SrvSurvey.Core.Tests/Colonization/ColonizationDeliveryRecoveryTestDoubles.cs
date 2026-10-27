@@ -316,6 +316,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                 Requirements = CopyRequirements(item.Requirements),
             };
 
+        /// <summary>
+        /// Clones a pending transaction while retaining the exact Raven baseline keys needed after restart.
+        /// </summary>
         private static ColonizationPendingCargoAdjustment Copy(ColonizationPendingCargoAdjustment item) =>
             item with
             {
@@ -780,6 +783,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         public Task<IReadOnlyDictionary<string, int>>? AdjustmentResponseTask { get; set; }
         public ManualResetEventSlim? EnteredAdjustment { get; set; }
 
+        /// <summary>
+        /// Records exact relative payloads and supplies controlled acknowledgements or failures for recovery tests.
+        /// </summary>
         public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargoChanges,

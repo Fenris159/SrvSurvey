@@ -9,6 +9,7 @@ namespace SrvSurvey.Core.Colonization;
 /// </summary>
 public static class ColonizationFleetCarrierCapiCargoSeeder
 {
+    /// <summary>Totals independent Frontier cargo stacks using stable commodity identifiers when available.</summary>
     public static IReadOnlyDictionary<string, int> CreateCargoTotals(FrontierCarrierSnapshot carrier)
     {
         ArgumentNullException.ThrowIfNull(carrier);
@@ -107,6 +108,7 @@ public static class ColonizationFleetCarrierCapiCargoSeeder
             ?.MarketId;
     }
 
+    /// <summary>Compares positive stock quantities without double counting alternate commodity names.</summary>
     private static Dictionary<string, int> Normalize(IReadOnlyDictionary<string, int>? cargo)
     {
         if (cargo is null || cargo.Count == 0)

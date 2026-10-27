@@ -57,6 +57,9 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return CargoInventoryDiff.InvertForFleetCarrier(shipDiff);
     }
 
+    /// <summary>
+    /// Builds authoritative updates for listed market stock and clears aliases only for those observed goods.
+    /// </summary>
     public static IReadOnlyDictionary<string, int> CreateMarketReplacement(
         MarketSnapshot market,
         ColonizationFleetCarrier carrier
@@ -95,6 +98,9 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return inventory.CreateRavenUpdate(replacement);
     }
 
+    /// <summary>
+    /// Validates the carrier market identity and converts a purchase or sale into its signed stock change.
+    /// </summary>
     private static Dictionary<string, int> CreateMarketAdjustment(
         System.Text.Json.JsonElement root,
         ColonizationDockingSnapshot dock,
@@ -117,6 +123,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { [commodity] = sign * count.Value };
     }
 
+    /// <summary>Combines direction-aware journal transfers under shared commodity identities.</summary>
     private static Dictionary<string, int> CreateTransferAdjustment(System.Text.Json.JsonElement root)
     {
         if (

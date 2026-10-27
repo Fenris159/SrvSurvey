@@ -34,6 +34,9 @@ public sealed class CarrierReadinessPresentationTests
     ];
     private static readonly string[] BuildIds = ["first", "second"];
 
+    /// <summary>
+    /// Renders shared carrier colors, exact bar proportions, wrapping, and theme changes in every report mode.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData("normal", 1180, "monochrome-dark")]
     [InlineData("normal", 1180, "blue-dark")]
@@ -136,6 +139,7 @@ public sealed class CarrierReadinessPresentationTests
         }
     }
 
+    /// <summary>Guards the bar against absent shares, invalid requirements, and excessive claimed coverage.</summary>
     [AvaloniaFact]
     public void EmptyUnknownOrOversizedDataNeverOverflowsTheBar()
     {
@@ -167,6 +171,7 @@ public sealed class CarrierReadinessPresentationTests
         }
     }
 
+    /// <summary>Creates twelve carriers with varied stock and a long label to exercise real legend wrapping.</summary>
     private static ColonizationProjectPreviewData Data()
     {
         ColonizationProjectPreviewData original = ColonizationProjectPreviewViewModelTests.Data();
@@ -197,6 +202,7 @@ public sealed class CarrierReadinessPresentationTests
         };
     }
 
+    /// <summary>Wraps the same stock fixture in a Nexus so report modes can be compared consistently.</summary>
     private static ColonizationNexus Nexus(ColonizationProjectPreviewData data) =>
         new()
         {

@@ -53,6 +53,7 @@ public sealed partial class RavenColonialClient : IRavenColonialCarrierManifestC
         CancellationToken cancellationToken
     ) => PostCarrierManifestAsync(marketId, "refresh", apiKey, cancellationToken);
 
+    /// <summary>Updates a carrier location with the route and query identifiers required by Raven.</summary>
     public Task<ColonizationFleetCarrier> SetFleetCarrierLocationAsync(
         long marketId,
         string systemName,

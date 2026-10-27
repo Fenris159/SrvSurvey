@@ -201,6 +201,9 @@ public sealed partial class ColonizationProjectPreview
         };
     }
 
+    /// <summary>
+    /// Deduplicates report stock with the same identity and maximum-count policy used by editable manifests.
+    /// </summary>
     private static Dictionary<string, int> Normalize(IReadOnlyDictionary<string, int> cargo) =>
         ColonizationCarrierInventory.NormalizeStock(cargo);
 

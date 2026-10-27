@@ -209,6 +209,9 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
         Apply(loaded);
     }
 
+    /// <summary>
+    /// Saves the edited Raven manifest, clearing superseded aliases while respecting profile cancellation.
+    /// </summary>
     public Task SaveAsync() =>
         CanSave
             ? RunAsync(async token =>
@@ -323,6 +326,9 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
         NotifyCarrier();
     }
 
+    /// <summary>
+    /// Builds one editable row per physical commodity and adds independent local comparison quantities.
+    /// </summary>
     private void ReplaceRows(IEnumerable<KeyValuePair<string, int>> cargo)
     {
         rows.Clear();

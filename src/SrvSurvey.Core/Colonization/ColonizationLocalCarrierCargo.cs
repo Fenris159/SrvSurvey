@@ -167,6 +167,9 @@ public sealed class ColonizationLocalCarrierCargo
         return carrier;
     }
 
+    /// <summary>
+    /// Totals separate Frontier cargo stacks by stable commodity identity before applying journal deltas.
+    /// </summary>
     private static Dictionary<string, long> Totals(IEnumerable<FrontierInventorySnapshot> cargo) =>
         cargo
             .Where(item => item.Quantity >= 0 && !string.IsNullOrWhiteSpace(item.CommodityKey ?? item.Name))
@@ -177,6 +180,7 @@ public sealed class ColonizationLocalCarrierCargo
                 StringComparer.OrdinalIgnoreCase
             );
 
+    /// <summary>Resolves local observations to the same commodity identities used by Raven inventory.</summary>
     private static string Key(string commodity) => ColonizationCarrierInventory.CommodityKey(commodity);
 
     /// <summary>Exposes local observations with the same carrier and commodity identities as Raven, retaining their source.</summary>

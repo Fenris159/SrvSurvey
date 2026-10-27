@@ -15,6 +15,9 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DiagnosticsUpdatesPresentationTests
 {
+    /// <summary>
+    /// Exercises real copy and installed-notes controls without an available update at narrow and wide widths.
+    /// </summary>
     [AvaloniaTheory]
     [InlineData(760)]
     [InlineData(1120)]
@@ -79,6 +82,9 @@ public sealed class DiagnosticsUpdatesPresentationTests
         Assert.False(model.ReleaseUpdates.CopySupportDetailsCommand.CanExecute(null));
     }
 
+    /// <summary>
+    /// Delivers actual headless pointer input so command execution and routed handlers run as they do for a user.
+    /// </summary>
     private static void Click(Window window, Control control)
     {
         Point point = control

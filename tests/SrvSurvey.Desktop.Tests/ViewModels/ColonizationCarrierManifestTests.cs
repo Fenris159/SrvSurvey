@@ -191,6 +191,9 @@ public sealed class ColonizationCarrierManifestTests
         Assert.False(reopened.CanRefresh);
     }
 
+    /// <summary>
+    /// Preserves edits for hidden categories through sorting, bulk-text mode, and manifest persistence.
+    /// </summary>
     [Fact]
     public async Task HiddenCargoKeepsEditsAcrossSortingTextModeAndSaving()
     {
@@ -272,6 +275,7 @@ public sealed class ColonizationCarrierManifestTests
         Assert.Equal(7, client.SentCargo!["platinum"]);
     }
 
+    /// <summary>Keeps alias stock singular when an edited manifest moves through bulk-text mode and back.</summary>
     [Fact]
     public async Task TextModeRoundTripConsolidatesLegacyKeysWithoutAddingTheirAmounts()
     {
@@ -298,6 +302,9 @@ public sealed class ColonizationCarrierManifestTests
         Assert.Equal(60, client.SentCargo["microcontrollers"]);
     }
 
+    /// <summary>
+    /// Covers the reported duplicate commodities, local comparisons, removals, and exact-case save results.
+    /// </summary>
     [Fact]
     public async Task ManifestAliasesHaveOneEditableRowAndSavingClearsTheOldAliases()
     {

@@ -13,6 +13,9 @@ public static class ColonizationFleetCarrierPendingCargo
         return cargo is null || cargo.Count == 0 || !cargo.Values.Any(quantity => quantity > 0);
     }
 
+    /// <summary>
+    /// Adds individual transaction deltas under shared keys, removing cancellations and rejecting count overflow.
+    /// </summary>
     public static void MergeDelta(IDictionary<string, int> pending, IReadOnlyDictionary<string, int> delta)
     {
         ArgumentNullException.ThrowIfNull(pending);
