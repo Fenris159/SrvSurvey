@@ -2305,8 +2305,20 @@
       "translation": "Jedes Oberflächenmaterial"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "App-Architektur: {0}"
+    },
+    {
       "source": "App info not found",
       "translation": "App-Informationen nicht gefunden"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "App-Version und Systemdetails in die Zwischenablage kopiert."
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "App-Version und Systemdetails konnten nicht kopiert werden: {0}"
     },
     {
       "source": "AppImage manual update",
@@ -2999,6 +3011,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Verfolgen Sie Rigs automatisch über das Rhino HUD"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "Verfügbare Versionshinweise"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -7349,6 +7365,10 @@
       "translation": "Koordinaten kopieren"
     },
     {
+      "source": "Copy details",
+      "translation": "Details kopieren"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "Eintrags-ID kopieren"
     },
@@ -7359,6 +7379,10 @@
     {
       "source": "Copy handler",
       "translation": "Kopierhandler"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "Kopieren Sie die installierten Versions- und Systemdetails für einen Fehlerbericht"
     },
     {
       "source": "Copy journal path",
@@ -9443,6 +9467,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "Jeder Stapel identifiziert die Anwendung als SrvSurvey-XP und enthält ihre Version und das Odyssey-Flag der erfassten Sitzung. Dieses Protokoll verwendet keinen persönlichen API-Schlüssel oder Login. Die Kennungen und Standorte des Mobilfunkanbieters können Aufschluss über die Aktivitäten Ihres Mobilfunkanbieters geben."
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "Der in diesem Bericht noch benötigte Frachtanteil jedes Transportunternehmens. Überladung ist ausgeschlossen."
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -14361,6 +14389,10 @@
       "translation": "Installiert"
     },
     {
+      "source": "Installed release notes",
+      "translation": "Installierte Versionshinweise"
+    },
+    {
       "source": "Instructions",
       "translation": "Anweisungen"
     },
@@ -18989,6 +19021,14 @@
       "translation": "OPTIONALE DATENAUSTAUSCH"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "Betriebssystemarchitektur: {0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "Betriebssystem: {0}"
+    },
+    {
       "source": "OTHER",
       "translation": "ANDERE"
     },
@@ -23545,6 +23585,10 @@
       "translation": "Relais-Hub"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "Veröffentlichungskanal: {0}"
+    },
+    {
       "source": "Release notes",
       "translation": "Versionshinweise"
     },
@@ -24827,6 +24871,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "Führen Sie zunächst eine Spansh Orientierungspunktsuche durch."
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "Laufzeit: {0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -28353,6 +28401,10 @@
       "translation": "SrvSurvey-XP {0} ist aktuell auf dem Kanal {1}."
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP: {0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-layout-validation-{0}"
     },
@@ -30963,6 +31015,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "Sowohl der Installationsvorgang als auch die Kandidatenbereinigung sind fehlgeschlagen."
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "Die installierten Versionshinweise fehlen in diesem Build."
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -42423,8 +42479,20 @@
       "translation": "Cualquier material de superficie"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "Arquitectura de la aplicación: {0}"
+    },
+    {
       "source": "App info not found",
       "translation": "Información de la aplicación no encontrada"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "Versión de la aplicación y detalles del sistema copiados al portapapeles."
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "No se pudieron copiar la versión de la aplicación y los detalles del sistema: {0}"
     },
     {
       "source": "AppImage manual update",
@@ -43117,6 +43185,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Seguimiento automático de equipos desde Rhino HUD"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "Notas de la versión disponibles"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -47467,6 +47539,10 @@
       "translation": "Copiar coordenadas"
     },
     {
+      "source": "Copy details",
+      "translation": "Copiar detalles"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "Copiar ID de entrada"
     },
@@ -47477,6 +47553,10 @@
     {
       "source": "Copy handler",
       "translation": "Controlador de copia"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "Copie la versión instalada y los detalles del sistema para obtener un informe de error"
     },
     {
       "source": "Copy journal path",
@@ -49561,6 +49641,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "Cada lote identifica la aplicación como SrvSurvey-XP e incluye su versión y el indicador Odyssey de la sesión capturada. Este protocolo no utiliza ninguna clave API personal ni inicio de sesión. Los identificadores y ubicaciones del operador pueden revelar la actividad de su operador."
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "La proporción de carga de cada transportista que aún se necesita en este informe. Se excluye la carga excedente."
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -54479,6 +54563,10 @@
       "translation": "Instalado"
     },
     {
+      "source": "Installed release notes",
+      "translation": "Notas de la versión instalada"
+    },
+    {
       "source": "Instructions",
       "translation": "Instrucciones"
     },
@@ -59107,6 +59195,14 @@
       "translation": "COMPARTIR DATOS OPCIONAL"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "Arquitectura del sistema operativo: {0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "SO: {0}"
+    },
+    {
       "source": "OTHER",
       "translation": "OTRO"
     },
@@ -63663,6 +63759,10 @@
       "translation": "Centro de retransmisión"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "Canal de lanzamiento: {0}"
+    },
+    {
       "source": "Release notes",
       "translation": "Notas de la versión"
     },
@@ -64945,6 +65045,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "Primero ejecute una búsqueda de puntos de referencia Spansh."
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "Tiempo de ejecución: {0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -68471,6 +68575,10 @@
       "translation": "SrvSurvey-XP {0} está vigente en el canal {1}."
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP: {0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-validación-de-diseño-{0}"
     },
@@ -71081,6 +71189,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "Tanto la operación de instalación como la limpieza del candidato fallaron."
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "Faltan las notas de la versión instaladas en esta compilación."
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -82541,8 +82653,20 @@
       "translation": "Tout matériau de surface"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "Architecture de l'application : {0}"
+    },
+    {
       "source": "App info not found",
       "translation": "Informations sur l'application introuvables"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "Version de l'application et détails du système copiés dans le presse-papiers."
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "La version de l'application et les détails du système n'ont pas pu être copiés : {0}"
     },
     {
       "source": "AppImage manual update",
@@ -83235,6 +83359,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Suivez automatiquement les plates-formes depuis le Rhino HUD"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "Notes de version disponibles"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -87585,6 +87713,10 @@
       "translation": "Copier les coordonnées"
     },
     {
+      "source": "Copy details",
+      "translation": "Copier les détails"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "Copier l'ID de l'entrée"
     },
@@ -87595,6 +87727,10 @@
     {
       "source": "Copy handler",
       "translation": "Gestionnaire de copie"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "Copiez la version installée et les détails du système pour un rapport de bug"
     },
     {
       "source": "Copy journal path",
@@ -89679,6 +89815,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "Chaque lot identifie l'application comme SrvSurvey-XP et inclut sa version ainsi que l'indicateur Odyssey de la session capturée. Ce protocole n'utilise aucune clé API personnelle ni connexion. Les identifiants et emplacements du transporteur peuvent révéler l'activité de votre transporteur."
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "La part du fret de chaque transporteur est encore nécessaire à ce rapport. Les marchandises excédentaires sont exclues."
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -94597,6 +94737,10 @@
       "translation": "Installé"
     },
     {
+      "source": "Installed release notes",
+      "translation": "Notes de version installées"
+    },
+    {
       "source": "Instructions",
       "translation": "Instructions"
     },
@@ -99225,6 +99369,14 @@
       "translation": "PARTAGE DE DONNÉES OPTIONNEL"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "Architecture du système d'exploitation : {0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "Système d'exploitation : {0}"
+    },
+    {
       "source": "OTHER",
       "translation": "AUTRE"
     },
@@ -103781,6 +103933,10 @@
       "translation": "Centre de relais"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "Canal de sortie : {0}"
+    },
+    {
       "source": "Release notes",
       "translation": "Notes de version"
     },
@@ -105063,6 +105219,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "Exécutez d'abord une recherche de point de repère Spansh."
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "Durée d'exécution : {0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -108589,6 +108749,10 @@
       "translation": "SrvSurvey-XP {0} est actuel sur le canal {1}."
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP : {0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-mise en page-validation-{0}"
     },
@@ -111199,6 +111363,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "L’opération d’installation et le nettoyage du candidat ont tous deux échoué."
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "Les notes de version installées sont absentes de cette version."
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -122659,8 +122827,20 @@
       "translation": "Qualquer material de superfície"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "Arquitetura do aplicativo: {0}"
+    },
+    {
       "source": "App info not found",
       "translation": "Informações do aplicativo não encontradas"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "Versão do aplicativo e detalhes do sistema copiados para a área de transferência."
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "Não foi possível copiar a versão do aplicativo e os detalhes do sistema: {0}"
     },
     {
       "source": "AppImage manual update",
@@ -123353,6 +123533,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Rastreie automaticamente as plataformas do Rhino HUD"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "Notas de lançamento disponíveis"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -127703,6 +127887,10 @@
       "translation": "Copiar coordenadas"
     },
     {
+      "source": "Copy details",
+      "translation": "Copiar detalhes"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "Copiar ID de entrada"
     },
@@ -127713,6 +127901,10 @@
     {
       "source": "Copy handler",
       "translation": "Manipulador de cópias"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "Copie a versão instalada e os detalhes do sistema para um relatório de bug"
     },
     {
       "source": "Copy journal path",
@@ -129797,6 +129989,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "Cada lote identifica o aplicativo como SrvSurvey-XP e inclui sua versão e o sinalizador Odyssey da sessão capturada. Este protocolo não usa chave de API pessoal ou login. Os identificadores e locais da operadora podem revelar a atividade da sua operadora."
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "A parcela de carga de cada transportadora ainda necessária para este relatório. A carga excedente está excluída."
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -134715,6 +134911,10 @@
       "translation": "Instalado"
     },
     {
+      "source": "Installed release notes",
+      "translation": "Notas de versão instaladas"
+    },
+    {
       "source": "Instructions",
       "translation": "Instruções"
     },
@@ -139343,6 +139543,14 @@
       "translation": "COMPARTILHAMENTO DE DADOS OPCIONAL"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "Arquitetura do sistema operacional: {0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "SO: {0}"
+    },
+    {
       "source": "OTHER",
       "translation": "OUTRO"
     },
@@ -143899,6 +144107,10 @@
       "translation": "Centro de retransmissão"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "Canal de lançamento: {0}"
+    },
+    {
       "source": "Release notes",
       "translation": "Notas de lançamento"
     },
@@ -145181,6 +145393,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "Execute primeiro uma pesquisa de ponto de referência Spansh."
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "Tempo de execução: {0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -148707,6 +148923,10 @@
       "translation": "SrvSurvey-XP {0} está atual no canal {1}."
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP: {0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-validação de layout-{0}"
     },
@@ -151317,6 +151537,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "A operação de instalação e a limpeza do candidato falharam."
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "As notas de versão instaladas estão faltando nesta compilação."
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -162777,8 +163001,20 @@
       "translation": "Любой материал поверхности"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "Архитектура приложения: {0}."
+    },
+    {
       "source": "App info not found",
       "translation": "Информация о приложении не найдена"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "Версия приложения и сведения о системе скопированы в буфер обмена."
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "Не удалось скопировать версию приложения и сведения о системе: {0}."
     },
     {
       "source": "AppImage manual update",
@@ -163471,6 +163707,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "Автоматически отслеживайте буровые установки из Rhino HUD"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "Доступные примечания к выпуску"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -167821,6 +168061,10 @@
       "translation": "Копировать координаты"
     },
     {
+      "source": "Copy details",
+      "translation": "Копировать детали"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "Скопировать идентификатор записи"
     },
@@ -167831,6 +168075,10 @@
     {
       "source": "Copy handler",
       "translation": "Обработчик копирования"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "Скопируйте установленную версию и сведения о системе для отчета об ошибке."
     },
     {
       "source": "Copy journal path",
@@ -169915,6 +170163,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "Каждый пакет идентифицирует приложение как SrvSurvey-XP и включает его версию и флаг Odyssey захваченного сеанса. Этот протокол не использует личный ключ API или логин. Идентификаторы и местоположения операторов связи могут раскрыть деятельность вашего оператора связи."
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "Доля груза каждого перевозчика, которая все еще необходима согласно этому отчету. Избыточный груз исключен."
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -174833,6 +175085,10 @@
       "translation": "Установлено"
     },
     {
+      "source": "Installed release notes",
+      "translation": "Установленные примечания к выпуску"
+    },
+    {
       "source": "Instructions",
       "translation": "Инструкции"
     },
@@ -179461,6 +179717,14 @@
       "translation": "ДОПОЛНИТЕЛЬНЫЙ ОБМЕН ДАННЫМИ"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "Архитектура ОС: {0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "ОС: {0}"
+    },
+    {
       "source": "OTHER",
       "translation": "ДРУГОЕ"
     },
@@ -184017,6 +184281,10 @@
       "translation": "Релейный концентратор"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "Канал выпуска: {0}"
+    },
+    {
       "source": "Release notes",
       "translation": "Примечания к выпуску"
     },
@@ -185299,6 +185567,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "Сначала запустите поиск ориентира Spansh."
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "Время выполнения: {0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -188825,6 +189097,10 @@
       "translation": "SrvSurvey-XP {0} текущий на канале {1}."
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP: {0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-layout-validation-{0}"
     },
@@ -191435,6 +191711,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "Операция установки и очистка кандидатов завершились неудачно."
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "В этой сборке отсутствуют установленные примечания к выпуску."
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -202895,8 +203175,20 @@
       "translation": "任何表面材质"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "应用架构：{0}"
+    },
+    {
       "source": "App info not found",
       "translation": "找不到应用程序信息"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "应用程序版本和系统详细信息已复制到剪贴板。"
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "无法复制应用程序版本和系统详细信息：{0}"
     },
     {
       "source": "AppImage manual update",
@@ -203589,6 +203881,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "从 Rhino HUD 自动跟踪装备"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "可用的发行说明"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -207939,6 +208235,10 @@
       "translation": "复制坐标"
     },
     {
+      "source": "Copy details",
+      "translation": "复制详细信息"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "复制条目 ID"
     },
@@ -207949,6 +208249,10 @@
     {
       "source": "Copy handler",
       "translation": "复制处理程序"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "复制已安装的版本和系统详细信息以获取错误报告"
     },
     {
       "source": "Copy journal path",
@@ -210033,6 +210337,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "每个批次将应用程序标识为 SrvSurvey-XP，并包括其版本和捕获的会话的 Odyssey 标志。该协议不使用个人 API 密钥或登录。运营商标识符和位置可以揭示您的运营商的活动。"
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "本报告仍需要各承运商的货物份额。剩余货物不包括在内。"
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -214951,6 +215259,10 @@
       "translation": "已安装"
     },
     {
+      "source": "Installed release notes",
+      "translation": "已安装的发行说明"
+    },
+    {
       "source": "Instructions",
       "translation": "指示"
     },
@@ -219579,6 +219891,14 @@
       "translation": "可选的数据共享"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "操作系统架构：{0}"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "操作系统：{0}"
+    },
+    {
       "source": "OTHER",
       "translation": "其他"
     },
@@ -224135,6 +224455,10 @@
       "translation": "中继集线器"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "发布通道：{0}"
+    },
+    {
       "source": "Release notes",
       "translation": "发行说明"
     },
@@ -225417,6 +225741,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "首先运行 Spansh 地标搜索。"
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "运行时：{0}"
     },
     {
       "source": "RuntimeProcessName",
@@ -228943,6 +229271,10 @@
       "translation": "SrvSurvey-XP {0} 当前在 {1} 通道上。"
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "SrvSurvey-XP：{0}"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "SrvSurvey-布局验证-{0}"
     },
@@ -231553,6 +231885,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "安装操作和候选清理均失败。"
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "此版本中缺少已安装的发行说明。"
     },
     {
       "source": "The joined stream overlay could not update: {0}",
@@ -243013,8 +243349,20 @@
       "translation": "* ANY SURFACE MATERIAL >>>!"
     },
     {
+      "source": "App architecture: {0}",
+      "translation": "* APP ARCHITECTURE: {0} >>>!"
+    },
+    {
       "source": "App info not found",
       "translation": "* APP INFO NOT FOUND >>>!"
+    },
+    {
+      "source": "App version and system details copied to the clipboard.",
+      "translation": "* APP VERSION AND SYSTEM DETAILS COPIED TO THE CLIPBOARD. >>>!"
+    },
+    {
+      "source": "App version and system details could not be copied: {0}",
+      "translation": "* APP VERSION AND SYSTEM DETAILS COULD NOT BE COPIED: {0} >>>!"
     },
     {
       "source": "AppImage manual update",
@@ -243707,6 +244055,10 @@
     {
       "source": "Automatically track rigs from the Rhino HUD",
       "translation": "* AUTOMATICALLY TRACK RIGS FROM THE RHINO HUD >>>!"
+    },
+    {
+      "source": "Available release notes",
+      "translation": "* AVAILABLE RELEASE NOTES >>>!"
     },
     {
       "source": "Available when the first and last waypoints are the same system.",
@@ -248057,6 +248409,10 @@
       "translation": "* COPY COORDINATES >>>!"
     },
     {
+      "source": "Copy details",
+      "translation": "* COPY DETAILS >>>!"
+    },
+    {
       "source": "Copy entry ID",
       "translation": "* COPY ENTRY ID >>>!"
     },
@@ -248067,6 +248423,10 @@
     {
       "source": "Copy handler",
       "translation": "* COPY HANDLER >>>!"
+    },
+    {
+      "source": "Copy installed version and system details for a bug report",
+      "translation": "* COPY INSTALLED VERSION AND SYSTEM DETAILS FOR A BUG REPORT >>>!"
     },
     {
       "source": "Copy journal path",
@@ -250151,6 +250511,10 @@
     {
       "source": "Each batch identifies the application as SrvSurvey-XP and includes its version and the captured session's Odyssey flag. This protocol uses no personal API key or login. Carrier identifiers and locations can reveal your carrier's activity.",
       "translation": "* EACH BATCH IDENTIFIES THE APPLICATION AS SRVSURVEY-XP AND INCLUDES ITS VERSION AND THE CAPTURED SESSION'S ODYSSEY FLAG. THIS PROTOCOL USES NO PERSONAL API KEY OR LOGIN. CARRIER IDENTIFIERS AND LOCATIONS CAN REVEAL YOUR CARRIER'S ACTIVITY. >>>!"
+    },
+    {
+      "source": "Each carrier's share of cargo still needed by this report. Surplus cargo is excluded.",
+      "translation": "* EACH CARRIER'S SHARE OF CARGO STILL NEEDED BY THIS REPORT. SURPLUS CARGO IS EXCLUDED. >>>!"
     },
     {
       "source": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -255069,6 +255433,10 @@
       "translation": "* INSTALLED >>>!"
     },
     {
+      "source": "Installed release notes",
+      "translation": "* INSTALLED RELEASE NOTES >>>!"
+    },
+    {
       "source": "Instructions",
       "translation": "* INSTRUCTIONS >>>!"
     },
@@ -259697,6 +260065,14 @@
       "translation": "* OPTIONAL DATA SHARING >>>!"
     },
     {
+      "source": "OS architecture: {0}",
+      "translation": "* OS ARCHITECTURE: {0} >>>!"
+    },
+    {
+      "source": "OS: {0}",
+      "translation": "* OS: {0} >>>!"
+    },
+    {
       "source": "OTHER",
       "translation": "* OTHER >>>!"
     },
@@ -264253,6 +264629,10 @@
       "translation": "* RELAY HUB >>>!"
     },
     {
+      "source": "Release channel: {0}",
+      "translation": "* RELEASE CHANNEL: {0} >>>!"
+    },
+    {
       "source": "Release notes",
       "translation": "* RELEASE NOTES >>>!"
     },
@@ -265535,6 +265915,10 @@
     {
       "source": "Run a Spansh landmark search first.",
       "translation": "* RUN A SPANSH LANDMARK SEARCH FIRST. >>>!"
+    },
+    {
+      "source": "Runtime: {0}",
+      "translation": "* RUNTIME: {0} >>>!"
     },
     {
       "source": "RuntimeProcessName",
@@ -269061,6 +269445,10 @@
       "translation": "* SRVSURVEY-XP {0} IS CURRENT ON THE {1} CHANNEL. >>>!"
     },
     {
+      "source": "SrvSurvey-XP: {0}",
+      "translation": "* SRVSURVEY-XP: {0} >>>!"
+    },
+    {
       "source": "SrvSurvey-layout-validation-{0}",
       "translation": "* SRVSURVEY-LAYOUT-VALIDATION-{0} >>>!"
     },
@@ -271671,6 +272059,10 @@
     {
       "source": "The installation operation and candidate cleanup both failed.",
       "translation": "* THE INSTALLATION OPERATION AND CANDIDATE CLEANUP BOTH FAILED. >>>!"
+    },
+    {
+      "source": "The installed release notes are missing from this build.",
+      "translation": "* THE INSTALLED RELEASE NOTES ARE MISSING FROM THIS BUILD. >>>!"
     },
     {
       "source": "The joined stream overlay could not update: {0}",

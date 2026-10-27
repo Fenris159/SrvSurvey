@@ -356,6 +356,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
     private void ApplySnapshot(ColonizationProjectPreview snapshot)
     {
         shipCapacity = Math.Max(0, currentShipCapacity());
+        ApplyCarrierReadiness(snapshot);
         CarrierHeaders = snapshot.Carriers.Select(carrier => carrier.Name).ToArray();
         Details = snapshot.IsCombined
             ? ColonizationProjectCsvExporter
@@ -452,6 +453,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         EffectGroups = [];
         Rows = [];
         CarrierHeaders = [];
+        ReadyCarriers = [];
         DeliveryHistory = [];
     }
 

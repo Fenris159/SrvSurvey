@@ -763,8 +763,53 @@ public sealed partial class RavenColonialClientTests
                 "secret-key"
             );
 
-        Assert.Equal(80, result["STEEL"]);
+        Assert.Equal(80, result["steel"]);
         Assert.Equal(adjust ? -5 : 75, JsonDocument.Parse(body!).RootElement.GetProperty("steel").GetInt32());
+    }
+
+    [Fact]
+    public async Task CarrierManifestCleanupSendsExactSourceAliasesAlongsideTheCanonicalAmount()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Cargo = new() { ["liquid oxygen"] = 80, ["LIQUIDOXYGEN"] = 60 },
+        };
+        Dictionary<string, int> replacement = ColonizationCarrierInventory
+            .FromRaven(carrier)
+            .CreateRavenReplacement(new Dictionary<string, int> { ["liquidoxygen"] = 75 });
+        RavenColonialClient client = Create(
+            new StubHandler(async request =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/root/api/fc/42/cargo", request.RequestUri!.AbsolutePath);
+                using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync());
+                Assert.Equal(0, body.RootElement.GetProperty("liquid oxygen").GetInt32());
+                Assert.Equal(0, body.RootElement.GetProperty("LIQUIDOXYGEN").GetInt32());
+                Assert.Equal(75, body.RootElement.GetProperty("liquidoxygen").GetInt32());
+                return Json("""{"liquidoxygen":75}""");
+            })
+        );
+        Assert.Equal(75, Assert.Single(await client.ReplaceFleetCarrierCargoAsync(42, replacement, "key")).Value);
+    }
+
+    [Fact]
+    public async Task CargoResponsesPreserveExactAliasesForLaterSourceAwareWrites()
+    {
+        RavenColonialClient client = Create(
+            new StubHandler(_ => Json("""{"liquidoxygen":75,"LIQUIDOXYGEN":60,"steel":10}"""))
+        );
+
+        IReadOnlyDictionary<string, int> response = await client.AdjustFleetCarrierCargoAsync(
+            42,
+            new Dictionary<string, int> { ["steel"] = 1 },
+            "key"
+        );
+
+        Assert.Equal(3, response.Count);
+        Assert.Equal(75, response["liquidoxygen"]);
+        Assert.Equal(60, response["LIQUIDOXYGEN"]);
+        Assert.Equal(75, ColonizationCarrierInventory.NormalizeStock(response)["liquidoxygen"]);
     }
 
     [Fact]

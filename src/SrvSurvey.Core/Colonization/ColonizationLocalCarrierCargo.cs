@@ -169,23 +169,28 @@ public sealed class ColonizationLocalCarrierCargo
 
     private static Dictionary<string, long> Totals(IEnumerable<FrontierInventorySnapshot> cargo) =>
         cargo
-            .Where(item => item.Quantity >= 0 && !string.IsNullOrWhiteSpace(item.Name))
-            .GroupBy(item => Key(item.Name), StringComparer.OrdinalIgnoreCase)
+            .Where(item => item.Quantity >= 0 && !string.IsNullOrWhiteSpace(item.CommodityKey ?? item.Name))
+            .GroupBy(item => Key(item.CommodityKey ?? item.Name), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 group => group.Key,
                 group => group.Sum(item => (long)item.Quantity),
                 StringComparer.OrdinalIgnoreCase
             );
 
-    private static string Key(string commodity) =>
-        ColonizationManifestCommodity
-            .ForKey(ColonizationMarketCommodities.Key(ColonizationConstructionState.NormalizeCommodityName(commodity)))
-            .Key;
+    private static string Key(string commodity) => ColonizationCarrierInventory.CommodityKey(commodity);
+
+    /// <summary>Exposes local observations with the same carrier and commodity identities as Raven, retaining their source.</summary>
+    public ColonizationCarrierInventory? GetInventory(ColonizationFleetCarrier carrier) =>
+        Find(carrier.MarketId, carrier.Name) is { } local
+            ? ColonizationCarrierInventory.FromLocal(
+                carrier,
+                local.Current.Where(item => item.Value >= 0 && local.GetBaselineTimestamp(item.Key).HasValue)
+            )
+            : null;
 
     /// <summary>Lists local inventory identities without treating an unknown baseline as a zero count.</summary>
     public IReadOnlyList<string> GetCommodities(ColonizationFleetCarrier carrier) =>
-        Find(carrier.MarketId, carrier.Name)?.Current.Where(item => item.Value > 0).Select(item => item.Key).ToArray()
-        ?? [];
+        GetInventory(carrier)?.Stock.Where(item => item.Quantity > 0).Select(item => item.Commodity).ToArray() ?? [];
 
     private sealed record CargoDelta(
         string Identity,

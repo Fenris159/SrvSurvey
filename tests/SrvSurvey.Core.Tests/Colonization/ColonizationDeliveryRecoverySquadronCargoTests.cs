@@ -5,6 +5,30 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed partial class ColonizationDeliveryRecoveryTests
 {
+    [Fact]
+    public async Task ConfirmedCargoWriteIsNotReplayedWhenRavenChangesTheCommodityAlias()
+    {
+        RecordingRavenClient client = CarrierClient(80, "SQD-001");
+        client.FleetCarrierResponse = client.FleetCarrierResponse! with { Cargo = new() { ["liquidoxygen"] = 75 } };
+        store.SavePendingCargoAdjustments([
+            new(
+                "Test Cmdr|F123|True",
+                42,
+                new() { ["liquidoxygen"] = -5 },
+                now.AddSeconds(-10),
+                new() { ["liquid oxygen"] = 80 },
+                Attempted: true,
+                OutcomeUnknown: true
+            ),
+        ]);
+        ColonizationDeliveryRecovery recovery = SquadronRecovery(client);
+        recovery.ApplyJournalEvents([Event("Undocked", "")], null);
+        await recovery.RetryPendingWritesAsync();
+        Assert.Empty(client.FleetCarrierAdjustments);
+        Assert.Empty(store.LoadPendingCargoAdjustments());
+        Assert.Equal(75, Assert.Single(recovery.FleetCarriers).Cargo["liquidoxygen"]);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

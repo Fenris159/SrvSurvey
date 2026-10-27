@@ -75,6 +75,7 @@ public sealed class RavenColonialCarrierManifestTests
                     location ? "/api/fc/42/location/Alpha%20Centauri" : "/api/fc/42/refresh",
                     request.RequestUri!.AbsolutePath
                 );
+                Assert.Equal(location ? "?marketIdOrName=42" : string.Empty, request.RequestUri.Query);
                 return Json(CarrierJson);
             })
         );

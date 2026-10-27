@@ -8,6 +8,23 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationLocalCarrierCargoTests
 {
     [Fact]
+    public void LocalObservationsShareRavenIdentityWithoutUsingItsCountsOrChangingItsSource()
+    {
+        var local = new ColonizationLocalCarrierCargo();
+        Assert.Null(local.GetInventory(RavenCarrier));
+        local.Observe(Carrier(42, new FrontierInventorySnapshot("Cargo", "Liquid oxygen", 75, 0)), At(10));
+        ColonizationCarrierInventory inventory = Assert.IsType<ColonizationCarrierInventory>(
+            local.GetInventory(RavenCarrier)
+        );
+        ColonizationInventoryStock stock = Assert.Single(inventory.Stock);
+        Assert.Equal(RavenCarrier.MarketId, inventory.MarketId);
+        Assert.Equal(ColonizationInventorySource.Local, inventory.Source);
+        Assert.Equal("liquidoxygen", stock.Commodity);
+        Assert.Equal(75, stock.Quantity);
+        Assert.Equal(75, local.GetQuantity(RavenCarrier, "$LiquidOxygen_Name;"));
+    }
+
+    [Fact]
     public void PartialAndDelayedMarketsCannotRestoreSupersededCommodityCounts()
     {
         var local = new ColonizationLocalCarrierCargo();

@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
+public sealed partial class ReleaseUpdateViewModel : INotifyPropertyChanged
 {
     private readonly IReleaseUpdateService service;
     private readonly ReleaseVersion currentVersion;
@@ -62,6 +62,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             OpenUpdateDiagnosticsAsync,
             () => ShouldShowUpdateNotification && diagnosticsNavigator is not null
         );
+        copySupportDetailsCommand = new AsyncCommand(CopySupportDetailsAsync, () => clipboardWriter is not null);
         CheckCommand = checkCommand;
         OpenReleaseCommand = openReleaseCommand;
         InstallCommand = installCommand;

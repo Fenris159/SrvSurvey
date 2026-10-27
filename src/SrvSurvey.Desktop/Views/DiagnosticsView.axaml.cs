@@ -35,6 +35,7 @@ public sealed partial class DiagnosticsView : UserControl
                 connectedViewModel.SetPlatformServices(WriteClipboardAsync, LaunchDirectoryAsync);
                 connectedInspector.SetClipboardWriter(WriteClipboardAsync);
                 connectedReleaseUpdates.SetUriLauncher(LaunchUriAsync);
+                connectedReleaseUpdates.SetClipboardWriter(WriteClipboardAsync);
             }
         }
     }
@@ -44,6 +45,7 @@ public sealed partial class DiagnosticsView : UserControl
         connectedViewModel?.SetPlatformServices(null, null);
         connectedInspector?.SetClipboardWriter(null);
         connectedReleaseUpdates?.SetUriLauncher(null);
+        connectedReleaseUpdates?.SetClipboardWriter(null);
         connectedViewModel = null;
         connectedInspector = null;
         connectedReleaseUpdates = null;
@@ -90,6 +92,18 @@ public sealed partial class DiagnosticsView : UserControl
             viewModel.ReleaseUpdates.ReleaseNotes
         );
         await dialog.ShowDialog(owner);
+    }
+
+    private async void InstalledReleaseNotes_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel && TopLevel.GetTopLevel(this) is Window owner)
+        {
+            var dialog = new ReleaseNotesDialog(
+                $"SrvSurvey-XP {viewModel.ReleaseUpdates.CurrentVersion}",
+                ReleaseUpdateViewModel.InstalledReleaseNotes
+            );
+            await dialog.ShowDialog(owner);
+        }
     }
 
     private async void ChooseVisitedStarsCache_Click(object? sender, RoutedEventArgs eventArgs)

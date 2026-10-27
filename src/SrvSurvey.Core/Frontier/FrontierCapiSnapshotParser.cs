@@ -661,14 +661,20 @@ public static partial class FrontierCapiSnapshotParser
                 ),
                 GetInt32(item, "qty") ?? 1,
                 GetInt64(item, JsonValue) ?? 0
-            ))
-            .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            )
+            {
+                CommodityKey = GetString(item, "commodity") is { Length: > 0 } commodity ? commodity : null,
+            })
+            .GroupBy(item => item.CommodityKey ?? item.Name, StringComparer.OrdinalIgnoreCase)
             .Select(group => new FrontierInventorySnapshot(
                 "Cargo",
                 group.First().Name,
                 group.Sum(item => item.Quantity),
                 group.Sum(item => item.Value)
-            ))
+            )
+            {
+                CommodityKey = group.First().CommodityKey,
+            })
             .OrderByDescending(item => item.Quantity)
             .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();

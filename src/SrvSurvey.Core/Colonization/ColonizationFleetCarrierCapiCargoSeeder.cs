@@ -15,7 +15,7 @@ public static class ColonizationFleetCarrierCapiCargoSeeder
         var totals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (FrontierInventorySnapshot item in carrier.Cargo)
         {
-            string commodity = ColonizationConstructionState.NormalizeCommodityName(item.Name);
+            string commodity = ColonizationCarrierInventory.CommodityKey(item.CommodityKey ?? item.Name);
             if (commodity.Length == 0 || item.Quantity <= 0)
             {
                 continue;
@@ -114,19 +114,9 @@ public static class ColonizationFleetCarrierCapiCargoSeeder
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var normalized = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (KeyValuePair<string, int> pair in cargo)
-        {
-            string commodity = ColonizationConstructionState.NormalizeCommodityName(pair.Key);
-            if (commodity.Length == 0 || pair.Value <= 0)
-            {
-                continue;
-            }
-
-            normalized.TryGetValue(commodity, out int current);
-            normalized[commodity] = current + pair.Value;
-        }
-
-        return normalized;
+        return ColonizationCarrierInventory
+            .NormalizeStock(cargo)
+            .Where(pair => pair.Value > 0)
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
     }
 }

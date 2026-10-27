@@ -93,7 +93,7 @@ public sealed record ColonizationNexusPlan(
 
     private static IEnumerable<ColonizationShoppingNeed> NormalizeNeeds(Dictionary<string, long>? needs) =>
         (needs ?? [])
-            .GroupBy(pair => ColonizationMarketCommodities.Key(pair.Key), StringComparer.Ordinal)
+            .GroupBy(pair => ColonizationCarrierInventory.CommodityKey(pair.Key), StringComparer.Ordinal)
             .Where(group => group.Key.Length > 0)
             .Select(group => new ColonizationShoppingNeed(
                 group.Key,

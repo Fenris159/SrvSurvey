@@ -199,6 +199,13 @@ sections so they do not become additional change bullets. The publishing
 workflow uses these checked-in notes for both new and repaired releases;
 automatically generated commit lists are disabled.
 
+The desktop build also embeds `CurrentReleaseNotes.md`. **Diagnostics > Updates >
+Installed release notes** opens that installed copy without an update check or
+network connection. **Available release notes** continues to show the newer
+release returned by an update check. **Copy details**, beside the installed
+version, copies the app version, selected release channel, OS description,
+OS/app architectures, and .NET runtime for bug reports.
+
 ## Regression contract
 
 - Journal coverage is a checked-in 74-event inventory. Each event needs a

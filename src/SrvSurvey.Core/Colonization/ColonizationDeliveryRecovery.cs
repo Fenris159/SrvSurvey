@@ -575,7 +575,7 @@ public sealed partial class ColonizationDeliveryRecovery
     }
 
     private static Dictionary<string, int> CopyCargo(IEnumerable<KeyValuePair<string, int>> cargo) =>
-        cargo.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        cargo.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
 
     private static string? GetJournalString(JsonElement root, string propertyName)
     {

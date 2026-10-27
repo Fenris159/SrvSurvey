@@ -19,7 +19,7 @@ public static class ColonizationFleetCarrierPendingCargo
         ArgumentNullException.ThrowIfNull(delta);
         foreach (KeyValuePair<string, int> pair in delta)
         {
-            string commodity = ColonizationConstructionState.NormalizeCommodityName(pair.Key);
+            string commodity = ColonizationCarrierInventory.CommodityKey(pair.Key);
             if (commodity.Length == 0 || pair.Value == 0)
             {
                 continue;

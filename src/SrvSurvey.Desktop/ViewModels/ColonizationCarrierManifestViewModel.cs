@@ -214,11 +214,9 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
             ? RunAsync(async token =>
             {
                 ColonizationFleetCarrier original = carrier!;
-                var cargo = original.Cargo.Keys.ToDictionary(key => key, _ => 0, StringComparer.OrdinalIgnoreCase);
-                foreach (CarrierManifestRowViewModel row in rows)
-                {
-                    cargo[row.Key] = row.Amount;
-                }
+                Dictionary<string, int> cargo = ColonizationCarrierInventory
+                    .FromRaven(original)
+                    .CreateRavenReplacement(rows.Select(row => new KeyValuePair<string, int>(row.Key, row.Amount)));
                 string location = SystemName.Trim();
                 if (location.Length > 0 && !location.Equals(original.SystemName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -239,7 +237,7 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
                 {
                     return;
                 }
-                saved(original with { Cargo = new Dictionary<string, int>(updated, StringComparer.OrdinalIgnoreCase) });
+                saved(original with { Cargo = new Dictionary<string, int>(updated, StringComparer.Ordinal) });
                 CloseRequested?.Invoke();
             })
             : Task.CompletedTask;
@@ -328,7 +326,9 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     private void ReplaceRows(IEnumerable<KeyValuePair<string, int>> cargo)
     {
         rows.Clear();
-        rows.AddRange(cargo.Select(pair => CreateRow(pair.Key, pair.Value)));
+        rows.AddRange(
+            ColonizationCarrierInventory.NormalizeStock(cargo).Select(pair => CreateRow(pair.Key, pair.Value))
+        );
         AddLocalCommodities();
         RebuildGroups();
     }

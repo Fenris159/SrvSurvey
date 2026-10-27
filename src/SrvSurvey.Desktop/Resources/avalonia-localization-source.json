@@ -4613,12 +4613,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "App architecture: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
     "Text": "App info not found",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "App version and system details copied to the clipboard.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
+    "Text": "App version and system details could not be copied: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
   },
   {
     "Text": "AppImage manual update",
@@ -6004,6 +6028,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Available release notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Available when the first and last waypoints are the same system.",
@@ -14738,6 +14770,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
+    "Text": "Copy details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Copy entry ID",
     "IsFormat": false,
     "SourceKinds": [
@@ -14755,6 +14795,14 @@
   },
   {
     "Text": "Copy handler",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Copy installed version and system details for a bug report",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -18946,6 +18994,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
+  },
+  {
+    "Text": "Each carrier\u0027s share of cargo still needed by this report. Surplus cargo is excluded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ColonizationProjectPreviewWindow.axaml"
   },
   {
     "Text": "Each commander has an independent retry queue. Multiple Elite clients can upload when their commanders are bound to distinct physical journal folders. Unverified or shared folders pause queueing and delivery; pending messages remain local until attribution is safe.",
@@ -28812,6 +28868,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Installed release notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Instructions",
     "IsFormat": false,
     "SourceKinds": [
@@ -38104,6 +38168,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
   },
   {
+    "Text": "OS architecture: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
+    "Text": "OS: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
     "Text": "OTHER",
     "IsFormat": false,
     "SourceKinds": [
@@ -47236,6 +47316,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Release channel: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
     "Text": "Release notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -49807,6 +49895,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Runtime: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
   },
   {
     "Text": "RuntimeProcessName",
@@ -56879,6 +56975,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "SrvSurvey-XP: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
+  },
+  {
     "Text": "SrvSurvey-layout-validation-{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -62114,6 +62218,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
+  },
+  {
+    "Text": "The installed release notes are missing from this build.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.SupportDetails.cs"
   },
   {
     "Text": "The joined stream overlay could not update: {0}",
@@ -79478,7 +79590,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.CarrierReadiness.cs"
   },
   {
     "Text": "{0} t delivered \u00B7 {1} t remaining \u00B7 Carrier cargo not reported",

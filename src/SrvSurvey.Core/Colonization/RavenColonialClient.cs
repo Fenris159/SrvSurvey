@@ -710,7 +710,7 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
         ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         var normalizedCargo = cargo
             .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
-            .ToDictionary(pair => pair.Key.Trim(), pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(pair => pair.Key.Trim(), pair => pair.Value, StringComparer.Ordinal);
         using var request = new HttpRequestMessage(method, CreateUri($"api/fc/{marketId}/cargo"))
         {
             Content = JsonContent.Create(normalizedCargo, options: JsonOptions),
@@ -723,7 +723,7 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var validated = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var validated = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (KeyValuePair<string, int> pair in result)
         {
             string? name = pair.Key?.Trim();

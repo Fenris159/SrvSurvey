@@ -47,6 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\CurrentReleaseNotes.md"
+                      LogicalName="SrvSurvey.Desktop.Resources.CurrentReleaseNotes.md" />
     <EmbeddedResource Include="Resources\chat-commands-guide.json"
                       LogicalName="SrvSurvey.Desktop.Resources.chat-commands-guide.json" />
     <EmbeddedResource Include="Resources\baseline-localization.json"

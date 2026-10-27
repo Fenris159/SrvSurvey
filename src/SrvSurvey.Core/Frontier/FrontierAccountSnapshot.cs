@@ -134,7 +134,11 @@ public sealed record FrontierCarrierEndpointSnapshot(
 
 public sealed record FrontierCapacitySnapshot(string Category, int Used);
 
-public sealed record FrontierInventorySnapshot(string Category, string Name, int Quantity, long Value);
+public sealed record FrontierInventorySnapshot(string Category, string Name, int Quantity, long Value)
+{
+    /// <summary>The language-independent CAPI commodity identifier, when provided by the carrier endpoint.</summary>
+    public string? CommodityKey { get; init; }
+}
 
 public sealed record FrontierMarketOrderSnapshot(
     string Category,

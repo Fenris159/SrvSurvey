@@ -320,9 +320,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             item with
             {
                 Delta = new Dictionary<string, int>(item.Delta, StringComparer.OrdinalIgnoreCase),
-                Before = item.Before is null
-                    ? null
-                    : new Dictionary<string, int>(item.Before, StringComparer.OrdinalIgnoreCase),
+                Before = item.Before is null ? null : new Dictionary<string, int>(item.Before, StringComparer.Ordinal),
             };
 
         private static ColonizationPendingContributionRequirements? CopyRequirements(
@@ -769,10 +767,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             {
                 return ReplaceCargo(cargo);
             }
-            var updated = new Dictionary<string, int>(
-                FleetCarrierResponse?.Cargo ?? [],
-                StringComparer.OrdinalIgnoreCase
-            );
+            var updated = new Dictionary<string, int>(FleetCarrierResponse?.Cargo ?? [], StringComparer.Ordinal);
             foreach (KeyValuePair<string, int> pair in cargo)
             {
                 updated[pair.Key] = pair.Value;
@@ -795,7 +790,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             FleetCarrierAdjustments.Add(
                 new FleetCarrierAdjustmentCall(
                     marketId,
-                    new Dictionary<string, int>(cargoChanges, StringComparer.OrdinalIgnoreCase)
+                    new Dictionary<string, int>(cargoChanges, StringComparer.Ordinal)
                 )
             );
             EnteredAdjustment?.Set();
@@ -808,10 +803,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                 return Task.FromException<IReadOnlyDictionary<string, int>>(failure);
             }
 
-            var updated = new Dictionary<string, int>(
-                FleetCarrierResponse?.Cargo ?? [],
-                StringComparer.OrdinalIgnoreCase
-            );
+            var updated = new Dictionary<string, int>(FleetCarrierResponse?.Cargo ?? [], StringComparer.Ordinal);
             foreach (KeyValuePair<string, int> pair in cargoChanges)
             {
                 updated[pair.Key] = Math.Max(0, updated.GetValueOrDefault(pair.Key) + pair.Value);
