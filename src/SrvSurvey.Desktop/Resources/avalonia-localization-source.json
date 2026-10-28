@@ -18335,6 +18335,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
+    "Text": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Docking requested",
     "IsFormat": false,
     "SourceKinds": [
@@ -57926,6 +57934,47 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Stealth Mode",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Stealth Mode is off. Enabled sharing services upload normally.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "StealthModeCard",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "StealthModeCheckBox",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "StealthModeEnabled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/NetworkPrivacySettingsStore.cs"
+  },
+  {
     "Text": "Steam",
     "IsFormat": false,
     "SourceKinds": [
@@ -67708,6 +67757,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
+    "Text": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
   },
   {
     "Text": "Upper floor",

@@ -284,6 +284,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "raven colonial personal public names"
             ),
             new(
+                "Stealth Mode",
+                PrivacyCategoryKey,
+                "StealthModeCheckBox",
+                "StealthModeCard",
+                "private discoveries queue persistent docking exploration EDDN Inara EDAstro EDSM Raven"
+            ),
+            new(
                 "EDDN sharing",
                 PrivacyCategoryKey,
                 "ConfigureEddnSharingButton",

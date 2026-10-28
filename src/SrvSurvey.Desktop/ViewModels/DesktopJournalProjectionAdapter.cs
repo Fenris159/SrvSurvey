@@ -1367,6 +1367,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         bool journalSource = verifiedSource || attributedJournal;
         bool canDeliver = !dependencies.IsDiagnosticReplay();
         bool canPublish = canDeliver && !update.IsBootstrapRead && journalSource;
+        ObserveUploadPrivacy(update, canPublish);
         bool canShareData = verifiedSource;
         EliteStatus? providerStatus = canShareData ? GetProviderStatus() : null;
         CargoSnapshot? providerCargo = GetProviderCargo(allowSharedCargo);
@@ -1523,6 +1524,15 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 "EDSM processing was isolated from journal tracking: " + exception.Message
             );
         }
+    }
+
+    private void ObserveUploadPrivacy(JournalMonitorUpdate update, bool canPublish)
+    {
+        dependencies.NetworkPrivacy.UploadPrivacy.Observe(
+            update.JournalEvents,
+            canPublish && state.Session.IsLegacy == false
+        );
+        dependencies.NetworkPrivacy.RefreshStealthStatus();
     }
 
     /// <summary>Companion files require a currently active verified source, independent of captured journal attribution.</summary>

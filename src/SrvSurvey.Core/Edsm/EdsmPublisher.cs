@@ -10,7 +10,7 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Edsm;
 
-public interface IEdsmPublisher : IDisposable
+public interface IEdsmPublisher : IDisposable, IJournalUploadPrivacyAware
 {
     Task<EdsmPublicationResult> ApplyAsync(EdsmPublicationUpdate update, CancellationToken cancellationToken = default);
 
@@ -39,6 +39,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private const int MaximumResponseBytes = 1024 * 1024;
     private const int MaximumDiscardListBytes = 256 * 1024;
 
+    private JournalUploadPrivacy? privacy;
+    private volatile bool privacyCancellationRequested;
     private readonly HttpClient httpClient;
     private readonly bool ownsHttpClient;
     private readonly string appVersion;
@@ -120,6 +122,30 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
     }
 
+    public void SetUploadPrivacy(JournalUploadPrivacy policy)
+    {
+        privacy?.Changed -= PrivacyChanged;
+        privacy = policy;
+        outbox?.EnableExpeditionRetention();
+        privacy.Changed += PrivacyChanged;
+    }
+
+    private void PrivacyChanged(bool restricting)
+    {
+        lock (stateSync)
+        {
+            if (restricting)
+            {
+                privacyCancellationRequested = true;
+                activeSendCancellation?.Cancel();
+            }
+            else
+            {
+                nextSendAt ??= timeProvider.GetUtcNow();
+            }
+        }
+    }
+
     public async Task<EdsmPublicationResult> ApplyAsync(
         EdsmPublicationUpdate update,
         CancellationToken cancellationToken = default
@@ -186,8 +212,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         EdsmPublicationResult completed = TakeCompletedSendResult();
         warnings.AddRange(completed.Warnings);
         bool forceFlush =
-            update.AllowPublishing
-            && update.JournalEvents.Any(item => item.EventName.Equals("Shutdown", StringComparison.OrdinalIgnoreCase));
+            update.AllowPublishing && update.JournalEvents.Any(item => item.EventName is "Shutdown" or "Docked");
         if (forceFlush || IsSendDue())
         {
             _ = TryStartBackgroundSend(forceFlush, out _);
@@ -388,7 +413,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             }
             pending.Add(queued);
             nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
-            dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
+            dropped = Math.Max(0, pending.Count - PendingLimit);
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
@@ -551,6 +576,11 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return events;
     }
 
+    private int PendingLimit => privacy is null ? MaximumPendingEvents : JournalUploadPrivacy.ExpeditionMaximumReports;
+
+    private bool CanRelease(EdsmQueuedEvent item) =>
+        privacy?.CanSendJournal(session?.ActiveCommanderName, item.RawJson) ?? true;
+
     private bool IsSendDue()
     {
         lock (stateSync)
@@ -581,7 +611,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return false;
             }
 
-            if (authorizedCredentials is null || session is null)
+            if (authorizedCredentials is null || session is null || !pending.Any(CanRelease))
             {
                 return false;
             }
@@ -594,6 +624,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             EdsmCredentials sendCredentials = authorizedCredentials;
             EdsmSession sendSession = session;
             HashSet<string> sendDiscardedEvents = discardedEvents;
+            privacyCancellationRequested = false;
             activeSendCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
             CancellationTokenSource sendCancellation = activeSendCancellation;
             activeSendTask = Task.Run(
@@ -696,6 +727,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
             }
 
             Requeue(batch, warnings);
+            if (privacyCancellationRequested)
+            {
+                return CreateSendResult(0, warnings);
+            }
             throw;
         }
         catch (Exception exception)
@@ -737,7 +772,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 count = pending
                     .Take(count)
                     .TakeWhile(item =>
-                        item.GameVersion == pending[0].GameVersion && item.GameBuild == pending[0].GameBuild
+                        item.GameVersion == pending[0].GameVersion
+                        && item.GameBuild == pending[0].GameBuild
+                        && CanRelease(item)
                     )
                     .Count();
             }
@@ -980,7 +1017,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         lock (stateSync)
         {
             pending.InsertRange(0, batch);
-            int dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
+            int dropped = Math.Max(0, pending.Count - PendingLimit);
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
@@ -1360,6 +1397,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
     public void Dispose()
     {
+        privacy?.Changed -= PrivacyChanged;
         using var shutdownCancellation = new CancellationTokenSource(ShutdownTimeout);
         try
         {

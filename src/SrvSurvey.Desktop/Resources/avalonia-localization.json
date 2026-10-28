@@ -9141,6 +9141,10 @@
       "translation": "Andocken gewährt · Pad {0}"
     },
     {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "Durch das Andocken werden die bis zu diesem Andocken aufgezeichneten Daten freigegeben; Neue Entdeckungen warten auf die nächste. Wenn Sie den Stealth-Modus deaktivieren, werden die normalen Uploads fortgesetzt. Abgeschaltete Sharing-Dienste werden dadurch nicht aktiviert."
+    },
+    {
       "source": "Docking requested",
       "translation": "Andocken angefordert"
     },
@@ -28873,6 +28877,26 @@
       "translation": "Status.json ist wieder lesbar; Überwachung {0}."
     },
     {
+      "source": "Stealth Mode",
+      "translation": "Stealth-Modus"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "Der Stealth-Modus ist ausgeschaltet. Normaler Upload der Sharing-Dienste aktiviert."
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "StealthModeCard"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "StealthModeCheckBox"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "StealthModeEnabled"
+    },
+    {
       "source": "Steam",
       "translation": "Dampf"
     },
@@ -33755,6 +33779,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "Backup wird auf Google Drive hochgeladen ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "Uploads werden bis zu einem Live-Andocken lokal gespeichert. Durch einen Neustart der Anwendung werden sie nicht freigegeben."
     },
     {
       "source": "Upper floor",
@@ -49421,6 +49449,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "Atraque concedido · pad {0}"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "El atraque libera datos registrados hasta ese atraque; Nuevos descubrimientos esperan al siguiente. Al desactivar el modo oculto se reanudan las cargas normales. Esto no permite compartir servicios que están desactivados."
     },
     {
       "source": "Docking requested",
@@ -69155,6 +69187,26 @@
       "translation": "Status.json vuelve a ser legible; monitorización {0}."
     },
     {
+      "source": "Stealth Mode",
+      "translation": "Modo sigiloso"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "El modo oculto está desactivado. Los servicios compartidos habilitados se cargan normalmente."
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "Tarjeta de modo sigiloso"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "Modo sigilosoCasilla de verificación"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "Modo sigiloso habilitado"
+    },
+    {
       "source": "Steam",
       "translation": "vapor"
     },
@@ -74037,6 +74089,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "Subiendo copia de seguridad a Google Drive ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "Las cargas se mantienen localmente hasta que se realiza el acoplamiento en vivo. Reiniciar la aplicación no los libera."
     },
     {
       "source": "Upper floor",
@@ -89703,6 +89759,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "Amarrage accordé · pad {0}"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "L'amarrage libère les données enregistrées jusqu'à cet amarrage ; de nouvelles découvertes attendent la suivante. La désactivation du mode furtif reprend les téléchargements normaux. Cela ne permet pas de partager les services désactivés."
     },
     {
       "source": "Docking requested",
@@ -109437,6 +109497,26 @@
       "translation": "Status.json est à nouveau lisible ; surveillance {0}."
     },
     {
+      "source": "Stealth Mode",
+      "translation": "Mode furtif"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "Le mode furtif est désactivé. Les services de partage activés téléchargent normalement."
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "Carte Mode Furtif"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "StealthModeCheckBox"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "StealthModeEnabled"
+    },
+    {
       "source": "Steam",
       "translation": "vapeur"
     },
@@ -114319,6 +114399,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "Téléchargement de la sauvegarde sur Google Drive ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "Les téléchargements sont conservés localement jusqu'à un amarrage en direct. Le redémarrage de l'application ne les libère pas."
     },
     {
       "source": "Upper floor",
@@ -129985,6 +130069,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "Encaixe concedido · pad {0}"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "O encaixe libera os dados registrados até aquele encaixe; novas descobertas aguardam a próxima. Desativar o modo furtivo retoma os uploads normais. Isso não permite o compartilhamento de serviços desativados."
     },
     {
       "source": "Docking requested",
@@ -149719,6 +149807,26 @@
       "translation": "Status.json pode ser lido novamente; monitoramento {0}."
     },
     {
+      "source": "Stealth Mode",
+      "translation": "Modo furtivo"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "O modo furtivo está desativado. Os serviços de compartilhamento ativados carregam normalmente."
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "Cartão StealthMode"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "StealthModeCheckBox"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "StealthMode habilitado"
+    },
+    {
       "source": "Steam",
       "translation": "vapor"
     },
@@ -154601,6 +154709,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "Fazendo upload do backup para o Google Drive ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "Os uploads são mantidos localmente até um acoplamento ao vivo. Reiniciar o aplicativo não os libera."
     },
     {
       "source": "Upper floor",
@@ -170267,6 +170379,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "Стыковка разрешена · площадка {0}"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "При стыковке освобождаются данные, записанные до этой стыковки; новые открытия ждут следующего. При отключении скрытого режима загрузка возобновляется в обычном режиме. Это не позволяет использовать отключенные службы общего доступа."
     },
     {
       "source": "Docking requested",
@@ -190001,6 +190117,26 @@
       "translation": "Status.json снова доступен для чтения; мониторинг {0}."
     },
     {
+      "source": "Stealth Mode",
+      "translation": "Скрытый режим"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "Стелс-режим выключен. Включенные сервисы обмена загружаются нормально."
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "Режим СтелсКарта"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "StealthModeCheckBox"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "Режим скрытности включен"
+    },
+    {
       "source": "Steam",
       "translation": "пар"
     },
@@ -194883,6 +195019,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "Загрузка резервной копии на Google Диск ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "Загрузка осуществляется локально до момента стыковки. Перезапуск приложения их не освобождает."
     },
     {
       "source": "Upper floor",
@@ -210549,6 +210689,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "已授予对接·pad {0}"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "对接释放截至该对接记录的数据；新的发现等待下一个。关闭隐身模式可恢复正常上传。这不会启用已关闭的共享服务。"
     },
     {
       "source": "Docking requested",
@@ -230283,6 +230427,26 @@
       "translation": "Status.json 再次可读；监控{0}。"
     },
     {
+      "source": "Stealth Mode",
+      "translation": "隐身模式"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "隐身模式已关闭。启用共享服务正常上传。"
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "隐形模式卡"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "隐身模式复选框"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "隐身模式已启用"
+    },
+    {
       "source": "Steam",
       "translation": "蒸汽"
     },
@@ -235165,6 +235329,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "正在将备份上传到 Google 云端硬盘 ({0} MiB)..."
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "上传在本地保存，直到实时对接。重新启动应用程序不会释放它们。"
     },
     {
       "source": "Upper floor",
@@ -250831,6 +250999,10 @@
     {
       "source": "Docking granted · pad {0}",
       "translation": "* DOCKING GRANTED · PAD {0} >>>!"
+    },
+    {
+      "source": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+      "translation": "* DOCKING RELEASES DATA RECORDED UP TO THAT DOCKING; NEW DISCOVERIES WAIT FOR THE NEXT ONE. TURNING STEALTH MODE OFF RESUMES NORMAL UPLOADS. THIS DOES NOT ENABLE SHARING SERVICES THAT ARE SWITCHED OFF. >>>!"
     },
     {
       "source": "Docking requested",
@@ -270565,6 +270737,26 @@
       "translation": "* STATUS.JSON IS READABLE AGAIN; MONITORING {0}. >>>!"
     },
     {
+      "source": "Stealth Mode",
+      "translation": "* STEALTH MODE >>>!"
+    },
+    {
+      "source": "Stealth Mode is off. Enabled sharing services upload normally.",
+      "translation": "* STEALTH MODE IS OFF. ENABLED SHARING SERVICES UPLOAD NORMALLY. >>>!"
+    },
+    {
+      "source": "StealthModeCard",
+      "translation": "* STEALTHMODECARD >>>!"
+    },
+    {
+      "source": "StealthModeCheckBox",
+      "translation": "* STEALTHMODECHECKBOX >>>!"
+    },
+    {
+      "source": "StealthModeEnabled",
+      "translation": "* STEALTHMODEENABLED >>>!"
+    },
+    {
       "source": "Steam",
       "translation": "* STEAM >>>!"
     },
@@ -275447,6 +275639,10 @@
     {
       "source": "Uploading backup to Google Drive ({0} MiB)...",
       "translation": "* UPLOADING BACKUP TO GOOGLE DRIVE ({0} MIB)... >>>!"
+    },
+    {
+      "source": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+      "translation": "* UPLOADS ARE HELD LOCALLY UNTIL A LIVE DOCKING. RESTARTING THE APPLICATION DOES NOT RELEASE THEM. >>>!"
     },
     {
       "source": "Upper floor",

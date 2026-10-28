@@ -16,7 +16,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 /// <summary>Exercises two independent application instances through real journal readers and provider HTTP serialization.</summary>
 [Trait("Category", "JournalUploadScenario")]
-public sealed class MultiCommanderJournalUploadTests
+public sealed partial class MultiCommanderJournalUploadTests
 {
     /// <summary>Verified folders enable each provider without crossing account credentials, payloads, or companion snapshots.</summary>
     [Theory]

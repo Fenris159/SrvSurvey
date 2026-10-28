@@ -22,6 +22,15 @@ public sealed partial class SettingsView : UserControl
         DetachedFromVisualTree += (_, _) => ClearSearchHighlight();
     }
 
+    private void StealthMode_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is CheckBox checkbox && DataContext is MainWindowViewModel model)
+        {
+            model.NetworkPrivacy.StealthModeEnabled = checkbox.IsChecked == true;
+            checkbox.SetCurrentValue(CheckBox.IsCheckedProperty, model.NetworkPrivacy.StealthModeEnabled);
+        }
+    }
+
     private async void ScrollToLegacyImport_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is MainWindowViewModel viewModel)

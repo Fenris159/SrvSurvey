@@ -20,6 +20,7 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         "SrvSurvey-uploads-" + Guid.NewGuid().ToString("N")
     );
     private readonly ScenarioClock clock = new();
+    private JournalUploadPrivacy? uploadPrivacy;
     private static readonly InaraPublicationOptions InaraOptions = new(
         "private-api-key",
         "Explorer",
@@ -197,6 +198,10 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         if (provider == "Inara")
         {
             using var publisher = new InaraPublisher("2.1.3.0", http, clock, outboxDirectory: storage);
+            if (uploadPrivacy is not null)
+            {
+                publisher.SetUploadPrivacy(uploadPrivacy);
+            }
             await publisher.ApplyAsync(
                 new(
                     bootstrap.JournalEvents,
@@ -267,6 +272,10 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         else if (provider == "EDSM")
         {
             using var publisher = new EdsmPublisher("2.1.3.0", http, clock, outboxDirectory: storage);
+            if (uploadPrivacy is not null)
+            {
+                publisher.SetUploadPrivacy(uploadPrivacy);
+            }
             await publisher.ApplyAsync(new(bootstrap.JournalEvents, bootstrap.JournalPath, false, EdsmOptions));
             if (live is not null)
             {
@@ -290,6 +299,10 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                 trafficBudget: new EdAstroTrafficBudget(),
                 outboxDirectory: storage
             );
+            if (uploadPrivacy is not null)
+            {
+                publisher.SetUploadPrivacy(uploadPrivacy);
+            }
             publisher.SetEnabled(true);
             publisher.Apply(new(bootstrap.JournalEvents, "Explorer", bootstrap.JournalPath, true, false, true));
             if (live is not null)
@@ -346,6 +359,10 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                 utcNow: () => clock.Now,
                 automaticProcessing: false
             );
+            if (uploadPrivacy is not null)
+            {
+                publisher.SetUploadPrivacy(uploadPrivacy);
+            }
             await publisher.ApplyAsync(EddnRequest(bootstrap, false));
             if (live is not null)
             {
@@ -484,6 +501,8 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
     {
         /// <summary>Simulates a body failure after successful provider headers.</summary>
         public bool FailResponseBody { get; init; }
+        public Func<CancellationToken, Task>? BeforePost { get; init; }
+        public string EdAstroEvents { get; init; } = "[\"Docked\"]";
 
         /// <summary>Captures actual provider request bodies for independent wire-contract assertions.</summary>
         public List<string> Posts { get; } = [];
@@ -499,9 +518,13 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                 return new(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
-                        provider == "EDAstro" ? "[\"Docked\"]" : "[\"Fileheader\",\"Shutdown\"]"
+                        provider == "EDAstro" ? EdAstroEvents : "[\"Fileheader\",\"Shutdown\"]"
                     ),
                 };
+            }
+            if (BeforePost is { } before)
+            {
+                await before(cancellationToken);
             }
             string body = await request.Content!.ReadAsStringAsync(cancellationToken);
             if (provider == "EDSM")

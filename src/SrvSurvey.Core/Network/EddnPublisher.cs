@@ -31,7 +31,7 @@ public sealed class EddnApplyRequest
     public string? GameBuild { get; init; }
 }
 
-public interface IEddnPublisher
+public interface IEddnPublisher : IJournalUploadPrivacyAware
 {
     Task<EddnPublicationResult> ApplyAsync(EddnApplyRequest request, CancellationToken cancellationToken = default);
 
@@ -116,6 +116,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         );
         outboxWriterTask = RunOutboxWriterAsync();
     }
+
+    public void SetUploadPrivacy(JournalUploadPrivacy policy) => outbox.SetUploadPrivacy(policy);
 
     public int PendingCount => outbox.pendingCount + Math.Max(0, Volatile.Read(ref stagedWriteCount));
 

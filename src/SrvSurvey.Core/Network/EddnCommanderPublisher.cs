@@ -11,6 +11,7 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
     private readonly Func<string, string?, EddnPublisher> create;
     private readonly EddnPublisher legacy;
     private readonly string directory;
+    private JournalUploadPrivacy? privacy;
     private bool enabled;
     private bool suspended;
     private bool companionDataAllowed = true;
@@ -60,6 +61,19 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
         }
     }
 
+    public void SetUploadPrivacy(JournalUploadPrivacy policy)
+    {
+        lock (sync)
+        {
+            privacy = policy;
+            legacy.SetUploadPrivacy(policy);
+            foreach (EddnPublisher publisher in publishers.Values)
+            {
+                publisher.SetUploadPrivacy(policy);
+            }
+        }
+    }
+
     /// <summary>Restores only the selected commander's persisted queue before journal activity, without leasing another instance's account.</summary>
     public void RestorePendingAccount(string? frontierId)
     {
@@ -88,6 +102,10 @@ public sealed class EddnCommanderPublisher : IEddnPublisher, IDisposable
         if (!publishers.TryGetValue(account, out EddnPublisher? publisher))
         {
             publisher = create(Path.Combine(directory, account, "outbox.json"), Path.Combine(directory, "consent"));
+            if (privacy is not null)
+            {
+                publisher.SetUploadPrivacy(privacy);
+            }
             publisher.SetSuspended(suspended);
             publisher.SetCompanionDataAllowed(companionDataAllowed);
             publisher.SetEnabled(enabled);

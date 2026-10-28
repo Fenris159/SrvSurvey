@@ -317,6 +317,22 @@
         </StackPanel>
       </Border>
 
+      <Border x:Name="StealthModeCard"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">
+        <StackPanel Spacing="8">
+          <CheckBox x:Name="StealthModeCheckBox"
+                    Content="Stealth Mode"
+                    IsChecked="{Binding NetworkPrivacy.StealthModeEnabled, Mode=OneWay}"
+                    Click="StealthMode_Click" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="Keep discoveries private while exploring. Hold uploads to EDDN, Inara, EDAstro, and EDSM in persistent local queues until you dock. Raven and read-only lookups continue normally." />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off." />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding NetworkPrivacy.StealthStatus}" />
+        </StackPanel>
+      </Border>
+
       <Border x:Name="SystemNicknamesCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}">

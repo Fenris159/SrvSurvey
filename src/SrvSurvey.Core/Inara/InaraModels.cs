@@ -169,7 +169,12 @@ internal sealed class InaraEventQueue
         }
     }
 
-    public List<InaraQueuedEvent> TakeBatch(string? apiKey, int maximumCount, out int discarded)
+    public List<InaraQueuedEvent> TakeBatch(
+        string? apiKey,
+        int maximumCount,
+        out int discarded,
+        Func<InaraEvent, bool>? canSend = null
+    )
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
         lock (sync)
@@ -180,10 +185,18 @@ internal sealed class InaraEventQueue
                 return [];
             }
 
-            int count = Math.Min(pending.Count, maximumCount);
+            int count = pending.Take(maximumCount).TakeWhile(item => canSend?.Invoke(item.Event) ?? true).Count();
             List<InaraQueuedEvent> batch = pending.GetRange(0, count);
             pending.RemoveRange(0, count);
             return batch;
+        }
+    }
+
+    public bool HasSendable(Func<InaraEvent, bool> canSend)
+    {
+        lock (sync)
+        {
+            return pending.Count > 0 && canSend(pending[0].Event);
         }
     }
 

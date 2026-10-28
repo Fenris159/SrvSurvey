@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.EdAstro;
 
@@ -15,7 +16,7 @@ public sealed record EdAstroApplyRequest(
 );
 
 /// <summary>Owns opt-in journal contribution, batching, delivery and traffic control.</summary>
-public interface IEdAstroPublisher : IDisposable
+public interface IEdAstroPublisher : IDisposable, IJournalUploadPrivacyAware
 {
     /// <summary>Maps new session events without blocking the journal projection on HTTP.</summary>
     void Apply(EdAstroApplyRequest request);

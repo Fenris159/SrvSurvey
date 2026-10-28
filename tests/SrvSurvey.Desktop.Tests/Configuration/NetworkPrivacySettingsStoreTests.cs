@@ -12,6 +12,33 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     );
 
     [Fact]
+    public void StealthModePersistsIndependentlyAndFailedSavingKeepsItOff()
+    {
+        NetworkPrivacySettingsStore store = CreateStore();
+        var model = new NetworkPrivacyViewModel(store);
+        Assert.False(model.StealthModeEnabled);
+        model.StealthModeEnabled = true;
+        Assert.True(model.UploadPrivacy.Enabled);
+        Assert.True(new NetworkPrivacyViewModel(store).StealthModeEnabled);
+        Assert.False(model.EddnUploadEnabled);
+        Assert.False(model.EdAstroUploadEnabled);
+        model.RefreshStealthStatus();
+        Assert.Contains("held locally", model.StealthStatus, StringComparison.Ordinal);
+        model.StealthModeEnabled = false;
+        Assert.False(model.UploadPrivacy.Enabled);
+        Assert.Contains("off", model.StealthStatus, StringComparison.Ordinal);
+        string blocked = Path.Combine(temporaryDirectory, "blocked");
+        File.WriteAllText(blocked, "occupied");
+        var unwritable = new NetworkPrivacyViewModel(
+            new NetworkPrivacySettingsStore(Path.Combine(blocked, "settings.json"))
+        );
+        unwritable.StealthModeEnabled = true;
+        Assert.False(unwritable.StealthModeEnabled);
+        Assert.False(unwritable.UploadPrivacy.Enabled);
+        Assert.Contains("could not be saved", unwritable.StatusMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void MissingDocumentKeepsPublicationDisabled()
     {
         NetworkPrivacyPreferences preferences = CreateStore().Load();

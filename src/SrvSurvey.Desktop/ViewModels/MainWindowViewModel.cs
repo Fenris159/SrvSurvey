@@ -513,6 +513,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
+            this.inaraPublisher.SetUploadPrivacy(NetworkPrivacy.UploadPrivacy);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;
             rollback.Add(() => Inara.ApiKeyChanged -= OnInaraApiKeyChanged);
             Edsm = new EdsmSettingsViewModel(commanderProfileStore);
@@ -525,6 +526,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                     outboxDirectory: JournalUploadStorageDirectory
                 );
             rollback.AddIfCreated(resolvedEdsmPublisher, this.edsmPublisher);
+            this.edsmPublisher.SetUploadPrivacy(NetworkPrivacy.UploadPrivacy);
             Edsm.CredentialsChanged += OnEdsmCredentialsChanged;
             rollback.Add(() => Edsm.CredentialsChanged -= OnEdsmCredentialsChanged);
             this.eddnPublisher =
@@ -539,6 +541,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.AddIfCreated(resolvedEddnPublisher, this.eddnPublisher as IDisposable);
             NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged);
+            this.eddnPublisher.SetUploadPrivacy(NetworkPrivacy.UploadPrivacy);
             InitializeEddnPublisher(targetFrontierId);
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
@@ -551,6 +554,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.AddIfCreated(resolvedEdAstroPublisher, this.edAstroPublisher);
             NetworkPrivacy.EdAstroUploadEnabledChanged += OnEdAstroUploadEnabledChanged;
             rollback.Add(() => NetworkPrivacy.EdAstroUploadEnabledChanged -= OnEdAstroUploadEnabledChanged);
+            this.edAstroPublisher.SetUploadPrivacy(NetworkPrivacy.UploadPrivacy);
             this.edAstroPublisher.SetEnabled(NetworkPrivacy.EdAstroUploadEnabled);
             this.voxStellarPublisher =
                 resolvedVoxStellarPublisher
