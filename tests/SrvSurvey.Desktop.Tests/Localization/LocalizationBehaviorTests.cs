@@ -77,6 +77,26 @@ public sealed class LocalizationBehaviorTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void OptionalBoundTooltipsRecoverAfterBlankValuesAreTranslated()
+    {
+        LocalizationCatalog.Initialize("de");
+        var button = new Button { Tag = "" };
+        button.Bind(ToolTip.TipProperty, new Binding(nameof(Control.Tag)) { Source = button });
+        LocalizationBehavior.SetEnabled(button, true);
+        Assert.Null(ToolTip.GetTip(button));
+
+        button.Tag = "Open category overlay settings";
+        Assert.Equal("Öffnen Sie die Kategorie-Overlay-Einstellungen", ToolTip.GetTip(button));
+
+        button.Tag = "   ";
+        Assert.Null(ToolTip.GetTip(button));
+
+        button.Tag = "Close";
+        Assert.Equal("Schließen", ToolTip.GetTip(button));
+        Assert.NotNull(BindingOperations.GetBindingExpressionBase(button, ToolTip.TipProperty));
+    }
+
+    [AvaloniaFact]
     public void EnabledBehaviorPreservesKdeOverlayWindowTitle()
     {
         const string title = "SrvSurvey Galaxy Map search guidance overlay";

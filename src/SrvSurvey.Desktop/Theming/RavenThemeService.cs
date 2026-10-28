@@ -219,6 +219,11 @@ public sealed class RavenThemeService
             application.Resources[$"LegacyTheme.{entry.Key}"] = new SolidColorBrush(entry.Value);
         }
 
+        foreach (KeyValuePair<string, Color> entry in OverlayCustomBrushes.Defaults)
+        {
+            SetBrush($"LegacyTheme.{entry.Key}", theme.Colors.GetValueOrDefault(entry.Key, entry.Value));
+        }
+
         foreach (KeyValuePair<string, string> mapping in OverlayResourceKeys)
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));

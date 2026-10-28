@@ -80,6 +80,8 @@ public sealed partial class OverlaySettingsView : UserControl
 
         if (isGlobal)
         {
+            CategoryOverlayContent.Children.Remove(PanelVisibilityCard);
+            GlobalVisibilityContent.Children.Add(PanelVisibilityCard);
             return;
         }
 

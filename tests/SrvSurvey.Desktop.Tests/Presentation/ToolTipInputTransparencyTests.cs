@@ -1,16 +1,113 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Behaviors;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ToolTipInputTransparencyTests
 {
+    [AvaloniaTheory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("\t\r\n")]
+    [InlineData("\u00A0")]
+    public void BlankBoundHintsDoNotOpenAnEmptyPopupAndKeepTheirBinding(string? blank)
+    {
+        var source = new Button { Content = "Details", Tag = blank };
+        source.Bind(ToolTip.TipProperty, new Binding(nameof(Control.Tag)) { Source = source });
+        var window = new Window
+        {
+            Width = 300,
+            Height = 200,
+            Content = source,
+        };
+        try
+        {
+            window.Show();
+            Render(window);
+            ToolTip.SetIsOpen(source, true);
+            Render(window);
+            Assert.DoesNotContain(window.GetVisualDescendants().OfType<ToolTip>(), tip => tip.IsEffectivelyVisible);
+            Assert.Null(ToolTip.GetTip(source));
+            ToolTip.SetIsOpen(source, false);
+
+            source.Tag = "Useful contextual detail";
+            Assert.Equal("Useful contextual detail", ToolTip.GetTip(source));
+            ToolTip.SetIsOpen(source, true);
+            Render(window);
+            Assert.Contains(window.GetVisualDescendants().OfType<ToolTip>(), tip => tip.IsEffectivelyVisible);
+
+            source.Tag = blank;
+            Render(window);
+            Assert.Null(ToolTip.GetTip(source));
+            Assert.False(ToolTip.GetIsOpen(source));
+            Assert.DoesNotContain(window.GetVisualDescendants().OfType<ToolTip>(), tip => tip.IsEffectivelyVisible);
+            source.Tag = "Updated contextual detail";
+            Assert.Equal("Updated contextual detail", ToolTip.GetTip(source));
+        }
+        finally
+        {
+            ToolTip.SetIsOpen(source, false);
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RichHintsKeepTheirContentAndCloseWhenReplacedByBlankText(bool explicitToolTip)
+    {
+        ToolTipContentBehavior.Register();
+        ToolTipContentBehavior.Register();
+        var detail = new StackPanel();
+        detail.Children.Add(new TextBlock { Text = "Planned: 100 t" });
+        detail.Children.Add(new TextBlock { Text = "Available: 75 t" });
+        object content = explicitToolTip ? new ToolTip { Content = detail } : detail;
+        var source = new Button { Content = "Supply" };
+        ToolTip.SetTip(source, content);
+        var window = new Window
+        {
+            Width = 300,
+            Height = 200,
+            Content = source,
+        };
+        try
+        {
+            window.Show();
+            ToolTip.SetIsOpen(source, true);
+            Render(window);
+            Assert.Same(content, ToolTip.GetTip(source));
+            ToolTip toolTip = Assert.Single(window.GetVisualDescendants().OfType<ToolTip>());
+            Assert.True(toolTip.IsEffectivelyVisible);
+            Assert.Same(detail, toolTip.Content);
+            Assert.Collection(
+                toolTip.GetVisualDescendants().OfType<TextBlock>(),
+                block => Assert.Equal("Planned: 100 t", block.Text),
+                block => Assert.Equal("Available: 75 t", block.Text)
+            );
+
+            ToolTip.SetTip(source, "");
+            Render(window);
+            Assert.Null(ToolTip.GetTip(source));
+            Assert.False(ToolTip.GetIsOpen(source));
+            Assert.DoesNotContain(window.GetVisualDescendants().OfType<ToolTip>(), tip => tip.IsEffectivelyVisible);
+        }
+        finally
+        {
+            ToolTip.SetIsOpen(source, false);
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void OpenToolTipDoesNotBlockTheControlBehindIt()
     {
@@ -74,7 +171,9 @@ public sealed class ToolTipInputTransparencyTests
 
     private static void Render(Window window)
     {
-        Assert.NotNull(window.CaptureRenderedFrame());
-        Assert.NotNull(window.CaptureRenderedFrame());
+        using WriteableBitmap? firstFrame = window.CaptureRenderedFrame();
+        Assert.NotNull(firstFrame);
+        using WriteableBitmap? secondFrame = window.CaptureRenderedFrame();
+        Assert.NotNull(secondFrame);
     }
 }

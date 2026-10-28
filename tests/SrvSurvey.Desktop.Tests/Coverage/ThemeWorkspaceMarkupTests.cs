@@ -30,7 +30,7 @@ public sealed class ThemeWorkspaceMarkupTests
             .Select(element => element.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
-        Assert.Equal(["Application theme", "In-game overlay appearance", "Overlay Settings"], headers);
+        Assert.Equal(["Application theme", "Overlay appearance", "Overlay setup"], headers);
         Assert.DoesNotContain(
             settings.Root!.DescendantsAndSelf().Attributes(),
             attribute => attribute.Value == "Theme selection"
@@ -38,18 +38,19 @@ public sealed class ThemeWorkspaceMarkupTests
     }
 
     [Fact]
-    public void OverlayColorGroupsAreSingleOpenAccordionsAndPerPanelScalingReplacesTheGlobalTypographyEditor()
+    public void OverlayColorGroupsHaveOneSelectorAndPerPanelScalingReplacesTheGlobalTypographyEditor()
     {
         XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
-        XElement categoryExpander = theme
+        XElement categorySelector = theme
             .Descendants()
             .Single(element =>
-                element.Name.LocalName == "Expander"
-                && element.Attribute("Classes")?.Value.Split(' ').Contains("theme-category", StringComparer.Ordinal)
-                    == true
+                element.Name.LocalName == "RadioButton" && element.Attribute("GroupName")?.Value == "OverlayColorGroups"
             );
-
-        Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", categoryExpander.Attribute("IsExpanded")?.Value);
+        Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", categorySelector.Attribute("IsChecked")?.Value);
+        Assert.Contains(
+            theme.Descendants(),
+            element => element.Attribute("IsVisible")?.Value == "{Binding IsExpanded}"
+        );
         Assert.DoesNotContain(theme.Descendants(), element => element.Attribute("Text")?.Value == "Typography");
         Assert.DoesNotContain(
             theme.Descendants(),

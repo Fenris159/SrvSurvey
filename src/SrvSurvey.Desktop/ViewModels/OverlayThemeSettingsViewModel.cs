@@ -13,6 +13,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private const string CategoryColonisation = "Colonization";
     private const string CategoryHumanSettlements = "Human settlements";
     private const string CategoryGuardian = "Guardian";
+    internal const string CategoryCustom = "Custom";
     private const string HeaderKey = "header";
 
     internal static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
@@ -96,6 +97,11 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryGuardian, "guardian.warning", "Warning / alignment"),
         new(CategoryGuardian, "guardian.success", "Success / present"),
         new(CategoryGuardian, "guardian.danger", "Danger / missing"),
+        new(CategoryCustom, "custom.1", "Brush 1"),
+        new(CategoryCustom, "custom.2", "Brush 2"),
+        new(CategoryCustom, "custom.3", "Brush 3"),
+        new(CategoryCustom, "custom.4", "Brush 4"),
+        new(CategoryCustom, "custom.5", "Brush 5"),
     ];
 
     private static readonly IReadOnlyList<OverlayTypographyDefinition> TypographyDefinitions =
@@ -331,7 +337,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             LegacyOverlayTheme draft = CreateDraftTheme();
             OverlayThemeStateSaveResult result = stateStore.SaveState(
                 StateName,
-                draft.Colors,
+                draft.Colors.Where(entry => !OverlayCustomBrushes.Defaults.ContainsKey(entry.Key)).ToDictionary(),
                 draft.EffectiveTypography
             );
             RefreshSavedStates(result.StateName);
@@ -451,6 +457,15 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private void ReplaceEditors(IReadOnlyDictionary<string, Color> colors, bool acceptChanges)
     {
         string? expandedCategoryName = Categories.FirstOrDefault(category => category.IsExpanded)?.Name;
+        // Personal brushes belong to the user, so loading a palette keeps their editor values and validation state.
+        var customEditors = Categories
+            .SelectMany(category => category.Colors)
+            .Where(editor => OverlayCustomBrushes.Defaults.ContainsKey(editor.Key))
+            .ToDictionary(editor => editor.Key, StringComparer.Ordinal);
+        var defaults = LegacyOverlayThemeStore
+            .CreateDefault()
+            .Colors.Concat(OverlayCustomBrushes.Defaults)
+            .ToDictionary();
         var definitions = Definitions.ToList();
         var knownKeys = definitions.Select(definition => definition.Key).ToHashSet(StringComparer.Ordinal);
         definitions.AddRange(
@@ -467,9 +482,20 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 group
                     .Select(definition =>
                     {
+                        if (
+                            !acceptChanges
+                            && customEditors.TryGetValue(
+                                definition.Key,
+                                out OverlayThemeColorEditorViewModel? customEditor
+                            )
+                        )
+                        {
+                            return customEditor;
+                        }
+
                         Color initialColor = colors.TryGetValue(definition.Key, out Color configuredColor)
                             ? configuredColor
-                            : LegacyOverlayThemeStore.CreateDefault().GetColor(definition.Key);
+                            : defaults[definition.Key];
                         var editor = new OverlayThemeColorEditorViewModel(definition, initialColor, OnEditorsChanged);
                         if (!acceptChanges)
                         {
@@ -655,6 +681,13 @@ public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public string Name { get; }
+
+    public bool IsCustomBrushGroup => Name == OverlayThemeSettingsViewModel.CategoryCustom;
+
+    public string? Description =>
+        IsCustomBrushGroup
+            ? "Use these colors in the overlay editor's Brush override menu. Theme presets and saved themes leave them unchanged."
+            : null;
 
     public IReadOnlyList<OverlayThemeColorEditorViewModel> Colors { get; }
 

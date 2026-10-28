@@ -2570,14 +2570,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "AMOUNT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
-  },
-  {
     "Text": "ANALYSE",
     "IsFormat": false,
     "SourceKinds": [
@@ -2608,14 +2600,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
-  },
-  {
-    "Text": "APPEARANCE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "APPIMAGE",
@@ -2760,14 +2744,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "AVAILABLE BALANCE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "AVERAGE",
@@ -2928,6 +2904,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
+  },
+  {
+    "Text": "Account",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
     "Text": "Account capabilities",
@@ -4181,6 +4165,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
   },
   {
+    "Text": "Amount",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+  },
+  {
     "Text": "Amount:",
     "IsFormat": false,
     "SourceKinds": [
@@ -4869,6 +4861,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "Apply colors",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Apply point edit",
     "IsFormat": false,
     "SourceKinds": [
@@ -4883,22 +4883,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
-    "Text": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Apply to overlays",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Approach a Guardian point before marking it empty.",
@@ -5148,6 +5132,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Arrange panels on your game display. Use the editor to preview and move them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Arrival",
@@ -5614,6 +5606,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
+    "Text": "Auto,Auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml.cs"
+  },
+  {
+    "Text": "Auto,Auto,Auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml.cs"
+  },
+  {
     "Text": "Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6030,6 +6038,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Available balance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
+  },
+  {
     "Text": "Available release notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -6406,14 +6422,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "BANK BALANCE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
-  },
-  {
     "Text": "BAR",
     "IsFormat": false,
     "SourceKinds": [
@@ -6735,14 +6743,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "BUY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
-  },
-  {
     "Text": "Back to browser",
     "IsFormat": false,
     "SourceKinds": [
@@ -6947,9 +6947,10 @@
     "Text": "Bank balance",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
     "Text": "Banner colour",
@@ -8454,6 +8455,46 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Brush 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Brush 2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Brush 3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Brush 4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Brush 5",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
     "Text": "BucketOneMillions",
     "IsFormat": false,
     "SourceKinds": [
@@ -8574,14 +8615,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Built-in presets fill the editor without changing theme.json until you apply them. Your named states remain stored separately from the active in-game overlay palette.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Bumper",
     "IsFormat": false,
     "SourceKinds": [
@@ -8612,6 +8645,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Buy",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Buy supplies",
@@ -8858,10 +8899,9 @@
     "Text": "CMDR",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "CMDR Corvus",
@@ -9008,14 +9048,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "COMMANDER SELECTION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
-  },
-  {
     "Text": "COMMODITY",
     "IsFormat": false,
     "SourceKinds": [
@@ -9032,28 +9064,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "COMMUNITY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "COMMUNITY GOAL",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "COMMUNITY GOALS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "COMPLETE",
@@ -9087,14 +9103,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "CONDITION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
     "Text": "CONFIGURATION",
@@ -9183,14 +9191,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "CREDIT VALUE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
     "Text": "CRY",
@@ -9355,14 +9355,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
-    "Text": "CURRENT LOCATION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
-  },
-  {
     "Text": "CURRENT ROUTE",
     "IsFormat": false,
     "SourceKinds": [
@@ -9370,14 +9362,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
-    "Text": "CURRENT SHIP",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
     "Text": "CURRENT SYSTEM",
@@ -9395,14 +9379,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
-  },
-  {
-    "Text": "CURRENT TIER",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "CUSTOM RUNTIME PROCESS",
@@ -11093,6 +11069,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose a monitor and size for game overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11173,6 +11157,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Choose a section below. Changes save automatically unless a Save button is shown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Choose a site on the Sites \u0026 surveys tab.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11227,6 +11219,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml.cs"
+  },
+  {
+    "Text": "Choose a theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Choose a valid overlay theme brush.",
@@ -11323,14 +11323,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
-  },
-  {
-    "Text": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Choose at least one commodity.",
@@ -11461,14 +11453,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
   },
   {
-    "Text": "Choose the application identity, tune in-game overlay appearance, and configure overlay behavior.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Choose the bright color of the deployment bars on your game HUD.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11574,6 +11558,14 @@
   },
   {
     "Text": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose what happens when you switch windows or change suits.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -12605,9 +12597,10 @@
     "Text": "Color",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/FirstFootfallInferenceSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
@@ -13330,9 +13323,10 @@
     "Text": "Community",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Community Goal",
@@ -13365,6 +13359,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
+  },
+  {
+    "Text": "Community goals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Community initiative",
@@ -14473,14 +14475,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Control passive Galaxy Map, route, survey, and status surfaces.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Control when overlays appear, edit their positions safely, customize their independent palette, and configure keyboard or controller actions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15572,6 +15566,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Credit value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+  },
+  {
     "Text": "Crimson Raiders",
     "IsFormat": false,
     "SourceKinds": [
@@ -15744,9 +15746,10 @@
     "Text": "Current location",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "Current project needs could not be refreshed.",
@@ -15762,7 +15765,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "Current ship ({0} tonnes): {1} trips",
@@ -15845,6 +15848,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
+    "Text": "Current tier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "Current-system POIs",
     "IsFormat": false,
     "SourceKinds": [
@@ -15883,6 +15894,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Custom",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
     "Text": "Custom / imported",
@@ -15981,14 +16000,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
-    "Text": "DEADLINE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "DEFERRED",
     "IsFormat": false,
     "SourceKinds": [
@@ -16002,7 +16013,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "DENSITY",
@@ -16048,18 +16059,9 @@
     "Text": "DESTINATION",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
-    "Text": "DETAIL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "DETAILS",
@@ -16391,6 +16393,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Deadline",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "Deadline not supplied",
     "IsFormat": false,
     "SourceKinds": [
@@ -16413,6 +16423,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+  },
+  {
+    "Text": "Debt",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "Debt threshold",
@@ -16744,6 +16762,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
+    "Text": "Delete selected theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Delete the selected saved search?",
     "IsFormat": false,
     "SourceKinds": [
@@ -16911,6 +16937,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
+    "Text": "Demand",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Demand:",
@@ -17318,9 +17352,10 @@
     "Text": "Detail",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
     "Text": "Detailed scan required",
@@ -17892,12 +17927,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
   },
   {
+    "Text": "Display",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Display and captured-frame sizes can differ because of desktop scaling. SrvSurvey maps the game\u2019s crop into the shared display; select the display containing the game and reselect if you move it to another monitor.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Display and scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Display host: {0}",
@@ -18914,14 +18965,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
   },
   {
-    "Text": "ESTIMATED NET WORTH",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
-  },
-  {
     "Text": "ETR: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -18962,14 +19005,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ExplorationPoiOverlayPresentation.axaml"
-  },
-  {
-    "Text": "EXPORTS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "EXT",
@@ -19831,22 +19866,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
-    "Text": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Enable global keyboard input below, then use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20485,6 +20504,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
+  },
+  {
+    "Text": "Estimated net worth",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "Estimated share of remaining project needs covered by the selected carriers, capped per commodity.",
@@ -21336,6 +21363,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
+    "Text": "Exports",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
     "Text": "Exports only boxels with at least this many recorded systems. Counts and stored data do not change.",
     "IsFormat": false,
     "SourceKinds": [
@@ -21634,14 +21669,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
-    "Text": "FLEET VALUE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
-  },
-  {
     "Text": "FLIGHT WARNING",
     "IsFormat": false,
     "SourceKinds": [
@@ -21690,14 +21717,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
-  },
-  {
-    "Text": "FRONTIER COMMANDER CONSOLE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
     "Text": "FSD",
@@ -23056,6 +23075,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Fleet value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
+  },
+  {
     "Text": "Fleet-carrier route name",
     "IsFormat": false,
     "SourceKinds": [
@@ -23542,6 +23569,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Frontier account",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
     "Text": "Frontier account access is unavailable during diagnostic replay.",
@@ -24176,14 +24211,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
-    "Text": "GLOBAL PROGRESS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "GNOME",
     "IsFormat": false,
     "SourceKinds": [
@@ -24601,14 +24628,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
-    "Text": "Game overlays",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Game text entry is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -24970,14 +24989,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
   },
   {
-    "Text": "Global overlay behavior",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Global overlay configuration",
     "IsFormat": false,
     "SourceKinds": [
@@ -25025,6 +25036,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Global progress",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Global shortcuts",
@@ -26569,6 +26588,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Hex value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "HiddenPlannedProjects",
     "IsFormat": false,
     "SourceKinds": [
@@ -27511,14 +27538,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "IMPORTS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
-  },
-  {
     "Text": "IN PROGRESS",
     "IsFormat": false,
     "SourceKinds": [
@@ -27565,14 +27584,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "ITEM",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
     "Text": "Ice",
@@ -27694,14 +27705,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EdAstroIntegrationDialog.axaml"
-  },
-  {
-    "Text": "Identity and location",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
     "Text": "If a body type occurs no more than once per system, the result is shown as a frequency. Example: 3 water worlds across 10 systems displays \u00271 in 3.3\u0027.",
@@ -28339,6 +28342,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Imports",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
     "Text": "Imports are hash-verified and preserve progress only when the quest identity matches.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28441,14 +28452,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "In-game overlay appearance",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
@@ -28932,6 +28935,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Interaction shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Internal update helper modes cannot be combined.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29007,9 +29018,10 @@
     "Text": "Item",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
     "Text": "Item (dim)",
@@ -30025,14 +30037,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
-    "Text": "LAST DOCKED MARKET",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
-  },
-  {
     "Text": "LAST FSS SCAN",
     "IsFormat": false,
     "SourceKinds": [
@@ -30446,9 +30450,10 @@
     "Text": "Last docked market",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Last docked services",
@@ -31276,22 +31281,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
-    "Text": "Load",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
-    "Text": "Load Defaults",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Load a commander and save a Raven API key before creating a Nexus.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31370,6 +31359,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Load theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "LoadGame",
@@ -32570,28 +32567,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "MISSION BRIEFING",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "MODE",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
-  },
-  {
-    "Text": "MODULE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
     "Text": "MOI",
@@ -32786,6 +32767,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Manage themes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Mandalay",
@@ -33557,6 +33546,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
+  },
+  {
+    "Text": "Mercenary",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Merging Codex journal {0} of {1}: {2}",
@@ -34509,6 +34506,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Mission briefing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "Mission remaining cargo count",
     "IsFormat": false,
     "SourceKinds": [
@@ -34603,6 +34608,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
+    "Text": "Module",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
     "Text": "Module blueprint",
@@ -35331,14 +35344,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
-    "Text": "Name this overlay theme state",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Name this search so you can resume it later.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35882,6 +35887,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Next body",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
     "Text": "Next boxel to search: {0}",
@@ -38003,9 +38016,10 @@
     "Text": "Notifications",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Notifications and the dedicated stream overlay can be enabled without changing ordinary overlay positions.",
@@ -38118,14 +38132,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "OBJECTIVE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "OBSERVED",
@@ -38254,6 +38260,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
+  },
+  {
+    "Text": "Objective",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -38648,6 +38662,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
+    "Text": "Opacity override and layout recovery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Opacity overrides are ready. Changes apply to visible overlays after Save.",
@@ -39051,7 +39073,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
   },
   {
-    "Text": "Open colour picker",
+    "Text": "Open color picker",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -39984,10 +40006,9 @@
     "Text": "Overlay Exceptions",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay.",
@@ -40006,20 +40027,13 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Overlay Settings",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Overlay appearance",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Overlay appearance and saved states",
@@ -40430,6 +40444,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Overlay positions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Overlay positions and appearance were not saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -40582,6 +40604,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutFileAccess.cs"
   },
   {
+    "Text": "Overlay setup",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Overlay size dimensions must be positive.",
     "IsFormat": false,
     "SourceKinds": [
@@ -40660,14 +40690,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
-  },
-  {
-    "Text": "Overlay theme presets and saved states",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Overlay theme state \u0027{0}\u0027",
@@ -41124,7 +41146,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "PRISTINE",
@@ -41734,6 +41756,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.CarrierManifest.cs"
+  },
+  {
+    "Text": "Platform and editor options",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Platform: {0} ({1})",
@@ -42940,6 +42970,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Preview on overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Preview state index must be from 0 to {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -42986,6 +43024,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Previous body",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
     "Text": "Previous entry",
@@ -43066,6 +43112,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
+    "Text": "Price",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
     "Text": "Price:",
@@ -43498,9 +43552,10 @@
     "Text": "Prohibited",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Project creation uses the live docked construction-site context and a shipped build catalog.",
@@ -47027,14 +47082,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
-    "Text": "Refresh preview",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Refresh profiles",
     "IsFormat": false,
     "SourceKinds": [
@@ -48324,6 +48371,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Reset to default colors",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Reset totals",
     "IsFormat": false,
     "SourceKinds": [
@@ -49066,6 +49121,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Reward",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Reward bands changed for this session but could not be saved: {0}",
@@ -50314,14 +50377,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
-    "Text": "SELL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
-  },
-  {
     "Text": "SESSION",
     "IsFormat": false,
     "SourceKinds": [
@@ -50345,14 +50400,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"
-  },
-  {
-    "Text": "SHIPYARD \u0026 OUTFITTING",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
   },
   {
     "Text": "SHOW",
@@ -50617,7 +50664,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "SUBTYPES (OPTIONAL)",
@@ -50998,6 +51045,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Save a copy of the colors in this editor. Apply colors saves them to your live overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Save a diagnostic capture when the tuning panel cannot be found",
     "IsFormat": false,
     "SourceKinds": [
@@ -51175,14 +51230,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
-    "Text": "Save named state",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Save notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -51318,6 +51365,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Save theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Save to Library",
@@ -52949,14 +53004,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
-    "Text": "Select an overlay theme",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Select deposits directly on Surface Mining \u003E Survey map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53163,6 +53210,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "Sell",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Sell System",
@@ -53525,6 +53580,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Set the look of the app and your game overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
@@ -54146,6 +54209,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
+    "Text": "Shipyard \u0026 outfitting",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
+  },
+  {
     "Text": "Shipyard and outfitting information becomes available after Frontier has a supported last-docked station for the commander.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54242,6 +54313,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Show All",
@@ -57687,7 +57766,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
   },
   {
     "Text": "Status \u0026 utilities",
@@ -57858,6 +57937,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingRows.cs"
   },
   {
+    "Text": "Stock",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+  },
+  {
     "Text": "Stock {0} \u00B7 Demand {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -57957,9 +58044,10 @@
     "Text": "Streaming",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Stronghold",
@@ -58915,6 +59003,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "System actions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
     "Text": "System biology",
@@ -64685,12 +64781,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Theme name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
     "Text": "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Theme preset or saved theme",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "Theme workspace: application versus overlay appearance",
@@ -64771,6 +64883,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "These shortcuts also appear in Settings \u2192 Input. Enable global keyboard input there to use them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
@@ -65869,6 +65989,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Trade",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Trade delivery",
@@ -68187,6 +68315,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "Use these colors in the overlay editor\u0027s Brush override menu. Theme presets and saved themes leave them unchanged.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "UseCompactScrollingCommoditiesList",
     "IsFormat": false,
     "SourceKinds": [
@@ -68458,6 +68610,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
+    "Text": "VR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "VR \u0026 headset overlays",
@@ -68858,6 +69018,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Visibility exceptions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode.",
@@ -70183,6 +70351,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
   },
   {
+    "Text": "When overlays appear",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
     "IsFormat": false,
     "SourceKinds": [
@@ -70728,14 +70904,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "YOUR CONTRIBUTION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "Years",
     "IsFormat": false,
     "SourceKinds": [
@@ -70814,6 +70982,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
+    "Text": "Your contribution",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -72542,6 +72718,46 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "custom.1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayCustomBrushes.cs"
+  },
+  {
+    "Text": "custom.2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayCustomBrushes.cs"
+  },
+  {
+    "Text": "custom.3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayCustomBrushes.cs"
+  },
+  {
+    "Text": "custom.4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayCustomBrushes.cs"
+  },
+  {
+    "Text": "custom.5",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayCustomBrushes.cs"
   },
   {
     "Text": "cutter",

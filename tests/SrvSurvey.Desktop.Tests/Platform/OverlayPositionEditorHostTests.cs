@@ -8,6 +8,8 @@ using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -18,13 +20,87 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayPositionEditorHostTests : IDisposable
 {
+    [AvaloniaFact]
+    public async Task SphericalSearchPreviewFollowsContentInsteadOfAnOldManualSize()
+    {
+        const string name = "PlotSphericalSearch";
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            name,
+            new(LegacyHorizontalAnchor.Right, 24, LegacyVerticalAnchor.Bottom, 40, 1, SizeOverride: new(240, 120))
+        );
+        store.Save(layout.Placements);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var interaction = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            layout,
+            registry,
+            host
+        );
+        interaction.SelectedCategory = interaction.Categories.Single(category =>
+            category.Category == OverlayLayoutCatalog.GetRequired(name).Category
+        );
+        Assert.True(interaction.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window => window.Definition.Name == name);
+            using WriteableBitmap? initial = preview.CaptureRenderedFrame();
+            PixelSize initialSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            Assert.False(preview.FindControl<Thumb>("PanelResizeThumb")!.IsVisible);
+            SphericalSearchOverlayViewModel model = Assert.IsType<SphericalSearchOverlayViewModel>(
+                preview.RuntimePresentation!.DataContext
+            );
+            model.Sphere.LoadProfile(
+                "F123",
+                "Drew",
+                true,
+                new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 50)
+            );
+            model.InstallEditorPreview("Praea Euq IL-P c5-123456789 (Expedition staging system)", "Sol", "Sol", "Sol");
+            await model.Sphere.UpdateNavigationAsync(null, new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+            using WriteableBitmap? expanded = preview.CaptureRenderedFrame();
+            Dispatcher.UIThread.RunJobs();
+            PixelSize expandedSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            Assert.True(expandedSize.Width > initialSize.Width);
+            Assert.True(expandedSize.Height > initialSize.Height);
+            Assert.Equal(
+                layout.GetPosition(name, bounds, expandedSize),
+                preview.GetPanelScreenOrigin(preview.RenderScaling)
+            );
+            await model.Sphere.UpdateNavigationAsync(null, new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+            using WriteableBitmap? contracted = preview.CaptureRenderedFrame();
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(initialSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
+            Assert.Equal(
+                layout.GetPosition(name, bounds, initialSize),
+                preview.GetPanelScreenOrigin(preview.RenderScaling)
+            );
+        }
+        finally
+        {
+            interaction.Cancel();
+        }
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
 
-    [AvaloniaFact]
-    public void TextBrushComboboxCommitsAndReloadsTheSelectedSwatch()
+    [AvaloniaTheory]
+    [InlineData("cyan")]
+    [InlineData("custom.1")]
+    [InlineData("custom.2")]
+    [InlineData("custom.3")]
+    [InlineData("custom.4")]
+    [InlineData("custom.5")]
+    public void TextBrushComboboxCommitsAndReloadsTheSelectedSwatch(string brushKey)
     {
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
@@ -54,16 +130,20 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             OverlayTypographyRoleViewModel role = model.TypographyRoles.Single(item =>
                 item.Role == OverlayTypographyRole.Header
             );
-            chooser.SelectedItem = role.BrushChoices.Single(choice => choice.Key == "cyan");
+            Assert.Equal(
+                Enumerable.Range(1, 5).Select(index => $"Custom: Brush {index}"),
+                role.BrushChoices.Skip(1).Take(5).Select(choice => choice.DisplayName)
+            );
+            chooser.SelectedItem = role.BrushChoices.Single(choice => choice.Key == brushKey);
             using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
-            Assert.Equal("cyan", role.SelectedBrush.Key);
+            Assert.Equal(brushKey, role.SelectedBrush.Key);
             Assert.NotNull(frame);
             frame.Save(
                 Path.Combine(Path.GetTempPath(), "srvsurvey-overlay-brush-editor.png"),
                 PngBitmapEncoderOptions.Default
             );
             model.SaveCommand.Execute(null);
-            Assert.Equal("cyan", store.Load().GetTypographyScale("PlotJumpInfo").Brushes.Header);
+            Assert.Equal(brushKey, store.Load().GetTypographyScale("PlotJumpInfo").Brushes.Header);
             Assert.True(model.Begin());
             model.OpenOverlaySettings("PlotJumpInfo");
             model.ToggleTypographySettingsCommand.Execute(null);
@@ -71,7 +151,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 .IsType<OverlayPositionEditorWindow>(host.EditorToolbar)
                 .CaptureRenderedFrame();
             Assert.Equal(
-                "cyan",
+                brushKey,
                 model.TypographyRoles.Single(item => item.Role == OverlayTypographyRole.Header).SelectedBrush.Key
             );
             model.ResetTypographyCommand.Execute(null);

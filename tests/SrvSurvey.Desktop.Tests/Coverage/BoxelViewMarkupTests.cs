@@ -268,7 +268,12 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{DynamicResource RavenAccentBrush}", values);
         Assert.Contains("{DynamicResource RavenAccentHoverBrush}", values);
         Assert.Contains("{DynamicResource RavenWarningBrush}", values);
-        Assert.DoesNotContain("System actions", values);
+        Assert.DoesNotContain(
+            menu.Descendants(),
+            element =>
+                element.Attribute("Content")?.Value == "System actions"
+                || element.Attribute("Text")?.Value == "System actions"
+        );
         XElement launcher = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
@@ -278,6 +283,8 @@ public sealed class BoxelViewMarkupTests
             );
         Assert.Equal("Menu_PointerEntered", launcher.Attribute("PointerEntered")?.Value);
         Assert.Equal("Menu_PointerExited", launcher.Attribute("PointerExited")?.Value);
+        Assert.Equal("System actions", launcher.Attribute("ToolTip.Tip")?.Value);
+        Assert.Equal("System actions", launcher.Attribute("AutomationProperties.Name")?.Value);
         XElement launcherStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "Button.radial-launcher"

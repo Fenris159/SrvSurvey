@@ -1615,10 +1615,14 @@ public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
     private static OverlayBrushChoice[] CreateBrushChoices() =>
         new[] { OverlayBrushChoice.Default }
             .Concat(
-                OverlayThemeSettingsViewModel.Definitions.Select(definition => new OverlayBrushChoice(
-                    definition.Key,
-                    $"{definition.Category}: {definition.DisplayName}"
-                ))
+                OverlayThemeSettingsViewModel
+                    .Definitions.OrderBy(definition =>
+                        definition.Category != OverlayThemeSettingsViewModel.CategoryCustom
+                    )
+                    .Select(definition => new OverlayBrushChoice(
+                        definition.Key,
+                        $"{definition.Category}: {definition.DisplayName}"
+                    ))
             )
             .Concat(
                 (Application.Current?.Resources.Keys.OfType<string>() ?? [])

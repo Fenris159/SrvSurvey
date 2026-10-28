@@ -13,6 +13,59 @@ public sealed class RavenThemeServiceTests : IDisposable
     );
 
     [Fact]
+    public void PersonalBrushesHaveDefaultsAndDoNotReplaceThemeRoles()
+    {
+        var application = new Application();
+        var service = new RavenThemeService(
+            application,
+            new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        service.ApplyCurrent();
+        Assert.All(
+            OverlayCustomBrushes.Defaults,
+            entry =>
+                Assert.Equal(
+                    entry.Value,
+                    Assert.IsType<SolidColorBrush>(application.Resources[$"LegacyTheme.{entry.Key}"]).Color
+                )
+        );
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        foreach (string key in OverlayCustomBrushes.Defaults.Keys)
+        {
+            colors[key] = Color.FromArgb(128, 12, 34, 56);
+        }
+
+        service.ApplyOverlayTheme(new LegacyOverlayTheme(colors, true, null));
+
+        Assert.Equal(
+            LegacyOverlayThemeStore.CreateDefault().GetColor("orange"),
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayAccentBrush"]).Color
+        );
+        foreach (RavenThemeDefinition theme in RavenThemeCatalog.All)
+        {
+            service.Select(theme.Key);
+            Assert.All(
+                OverlayCustomBrushes.Defaults.Keys,
+                key =>
+                    Assert.Equal(
+                        Color.FromArgb(128, 12, 34, 56),
+                        Assert.IsType<SolidColorBrush>(application.Resources[$"LegacyTheme.{key}"]).Color
+                    )
+            );
+        }
+
+        service.ApplyOverlayTheme(LegacyOverlayThemeStore.CreateDefault());
+        Assert.All(
+            OverlayCustomBrushes.Defaults,
+            entry =>
+                Assert.Equal(
+                    entry.Value,
+                    Assert.IsType<SolidColorBrush>(application.Resources[$"LegacyTheme.{entry.Key}"]).Color
+                )
+        );
+    }
+
+    [Fact]
     public void MonochromeThemeAppliesLayeredLowGlareRolesAndRemovesDepthShadows()
     {
         var application = new Application();

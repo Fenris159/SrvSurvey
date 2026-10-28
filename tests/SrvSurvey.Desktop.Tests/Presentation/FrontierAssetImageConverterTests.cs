@@ -50,7 +50,7 @@ public sealed class FrontierAssetImageConverterTests
         string views = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views");
         string commander = File.ReadAllText(Path.Combine(views, "FrontierCommanderTabView.axaml"));
 
-        Assert.Equal(5, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
+        Assert.Equal(6, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
     }
 
     /// <summary>Counts converter bindings in markup to detect newly unconverted dynamic asset paths.</summary>

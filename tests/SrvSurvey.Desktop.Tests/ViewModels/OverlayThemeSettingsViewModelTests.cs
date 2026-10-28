@@ -13,6 +13,80 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     );
 
     [Fact]
+    public void FivePersonalBrushesFollowGuardianAndPersistWithoutChangingThemeColors()
+    {
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
+        Assert.Equal("Guardian", viewModel.Categories[^2].Name);
+        OverlayThemeCategoryViewModel custom = viewModel.Categories[^1];
+        Assert.Equal("Custom", custom.Name);
+        Assert.True(custom.IsCustomBrushGroup);
+        Assert.False(viewModel.Categories[0].IsCustomBrushGroup);
+        Assert.Equal(
+            Enumerable.Range(1, 5).Select(index => $"Brush {index}"),
+            custom.Colors.Select(editor => editor.DisplayName)
+        );
+        Assert.Equal(5, custom.Colors.Select(editor => editor.Color).Distinct().Count());
+        Assert.False(viewModel.IsDirty);
+        foreach (OverlayThemeColorEditorViewModel editor in custom.Colors)
+        {
+            editor.HexValue = "#12345680";
+        }
+
+        viewModel.ApplyCommand.Execute(null);
+
+        var store = new LegacyOverlayThemeStore(Path.Combine(temporaryDirectory, "theme.json"));
+        var reloaded = new OverlayThemeSettingsViewModel(
+            store,
+            new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"))
+        );
+        Assert.False(reloaded.IsDirty);
+        Assert.Equal("Default", reloaded.SelectedSavedState);
+        Assert.All(reloaded.Categories[^1].Colors, editor => Assert.Equal("#12345680", editor.HexValue));
+        Assert.All(
+            LegacyOverlayThemeStore.CreateDefault().Colors,
+            entry => Assert.Equal(entry.Value, store.Load().GetColor(entry.Key))
+        );
+    }
+
+    [Fact]
+    public void PresetsSavedStatesAndDefaultsLeavePersonalBrushesAndValidationUnchanged()
+    {
+        var stateStore = new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"));
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel(stateStore);
+        OverlayThemeColorEditorViewModel personal = GetEditor(viewModel, "custom.1");
+        personal.HexValue = "#12345680";
+        viewModel.StateName = "Saved palette";
+        viewModel.SaveStateCommand.Execute(null);
+        Assert.DoesNotContain(
+            stateStore.Load().States.Single().Colors.Keys,
+            key => key.StartsWith("custom.", StringComparison.Ordinal)
+        );
+        // Also ignore personal swatches in an older/imported saved palette.
+        var imported = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        imported["custom.1"] = Colors.Red;
+        _ = stateStore.SaveState("Saved palette", imported);
+        foreach (OverlayThemePreset preset in OverlayThemePresetCatalog.Presets)
+        {
+            viewModel.SelectedSavedState = preset.Name;
+            Assert.Same(personal, GetEditor(viewModel, "custom.1"));
+            Assert.Equal("#12345680", personal.HexValue);
+        }
+
+        viewModel.SelectedSavedState = "Saved palette";
+        viewModel.LoadStateCommand.Execute(null);
+        Assert.Equal("#12345680", GetEditor(viewModel, "custom.1").HexValue);
+        personal.HexValue = "invalid";
+        viewModel.RestoreDefaultsCommand.Execute(null);
+        Assert.Same(personal, GetEditor(viewModel, "custom.1"));
+        Assert.True(viewModel.HasValidationErrors);
+        Assert.False(viewModel.CanApply);
+        viewModel.ReloadActiveCommand.Execute(null);
+        Assert.False(viewModel.HasValidationErrors);
+        Assert.False(viewModel.IsDirty);
+        Assert.Equal(OverlayCustomBrushes.Defaults["custom.1"], GetColor(viewModel, "custom.1"));
+    }
+
+    [Fact]
     public void BuiltInPresetsAreAlwaysAvailableAndLoadWhenSelected()
     {
         OverlayThemeSettingsViewModel viewModel = CreateViewModel();

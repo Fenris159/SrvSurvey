@@ -1,0 +1,168 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Application windows opt in explicitly. In-game windows and presentations
+       keep RavenStyles and their existing overlay typography unchanged. All
+       colors come from the six application palettes, including light themes. -->
+  <Style Selector="Window.app-window TextBlock.page-title, Window.app-window TextBlock.commander-name, Window.app-window TextBlock.app-wordmark">
+    <Setter Property="FontFamily" Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Window.app-window TextBlock.page-title">
+    <Setter Property="FontSize" Value="32" />
+    <Setter Property="LetterSpacing" Value="0.3" />
+  </Style>
+  <Style Selector="Window.app-window TextBlock.app-wordmark">
+    <Setter Property="FontSize" Value="20" />
+  </Style>
+  <Style Selector="Window.app-window TextBlock.card-title">
+    <Setter Property="FontFamily" Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Window.app-window TextBlock.eyebrow">
+    <Setter Property="LetterSpacing" Value="0.4" />
+  </Style>
+
+  <!-- Small radii distinguish instrument housings, recessed fields and status
+       badges. Existing view padding and custom control layouts remain intact. -->
+  <Style Selector="Window.app-window Border.card">
+    <Setter Property="CornerRadius" Value="5" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Border.card.raised">
+    <Setter Property="Background" Value="{DynamicResource RavenSidebarBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Border.commander-panel">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Border.badge">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Window.app-window Border.detail-tile, Window.app-window Border.rank-card, Window.app-window Border.dashboard-row, Window.app-window Border.subexpander-panel, Window.app-window Border.module-group">
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+
+  <!-- The selected rail is the brightest fixed element in the shell. Reserving
+       the accent for location and actions keeps dense workspaces readable. -->
+  <Style Selector="Window.app-window Border.nav-row">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderThickness" Value="3,0,0,0" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Window.app-window Border.nav-row.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.nav-item">
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Window.app-window Button.nav-item TextBlock">
+    <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+  </Style>
+  <Style Selector="Window.app-window Border.nav-row.selected Button.nav-item">
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.nav-group-heading">
+    <Setter Property="FontFamily" Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+  <Style Selector="Window.app-window Button.commander-card">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Window.app-window Button.commander-card:pointerover, Window.app-window Button.commander-card.selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+
+  <Style Selector="Window.app-window Button.primary, Window.app-window Button.secondary, Window.app-window Button.danger, Window.app-window Button.settings-search-result">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Window.app-window Button.secondary">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.secondary:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenControlAccentHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentHoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.secondary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.primary:pressed /template/ ContentPresenter, Window.app-window Button.secondary:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+
+  <Style Selector="Window.app-window TextBox, Window.app-window NumericUpDown, Window.app-window ComboBox">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
+  </Style>
+  <Style Selector="Window.app-window TextBox:pointerover /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenFocusRingBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button:focus-visible, Window.app-window ToggleButton:focus-visible, Window.app-window ComboBox:focus-visible, Window.app-window NumericUpDown:focus-visible, Window.app-window TabItem:focus-visible">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenFocusRingBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <!-- Keep the existing expanders and tabs, replacing pill-shaped headers with
+       shallow instrument strips without changing their interaction templates. -->
+  <Style Selector="Window.app-window Expander.section-pill /template/ ToggleButton, Window.app-window Expander.profile-section /template/ ToggleButton, Window.app-window Expander.profile-subsection /template/ ToggleButton, Window.app-window Expander.theme-selector /template/ ToggleButton">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="{DynamicResource RavenSidebarBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Expander.section-pill /template/ ToggleButton /template/ Border#ToggleButtonBackground, Window.app-window Expander.profile-section /template/ ToggleButton /template/ Border#ToggleButtonBackground, Window.app-window Expander.profile-subsection /template/ ToggleButton /template/ Border#ToggleButtonBackground, Window.app-window Expander.theme-selector /template/ ToggleButton /template/ Border#ToggleButtonBackground">
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Window.app-window TabItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window Button.link.workspace-tab">
+    <Setter Property="FontFamily" Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+  </Style>
+  <Style Selector="Window.app-window Button.link.workspace-tab.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window ListBox.settings-categories">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Window.app-window ListBox.settings-categories ListBoxItem">
+    <Setter Property="BorderThickness" Value="2,0,0,0" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="Margin" Value="0,1" />
+  </Style>
+  <Style Selector="Window.app-window ListBox.settings-categories ListBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Window.app-window ListBox.settings-categories ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+</Styles>

@@ -16,273 +16,245 @@
       <Setter Property="Width" Value="14" />
       <Setter Property="Height" Value="14" />
     </Style>
+    <Style Selector="RadioButton.overlay-color-group">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="8,6" />
+      <Setter Property="Margin" Value="0,0,4,6" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" CornerRadius="3">
+            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Foreground="{TemplateBinding Foreground}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.overlay-color-group:checked">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    </Style>
+    <Style Selector="RadioButton.overlay-color-group:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+    </Style>
   </UserControl.Styles>
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32" Spacing="22" MaxWidth="1100">
-      <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="APPEARANCE" />
-        <TextBlock Classes="page-title" Text="Theme" />
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="Choose the application identity, tune in-game overlay appearance, and configure overlay behavior." />
-      </StackPanel>
-      <TabControl Classes="theme-selector"
-                  HorizontalContentAlignment="Stretch">
-        <TabItem Classes="theme-selector" Header="Application theme">
-      <StackPanel Margin="0,16,0,0" Spacing="18">
-        <Border Classes="card raised">
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-            <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Current application theme" />
-              <TextBlock Classes="muted" Text="{Binding SelectedThemeName}" />
-            </StackPanel>
-            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         FontWeight="SemiBold"
-                         Text="SAVED LOCALLY" />
-            </Border>
-          </Grid>
-        </Border>
-
-        <ItemsControl ItemsSource="{Binding ThemeOptions}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel Orientation="Horizontal" ItemWidth="250" ItemHeight="184" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:ThemeOptionViewModel">
-              <Button Classes="secondary"
-                      Width="238"
-                      Height="172"
-                      Margin="0,0,12,12"
-                      Padding="0"
-                      HorizontalContentAlignment="Stretch"
-                      VerticalContentAlignment="Stretch"
-                      Command="{Binding SelectCommand}">
-                <Border Background="{Binding WindowBrush}"
-                        BorderBrush="{Binding AccentBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="16">
-                  <Grid RowDefinitions="*,Auto" RowSpacing="14">
-                    <StackPanel Spacing="8">
-                      <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Foreground="{Binding TextBrush}"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Text="{Binding DisplayName}" />
-                        <TextBlock Grid.Column="1"
-                                   Foreground="{Binding AccentBrush}"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   Text="{Binding ModeLabel}" />
-                      </Grid>
-                      <Border Height="48"
-                              Background="{Binding SurfaceBrush}"
-                              CornerRadius="6"
-                              Padding="10">
-                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                          <Border Width="72" Height="7"
-                                  HorizontalAlignment="Left"
-                                  Background="{Binding TextBrush}"
-                                  CornerRadius="4" />
-                          <Border Grid.Column="1" Width="38" Height="20"
-                                  Background="{Binding AccentBrush}"
-                                  CornerRadius="5" />
-                        </Grid>
-                      </Border>
-                    </StackPanel>
-                    <Border Grid.Row="1" Height="4"
-                            Background="{Binding AccentBrush}"
-                            CornerRadius="2" />
-                  </Grid>
+  <Grid Margin="24" RowDefinitions="Auto,*" RowSpacing="18">
+    <StackPanel Spacing="5">
+      <TextBlock Classes="page-title" Text="Theme" />
+      <TextBlock Classes="muted"
+                 TextWrapping="Wrap"
+                 Text="Set the look of the app and your game overlays." />
+    </StackPanel>
+    <TabControl x:Name="ThemeSections" Grid.Row="1" Classes="theme-selector" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+      <TabItem Classes="theme-selector" Header="Application theme">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="0,16,0,0" Spacing="18">
+            <Border Classes="card raised">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="card-title" Text="Current application theme" />
+                  <TextBlock Classes="muted" Text="{Binding SelectedThemeName}" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontWeight="SemiBold"
+                             Text="SAVED LOCALLY" />
                 </Border>
-              </Button>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+              </Grid>
+            </Border>
 
-        <Border Classes="card">
-          <StackPanel Spacing="8">
-            <TextBlock Classes="card-title" Text="Application theme scope" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette." />
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       TextWrapping="Wrap"
-                       Text="{Binding ThemeStatusMessage}" />
-          </StackPanel>
-        </Border>
-      </StackPanel>
-        </TabItem>
-
-        <TabItem Classes="theme-selector" Header="In-game overlay appearance">
-      <StackPanel Margin="0,16,0,0" Spacing="18">
-        <Border x:Name="OverlayThemePresetCard"
-                Classes="card raised">
-          <StackPanel Spacing="14">
-            <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Overlay theme presets and saved states" />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="Built-in presets fill the editor without changing theme.json until you apply them. Your named states remain stored separately from the active in-game overlay palette." />
-            </StackPanel>
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-              <ComboBox ItemsSource="{Binding OverlayTheme.SavedStates}"
-                        SelectedItem="{Binding OverlayTheme.SelectedSavedState, Mode=TwoWay}"
-                        PlaceholderText="Select an overlay theme" />
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      Command="{Binding OverlayTheme.LoadStateCommand}"
-                      Content="Load" />
-              <Button Grid.Column="2"
-                      Classes="secondary"
-                      Command="{Binding OverlayTheme.DeleteStateCommand}"
-                      Content="Delete" />
-            </Grid>
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-              <TextBox Text="{Binding OverlayTheme.StateName, Mode=TwoWay}"
-                       MaxLength="80"
-                       PlaceholderText="Name this overlay theme state" />
-              <Button Grid.Column="1"
-                      Classes="primary"
-                      Command="{Binding OverlayTheme.SaveStateCommand}"
-                      Content="Save named state" />
-            </Grid>
-          </StackPanel>
-        </Border>
-
-        <Border x:Name="OverlayThemeActionsCard"
-                Classes="card raised">
-          <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
-            <TextBlock VerticalAlignment="Center"
-                       Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="{Binding OverlayTheme.StatusMessage}" />
-            <Button Grid.Column="1"
-                    Classes="secondary"
-                    Command="{Binding OverlayTheme.PreviewCommand}"
-                    Content="Refresh preview" />
-            <Button Grid.Column="2"
-                    Classes="secondary"
-                    Command="{Binding OverlayTheme.ReloadActiveCommand}"
-                    Content="Discard changes" />
-            <Button Grid.Column="3"
-                    Classes="secondary"
-                    Command="{Binding OverlayTheme.RestoreDefaultsCommand}"
-                    Content="Load Defaults" />
-            <Button Grid.Column="4"
-                    Classes="primary"
-                    Command="{Binding OverlayTheme.ApplyCommand}"
-                    Content="Apply to overlays" />
-          </Grid>
-        </Border>
-
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays." />
-
-        <ItemsControl x:Name="OverlayThemeColorEditorList"
-                      ItemsSource="{Binding OverlayTheme.Categories}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:OverlayThemeCategoryViewModel">
-              <Expander Classes="section-pill theme-category"
-                        Margin="0,0,0,12"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
-                <Expander.Header>
-                  <TextBlock Classes="card-title" Text="{Binding Name}" />
-                </Expander.Header>
-                <Border Classes="card" Margin="0,8,0,0" Grid.IsSharedSizeScope="True">
-                  <ItemsControl ItemsSource="{Binding Colors}">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
-                      </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:OverlayThemeColorEditorViewModel">
-                        <Grid Height="36"
-                              Margin="0,0,12,6"
-                              Classes="overlay-theme-color-row"
-                              ColumnSpacing="8">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="64" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="OverlayThemeColorName" />
-                            <ColumnDefinition Width="142" />
-                            <ColumnDefinition Width="118" />
-                          </Grid.ColumnDefinitions>
-                          <ColorPicker Width="64"
-                                       Height="32"
-                                       MinHeight="0"
-                                       MaxHeight="32"
-                                       VerticalAlignment="Center"
-                                       Color="{Binding Color, Mode=TwoWay}"
-                                       ColorModel="Rgba"
-                                       HexInputAlphaPosition="Trailing"
-                                       IsAlphaEnabled="True"
-                                       IsAlphaVisible="True"
-                                       ToolTip.Tip="Open colour picker" />
-                          <StackPanel Grid.Column="1"
-                                      VerticalAlignment="Center"
-                                      Spacing="0">
-                            <TextBlock FontSize="12"
+            <ItemsControl ItemsSource="{Binding ThemeOptions}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" ItemWidth="250" ItemHeight="184" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ThemeOptionViewModel">
+                  <Button Classes="secondary"
+                          Width="238"
+                          Height="172"
+                          Margin="0,0,12,12"
+                          Padding="0"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalContentAlignment="Stretch"
+                          Command="{Binding SelectCommand}">
+                    <Border Background="{Binding WindowBrush}"
+                            BorderBrush="{Binding AccentBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="16">
+                      <Grid RowDefinitions="*,Auto" RowSpacing="14">
+                        <StackPanel Spacing="8">
+                          <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Foreground="{Binding TextBrush}"
+                                       FontSize="15"
                                        FontWeight="SemiBold"
                                        Text="{Binding DisplayName}" />
-                            <TextBlock Classes="muted"
-                                       FontSize="9"
-                                       Text="{Binding Key}" />
-                          </StackPanel>
-                          <Grid Grid.Column="2"
-                                VerticalAlignment="Center"
-                                ColumnDefinitions="*,Auto"
-                                ColumnSpacing="5"
-                                ToolTip.Tip="Opacity">
-                            <Slider x:Name="OverlayThemeOpacitySlider"
-                                    Classes="overlay-theme-opacity"
-                                    Height="32"
-                                    MinHeight="0"
-                                    MaxHeight="32"
-                                    Minimum="0"
-                                    Maximum="100"
-                                    TickFrequency="1"
-                                    IsSnapToTickEnabled="True"
-                                    Value="{Binding OpacityPercent, Mode=TwoWay}" />
                             <TextBlock Grid.Column="1"
-                                       Classes="monospace"
+                                       Foreground="{Binding AccentBrush}"
                                        FontSize="10"
-                                       VerticalAlignment="Center"
-                                       Width="34"
-                                       Text="{Binding OpacityPercent, StringFormat={}{0}%}" />
+                                       FontWeight="Bold"
+                                       Text="{Binding ModeLabel}" />
                           </Grid>
-                          <TextBox x:Name="OverlayThemeHexTextBox"
-                                   Grid.Column="3"
-                                   Height="32"
-                                   MinHeight="0"
-                                   MaxHeight="32"
-                                   VerticalContentAlignment="Center"
-                                   Classes="overlay-theme-hex"
-                                   Classes.invalid="{Binding HasValidationError}"
-                                   Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                   ToolTip.Tip="{Binding ValidationMessage}" />
-                        </Grid>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </Border>
-              </Expander>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                          <Border Height="48"
+                                  Background="{Binding SurfaceBrush}"
+                                  CornerRadius="2">
+                            <Grid ColumnDefinitions="40,*">
+                              <Border BorderBrush="{Binding AccentBrush}" BorderThickness="0,0,1,0" Padding="5,7">
+                                <StackPanel Spacing="5">
+                                  <Border Height="5" Background="{Binding AccentBrush}" />
+                                  <Border Height="3" Margin="3,0" Background="{Binding TextBrush}" Opacity="0.45" />
+                                  <Border Height="3" Margin="3,0" Background="{Binding TextBrush}" Opacity="0.45" />
+                                  <Border Height="3" Margin="3,0" Background="{Binding TextBrush}" Opacity="0.45" />
+                                </StackPanel>
+                              </Border>
+                              <Grid Grid.Column="1" Margin="8" RowDefinitions="Auto,*" RowSpacing="6">
+                                <Border Height="5" Width="62" HorizontalAlignment="Left" Background="{Binding TextBrush}" />
+                                <Border Grid.Row="1" BorderBrush="{Binding AccentBrush}" BorderThickness="2,1,1,1">
+                                  <Border Height="3" Margin="6,0" Background="{Binding TextBrush}" Opacity="0.35" />
+                                </Border>
+                              </Grid>
+                            </Grid>
+                          </Border>
+                        </StackPanel>
+                        <Border Grid.Row="1" Height="4"
+                                Background="{Binding AccentBrush}"
+                                CornerRadius="2" />
+                      </Grid>
+                    </Border>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-      </StackPanel>
-        </TabItem>
-        <TabItem Classes="theme-selector" Header="Overlay Settings">
-      <views:OverlaySettingsView />
-        </TabItem>
-      </TabControl>
-    </StackPanel>
-  </ScrollViewer>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="card-title" Text="Application theme scope" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette." />
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                           TextWrapping="Wrap"
+                           Text="{Binding ThemeStatusMessage}" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Classes="theme-selector" Header="Overlay appearance">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="0,16,0,0">
+          <StackPanel Spacing="12">
+            <Border x:Name="OverlayThemePresetCard" Classes="card raised" Padding="16,12">
+              <StackPanel Spacing="10">
+                <TextBlock FontWeight="SemiBold" Text="Theme preset or saved theme" />
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                  <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding OverlayTheme.SavedStates}"
+                            SelectedItem="{Binding OverlayTheme.SelectedSavedState, Mode=TwoWay}"
+                            PlaceholderText="Choose a theme" />
+                  <Button Grid.Column="1" Classes="secondary" Command="{Binding OverlayTheme.LoadStateCommand}" Content="Load theme" />
+                  <Button x:Name="OverlayThemeLibrary" Grid.Column="2" Classes="secondary" Content="Manage themes">
+                    <Button.Flyout>
+                      <Flyout>
+                        <StackPanel Width="360" Spacing="12">
+                          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Save a copy of the colors in this editor. Apply colors saves them to your live overlays." />
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <TextBox Text="{Binding OverlayTheme.StateName, Mode=TwoWay}" MaxLength="80" PlaceholderText="Theme name" />
+                            <Button Grid.Column="1" Classes="secondary" Command="{Binding OverlayTheme.SaveStateCommand}" Content="Save theme" />
+                          </Grid>
+                          <WrapPanel>
+                            <Button Classes="secondary" Margin="0,0,10,0" Command="{Binding OverlayTheme.DeleteStateCommand}" Content="Delete selected theme" />
+                            <Button Classes="secondary" Command="{Binding OverlayTheme.RestoreDefaultsCommand}" Content="Reset to default colors" />
+                          </WrapPanel>
+                        </StackPanel>
+                      </Flyout>
+                    </Button.Flyout>
+                  </Button>
+                </Grid>
+
+              </StackPanel>
+            </Border>
+            <ItemsControl x:Name="OverlayColorGroups" ItemsSource="{Binding OverlayTheme.Categories}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:OverlayThemeCategoryViewModel">
+                  <RadioButton Classes="overlay-color-group" GroupName="OverlayColorGroups"
+                               Content="{Binding Name}" IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                               ToolTip.Tip="{Binding Description}" AutomationProperties.HelpText="{Binding Description}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+          <ScrollViewer x:Name="OverlayColorScroller" Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="card" Padding="16,8">
+              <ItemsControl x:Name="OverlayThemeColorEditorList" ItemsSource="{Binding OverlayTheme.Categories}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:OverlayThemeCategoryViewModel">
+                    <StackPanel IsVisible="{Binding IsExpanded}" Spacing="6">
+                      <Grid ColumnDefinitions="64,*,112,104" ColumnSpacing="10" Margin="0,4,0,6">
+                        <TextBlock Grid.Column="1" Classes="muted" FontSize="11" Text="Color" ToolTip.Tip="{Binding Description}" />
+                        <TextBlock Grid.Column="2" Classes="muted" FontSize="11" Text="Opacity" />
+                        <TextBlock Grid.Column="3" Classes="muted" FontSize="11" Text="Hex value" />
+                      </Grid>
+                      <ItemsControl ItemsSource="{Binding Colors}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:OverlayThemeColorEditorViewModel">
+                            <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                              <Grid MinHeight="36" Classes="overlay-theme-color-row" RowDefinitions="Auto,Auto" ColumnDefinitions="64,*,112,104" ColumnSpacing="10">
+                                <ColorPicker Width="64" Height="32" MinHeight="0" MaxHeight="32" VerticalAlignment="Center"
+                                             Color="{Binding Color, Mode=TwoWay}" ColorModel="Rgba" HexInputAlphaPosition="Trailing"
+                                             IsAlphaEnabled="True" IsAlphaVisible="True" ToolTip.Tip="Open color picker" />
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
+                                           Text="{Binding DisplayName}" TextWrapping="Wrap" />
+                                <Grid Grid.Column="2" VerticalAlignment="Center" ColumnDefinitions="*,Auto" ColumnSpacing="5">
+                                  <Slider x:Name="OverlayThemeOpacitySlider" Classes="overlay-theme-opacity"
+                                          Height="32" MinHeight="0" MaxHeight="32" Minimum="0" Maximum="100"
+                                          TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding OpacityPercent, Mode=TwoWay}"
+                                          AutomationProperties.Name="{Binding DisplayName, StringFormat={}{0} opacity}" />
+                                  <TextBlock Grid.Column="1" FontSize="10" VerticalAlignment="Center" Width="34"
+                                             Text="{Binding OpacityPercent, StringFormat={}{0}%}" />
+                                </Grid>
+                                <TextBox x:Name="OverlayThemeHexTextBox" Grid.Column="3" Height="32" MinHeight="0" MaxHeight="32"
+                                         VerticalContentAlignment="Center" Classes="overlay-theme-hex" Classes.invalid="{Binding HasValidationError}"
+                                         Text="{Binding HexValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="{Binding DisplayName, StringFormat={}{0} hex color}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,4,0,0"
+                                           FontSize="11" Foreground="{DynamicResource RavenWarningBrush}"
+                                           IsVisible="{Binding HasValidationError}" Text="{Binding ValidationMessage}" />
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Border>
+          </ScrollViewer>
+          <Border x:Name="OverlayThemeActionsCard" Grid.Row="2" Background="{DynamicResource RavenSidebarBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="12">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="muted" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"
+                         Text="{Binding OverlayTheme.StatusMessage}" ToolTip.Tip="{Binding OverlayTheme.StatusMessage}" />
+              <WrapPanel HorizontalAlignment="Right">
+                <Button Classes="secondary" Margin="0,0,10,4" Command="{Binding OverlayTheme.PreviewCommand}" Content="Preview on overlays" />
+                <Button Classes="secondary" Margin="0,0,10,4" Command="{Binding OverlayTheme.ReloadActiveCommand}" Content="Discard changes" />
+                <Button Classes="primary" Margin="0,0,0,4" Command="{Binding OverlayTheme.ApplyCommand}" Content="Apply colors" />
+              </WrapPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+      <TabItem Classes="theme-selector" Header="Overlay setup">
+        <views:OverlaySettingsView x:Name="GlobalOverlaySettings" />
+      </TabItem>
+    </TabControl>
+  </Grid>
 </UserControl>
