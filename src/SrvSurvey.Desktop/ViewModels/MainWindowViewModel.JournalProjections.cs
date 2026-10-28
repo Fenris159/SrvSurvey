@@ -18,6 +18,7 @@ public sealed partial class MainWindowViewModel
                     ScreenshotProcessing = ScreenshotProcessing,
                     DockToDock = DockToDock,
                     Notifications = Notifications,
+                    DiscordCarrierAnnouncements = DiscordCarrierAnnouncements,
                     PulseOverlay = PulseOverlay,
                     GalaxyMap = GalaxyMap,
                     ExplorationPois = ExplorationPois,

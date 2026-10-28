@@ -8,6 +8,7 @@ using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Diagnostics.Replay;
+using SrvSurvey.Core.Discord;
 using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
@@ -356,6 +357,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             Localization = new LocalizationViewModel(
                 new LocalizationSettingsStore(AppDataPaths.UiSettingsPath, AppDataPaths.OverlaySettingsDirectory)
             );
+            DiscordCarrierAnnouncements = new DiscordCarrierAnnouncementsViewModel(
+                new DiscordCarrierSettingsStore(AppDataPaths.UiSettingsPath),
+                new DiscordCarrierWebhookClient(externalNetworkClient),
+                () => !IsDiagnosticReplay
+            );
+            rollback.Add(() => DiscordCarrierAnnouncements.DisposeAsync().AsTask().GetAwaiter().GetResult());
             WaylandCapture = new WaylandCaptureSettingsViewModel(
                 AppDataPaths.DataDirectory,
                 !IsDiagnosticReplay && OperatingSystem.IsLinux() && GameScreenCapture.IsWaylandSession(),
@@ -1162,6 +1169,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public DockToDockViewModel DockToDock { get; }
 
     public NotificationViewModel Notifications { get; }
+
+    public DiscordCarrierAnnouncementsViewModel DiscordCarrierAnnouncements { get; }
 
     public PulseOverlayViewModel PulseOverlay { get; }
 
@@ -4734,6 +4743,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         await TryDisposeAsync(() => new ValueTask(DrainCarrierCargoAtShutdownAsync()));
         TryDispose(SaveWorkspaceContinuity);
         await TryDisposeAsync(ActiveUsers.DisposeAsync);
+        await TryDisposeAsync(DiscordCarrierAnnouncements.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
         TryDispose(Route.SpanshSearch!.Dispose);

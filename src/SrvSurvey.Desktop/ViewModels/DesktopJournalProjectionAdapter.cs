@@ -5,6 +5,7 @@ using SrvSurvey.Core.EdAstro;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
@@ -348,6 +349,30 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ApplyFleetCarrierRouteJournalEventsAsync(context);
         operations[JournalProjectionOperation.FleetCarrierBootstrapEvents] = Sync(
             (context, tick) => dependencies.FleetCarrierRoute.ApplyFleetCarrierJumpEvents(context.JournalEvents)
+        );
+        operations[JournalProjectionOperation.CarrierAnnouncements] = Sync(
+            (context, tick) =>
+            {
+                if (context.Update.IsAwaitingCommanderIdentity || dependencies.IsDiagnosticReplay())
+                {
+                    return;
+                }
+                FrontierAccountSnapshot? account = dependencies.FrontierProfile.Snapshot;
+                dependencies.DiscordCarrierAnnouncements.ApplyJournalEvents(
+                    state.Session.FrontierId ?? state.Session.CommanderName ?? string.Empty,
+                    context.JournalEvents,
+                    tick.AllowLiveEffects && tick.AllowAttributedJournal && state.Session.IsLegacy != true,
+                    string.Equals(
+                        account?.CommanderName,
+                        state.Session.CommanderName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                        ? account
+                        : null,
+                    dependencies.FleetCarrierRoute.CreateSnapshot(),
+                    new(tick.PreviousFrontierId, tick.PreviousCommanderName)
+                );
+            }
         );
         operations[JournalProjectionOperation.ExplorationBaseline] = Sync(
             (_, tick) =>

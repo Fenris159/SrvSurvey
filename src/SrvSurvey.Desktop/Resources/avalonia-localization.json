@@ -2277,6 +2277,10 @@
       "translation": "Ankündigungen"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "Ankündigungen sind deaktiviert, bis Sie einen Discord Webhook speichern und aktivieren."
+    },
+    {
       "source": "Anomaly",
       "translation": "Anomalie"
     },
@@ -2575,6 +2579,10 @@
     {
       "source": "Arrival",
       "translation": "Ankunft"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "Ankunft bestätigt"
     },
     {
       "source": "Arrival distance (ls)",
@@ -5109,6 +5117,10 @@
       "translation": "Spediteurbetrieb und Fracht"
     },
     {
+      "source": "Carrier route",
+      "translation": "Trägerroute"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "Die Suche nach dem Mobilfunkanbieter ist fehlgeschlagen. Versuchen Sie es erneut, wenn Raven Colonial verfügbar ist."
     },
@@ -5155,6 +5167,10 @@
     {
       "source": "CarrierType",
       "translation": "CarrierType"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "Fluggesellschaften geben bekannt"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -7621,6 +7637,10 @@
       "translation": "{0} konnte für VR nicht gerendert werden: {1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "Die Einstellungen Discord konnten nicht gespeichert werden. Überprüfen Sie, ob der Einstellungsordner beschreibbar ist."
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "Boxel-Umfragestatistiken konnten nicht gespeichert werden: {0}"
     },
@@ -8869,6 +8889,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord Ankündigungen werden schneller in die Warteschlange gestellt, als sie gesendet werden können. Einige Nachrichten wurden übersprungen."
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord Carrier-Ankündigungen"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "Discord Webhook-URL"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "DiscordCarrierAnnouncements"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "DiscordCarrierAnnouncementsCard"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "Entdeckt"
     },
@@ -9769,6 +9813,10 @@
       "translation": "Aktivieren Sie die Kolonisierung und konfigurieren Sie den Raven-API-Schlüssel dieses Kommandanten in den Einstellungen."
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "Aktivieren Sie Discord Carrier-Ankündigungen"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "Aktivieren Sie die EDAstro-Freigabe für Live-Commander-Sitzungen"
     },
@@ -10075,6 +10123,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "Geben Sie ein System, einen optionalen Körper/Ring und eine Kategorie ein; Durch das Speichern einer neuen Kategorie wird diese für den Kategoriefilter verfügbar."
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "Geben Sie eine gültige Webhook-URL Discord ein, bevor Sie Ankündigungen aktivieren."
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -14133,6 +14185,10 @@
       "translation": "Import…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "Öffnen Sie in Discord die Kanaleinstellungen, wählen Sie Integrationen → Webhooks, erstellen Sie einen Webhook und kopieren Sie dessen URL hierher. Die URL wird lokal gespeichert und von der Cloud-Profilsynchronisierung ausgeschlossen."
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "In Leamae UK-D d13-890 ist Leamae der Sektor, UK-D d13 identifiziert das Boxel und 890 ist die Systemnummer innerhalb dieser Sequenz."
     },
@@ -14713,12 +14769,20 @@
       "translation": "Springen"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "Sprung abgebrochen"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "Abklingzeit des Sprungs"
     },
     {
       "source": "Jump cost",
       "translation": "Sprungkosten"
+    },
+    {
+      "source": "Jump events",
+      "translation": "Sprungereignisse"
     },
     {
       "source": "Jump fuel",
@@ -14735,6 +14799,10 @@
     {
       "source": "Jump scheduled",
       "translation": "Sprung geplant"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "Geplanter Sprung / Aufladen des Laufwerks"
     },
     {
       "source": "Jump target data ready",
@@ -14795,6 +14863,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "Halten Sie SrvSurvey während des Spielens geöffnet. Arbeitsbereiche und kontextsensitive Overlays werden aktualisiert, wenn neue Journalereignisse eintreffen."
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "Lassen Sie SrvSurvey laufen, wobei das Live-Journal des Carrier-Managers ausgewählt ist. Personen- und Geschwadertransporter werden getrennt verfolgt. Frühere Journal-Ereignisse werden nie erneut veröffentlicht und das Eintreffen wird erst angekündigt, wenn das Spiel dies bestätigt. Eine aktive passende Carrier-Route ist enthalten, sofern verfügbar."
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -15487,6 +15559,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "Auf Community-Beobachtungen achten …"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "Lauschen auf Live-Trägersprungereignisse, während SrvSurvey ausgeführt wird."
     },
     {
       "source": "Lithium Hydroxide",
@@ -20621,6 +20697,10 @@
       "translation": "Einfügen akzeptiert Dezimalpaare, die durch Leerzeichen, Kommas, senkrechte Striche, Backticks oder Schrägstriche getrennt sind, sowie N/S/E/W-Koordinaten."
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "Fügen Sie die Webhook-URL des Kanals ein"
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "Fügen Sie die zuletzt aufgezeichnete Beladung dieses Schiffs in den Importdialog von EDSY ein."
     },
@@ -21087,6 +21167,10 @@
     {
       "source": "Position unavailable",
       "translation": "Position nicht verfügbar"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "Veröffentlichen Sie Sprungpläne, Stornierungen und bestätigte Ankünfte des Spediteurs an einem Discord-Kanal, einschließlich des Abflugsystems, des Ziels, des Körpers und der Sprungzeit, sofern verfügbar."
     },
     {
       "source": "Potential Galactic-region first",
@@ -25725,6 +25809,14 @@
       "translation": "Gespeichert {0}."
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "Gespeichert. Discord Carrier-Ankündigungen sind deaktiviert."
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "Gespeichert. Hören Sie sich Live-Carrier-Jump-Events an."
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "Nexus-Datenschutz wird gewahrt..."
     },
@@ -26541,8 +26633,16 @@
       "translation": "Senden Sie das Journal zur Boxel-Vermessung an VoxStellar."
     },
     {
+      "source": "Send test message",
+      "translation": "Testnachricht senden"
+    },
+    {
       "source": "SendText",
       "translation": "SendText"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "Senden einer Testnachricht an Discord…"
     },
     {
       "source": "Separation",
@@ -33409,6 +33509,10 @@
       "translation": "Nicht gespeicherte Reiseänderungen wurden verworfen."
     },
     {
+      "source": "Unsaved changes",
+      "translation": "Nicht gespeicherte Änderungen"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "Nicht gespeicherte Routenänderungen wurden beibehalten."
     },
@@ -38793,6 +38897,10 @@
       "translation": "Waffenfarbe"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "Webhook discord Flottenträger, persönliches Geschwader, Sprung, Abfahrt, Stornierung, Ankunft, Reiseroute, Benachrichtigung, Kanalserver"
+    },
+    {
       "source": "what-happened",
       "translation": "Was ist passiert?"
     },
@@ -42451,6 +42559,10 @@
       "translation": "Anuncios"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "Los anuncios estarán desactivados hasta que guarde y habilite un webhook Discord."
+    },
+    {
       "source": "Anomaly",
       "translation": "anomalía"
     },
@@ -42749,6 +42861,10 @@
     {
       "source": "Arrival",
       "translation": "Llegada"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "Llegada confirmada"
     },
     {
       "source": "Arrival distance (ls)",
@@ -45283,6 +45399,10 @@
       "translation": "Operaciones de transporte y carga"
     },
     {
+      "source": "Carrier route",
+      "translation": "Ruta del transportista"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "La búsqueda del operador falló. Inténtelo de nuevo cuando Raven Colonial esté disponible."
     },
@@ -45329,6 +45449,10 @@
     {
       "source": "CarrierType",
       "translation": "Tipo de operador"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "Transportistas para anunciar"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -47795,6 +47919,10 @@
       "translation": "No se pudo renderizar {0} para VR: {1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "No se pudo guardar la configuración Discord. Compruebe que se pueda escribir en la carpeta de configuración."
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "No se pudieron guardar las estadísticas de la encuesta de boxel: {0}"
     },
@@ -49043,6 +49171,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord los anuncios se ponen en cola más rápido de lo que se pueden enviar. Se omitieron algunos mensajes."
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord anuncios del operador"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "Discord URL del webhook"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "DiscordCarrierAnuncios"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "DiscordPortadorAnunciosTarjeta"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "descubierto"
     },
@@ -49943,6 +50095,10 @@
       "translation": "Habilite la colonización y configure la clave Raven API de este comandante en Configuración."
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "Habilitar anuncios de operador Discord"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "Habilite el uso compartido de EDAstro para sesiones de Commander en vivo"
     },
@@ -50249,6 +50405,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "Ingrese un sistema, cuerpo/anillo opcional y categoría; guardar una nueva categoría la pone a disposición del filtro de categorías."
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "Ingrese una URL de webhook válida Discord antes de habilitar los anuncios."
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -54307,6 +54467,10 @@
       "translation": "Importar…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "En Discord, abra la configuración del canal, elija Integraciones → Webhooks, cree un webhook y copie su URL aquí. La URL se guarda localmente y se excluye de la sincronización del perfil en la nube."
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "En Leamae UK-D d13-890, Leamae es el sector, UK-D d13 identifica el boxel y 890 es el número del sistema dentro de esa secuencia."
     },
@@ -54887,12 +55051,20 @@
       "translation": "Saltar"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "Salto cancelado"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "Saltar tiempo de reutilización"
     },
     {
       "source": "Jump cost",
       "translation": "Costo de salto"
+    },
+    {
+      "source": "Jump events",
+      "translation": "Eventos de salto"
     },
     {
       "source": "Jump fuel",
@@ -54909,6 +55081,10 @@
     {
       "source": "Jump scheduled",
       "translation": "Salto programado"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "Salto programado/carga de conducción"
     },
     {
       "source": "Jump target data ready",
@@ -54969,6 +55145,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "Mantén SrvSurvey abierto mientras juegas. Los espacios de trabajo y las superposiciones contextuales se actualizan cuando llegan nuevos eventos del diario."
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "Mantenga SrvSurvey ejecutándose con el diario en vivo del administrador del operador seleccionado. Los transportistas personales y de escuadrón se rastrean por separado. Los eventos anteriores del diario nunca se vuelven a publicar y su llegada se anuncia solo cuando el juego lo confirma. Se incluye una ruta de operador coincidente activa cuando está disponible."
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -55661,6 +55841,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "Escuchando las observaciones de la comunidad..."
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "Escuchando eventos de salto de operador en vivo mientras SrvSurvey se está ejecutando."
     },
     {
       "source": "Lithium Hydroxide",
@@ -60795,6 +60979,10 @@
       "translation": "Pegar acepta pares de decimales separados por espacios, comas, barras verticales, comillas invertidas o barras diagonales, además de coordenadas N/S/E/W."
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "Pega la URL del webhook del canal."
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "Pega el último equipamiento grabado de este barco en el cuadro de diálogo Importar de EDSY."
     },
@@ -61261,6 +61449,10 @@
     {
       "source": "Position unavailable",
       "translation": "Puesto no disponible"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "Publique los planes de salto de la aerolínea, cancelaciones y llegadas confirmadas a un canal Discord, incluido el sistema de salida, el destino, el cuerpo y el tiempo de salto cuando esté disponible."
     },
     {
       "source": "Potential Galactic-region first",
@@ -65899,6 +66091,14 @@
       "translation": "Guardado {0}."
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "Guardado. Discord los anuncios del operador están desactivados."
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "Guardado. Escuchar eventos de salto de portadora en vivo."
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "Guardando la privacidad de Nexus..."
     },
@@ -66715,8 +66915,16 @@
       "translation": "Enviar diario a VoxStellar para inspección de cajas"
     },
     {
+      "source": "Send test message",
+      "translation": "Enviar mensaje de prueba"
+    },
+    {
       "source": "SendText",
       "translation": "Enviar texto"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "Enviando un mensaje de prueba a Discord…"
     },
     {
       "source": "Separation",
@@ -73583,6 +73791,10 @@
       "translation": "Se descartaron los cambios de viaje no guardados."
     },
     {
+      "source": "Unsaved changes",
+      "translation": "Cambios no guardados"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "Se mantuvieron las ediciones de ruta no guardadas."
     },
@@ -78967,6 +79179,10 @@
       "translation": "color del arma"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "webhook discord flota transportista personal escuadrón salto salida cancelación llegada itinerario notificación canal servidor"
+    },
+    {
       "source": "what-happened",
       "translation": "que paso"
     },
@@ -82625,6 +82841,10 @@
       "translation": "Annonces"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "Les annonces sont désactivées jusqu'à ce que vous enregistriez et activiez un webhook Discord."
+    },
+    {
       "source": "Anomaly",
       "translation": "Anomalie"
     },
@@ -82923,6 +83143,10 @@
     {
       "source": "Arrival",
       "translation": "Arrivée"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "Arrivée confirmée"
     },
     {
       "source": "Arrival distance (ls)",
@@ -85457,6 +85681,10 @@
       "translation": "Opérations de transporteur et fret"
     },
     {
+      "source": "Carrier route",
+      "translation": "Itinéraire du transporteur"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "La recherche du transporteur a échoué. Réessayez lorsque Raven Colonial sera disponible."
     },
@@ -85503,6 +85731,10 @@
     {
       "source": "CarrierType",
       "translation": "Type de transporteur"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "Transporteurs à annoncer"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -87969,6 +88201,10 @@
       "translation": "Impossible de restituer {0} pour VR : {1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "Impossible d'enregistrer les paramètres Discord. Vérifiez que le dossier des paramètres est accessible en écriture."
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "Impossible d'enregistrer les statistiques de l'enquête Boxel : {0}"
     },
@@ -89217,6 +89453,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord les annonces sont mises en file d'attente plus rapidement qu'elles ne peuvent être envoyées. Certains messages ont été ignorés."
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord annonces des opérateurs"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "Discord URL du webhook"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "DiscordCarrierAnnonces"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "DiscordCarrierAnnoncesCarte"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "Découvert"
     },
@@ -90117,6 +90377,10 @@
       "translation": "Activez la colonisation et configurez la clé API Raven de ce commandant dans Paramètres."
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "Activer les annonces des opérateurs Discord"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "Activer le partage EDAstro pour les sessions Commander en direct"
     },
@@ -90423,6 +90687,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "Entrez un système, un corps/anneau facultatif et une catégorie ; l'enregistrement d'une nouvelle catégorie la rend disponible pour le filtre de catégorie."
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "Saisissez une URL de webhook valide Discord avant d'activer les annonces."
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -94481,6 +94749,10 @@
       "translation": "Importer…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "Dans Discord, ouvrez les paramètres du canal, choisissez Intégrations → Webhooks, créez un webhook et copiez son URL ici. L'URL est enregistrée localement et exclue de la synchronisation du profil cloud."
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "Dans Leamae UK-D d13-890, Leamae est le secteur, UK-D d13 identifie le boxel et 890 est le numéro de système dans cette séquence."
     },
@@ -95061,12 +95333,20 @@
       "translation": "Saut"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "Saut annulé"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "Temps de recharge du saut"
     },
     {
       "source": "Jump cost",
       "translation": "Coût du saut"
+    },
+    {
+      "source": "Jump events",
+      "translation": "Événements de saut"
     },
     {
       "source": "Jump fuel",
@@ -95083,6 +95363,10 @@
     {
       "source": "Jump scheduled",
       "translation": "Saut programmé"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "Saut programmé/chargement du trajet"
     },
     {
       "source": "Jump target data ready",
@@ -95143,6 +95427,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "Gardez SrvSurvey ouvert pendant la lecture. Les espaces de travail et les superpositions contextuelles sont mises à jour lorsque de nouveaux événements de journal arrivent."
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "Continuez à exécuter SrvSurvey avec le journal en direct du gestionnaire de transporteur sélectionné. Les transporteurs personnels et d'escadron sont suivis séparément. Les événements précédents du journal ne sont jamais republiés et l'arrivée n'est annoncée que lorsque le jeu le confirme. Un itinéraire de transporteur correspondant actif est inclus lorsqu’il est disponible."
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -95835,6 +96123,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "À l’écoute des observations de la communauté…"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "Écoute des événements de saut de transporteur en direct pendant l'exécution de SrvSurvey."
     },
     {
       "source": "Lithium Hydroxide",
@@ -100969,6 +101261,10 @@
       "translation": "Coller accepte les paires décimales séparées par des espaces, des virgules, des barres verticales, des guillemets ou des barres obliques, ainsi que les coordonnées N/S/E/W."
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "Collez l'URL du webhook de la chaîne"
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "Collez le dernier chargement enregistré de ce vaisseau dans la boîte de dialogue Importer d'EDSY."
     },
@@ -101435,6 +101731,10 @@
     {
       "source": "Position unavailable",
       "translation": "Poste indisponible"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "Publiez les plans de saut du transporteur, les annulations et les arrivées confirmées sur un canal Discord, y compris le système de départ, la destination, le corps et l'heure du saut lorsqu'ils sont disponibles."
     },
     {
       "source": "Potential Galactic-region first",
@@ -106073,6 +106373,14 @@
       "translation": "{0} enregistré."
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "Enregistré. Les annonces des opérateurs Discord sont désactivées."
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "Enregistré. Écoute des événements de saut de transporteur en direct."
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "Sauvegarde de la confidentialité du Nexus…"
     },
@@ -106889,8 +107197,16 @@
       "translation": "Envoyer le journal à VoxStellar pour le levé boxel"
     },
     {
+      "source": "Send test message",
+      "translation": "Envoyer un message test"
+    },
+    {
       "source": "SendText",
       "translation": "EnvoyerTexte"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "Envoi d'un message test à Discord…"
     },
     {
       "source": "Separation",
@@ -113757,6 +114073,10 @@
       "translation": "Les modifications non enregistrées du parcours ont été ignorées."
     },
     {
+      "source": "Unsaved changes",
+      "translation": "Modifications non enregistrées"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "Les modifications d'itinéraire non enregistrées ont été conservées."
     },
@@ -119141,6 +119461,10 @@
       "translation": "couleur d'arme"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "webhook discord transporteur de flotte escadron personnel saut départ annulation arrivée itinéraire notification canal serveur"
+    },
+    {
       "source": "what-happened",
       "translation": "que s'est-il passé"
     },
@@ -122799,6 +123123,10 @@
       "translation": "Anúncios"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "Os anúncios ficam desativados até que você salve e ative um webhook Discord."
+    },
+    {
       "source": "Anomaly",
       "translation": "Anomalia"
     },
@@ -123097,6 +123425,10 @@
     {
       "source": "Arrival",
       "translation": "Chegada"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "Chegada confirmada"
     },
     {
       "source": "Arrival distance (ls)",
@@ -125631,6 +125963,10 @@
       "translation": "Operações e carga do transportador"
     },
     {
+      "source": "Carrier route",
+      "translation": "Rota da transportadora"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "Falha na busca da operadora. Tente novamente quando Raven Colonial estiver disponível."
     },
@@ -125677,6 +126013,10 @@
     {
       "source": "CarrierType",
       "translation": "Tipo de operadora"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "Operadoras anunciam"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -128143,6 +128483,10 @@
       "translation": "Não foi possível renderizar {0} para VR: {1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "Não foi possível salvar as configurações Discord. Verifique se a pasta de configurações é gravável."
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "Não foi possível salvar as estatísticas da pesquisa boxel: {0}"
     },
@@ -129391,6 +129735,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord os anúncios são enfileirados mais rapidamente do que podem ser enviados. Algumas mensagens foram ignoradas."
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord anúncios da operadora"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "URL do webhook Discord"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "DiscordCarrierAnúncios"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "DiscordCarrierAnúnciosCartão"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "Descoberto"
     },
@@ -130291,6 +130659,10 @@
       "translation": "Habilite a colonização e configure a chave Raven API deste comandante em Configurações."
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "Ativar anúncios da operadora Discord"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "Habilite o compartilhamento EDAstro para sessões ao vivo do Commander"
     },
@@ -130597,6 +130969,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "Insira um sistema, corpo/anel opcional e categoria; salvar uma nova categoria a disponibiliza para o filtro de categoria."
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "Insira um URL de webhook válido Discord antes de ativar os anúncios."
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -134655,6 +135031,10 @@
       "translation": "Importar…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "Em Discord, abra as configurações do canal, escolha Integrações → Webhooks, crie um webhook e copie sua URL aqui. O URL é salvo localmente e excluído da sincronização do perfil na nuvem."
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "Em Leamae UK-D d13-890, Leamae é o setor, UK-D d13 identifica o boxel e 890 é o número do sistema dentro dessa sequência."
     },
@@ -135235,12 +135615,20 @@
       "translation": "Pular"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "Salto cancelado"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "Tempo de espera do salto"
     },
     {
       "source": "Jump cost",
       "translation": "Custo de salto"
+    },
+    {
+      "source": "Jump events",
+      "translation": "Eventos de salto"
     },
     {
       "source": "Jump fuel",
@@ -135257,6 +135645,10 @@
     {
       "source": "Jump scheduled",
       "translation": "Salto agendado"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "Salto agendado / carregamento de unidade"
     },
     {
       "source": "Jump target data ready",
@@ -135317,6 +135709,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "Mantenha SrvSurvey aberto enquanto joga. Os espaços de trabalho e as sobreposições sensíveis ao contexto são atualizados quando novos eventos de diário chegam."
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "Manter SrvSurvey em execução com o diário ao vivo do gerente da operadora selecionado. Os transportadores pessoais e de esquadrão são rastreados separadamente. Os eventos anteriores do diário nunca são republicados e a chegada só é anunciada quando o jogo a confirma. Uma rota de transportadora correspondente ativa é incluída quando disponível."
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -136009,6 +136405,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "Ouvindo as observações da comunidade…"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "Ouvindo eventos de salto de portadora ao vivo enquanto SrvSurvey está em execução."
     },
     {
       "source": "Lithium Hydroxide",
@@ -141143,6 +141543,10 @@
       "translation": "Colar aceita pares decimais separados por espaços, vírgulas, barras verticais, crases ou barras, além de coordenadas N/S/E/W."
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "Cole o URL do webhook do canal"
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "Cole o último carregamento registrado deste navio na caixa de diálogo Importar do EDSY."
     },
@@ -141609,6 +142013,10 @@
     {
       "source": "Position unavailable",
       "translation": "Posição indisponível"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "Publicar planos de salto da transportadora, cancelamentos e chegadas confirmadas em um canal Discord, incluindo o sistema de partida, destino, corpo e tempo de salto, quando disponível."
     },
     {
       "source": "Potential Galactic-region first",
@@ -146247,6 +146655,14 @@
       "translation": "Salvo {0}."
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "Salvo. Discord os anúncios da operadora estão desativados."
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "Salvo. Ouvindo eventos de salto de operadora ao vivo."
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "Salvando a privacidade do Nexus..."
     },
@@ -147063,8 +147479,16 @@
       "translation": "Enviar diário para VoxStellar para levantamento de boxel"
     },
     {
+      "source": "Send test message",
+      "translation": "Enviar mensagem de teste"
+    },
+    {
       "source": "SendText",
       "translation": "EnviarTexto"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "Enviando uma mensagem de teste para Discord…"
     },
     {
       "source": "Separation",
@@ -153931,6 +154355,10 @@
       "translation": "As alterações não salvas da jornada foram descartadas."
     },
     {
+      "source": "Unsaved changes",
+      "translation": "Alterações não salvas"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "As edições de rota não salvas foram mantidas."
     },
@@ -159315,6 +159743,10 @@
       "translation": "armacor"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "webhook discord transportador de frota esquadrão pessoal salto cancelamento de partida servidor de canal de notificação de itinerário de chegada"
+    },
+    {
       "source": "what-happened",
       "translation": "o que aconteceu"
     },
@@ -162973,6 +163405,10 @@
       "translation": "Объявления"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "Объявления отключены, пока вы не сохраните и не включите веб-перехватчик Discord."
+    },
+    {
       "source": "Anomaly",
       "translation": "Аномалия"
     },
@@ -163271,6 +163707,10 @@
     {
       "source": "Arrival",
       "translation": "Прибытие"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "Прибытие подтверждено"
     },
     {
       "source": "Arrival distance (ls)",
@@ -165805,6 +166245,10 @@
       "translation": "Перевозочные операции и грузы"
     },
     {
+      "source": "Carrier route",
+      "translation": "Маршрут перевозчика"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "Поиск оператора не удался. Попробуйте еще раз, когда Raven Colonial станет доступен."
     },
@@ -165851,6 +166295,10 @@
     {
       "source": "CarrierType",
       "translation": "Тип оператора связи"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "Перевозчики объявят"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -168317,6 +168765,10 @@
       "translation": "Не удалось отобразить {0} для VR: {1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "Не удалось сохранить настройки Discord. Убедитесь, что папка настроек доступна для записи."
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "Не удалось сохранить статистику боксерского опроса: {0}"
     },
@@ -169565,6 +170017,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord объявления ставятся в очередь быстрее, чем могут быть отправлены. Некоторые сообщения были пропущены."
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord объявления операторов связи"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "Discord URL-адрес веб-перехватчика"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "DiscordПеревозчикОбъявления"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "DiscordПеревозчикОбъявленияОткрытка"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "Обнаружен"
     },
@@ -170465,6 +170941,10 @@
       "translation": "Включите колонизацию и настройте API-ключ Raven этого командира в настройках."
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "Включить Discord объявления оператора связи"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "Включите общий доступ к EDAstro для сеансов Commander в режиме реального времени."
     },
@@ -170771,6 +171251,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "Введите систему, дополнительный корпус/кольцо и категорию; сохранение новой категории делает ее доступной для фильтра категорий."
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "Введите действительный URL-адрес веб-перехватчика Discord перед включением объявлений."
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -174829,6 +175313,10 @@
       "translation": "Импортировать…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "В Discord откройте настройки канала, выберите «Интеграции» → «Вебхуки», создайте вебхук и скопируйте его URL сюда. URL-адрес сохраняется локально и исключается из синхронизации облачных профилей."
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "В Leamae UK-D d13-890 Leamae — это сектор, UK-D d13 идентифицирует бокс, а 890 — это системный номер в этой последовательности."
     },
@@ -175409,12 +175897,20 @@
       "translation": "Прыжок"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "Прыжок отменен"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "Время восстановления прыжка"
     },
     {
       "source": "Jump cost",
       "translation": "Стоимость прыжка"
+    },
+    {
+      "source": "Jump events",
+      "translation": "События прыжков"
     },
     {
       "source": "Jump fuel",
@@ -175431,6 +175927,10 @@
     {
       "source": "Jump scheduled",
       "translation": "Прыжок запланирован"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "Запланированный прыжок / зарядка диска"
     },
     {
       "source": "Jump target data ready",
@@ -175491,6 +175991,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "Держите SrvSurvey открытым во время игры. Рабочие области и контекстно-зависимые наложения обновляются при появлении новых событий журнала."
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "Продолжайте работу SrvSurvey с выбранным активным журналом менеджера оператора связи. Персональные и эскадрильи отслеживаются отдельно. Предыдущие события журнала никогда не перепечатываются, а о прибытии объявляется только тогда, когда игра подтверждает это. Активный соответствующий маршрут перевозчика включается, если он доступен."
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -176183,6 +176687,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "Прислушиваемся к замечаниям сообщества…"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "Прослушивание событий перехода несущей в реальном времени во время работы SrvSurvey."
     },
     {
       "source": "Lithium Hydroxide",
@@ -181317,6 +181825,10 @@
       "translation": "Вставка принимает десятичные пары, разделенные пробелами, запятыми, вертикальной чертой, обратными кавычками или косой чертой, а также координаты С/Ю/В/З."
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "Вставьте URL-адрес веб-перехватчика канала."
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "Вставьте последнюю записанную загрузку этого корабля в диалоговое окно импорта EDSY."
     },
@@ -181783,6 +182295,10 @@
     {
       "source": "Position unavailable",
       "translation": "Позиция недоступна"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "Почтовые планы перехода перевозчика, отмены и подтвержденные прибытия на канал Discord, включая систему отправления, пункт назначения, тело и время перехода, если оно доступно."
     },
     {
       "source": "Potential Galactic-region first",
@@ -186421,6 +186937,14 @@
       "translation": "Сохранено {0}."
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "Сохранено. Discord объявления операторов связи отключены."
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "Сохранено. Прослушивание событий перехода на несущую в реальном времени."
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "Сохранение конфиденциальности Nexus..."
     },
@@ -187237,8 +187761,16 @@
       "translation": "Отправьте журнал в VoxStellar для съемки бокса."
     },
     {
+      "source": "Send test message",
+      "translation": "Отправить тестовое сообщение"
+    },
+    {
       "source": "SendText",
       "translation": "Отправитьтекст"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "Отправка тестового сообщения на адрес Discord…"
     },
     {
       "source": "Separation",
@@ -194105,6 +194637,10 @@
       "translation": "Несохраненные изменения путешествия были отменены."
     },
     {
+      "source": "Unsaved changes",
+      "translation": "Несохраненные изменения"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "Несохраненные изменения маршрута были сохранены."
     },
@@ -199489,6 +200025,10 @@
       "translation": "цвет оружия"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "вебхук discord перевозчик флота персональная эскадрилья прыжок вылет отмена прибытие сервер канала уведомлений о маршруте"
+    },
+    {
       "source": "what-happened",
       "translation": "что случилось"
     },
@@ -203147,6 +203687,10 @@
       "translation": "公告"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "在您保存并启用 Discord webhook 之前，公告将关闭。"
+    },
+    {
       "source": "Anomaly",
       "translation": "异常"
     },
@@ -203445,6 +203989,10 @@
     {
       "source": "Arrival",
       "translation": "到达"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "抵达确认"
     },
     {
       "source": "Arrival distance (ls)",
@@ -205979,6 +206527,10 @@
       "translation": "承运人运营和货物"
     },
     {
+      "source": "Carrier route",
+      "translation": "承运路线"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "运营商搜索失败。当 Raven Colonial 可用时重试。"
     },
@@ -206025,6 +206577,10 @@
     {
       "source": "CarrierType",
       "translation": "运营商类型"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "运营商宣布"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -208491,6 +209047,10 @@
       "translation": "无法渲染 VR 的 {0}：{1}"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "无法保存Discord设置。检查设置文件夹是否可写。"
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "无法保存 boxel 调查统计信息：{0}"
     },
@@ -209739,6 +210299,30 @@
       "translation": "Discord"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "Discord 公告的排队速度比发送速度快。一些消息被跳过。"
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "Discord 运营商公告"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "Discord webhook URL"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "Discord运营商公告"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "Discord 运营商公告卡"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "DiscordWebhookUrlTextBox"
+    },
+    {
       "source": "Discovered",
       "translation": "发现"
     },
@@ -210639,6 +211223,10 @@
       "translation": "启用殖民并在“设置”中配置该指挥官的 Raven API 密钥。"
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "启用 Discord 运营商公告"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "为实时 Commander 会话启用 EDAstro 共享"
     },
@@ -210945,6 +211533,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "输入系统，可选主体/环和类别；保存新类别使其可供类别过滤器使用。"
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "在启用公告之前输入有效的 Discord webhook URL。"
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -215003,6 +215595,10 @@
       "translation": "进口…"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "在 Discord 中，打开通道设置，选择集成 → Webhooks，创建一个 Webhook，并将其 URL 复制到此处。 URL 保存在本地并从云配置文件同步中排除。"
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "在 Leamae UK-D d13-890 中，Leamae 是扇区，UK-D d13 标识 boxel，890 是该序列中的系统编号。"
     },
@@ -215583,12 +216179,20 @@
       "translation": "跳"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "跳跃取消"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "跳跃冷却时间"
     },
     {
       "source": "Jump cost",
       "translation": "跳跃成本"
+    },
+    {
+      "source": "Jump events",
+      "translation": "跳跃活动"
     },
     {
       "source": "Jump fuel",
@@ -215605,6 +216209,10 @@
     {
       "source": "Jump scheduled",
       "translation": "跳跃预定"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "跳跃预定/行驶充电"
     },
     {
       "source": "Jump target data ready",
@@ -215665,6 +216273,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "播放时保持 SrvSurvey 打开。当新的日志事件到达时，工作区和上下文相关的叠加层会更新。"
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "在选择运营商经理的实时日志的情况下保持 SrvSurvey 运行。个人和中队航母是分开跟踪的。以前的日志事件永远不会重新发布，并且只有在游戏确认后才会宣布到达。如果可用，则包含有效的匹配承运商路线。"
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -216357,6 +216969,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "倾听社区意见……"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "SrvSurvey 运行时侦听实时载波跳跃事件。"
     },
     {
       "source": "Lithium Hydroxide",
@@ -221491,6 +222107,10 @@
       "translation": "粘贴接受以空格、逗号、竖线、反引号或斜杠分隔的小数对，以及 N/S/E/W 坐标。"
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "粘贴频道的 Webhook URL"
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "将这艘船的最新记录装载粘贴到 EDSY 的导入对话框中。"
     },
@@ -221957,6 +222577,10 @@
     {
       "source": "Position unavailable",
       "translation": "位置不可用"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "将承运商的跳转计划、取消和确认到达发布到 Discord 通道，包括出发系统、目的地、主体和跳转时间（如果有）。"
     },
     {
       "source": "Potential Galactic-region first",
@@ -226595,6 +227219,14 @@
       "translation": "已保存 {0}。"
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "已保存。 Discord 运营商公告已关闭。"
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "已保存。监听实时载波跳跃事件。"
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "保存 Nexus 隐私..."
     },
@@ -227411,8 +228043,16 @@
       "translation": "将日志发送至 VoxStellar 进行箱形测量"
     },
     {
+      "source": "Send test message",
+      "translation": "发送测试消息"
+    },
+    {
       "source": "SendText",
       "translation": "发送文本"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "正在发送测试消息至 Discord..."
     },
     {
       "source": "Separation",
@@ -234279,6 +234919,10 @@
       "translation": "未保存的旅程更改已被丢弃。"
     },
     {
+      "source": "Unsaved changes",
+      "translation": "未保存的更改"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "保留未保存的路线编辑。"
     },
@@ -239663,6 +240307,10 @@
       "translation": "武器颜色"
     },
     {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "webhook discord 舰队承运人个人中队跳转出发取消到达行程通知通道服务器"
+    },
+    {
       "source": "what-happened",
       "translation": "发生了什么事"
     },
@@ -243321,6 +243969,10 @@
       "translation": "* ANNOUNCEMENTS >>>!"
     },
     {
+      "source": "Announcements are off until you save and enable a Discord webhook.",
+      "translation": "* ANNOUNCEMENTS ARE OFF UNTIL YOU SAVE AND ENABLE A DISCORD WEBHOOK. >>>!"
+    },
+    {
       "source": "Anomaly",
       "translation": "* ANOMALY >>>!"
     },
@@ -243619,6 +244271,10 @@
     {
       "source": "Arrival",
       "translation": "* ARRIVAL >>>!"
+    },
+    {
+      "source": "Arrival confirmed",
+      "translation": "* ARRIVAL CONFIRMED >>>!"
     },
     {
       "source": "Arrival distance (ls)",
@@ -246153,6 +246809,10 @@
       "translation": "* CARRIER OPERATIONS AND CARGO >>>!"
     },
     {
+      "source": "Carrier route",
+      "translation": "* CARRIER ROUTE >>>!"
+    },
+    {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
       "translation": "* CARRIER SEARCH FAILED. TRY AGAIN WHEN RAVEN COLONIAL IS AVAILABLE. >>>!"
     },
@@ -246199,6 +246859,10 @@
     {
       "source": "CarrierType",
       "translation": "* CARRIERTYPE >>>!"
+    },
+    {
+      "source": "Carriers to announce",
+      "translation": "* CARRIERS TO ANNOUNCE >>>!"
     },
     {
       "source": "Cash, fleet and carrier bank",
@@ -248665,6 +249329,10 @@
       "translation": "* COULD NOT RENDER {0} FOR VR: {1} >>>!"
     },
     {
+      "source": "Could not save Discord settings. Check that the settings folder is writable.",
+      "translation": "* COULD NOT SAVE DISCORD SETTINGS. CHECK THAT THE SETTINGS FOLDER IS WRITABLE. >>>!"
+    },
+    {
       "source": "Could not save boxel survey statistics: {0}",
       "translation": "* COULD NOT SAVE BOXEL SURVEY STATISTICS: {0} >>>!"
     },
@@ -249913,6 +250581,30 @@
       "translation": "* DISCORD >>>!"
     },
     {
+      "source": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+      "translation": "* DISCORD ANNOUNCEMENTS ARE QUEUED FASTER THAN THEY CAN BE SENT. SOME MESSAGES WERE SKIPPED. >>>!"
+    },
+    {
+      "source": "Discord carrier announcements",
+      "translation": "* DISCORD CARRIER ANNOUNCEMENTS >>>!"
+    },
+    {
+      "source": "Discord webhook URL",
+      "translation": "* DISCORD WEBHOOK URL >>>!"
+    },
+    {
+      "source": "DiscordCarrierAnnouncements",
+      "translation": "* DISCORDCARRIERANNOUNCEMENTS >>>!"
+    },
+    {
+      "source": "DiscordCarrierAnnouncementsCard",
+      "translation": "* DISCORDCARRIERANNOUNCEMENTSCARD >>>!"
+    },
+    {
+      "source": "DiscordWebhookUrlTextBox",
+      "translation": "* DISCORDWEBHOOKURLTEXTBOX >>>!"
+    },
+    {
       "source": "Discovered",
       "translation": "* DISCOVERED >>>!"
     },
@@ -250813,6 +251505,10 @@
       "translation": "* ENABLE COLONIZATION AND CONFIGURE THIS COMMANDER'S RAVEN API KEY IN SETTINGS. >>>!"
     },
     {
+      "source": "Enable Discord carrier announcements",
+      "translation": "* ENABLE DISCORD CARRIER ANNOUNCEMENTS >>>!"
+    },
+    {
       "source": "Enable EDAstro sharing for live Commander sessions",
       "translation": "* ENABLE EDASTRO SHARING FOR LIVE COMMANDER SESSIONS >>>!"
     },
@@ -251119,6 +251815,10 @@
     {
       "source": "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
       "translation": "* ENTER A SYSTEM, OPTIONAL BODY/RING AND CATEGORY; SAVING A NEW CATEGORY MAKES IT AVAILABLE TO THE CATEGORY FILTER. >>>!"
+    },
+    {
+      "source": "Enter a valid Discord webhook URL before enabling announcements.",
+      "translation": "* ENTER A VALID DISCORD WEBHOOK URL BEFORE ENABLING ANNOUNCEMENTS. >>>!"
     },
     {
       "source": "Enter a valid generated system and lower mass code.",
@@ -255177,6 +255877,10 @@
       "translation": "* IMPORT… >>>!"
     },
     {
+      "source": "In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+      "translation": "* IN DISCORD, OPEN THE CHANNEL SETTINGS, CHOOSE INTEGRATIONS → WEBHOOKS, CREATE A WEBHOOK, AND COPY ITS URL HERE. THE URL IS SAVED LOCALLY AND EXCLUDED FROM CLOUD PROFILE SYNC. >>>!"
+    },
+    {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "* IN LEAMAE UK-D D13-890, LEAMAE IS THE SECTOR, UK-D D13 IDENTIFIES THE BOXEL, AND 890 IS THE SYSTEM NUMBER WITHIN THAT SEQUENCE. >>>!"
     },
@@ -255757,12 +256461,20 @@
       "translation": "* JUMP >>>!"
     },
     {
+      "source": "Jump cancelled",
+      "translation": "* JUMP CANCELLED >>>!"
+    },
+    {
       "source": "Jump cooldown",
       "translation": "* JUMP COOLDOWN >>>!"
     },
     {
       "source": "Jump cost",
       "translation": "* JUMP COST >>>!"
+    },
+    {
+      "source": "Jump events",
+      "translation": "* JUMP EVENTS >>>!"
     },
     {
       "source": "Jump fuel",
@@ -255779,6 +256491,10 @@
     {
       "source": "Jump scheduled",
       "translation": "* JUMP SCHEDULED >>>!"
+    },
+    {
+      "source": "Jump scheduled / drive charging",
+      "translation": "* JUMP SCHEDULED / DRIVE CHARGING >>>!"
     },
     {
       "source": "Jump target data ready",
@@ -255839,6 +256555,10 @@
     {
       "source": "Keep SrvSurvey open while playing. Workspaces and context-sensitive overlays update when new journal events arrive.",
       "translation": "* KEEP SRVSURVEY OPEN WHILE PLAYING. WORKSPACES AND CONTEXT-SENSITIVE OVERLAYS UPDATE WHEN NEW JOURNAL EVENTS ARRIVE. >>>!"
+    },
+    {
+      "source": "Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+      "translation": "* KEEP SRVSURVEY RUNNING WITH THE CARRIER MANAGER'S LIVE JOURNAL SELECTED. PERSONAL AND SQUADRON CARRIERS ARE TRACKED SEPARATELY. PREVIOUS JOURNAL EVENTS ARE NEVER REPOSTED, AND ARRIVAL IS ANNOUNCED ONLY WHEN THE GAME CONFIRMS IT. AN ACTIVE MATCHING CARRIER ROUTE IS INCLUDED WHEN AVAILABLE. >>>!"
     },
     {
       "source": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -256531,6 +257251,10 @@
     {
       "source": "Listening for community observations…",
       "translation": "* LISTENING FOR COMMUNITY OBSERVATIONS… >>>!"
+    },
+    {
+      "source": "Listening for live carrier jump events while SrvSurvey is running.",
+      "translation": "* LISTENING FOR LIVE CARRIER JUMP EVENTS WHILE SRVSURVEY IS RUNNING. >>>!"
     },
     {
       "source": "Lithium Hydroxide",
@@ -261665,6 +262389,10 @@
       "translation": "* PASTE ACCEPTS DECIMAL PAIRS SEPARATED BY SPACES, COMMAS, PIPES, BACKTICKS, OR SLASHES, PLUS N/S/E/W COORDINATES. >>>!"
     },
     {
+      "source": "Paste the channel's webhook URL",
+      "translation": "* PASTE THE CHANNEL'S WEBHOOK URL >>>!"
+    },
+    {
       "source": "Paste this ship's latest recorded loadout into EDSY's Import dialog.",
       "translation": "* PASTE THIS SHIP'S LATEST RECORDED LOADOUT INTO EDSY'S IMPORT DIALOG. >>>!"
     },
@@ -262131,6 +262859,10 @@
     {
       "source": "Position unavailable",
       "translation": "* POSITION UNAVAILABLE >>>!"
+    },
+    {
+      "source": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+      "translation": "* POST CARRIER JUMP PLANS, CANCELLATIONS, AND CONFIRMED ARRIVALS TO A DISCORD CHANNEL, INCLUDING THE DEPARTURE SYSTEM, DESTINATION, BODY, AND JUMP TIME WHEN AVAILABLE. >>>!"
     },
     {
       "source": "Potential Galactic-region first",
@@ -266769,6 +267501,14 @@
       "translation": "* SAVED {0}. >>>!"
     },
     {
+      "source": "Saved. Discord carrier announcements are off.",
+      "translation": "* SAVED. DISCORD CARRIER ANNOUNCEMENTS ARE OFF. >>>!"
+    },
+    {
+      "source": "Saved. Listening for live carrier jump events.",
+      "translation": "* SAVED. LISTENING FOR LIVE CARRIER JUMP EVENTS. >>>!"
+    },
+    {
       "source": "Saving Nexus privacy...",
       "translation": "* SAVING NEXUS PRIVACY... >>>!"
     },
@@ -267585,8 +268325,16 @@
       "translation": "* SEND JOURNAL TO VOXSTELLAR FOR BOXEL SURVEYING >>>!"
     },
     {
+      "source": "Send test message",
+      "translation": "* SEND TEST MESSAGE >>>!"
+    },
+    {
       "source": "SendText",
       "translation": "* SENDTEXT >>>!"
+    },
+    {
+      "source": "Sending a test message to Discord…",
+      "translation": "* SENDING A TEST MESSAGE TO DISCORD… >>>!"
     },
     {
       "source": "Separation",
@@ -274453,6 +275201,10 @@
       "translation": "* UNSAVED JOURNEY CHANGES WERE DISCARDED. >>>!"
     },
     {
+      "source": "Unsaved changes",
+      "translation": "* UNSAVED CHANGES >>>!"
+    },
+    {
       "source": "Unsaved route edits were kept.",
       "translation": "* UNSAVED ROUTE EDITS WERE KEPT. >>>!"
     },
@@ -279835,6 +280587,10 @@
     {
       "source": "weaponcolour",
       "translation": "* WEAPONCOLOUR >>>!"
+    },
+    {
+      "source": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+      "translation": "* WEBHOOK DISCORD FLEET CARRIER PERSONAL SQUADRON JUMP DEPARTURE CANCELLATION ARRIVAL ITINERARY NOTIFICATION CHANNEL SERVER >>>!"
     },
     {
       "source": "what-happened",

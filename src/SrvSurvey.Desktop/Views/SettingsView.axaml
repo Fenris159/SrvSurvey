@@ -171,6 +171,58 @@
         </Grid>
       </Border>
 
+      <Border x:Name="DiscordCarrierAnnouncementsCard"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsApplicationSelected}">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Discord carrier announcements" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="760" HorizontalAlignment="Left"
+                       Text="Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available." />
+          </StackPanel>
+          <CheckBox x:Name="DiscordCarrierEnabledCheckBox"
+                    IsChecked="{Binding DiscordCarrierAnnouncements.Enabled, Mode=TwoWay}"
+                    Content="Enable Discord carrier announcements" />
+          <StackPanel Spacing="6">
+            <TextBlock FontWeight="SemiBold" Text="Discord webhook URL" />
+            <TextBox x:Name="DiscordWebhookUrlTextBox"
+                     AutomationProperties.Name="Discord webhook URL"
+                     PasswordChar="*"
+                     Text="{Binding DiscordCarrierAnnouncements.WebhookUrl, Mode=TwoWay}"
+                     PlaceholderText="Paste the channel's webhook URL" />
+            <TextBlock x:Name="DiscordWebhookUrlValidation" Classes="muted" TextWrapping="Wrap"
+                       IsVisible="{Binding DiscordCarrierAnnouncements.HasInvalidWebhookUrl}"
+                       Text="Enter a valid Discord webhook URL before enabling announcements." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="760" HorizontalAlignment="Left"
+                       Text="In Discord, open the channel settings, choose Integrations → Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync." />
+          </StackPanel>
+          <WrapPanel Orientation="Horizontal">
+            <StackPanel Spacing="6" Width="280" Margin="0,0,20,8">
+              <TextBlock FontWeight="SemiBold" Text="Carriers to announce" />
+              <CheckBox IsChecked="{Binding DiscordCarrierAnnouncements.PersonalCarrier, Mode=TwoWay}" Content="Personal fleet carrier" />
+              <CheckBox IsChecked="{Binding DiscordCarrierAnnouncements.SquadronCarrier, Mode=TwoWay}" Content="Squadron carrier" />
+            </StackPanel>
+            <StackPanel Spacing="6" Width="280" Margin="0,0,20,8">
+              <TextBlock FontWeight="SemiBold" Text="Jump events" />
+              <CheckBox IsChecked="{Binding DiscordCarrierAnnouncements.JumpScheduled, Mode=TwoWay}" Content="Jump scheduled / drive charging" />
+              <CheckBox IsChecked="{Binding DiscordCarrierAnnouncements.JumpCancelled, Mode=TwoWay}" Content="Jump cancelled" />
+              <CheckBox IsChecked="{Binding DiscordCarrierAnnouncements.JumpArrived, Mode=TwoWay}" Content="Arrival confirmed" />
+            </StackPanel>
+          </WrapPanel>
+          <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="760" HorizontalAlignment="Left"
+                     Text="Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available." />
+          <WrapPanel Orientation="Horizontal">
+            <Button x:Name="SaveDiscordWebhookButton" Classes="primary" Margin="0,0,10,6"
+                    Command="{Binding DiscordCarrierAnnouncements.SaveCommand}" Content="Save changes" />
+            <Button x:Name="TestDiscordWebhookButton" Classes="secondary" Margin="0,0,10,6"
+                    Command="{Binding DiscordCarrierAnnouncements.TestCommand}" Content="Send test message" />
+            <TextBlock Classes="muted" VerticalAlignment="Center" Margin="0,0,0,6"
+                       IsVisible="{Binding DiscordCarrierAnnouncements.HasChanges}" Text="Unsaved changes" />
+          </WrapPanel>
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding DiscordCarrierAnnouncements.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Border x:Name="DesktopBehaviorCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsDesktopSelected}">

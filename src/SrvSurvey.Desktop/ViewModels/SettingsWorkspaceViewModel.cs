@@ -235,6 +235,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "monitor scale minimize tray game elite focus startup jump reduce motion animation"
             ),
             new(
+                "Discord carrier announcements",
+                ApplicationCategoryKey,
+                "DiscordWebhookUrlTextBox",
+                "DiscordCarrierAnnouncementsCard",
+                "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server"
+            ),
+            new(
                 "Preferred commander",
                 DesktopCategoryKey,
                 "PreferredCommanderComboBox",

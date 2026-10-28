@@ -27,6 +27,7 @@ internal sealed class JournalProjectionDependencies
     internal required ScreenshotProcessingViewModel ScreenshotProcessing { get; init; }
     internal required DockToDockViewModel DockToDock { get; init; }
     internal required NotificationViewModel Notifications { get; init; }
+    internal required DiscordCarrierAnnouncementsViewModel DiscordCarrierAnnouncements { get; init; }
     internal required PulseOverlayViewModel PulseOverlay { get; init; }
     internal required GalaxyMapOverlayViewModel GalaxyMap { get; init; }
     internal ExplorationPoiViewModel? ExplorationPois { get; init; }
