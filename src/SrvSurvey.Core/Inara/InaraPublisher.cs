@@ -451,7 +451,11 @@ public sealed class InaraPublisher : IInaraPublisher
         if (recovered is not null || storageGeneration != authorizationGeneration)
         {
             queue.TakeAll();
-            queue.Enqueue(options.ApiKey!.Trim(), recovered ?? outbox.ReadPending(), PendingLimit);
+            queue.Enqueue(
+                options.ApiKey!.Trim(),
+                (recovered ?? outbox.ReadPending()).OrderBy(CapturedAt),
+                PendingLimit
+            );
             storageGeneration = authorizationGeneration;
             nextSendAt = outbox.NotBefore ?? timeProvider.GetUtcNow();
         }
@@ -875,6 +879,17 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private bool HasReleasableEvents() =>
         queue.HasSendable(item => privacy?.CanSend(session?.Commander, item.Timestamp) ?? true);
+
+    /// <summary>Restores event chronology so held reports cannot hide earlier released reports after recovery.</summary>
+    private static DateTimeOffset CapturedAt(InaraEvent item) =>
+        DateTimeOffset.TryParse(
+            item.Timestamp,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind,
+            out DateTimeOffset at
+        )
+            ? at
+            : DateTimeOffset.MaxValue;
 
     /// <summary>Starts one authorized batch within the provider rate limit and current retry deadline.</summary>
     private bool TryStartBackgroundSend(

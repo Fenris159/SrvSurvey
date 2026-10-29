@@ -299,6 +299,45 @@ public sealed class MiningCargoReconciliationTests
         Assert.False(run.Current.HasUnconfirmedYield);
     }
 
+    /// <summary>Rejected ship/SRV snapshots cannot mutate a paused session's valid ship-cargo baseline.</summary>
+    [Theory]
+    [InlineData("\"Count\":99,\"Vessel\":\"SRV\"")]
+    [InlineData("\"Count\":-1")]
+    [InlineData("\"Count\":\"invalid\"")]
+    [InlineData("\"Count\":2147483648")]
+    [InlineData("\"Vessel\":\"Ship\"")]
+    public void RejectedCargoDuringPausePreservesTheShipBaseline(string fields)
+    {
+        var run = new Replay();
+        run.Start();
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"");
+        MiningCargoReconciliationState baseline = run.State.Data.CargoReconciliation with { };
+        run.State.Session.Pause(DateTimeOffset.Parse("2026-10-28T12:00:04Z", CultureInfo.InvariantCulture));
+        run.Apply("Cargo", fields, second: 5);
+        Assert.Equal(baseline, run.State.Data.CargoReconciliation);
+        run.State.Session.Resume(DateTimeOffset.Parse("2026-10-28T12:00:06Z", CultureInfo.InvariantCulture));
+        run.Apply("Cargo", "\"Count\":1", second: 7);
+        Assert.Equal(1, run.Current.RefinedTons);
+        Assert.False(run.Current.HasUnconfirmedYield);
+    }
+
+    /// <summary>Prospecting and engineering materials do not invalidate a known ship-cargo reading during a pause.</summary>
+    [Theory]
+    [InlineData("ProspectedAsteroid", "\"Materials\":[]")]
+    [InlineData("MaterialCollected", "\"Category\":\"Raw\",\"Name\":\"iron\",\"Count\":3")]
+    public void NonCargoMiningEventsDuringPauseKeepYieldConfirmable(string name, string fields)
+    {
+        var run = new Replay();
+        run.Start();
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"");
+        run.State.Session.Pause(DateTimeOffset.Parse("2026-10-28T12:00:04Z", CultureInfo.InvariantCulture));
+        run.Apply(name, fields, second: 5);
+        run.State.Session.Resume(DateTimeOffset.Parse("2026-10-28T12:00:06Z", CultureInfo.InvariantCulture));
+        run.Apply("Cargo", "\"Count\":1", second: 7);
+        Assert.Equal(1, run.Current.RefinedTons);
+        Assert.False(run.Current.HasUnconfirmedYield);
+    }
+
     private sealed class Replay
     {
         private int offset;

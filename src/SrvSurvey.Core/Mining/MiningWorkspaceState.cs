@@ -45,9 +45,15 @@ public sealed class MiningWorkspaceState
             return false;
         }
 
-        if (!Remember(entry))
+        if (!Remember(entry, bootstrap, out bool legacyReplay))
         {
             return ApplySessionTravel(entry, bootstrap);
+        }
+        if (legacyReplay)
+        {
+            // Save the migrated source identity without recounting legacy history.
+            Synchronize();
+            return true;
         }
         if (!bootstrap)
         {
@@ -90,13 +96,15 @@ public sealed class MiningWorkspaceState
             ? session
             : null;
 
-    private bool Remember(JournalEventEnvelope entry)
+    /// <summary>Migrates legacy bootstrap hashes to physical identities while keeping distinct live records countable.</summary>
+    private bool Remember(JournalEventEnvelope entry, bool bootstrap, out bool legacyReplay)
     {
         string raw = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
         string key = entry.SourceRecordIdentity is { } source
             ? "source:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)))
             : raw;
-        if (processed.Contains(raw) || !processed.Add(key))
+        legacyReplay = bootstrap && entry.SourceRecordIdentity is not null && processed.Contains(raw);
+        if (!processed.Add(key))
         {
             return false;
         }

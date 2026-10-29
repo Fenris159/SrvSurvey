@@ -23,6 +23,7 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
 {
     private const string CountProperty = "Count";
 
+    /// <summary>Reconciles cargo-changing evidence while leaving rejected snapshots and non-cargo mining activity untouched.</summary>
     public void Observe(JournalEventEnvelope entry, MiningSession? owner, bool carryover, bool credit)
     {
         if (entry.Timestamp is not { } at || at < state.LastSnapshotAt)
@@ -31,7 +32,7 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
         }
         SelectOwner(owner, carryover);
         JsonElement data = entry.Payload;
-        if (!carryover && owner is { PausedAt: not null, PausedForTravel: false })
+        if (entry.EventName == "MiningRefined" && !carryover && owner is { PausedAt: not null, PausedForTravel: false })
         {
             // Paused production can be confirmed after resume. Its next cargo reading
             // establishes a baseline instead of being credited to the active session.
@@ -115,6 +116,7 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
         state.HasRefineryEvidence = false;
     }
 
+    /// <summary>Validates a ship reading before replacing a paused baseline or confirming active refinery yield.</summary>
     private void ObserveCargo(JsonElement data, DateTimeOffset at, MiningSession? owner, bool credit)
     {
         string vessel = MiningJson.Text(data, "Vessel");
@@ -127,6 +129,11 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
         )
         {
             return;
+        }
+        // Only a validated ship snapshot may replace the paused cargo baseline.
+        if (!state.Carryover && owner is { PausedAt: not null, PausedForTravel: false })
+        {
+            Rebase(owner, at);
         }
         if (state.LastCount is { } before && owner is not null && credit)
         {

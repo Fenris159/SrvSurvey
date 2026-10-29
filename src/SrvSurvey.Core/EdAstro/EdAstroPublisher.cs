@@ -278,7 +278,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             generation++;
             activeRequest?.Cancel();
             queue.Clear();
-            queue.AddRange(recovered);
+            queue.AddRange(recovered.OrderBy(CapturedAt));
             seen.Clear();
             seenOrder.Clear();
             foreach (string identity in recovered.Select(item => item.Identity))
@@ -530,6 +530,12 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
 
     private bool CanRelease(QueuedEvent item) =>
         privacy?.CanSendJournal(item.Session.Split('\n')[0], item.Json) ?? true;
+
+    /// <summary>Restores journal chronology after acknowledgements free slots in the durable dictionary.</summary>
+    private static DateTimeOffset CapturedAt(QueuedEvent item) =>
+        JournalEventEnvelope.TryParse(item.Json, out JournalEventEnvelope? entry, out _)
+            ? entry?.Timestamp ?? DateTimeOffset.MaxValue
+            : DateTimeOffset.MaxValue;
 
     private QueuedEvent[] TakeBatch()
     {

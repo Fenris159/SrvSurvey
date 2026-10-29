@@ -443,12 +443,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
             {
                 pending.Clear();
                 pending.AddRange(
-                    (recovered ?? outbox.ReadPending()).Select(item =>
-                        item with
-                        {
-                            AuthorizationGeneration = authorizationGeneration,
-                        }
-                    )
+                    (recovered ?? outbox.ReadPending())
+                        .OrderBy(CapturedAt)
+                        .Select(item => item with { AuthorizationGeneration = authorizationGeneration })
                 );
                 storageGeneration = authorizationGeneration;
                 nextSendAt = outbox.NotBefore ?? timeProvider.GetUtcNow() + SendInterval;
@@ -581,6 +578,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private bool CanRelease(EdsmQueuedEvent item) =>
         privacy?.CanSendJournal(session?.ActiveCommanderName, item.RawJson) ?? true;
 
+    /// <summary>Restores journal chronology after acknowledgements free slots in the durable dictionary.</summary>
+    private static DateTimeOffset CapturedAt(EdsmQueuedEvent item) =>
+        JournalEventEnvelope.TryParse(item.RawJson, out JournalEventEnvelope? entry, out _)
+            ? entry?.Timestamp ?? DateTimeOffset.MaxValue
+            : DateTimeOffset.MaxValue;
+
     private bool IsSendDue()
     {
         lock (stateSync)
@@ -611,7 +614,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return false;
             }
 
-            if (authorizedCredentials is null || session is null || !pending.Any(CanRelease))
+            if (authorizedCredentials is null || session is null || pending.Count == 0 || !CanRelease(pending[0]))
             {
                 return false;
             }
