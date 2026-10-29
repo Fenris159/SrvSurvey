@@ -100,25 +100,27 @@
         </ItemsControl>
       </StackPanel>
 
-      <Grid x:Name="CommanderSupport" ColumnDefinitions="*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="28" RowSpacing="18">
-        <Expander x:Name="CommanderReputation" Classes="profile-section console-section" HorizontalAlignment="Stretch"
-                  IsExpanded="{Binding PaneStates.CommanderFactionReputation.IsExpanded, Mode=TwoWay}">
-          <Expander.Header><TextBlock Text="{Binding CommanderReputation.Count, StringFormat=Faction reputation ({0})}" /></Expander.Header>
-          <ItemsControl ItemsSource="{Binding CommanderReputation}" Margin="0,4,0,0">
+      <StackPanel x:Name="CommanderSupport" Spacing="20">
+        <StackPanel x:Name="CommanderReputation" Spacing="4">
+          <TextBlock Classes="card-title" Text="{Binding CommanderReputation.Count, StringFormat=Faction reputation ({0})}" />
+          <ItemsControl x:Name="CommanderFactionRows" ItemsSource="{Binding CommanderReputation}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:FrontierReputationRowViewModel">
-                <Border Classes="console-data-row">
-                  <Grid ColumnDefinitions="36,*,Auto" ColumnSpacing="10">
-                    <Image Width="30" Height="30" Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}" Stretch="Uniform" />
-                    <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" Text="{Binding Faction}" />
-                    <TextBlock Grid.Column="2" FontWeight="SemiBold" VerticalAlignment="Center" Text="{Binding Score}" />
+                <Border Classes="console-data-row commander-faction">
+                  <Grid ColumnDefinitions="32,*" ColumnSpacing="6">
+                    <Image Width="32" Height="32" VerticalAlignment="Center" Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}" Stretch="Uniform" />
+                    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                      <TextBlock Classes="console-label" TextWrapping="Wrap" Text="{Binding Faction}" />
+                      <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding Score}" />
+                    </StackPanel>
                   </Grid>
                 </Border>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-        </Expander>
-        <Expander x:Name="CommanderFleet" Grid.Column="1" Classes="profile-section console-section" HorizontalAlignment="Stretch"
+        </StackPanel>
+        <Expander x:Name="CommanderFleet" Classes="profile-section console-section" HorizontalAlignment="Stretch"
                   IsExpanded="{Binding PaneStates.CommanderOwnedFleet.IsExpanded, Mode=TwoWay}">
           <Expander.Header>
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
@@ -146,7 +148,7 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </Expander>
-      </Grid>
+      </StackPanel>
 
       <StackPanel Spacing="9" IsVisible="{Binding HasCapabilities}">
         <TextBlock Classes="console-label" Text="Account capabilities" />

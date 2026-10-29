@@ -38,6 +38,7 @@ public sealed partial class CommanderProfileViewModelTests
             new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
         );
         await model.OpenAsync();
+        model.PaneStates.CommanderFactionReputation.IsExpanded = false;
         model.PaneStates.CurrentShipModules.IsExpanded = true;
         model.PaneStates.ShipyardModules.IsExpanded = true;
         var view = new CommanderProfileView { DataContext = model };
@@ -108,6 +109,26 @@ public sealed partial class CommanderProfileViewModelTests
             TabControl tabs = view.FindControl<TabControl>("CommanderProfileTabs")!;
             Assert.Equal(6, tabs.Items.Count);
             Expander fleet = commander.FindControl<Expander>("CommanderFleet")!;
+            Control reputation = commander.FindControl<Control>("CommanderReputation")!;
+            Assert.IsNotType<Expander>(reputation);
+            ItemsControl factions = commander.FindControl<ItemsControl>("CommanderFactionRows")!;
+            UniformGrid factionRow = Assert.IsType<UniformGrid>(factions.ItemsPanelRoot);
+            Assert.Equal(4, factionRow.Children.Count);
+            Assert.All(factionRow.Children, faction => Assert.True(faction.IsEffectivelyVisible));
+            Assert.Single(factionRow.Children.Select(faction => faction.Bounds.Y).Distinct());
+            Assert.True(factionRow.Children[3].Bounds.X > factionRow.Children[0].Bounds.X);
+            ItemsControl ranks = commander.FindControl<ItemsControl>("CommanderRanks")!;
+            Point reputationPosition = reputation.TranslatePoint(default, commander)!.Value;
+            Point ranksPosition = ranks.TranslatePoint(default, commander)!.Value;
+            Point fleetPosition = fleet.TranslatePoint(default, commander)!.Value;
+            Assert.True(reputationPosition.Y >= ranksPosition.Y + ranks.Bounds.Height);
+            Assert.True(fleetPosition.Y >= reputationPosition.Y + reputation.Bounds.Height);
+            Assert.Equal(reputation.Bounds.Width, fleet.Bounds.Width, precision: 1);
+            Assert.Equal(reputationPosition.X, fleetPosition.X, precision: 1);
+            Assert.True(fleet.Bounds.Width >= scroller.Viewport.Width - 10);
+            scroller.Offset = new Vector(0, Math.Max(0, reputationPosition.Y - 20));
+            CaptureConsole(window, $"{palette}-{width}-reputation-and-fleet");
+            scroller.Offset = default;
             fleet.IsExpanded = false;
             Assert.False(model.PaneStates.CommanderOwnedFleet.IsExpanded);
             for (int index = 1; index < tabs.Items.Count; index++)
@@ -255,7 +276,13 @@ public sealed partial class CommanderProfileViewModelTests
                 ScrollViewer scroller = commander.FindControl<ScrollViewer>("CommanderScroller")!;
                 Assert.True(scroller.Extent.Width <= scroller.Viewport.Width + 1);
                 Assert.Equal(width < 820 ? 1 : 0, Grid.GetRow(commander.FindControl<StackPanel>("FlightShip")!));
-                Assert.Equal(width < 820 ? 1 : 0, Grid.GetRow(commander.FindControl<Expander>("CommanderFleet")!));
+                Expander fleet = commander.FindControl<Expander>("CommanderFleet")!;
+                StackPanel reputation = commander.FindControl<StackPanel>("CommanderReputation")!;
+                Assert.Equal(reputation.Bounds.Width, fleet.Bounds.Width, precision: 1);
+                Assert.True(
+                    fleet.TranslatePoint(default, commander)!.Value.Y
+                        >= reputation.TranslatePoint(default, commander)!.Value.Y + reputation.Bounds.Height
+                );
                 Assert.Equal(
                     width < 860 ? 1 : 0,
                     Grid.GetRow(view.FindControl<StackPanel>("CommanderAccountSelection")!)
@@ -359,7 +386,13 @@ public sealed partial class CommanderProfileViewModelTests
                 new("empire", "Empire", 9, "Earl"),
             ],
             Powerplay = new("Aisling Duval", 160, 1_260_198, snapshot.FetchedAt),
-            CommanderReputation = [new("Federation", 100), new("Empire", 78), new("Alliance", 42)],
+            CommanderReputation =
+            [
+                new("Federation", 100),
+                new("Empire", 78),
+                new("Alliance", 42),
+                new("Independent", 68),
+            ],
         };
     }
 

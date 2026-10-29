@@ -57,6 +57,11 @@
     <Setter Property="Padding" Value="0,10" />
     <Setter Property="Margin" Value="0" />
   </Style>
+  <Style Selector=".commander-readout Border.commander-faction">
+    <Setter Property="Padding" Value="0,12" />
+    <Setter Property="Margin" Value="0,0,6,0" />
+    <Setter Property="MinHeight" Value="72" />
+  </Style>
   <Style Selector=".commander-console Expander.profile-section /template/ ToggleButton, .commander-readout Expander.console-section /template/ ToggleButton">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
