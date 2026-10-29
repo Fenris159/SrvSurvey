@@ -7,6 +7,56 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayWindowRegistryTests
 {
+    /// <summary>Exercises every panel using the shared availability gate, before and after hosting either presentation mode.</summary>
+    public static IEnumerable<object[]> AvailabilityCases()
+    {
+        foreach (
+            OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported.Where(definition =>
+                definition.Name != "PlotBuildCommodities"
+            )
+        )
+        {
+            yield return [definition.Name, false];
+            yield return [definition.Name, true];
+        }
+    }
+
+    /// <summary>Disabled availability survives startup, repeated show requests, and later enable/disable edits for all shared panels.</summary>
+    [AvaloniaTheory]
+    [MemberData(nameof(AvailabilityCases))]
+    public void SavedAvailabilityBlocksEveryOtherPanelAtStartup(string plotterName, bool combinedPresentation)
+    {
+        var registry = new OverlayWindowRegistry();
+        var window = new Window();
+        try
+        {
+            registry.SetUserVisibility(plotterName, visible: false);
+            registry.Register(window, plotterName);
+            if (combinedPresentation)
+            {
+                registry.SetPresentationVisual(window, new Border());
+            }
+            else
+            {
+                window.Show();
+            }
+            registry.SetPresentationVisible(window, visible: true);
+            Assert.False(registry.ShouldPresent(plotterName));
+            Assert.False(registry.GetDecision(window).ShouldPresent);
+            Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
+
+            registry.SetUserVisibility(plotterName, visible: true);
+            Assert.True(registry.ShouldPresent(plotterName));
+            registry.SetUserVisibility(plotterName, visible: false);
+            Assert.False(registry.ShouldPresent(plotterName));
+            Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData("PlotFootCombat", true, false)]
     [InlineData("PlotFootCombat", true, true)]

@@ -428,6 +428,7 @@ public sealed class JournalProjectionTests
         JournalProjectionOperation.RouteAutoCopy,
         JournalProjectionOperation.RouteEvents,
         JournalProjectionOperation.FleetCarrierEvents,
+        JournalProjectionOperation.CarrierAnnouncements,
         JournalProjectionOperation.ExplorationBaseline,
         JournalProjectionOperation.BoxelRoute,
         JournalProjectionOperation.SearchNavigation,

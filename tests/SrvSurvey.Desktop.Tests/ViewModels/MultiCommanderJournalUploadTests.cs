@@ -16,7 +16,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 /// <summary>Exercises two independent application instances through real journal readers and provider HTTP serialization.</summary>
 [Trait("Category", "JournalUploadScenario")]
-public sealed class MultiCommanderJournalUploadTests
+public sealed partial class MultiCommanderJournalUploadTests
 {
     /// <summary>Verified folders enable each provider without crossing account credentials, payloads, or companion snapshots.</summary>
     [Theory]
@@ -473,6 +473,7 @@ public sealed class MultiCommanderJournalUploadTests
     {
         public ConcurrentQueue<string> Posts { get; } = new();
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
+        public string EdAstroEvents { get; set; } = "[\"Docked\"]";
 
         /// <summary>Serves provider policy and decodes transport envelopes without contacting a real service.</summary>
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -485,7 +486,7 @@ public sealed class MultiCommanderJournalUploadTests
                 return new(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
-                        provider == "EDAstro" ? "[\"Docked\"]" : "[\"Fileheader\",\"Shutdown\"]"
+                        provider == "EDAstro" ? EdAstroEvents : "[\"Fileheader\",\"Shutdown\"]"
                     ),
                 };
             }

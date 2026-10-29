@@ -13,7 +13,7 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Inara;
 
-public interface IInaraPublisher : IDisposable
+public interface IInaraPublisher : IDisposable, IJournalUploadPrivacyAware
 {
     Task<InaraPublicationResult> ApplyAsync(
         InaraPublicationUpdate update,
@@ -51,6 +51,8 @@ public sealed class InaraPublisher : IInaraPublisher
     private const int MaximumPayloadBytes = 1024 * 1024;
     private const int MaximumResponseBytes = 1024 * 1024;
 
+    private JournalUploadPrivacy? privacy;
+    private volatile bool privacyCancellationRequested;
     private readonly HttpClient httpClient;
     private readonly bool ownsHttpClient;
     private readonly string appVersion;
@@ -127,6 +129,30 @@ public sealed class InaraPublisher : IInaraPublisher
         else
         {
             this.httpClient = httpClient;
+        }
+    }
+
+    public void SetUploadPrivacy(JournalUploadPrivacy policy)
+    {
+        privacy?.Changed -= PrivacyChanged;
+        privacy = policy;
+        outbox?.EnableExpeditionRetention();
+        privacy.Changed += PrivacyChanged;
+    }
+
+    private void PrivacyChanged(bool restricting)
+    {
+        lock (sendStateSync)
+        {
+            if (restricting)
+            {
+                privacyCancellationRequested = true;
+                activeSendCancellation?.Cancel();
+            }
+            else
+            {
+                nextSendAt ??= timeProvider.GetUtcNow();
+            }
         }
     }
 
@@ -297,7 +323,8 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private void MaybeStartBackgroundSend(InaraPublicationUpdate update)
     {
-        bool forceFlush = update.AllowPublishing && update.JournalEvents.Any(item => item.EventName == "Shutdown");
+        bool forceFlush =
+            update.AllowPublishing && update.JournalEvents.Any(item => item.EventName is "Shutdown" or "Docked");
         if (forceFlush || IsSendDue())
         {
             _ = TryStartBackgroundSend(force: forceFlush, out _, out _);
@@ -424,7 +451,11 @@ public sealed class InaraPublisher : IInaraPublisher
         if (recovered is not null || storageGeneration != authorizationGeneration)
         {
             queue.TakeAll();
-            queue.Enqueue(options.ApiKey!.Trim(), recovered ?? outbox.ReadPending());
+            queue.Enqueue(
+                options.ApiKey!.Trim(),
+                (recovered ?? outbox.ReadPending()).OrderBy(CapturedAt),
+                PendingLimit
+            );
             storageGeneration = authorizationGeneration;
             nextSendAt = outbox.NotBefore ?? timeProvider.GetUtcNow();
         }
@@ -438,18 +469,21 @@ public sealed class InaraPublisher : IInaraPublisher
         if (outbox is not null)
         {
             InaraEvent[] replacements = captured.Where(item => !string.IsNullOrWhiteSpace(item.ReplaceKey)).ToArray();
-            outbox.Complete(
-                outbox
-                    .ReadPending()
-                    .Where(old =>
-                        replacements.Any(current =>
-                            current.ReplaceKey == old.ReplaceKey && current.UploadIdentity != old.UploadIdentity
+            if (replacements.Length > 0)
+            {
+                outbox.Complete(
+                    outbox
+                        .ReadPending()
+                        .Where(old =>
+                            replacements.Any(current =>
+                                current.ReplaceKey == old.ReplaceKey && current.UploadIdentity != old.UploadIdentity
+                            )
                         )
-                    )
-                    .Select(old => old.UploadIdentity)
-            );
+                        .Select(old => old.UploadIdentity)
+                );
+            }
         }
-        return queue.Enqueue(apiKey, captured);
+        return queue.Enqueue(apiKey, captured, PendingLimit);
     }
 
     /// <summary>Checkpoints final outcomes while preserving the items the provider explicitly deferred.</summary>
@@ -674,6 +708,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     public void Dispose()
     {
+        privacy?.Changed -= PrivacyChanged;
         using var shutdownCancellation = new CancellationTokenSource(ShutdownTimeout);
         try
         {
@@ -839,6 +874,23 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    private int PendingLimit =>
+        privacy is null ? InaraEventQueue.DefaultMaximumCount : JournalUploadPrivacy.ExpeditionMaximumReports;
+
+    private bool HasReleasableEvents() =>
+        queue.HasSendable(item => privacy?.CanSend(session?.Commander, item.Timestamp) ?? true);
+
+    /// <summary>Restores event chronology so held reports cannot hide earlier released reports after recovery.</summary>
+    private static DateTimeOffset CapturedAt(InaraEvent item) =>
+        DateTimeOffset.TryParse(
+            item.Timestamp,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind,
+            out DateTimeOffset at
+        )
+            ? at
+            : DateTimeOffset.MaxValue;
+
     /// <summary>Starts one authorized batch within the provider rate limit and current retry deadline.</summary>
     private bool TryStartBackgroundSend(
         bool force,
@@ -855,24 +907,17 @@ public sealed class InaraPublisher : IInaraPublisher
                 return sendTask is not null;
             }
 
+            if (!HasReleasableEvents())
+            {
+                return false;
+            }
             DateTimeOffset now = timeProvider.GetUtcNow();
             if (outbox?.NotBefore is { } retainedDeadline && now < retainedDeadline)
             {
                 return false;
             }
-            DateTimeOffset allowedAt = rateLimiter.NextAllowedAt(now);
-            if (allowedAt > now)
+            if (IsRateLimited(now, force, out rateLimitedUntil))
             {
-                if (nextSendAt is null || allowedAt < nextSendAt.Value)
-                {
-                    nextSendAt = allowedAt;
-                }
-
-                if (force)
-                {
-                    rateLimitedUntil = allowedAt;
-                }
-
                 return false;
             }
 
@@ -893,6 +938,7 @@ public sealed class InaraPublisher : IInaraPublisher
             }
 
             long generation = authorizationGeneration;
+            privacyCancellationRequested = false;
             activeSendCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
             CancellationTokenSource sendCancellation = activeSendCancellation;
             activeSendTask = Task.Run(
@@ -902,6 +948,25 @@ public sealed class InaraPublisher : IInaraPublisher
             sendTask = activeSendTask;
             return true;
         }
+    }
+
+    private bool IsRateLimited(DateTimeOffset now, bool force, out DateTimeOffset? until)
+    {
+        until = null;
+        DateTimeOffset allowedAt = rateLimiter.NextAllowedAt(now);
+        if (allowedAt <= now)
+        {
+            return false;
+        }
+        if (nextSendAt is null || allowedAt < nextSendAt.Value)
+        {
+            nextSendAt = allowedAt;
+        }
+        if (force)
+        {
+            until = allowedAt;
+        }
+        return true;
     }
 
     private InaraPublicationResult TakeCompletedSendResult()
@@ -1020,7 +1085,12 @@ public sealed class InaraPublisher : IInaraPublisher
         CancellationToken cancellationToken
     )
     {
-        List<InaraQueuedEvent> batch = queue.TakeBatch(apiKey, MaximumEventsPerRequest, out int discarded);
+        List<InaraQueuedEvent> batch = queue.TakeBatch(
+            apiKey,
+            MaximumEventsPerRequest,
+            out int discarded,
+            item => privacy?.CanSend(sendSession.Commander, item.Timestamp) ?? true
+        );
         lock (sendStateSync)
         {
             nextSendAt = null;
@@ -1209,6 +1279,10 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         Requeue(batch, warnings);
+        if (privacyCancellationRequested)
+        {
+            return CreateSendResult(0, warnings);
+        }
         throw exception;
     }
 
@@ -1271,7 +1345,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private void Requeue(IReadOnlyCollection<InaraQueuedEvent> batch, List<string> warnings)
     {
-        int dropped = queue.Requeue(batch);
+        int dropped = queue.Requeue(batch, PendingLimit);
         if (dropped > 0)
         {
             warnings.Add($"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");

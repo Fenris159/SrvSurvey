@@ -31,6 +31,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     private const int MaximumResponseBytes = 128 * 1024;
     private static readonly TimeSpan EventListLifetime = TimeSpan.FromDays(1);
     private static readonly TimeSpan LogInterval = TimeSpan.FromMinutes(15);
+    private JournalUploadPrivacy? privacy;
     private readonly Lock sync = new();
     private readonly SemaphoreSlim sending = new(1, 1);
     private readonly HttpClient client;
@@ -95,6 +96,26 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     }
 
     /// <summary>Number of journal events retained locally, including the active batch.</summary>
+    public void SetUploadPrivacy(JournalUploadPrivacy policy)
+    {
+        privacy?.Changed -= PrivacyChanged;
+        privacy = policy;
+        outbox?.EnableExpeditionRetention();
+        privacy.Changed += PrivacyChanged;
+    }
+
+    private void PrivacyChanged(bool restricting)
+    {
+        if (!restricting)
+        {
+            return;
+        }
+        lock (sync)
+        {
+            activeRequest?.Cancel();
+        }
+    }
+
     public int PendingCount
     {
         get
@@ -201,9 +222,12 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         string json = data.ToJsonString();
         if (
             Encoding.UTF8.GetByteCount(json) > MaximumPayloadBytes / 2
-            || queue.Count >= MaximumQueueSize
-            || queue.Sum(item => Encoding.UTF8.GetByteCount(item.Json)) + Encoding.UTF8.GetByteCount(json)
-                > 4 * MaximumPayloadBytes
+            || queue.Count >= PendingLimit
+            || (
+                outbox is null
+                && queue.Sum(item => Encoding.UTF8.GetByteCount(item.Json)) + Encoding.UTF8.GetByteCount(json)
+                    > 4 * MaximumPayloadBytes
+            )
         )
         {
             ReportProblem("EDAstro's bounded local queue is full or an event is too large; new data was skipped.");
@@ -231,7 +255,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         }
         seen.Add(identity);
         seenOrder.Enqueue(identity);
-        while (seenOrder.Count > MaximumQueueSize)
+        while (seenOrder.Count > PendingLimit)
         {
             seen.Remove(seenOrder.Dequeue());
         }
@@ -254,7 +278,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             generation++;
             activeRequest?.Cancel();
             queue.Clear();
-            queue.AddRange(recovered);
+            queue.AddRange(recovered.OrderBy(CapturedAt));
             seen.Clear();
             seenOrder.Clear();
             foreach (string identity in recovered.Select(item => item.Identity))
@@ -396,7 +420,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     private bool CanRequest()
     {
         DateTimeOffset now = utcNow();
-        if (disposed || !enabled || suspended || queue.Count == 0 || now < nextRequestAt)
+        if (disposed || !enabled || suspended || queue.Count == 0 || !CanRelease(queue[0]) || now < nextRequestAt)
         {
             return false;
         }
@@ -502,6 +526,17 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     }
 
     /// <summary>Selects an ordered batch within event and byte limits without mixing captured sessions.</summary>
+    private int PendingLimit => privacy is null ? MaximumQueueSize : JournalUploadPrivacy.ExpeditionMaximumReports;
+
+    private bool CanRelease(QueuedEvent item) =>
+        privacy?.CanSendJournal(item.Session.Split('\n')[0], item.Json) ?? true;
+
+    /// <summary>Restores journal chronology after acknowledgements free slots in the durable dictionary.</summary>
+    private static DateTimeOffset CapturedAt(QueuedEvent item) =>
+        JournalEventEnvelope.TryParse(item.Json, out JournalEventEnvelope? entry, out _)
+            ? entry?.Timestamp ?? DateTimeOffset.MaxValue
+            : DateTimeOffset.MaxValue;
+
     private QueuedEvent[] TakeBatch()
     {
         QueuedEvent first = queue[0];
@@ -511,7 +546,8 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
         {
             size += Encoding.UTF8.GetByteCount(item.Json) + 1;
             if (
-                item.Session != first.Session
+                !CanRelease(item)
+                || item.Session != first.Session
                 || item.Odyssey != first.Odyssey
                 || size > MaximumPayloadBytes
                 || result.Count == MaximumBatchSize
@@ -710,6 +746,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
     /// <summary>Cancels delivery and releases storage leases while preserving captured uploads for the next eligible session.</summary>
     public void Dispose()
     {
+        privacy?.Changed -= PrivacyChanged;
         lock (sync)
         {
             if (disposed)

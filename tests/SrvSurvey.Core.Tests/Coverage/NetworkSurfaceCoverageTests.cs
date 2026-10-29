@@ -14,6 +14,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Exploration/EdAstroPoiClient.cs",
         "src/SrvSurvey.Core/Edsm/EdsmPublisher.cs",
         "src/SrvSurvey.Core/EdAstro/EdAstroPublisher.cs",
+        "src/SrvSurvey.Core/Discord/DiscordCarrierWebhookClient.cs",
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/DailyActiveUsersClient.cs",
@@ -69,6 +70,17 @@ public sealed class NetworkSurfaceCoverageTests
 
     private static readonly NetworkSurface[] Surfaces =
     [
+        new(
+            "discord-carrier-announcements",
+            [
+                "src/SrvSurvey.Core/Discord/DiscordCarrierWebhookClient.cs",
+                "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs",
+            ],
+            [
+                "tests/SrvSurvey.Core.Tests/Discord/DiscordCarrierWebhookClientTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/ViewModels/DiscordCarrierAnnouncementsTests.cs",
+            ]
+        ),
         new(
             "colonization-market-shopping",
             [

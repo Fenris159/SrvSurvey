@@ -235,6 +235,33 @@ public sealed class JournalUploadOutboxTests : IDisposable
         Assert.NotEmpty(messages);
     }
 
+    [Fact]
+    public void ExpeditionBacklogBeyondTheOrdinaryRetryLimitSurvivesReopening()
+    {
+        using (JournalUploadOutbox<Payload> store = Create())
+        {
+            store.EnableExpeditionRetention();
+            Assert.True(store.TryOpen("F123", out _));
+            Assert.Equal(
+                5000,
+                store
+                    .Enqueue(
+                        Enumerable
+                            .Range(0, 5000)
+                            .Select(index => new Payload(
+                                index.ToString(global::System.Globalization.CultureInfo.InvariantCulture),
+                                "Undisclosed discovery"
+                            ))
+                    )
+                    .Count
+            );
+        }
+        using JournalUploadOutbox<Payload> reopened = Create();
+        reopened.EnableExpeditionRetention();
+        Assert.True(reopened.TryOpen("F123", out IReadOnlyList<Payload>? retained));
+        Assert.Equal(5000, retained!.Count);
+    }
+
     /// <summary>Creates real isolated leased storage with explicit validation of retained provider values.</summary>
     private JournalUploadOutbox<Payload> Create() =>
         new(

@@ -235,6 +235,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "monitor scale minimize tray game elite focus startup jump reduce motion animation"
             ),
             new(
+                "Discord carrier announcements",
+                ApplicationCategoryKey,
+                "DiscordWebhookUrlTextBox",
+                "DiscordCarrierAnnouncementsCard",
+                "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server"
+            ),
+            new(
                 "Preferred commander",
                 DesktopCategoryKey,
                 "PreferredCommanderComboBox",
@@ -275,6 +282,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "SystemNicknamesCheckBox",
                 "SystemNicknamesCard",
                 "raven colonial personal public names"
+            ),
+            new(
+                "Stealth Mode",
+                PrivacyCategoryKey,
+                "StealthModeCheckBox",
+                "StealthModeCard",
+                "private discoveries queue persistent docking exploration EDDN Inara EDAstro EDSM Raven"
             ),
             new(
                 "EDDN sharing",

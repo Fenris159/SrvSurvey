@@ -11,7 +11,8 @@ public sealed record MiningImportedReport(
     int Asteroids,
     int Cores,
     int Engineering,
-    Dictionary<string, string> Fields
+    Dictionary<string, string> Fields,
+    double CarryoverTons = 0
 );
 
 /// <summary>Imports summary CSVs without fabricating per-asteroid or per-refinement journal events.</summary>
@@ -99,7 +100,8 @@ public static class MiningReportImport
                 (int)Number("asteroids_prospected", "Asteroids"),
                 (int)Number("", "CoreHits"),
                 (int)Number("", "EngineeringMaterials"),
-                fields
+                fields,
+                Number("", "RefineryCarryoverTons")
             ),
         };
     }

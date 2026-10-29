@@ -66,6 +66,88 @@ public sealed class ColonizationCommodityOverlayCoordinatorTests : IDisposable
         $"SrvSurvey-colonization-visibility-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Restored settings keep both disabled switches hidden through docking and permit deliberate shortcut activation.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DisabledAutomaticAndManualAvailabilityStayHiddenOnDockedStartup(bool docked)
+    {
+        CreateAvailability(new OverlayWindowRegistry())
+            .Panels.Single(item => item.PlotterName == "PlotBuildCommodities")
+            .IsEnabled = false;
+        string path = Path.Combine(directory, "ui.json");
+        new ColonizationSettingsStore(path).SaveOverlayPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                AutoShow = false,
+            }
+        );
+        var registry = new OverlayWindowRegistry();
+        OverlayPanelVisibilityViewModel availability = CreateAvailability(registry);
+        OverlayPanelVisibilityEntryViewModel panel = availability.Panels.Single(item =>
+            item.PlotterName == "PlotBuildCommodities"
+        );
+        var overlay = new ColonizationCommodityOverlayViewModel();
+        overlay.ApplyPreferences(new ColonizationSettingsStore(path).LoadOverlayPreferences());
+        overlay.Apply(Plan(), new EliteStatus { Flags = docked ? StatusFlags.Docked : StatusFlags.InMainShip });
+        using var host = new HostedOverlayTestHarness(registry);
+        using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
+
+        Assert.False(panel.IsEnabled);
+        Assert.False(coordinator.IsVisible);
+        overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.Docked });
+        host.Tick();
+        Assert.False(coordinator.IsVisible);
+        overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.InMainShip });
+        Assert.False(coordinator.IsVisible);
+        coordinator.ToggleVisibility(availability);
+        host.Tick();
+        Assert.True(panel.IsEnabled);
+        Assert.True(coordinator.IsVisible);
+        coordinator.ToggleVisibility(availability);
+        host.Tick();
+        Assert.False(panel.IsEnabled);
+        Assert.False(coordinator.IsVisible);
+    }
+
+    /// <summary>Disabling automatic hiding uses saved availability and reacts to live settings changes without a shortcut.</summary>
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PersistentDisplayRespectsAvailabilityAtStartupAndDuringSettingsChanges(bool initiallyEnabled)
+    {
+        CreateAvailability(new OverlayWindowRegistry())
+            .Panels.Single(item => item.PlotterName == "PlotBuildCommodities")
+            .IsEnabled = initiallyEnabled;
+        var registry = new OverlayWindowRegistry();
+        OverlayPanelVisibilityViewModel availability = CreateAvailability(registry);
+        OverlayPanelVisibilityEntryViewModel panel = availability.Panels.Single(item =>
+            item.PlotterName == "PlotBuildCommodities"
+        );
+        var overlay = new ColonizationCommodityOverlayViewModel();
+        ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default with { AutoShow = false };
+        overlay.ApplyPreferences(preferences);
+        overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.Docked });
+        using var host = new HostedOverlayTestHarness(registry);
+        using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
+
+        Assert.Equal(initiallyEnabled, coordinator.IsVisible);
+        panel.IsEnabled = true;
+        host.Tick();
+        Assert.True(coordinator.IsVisible);
+        overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.InMainShip });
+        Assert.True(coordinator.IsVisible);
+        panel.IsEnabled = false;
+        host.Tick();
+        Assert.False(coordinator.IsVisible);
+        overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.Docked });
+        Assert.False(coordinator.IsVisible);
+        overlay.ApplyPreferences(preferences with { AutoShow = true });
+        Assert.True(coordinator.IsVisible);
+        overlay.ApplyPreferences(preferences);
+        Assert.False(coordinator.IsVisible);
+    }
+
     /// <summary>Automatic docking display works while the always-on availability checkbox is disabled.</summary>
     [AvaloniaTheory]
     [InlineData(false, GuiFocus.NoFocus, false)]
@@ -225,7 +307,7 @@ public sealed class ColonizationCommodityOverlayCoordinatorTests : IDisposable
     {
         var registry = new OverlayWindowRegistry();
         OverlayPanelVisibilityViewModel availability = CreateAvailability(registry);
-        availability.Toggle("PlotBuildCommodities");
+        availability.Panels.Single(panel => panel.PlotterName == "PlotBuildCommodities").IsEnabled = true;
         var overlay = new ColonizationCommodityOverlayViewModel();
         overlay.ApplyPreferences(ColonizationOverlayPreferences.Default with { AutoShow = false });
         overlay.Apply(Plan(), new EliteStatus { Flags = StatusFlags.InMainShip });

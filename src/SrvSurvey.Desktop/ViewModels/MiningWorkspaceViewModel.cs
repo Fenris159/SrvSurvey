@@ -347,6 +347,21 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             ? "No active session"
             : $"{SessionStateLabel(session)} · {session.ActiveDuration:hh\\:mm\\:ss} · {session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h · {session.Asteroids} asteroids · {session.CoreHits} cores";
 
+    public string YieldConfirmation =>
+        Current switch
+        {
+            null => "Session tons exclude post-session refinery carryover.",
+            { EstimatedCargoBaseline: true } => "Yield includes estimates from incomplete cargo readings.",
+            { HasUnconfirmedYield: true } => "Refinery estimate; awaiting cargo confirmation.",
+            _ => "Session tons confirmed from cargo readings.",
+        };
+
+    public string RefineryCarryoverSummary =>
+        Current is null && state.Data.History.FirstOrDefault() is { HasCarryover: true } last
+            ? $"Last session: {last.CarryoverTons:0.##} t refinery carryover after the session ended (excluded from t/hour)."
+            : "";
+    public bool HasRefineryCarryover => RefineryCarryoverSummary.Length > 0;
+
     private static string SessionStateLabel(MiningSession session) => session.PausedAt is null ? "Active" : "Paused";
 
     private string CapacityLabel => capacity > 0 ? capacity.ToString("N0", CultureInfo.CurrentCulture) : "unknown";
@@ -1592,6 +1607,9 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 {
                     nameof(CommunityStatus),
                     nameof(SessionSummary),
+                    nameof(YieldConfirmation),
+                    nameof(RefineryCarryoverSummary),
+                    nameof(HasRefineryCarryover),
                     nameof(ShouldShowNotifications),
                     nameof(ShouldShowCargo),
                     nameof(ShouldShowSession),
@@ -1632,6 +1650,9 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 nameof(Context),
                 nameof(CurrentSystem),
                 nameof(SessionSummary),
+                nameof(YieldConfirmation),
+                nameof(RefineryCarryoverSummary),
+                nameof(HasRefineryCarryover),
                 nameof(CargoSummary),
                 nameof(Cargo),
                 nameof(CargoUsed),

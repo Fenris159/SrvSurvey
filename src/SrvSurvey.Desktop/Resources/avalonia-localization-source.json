@@ -4549,6 +4549,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Announcements are off until you save and enable a Discord webhook.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
     "Text": "Anomaly",
     "IsFormat": false,
     "SourceKinds": [
@@ -5148,6 +5156,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs"
+  },
+  {
+    "Text": "Arrival confirmed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Arrival distance (ls)",
@@ -10219,6 +10235,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Carrier route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
     "Text": "Carrier search failed. Try again when Raven Colonial is available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10313,6 +10337,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+  },
+  {
+    "Text": "Carriers to announce",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Cash, fleet and carrier bank",
@@ -15276,6 +15308,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
+    "Text": "Could not save Discord settings. Check that the settings folder is writable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
     "Text": "Could not save boxel survey statistics: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -17823,6 +17863,55 @@
     "FirstSource": "src/SrvSurvey.Desktop/ErrorReportWindow.axaml"
   },
   {
+    "Text": "Discord announcements are queued faster than they can be sent. Some messages were skipped.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
+    "Text": "Discord carrier announcements",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Discord webhook URL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "DiscordCarrierAnnouncements",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/DiscordCarrierSettingsStore.cs"
+  },
+  {
+    "Text": "DiscordCarrierAnnouncementsCard",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "DiscordWebhookUrlTextBox",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Discovered",
     "IsFormat": false,
     "SourceKinds": [
@@ -18295,6 +18384,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
+  },
+  {
+    "Text": "Docking releases data recorded up to that docking; new discoveries wait for the next one. Turning Stealth Mode off resumes normal uploads. This does not enable sharing services that are switched off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Docking requested",
@@ -19633,6 +19730,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.cs"
   },
   {
+    "Text": "Enable Discord carrier announcements",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Enable EDAstro sharing for live Commander sessions",
     "IsFormat": false,
     "SourceKinds": [
@@ -20232,6 +20337,15 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Enter a valid Discord webhook URL before enabling announcements.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Enter a valid generated system and lower mass code.",
@@ -28366,6 +28480,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "In Discord, open the channel settings, choose Integrations \u2192 Webhooks, create a webhook, and copy its URL here. The URL is saved locally and excluded from cloud profile sync.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29530,6 +29652,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Jump cancelled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Jump cooldown",
     "IsFormat": false,
     "SourceKinds": [
@@ -29544,6 +29674,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Jump events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Jump fuel",
@@ -29576,6 +29714,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Jump scheduled / drive charging",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Jump target data ready",
@@ -29697,6 +29843,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Keep SrvSurvey running with the carrier manager\u0027s live journal selected. Personal and squadron carriers are tracked separately. Previous journal events are never reposted, and arrival is announced only when the game confirms it. An active matching carrier route is included when available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Keep application and desktop bindings consistent when switching between portal and raw input. Changed portal requests may need approval through the button.",
@@ -30488,6 +30642,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Last shortcut: {0} from {1}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -31079,6 +31241,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
+  },
+  {
+    "Text": "Listening for live carrier jump events while SrvSurvey is running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
   },
   {
     "Text": "Lithium Hydroxide",
@@ -41397,6 +41567,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Paste the channel\u0027s webhook URL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Paste this ship\u0027s latest recorded loadout into EDSY\u0027s Import dialog.",
     "IsFormat": false,
     "SourceKinds": [
@@ -41576,9 +41754,10 @@
     "Text": "Personal fleet carrier",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Personal progress not supplied by Frontier or local journals",
@@ -42341,6 +42520,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestIndicatorViewModel.cs"
+  },
+  {
+    "Text": "Post carrier jump plans, cancellations, and confirmed arrivals to a Discord channel, including the departure system, destination, body, and jump time when available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Potential Galactic-region first",
@@ -46903,6 +47090,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Refinery estimate; awaiting cargo confirmation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Refresh",
@@ -51664,6 +51859,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Saved. Discord carrier announcements are off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
+    "Text": "Saved. Listening for live carrier jump events.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
     "Text": "Saving Nexus privacy...",
     "IsFormat": false,
     "SourceKinds": [
@@ -53300,12 +53511,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Send test message",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "SendText",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+  },
+  {
+    "Text": "Sending a test message to Discord\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
   },
   {
     "Text": "Separation",
@@ -53412,6 +53639,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Session tons confirmed from cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Session tons exclude post-session refinery carryover.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Sessions and cargo",
@@ -56129,9 +56380,10 @@
     "Text": "Squadron carrier",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "SquadronAndFriends",
@@ -57799,6 +58051,47 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Stealth Mode",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Stealth Mode is off. Enabled sharing services upload normally.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "StealthModeCard",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "StealthModeCheckBox",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "StealthModeEnabled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/NetworkPrivacySettingsStore.cs"
   },
   {
     "Text": "Steam",
@@ -63164,6 +63457,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander \u002B data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
     "IsFormat": false,
     "SourceKinds": [
@@ -67137,6 +67438,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Unsaved changes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Unsaved route edits were kept.",
     "IsFormat": false,
     "SourceKinds": [
@@ -67624,6 +67933,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
+    "Text": "Uploads are held locally until a live docking. Restarting the application does not release them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
   },
   {
     "Text": "Upper floor",
@@ -70958,6 +71275,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "Yield estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Yield includes estimates from incomplete cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -77999,6 +78332,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "webhook discord fleet carrier personal squadron jump departure cancellation arrival itinerary notification channel server",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
     "Text": "what-happened",

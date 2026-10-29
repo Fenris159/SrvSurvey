@@ -9,9 +9,10 @@ namespace SrvSurvey.Core.Network;
 internal sealed class JournalUploadOutbox<T> : IDisposable
     where T : class
 {
-    private const long MaximumFileBytes = 64L * 1024 * 1024;
+    private long maximumFileBytes = 64L * 1024 * 1024;
     private const long CompactAfterBytes = 8L * 1024 * 1024;
-    private const int MaximumPending = 4096;
+    private int maximumPending = 4096;
+    private long nextCompactionBytes = CompactAfterBytes;
     private const int MaximumReceipts = 65536;
     private readonly string folder;
     private readonly Func<T, string> identity;
@@ -58,6 +59,15 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             Report("Journal upload storage is unavailable; application startup can continue without delivery.");
+        }
+    }
+
+    internal void EnableExpeditionRetention()
+    {
+        lock (sync)
+        {
+            maximumPending = JournalUploadPrivacy.ExpeditionMaximumReports;
+            maximumFileBytes = JournalUploadPrivacy.ExpeditionMaximumBytes;
         }
     }
 
@@ -238,7 +248,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
                 )
                 .DistinctBy(identity, StringComparer.Ordinal)
                 .ToArray();
-            if (pending.Count + added.Length > MaximumPending)
+            if (pending.Count + added.Length > maximumPending)
             {
                 throw new IOException("The durable journal upload queue is full; existing reports were retained.");
             }
@@ -332,12 +342,12 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         }
         byte[] bytes = Encode(delta);
         long length = File.Exists(path) ? new FileInfo(path).Length : 0;
-        if (length > CompactAfterBytes || length + bytes.Length > MaximumFileBytes)
+        if (length > nextCompactionBytes || length + bytes.Length > maximumFileBytes)
         {
             Compact();
             length = new FileInfo(path!).Length;
         }
-        if (length + bytes.Length > MaximumFileBytes)
+        if (length + bytes.Length > maximumFileBytes)
         {
             throw new IOException(
                 "The durable journal upload storage limit was reached; retained reports were not removed."
@@ -379,7 +389,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         {
             return;
         }
-        if (new FileInfo(path).Length > MaximumFileBytes)
+        if (new FileInfo(path).Length > maximumFileBytes)
         {
             throw new IOException("The durable journal upload log exceeds its supported size.");
         }
@@ -403,7 +413,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
             }
             ReplayRecord(bytes, begin, end - begin);
         }
-        if (pending.Count > MaximumPending)
+        if (pending.Count > maximumPending)
         {
             throw new IOException("The durable journal upload log contains too many pending reports.");
         }
@@ -523,7 +533,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         try
         {
             byte[] bytes = Encode(new Delta(pending.Values.ToArray(), [], receipts.ToArray(), NotBefore, true));
-            if (bytes.Length > MaximumFileBytes)
+            if (bytes.Length > maximumFileBytes)
             {
                 throw new IOException("The durable journal upload checkpoint exceeds its storage limit.");
             }
@@ -533,6 +543,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
                 file.Flush(true);
             }
             File.Move(temporary, path!, true);
+            nextCompactionBytes = Math.Max(CompactAfterBytes, bytes.LongLength * 2);
         }
         finally
         {

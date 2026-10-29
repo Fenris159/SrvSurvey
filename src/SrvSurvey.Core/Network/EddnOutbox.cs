@@ -31,8 +31,8 @@ internal sealed class EddnOutbox : IDisposable
     private readonly Func<DateTimeOffset> utcNow;
     private readonly UploadSuccessLogAggregator successfulUploads;
     private readonly bool automaticProcessing;
-    private readonly int maximumPendingMessages;
-    private readonly long maximumStoreBytes;
+    private int maximumPendingMessages;
+    private long maximumStoreBytes;
     private readonly Lock sync = new();
     private readonly Lock sharedConsentSync = new();
 
@@ -57,6 +57,7 @@ internal sealed class EddnOutbox : IDisposable
     private FileStream? ownershipLease;
     private FileStream? sharedDisableLease;
     private bool? requestedEnabled;
+    private JournalUploadPrivacy? privacy;
     private bool enabled;
     private bool suspended;
     private bool loadingTruncated;
@@ -377,6 +378,55 @@ internal sealed class EddnOutbox : IDisposable
         return true;
     }
 
+    /// <summary>Attaches privacy and restores files truncated by the legacy recovery limits before selecting eligible work.</summary>
+    internal void SetUploadPrivacy(JournalUploadPrivacy policy)
+    {
+        List<string> reloadLogs = [];
+        lock (sync)
+        {
+            if (disposed)
+            {
+                return;
+            }
+            privacy?.Changed -= PrivacyChanged;
+            privacy = policy;
+            maximumPendingMessages = Math.Max(maximumPendingMessages, JournalUploadPrivacy.ExpeditionMaximumReports);
+            maximumStoreBytes = Math.Max(maximumStoreBytes, JournalUploadPrivacy.ExpeditionMaximumBytes);
+            if (loadingTruncated && ownershipLease is not null)
+            {
+                pending = load(reloadLogs);
+            }
+            privacy.Changed += PrivacyChanged;
+            scheduleNextLocked(utcNow());
+        }
+        writeLogs(reloadLogs);
+    }
+
+    private void PrivacyChanged(bool restricting)
+    {
+        lock (sync)
+        {
+            if (disposed)
+            {
+                return;
+            }
+            if (restricting)
+            {
+                activityCancellation.Cancel();
+                activityCancellation.Dispose();
+                activityCancellation = new CancellationTokenSource();
+            }
+            scheduleNextLocked(utcNow());
+        }
+    }
+
+    private bool CanRelease(EddnQueuedMessage item) =>
+        privacy?.CanSend(
+            item.header.uploaderID,
+            item.message["timestamp"]?.ToString(Newtonsoft.Json.Formatting.None).Trim('"')
+        )
+        ?? true;
+
     internal async Task processDue(CancellationToken cancellationToken = default)
     {
         if (!await processing.WaitAsync(0, cancellationToken).ConfigureAwait(false))
@@ -492,6 +542,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Preserves held reports on cancellation and applies transport outcomes to eligible reports.</summary>
     private bool ApplyUploadOutcome(EddnQueuedMessage next, EddnUploadResult? result, Exception? failure, bool retry)
     {
         string? persistenceLog = null;
@@ -506,6 +557,11 @@ internal sealed class EddnOutbox : IDisposable
             }
 
             if (!pending.Any(item => item.id == next.id))
+            {
+                return true;
+            }
+
+            if (failure is OperationCanceledException && !CanRelease(next))
             {
                 return true;
             }
@@ -620,6 +676,7 @@ internal sealed class EddnOutbox : IDisposable
 
     public void Dispose()
     {
+        privacy?.Changed -= PrivacyChanged;
         CancellationTokenSource cancellation;
         CancellationTokenSource idleCancellation;
         lock (sync)
@@ -714,7 +771,15 @@ internal sealed class EddnOutbox : IDisposable
             return;
         }
 
-        schedule(pending.Min(item => item.nextAttempt) - now);
+        DateTimeOffset? next = pending.Where(CanRelease).Select(item => (DateTimeOffset?)item.nextAttempt).Min();
+        if (next is null)
+        {
+            stopTimer();
+        }
+        else
+        {
+            schedule(next.Value - now);
+        }
     }
 
     private EddnQueuedMessage? nextDueLocked(DateTimeOffset now)
@@ -723,7 +788,7 @@ internal sealed class EddnOutbox : IDisposable
         // Retried messages then use their own due time. One persistently
         // retryable payload therefore cannot block unrelated uploads.
         return pending
-            .Where(item => item.nextAttempt <= now)
+            .Where(item => item.nextAttempt <= now && CanRelease(item))
             .OrderBy(item => item.attempts == 0 ? 0 : 1)
             .ThenBy(item => item.attempts == 0 ? item.created : item.nextAttempt)
             .ThenBy(item => item.created)

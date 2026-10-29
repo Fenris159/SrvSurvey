@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SrvSurvey.Core\SrvSurvey.Core.csproj" />
+    <None Include="..\Fixtures\Mining\*.gz" Link="Fixtures\Mining\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Fixtures\Spansh\*.json" Link="Fixtures\Spansh\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

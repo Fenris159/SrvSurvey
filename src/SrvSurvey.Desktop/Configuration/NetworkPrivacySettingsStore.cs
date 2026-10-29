@@ -9,7 +9,10 @@ public sealed class NetworkPrivacySettingsStore
     public NetworkPrivacySettingsStore(string path)
     {
         documentStore = new UiSettingsDocumentStore(path);
+        UploadPrivacyPath = path + ".stealth-docking.json";
     }
+
+    internal string UploadPrivacyPath { get; }
 
     /// <summary>Restores explicit sharing consent with disabled defaults for absent or invalid values.</summary>
     public NetworkPrivacyPreferences Load()
@@ -20,7 +23,8 @@ public sealed class NetworkPrivacySettingsStore
             GetBoolean(settings, "EddnUploadEnabled", defaults.EddnUploadEnabled),
             GetBoolean(settings, "UploadGreenGasGiantCandidates", defaults.UploadGreenGasGiantCandidates),
             GetBoolean(settings, "UploadHumanSettlementGeometry", defaults.UploadHumanSettlementGeometry),
-            GetBoolean(settings, "EdAstroUploadEnabled", defaults.EdAstroUploadEnabled)
+            GetBoolean(settings, "EdAstroUploadEnabled", defaults.EdAstroUploadEnabled),
+            GetBoolean(settings, "StealthModeEnabled", defaults.StealthModeEnabled)
         );
     }
 
@@ -40,6 +44,7 @@ public sealed class NetworkPrivacySettingsStore
             root["Version"] = 1;
             settings["EddnUploadEnabled"] = preferences.EddnUploadEnabled;
             settings["EdAstroUploadEnabled"] = preferences.EdAstroUploadEnabled;
+            settings["StealthModeEnabled"] = preferences.StealthModeEnabled;
             settings.Remove("EddnUseTestSchemas");
             settings.Remove("EddnEnvironment");
             settings["UploadGreenGasGiantCandidates"] = preferences.UploadGreenGasGiantCandidates;
@@ -57,7 +62,8 @@ public sealed record NetworkPrivacyPreferences(
     bool EddnUploadEnabled,
     bool UploadGreenGasGiantCandidates,
     bool UploadHumanSettlementGeometry = false,
-    bool EdAstroUploadEnabled = false
+    bool EdAstroUploadEnabled = false,
+    bool StealthModeEnabled = false
 )
 {
     public static NetworkPrivacyPreferences Default { get; } =

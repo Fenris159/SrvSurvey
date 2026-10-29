@@ -17,7 +17,32 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         preferences = settingsStore.Load();
+        UploadPrivacy = new JournalUploadPrivacy(settingsStore.UploadPrivacyPath, preferences.StealthModeEnabled);
     }
+
+    public JournalUploadPrivacy UploadPrivacy { get; }
+
+    public bool StealthModeEnabled
+    {
+        get => preferences.StealthModeEnabled;
+        set
+        {
+            if (Update(preferences with { StealthModeEnabled = value }))
+            {
+                UploadPrivacy.SetEnabled(value);
+            }
+        }
+    }
+
+    public string StealthStatus =>
+        UploadPrivacy.LastError
+        ?? (
+            StealthModeEnabled
+                ? "Uploads are held locally until a live docking. Restarting the application does not release them."
+                : "Stealth Mode is off. Enabled sharing services upload normally."
+        );
+
+    public void RefreshStealthStatus() => OnPropertyChanged(nameof(StealthStatus));
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
