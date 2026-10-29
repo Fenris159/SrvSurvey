@@ -1366,7 +1366,7 @@
                       IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
                       Content="Auto hide colonization overlay until docked" />
             <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
-                       Text="The panel appears automatically when docking or opening enabled game panels. Turn this off for persistent display. You can also keep it visible using Colonization commodities or its shortcut." />
+                       Text="The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it." />
             <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
                       Content="Show when looking at right-hand panel" />
             <CheckBox x:Name="CollapseCoveredCommodityGroupsCheckBox"

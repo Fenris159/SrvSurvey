@@ -63361,6 +63361,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander \u002B data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
     "IsFormat": false,
     "SourceKinds": [

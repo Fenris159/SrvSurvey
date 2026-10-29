@@ -112,7 +112,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         SynchronizeIntent();
     }
 
-    /// <summary>Combines persistent manual display with automatic context and global overlay suppression.</summary>
+    /// <summary>Requires availability for persistent display while preserving automatic docking and explicit shortcut requests.</summary>
     private void SynchronizeIntent()
     {
         if (disposed)
@@ -124,7 +124,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         {
             true => viewModel.CanShowManually,
             false => false,
-            null => viewModel.ShouldAutoShow,
+            null => viewModel.ShouldAutoShow && (viewModel.Preferences.AutoShow || userEnabled),
         };
         hostedWindow.Reconcile(!isSuppressed && wantsWindow);
     }

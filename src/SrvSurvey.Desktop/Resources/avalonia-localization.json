@@ -31585,6 +31585,10 @@
       "translation": "Der Paket-Hash ist gültig. Vorbereiten eines isolierten Update-Kandidaten."
     },
     {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "Das Panel wird beim Andocken oder Öffnen aktivierter Spielpanels automatisch angezeigt. Für eine dauerhafte Anzeige schalten Sie diese Option aus und aktivieren Sie „Kolonisierungswaren“. Schalten Sie beide aus, um es verborgen zu halten. Die Verknüpfung kann es immer noch umschalten."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Die Nutzlast wird direkt auf https://voxstellar.com/webhooks/v1/system als Commander + Daten gepostet und mit HMAC-SHA256 signiert. SrvSurvey sendet keinen Startverlauf oder wiedergegebene Journaleinträge. Wenn Sie die Option deaktivieren, werden Einträge in der Warteschlange ungültig, deren Hochladen noch nicht begonnen hat."
     },
@@ -71921,6 +71925,10 @@
     {
       "source": "The package hash is valid. Preparing an isolated update candidate.",
       "translation": "El hash del paquete es válido. Preparando un candidato de actualización aislado."
+    },
+    {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "El panel aparece automáticamente al acoplar o abrir paneles de juego habilitados. Para una visualización persistente, desactívela y habilite los productos de colonización. Apague ambos para mantenerlo oculto; el acceso directo aún puede alternarlo."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -112261,6 +112269,10 @@
       "translation": "Le hachage du package est valide. Préparation d'une mise à jour candidate isolée."
     },
     {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "Le panneau apparaît automatiquement lors de l'amarrage ou de l'ouverture des panneaux de jeu activés. Pour un affichage persistant, désactivez cette option et activez les produits de colonisation. Désactivez les deux pour le garder caché ; le raccourci peut toujours le basculer."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "La charge utile est publiée directement sur https://voxstellar.com/webhooks/v1/system en tant que commandant + données et signée avec HMAC-SHA256. SrvSurvey n'envoie pas l'historique de démarrage ni les entrées de journal relues. La désactivation de l'option invalide les entrées en file d'attente dont le téléchargement n'a pas encore commencé."
     },
@@ -152597,6 +152609,10 @@
     {
       "source": "The package hash is valid. Preparing an isolated update candidate.",
       "translation": "O hash do pacote é válido. Preparando um candidato de atualização isolado."
+    },
+    {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "O painel aparece automaticamente ao encaixar ou abrir painéis de jogo habilitados. Para exibição persistente, desligue esta opção e ative Mercadorias de colonização. Desligue ambos para mantê-los ocultos; o atalho ainda pode alterná-lo."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -192937,6 +192953,10 @@
       "translation": "Хэш пакета действителен. Подготовка изолированного кандидата на обновление."
     },
     {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "Панель появляется автоматически при закреплении или открытии включенных игровых панелей. Для постоянного отображения отключите это и включите товары колонизации. Выключите оба, чтобы скрыть их; ярлык все еще может переключать его."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Полезная нагрузка размещается непосредственно на https://voxstellar.com/webhooks/v1/system как «командир + данные» и подписывается HMAC-SHA256. SrvSurvey не отправляет историю запуска или воспроизведенные записи журнала. Отключение этой опции делает недействительными записи в очереди, которые еще не начали загрузку."
     },
@@ -233275,6 +233295,10 @@
       "translation": "包哈希有效。准备一个孤立的更新候选者。"
     },
     {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "当对接或打开启用的游戏面板时，该面板会自动出现。要持久显示，请关闭此功能并启用殖民商品。将两者都关闭以使其隐藏；快捷方式仍然可以切换它。"
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "有效负载作为指挥官 + 数据直接发布到 https://voxstellar.com/webhooks/v1/system 并使用 HMAC-SHA256 进行签名。 SrvSurvey 不发送启动历史记录或重播的日志条目。关闭该选项将使尚未开始上传的排队条目无效。"
     },
@@ -273611,6 +273635,10 @@
     {
       "source": "The package hash is valid. Preparing an isolated update candidate.",
       "translation": "* THE PACKAGE HASH IS VALID. PREPARING AN ISOLATED UPDATE CANDIDATE. >>>!"
+    },
+    {
+      "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
+      "translation": "* THE PANEL APPEARS AUTOMATICALLY WHEN DOCKING OR OPENING ENABLED GAME PANELS. FOR PERSISTENT DISPLAY, TURN THIS OFF AND ENABLE COLONIZATION COMMODITIES. TURN BOTH OFF TO KEEP IT HIDDEN; THE SHORTCUT CAN STILL TOGGLE IT. >>>!"
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
