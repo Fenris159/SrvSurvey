@@ -98,6 +98,7 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         );
     }
 
+    /// <summary>Checks that overlay availability and shortcut editors retain their shared master-binding contract.</summary>
     [Fact]
     public void OverlaySettingsOfferPanelAvailabilityAndSharedShortcuts()
     {

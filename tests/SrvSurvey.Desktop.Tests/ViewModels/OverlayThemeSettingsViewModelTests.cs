@@ -12,6 +12,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         $"SrvSurvey-overlay-editor-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Checks the five personal swatches follow Guardian and persist independently of palette colors.</summary>
     [Fact]
     public void FivePersonalBrushesFollowGuardianAndPersistWithoutChangingThemeColors()
     {
@@ -48,6 +49,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         );
     }
 
+    /// <summary>Checks palette operations retain personal swatches and any outstanding invalid color input.</summary>
     [Fact]
     public void PresetsSavedStatesAndDefaultsLeavePersonalBrushesAndValidationUnchanged()
     {

@@ -8,6 +8,7 @@ internal static class ToolTipContentBehavior
 {
     private static int registered;
 
+    /// <summary>Installs the tooltip content handler once for the application lifetime.</summary>
     public static void Register()
     {
         if (Interlocked.Exchange(ref registered, 1) == 0)
@@ -16,6 +17,7 @@ internal static class ToolTipContentBehavior
         }
     }
 
+    /// <summary>Clears whitespace-only tooltip text while preserving the binding and rich content.</summary>
     private static void OnTipChanged(Control control, AvaloniaPropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.GetNewValue<object?>() is string text && string.IsNullOrWhiteSpace(text))

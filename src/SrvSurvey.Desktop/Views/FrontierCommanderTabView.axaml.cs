@@ -10,6 +10,7 @@ public sealed partial class FrontierCommanderTabView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>Reflows flight and fleet readouts into two rows when the commander tab becomes narrow.</summary>
     private void Readout_SizeChanged(object? sender, SizeChangedEventArgs args)
     {
         bool compact = args.NewSize.Width < 820;
@@ -23,6 +24,7 @@ public sealed partial class FrontierCommanderTabView : UserControl
         Grid.SetColumnSpan(CommanderReputation, compact ? 2 : 1);
     }
 
+    /// <summary>Keeps rank cards above their minimum width as the commander tab is resized.</summary>
     private void Ranks_SizeChanged(object? sender, SizeChangedEventArgs args)
     {
         if (CommanderRanks.ItemsPanelRoot is UniformGrid panel)

@@ -17,6 +17,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class HostedOverlayWindowTests
 {
+    /// <summary>Verifies live spherical-search growth and shrinkage preserve the saved window anchor.</summary>
     [AvaloniaTheory]
     [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Top, false, 1)]
     [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom, false, 1)]

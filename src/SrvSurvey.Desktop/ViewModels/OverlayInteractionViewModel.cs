@@ -1612,6 +1612,7 @@ public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Lists theme roles, personal swatches and imported legacy brushes for explicit editor overrides.</summary>
     private static OverlayBrushChoice[] CreateBrushChoices() =>
         new[] { OverlayBrushChoice.Default }
             .Concat(

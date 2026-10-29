@@ -12,6 +12,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         $"SrvSurvey-theme-service-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Checks personal swatch defaults and that changing them leaves the six application theme roles intact.</summary>
     [Fact]
     public void PersonalBrushesHaveDefaultsAndDoNotReplaceThemeRoles()
     {

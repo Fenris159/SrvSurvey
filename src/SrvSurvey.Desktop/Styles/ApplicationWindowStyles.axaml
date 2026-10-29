@@ -29,6 +29,9 @@
     <Setter Property="CornerRadius" Value="5" />
     <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />
   </Style>
+  <Style Selector="Window.app-window Border.card.settings-search-highlight">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
   <Style Selector="Window.app-window Border.card.raised">
     <Setter Property="Background" Value="{DynamicResource RavenSidebarBrush}" />
   </Style>

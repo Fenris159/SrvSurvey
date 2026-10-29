@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ResponsiveColumnsPanelTests
 {
+    /// <summary>Checks responsive row heights, wrapping and final-row expansion at wide and narrow sizes.</summary>
     [AvaloniaTheory]
     [InlineData(500, 1)]
     [InlineData(800, 2)]

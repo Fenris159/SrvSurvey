@@ -12,6 +12,7 @@ public sealed partial class CommanderProfileView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>Moves account selection and feedback below the commander header when its readout becomes narrow.</summary>
     private void Console_SizeChanged(object? sender, SizeChangedEventArgs args)
     {
         bool compact = args.NewSize.Width < 860;

@@ -166,6 +166,7 @@ public sealed class VrPlatformPickerTests
         }
     }
 
+    /// <summary>Verifies that the real settings picker shows availability reasons and rejects unavailable VR selections.</summary>
     [AvaloniaFact]
     public void ActualSettingsPickerBindsAvailabilityAndShowsDisabledReasons()
     {

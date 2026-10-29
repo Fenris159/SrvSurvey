@@ -19,6 +19,7 @@ public sealed class ThemeWorkspaceMarkupTests
         Assert.True(Array.IndexOf(viewNames, "ThemeView") < Array.IndexOf(viewNames, "GuidesView"));
     }
 
+    /// <summary>Checks that application appearance, overlay appearance and overlay setup remain separate workspace sections.</summary>
     [Fact]
     public void ThemeWorkspaceOwnsTheThreeExistingSections()
     {
@@ -37,6 +38,7 @@ public sealed class ThemeWorkspaceMarkupTests
         );
     }
 
+    /// <summary>Checks color-group navigation and that typography scaling belongs to individual overlay panels.</summary>
     [Fact]
     public void OverlayColorGroupsHaveOneSelectorAndPerPanelScalingReplacesTheGlobalTypographyEditor()
     {

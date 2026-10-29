@@ -225,6 +225,7 @@ public sealed class BoxelViewMarkupTests
         Assert.DoesNotContain(searchBindings, binding => binding.Contains("BoxelSearch", StringComparison.Ordinal));
     }
 
+    /// <summary>Checks the four system actions, their theme resources and their accessible labels in the actual markup.</summary>
     [Fact]
     public void SystemActionMenuProvidesFourThemedRadialActions()
     {

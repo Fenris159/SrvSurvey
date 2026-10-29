@@ -42,6 +42,10 @@ public sealed class ApplicationWindowAppearanceTests
             main.ThemeOptions.Single(option => option.Definition.Key == palette).SelectCommand.Execute(null);
             Assert.Equal(theme.Current.DisplayName, main.SelectedThemeName);
             window.Show();
+            // Monitor restoration may choose a compact starting size on Windows runners.
+            // Exercise the wide layout at a known size, then test the real minimum below.
+            window.Width = 1400;
+            window.Height = 900;
             main.ToggleNavigationGroup("survey");
             Capture(window, palette, "overview");
             Assert.True(window.FindControl<Border>("MainSidebar")!.Bounds.Width > 200);
@@ -59,7 +63,10 @@ public sealed class ApplicationWindowAppearanceTests
                 .GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .Single(control => control.Name == "SettingsFormScroller");
-            Assert.True(form.Extent.Width <= form.Viewport.Width + 1);
+            Assert.True(
+                form.Extent.Width <= form.Viewport.Width + 1,
+                $"Wide settings layout: window={window.Bounds}, extent={form.Extent}, viewport={form.Viewport}."
+            );
             main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "theme");
             Capture(window, palette, "theme");
             Assert.True(main.IsThemeSelected);
@@ -88,6 +95,44 @@ public sealed class ApplicationWindowAppearanceTests
         finally
         {
             editor.Close();
+            window.Close();
+            theme.Select(previous);
+            theme.ApplyCurrent();
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>Search-result emphasis follows the palette and clears back to the ordinary card border.</summary>
+    [AvaloniaFact]
+    public void SettingsSearchHighlightOverridesApplicationCardInEveryPalette()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-highlight-{Guid.NewGuid():N}");
+        var theme = new RavenThemeService(
+            Application.Current!,
+            new ThemePreferenceStore(Path.Combine(root, "ui.json"))
+        );
+        string previous = theme.Current.Key;
+        var card = new Border { Classes = { "card", "settings-search-highlight" } };
+        var window = new Window { Classes = { "app-window" }, Content = card };
+        try
+        {
+            window.Show();
+            foreach (RavenThemeDefinition palette in RavenThemeCatalog.All)
+            {
+                theme.Select(palette.Key);
+                theme.ApplyCurrent();
+                Assert.Same(Application.Current!.Resources["RavenAccentBrush"], card.BorderBrush);
+                card.Classes.Remove("settings-search-highlight");
+                Assert.Same(Application.Current.Resources["RavenStrongBorderBrush"], card.BorderBrush);
+                card.Classes.Add("settings-search-highlight");
+                Assert.Same(Application.Current.Resources["RavenAccentBrush"], card.BorderBrush);
+            }
+        }
+        finally
+        {
             window.Close();
             theme.Select(previous);
             theme.ApplyCurrent();

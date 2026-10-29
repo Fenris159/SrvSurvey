@@ -260,6 +260,7 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
         }
     }
 
+    /// <summary>Builds an isolated main-window model with the overlay settings instance used by the presentation test.</summary>
     private MainWindowViewModel CreateMain(OverlayThemeSettingsViewModel? overlay = null) =>
         MainWindowViewModelTestBuilder.Create(
             null,
@@ -280,12 +281,14 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             }
         );
 
+    /// <summary>Returns color editors whose own and ancestor visibility permit them to appear in the current category.</summary>
     private static Grid[] VisibleRows(ThemeView view) =>
         view.GetVisualDescendants()
             .OfType<Grid>()
             .Where(grid => grid.Classes.Contains("overlay-theme-color-row") && grid.IsEffectivelyVisible)
             .ToArray();
 
+    /// <summary>Captures an overlay-theme settings frame and optionally saves it for visual inspection.</summary>
     private static void Capture(Window window, string name)
     {
         AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);

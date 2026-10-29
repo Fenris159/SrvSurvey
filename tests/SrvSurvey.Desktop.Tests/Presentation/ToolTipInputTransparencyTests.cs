@@ -61,6 +61,7 @@ public sealed class ToolTipInputTransparencyTests
         }
     }
 
+    /// <summary>Verifies rich tooltip content survives and an already-open hint closes when replaced with blank text.</summary>
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]

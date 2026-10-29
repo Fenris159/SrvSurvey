@@ -44,6 +44,7 @@ public sealed class ResponsiveColumnsPanel : Panel
         set => SetValue(SpacingProperty, value);
     }
 
+    /// <summary>Measures visible sections in responsive rows, using each row's tallest section for its height.</summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         Control[] children = Children.Where(child => child.IsVisible).ToArray();
@@ -68,6 +69,7 @@ public sealed class ResponsiveColumnsPanel : Panel
         return new Size(width, height);
     }
 
+    /// <summary>Arranges visible sections into equal-width columns, stretching the final partial row to fit.</summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         Control[] children = Children.Where(child => child.IsVisible).ToArray();
@@ -87,6 +89,7 @@ public sealed class ResponsiveColumnsPanel : Panel
         return finalSize;
     }
 
+    /// <summary>Chooses a bounded column count from the available width and the minimum section width.</summary>
     private int GetColumns(double width) =>
         double.IsPositiveInfinity(width)
             ? MaximumColumns

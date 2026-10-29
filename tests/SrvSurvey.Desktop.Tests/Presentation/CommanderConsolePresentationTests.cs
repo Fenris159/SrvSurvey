@@ -17,6 +17,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Exercises commander readouts, tab navigation and preserved actions across all six palettes.</summary>
     [AvaloniaTheory]
     [InlineData("blue-dark", 1000)]
     [InlineData("blue-dark", 600)]
@@ -169,6 +170,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Checks that a zero debt balance disappears while positive and negative reported balances remain visible.</summary>
     [AvaloniaTheory]
     [InlineData(0, 125000)]
     [InlineData(125000, 0)]
@@ -218,6 +220,7 @@ public sealed partial class CommanderProfileViewModelTests
         }
     }
 
+    /// <summary>Checks long commander readouts and account controls remain usable across responsive breakpoints.</summary>
     [AvaloniaFact]
     public async Task CommanderConsoleReflowsLongReadoutsWhenTheWindowIsResized()
     {
@@ -360,6 +363,7 @@ public sealed partial class CommanderProfileViewModelTests
         };
     }
 
+    /// <summary>Captures the actual commander view and optionally writes a frame for visual inspection.</summary>
     private static void CaptureConsole(Window window, string stage)
     {
         AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);

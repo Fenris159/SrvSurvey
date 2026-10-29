@@ -323,6 +323,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Saves a named overlay palette and typography while keeping personal brushes outside palette states.</summary>
     private void SaveState()
     {
         if (OverlayThemePresetCatalog.TryGet(StateName.Trim(), out _))
@@ -454,6 +455,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         );
     }
 
+    /// <summary>Rebuilds palette editors while retaining personal swatches, their validation state and the expanded category.</summary>
     private void ReplaceEditors(IReadOnlyDictionary<string, Color> colors, bool acceptChanges)
     {
         string? expandedCategoryName = Categories.FirstOrDefault(category => category.IsExpanded)?.Name;
