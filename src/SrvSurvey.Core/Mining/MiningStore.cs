@@ -44,6 +44,7 @@ public sealed record MiningCommanderData
 {
     public int SchemaVersion { get; init; } = 1;
     public MiningSession? Current { get; set; }
+    public MiningCargoReconciliationState CargoReconciliation { get; init; } = new();
     public List<MiningSession> History { get; init; } = [];
     public List<MiningMission> Missions { get; init; } = [];
     public MiningPreferences Settings { get; init; } = new();
@@ -144,7 +145,10 @@ public sealed class MiningStore(string directory)
             JsonSerializer.Deserialize<MiningCommanderData>(json, Options)
             ?? throw new JsonException("Empty mining backup.");
         if (
-            state.History is null
+            state.CargoReconciliation is null
+            || state.CargoReconciliation.Mineral is null
+            || state.CargoReconciliation.LastCount < 0
+            || state.History is null
             || state.Missions is null
             || state.Settings is null
             || state.Rings is null
@@ -210,6 +214,7 @@ public sealed class MiningStore(string directory)
         || s.Prospects is null
         || s.ActiveProspects is null
         || s.Collections is null
+        || s.RefineryCarryover is null
         || s.Screenshots is null
         || s.RefineryEstimates is null
         || (
@@ -221,6 +226,7 @@ public sealed class MiningStore(string directory)
         || s.ActiveProspects.Any(InvalidProspect)
         || (s.ActiveProspect is { } activeProspect && InvalidProspect(activeProspect))
         || s.Collections.Any(c => c is null || c.Name is null || c.Count < 0)
+        || s.RefineryCarryover.Any(c => c is null || c.Name is null || c.Count < 0)
         || s.RefineryEstimates.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 16);
 
     private static bool InvalidProspect(MiningProspect prospect) =>

@@ -22,6 +22,7 @@ public static class MiningReport
                 )
             );
             output.AppendLine(s.Notes);
+            AppendYieldNotes(output, s);
             foreach (MiningProspect prospect in s.Prospects)
             {
                 output.AppendLine(
@@ -57,10 +58,32 @@ public static class MiningReport
         return output.ToString();
     }
 
+    private static void AppendYieldNotes(StringBuilder output, MiningSession s)
+    {
+        output.AppendLine(
+            s.HasUnconfirmedYield
+                ? "Yield is estimated; cargo confirmation is incomplete."
+                : "Session yield confirmed from cargo readings."
+        );
+        if (s.HasCarryover)
+        {
+            output.AppendLine(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Refinery carryover after session: {s.CarryoverTons:0.##} t (excluded from session tons and t/hour)."
+                )
+            );
+        }
+        if (s.EstimatedMineralBreakdown)
+        {
+            output.AppendLine("The mineral split is estimated because the journal supplied total cargo counts only.");
+        }
+    }
+
     public static string Csv(IEnumerable<MiningSession> sessions)
     {
         var text = new StringBuilder(
-            "Started,System,Ring,Ship,ActiveMinutes,Tons,TonsPerHour,Asteroids,CoreHits,Prospectors,Collectors,EngineeringMaterials,Notes\r\n"
+            "Started,System,Ring,Ship,ActiveMinutes,Tons,TonsPerHour,Asteroids,CoreHits,Prospectors,Collectors,EngineeringMaterials,Notes,RefineryCarryoverTons\r\n"
         );
         foreach (MiningSession s in sessions)
         {
@@ -82,6 +105,7 @@ public static class MiningReport
                         s.CollectorLimpets.ToString(CultureInfo.InvariantCulture),
                         s.EngineeringCount.ToString(CultureInfo.InvariantCulture),
                         s.Notes,
+                        s.CarryoverTons.ToString(CultureInfo.InvariantCulture),
                     }.Select(Cell)
                 )
             );
@@ -153,6 +177,22 @@ public static class MiningReport
             CultureInfo.InvariantCulture,
             $"<p class='metric'>{s.RefinedTons} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration:hh\\:mm\\:ss}</p><p>{s.Asteroids} asteroids · {s.CoreHits} cores · {s.TonsPerAsteroid:0.00} t/asteroid · {s.ProspectorLimpets} prospectors · {s.CollectorLimpets} collectors</p>"
         );
+        text.Append(
+            s.HasUnconfirmedYield
+                ? "<p>Yield is estimated; cargo confirmation is incomplete.</p>"
+                : "<p>Session yield confirmed from cargo readings.</p>"
+        );
+        if (s.HasCarryover)
+        {
+            text.Append(
+                CultureInfo.InvariantCulture,
+                $"<p><strong>Refinery carryover after session: {s.CarryoverTons:0.##} t</strong> (excluded from session tons and t/hour).</p>"
+            );
+        }
+        if (s.EstimatedMineralBreakdown)
+        {
+            text.Append("<p>The mineral split is estimated because the journal supplied total cargo counts only.</p>");
+        }
         if (s.Notes.Length > 0)
         {
             text.Append("<pre>" + H(s.Notes) + "</pre>");

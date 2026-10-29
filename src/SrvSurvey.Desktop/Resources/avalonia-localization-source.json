@@ -30637,6 +30637,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Last shortcut: {0} from {1}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -47029,6 +47037,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Refinery estimate; awaiting cargo confirmation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Refresh",
     "IsFormat": false,
     "SourceKinds": [
@@ -53568,6 +53584,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Session tons confirmed from cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Session tons exclude post-session refinery carryover.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Sessions and cargo",
@@ -71059,6 +71099,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "Yield estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Yield includes estimates from incomplete cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "You are not the architect of this system ({0}). The system was not loaded.",

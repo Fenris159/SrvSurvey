@@ -13,10 +13,12 @@ public sealed class MiningWorkspaceState
     private const string ProspectedAsteroidEvent = "ProspectedAsteroid";
     private const string MiningRefinedEvent = "MiningRefined";
     private readonly HashSet<string> processed;
+    private readonly MiningCargoReconciler cargoReconciler;
 
     public MiningWorkspaceState(MiningCommanderData data)
     {
         Data = data;
+        cargoReconciler = new(data.CargoReconciliation, FindSession);
         Session.Restore(data.Current);
         Missions.Missions.AddRange(data.Missions);
         processed = data.ProcessedEvents.ToHashSet(StringComparer.Ordinal);
@@ -43,20 +45,9 @@ public sealed class MiningWorkspaceState
             return false;
         }
 
-        string key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
-        if (!processed.Add(key))
+        if (!Remember(entry))
         {
-            // History can observe a completed jump before the live feed; deduplicate
-            // accounting without discarding the live session's travel action.
             return ApplySessionTravel(entry, bootstrap);
-        }
-
-        Data.ProcessedEvents.Add(key);
-        // Bound recovery metadata; older replayed activity is also constrained by the active session start time.
-        if (Data.ProcessedEvents.Count > 50000)
-        {
-            processed.Remove(Data.ProcessedEvents[0]);
-            Data.ProcessedEvents.RemoveAt(0);
         }
         if (!bootstrap)
         {
@@ -67,7 +58,16 @@ public sealed class MiningWorkspaceState
             }
         }
 
+        MiningSession? owner = Session.Current ?? FindCarryoverSession(entry);
+        bool carryover = Session.Current is null;
+        bool credit =
+            owner is not null
+            && (carryover || owner.PausedAt is null || owner.PausedForTravel)
+            && entry.Timestamp >= owner.Started;
+        // Select the ledger scope before applying the first refinery event to its collection list.
+        cargoReconciler.SelectOwner(owner, carryover);
         bool changed = Session.Apply(entry);
+        cargoReconciler.Observe(entry, owner, carryover, credit);
         Missions.Apply(entry, system, station);
         ApplyRing(entry, system, position);
         if (changed && !bootstrap && !IsProspectProgress(entry))
@@ -77,6 +77,35 @@ public sealed class MiningWorkspaceState
 
         ApplySessionTravel(entry, bootstrap);
         Synchronize();
+        return true;
+    }
+
+    private MiningSession? FindSession(Guid id) =>
+        Session.Current?.Id == id ? Session.Current : Data.History.Find(s => s.Id == id);
+
+    private MiningSession? FindCarryoverSession(JournalEventEnvelope entry) =>
+        Data.CargoReconciliation.CarryoverSessionId is { } id
+        && FindSession(id) is { } session
+        && entry.Timestamp >= session.Ended
+            ? session
+            : null;
+
+    private bool Remember(JournalEventEnvelope entry)
+    {
+        string raw = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
+        string key = entry.SourceRecordIdentity is { } source
+            ? "source:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)))
+            : raw;
+        if (processed.Contains(raw) || !processed.Add(key))
+        {
+            return false;
+        }
+        Data.ProcessedEvents.Add(key);
+        if (Data.ProcessedEvents.Count > 50000)
+        {
+            processed.Remove(Data.ProcessedEvents[0]);
+            Data.ProcessedEvents.RemoveAt(0);
+        }
         return true;
     }
 
@@ -201,7 +230,9 @@ public sealed class MiningWorkspaceState
         }
 
         Session.Current.Thresholds = new Dictionary<string, double>(Data.Settings.Thresholds);
-        Data.History.Insert(0, Session.Stop(now));
+        MiningSession completed = Session.Stop(now);
+        Data.History.Insert(0, completed);
+        Data.CargoReconciliation.CarryoverSessionId = completed.Id;
         Synchronize();
     }
 
@@ -365,6 +396,19 @@ public sealed class MiningWorkspaceState
 
     private static readonly HashSet<string> RelevantEvents =
     [
+        "Cargo",
+        "Synthesis",
+        "Died",
+        "ShipyardBuy",
+        "ShipyardSwap",
+        "BuyDrones",
+        "SellDrones",
+        "CollectCargo",
+        "EjectCargo",
+        "MarketBuy",
+        "MarketSell",
+        "CargoTransfer",
+        "ColonisationContribution",
         "LaunchDrone",
         ProspectedAsteroidEvent,
         MiningRefinedEvent,

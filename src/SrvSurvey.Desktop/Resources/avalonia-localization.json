@@ -15269,6 +15269,10 @@
       "translation": "Letzte Aktualisierung: {0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "Letzte Sitzung: {0} t Raffinerieübertrag nach Sitzungsende (ausgenommen von t/Stunde)."
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "Letzte Verknüpfung: {0} von {1}."
     },
@@ -23441,6 +23445,10 @@
       "translation": "Raffinerieinhalte (Handbuch)"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "Schätzung der Raffinerie; Warten auf die Frachtbestätigung."
+    },
+    {
       "source": "Refresh",
       "translation": "Aktualisieren"
     },
@@ -26699,6 +26707,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "Die Sitzung zeigt Prospektionsprozentsätze, Kernentdeckungen, Qualitätstreffer, raffinierte Tonnage, Napfschnecken, technische Materialien und Fracht. Bei manuellen Zählkorrekturen bleiben die ursprünglichen Beobachtungen erhalten."
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Die Sitzungstonnen werden anhand der Frachtablesungen bestätigt. Die Raffinerieübertragung nach der Sitzung ist separat und ändert sich nicht in T/Stunde. Berichte ohne ausreichende Ladungswerte werden als Schätzungen gekennzeichnet."
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "Sitzungstonnen durch Frachtablesungen bestätigt."
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "In den Session-Tonnen ist die Verschleppung aus der Raffinerie nach der Session nicht enthalten."
     },
     {
       "source": "Sessions and cargo",
@@ -35427,6 +35447,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "Ja, schließen Sie es und fahren Sie fort"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "Ertragsschätzung"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "Der Ertrag umfasst Schätzungen aus unvollständigen Ladungsmessungen."
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -55579,6 +55607,10 @@
       "translation": "Última actualización: {0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "Última sesión: {0} t arrastre de refinería después de finalizar la sesión (excluido de t/hora)."
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "Último atajo: {0} de {1}."
     },
@@ -63751,6 +63783,10 @@
       "translation": "Contenidos de la refinería (manual)"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "Estimación de refinería; A la espera de confirmación de carga."
+    },
+    {
       "source": "Refresh",
       "translation": "Actualizar"
     },
@@ -67009,6 +67045,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "La sesión muestra porcentajes de prospección, descubrimientos de núcleos, resultados de calidad, tonelaje refinado, lapas, materiales de ingeniería y carga. Las correcciones de recuento manual conservan las observaciones originales."
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Las toneladas de sesión se confirman a partir de lecturas de carga. El arrastre de refinería después de la sesión es independiente y no cambia t/hora. Los informes sin suficientes lecturas de carga se marcan como estimaciones."
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "Toneladas de sesión confirmadas a partir de lecturas de carga."
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "Las toneladas de sesión excluyen el remanente de refinería posterior a la sesión."
     },
     {
       "source": "Sessions and cargo",
@@ -75737,6 +75785,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "Sí, ciérralo y continúa."
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "estimación de rendimiento"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "El rendimiento incluye estimaciones de lecturas de carga incompletas."
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -95889,6 +95945,10 @@
       "translation": "Dernière actualisation : {0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "Dernière session : {0} t report de raffinerie après la fin de la session (exclu de t/heure)."
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "Dernier raccourci : {0} depuis {1}."
     },
@@ -104061,6 +104121,10 @@
       "translation": "Contenu de la raffinerie (manuel)"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "Estimation de la raffinerie ; en attente de confirmation du fret."
+    },
+    {
       "source": "Refresh",
       "translation": "Actualiser"
     },
@@ -107319,6 +107383,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "La session montre les pourcentages de prospection, les découvertes principales, les résultats de qualité, le tonnage raffiné, les patelles, les matériaux d'ingénierie et la cargaison. Les corrections de comptage manuelles conservent les observations originales."
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Les tonnes de session sont confirmées à partir des relevés de cargaison. Le report de la raffinerie après la session est distinct et ne change pas le t/heure. Les rapports ne comportant pas suffisamment de relevés de fret sont marqués comme estimations."
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "Tonnes de session confirmées à partir des relevés de fret."
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "Les tonnes de session excluent le report de raffinage après la session."
     },
     {
       "source": "Sessions and cargo",
@@ -116047,6 +116123,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "Oui, ferme-le et continue"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "Estimation du rendement"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "Le rendement comprend des estimations basées sur des relevés de cargaison incomplets."
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -136199,6 +136283,10 @@
       "translation": "Última atualização: {0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "Última sessão: {0} t carryover da refinaria após o término da sessão (excluído de t/hora)."
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "Último atalho: {0} de {1}."
     },
@@ -144371,6 +144459,10 @@
       "translation": "Conteúdo da refinaria (manual)"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "Estimativa da refinaria; aguardando confirmação da carga."
+    },
+    {
       "source": "Refresh",
       "translation": "Atualizar"
     },
@@ -147629,6 +147721,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "A sessão mostra percentagens de prospecção, descobertas principais, resultados de qualidade, tonelagem refinada, lapas, materiais de engenharia e carga. As correções manuais de contagem retêm as observações originais."
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "As toneladas da sessão são confirmadas pelas leituras de carga. O transporte da refinaria após a sessão é separado e não muda em t/hora. Relatórios sem leituras de carga suficientes são marcados como estimativas."
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "Toneladas de sessão confirmadas pelas leituras de carga."
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "As toneladas da sessão excluem o transporte da refinaria pós-sessão."
     },
     {
       "source": "Sessions and cargo",
@@ -156357,6 +156461,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "Sim, feche e continue"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "Estimativa de rendimento"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "O rendimento inclui estimativas de leituras de carga incompletas."
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -176509,6 +176621,10 @@
       "translation": "Последнее обновление: {0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "Последний сеанс: {0} t перенос нефтеперерабатывающего завода после завершения сеанса (исключено из т/час)."
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "Последний ярлык: {0} из {1}."
     },
@@ -184681,6 +184797,10 @@
       "translation": "Содержание нефтеперерабатывающего завода (руководство)"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "Смета НПЗ; ждем подтверждения груза."
+    },
+    {
       "source": "Refresh",
       "translation": "Обновить"
     },
@@ -187939,6 +188059,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "Сессия показывает процент разведки, основные открытия, качественные результаты, переработанный тоннаж, блюда, инженерные материалы и грузы. Ручные корректировки подсчета сохраняют исходные наблюдения."
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Сессионные тонны подтверждаются показаниями груза. Перенос НПЗ после сеанса является отдельным и не меняется т/час. Отчеты без достаточного количества показаний груза помечаются как оценки."
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "Сессионные тонны подтверждены показаниями груза."
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "Сессионные тонны исключают постсессионный перенос нефти."
     },
     {
       "source": "Sessions and cargo",
@@ -196667,6 +196799,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "Да, закройте и продолжайте"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "Оценка доходности"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "Доходность включает оценки на основе неполных показаний груза."
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -216819,6 +216959,10 @@
       "translation": "上次刷新：{0}"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "上一交易日：{0} t 交易结束后炼厂结转（不含t/小时）。"
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "最后一个快捷方式：来自 {1} 的 {0}。"
     },
@@ -224991,6 +225135,10 @@
       "translation": "炼油厂内容（手册）"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "炼油厂估算；等待货物确认。"
+    },
+    {
       "source": "Refresh",
       "translation": "刷新"
     },
@@ -228249,6 +228397,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "会议展示了勘探百分比、核心发现、质量命中、精炼吨位、帽贝、工程材料和货物。手动计数校正保留原始观察结果。"
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "会话吨数由货物读数确认。炼油厂结转量在时段后是单独的并且不改变t/小时。没有足够货物读数的报告被标记为估计值。"
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "交易吨数从货物数据中得到证实。"
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "会议吨数不包括会议后炼油厂结转。"
     },
     {
       "source": "Sessions and cargo",
@@ -236977,6 +237137,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "是的，关闭它并继续"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "产量预估"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "产量包括不完整的货物读数的估计值。"
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",
@@ -257129,6 +257297,10 @@
       "translation": "* LAST REFRESH: {0} >>>!"
     },
     {
+      "source": "Last session: {0} t refinery carryover after the session ended (excluded from t/hour).",
+      "translation": "* LAST SESSION: {0} T REFINERY CARRYOVER AFTER THE SESSION ENDED (EXCLUDED FROM T/HOUR). >>>!"
+    },
+    {
       "source": "Last shortcut: {0} from {1}.",
       "translation": "* LAST SHORTCUT: {0} FROM {1}. >>>!"
     },
@@ -265301,6 +265473,10 @@
       "translation": "* REFINERY CONTENTS (MANUAL) >>>!"
     },
     {
+      "source": "Refinery estimate; awaiting cargo confirmation.",
+      "translation": "* REFINERY ESTIMATE; AWAITING CARGO CONFIRMATION. >>>!"
+    },
+    {
       "source": "Refresh",
       "translation": "* REFRESH >>>!"
     },
@@ -268559,6 +268735,18 @@
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "* SESSION SHOWS PROSPECTING PERCENTAGES, CORE DISCOVERIES, QUALITY HITS, REFINED TONNAGE, LIMPETS, ENGINEERING MATERIALS AND CARGO. MANUAL COUNT CORRECTIONS RETAIN THE ORIGINAL OBSERVATIONS. >>>!"
+    },
+    {
+      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+      "translation": "* SESSION TONS ARE CONFIRMED FROM CARGO READINGS. REFINERY CARRYOVER AFTER THE SESSION IS SEPARATE AND DOES NOT CHANGE T/HOUR. REPORTS WITHOUT ENOUGH CARGO READINGS ARE MARKED AS ESTIMATES. >>>!"
+    },
+    {
+      "source": "Session tons confirmed from cargo readings.",
+      "translation": "* SESSION TONS CONFIRMED FROM CARGO READINGS. >>>!"
+    },
+    {
+      "source": "Session tons exclude post-session refinery carryover.",
+      "translation": "* SESSION TONS EXCLUDE POST-SESSION REFINERY CARRYOVER. >>>!"
     },
     {
       "source": "Sessions and cargo",
@@ -277287,6 +277475,14 @@
     {
       "source": "Yes, close it and continue",
       "translation": "* YES, CLOSE IT AND CONTINUE >>>!"
+    },
+    {
+      "source": "Yield estimate",
+      "translation": "* YIELD ESTIMATE >>>!"
+    },
+    {
+      "source": "Yield includes estimates from incomplete cargo readings.",
+      "translation": "* YIELD INCLUDES ESTIMATES FROM INCOMPLETE CARGO READINGS. >>>!"
     },
     {
       "source": "You are not the architect of this system ({0}). The system was not loaded.",

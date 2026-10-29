@@ -54,6 +54,18 @@ public sealed record MiningSession
     public List<MiningProspect> ActiveProspects { get; init; } = [];
     public MiningProspect? ActiveProspect { get; set; }
     public List<MiningCollectionEntry> Collections { get; init; } = [];
+    public List<MiningCollectionEntry> RefineryCarryover { get; init; } = [];
+    public int? ConfirmedRefinedTons { get; set; }
+    public int? ConfirmedCarryoverTons { get; set; }
+    public bool EstimatedCargoBaseline { get; set; }
+    public bool EstimatedMineralBreakdown { get; set; }
+    public double CarryoverTons => (Imported?.CarryoverTons ?? 0) + RefineryCarryover.Sum(c => c.Count);
+    public bool HasCarryover => CarryoverTons > 0;
+    public bool HasUnconfirmedYield =>
+        Imported is not null
+        || EstimatedCargoBaseline
+        || ConfirmedRefinedTons != Collections.Where(c => !c.Engineering).Sum(c => c.Count);
+
     public int ProspectorLimpets { get; set; }
     public int CollectorLimpets { get; set; }
     public int AsteroidAdjustment { get; set; }

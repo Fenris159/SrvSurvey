@@ -25,6 +25,8 @@
             <Border Classes="card raised">
               <StackPanel Spacing="12">
                 <TextBlock Text="{Binding SessionSummary}" TextWrapping="Wrap" Classes="card-title"/>
+                <TextBlock Text="{Binding YieldConfirmation}" TextWrapping="Wrap" Classes="muted"/>
+                <TextBlock Text="{Binding RefineryCarryoverSummary}" IsVisible="{Binding HasRefineryCarryover}" TextWrapping="Wrap" Classes="muted"/>
                 <WrapPanel>
                   <Button Content="Start session" Command="{Binding StartCommand}" Margin="0,0,8,8"/>
                   <Button Content="Pause / resume" Command="{Binding PauseCommand}" Margin="0,0,8,8"/>
@@ -195,6 +197,7 @@
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="{Binding HistorySummary}" TextWrapping="Wrap" Classes="card-title"/>
+            <TextBlock Text="Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates." TextWrapping="Wrap" Classes="muted"/>
             <TextBlock Text="Select a completed session for notes, screenshots and exports. HTML reports work offline and can be printed or saved as PDF. Imported CSV summaries retain their original fields." TextWrapping="Wrap" Classes="muted"/>
             <WrapPanel>
               <Button Content="Import report CSV…" Click="ImportReports_Click" Margin="0,0,8,8"/>
@@ -222,7 +225,11 @@
                 <DataTemplate x:DataType="mining:MiningSession">
                   <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="History0" /><ColumnDefinition Width="Auto" SharedSizeGroup="History1" /><ColumnDefinition Width="Auto" SharedSizeGroup="History2" /><ColumnDefinition Width="Auto" SharedSizeGroup="History3" /><ColumnDefinition Width="Auto" SharedSizeGroup="History4" /></Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Started}"/><TextBlock Grid.Column="1" Text="{Binding System}" ToolTip.Tip="{Binding System}"/>
-                    <TextBlock Grid.Column="2" Text="{Binding Ring}" ToolTip.Tip="{Binding Ring}"/><TextBlock Grid.Column="3" Text="{Binding RefinedTons}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Ring}" ToolTip.Tip="{Binding Ring}"/><StackPanel Grid.Column="3" Spacing="2">
+                      <TextBlock Text="{Binding RefinedTons}"/>
+                      <TextBlock Text="{Binding CarryoverTons, StringFormat={}{0:0.##} t refinery carryover}" IsVisible="{Binding HasCarryover}" Classes="muted"/>
+                      <TextBlock Text="Yield estimate" IsVisible="{Binding HasUnconfirmedYield}" Classes="muted"/>
+                    </StackPanel>
                     <TextBlock Grid.Column="4" Text="{Binding TonsPerHour, StringFormat={}{0:0.0}}"/>
                   </Grid>
                 </DataTemplate>
