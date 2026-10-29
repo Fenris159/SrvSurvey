@@ -378,13 +378,28 @@ internal sealed class EddnOutbox : IDisposable
         return true;
     }
 
+    /// <summary>Attaches privacy and restores files truncated by the legacy recovery limits before selecting eligible work.</summary>
     internal void SetUploadPrivacy(JournalUploadPrivacy policy)
     {
-        privacy?.Changed -= PrivacyChanged;
-        privacy = policy;
-        maximumPendingMessages = Math.Max(maximumPendingMessages, JournalUploadPrivacy.ExpeditionMaximumReports);
-        maximumStoreBytes = Math.Max(maximumStoreBytes, JournalUploadPrivacy.ExpeditionMaximumBytes);
-        privacy.Changed += PrivacyChanged;
+        List<string> reloadLogs = [];
+        lock (sync)
+        {
+            if (disposed)
+            {
+                return;
+            }
+            privacy?.Changed -= PrivacyChanged;
+            privacy = policy;
+            maximumPendingMessages = Math.Max(maximumPendingMessages, JournalUploadPrivacy.ExpeditionMaximumReports);
+            maximumStoreBytes = Math.Max(maximumStoreBytes, JournalUploadPrivacy.ExpeditionMaximumBytes);
+            if (loadingTruncated && ownershipLease is not null)
+            {
+                pending = load(reloadLogs);
+            }
+            privacy.Changed += PrivacyChanged;
+            scheduleNextLocked(utcNow());
+        }
+        writeLogs(reloadLogs);
     }
 
     private void PrivacyChanged(bool restricting)

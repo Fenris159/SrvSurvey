@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MultiCommanderJournalUploadTests
 {
+    /// <summary>Real projection senders hold discoveries, release earlier evidence, and keep docking-second records private.</summary>
     [Theory]
     [InlineData("EDDN")]
     [InlineData("Inara")]
@@ -25,6 +26,7 @@ public sealed partial class MultiCommanderJournalUploadTests
             string peerFolder = await CreateJournalAsync(root, "Epic", "F2", "Second");
             await SaveProfilesAsync(paths);
             using var sender = new Sender(provider, root);
+            sender.Handler.EdAstroEvents = "[\"Docked\",\"ScanOrganic\"]";
             await using MainWindowViewModel main = Create(folder, "F1", paths, sender);
             using var peerSender = new Sender(provider, root);
             await using MainWindowViewModel peer = Create(peerFolder, "F2", paths, peerSender);
@@ -33,9 +35,10 @@ public sealed partial class MultiCommanderJournalUploadTests
             await peer.RefreshAsync();
             await main.RefreshAsync();
             string journal = Path.Combine(folder, "Journal.F1.log");
+            string discovery = provider == "EDAstro" ? "ScanOrganic" : "FSDJump";
             await File.AppendAllTextAsync(
                 journal,
-                """{"timestamp":"2026-10-14T12:00:04Z","event":"FSDJump","StarSystem":"Private expedition","SystemAddress":42,"StarPos":[0,0,0],"JumpDist":5} """
+                $$"""{"timestamp":"2026-10-14T12:00:04Z","event":"{{discovery}}","StarSystem":"Private expedition","SystemAddress":42,"StarPos":[0,0,0],"JumpDist":5} """
                     + "\n"
             );
             await main.RefreshAsync();
@@ -48,7 +51,33 @@ public sealed partial class MultiCommanderJournalUploadTests
             );
             await main.RefreshAsync();
             await sender.FlushAsync(false);
-            Assert.False(sender.Handler.Posts.IsEmpty, sender.Diagnostics);
+            Assert.Contains(
+                sender.Handler.Posts,
+                body => body.Contains("Private expedition", StringComparison.Ordinal)
+            );
+            sender.Handler.Posts.Clear();
+            await File.AppendAllTextAsync(
+                journal,
+                $$"""{"timestamp":"2026-10-14T12:00:30Z","event":"{{discovery}}","StarSystem":"Private next expedition","SystemAddress":43,"StarPos":[1,0,0],"JumpDist":1} """
+                    + "\n"
+            );
+            await main.RefreshAsync();
+            await sender.FlushAsync(false);
+            Assert.DoesNotContain(
+                sender.Handler.Posts,
+                body => body.Contains("Private next expedition", StringComparison.Ordinal)
+            );
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-10-14T12:00:31Z","event":"Docked","StarSystem":"Safe port system","StationName":"Safe port","MarketID":123} """
+                    + "\n"
+            );
+            await main.RefreshAsync();
+            await sender.FlushAsync(false);
+            Assert.Contains(
+                sender.Handler.Posts,
+                body => body.Contains("Private next expedition", StringComparison.Ordinal)
+            );
         }
         finally
         {

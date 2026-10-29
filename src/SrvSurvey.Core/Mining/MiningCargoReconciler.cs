@@ -31,6 +31,12 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
         }
         SelectOwner(owner, carryover);
         JsonElement data = entry.Payload;
+        if (!carryover && owner is { PausedAt: not null, PausedForTravel: false })
+        {
+            // Paused production can be confirmed after resume. Its next cargo reading
+            // establishes a baseline instead of being credited to the active session.
+            Rebase(owner, at);
+        }
         if (entry.EventName == "Cargo")
         {
             ObserveCargo(data, at, owner, credit);
@@ -101,7 +107,7 @@ internal sealed class MiningCargoReconciler(MiningCargoReconciliationState state
         // confirmed gross yield and take the next cargo reading as a new baseline.
         if (owner is not null && !state.Carryover)
         {
-            owner.EstimatedCargoBaseline |= owner.HasUnconfirmedYield;
+            owner.EstimatedCargoBaseline |= owner.RefinedTons > 0 && owner.HasUnconfirmedYield;
         }
         state.LastCount = null;
         state.LastSnapshotAt = at;

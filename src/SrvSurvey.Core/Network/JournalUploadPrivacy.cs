@@ -86,7 +86,9 @@ public sealed class JournalUploadPrivacy
                         DateTimeStyles.RoundtripKind,
                         out DateTimeOffset at
                     )
-                    && at <= docked
+                    // Journal timestamps have only second precision. Keep the entire
+                    // docking second held so later records cannot leak through a tie.
+                    && at < docked
                 );
         }
     }

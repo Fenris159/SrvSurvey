@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Network;
 using Xunit;
 
@@ -11,6 +12,64 @@ namespace SrvSurvey.Core.Tests.Network;
 [Trait("Category", "JournalUploadScenario")]
 public sealed class EddnOutboxTests
 {
+    /// <summary>Attaching expedition privacy expands recovery before held reports can strand later eligible files.</summary>
+    [Fact]
+    public async Task ExpeditionPrivacyReloadsTheEntireRetainedBacklogBeforeSelectingReleasedReports()
+    {
+        using var folder = new TemporaryFolder();
+        string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        string store = storeFolder(path);
+        Directory.CreateDirectory(store);
+        var now = DateTimeOffset.Parse("2026-07-28T13:00:00Z", CultureInfo.InvariantCulture);
+        for (int i = 0; i < 5000; i++)
+        {
+            EddnQueuedMessage message = queued(now.AddHours(-2));
+            message.message["timestamp"] = "2026-07-28T12:00:02Z";
+            writeQueued(store, message);
+        }
+        // Pick an eligible file outside the constructor's original recovery window.
+        string eligiblePath = Directory.EnumerateFiles(store, "*.json").Skip(4096).First();
+        EddnQueuedMessage eligible = JsonConvert.DeserializeObject<EddnQueuedMessage>(
+            await File.ReadAllTextAsync(eligiblePath)
+        )!;
+        eligible.message["timestamp"] = "2026-07-28T12:00:00Z";
+        writeQueued(store, eligible);
+        int calls = 0;
+        using EddnOutbox queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                calls++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }),
+            () => now
+        );
+        Assert.Equal(4096, queue.pendingCount);
+        var privacy = new JournalUploadPrivacy(Path.Combine(folder.path, "privacy.json"), true);
+        queue.SetUploadPrivacy(privacy);
+        Assert.Equal(5000, queue.pendingCount);
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"LoadGame","Commander":"Test Cmdr","FID":"F1"}""",
+                out JournalEventEnvelope? commander,
+                out _
+            )
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"Docked","timestamp":"2026-07-28T12:00:01Z"}""",
+                out JournalEventEnvelope? docking,
+                out _
+            )
+        );
+        privacy.Observe([commander!, docking!], true);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        await queue.processDue();
+        Assert.Equal(1, calls);
+        Assert.Equal(4999, queue.pendingCount);
+        Assert.Equal(4999, Directory.GetFiles(store, "*.json").Length);
+    }
+
     [Fact]
     public async Task QueueIsPersistedBeforeSendingAndSurvivesRestart()
     {

@@ -232,10 +232,77 @@ public sealed class MiningCargoReconciliationTests
         Assert.False(run.Current.HasUnconfirmedYield);
     }
 
+    /// <summary>Late snapshots cannot turn production observed during a manual pause into active yield.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void PausedProductionStaysExcludedWhenCargoArrivesAfterResume(bool snapshotWhilePaused, bool reopen)
+    {
+        var run = new Replay();
+        run.Start();
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"");
+        run.Apply("Cargo", "\"Count\":1");
+        run.State.Session.Pause(DateTimeOffset.Parse("2026-10-28T12:00:05Z", CultureInfo.InvariantCulture));
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"", second: 6);
+        if (snapshotWhilePaused)
+        {
+            run.Apply("Cargo", "\"Count\":2", second: 7);
+        }
+        if (reopen)
+        {
+            run.Reopen();
+        }
+        run.State.Session.Resume(DateTimeOffset.Parse("2026-10-28T12:00:08Z", CultureInfo.InvariantCulture));
+        if (!snapshotWhilePaused)
+        {
+            run.Apply("Cargo", "\"Count\":2", second: 9);
+        }
+        Assert.Equal(1, run.Current.RefinedTons);
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"", second: 10);
+        run.Apply("Cargo", "\"Count\":3", second: 11);
+        Assert.Equal(2, run.Current.RefinedTons);
+        Assert.False(run.Current.HasUnconfirmedYield);
+    }
+
+    /// <summary>Unconfirmed pre-pause production is retained as an estimate when a paused reading cannot attribute it.</summary>
+    [Fact]
+    public void ConfirmationDuringManualPauseDoesNotEraseEarlierProvisionalYield()
+    {
+        var run = new Replay();
+        run.Start();
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"");
+        run.Apply("Cargo", "\"Count\":1");
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"");
+        run.State.Session.Pause(DateTimeOffset.Parse("2026-10-28T12:00:06Z", CultureInfo.InvariantCulture));
+        run.Apply("Cargo", "\"Count\":2", second: 7);
+        run.State.Session.Resume(DateTimeOffset.Parse("2026-10-28T12:00:08Z", CultureInfo.InvariantCulture));
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"", second: 9);
+        run.Apply("Cargo", "\"Count\":3", second: 10);
+        Assert.Equal(3, run.Current.RefinedTons);
+        Assert.True(run.Current.HasUnconfirmedYield);
+    }
+
+    /// <summary>Pausing a session before any production does not create a permanent uncertainty flag.</summary>
+    [Fact]
+    public void PausingAnEmptySessionKeepsSubsequentCargoConfirmationUsable()
+    {
+        var run = new Replay();
+        run.Start();
+        run.State.Session.Pause(DateTimeOffset.Parse("2026-10-28T12:00:03Z", CultureInfo.InvariantCulture));
+        run.Apply("Cargo", "\"Count\":0", second: 4);
+        run.State.Session.Resume(DateTimeOffset.Parse("2026-10-28T12:00:05Z", CultureInfo.InvariantCulture));
+        run.Apply("MiningRefined", "\"Type\":\"platinum\"", second: 6);
+        run.Apply("Cargo", "\"Count\":1", second: 7);
+        Assert.Equal(1, run.Current.RefinedTons);
+        Assert.False(run.Current.HasUnconfirmedYield);
+    }
+
     private sealed class Replay
     {
         private int offset;
-        public MiningWorkspaceState State { get; } = new(new MiningCommanderData());
+        public MiningWorkspaceState State { get; private set; } = new(new MiningCommanderData());
         public MiningSession Current => State.Session.Current!;
 
         public void Start(int count = 1)
@@ -243,6 +310,8 @@ public sealed class MiningCargoReconciliationTests
             Apply("Cargo", $"\"Count\":{count}");
             Apply("LaunchDrone", "\"Type\":\"Prospector\"");
         }
+
+        public void Reopen() => State = new MiningWorkspaceState(MiningStore.Parse(MiningStore.Export(State.Data)));
 
         public JournalEventEnvelope Apply(string name, string fields = "", int? second = null)
         {

@@ -97,6 +97,24 @@ public sealed class JournalUploadPrivacyTests : IDisposable
         Assert.True(policy.CanSend("First", "2026-10-28T00:00:00Z"));
     }
 
+    /// <summary>Second-resolution timestamps cannot release evidence captured on the far side of a docking.</summary>
+    [Fact]
+    public void ReportsInTheDockingSecondStayHeldAcrossRestartUntilALaterDock()
+    {
+        var policy = new JournalUploadPrivacy(StatePath, true);
+        policy.Observe([Header, Commander("First", "F1"), Dock], true);
+        const string sameSecond = "2026-10-28T00:00:01Z";
+        Assert.True(policy.CanSend("First", "2026-10-28T00:00:00Z"));
+        Assert.False(policy.CanSend("First", sameSecond));
+        var restored = new JournalUploadPrivacy(StatePath, true);
+        Assert.False(restored.CanSend("First", sameSecond));
+        restored.Observe(
+            [Header, Commander("First", "F1"), Parse("""{"event":"Docked","timestamp":"2026-10-28T00:00:02Z"}""")],
+            true
+        );
+        Assert.True(restored.CanSend("First", sameSecond));
+    }
+
     private static JournalEventEnvelope Header => Parse("""{"event":"Fileheader","Odyssey":true}""");
     private static JournalEventEnvelope Dock => Parse("""{"event":"Docked","timestamp":"2026-10-28T00:00:01Z"}""");
 

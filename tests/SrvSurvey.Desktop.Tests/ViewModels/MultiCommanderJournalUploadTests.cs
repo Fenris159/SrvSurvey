@@ -473,6 +473,7 @@ public sealed partial class MultiCommanderJournalUploadTests
     {
         public ConcurrentQueue<string> Posts { get; } = new();
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
+        public string EdAstroEvents { get; set; } = "[\"Docked\"]";
 
         /// <summary>Serves provider policy and decodes transport envelopes without contacting a real service.</summary>
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -485,7 +486,7 @@ public sealed partial class MultiCommanderJournalUploadTests
                 return new(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
-                        provider == "EDAstro" ? "[\"Docked\"]" : "[\"Fileheader\",\"Shutdown\"]"
+                        provider == "EDAstro" ? EdAstroEvents : "[\"Fileheader\",\"Shutdown\"]"
                     ),
                 };
             }
