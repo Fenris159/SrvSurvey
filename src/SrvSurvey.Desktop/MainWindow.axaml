@@ -1,4 +1,5 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window Classes="app-window"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -66,6 +67,12 @@
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,1,0">
       <Grid>
+      <Border Height="90"
+              VerticalAlignment="Top"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="0,0,0,1"
+              IsHitTestVisible="False" />
       <Grid x:Name="SidebarContent"
             IsVisible="{Binding !IsSidebarCollapsed}"
             Margin="16"
@@ -78,7 +85,7 @@
                  Stretch="Uniform"
                  ToolTip.Tip="SrvSurvey-XP" />
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-            <TextBlock FontSize="17" FontWeight="SemiBold" Text="SrvSurvey-XP" />
+            <TextBlock Classes="app-wordmark" Text="SrvSurvey-XP" />
             <TextBlock Classes="muted" FontSize="10" Text="CMDR'S COMPANION" />
           </StackPanel>
         </Grid>
@@ -213,6 +220,11 @@
     </Border>
 
     <Grid x:Name="MainWorkspace" Grid.Column="1">
+      <Border Height="2"
+              VerticalAlignment="Top"
+              Background="{DynamicResource RavenAccentBrush}"
+              Opacity="0.65"
+              IsHitTestVisible="False" />
       <ContentControl IsVisible="{Binding IsProfileSelected}">
         <views:CommanderProfileView DataContext="{Binding FrontierProfile}" />
       </ContentControl>
@@ -284,7 +296,7 @@
             Background="{DynamicResource RavenWindowBrush}"
             BorderBrush="{DynamicResource RavenAccentBrush}"
             BorderThickness="1"
-            CornerRadius="12"
+            CornerRadius="4"
             BoxShadow="{DynamicResource RavenFloatingPanelShadow}">
       <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"

@@ -1018,7 +1018,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             size,
             OverlayContentPlacement.GetMonitorBounds(preview, position, size, hostBounds),
             hostBounds,
-            editSession?.GetPlacement(preview.Definition.Name)
+            editSession?.GetPlacement(preview.Definition.Name),
+            followPlacementAnchors: preview.RuntimePresentation
+                is IOverlayPanelSizePolicy { FollowPlacementAnchors: true }
         );
     }
 

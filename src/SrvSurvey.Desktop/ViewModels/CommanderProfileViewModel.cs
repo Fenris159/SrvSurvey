@@ -347,6 +347,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string Debt => FormatCredits(Snapshot?.Debt ?? 0);
 
+    public bool HasDebt => Snapshot is { Debt: not 0 };
+
     public string NetWorth => FormatCredits(Snapshot?.NetWorth ?? 0);
 
     public string FleetValue => FormatCredits(Snapshot?.FleetValue ?? 0);
@@ -1186,6 +1188,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             ?? [];
 
     public IReadOnlyList<FrontierNamedValueSnapshot> MarketServices => Market?.Services ?? [];
+
+    public bool HasMarketServices => MarketServices.Count > 0;
+
+    public bool HasMarketEconomies => MarketEconomies.Count > 0;
 
     public IReadOnlyList<FrontierEconomyRowViewModel> MarketEconomies =>
         marketEconomyRows ??=
@@ -3770,6 +3776,10 @@ public sealed record FrontierRankCardViewModel(
     public bool HasDetail => RankText.Length > 0;
 
     public bool HasIconTint => IconTint is not null;
+
+    public bool HasThemeIconTint => Category is "Trade" or "Mercenary" or "Exobiology";
+
+    public bool HasOriginalIcon => !HasIconTint && !HasThemeIconTint;
 
     public bool HasMerits => MeritsText.Length > 0;
 

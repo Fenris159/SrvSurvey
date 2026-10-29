@@ -424,6 +424,66 @@ public sealed class EddnOutboxTests
         Assert.Equal(0, queue.pendingCount);
     }
 
+    /// <summary>Privacy holds preserve retry state and release immediately when docking or disabling Stealth Mode.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StealthCancellationDoesNotDelayTheNextPermittedUpload(bool dock)
+    {
+        using var folder = new TemporaryFolder();
+        string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z", CultureInfo.InvariantCulture);
+        var privacy = new JournalUploadPrivacy(Path.Combine(folder.path, "privacy.json"), false);
+        var handler = new CancelThenSucceedHandler();
+        using var client = new HttpClient(handler);
+        var transport = new EddnTransport(client, new Uri("https://live.example.test/upload/"));
+        using EddnOutbox queue = outbox(path, transport, () => now);
+        queue.SetUploadPrivacy(privacy);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        EddnQueuedMessage message = queued(now);
+        Assert.True(queue.enqueue(message));
+        Task processing = queue.processDue();
+        await handler.Entered.WaitAsync(TimeSpan.FromSeconds(2));
+
+        privacy.SetEnabled(true);
+        await processing.WaitAsync(TimeSpan.FromSeconds(2));
+
+        EddnQueuedMessage saved = Assert.Single(loadSaved(path));
+        Assert.Equal(0, saved.attempts);
+        Assert.Equal(now, saved.nextAttempt);
+        await queue.processDue();
+        Assert.Equal(1, handler.Calls);
+
+        now += TimeSpan.FromSeconds(1);
+        if (dock)
+        {
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    $$"""{"event":"LoadGame","Commander":"{{message.header.uploaderID}}","FID":"F1"}""",
+                    out JournalEventEnvelope? commander,
+                    out _
+                )
+            );
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    """{"event":"Docked","timestamp":"2026-07-28T12:00:01Z"}""",
+                    out JournalEventEnvelope? docking,
+                    out _
+                )
+            );
+            privacy.Observe([commander!, docking!], true);
+        }
+        else
+        {
+            privacy.SetEnabled(false);
+        }
+        await queue.processDue();
+
+        Assert.Equal(2, handler.Calls);
+        Assert.Equal(0, queue.pendingCount);
+        Assert.Empty(loadSaved(path));
+    }
+
     [Fact]
     public void OnlyOneProcessCanOwnAndRewriteAnOutbox()
     {

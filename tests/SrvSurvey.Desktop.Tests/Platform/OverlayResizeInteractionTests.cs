@@ -20,10 +20,14 @@ public sealed class OverlayResizeInteractionTests
     private static readonly bool[] ConfiguredSizes = [false, true];
     private static readonly int[] PointerSteps = [1, 2, 3, 4, 5, 6, 7, 8, 6, 4, 2, 0];
 
-    /// <summary>A captured resize grip follows each pointer sample without lag or oscillation.</summary>
+    /// <summary>Manual grips track each pointer sample; fully automatic panels keep their grip hidden.</summary>
     [AvaloniaTheory]
     [MemberData(nameof(ResizeCases))]
-    public void ResizeGripFollowsEveryPointerSample(string plotterName, int percent, bool configured)
+    public void ResizePolicyHidesAutomaticGripsAndTracksManualPointerSamples(
+        string plotterName,
+        int percent,
+        bool configured
+    )
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotterName));
         try
@@ -40,6 +44,14 @@ public sealed class OverlayResizeInteractionTests
             Control panel = preview.RuntimePresentation!;
             Size original = panel.Bounds.Size;
             Thumb grip = preview.FindControl<Thumb>("PanelResizeThumb")!;
+            if (panel is IOverlayPanelSizePolicy { AutoWidth: true, AutoHeight: true })
+            {
+                Assert.False(grip.IsVisible);
+                Assert.True(double.IsNaN(panel.Width));
+                Assert.True(double.IsNaN(panel.Height));
+                return;
+            }
+            Assert.True(grip.IsVisible);
             Point start = grip.TranslatePoint(new Point(11, 11), preview)!.Value;
             preview.MouseMove(start, RawInputModifiers.None);
             preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
@@ -131,7 +143,6 @@ public sealed class OverlayResizeInteractionTests
     /// <summary>Checks every shared presentation at natural and explicit sizes with reduced and enlarged scaling.</summary>
     public static IEnumerable<TheoryDataRow<string, int, bool>> ResizeCases() =>
         from definition in OverlayLayoutCatalog.Supported
-        where definition.Name is not ("PlotMiningMissions" or "PlotMassacre")
         from percent in ScalePercents
         from configured in ConfiguredSizes
         select new TheoryDataRow<string, int, bool>(definition.Name, percent, configured);

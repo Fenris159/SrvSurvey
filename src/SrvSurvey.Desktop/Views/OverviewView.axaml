@@ -38,9 +38,9 @@
         </Grid>
       </Border>
 
-      <Border Classes="card" Padding="0">
-        <Grid ColumnDefinitions="6,*">
-          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+      <Border Classes="card commander-panel" Padding="0">
+        <Grid ColumnDefinitions="3,*">
+          <Border Classes="accent-line" CornerRadius="0" />
           <Grid Grid.Column="1"
                 Margin="24"
                 RowDefinitions="Auto,Auto"
@@ -49,7 +49,8 @@
                 ColumnSpacing="26">
             <StackPanel Spacing="6">
               <TextBlock Classes="muted" FontSize="12" Text="COMMANDER" />
-              <TextBlock FontSize="26"
+              <TextBlock Classes="commander-name"
+                         FontSize="26"
                          FontWeight="SemiBold"
                          Text="{Binding CommanderName}" />
               <TextBlock Classes="muted" Text="{Binding FrontierId, StringFormat=Frontier ID: {0}}" />

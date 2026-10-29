@@ -132,7 +132,7 @@
                     <DataTemplate x:DataType="mining:MiningProspect">
                       <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects2" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Time}"/><TextBlock Grid.Column="1" Text="{Binding MineralSummary}" ToolTip.Tip="{Binding MineralSummary}"/>
-                        <TextBlock Grid.Column="2" Text="{Binding Core}" ToolTip.Tip="{Binding Core}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Core}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>

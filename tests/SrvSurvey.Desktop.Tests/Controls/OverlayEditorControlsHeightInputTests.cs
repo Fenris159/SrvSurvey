@@ -12,7 +12,7 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 public sealed class OverlayEditorControlsHeightInputTests
 {
     [AvaloniaFact]
-    public void EditorHeightEntryIsAsCompactAsNearbyShortcutEntry()
+    public void EditorHeightEntryIsAsCompactAsShortcutEntry()
     {
         var settings = new OverlaySettingsView();
         var window = new Window
@@ -24,14 +24,20 @@ public sealed class OverlayEditorControlsHeightInputTests
         try
         {
             window.Show();
+            settings.FindControl<Expander>("OverlayPlatformOptions")!.IsExpanded = true;
+            window.UpdateLayout();
             OverlayEditorHeightEntry entry = Assert.IsType<OverlayEditorHeightEntry>(
                 settings.FindControl<OverlayEditorHeightEntry>("EditorControlsHeightInput")
             );
+            double editorHeight = entry.Bounds.Height;
+            Assert.True(editorHeight > 0);
+            settings.FindControl<TabControl>("GlobalOverlaySections")!.SelectedIndex = 2;
+            window.UpdateLayout();
             ShortcutCaptureBox shortcut = settings.GetVisualDescendants().OfType<ShortcutCaptureBox>().First();
 
             Assert.True(
-                entry.Bounds.Height <= shortcut.Bounds.Height + 4,
-                $"Editor entry height {entry.Bounds.Height} exceeds shortcut height {shortcut.Bounds.Height}."
+                editorHeight <= shortcut.Bounds.Height + 4,
+                $"Editor entry height {editorHeight} exceeds shortcut height {shortcut.Bounds.Height}."
             );
         }
         finally

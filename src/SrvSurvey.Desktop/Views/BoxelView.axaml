@@ -334,8 +334,7 @@
                          Classes="last-system-available"
                          Classes.invalid="{Binding BoxelSearch.HasLastSystemAvailableError}"
                          Text="{Binding BoxelSearch.LastSystemAvailable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         LostFocus="LastSystemAvailable_LostFocus"
-                         ToolTip.Tip="{Binding BoxelSearch.LastSystemAvailableValidationMessage}" />
+                         LostFocus="LastSystemAvailable_LostFocus" />
                 <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
                            FontSize="11"
                            IsVisible="{Binding BoxelSearch.HasLastSystemAvailableError}"

@@ -1,151 +1,182 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:core="using:SrvSurvey.Core.Frontier"
-             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
-             x:Class="SrvSurvey.Desktop.Views.FrontierMarketTabView"
-             x:DataType="vm:CommanderProfileViewModel">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="4,16,4,18" Spacing="16">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="SrvSurvey.Desktop.Views.FrontierMarketTabView" x:DataType="vm:CommanderProfileViewModel" Classes="commander-subpage" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:core="using:SrvSurvey.Core.Frontier">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" x:Name="FrontierPageScroller">
+    <StackPanel Margin="0,14,8,18" Spacing="22">
       <Border Classes="card" IsVisible="{Binding HasMarketError}">
         <StackPanel Spacing="4">
           <TextBlock Classes="card-title" Text="Market update warning" />
           <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding MarketError}" />
         </StackPanel>
       </Border>
-
-      <Border Classes="card raised">
+      <Border Classes="card console-page-header">
         <StackPanel Spacing="4">
-          <TextBlock Classes="eyebrow" Text="LAST DOCKED MARKET" />
-          <TextBlock FontSize="24" FontWeight="SemiBold" Text="{Binding MarketTitle}" />
+          <TextBlock Classes="console-label" Text="Last docked market" />
+          <TextBlock Text="{Binding MarketTitle}" Classes="console-page-title" TextWrapping="Wrap" />
           <TextBlock Classes="muted" Text="{Binding MarketSubtitle}" />
         </StackPanel>
       </Border>
-
       <Border Classes="card" IsVisible="{Binding !HasMarket}">
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Market information becomes available after Frontier has a supported last-docked market for the commander." />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Market information becomes available after Frontier has a supported last-docked market for the commander." />
       </Border>
-
       <StackPanel IsVisible="{Binding HasMarket}" Spacing="16">
-        <Grid ColumnDefinitions="1.15*,*,*" ColumnSpacing="12">
-          <Border Classes="card">
+        <Expander Classes="profile-section" IsExpanded="{Binding PaneStates.MarketCommodities.IsExpanded, Mode=TwoWay}">
+          <Expander.Header>
+            <TextBlock Text="{Binding MarketCommodities.Count, StringFormat=Commodity market ({0})}" />
+          </Expander.Header>
+          <ScrollViewer x:Name="MarketPricesScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="460" Focusable="True">
+            <StackPanel Grid.IsSharedSizeScope="True" Margin="10,6,10,12">
+              <Grid ColumnSpacing="14" Margin="0,4">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="MarketCommodity" />
+                  <ColumnDefinition Width="Auto" MinWidth="150" SharedSizeGroup="MarketStatus" />
+                  <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketBuy" />
+                  <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketSell" />
+                  <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketStock" />
+                  <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketDemand" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Classes="table-heading" Text="Commodity" />
+                <TextBlock Grid.Column="1" Classes="table-heading" Text="Status" />
+                <TextBlock Grid.Column="2" Classes="table-heading" Text="Buy" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="3" Classes="table-heading" Text="Sell" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="4" Classes="table-heading" Text="Stock" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="5" Classes="table-heading" Text="Demand" HorizontalAlignment="Right" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding MarketCommodities}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCommodityRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnSpacing="14">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="MarketCommodity" />
+                          <ColumnDefinition Width="Auto" MinWidth="150" SharedSizeGroup="MarketStatus" />
+                          <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketBuy" />
+                          <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketSell" />
+                          <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketStock" />
+                          <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketDemand" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                          <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                          <TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                          <TextBlock Text="{Binding Legality}" />
+                          <TextBlock Classes="muted" FontSize="10" Text="{Binding Availability}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding BuyPrice}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{Binding SellPrice}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding Stock}" HorizontalAlignment="Right" />
+                        <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding Demand}" HorizontalAlignment="Right" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </ScrollViewer>
+        </Expander>
+        <controls:ResponsiveColumnsPanel MinimumColumnWidth="240" MaximumColumns="3" Spacing="24">
+          <Border Classes="card" IsVisible="{Binding HasMarketServices}">
             <StackPanel Spacing="8">
               <TextBlock Classes="card-title" Text="Services" />
               <ItemsControl ItemsSource="{Binding MarketServices}">
-                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="core:FrontierNamedValueSnapshot">
                     <Border Classes="badge" Margin="0,0,6,6">
-                      <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{Binding Name}" /><TextBlock Classes="muted" Text="{Binding Value}" /></StackPanel>
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Classes="muted" Text="{Binding Value}" />
+                      </StackPanel>
                     </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </StackPanel>
           </Border>
-          <Border Grid.Column="1" Classes="card">
+          <Border Classes="card" IsVisible="{Binding HasMarketEconomies}">
             <StackPanel Spacing="8">
               <TextBlock Classes="card-title" Text="Economies" />
               <ItemsControl ItemsSource="{Binding MarketEconomies}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:FrontierEconomyRowViewModel">
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,3"><TextBlock Text="{Binding Name}" /><TextBlock Grid.Column="1" Classes="muted" Text="{Binding Proportion}" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,3">
+                      <TextBlock Text="{Binding Name}" />
+                      <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Proportion}" />
+                    </Grid>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </StackPanel>
           </Border>
-          <Border Grid.Column="2" Classes="card">
+          <Border Classes="card">
             <StackPanel Spacing="7">
               <TextBlock Classes="card-title" Text="Trade policy" />
-              <TextBlock Classes="muted" FontSize="10" Text="IMPORTS" />
+              <TextBlock Classes="muted" FontSize="10" Text="Imports" />
               <TextBlock TextWrapping="Wrap" Text="{Binding MarketImported.Count, StringFormat={}{0} commodities}" />
-              <TextBlock Classes="muted" FontSize="10" Text="EXPORTS" />
+              <TextBlock Classes="muted" FontSize="10" Text="Exports" />
               <TextBlock TextWrapping="Wrap" Text="{Binding MarketExported.Count, StringFormat={}{0} commodities}" />
-              <TextBlock Classes="muted" FontSize="10" Text="PROHIBITED" />
+              <TextBlock Classes="muted" FontSize="10" Text="Prohibited" />
               <TextBlock TextWrapping="Wrap" Text="{Binding MarketProhibited.Count, StringFormat={}{0} commodities}" />
             </StackPanel>
           </Border>
-        </Grid>
-
-        <Expander Classes="profile-section"
-                  IsExpanded="{Binding PaneStates.MarketCommodities.IsExpanded, Mode=TwoWay}">
-          <Expander.Header><TextBlock Text="{Binding MarketCommodities.Count, StringFormat=Commodity market ({0})}" /></Expander.Header>
-          <StackPanel Grid.IsSharedSizeScope="True" Margin="10,6,10,12">
-            <Grid ColumnSpacing="14" Margin="10,4">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" MinWidth="250" SharedSizeGroup="MarketCommodity" />
-                <ColumnDefinition Width="Auto" MinWidth="190" SharedSizeGroup="MarketStatus" />
-                <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketBuy" />
-                <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketSell" />
-                <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketStock" />
-                <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketDemand" />
-              </Grid.ColumnDefinitions>
-              <TextBlock Classes="table-heading" Text="COMMODITY" />
-              <TextBlock Grid.Column="1" Classes="table-heading" Text="STATUS" />
-              <TextBlock Grid.Column="2" Classes="table-heading" Text="BUY" />
-              <TextBlock Grid.Column="3" Classes="table-heading" Text="SELL" />
-              <TextBlock Grid.Column="4" Classes="table-heading" Text="STOCK" />
-              <TextBlock Grid.Column="5" Classes="table-heading" Text="DEMAND" />
-            </Grid>
-            <ItemsControl ItemsSource="{Binding MarketCommodities}">
+        </controls:ResponsiveColumnsPanel>
+        <controls:ResponsiveColumnsPanel MinimumColumnWidth="240" MaximumColumns="3" Spacing="24">
+          <Expander Classes="profile-section" IsExpanded="{Binding PaneStates.MarketImported.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding MarketImported.Count, StringFormat=Imported ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding MarketImported}" Margin="8">
               <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:FrontierCommodityRowViewModel">
-                  <Border Classes="dashboard-row">
-                    <Grid ColumnSpacing="14">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="250" SharedSizeGroup="MarketCommodity" />
-                        <ColumnDefinition Width="Auto" MinWidth="190" SharedSizeGroup="MarketStatus" />
-                        <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketBuy" />
-                        <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketSell" />
-                        <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="MarketStock" />
-                        <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="MarketDemand" />
-                      </Grid.ColumnDefinitions>
-                      <StackPanel><TextBlock FontWeight="SemiBold" Text="{Binding Name}" /><TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" /></StackPanel>
-                      <StackPanel Grid.Column="1"><TextBlock Text="{Binding Legality}" /><TextBlock Classes="muted" FontSize="10" Text="{Binding Availability}" /></StackPanel>
-                      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding BuyPrice}" />
-                      <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{Binding SellPrice}" />
-                      <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding Stock}" />
-                      <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding Demand}" />
-                    </Grid>
-                  </Border>
+                <DataTemplate>
+                  <TextBlock Margin="4" Text="{Binding}" />
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-          </StackPanel>
-        </Expander>
-
-        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-          <Expander Classes="profile-section"
-                    IsExpanded="{Binding PaneStates.MarketImported.IsExpanded, Mode=TwoWay}">
-            <Expander.Header><TextBlock Text="{Binding MarketImported.Count, StringFormat=Imported ({0})}" /></Expander.Header>
-            <ItemsControl ItemsSource="{Binding MarketImported}" Margin="8"><ItemsControl.ItemTemplate><DataTemplate><TextBlock Margin="4" Text="{Binding}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
           </Expander>
-          <Expander Grid.Column="1" Classes="profile-section"
-                    IsExpanded="{Binding PaneStates.MarketExported.IsExpanded, Mode=TwoWay}">
-            <Expander.Header><TextBlock Text="{Binding MarketExported.Count, StringFormat=Exported ({0})}" /></Expander.Header>
-            <ItemsControl ItemsSource="{Binding MarketExported}" Margin="8"><ItemsControl.ItemTemplate><DataTemplate><TextBlock Margin="4" Text="{Binding}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+          <Expander Classes="profile-section" IsExpanded="{Binding PaneStates.MarketExported.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding MarketExported.Count, StringFormat=Exported ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding MarketExported}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Margin="4" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </Expander>
-          <Expander Grid.Column="2" Classes="profile-section"
-                    IsExpanded="{Binding PaneStates.MarketProhibited.IsExpanded, Mode=TwoWay}">
-            <Expander.Header><TextBlock Text="{Binding MarketProhibited.Count, StringFormat=Prohibited ({0})}" /></Expander.Header>
-            <ItemsControl ItemsSource="{Binding MarketProhibited}" Margin="8"><ItemsControl.ItemTemplate><DataTemplate><TextBlock Margin="4" Text="{Binding}" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+          <Expander Classes="profile-section" IsExpanded="{Binding PaneStates.MarketProhibited.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding MarketProhibited.Count, StringFormat=Prohibited ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding MarketProhibited}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Margin="4" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </Expander>
-        </Grid>
-
-        <Expander Classes="profile-section"
-                  IsExpanded="{Binding PaneStates.MarketData.IsExpanded, Mode=TwoWay}">
-          <Expander.Header><TextBlock Text="{Binding MarketData.Count, StringFormat=All market data points ({0})}" /></Expander.Header>
-          <ItemsControl ItemsSource="{Binding MarketData}" Margin="8" MaxHeight="500">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
-                <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12" Margin="4,3">
-                  <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
-                  <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+        </controls:ResponsiveColumnsPanel>
+        <Expander Classes="profile-section" IsExpanded="{Binding PaneStates.MarketData.IsExpanded, Mode=TwoWay}">
+          <Expander.Header>
+            <TextBlock Text="{Binding MarketData.Count, StringFormat=All market data points ({0})}" />
+          </Expander.Header>
+          <ScrollViewer MaxHeight="500" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding MarketData}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+                  <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12" Margin="4,3">
+                    <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                    <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
         </Expander>
       </StackPanel>
     </StackPanel>

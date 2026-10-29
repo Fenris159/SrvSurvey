@@ -13,18 +13,19 @@ internal sealed class OverlayContentPlacement
     private PixelPoint corner;
     private bool alignRight;
 
-    /// <summary>Reanchors only after a position or reference-frame change, independently of content size and opacity.</summary>
+    /// <summary>Retains a growth corner unless the panel explicitly follows its saved placement anchors.</summary>
     public PixelPoint Resolve(
         PixelPoint requested,
         PixelSize size,
         PixelRect monitor,
         PixelRect reference,
         LegacyOverlayPlacement? placement,
-        PixelRect? viewport = null
+        PixelRect? viewport = null,
+        bool followPlacementAnchors = false
     )
     {
         var nextKey = PositionKey.From(placement);
-        if (key != nextKey || referenceBounds != reference)
+        if (key != nextKey || referenceBounds != reference || followPlacementAnchors)
         {
             key = nextKey;
             referenceBounds = reference;

@@ -1,4 +1,5 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<Window Classes="app-window"
+        xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="SrvSurvey.Desktop.DeleteFiregroupDialog" Title="Delete firegroup configuration"
         Width="460" SizeToContent="Height" CanResize="False" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
  <StackPanel Margin="24" Spacing="16">

@@ -161,6 +161,8 @@
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/GuardianLegacyOverlayStyles.axaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/OverlayTypographyStyles.axaml" />
+    <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/ApplicationWindowStyles.axaml" />
+    <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/CommanderConsoleStyles.axaml" />
     <Style Selector="Control">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
     </Style>

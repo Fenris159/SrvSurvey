@@ -249,7 +249,9 @@ jobs:
 
       - name: Test with coverage (Avalonia / XP)
         if: steps.layout.outputs.kind == 'avalonia'
-        timeout-minutes: 10
+        # The uninstrumented Windows suite already takes about eight minutes.
+        # Allow coverage overhead while retaining the per-test hang diagnostics.
+        timeout-minutes: 15
         run: >-
           dotnet test SrvSurvey.slnx
           --configuration Release

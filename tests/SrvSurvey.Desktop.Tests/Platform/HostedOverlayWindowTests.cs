@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -16,6 +17,110 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class HostedOverlayWindowTests
 {
+    /// <summary>Verifies live spherical-search growth and shrinkage preserve the saved window anchor.</summary>
+    [AvaloniaTheory]
+    [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Top, false, 1)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom, false, 1)]
+    [InlineData(LegacyHorizontalAnchor.Center, LegacyVerticalAnchor.Middle, false, 1)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Top, true, 1)]
+    [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Bottom, true, 1)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom, true, 1)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom, true, 1.5)]
+    [InlineData(LegacyHorizontalAnchor.Center, LegacyVerticalAnchor.Middle, true, 1.5)]
+    public async Task SphericalSearchFollowsLiveContentAndItsSavedAnchor(
+        LegacyHorizontalAnchor horizontal,
+        LegacyVerticalAnchor vertical,
+        bool savedSize,
+        double scaling
+    )
+    {
+        const string name = "PlotSphericalSearch";
+        var platform = new RecordingOverlayPlatform();
+        var timer = new ManualHostedOverlayTimer();
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [name] = new(
+                    horizontal,
+                    horizontal == LegacyHorizontalAnchor.Center ? 0 : 24,
+                    vertical,
+                    vertical == LegacyVerticalAnchor.Middle ? 0 : 40,
+                    1,
+                    SizeOverride: savedSize ? new(240, 120) : null
+                ),
+            },
+            null,
+            null
+        );
+        using var model = (SphericalSearchOverlayViewModel)OverlayEditorPreviewCatalog.Create(name);
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Spherical search autosizing"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => timer,
+                layout
+            )
+        );
+        using HostedOverlayWindow host = session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                name,
+                _ =>
+                {
+                    var searchWindow = new SphericalSearchOverlayWindow(model);
+                    searchWindow.SetRenderScaling(scaling);
+                    return searchWindow;
+                },
+                (_, _) => default
+            )
+        );
+        host.Reconcile(true);
+        Window window = Assert.IsType<SphericalSearchOverlayWindow>(host.CurrentWindow);
+        using WriteableBitmap? initial = window.CaptureRenderedFrame();
+        timer.Pulse();
+        PixelSize initialSize = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, name));
+        model.Sphere.LoadProfile(
+            "F123",
+            "Drew",
+            true,
+            new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 50)
+        );
+        model.InstallEditorPreview(
+            "Praea Euq IL-P c5-123456789 (Expedition staging system)",
+            "Eol Prou AA-A h123456789",
+            "Sol",
+            "Sol"
+        );
+        await model.Sphere.UpdateNavigationAsync(null, new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        using WriteableBitmap? expanded = window.CaptureRenderedFrame();
+        timer.Pulse();
+        window.UpdateLayout();
+        PixelSize expandedSize = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, name));
+        Assert.True(
+            expandedSize.Width > initialSize.Width,
+            $"Width stayed {initialSize.Width} -> {expandedSize.Width}."
+        );
+        Assert.True(
+            expandedSize.Height > initialSize.Height,
+            $"Height stayed {initialSize.Height} -> {expandedSize.Height}."
+        );
+        Assert.Equal(layout.GetPosition(name, AvailableGameWindow.ClientBounds, expandedSize), window.Position);
+        Assert.True(window.ClientSize.Width * scaling >= expandedSize.Width - 1);
+        Assert.True(window.ClientSize.Height * scaling >= expandedSize.Height - 1);
+        model.InstallEditorPreview("Sol", "Sol", "Sol", "Sol");
+        using WriteableBitmap? shorterText = window.CaptureRenderedFrame();
+        timer.Pulse();
+        PixelSize shorterSize = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, name));
+        Assert.True(shorterSize.Width < expandedSize.Width);
+        Assert.Equal(expandedSize.Height, shorterSize.Height);
+        Assert.Equal(layout.GetPosition(name, AvailableGameWindow.ClientBounds, shorterSize), window.Position);
+        await model.Sphere.UpdateNavigationAsync(null, new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        using WriteableBitmap? contracted = window.CaptureRenderedFrame();
+        timer.Pulse();
+        Assert.Equal(initialSize, OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, name)));
+        Assert.Equal(layout.GetPosition(name, AvailableGameWindow.ClientBounds, initialSize), window.Position);
+    }
+
     /// <summary>Live growth retains the chosen corner while leaving persisted coordinates unchanged.</summary>
     [AvaloniaTheory]
     [InlineData(30, false)]

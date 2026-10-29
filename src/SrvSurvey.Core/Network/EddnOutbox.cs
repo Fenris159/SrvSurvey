@@ -542,6 +542,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Preserves held reports on cancellation and applies transport outcomes to eligible reports.</summary>
     private bool ApplyUploadOutcome(EddnQueuedMessage next, EddnUploadResult? result, Exception? failure, bool retry)
     {
         string? persistenceLog = null;
@@ -556,6 +557,11 @@ internal sealed class EddnOutbox : IDisposable
             }
 
             if (!pending.Any(item => item.id == next.id))
+            {
+                return true;
+            }
+
+            if (failure is OperationCanceledException && !CanRelease(next))
             {
                 return true;
             }
