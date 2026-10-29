@@ -98,6 +98,7 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         );
     }
 
+    /// <summary>Checks that overlay availability and shortcut editors retain their shared master-binding contract.</summary>
     [Fact]
     public void OverlaySettingsOfferPanelAvailabilityAndSharedShortcuts()
     {
@@ -127,8 +128,15 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         Assert.Contains("{Binding CollapseCoveredColonyGroupsBinding.Chord, Mode=TwoWay}", values);
         Assert.Contains("{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}", values);
 
-        XElement outerStack = settings.Root!.Elements().Single(element => element.Name.LocalName == "StackPanel");
-        XElement lastCard = outerStack.Elements().Last(element => element.Name.LocalName == "Border");
+        XElement categoryContent = settings
+            .Descendants()
+            .Single(element =>
+                element
+                    .Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "CategoryOverlayContent")
+            );
+        Assert.Same(categoryContent, card.Parent);
+        XElement lastCard = categoryContent.Elements().Last(element => element.Name.LocalName == "Border");
         Assert.Contains(
             lastCard.Attributes(),
             attribute => attribute.Name.LocalName == "Name" && attribute.Value == "PanelVisibilityCard"

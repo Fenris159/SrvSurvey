@@ -22,6 +22,9 @@ internal interface IOverlayPanelSizePolicy
     bool AutoWidth => false;
 
     bool AutoHeight { get; }
+
+    /// <summary>Recalculates the saved horizontal and vertical anchors whenever content changes size.</summary>
+    bool FollowPlacementAnchors => false;
 }
 
 /// <summary>Bounds scrolling content without imposing a fixed height on the shared presentation.</summary>

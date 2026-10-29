@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -7,5 +8,24 @@ public sealed partial class FrontierCommanderTabView : UserControl
     public FrontierCommanderTabView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>Reflows the flight location and current ship into two rows when the commander tab becomes narrow.</summary>
+    private void Readout_SizeChanged(object? sender, SizeChangedEventArgs args)
+    {
+        bool compact = args.NewSize.Width < 820;
+        Grid.SetRow(FlightShip, compact ? 1 : 0);
+        Grid.SetColumn(FlightShip, compact ? 1 : 2);
+        Grid.SetColumnSpan(FlightShip, compact ? 2 : 1);
+        Grid.SetColumnSpan(FlightLocation, compact ? 2 : 1);
+    }
+
+    /// <summary>Keeps rank cards above their minimum width as the commander tab is resized.</summary>
+    private void Ranks_SizeChanged(object? sender, SizeChangedEventArgs args)
+    {
+        if (CommanderRanks.ItemsPanelRoot is UniformGrid panel)
+        {
+            panel.Columns = Math.Max(1, (int)(args.NewSize.Width / 240));
+        }
     }
 }

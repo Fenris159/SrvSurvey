@@ -27,6 +27,7 @@ public sealed partial class App : Application
     public override void Initialize()
     {
         OverlayPopupPlacementBehavior.Register();
+        ToolTipContentBehavior.Register();
         AvaloniaXamlLoader.Load(this);
 #if DEBUG
         if (Interlocked.Exchange(ref developerToolsAttached, 1) == 0)

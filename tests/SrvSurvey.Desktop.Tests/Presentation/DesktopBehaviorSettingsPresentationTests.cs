@@ -41,6 +41,9 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         try
         {
             window.Show();
+            settings.FindControl<TabControl>("GlobalOverlaySections")!.SelectedIndex = 1;
+            using Avalonia.Media.Imaging.WriteableBitmap? visibilityFrame = window.CaptureRenderedFrame();
+            Assert.NotNull(visibilityFrame);
             WrapPanel options = settings.FindControl<WrapPanel>("SuitOverlaySuppressionOptions")!;
             CheckBox dominator = settings.FindControl<CheckBox>("DominatorSuitOverlaySuppressionCheckBox")!;
             CheckBox maverick = settings.FindControl<CheckBox>("MaverickSuitOverlaySuppressionCheckBox")!;
@@ -179,7 +182,7 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
             StackPanel bypassSetting = Assert.IsType<StackPanel>(
                 settings.FindControl<StackPanel>("BypassWindowManagementSetting")
             );
-            Assert.Same(bypassSetting, content.Children[2]);
+            settings.FindControl<Expander>("OverlayPlatformOptions")!.IsExpanded = true;
             CheckBox bypass = Assert.IsType<CheckBox>(settings.FindControl<CheckBox>("BypassWindowManagementCheckBox"));
             Assert.Equal("Bypass Window Management", bypass.Content);
             Assert.False(bypass.IsChecked);

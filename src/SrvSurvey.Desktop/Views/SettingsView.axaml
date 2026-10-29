@@ -36,7 +36,8 @@
               Padding="10"
               VerticalAlignment="Stretch">
         <Grid RowDefinitions="*,Auto" RowSpacing="12">
-          <ListBox ItemsSource="{Binding SettingsWorkspace.Categories}"
+          <ListBox Classes="settings-categories"
+                   ItemsSource="{Binding SettingsWorkspace.Categories}"
                    SelectedItem="{Binding SettingsWorkspace.SelectedCategory, Mode=TwoWay}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:SettingsCategoryViewModel">
@@ -58,9 +59,12 @@
       </Border>
 
       <Grid Grid.Column="1">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+        <ScrollViewer x:Name="SettingsFormScroller"
+                      HorizontalScrollBarVisibility="Auto"
                       IsVisible="{Binding !SettingsWorkspace.HasSearchQuery}">
-          <StackPanel Spacing="24" MaxWidth="1100">
+          <StackPanel Spacing="24"
+                      Width="{Binding #SettingsFormScroller.Viewport.Width}"
+                      MinWidth="540" MaxWidth="1100">
             <Border x:Name="GlobalOverlaysCard"
                     Classes="card raised"
                     IsVisible="{Binding SettingsWorkspace.IsGlobalOverlaysSelected}">

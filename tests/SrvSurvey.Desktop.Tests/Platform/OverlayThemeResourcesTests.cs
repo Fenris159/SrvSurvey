@@ -15,13 +15,22 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayThemeResourcesTests
 {
     [AvaloniaTheory]
-    [InlineData(OverlayTypographyRole.Header, "type-header")]
-    [InlineData(OverlayTypographyRole.Title, "type-title")]
-    [InlineData(OverlayTypographyRole.Value, "type-value")]
-    [InlineData(OverlayTypographyRole.Body, "type-body")]
-    [InlineData(OverlayTypographyRole.Detail, "type-detail")]
-    [InlineData(OverlayTypographyRole.Caption, "type-caption")]
-    public void RoleBrushOverridesUseThemeSwatchesAndResetToOriginalBrush(OverlayTypographyRole role, string cssClass)
+    [InlineData(OverlayTypographyRole.Header, "type-header", "cyan")]
+    [InlineData(OverlayTypographyRole.Title, "type-title", "cyan")]
+    [InlineData(OverlayTypographyRole.Value, "type-value", "cyan")]
+    [InlineData(OverlayTypographyRole.Body, "type-body", "cyan")]
+    [InlineData(OverlayTypographyRole.Detail, "type-detail", "cyan")]
+    [InlineData(OverlayTypographyRole.Caption, "type-caption", "cyan")]
+    [InlineData(OverlayTypographyRole.Header, "type-header", "custom.1")]
+    [InlineData(OverlayTypographyRole.Title, "type-title", "custom.2")]
+    [InlineData(OverlayTypographyRole.Value, "type-value", "custom.3")]
+    [InlineData(OverlayTypographyRole.Body, "type-body", "custom.4")]
+    [InlineData(OverlayTypographyRole.Detail, "type-detail", "custom.5")]
+    public void RoleBrushOverridesUseThemeSwatchesAndResetToOriginalBrush(
+        OverlayTypographyRole role,
+        string cssClass,
+        string brushKey
+    )
     {
         var text = new TextBlock
         {
@@ -33,18 +42,18 @@ public sealed class OverlayThemeResourcesTests
         var root = new StackPanel();
         root.Children.Add(text);
         var window = new Window { Content = root };
-        window.Resources["LegacyTheme.cyan"] = Brushes.Red;
+        window.Resources[$"LegacyTheme.{brushKey}"] = Brushes.Red;
         try
         {
             window.Show();
             OverlayTypographyScale scale = OverlayTypographyScale.Default with
             {
-                Brushes = OverlayTypographyBrushes.Default.With(role, "cyan"),
+                Brushes = OverlayTypographyBrushes.Default.With(role, brushKey),
             };
             OverlayTypographyResources.Apply(root, scale);
             Assert.Equal(Colors.Red, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
             Assert.Equal(17, text.FontSize);
-            window.Resources["LegacyTheme.cyan"] = Brushes.Green;
+            window.Resources[$"LegacyTheme.{brushKey}"] = Brushes.Green;
             OverlayTypographyResources.Apply(root, scale);
             Assert.Equal(Colors.Green, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
             OverlayTypographyResources.Apply(root, scale with { Brushes = scale.Brushes.With(role, "unknown") });

@@ -166,6 +166,7 @@ public sealed class VrPlatformPickerTests
         }
     }
 
+    /// <summary>Verifies that the real settings picker shows availability reasons and rejects unavailable VR selections.</summary>
     [AvaloniaFact]
     public void ActualSettingsPickerBindsAvailabilityAndShowsDisabledReasons()
     {
@@ -184,6 +185,7 @@ public sealed class VrPlatformPickerTests
             try
             {
                 window.Show();
+                settings.FindControl<TabControl>("GlobalOverlaySections")!.SelectedIndex = 4;
                 VrPlatformPicker picker = Assert.IsType<VrPlatformPicker>(
                     settings.FindControl<VrPlatformPicker>("VrRoutePicker")
                 );

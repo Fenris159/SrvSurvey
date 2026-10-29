@@ -262,6 +262,8 @@
             Classes="radial-launcher"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            AutomationProperties.Name="System actions"
+            ToolTip.Tip="System actions"
             Click="Launcher_Click"
             KeyDown="Launcher_KeyDown"
             PointerEntered="Menu_PointerEntered"

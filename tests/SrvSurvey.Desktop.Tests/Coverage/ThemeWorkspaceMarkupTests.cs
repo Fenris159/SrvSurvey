@@ -19,6 +19,7 @@ public sealed class ThemeWorkspaceMarkupTests
         Assert.True(Array.IndexOf(viewNames, "ThemeView") < Array.IndexOf(viewNames, "GuidesView"));
     }
 
+    /// <summary>Checks that application appearance, overlay appearance and overlay setup remain separate workspace sections.</summary>
     [Fact]
     public void ThemeWorkspaceOwnsTheThreeExistingSections()
     {
@@ -30,26 +31,28 @@ public sealed class ThemeWorkspaceMarkupTests
             .Select(element => element.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
-        Assert.Equal(["Application theme", "In-game overlay appearance", "Overlay Settings"], headers);
+        Assert.Equal(["Application theme", "Overlay appearance", "Overlay setup"], headers);
         Assert.DoesNotContain(
             settings.Root!.DescendantsAndSelf().Attributes(),
             attribute => attribute.Value == "Theme selection"
         );
     }
 
+    /// <summary>Checks color-group navigation and that typography scaling belongs to individual overlay panels.</summary>
     [Fact]
-    public void OverlayColorGroupsAreSingleOpenAccordionsAndPerPanelScalingReplacesTheGlobalTypographyEditor()
+    public void OverlayColorGroupsHaveOneSelectorAndPerPanelScalingReplacesTheGlobalTypographyEditor()
     {
         XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
-        XElement categoryExpander = theme
+        XElement categorySelector = theme
             .Descendants()
             .Single(element =>
-                element.Name.LocalName == "Expander"
-                && element.Attribute("Classes")?.Value.Split(' ').Contains("theme-category", StringComparer.Ordinal)
-                    == true
+                element.Name.LocalName == "RadioButton" && element.Attribute("GroupName")?.Value == "OverlayColorGroups"
             );
-
-        Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", categoryExpander.Attribute("IsExpanded")?.Value);
+        Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", categorySelector.Attribute("IsChecked")?.Value);
+        Assert.Contains(
+            theme.Descendants(),
+            element => element.Attribute("IsVisible")?.Value == "{Binding IsExpanded}"
+        );
         Assert.DoesNotContain(theme.Descendants(), element => element.Attribute("Text")?.Value == "Typography");
         Assert.DoesNotContain(
             theme.Descendants(),

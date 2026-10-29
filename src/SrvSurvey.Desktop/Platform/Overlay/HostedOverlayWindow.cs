@@ -689,7 +689,9 @@ internal sealed class HostedOverlayWindow : IDisposable
                 monitor,
                 gameBounds,
                 overlayLayout.Placements.GetValueOrDefault(definition.PlotterName),
-                viewport
+                viewport,
+                followPlacementAnchors: OverlayThemeResources.GetPresentationRoot(target)
+                    is IOverlayPanelSizePolicy { FollowPlacementAnchors: true }
             );
         }
         if (target.Position != position)

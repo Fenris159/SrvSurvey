@@ -1,4 +1,5 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window Classes="app-window"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -65,6 +66,8 @@
             <Button Classes="secondary"
                     Padding="10,7"
                     Command="{Binding PreviousBodyCommand}"
+                    AutomationProperties.Name="Previous body"
+                    ToolTip.Tip="Previous body"
                     Content="‹" />
             <ComboBox Grid.Column="1"
                       HorizontalAlignment="Stretch"
@@ -81,6 +84,8 @@
                     Classes="secondary"
                     Padding="10,7"
                     Command="{Binding NextBodyCommand}"
+                    AutomationProperties.Name="Next body"
+                    ToolTip.Tip="Next body"
                     Content="›" />
           </Grid>
 
