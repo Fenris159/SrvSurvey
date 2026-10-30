@@ -90,7 +90,10 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
         openWorkspaceCommand = new AsyncCommand(OpenWorkspaceAsync, CanOpenWorkspace);
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
-        newJourneyCommand = new AsyncCommand(StartNewJourneyAsync, () => HasProfileAndNotBusy() && !HasActiveJourney);
+        newJourneyCommand = new AsyncCommand(
+            StartNewJourneyAsync,
+            () => HasProfileAndNotBusy() && !HasActiveJourney && !IsDirty
+        );
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
         beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
@@ -922,6 +925,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         if (selectedDocument is not null)
         {
             ClearJourneyDraft();
+            SelectedSystemNotes = loadedSystemNotes;
             ApplyDocument(
                 selectedDocument,
                 preferredSystem: SelectedSystem is { } system
@@ -1272,6 +1276,8 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private void RaiseDirtyState()
     {
         OnPropertyChanged(nameof(IsDirty));
+        newJourneyCommand.RaiseCanExecuteChanged();
+        beginJourneyCommand.RaiseCanExecuteChanged();
         refreshCommand.RaiseCanExecuteChanged();
         saveCommand.RaiseCanExecuteChanged();
         discardCommand.RaiseCanExecuteChanged();

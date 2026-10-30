@@ -128,6 +128,7 @@ public sealed partial class JourneyWorkspaceViewModel
     private bool CanBeginJourney() =>
         IsCreating
         && !HasActiveJourney
+        && !IsDirty
         && !string.IsNullOrWhiteSpace(NewJourneyName)
         && HasProfileAndNotBusy()
         && (UseCurrentStart ? HasCurrentStartSystem : SelectedStartVisit is not null);

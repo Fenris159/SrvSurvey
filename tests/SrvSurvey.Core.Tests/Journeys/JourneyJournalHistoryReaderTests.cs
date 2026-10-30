@@ -10,6 +10,35 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
     );
 
     [Fact]
+    public async Task LatestFsdLookupSkipsCarrierOnlyJournalsAndStopsBeforeOlderFiles()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true) + "\nmalformed old entry"
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-02T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-03T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-03T00:05:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemSearchResult result = await reader.FindLatestFsdJumpAsync("F123", true, 42);
+        Assert.Equal(2, result.Entry!.Event.Timestamp!.Value.Day);
+        Assert.Empty(result.Errors);
+        Assert.Single((await reader.FindArrivalsAsync("F123", true, 42)).Errors);
+    }
+
+    [Fact]
     public async Task FindsEveryDistinctArrivalByEventDateAndKeepsCommanderAndGameModesSeparate()
     {
         const string first = "Journal.2026-07-01T000000.01.log";

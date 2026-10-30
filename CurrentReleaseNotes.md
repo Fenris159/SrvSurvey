@@ -32,7 +32,8 @@ from RC77.
   visits to the same system. Unsaved edits survive commander changes and are
   protected when switching history lists. The on-top preference applies while
   Journeys is selected. Begin and Cancel remain reachable while the creation
-  form scrolls.
+  form scrolls. Save or discard edits to an existing journey before beginning
+  another expedition.
 - **Journey screenshots:** Image lists use the PNG converter's current output
   folder and refresh after conversion or a destination change without discarding
   unsaved notes. Existing converted images remain available across repeat visits
@@ -61,7 +62,8 @@ from RC77.
   separate for each commander, and follow portable backup/restore and sync.
   Failed edits stay available through journal connection and commander changes
   for retry. Saving one preference preserves unrelated changes made in another
-  settings window.
+  settings window. An explicit edit for a remembered commander takes precedence
+  over the same field in an older unassigned draft when the journal connects.
 - **Recent Prospects:** Mining notifications show asteroid engineering material
   content as Low, Medium or High instead of a fixed 100% remaining reading.
   Mineral percentages remain visible, and missing material content stays hidden,

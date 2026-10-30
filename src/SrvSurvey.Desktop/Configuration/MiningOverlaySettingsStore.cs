@@ -107,6 +107,10 @@ public sealed class MiningOverlaySettingsStore(string path)
                 }
                 section.Remove(Pending);
             }
+            else
+            {
+                RemoveSupersededDraftFields(section, previous, updated);
+            }
             profiles[commander] = values;
             result = Read(root, commander, () => before, includeDraft: false);
         });
@@ -196,12 +200,30 @@ public sealed class MiningOverlaySettingsStore(string path)
 
     private static void ApplyEdits(JsonObject values, JsonObject previous, JsonObject updated)
     {
-        foreach ((string name, JsonNode? value) in updated)
+        foreach (string name in EditedFieldNames(previous, updated))
         {
-            if (!JsonNode.DeepEquals(previous[name], value))
-            {
-                values[name] = value?.DeepClone();
-            }
+            values[name] = updated[name]?.DeepClone();
+        }
+    }
+
+    private static IEnumerable<string> EditedFieldNames(JsonObject previous, JsonObject updated) =>
+        updated
+            .Where(property => !JsonNode.DeepEquals(previous[property.Key], property.Value))
+            .Select(property => property.Key);
+
+    private static void RemoveSupersededDraftFields(JsonObject section, JsonObject previous, JsonObject updated)
+    {
+        if (section[Pending] is not JsonObject pending)
+        {
+            return;
+        }
+        foreach (string name in EditedFieldNames(previous, updated))
+        {
+            pending.Remove(name);
+        }
+        if (pending.Count == 0)
+        {
+            section.Remove(Pending);
         }
     }
 

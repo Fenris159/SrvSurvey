@@ -10,6 +10,29 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class MiningWorkspaceViewModelTests
 {
     [Fact]
+    public void RememberedCommanderEditsWinOverAnOlderDraftWhenTheJournalConnects()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var overlay = new MiningOverlaySettingsStore(root.Paths.SharedUiSettingsPath);
+        var defaults = new MiningOverlayPreferences();
+        overlay.Save(null, defaults, defaults with { SessionYieldLimit = 9, NotificationSeconds = 30 });
+        using var workspace = new MiningWorkspaceViewModel(
+            root.Paths.DataDirectory,
+            new Resolver(),
+            new BookmarksViewModel(root.Paths.DataDirectory),
+            options: new() { CommanderId = "F1", OverlaySettings = overlay }
+        );
+        Assert.Equal(9, workspace.SessionYieldLimit);
+        workspace.SessionYieldLimit = 12;
+        ConnectMiningCommander(workspace, "F1");
+        Assert.Equal(12, workspace.SessionYieldLimit);
+        Assert.Equal(30, workspace.Settings.NotificationSeconds);
+        ConnectMiningCommander(workspace, "F2");
+        Assert.Equal(5, workspace.SessionYieldLimit);
+        Assert.Equal(15, workspace.Settings.NotificationSeconds);
+    }
+
+    [Fact]
     public void AwaitingANewJournalIdentityKeepsNewOverlayEditsAwayFromThePreviousCommander()
     {
         using var root = new ProfileSyncTestRoot();

@@ -16,22 +16,12 @@ public sealed class JourneyJournalHistoryReader
         this.journalDirectory = Path.GetFullPath(journalDirectory);
     }
 
-    public async Task<JourneyJournalSystemSearchResult> FindLatestFsdJumpAsync(
+    public Task<JourneyJournalSystemSearchResult> FindLatestFsdJumpAsync(
         string frontierId,
         bool isOdyssey,
         long systemAddress,
         CancellationToken cancellationToken = default
-    )
-    {
-        JourneyJournalSystemVisitsResult visits = await FindArrivalsAsync(
-                frontierId,
-                isOdyssey,
-                systemAddress,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-        return new(visits.Entries.FirstOrDefault(entry => entry.Event.EventName == "FSDJump"), visits.Errors);
-    }
+    ) => FindLatestEntryAsync(frontierId, isOdyssey, systemAddress, fsdJumpsOnly: true, cancellationToken);
 
     public Task<JourneyJournalSystemVisitsResult> FindArrivalsAsync(
         string frontierId,
@@ -132,11 +122,19 @@ public sealed class JourneyJournalHistoryReader
     private static bool IsSystemEvent(JournalEventEnvelope entry, bool includeLocations) =>
         entry.EventName is "FSDJump" or "CarrierJump" || (includeLocations && entry.EventName == "Location");
 
-    public async Task<JourneyJournalSystemSearchResult> FindCurrentLocationAsync(
+    public Task<JourneyJournalSystemSearchResult> FindCurrentLocationAsync(
         string frontierId,
         bool isOdyssey,
         long systemAddress,
         CancellationToken cancellationToken = default
+    ) => FindLatestEntryAsync(frontierId, isOdyssey, systemAddress, fsdJumpsOnly: false, cancellationToken);
+
+    private async Task<JourneyJournalSystemSearchResult> FindLatestEntryAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        bool fsdJumpsOnly,
+        CancellationToken cancellationToken
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
@@ -155,6 +153,7 @@ public sealed class JourneyJournalHistoryReader
                     null,
                     includeLocations: true
                 )
+                .Where(entry => !fsdJumpsOnly || entry.Event.EventName == "FSDJump")
                 .OrderByDescending(entry => entry.Event.Timestamp)
                 .FirstOrDefault();
             if (location is not null)

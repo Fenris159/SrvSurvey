@@ -8,6 +8,47 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class JourneyWorkspaceViewModelTests
 {
     [Theory]
+    [InlineData("name")]
+    [InlineData("description")]
+    [InlineData("notes")]
+    public async Task UnsavedJourneyEditsBlockBeginningAndUpdateTheCommandUntilDiscarded(string field)
+    {
+        await SeedHistoricalJourneyAsync(1);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Next expedition";
+        Assert.True(model.BeginJourneyCommand.CanExecute(null));
+        int notifications = 0;
+        model.BeginJourneyCommand.CanExecuteChanged += (_, _) => notifications++;
+        switch (field)
+        {
+            case "name":
+                model.JourneyName = "Unsaved name";
+                break;
+            case "description":
+                model.JourneyDescription = "Unsaved description";
+                break;
+            case "notes":
+                model.SelectedSystemNotes = "Unsaved notes";
+                break;
+            default:
+                throw new InvalidOperationException("Unknown edit field.");
+        }
+        Assert.True(model.IsDirty);
+        Assert.False(model.BeginJourneyCommand.CanExecute(null));
+        Assert.False(model.NewJourneyCommand.CanExecute(null));
+        await model.BeginJourneyAsync();
+        Assert.False(model.HasActiveJourney);
+        Assert.True(model.IsDirty);
+        Assert.Single(model.Journeys);
+        await model.DiscardAsync();
+        Assert.True(model.BeginJourneyCommand.CanExecute(null));
+        Assert.True(model.NewJourneyCommand.CanExecute(null));
+        Assert.True(notifications >= 2);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task FinishingJourneyOperationsCannotRestoreADisconnectedCommandersReadout(bool conclude)

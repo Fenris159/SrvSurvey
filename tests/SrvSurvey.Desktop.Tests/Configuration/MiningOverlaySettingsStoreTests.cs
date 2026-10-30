@@ -7,6 +7,21 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 public sealed class MiningOverlaySettingsStoreTests : IDisposable
 {
     [Fact]
+    public void ExplicitCommanderEditsSupersedeOnlyThoseFieldsFromAnOlderUnassignedDraft()
+    {
+        var store = new MiningOverlaySettingsStore(Path.Combine(directory, "ui.json"));
+        var defaults = new MiningOverlayPreferences();
+        store.Save(null, defaults, defaults with { SessionYieldLimit = 9, NotificationSeconds = 30 });
+        MiningOverlayPreferences shown = store.ReadPreferences("F1", () => defaults);
+        store.SaveCommander("F1", shown, shown with { SessionYieldLimit = 12 });
+        MiningOverlayPreferences reloaded = store.ReadPreferences("F1", () => defaults);
+        Assert.Equal(12, reloaded.SessionYieldLimit);
+        Assert.Equal(30, reloaded.NotificationSeconds);
+        Assert.Equal(reloaded, store.Load("F1", () => defaults));
+        Assert.Equal(defaults, store.Load("F2", () => defaults));
+    }
+
+    [Fact]
     public void AssigningADraftRetainsChangesWrittenAfterTheRead()
     {
         var store = new MiningOverlaySettingsStore(Path.Combine(directory, "ui.json"));
