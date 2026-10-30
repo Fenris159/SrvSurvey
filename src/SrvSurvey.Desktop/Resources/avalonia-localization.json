@@ -829,10 +829,6 @@
       "translation": "Ein korrekter Standorttyp und eine korrekte Überschrift sorgen dafür, dass die projizierte Karte mit den Ruinen oder dem Bauwerk übereinstimmt."
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "Es ist ein aktuelles Journalsystem erforderlich, oder suchen Sie nach einem früheren System."
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Zur Kalibrierung des Cockpit-Offsets sind eine aktuelle Schiffs- und Oberflächenposition erforderlich."
     },
@@ -1595,6 +1591,10 @@
     {
       "source": "Add Systems",
       "translation": "Systeme hinzufügen"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "Fügen Sie eine Beschreibung für Ihre Reise hinzu"
     },
     {
       "source": "Add a destination system",
@@ -3559,10 +3559,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "Beginnen Sie eine Reise, um Ihre nächste Expedition aufzuzeichnen."
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "Beginnen Sie eine Expedition"
     },
     {
       "source": "Begin journey",
@@ -5593,10 +5589,6 @@
       "translation": "Wählen Sie vor dem Speichern einen anerkannten Guardian-Site-Typ aus."
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "Wählen Sie als Startpunkt eine aufgezeichnete Ankunft."
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "Wählen Sie ein Bezugssystem und ein Oberflächenmaterial."
     },
@@ -5643,6 +5635,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "Wählen Sie ein System und klicken Sie auf + Hinzufügen. Bearbeiten, entfernen oder ordnen Sie die Ziele unten neu an."
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "Wählen Sie ein System und den Besuch, bei dem Ihre Reise begann."
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -5815,6 +5811,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "Wählen Sie die sechs Sekunden langen Meldungen aus, die angezeigt werden, nachdem FSS ein System abgeschlossen hat. Zeitgesteuerte Nachrichten erfordern außerdem die globale passive Benachrichtigungsüberlagerung in den Einstellungen."
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "Wählen Sie den Besuch, bei dem Ihre Reise begann."
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -10493,10 +10493,6 @@
       "translation": "Expeditionsverlauf, Statistiken und Berichte"
     },
     {
-      "source": "Expedition name",
-      "translation": "Expeditionsname"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "Experimentelle Rig-Bar-Erkennung"
     },
@@ -11277,10 +11273,6 @@
       "translation": "Finden Sie Platinum-Spots"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "Suchen Sie nach den erfassten Ankünften eines Systems und wählen Sie dann den Besuch aus, bei dem Ihre Reise begonnen hat. Vorhandene Zeitschriften werden ab diesem Eingang wiedergegeben."
-    },
-    {
       "source": "Find buyers",
       "translation": "Finden Sie Käufer"
     },
@@ -11337,10 +11329,6 @@
       "translation": "Finden Sie profitable Standorte für den Tagebau"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "Finden Sie aufgezeichnete Ankünfte in {0}."
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "Finden Sie Ringe, Märkte und Händler"
     },
@@ -11365,12 +11353,12 @@
       "translation": "Suche nach Flottenbetreibern auf Raven Colonial..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "Es werden erfasste Ankünfte in {0} gefunden..."
-    },
-    {
       "source": "Finding settings",
       "translation": "Einstellungen finden"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "Finden Sie Ihre Besuche bei {0}..."
     },
     {
       "source": "Finds",
@@ -11793,10 +11781,6 @@
       "translation": "Gefunden {0} Green Gas Giant-Kandidaten; Es wurde kein Kandidat veröffentlicht."
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "{0}-Eingänge gefunden. Wählen Sie den Besuch, bei dem diese Reise begann."
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "{0} Kommandantenprofil(e) gefunden. {1}"
     },
@@ -11821,8 +11805,8 @@
       "translation": "{0} passende(s) System(e) gefunden, nächstgelegene zuerst."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "{0} passende Systeme gefunden."
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "{0} Besuche gefunden. Wählen Sie den Besuch, bei dem Ihre Reise begann."
     },
     {
       "source": "Frame Shift Drive",
@@ -14799,6 +14783,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Reisedaten konnten nicht initialisiert werden: {0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "Reisebeschreibung (optional)"
     },
     {
       "source": "Journey details",
@@ -17817,6 +17805,10 @@
       "translation": "Namen"
     },
     {
+      "source": "Name this journey",
+      "translation": "Benennen Sie diese Reise"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "Benennen Sie diese Suche, damit Sie sie später fortsetzen können."
     },
@@ -18545,10 +18537,6 @@
       "translation": "Es ist keine aktuelle Journaldatei verfügbar."
     },
     {
-      "source": "No current journal system",
-      "translation": "Kein aktuelles Journalsystem"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "Für die Missionsverfolgung steht kein aktueller Obelisk zur Verfügung."
     },
@@ -18713,10 +18701,6 @@
       "translation": "Keine passenden Systeme gefunden."
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "Es wurden keine passenden Systeme gefunden."
-    },
-    {
       "source": "No messages",
       "translation": "Keine Nachrichten"
     },
@@ -18773,6 +18757,10 @@
       "translation": "Es ist keine geplante Raven-Site verfügbar; Wählen Sie manuell ein Build-Layout."
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "Keine früheren Besuche stimmen mit {0} überein. Versuchen Sie es mit einem anderen Systemnamen."
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Keine Projekte geladen."
     },
@@ -18791,10 +18779,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "Für die überprüften Verkaufssysteme wurde in der Nähe eines Fortified- oder Stronghold-Unterstützers kein qualifizierter Grundbesitz gefunden."
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "In den Tagebüchern dieses Kommandanten wurden keine aufgezeichneten Schiffs- oder Trägerankünfte in {0} gefunden."
     },
     {
       "source": "No reference image is available for this entry.",
@@ -19951,10 +19935,6 @@
     {
       "source": "Optional Internal",
       "translation": "Optional intern"
-    },
-    {
-      "source": "Optional description",
-      "translation": "Optionale Beschreibung"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -23449,10 +23429,6 @@
       "translation": "Aufgezeichneter Guardian-Beacon-Scan in {0}."
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "Erfasste Ankünfte ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "Aufgezeichneter erster Schritt für {0}."
     },
@@ -26365,8 +26341,8 @@
       "translation": "Suchen Sie nach Ereignis, Commander, System, Datei oder JSON"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "Suchen Sie nach einem zuvor besuchten System."
+      "source": "Search for a system to see your previous visits.",
+      "translation": "Suchen Sie nach einem System, um Ihre vorherigen Besuche anzuzeigen."
     },
     {
       "source": "Search near system",
@@ -26645,10 +26621,6 @@
       "translation": "Wählen Sie eine Markierung aus, um ihren Vermessungsstatus, die Reliktrichtung, wenn es sich um einen Reliktturm handelt, und die Komponentenmaterialien zu aktualisieren. Commander-spezifische Rohpunkte stellen außerdem Winkel-, Distanz- und Rotationssteuerungen in 0,1-Schritten zur Verfügung."
     },
     {
-      "source": "Select a matching system",
-      "translation": "Wählen Sie ein passendes System"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "Wählen Sie einen zu löschenden Mineralschwellenwert aus."
     },
@@ -26675,10 +26647,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "Wählen Sie in den Suchmärkten einen Bahnhof oder Waren aus, um Ihre Einkaufsliste zu erstellen."
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "Wählen Sie ein System aus den Suchergebnissen aus."
     },
     {
       "source": "Select a threshold group to delete.",
@@ -28937,14 +28905,6 @@
       "translation": "Kapitel beginnen"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "Beginnen Sie mit einem zuvor besuchten System"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "Beginnen Sie mit dem aktuellen System"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Beginnen Sie hier, wenn der Commander-, System-, Körper-, Fracht- oder Overlay-Status nicht aktualisiert wird."
     },
@@ -29019,6 +28979,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "Globale Tastatureingabe wird gestartet..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "Startsystem"
     },
     {
       "source": "Starting verified package download...",
@@ -32421,10 +32385,6 @@
       "translation": "Die Sternensystemsuche ist fehlgeschlagen: {0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "Die Startbesuche konnten nicht gefunden werden: {0}"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "Die Startressource wurde bereits übertragen."
     },
@@ -32475,10 +32435,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "Die Systemnotizen wurden nicht gespeichert: {0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "Die Systemsuche ist fehlgeschlagen: {0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -33453,6 +33409,10 @@
       "translation": "Geben Sie A, B oder G für Ruinen oder .site <type> für jedes zugeordnete Guardian-Layout ein."
     },
     {
+      "source": "Type a system name…",
+      "translation": "Geben Sie einen Systemnamen ein..."
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "Der Typ akzeptiert einen Namen. Trennen Sie mehrere Subtypen oder Varianten durch Kommas oder Semikolons. Jede Liste entspricht einem ihrer Namen."
     },
@@ -34315,6 +34275,10 @@
     {
       "source": "Use current system",
       "translation": "Aktuelles System verwenden"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "Aktuelles System verwenden: {0}"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -35811,6 +35775,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "Auf Ihrem Desktop wird eine Bildschirmfreigabeauswahl geöffnet."
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "Ihre vorherigen Besuche ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "Ihre vorherigen Besuche konnten nicht geladen werden: {0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -38889,10 +38861,6 @@
       "translation": "die Frachtschaufel"
     },
     {
-      "source": "the current system",
-      "translation": "das aktuelle System"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "Der Desktop-Launcher lehnte die Anfrage ab."
     },
@@ -41559,10 +41527,6 @@
       "translation": "Un tipo de sitio y un rumbo correctos hacen que el mapa proyectado se alinee con las ruinas o la estructura."
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "Se requiere un sistema de diario actual o buscar un sistema anterior."
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Se requiere una posición actual del barco y de la superficie para calibrar el desplazamiento de la cabina."
     },
@@ -42325,6 +42289,10 @@
     {
       "source": "Add Systems",
       "translation": "Agregar sistemas"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "Añade una descripción para tu viaje."
     },
     {
       "source": "Add a destination system",
@@ -44289,10 +44257,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "Comienza un viaje para registrar tu próxima expedición."
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "comenzar una expedición"
     },
     {
       "source": "Begin journey",
@@ -46323,10 +46287,6 @@
       "translation": "Elija un tipo de sitio Guardian reconocido antes de guardar."
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "Elija una llegada registrada como punto de partida."
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "Elija un sistema de referencia y un material de superficie."
     },
@@ -46373,6 +46333,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "Elija un sistema y seleccione + Agregar. Edite, elimine o reordene los destinos a continuación."
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "Elige un sistema y la visita donde comenzó tu viaje."
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -46545,6 +46509,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "Elija los mensajes de seis segundos que se muestran después de que FSS completa un sistema. Los mensajes programados también requieren la superposición de notificación pasiva global en Configuración."
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "Elige la visita donde comenzó tu viaje."
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -51223,10 +51191,6 @@
       "translation": "Historial, estadísticas e informes de expediciones."
     },
     {
-      "source": "Expedition name",
-      "translation": "Nombre de la expedición"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "Detección experimental de barras de aparejo"
     },
@@ -52007,10 +51971,6 @@
       "translation": "Encuentra lugares Platino"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "Encuentre las llegadas registradas en un sistema y luego elija la visita donde comenzó su viaje. Los diarios existentes se reproducen a partir de esa llegada."
-    },
-    {
       "source": "Find buyers",
       "translation": "encontrar compradores"
     },
@@ -52067,10 +52027,6 @@
       "translation": "Encuentre ubicaciones rentables de minería a cielo abierto"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "Encuentre llegadas registradas en {0}."
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "Encuentra anillos, mercados y comerciantes."
     },
@@ -52095,12 +52051,12 @@
       "translation": "Buscando transportistas de flotas en Raven Colonial..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "Encontrando llegadas registradas en {0}..."
-    },
-    {
       "source": "Finding settings",
       "translation": "Encontrar configuraciones"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "Encontrando sus visitas a {0}..."
     },
     {
       "source": "Finds",
@@ -52523,10 +52479,6 @@
       "translation": "Se encontraron {0} candidatos a Gigante del Gas Verde; no se publicó ningún candidato."
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "Llegadas {0} encontradas. Elige la visita donde comenzó este viaje."
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "Se encontraron {0} perfiles de comandante. {1}"
     },
@@ -52551,8 +52503,8 @@
       "translation": "Se encontraron sistemas coincidentes {0}, el más cercano primero."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Se encontraron {0} sistemas coincidentes."
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "Visitas {0} encontradas. Elige la visita donde comenzó tu viaje."
     },
     {
       "source": "Frame Shift Drive",
@@ -55529,6 +55481,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "No se pudieron inicializar los datos del viaje: {0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "Descripción del viaje (opcional)"
     },
     {
       "source": "Journey details",
@@ -58547,6 +58503,10 @@
       "translation": "nombre"
     },
     {
+      "source": "Name this journey",
+      "translation": "Nombra este viaje"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "Ponle un nombre a esta búsqueda para que puedas reanudarla más tarde."
     },
@@ -59275,10 +59235,6 @@
       "translation": "No hay ningún archivo de diario actual disponible."
     },
     {
-      "source": "No current journal system",
-      "translation": "No hay sistema de diario actual"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "No hay ningún obelisco actual disponible para el seguimiento de la misión."
     },
@@ -59443,10 +59399,6 @@
       "translation": "No se encontraron sistemas coincidentes."
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "No se encontraron sistemas coincidentes."
-    },
-    {
       "source": "No messages",
       "translation": "Sin mensajes"
     },
@@ -59503,6 +59455,10 @@
       "translation": "No hay ningún sitio Raven planificado disponible; Elija un diseño de construcción manualmente."
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "Ninguna visita anterior coincide con {0}. Pruebe con otro nombre del sistema."
+    },
+    {
       "source": "No projects loaded.",
       "translation": "No hay proyectos cargados."
     },
@@ -59521,10 +59477,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "No se encontró ningún cuerpo apto para aterrizar alrededor de un partidario Fortificado o Fortaleza para los sistemas de venta verificados."
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "En los diarios de este comandante no se encontraron llegadas registradas de barcos o portaaviones a {0}."
     },
     {
       "source": "No reference image is available for this entry.",
@@ -60681,10 +60633,6 @@
     {
       "source": "Optional Internal",
       "translation": "Interno opcional"
-    },
-    {
-      "source": "Optional description",
-      "translation": "Descripción opcional"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -64179,10 +64127,6 @@
       "translation": "Escaneo de baliza Guardian grabado en {0}."
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "Llegadas registradas ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "Primer paso registrado para {0}."
     },
@@ -67095,8 +67039,8 @@
       "translation": "Buscar evento, comandante, sistema, archivo o JSON"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "Busque un sistema visitado anteriormente."
+      "source": "Search for a system to see your previous visits.",
+      "translation": "Busque un sistema para ver sus visitas anteriores."
     },
     {
       "source": "Search near system",
@@ -67375,10 +67319,6 @@
       "translation": "Seleccione un marcador para actualizar su estado de reconocimiento, el rumbo de la reliquia cuando sea una torre de reliquia y los materiales que la componen. Los puntos sin procesar específicos de Commander también exponen controles de ángulo, distancia y rotación con incrementos de 0,1."
     },
     {
-      "source": "Select a matching system",
-      "translation": "Seleccione un sistema coincidente"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "Seleccione un umbral de minerales para eliminar."
     },
@@ -67405,10 +67345,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "Seleccione una estación o productos en Buscar mercados para crear su lista de compras."
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "Seleccione un sistema de los resultados de la búsqueda."
     },
     {
       "source": "Select a threshold group to delete.",
@@ -69667,14 +69603,6 @@
       "translation": "Iniciar capitulo"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "Comenzar desde un sistema visitado previamente"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "Empezar desde el sistema actual"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Comience aquí cuando el estado del comandante, sistema, carrocería, carga o superposición no se actualice."
     },
@@ -69749,6 +69677,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "Iniciando la entrada de teclado global..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "Sistema de arranque"
     },
     {
       "source": "Starting verified package download...",
@@ -73151,10 +73083,6 @@
       "translation": "La búsqueda del sistema estelar falló: {0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "No se pudieron encontrar las visitas iniciales: {0}"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "El recurso de inicio ya fue transferido."
     },
@@ -73205,10 +73133,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "Las notas del sistema no fueron guardadas: {0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "La búsqueda del sistema falló: {0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -74183,6 +74107,10 @@
       "translation": "Escriba A, B o G para ruinas, o .site <tipo> para cualquier diseño de Guardian mapeado."
     },
     {
+      "source": "Type a system name…",
+      "translation": "Escriba un nombre de sistema..."
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "El tipo acepta un nombre. Separe varios subtipos o variantes con comas o punto y coma. Cada lista coincide con cualquiera de sus nombres."
     },
@@ -75045,6 +74973,10 @@
     {
       "source": "Use current system",
       "translation": "Usar el sistema actual"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "Usar el sistema actual: {0}"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -76541,6 +76473,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "Su escritorio abrirá un selector para compartir pantalla."
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "Tus visitas anteriores ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "No se pudieron cargar tus visitas anteriores: {0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -79619,10 +79559,6 @@
       "translation": "la pala de carga"
     },
     {
-      "source": "the current system",
-      "translation": "el sistema actual"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "el iniciador de escritorio rechazó la solicitud."
     },
@@ -82289,10 +82225,6 @@
       "translation": "Un type de site et un cap corrects permettent d'aligner la carte projetée avec les ruines ou la structure."
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "Un système de journal actuel est requis, ou recherchez un système antérieur."
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Une position actuelle du navire et de la surface est nécessaire pour calibrer le décalage de son cockpit."
     },
@@ -83055,6 +82987,10 @@
     {
       "source": "Add Systems",
       "translation": "Ajouter des systèmes"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "Ajoutez une description de votre voyage"
     },
     {
       "source": "Add a destination system",
@@ -85019,10 +84955,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "Commencez un voyage pour enregistrer votre prochaine expédition."
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "Commencer une expédition"
     },
     {
       "source": "Begin journey",
@@ -87053,10 +86985,6 @@
       "translation": "Choisissez un type de site Guardian reconnu avant d'enregistrer."
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "Choisissez une arrivée enregistrée comme point de départ."
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "Choisissez un système de référence et un matériau de surface."
     },
@@ -87103,6 +87031,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "Choisissez un système et sélectionnez + Ajouter. Modifiez, supprimez ou réorganisez les destinations ci-dessous."
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "Choisissez un système et la visite où votre voyage a commencé."
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -87275,6 +87207,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "Choisissez les messages de six secondes affichés une fois que FSS a terminé un système. Les messages chronométrés nécessitent également la superposition de notification passive globale dans les paramètres."
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "Choisissez la visite où votre voyage a commencé."
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -91953,10 +91889,6 @@
       "translation": "Historique, statistiques et rapports de l'expédition"
     },
     {
-      "source": "Expedition name",
-      "translation": "Nom de l'expédition"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "Détection expérimentale de barres de forage"
     },
@@ -92737,10 +92669,6 @@
       "translation": "Trouver des places Platine"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "Recherchez les arrivées enregistrées par un système, puis choisissez la visite où votre voyage a commencé. Les journaux existants sont relus à partir de cette arrivée."
-    },
-    {
       "source": "Find buyers",
       "translation": "Trouver des acheteurs"
     },
@@ -92797,10 +92725,6 @@
       "translation": "Trouver des sites d'exploitation minière à ciel ouvert rentables"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "Recherchez les arrivées enregistrées dans {0}."
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "Trouvez des anneaux, des marchés et des commerçants"
     },
@@ -92825,12 +92749,12 @@
       "translation": "Recherche de transporteurs de flotte sur Raven Colonial..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "Recherche des arrivées enregistrées dans {0}..."
-    },
-    {
       "source": "Finding settings",
       "translation": "Recherche de paramètres"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "Trouver vos visites à {0}..."
     },
     {
       "source": "Finds",
@@ -93253,10 +93177,6 @@
       "translation": "{0} candidat(s) à la géante du gaz vert ; aucun candidat n'a été publié."
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "Arrivées {0} trouvées. Choisissez la visite où ce voyage a commencé."
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "{0} profil(s) de commandant trouvé(s). {1}"
     },
@@ -93281,8 +93201,8 @@
       "translation": "Système(s) correspondant(s) {0} trouvé(s), le plus proche en premier."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "{0} systèmes correspondants trouvés."
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "Visites {0} trouvées. Choisissez la visite où votre voyage a commencé."
     },
     {
       "source": "Frame Shift Drive",
@@ -96259,6 +96179,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Les données du trajet n'ont pas pu être initialisées : {0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "Description du voyage (facultatif)"
     },
     {
       "source": "Journey details",
@@ -99277,6 +99201,10 @@
       "translation": "nom"
     },
     {
+      "source": "Name this journey",
+      "translation": "Nommez ce voyage"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "Nommez cette recherche afin de pouvoir la reprendre plus tard."
     },
@@ -100005,10 +99933,6 @@
       "translation": "Aucun fichier journal actuel n'est disponible."
     },
     {
-      "source": "No current journal system",
-      "translation": "Aucun système de journal actuel"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "Aucun obélisque actuel n'est disponible pour le suivi des missions."
     },
@@ -100173,10 +100097,6 @@
       "translation": "Aucun système correspondant trouvé."
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "Aucun système correspondant n'a été trouvé."
-    },
-    {
       "source": "No messages",
       "translation": "Aucun message"
     },
@@ -100233,6 +100153,10 @@
       "translation": "Aucun site Raven prévu n'est disponible ; choisissez manuellement une disposition de construction."
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "Aucune visite précédente ne correspond à {0}. Essayez un autre nom de système."
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Aucun projet chargé."
     },
@@ -100251,10 +100175,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "Aucun corps débarquable qualifié n'a été trouvé autour d'un partisan d'une Fortification ou d'une Forteresse pour les systèmes de vente vérifiés."
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "Aucune arrivée enregistrée de navire ou de transporteur dans {0} n'a été trouvée dans les journaux de ce commandant."
     },
     {
       "source": "No reference image is available for this entry.",
@@ -101411,10 +101331,6 @@
     {
       "source": "Optional Internal",
       "translation": "Interne en option"
-    },
-    {
-      "source": "Optional description",
-      "translation": "Description facultative"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -104909,10 +104825,6 @@
       "translation": "Analyse de balise Guardian enregistrée dans {0}."
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "Arrivées enregistrées ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "Première fréquentation enregistrée pour {0}."
     },
@@ -107825,8 +107737,8 @@
       "translation": "Rechercher un événement, un commandant, un système, un fichier ou JSON"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "Recherchez un système précédemment visité."
+      "source": "Search for a system to see your previous visits.",
+      "translation": "Recherchez un système pour voir vos visites précédentes."
     },
     {
       "source": "Search near system",
@@ -108105,10 +108017,6 @@
       "translation": "Sélectionnez un marqueur pour mettre à jour son statut d'enquête, le titre de la relique lorsqu'il s'agit d'une tour relique et les matériaux qui la composent. Les points bruts spécifiques au commandant exposent également les commandes d'angle, de distance et de rotation avec des incréments de 0,1."
     },
     {
-      "source": "Select a matching system",
-      "translation": "Sélectionnez un système correspondant"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "Sélectionnez un seuil minéral à supprimer."
     },
@@ -108135,10 +108043,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "Sélectionnez une station ou des produits dans Search Markets pour créer votre liste de courses."
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "Sélectionnez un système dans les résultats de la recherche."
     },
     {
       "source": "Select a threshold group to delete.",
@@ -110397,14 +110301,6 @@
       "translation": "Commencer le chapitre"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "Démarrer à partir d'un système précédemment visité"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "Partir du système actuel"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Commencez ici lorsque l'état du commandant, du système, de la carrosserie, de la cargaison ou de la superposition n'est pas mis à jour."
     },
@@ -110479,6 +110375,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "Démarrage de la saisie globale au clavier..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "Système de démarrage"
     },
     {
       "source": "Starting verified package download...",
@@ -113881,10 +113781,6 @@
       "translation": "La recherche dans le système stellaire a échoué : {0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "Les visites de départ sont introuvables : {0}"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "La ressource de démarrage a déjà été transférée."
     },
@@ -113935,10 +113831,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "Les notes système n'ont pas été enregistrées : {0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "La recherche du système a échoué : {0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -114913,6 +114805,10 @@
       "translation": "Tapez A, B ou G pour les ruines, ou .site <type> pour toute disposition Guardian cartographiée."
     },
     {
+      "source": "Type a system name…",
+      "translation": "Tapez un nom de système…"
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "Le type accepte un nom. Séparez plusieurs sous-types ou variantes par des virgules ou des points-virgules. Chaque liste correspond à l'un de ses noms."
     },
@@ -115775,6 +115671,10 @@
     {
       "source": "Use current system",
       "translation": "Utiliser le système actuel"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "Utiliser le système actuel : {0}"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -117271,6 +117171,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "Votre bureau ouvrira un sélecteur de partage d'écran."
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "Vos visites précédentes ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "Vos visites précédentes n'ont pas pu être chargées : {0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -120349,10 +120257,6 @@
       "translation": "la pelle à marchandises"
     },
     {
-      "source": "the current system",
-      "translation": "le système actuel"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "le lanceur de bureau a refusé la demande."
     },
@@ -123019,10 +122923,6 @@
       "translation": "Um tipo de local e título corretos fazem com que o mapa projetado se alinhe com as ruínas ou estrutura."
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "É necessário um sistema de diário atual ou procure um sistema anterior."
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "A posição atual do navio e da superfície é necessária para calibrar o deslocamento da cabine."
     },
@@ -123785,6 +123685,10 @@
     {
       "source": "Add Systems",
       "translation": "Adicionar sistemas"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "Adicione uma descrição para sua jornada"
     },
     {
       "source": "Add a destination system",
@@ -125749,10 +125653,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "Comece uma jornada para registrar sua próxima expedição."
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "Comece uma expedição"
     },
     {
       "source": "Begin journey",
@@ -127783,10 +127683,6 @@
       "translation": "Escolha um tipo de site reconhecido do Guardian antes de salvar."
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "Escolha uma chegada registrada como ponto de partida."
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "Escolha um sistema de referência e um material de superfície."
     },
@@ -127833,6 +127729,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "Escolha um sistema e selecione + Adicionar. Edite, remova ou reordene os destinos abaixo."
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "Escolha um sistema e a visita onde sua jornada começou."
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -128005,6 +127905,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "Escolha as mensagens de seis segundos mostradas após o FSS concluir um sistema. As mensagens cronometradas também exigem a sobreposição de notificação passiva global nas Configurações."
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "Escolha a visita onde sua jornada começou."
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -132683,10 +132587,6 @@
       "translation": "Histórico de expedição, estatísticas e relatórios"
     },
     {
-      "source": "Expedition name",
-      "translation": "Nome da expedição"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "Detecção experimental de barra de equipamento"
     },
@@ -133467,10 +133367,6 @@
       "translation": "Encontre vagas Platinum"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "Encontre as chegadas registradas em um sistema e escolha a visita onde sua jornada começou. Os diários existentes são reproduzidos a partir dessa chegada."
-    },
-    {
       "source": "Find buyers",
       "translation": "Encontre compradores"
     },
@@ -133527,10 +133423,6 @@
       "translation": "Encontre locais lucrativos para mineração de superfície"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "Encontre chegadas registradas em {0}."
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "Encontre anéis, mercados e comerciantes"
     },
@@ -133555,12 +133447,12 @@
       "translation": "Encontrando transportadoras de frota em Raven Colonial..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "Encontrando chegadas registradas em {0}..."
-    },
-    {
       "source": "Finding settings",
       "translation": "Encontrando configurações"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "Encontrando suas visitas a {0}..."
     },
     {
       "source": "Finds",
@@ -133983,10 +133875,6 @@
       "translation": "Encontrados {0} candidatos a Gigante de Gás Verde; nenhum candidato foi publicado."
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "Chegadas {0} encontradas. Escolha a visita onde esta viagem começou."
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "Encontrados {0} perfis de comandante. {1}"
     },
@@ -134011,8 +133899,8 @@
       "translation": "Sistema(s) correspondente(s) {0} encontrado(s), mais próximo primeiro."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Encontrados {0} sistemas correspondentes."
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "Visitas {0} encontradas. Escolha a visita onde sua jornada começou."
     },
     {
       "source": "Frame Shift Drive",
@@ -136989,6 +136877,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Não foi possível inicializar os dados da viagem: {0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "Descrição da viagem (opcional)"
     },
     {
       "source": "Journey details",
@@ -140007,6 +139899,10 @@
       "translation": "nome"
     },
     {
+      "source": "Name this journey",
+      "translation": "Dê um nome a esta jornada"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "Nomeie esta pesquisa para que você possa retomá-la mais tarde."
     },
@@ -140735,10 +140631,6 @@
       "translation": "Nenhum arquivo de diário atual está disponível."
     },
     {
-      "source": "No current journal system",
-      "translation": "Nenhum sistema de diário atual"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "Nenhum obelisco atual está disponível para rastreamento de missão."
     },
@@ -140903,10 +140795,6 @@
       "translation": "Nenhum sistema correspondente encontrado."
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "Nenhum sistema correspondente foi encontrado."
-    },
-    {
       "source": "No messages",
       "translation": "Nenhuma mensagem"
     },
@@ -140963,6 +140851,10 @@
       "translation": "Nenhum site planejado da Raven está disponível; escolha um layout de construção manualmente."
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "Nenhuma visita anterior corresponde a {0}. Tente outro nome de sistema."
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Nenhum projeto carregado."
     },
@@ -140981,10 +140873,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "Nenhum corpo qualificado para desembarque foi encontrado perto de um apoiador de Fortificado ou Fortaleza para os sistemas de venda verificados."
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "Nenhuma chegada registrada de navio ou porta-aviões em {0} foi encontrada nos diários deste comandante."
     },
     {
       "source": "No reference image is available for this entry.",
@@ -142141,10 +142029,6 @@
     {
       "source": "Optional Internal",
       "translation": "Opcional Interno"
-    },
-    {
-      "source": "Optional description",
-      "translation": "Descrição opcional"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -145639,10 +145523,6 @@
       "translation": "Varredura de farol do Guardian gravada em {0}."
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "Chegadas registradas ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "Primeiro passo registrado para {0}."
     },
@@ -148555,8 +148435,8 @@
       "translation": "Pesquisar evento, comandante, sistema, arquivo ou JSON"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "Procure um sistema visitado anteriormente."
+      "source": "Search for a system to see your previous visits.",
+      "translation": "Procure um sistema para ver suas visitas anteriores."
     },
     {
       "source": "Search near system",
@@ -148835,10 +148715,6 @@
       "translation": "Selecione um marcador para atualizar seu status de pesquisa, título da relíquia quando for uma torre de relíquia e materiais componentes. Os pontos brutos específicos do Commander também expõem controles de ângulo, distância e rotação com incrementos de 0,1."
     },
     {
-      "source": "Select a matching system",
-      "translation": "Selecione um sistema correspondente"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "Selecione um limite mineral para excluir."
     },
@@ -148865,10 +148741,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "Selecione uma estação ou mercadorias em Search Markets para criar sua ShoppingList."
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "Selecione um sistema nos resultados da pesquisa."
     },
     {
       "source": "Select a threshold group to delete.",
@@ -151127,14 +150999,6 @@
       "translation": "Iniciar capítulo"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "Comece a partir de um sistema visitado anteriormente"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "Comece pelo sistema atual"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Comece aqui quando o estado do comandante, do sistema, do corpo, da carga ou da sobreposição não for atualizado."
     },
@@ -151209,6 +151073,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "Iniciando a entrada global do teclado..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "Sistema inicial"
     },
     {
       "source": "Starting verified package download...",
@@ -154611,10 +154479,6 @@
       "translation": "A pesquisa do sistema estelar falhou: {0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "As visitas iniciais não foram encontradas: {0}"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "O recurso de inicialização já foi transferido."
     },
@@ -154665,10 +154529,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "As notas do sistema não foram salvas: {0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "A pesquisa do sistema falhou: {0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -155643,6 +155503,10 @@
       "translation": "Digite A, B ou G para ruínas ou .site <type> para qualquer layout de Guardião mapeado."
     },
     {
+      "source": "Type a system name…",
+      "translation": "Digite um nome de sistema…"
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "O tipo aceita um nome. Separe vários subtipos ou variantes com vírgulas ou ponto e vírgula. Cada lista corresponde a qualquer um de seus nomes."
     },
@@ -156505,6 +156369,10 @@
     {
       "source": "Use current system",
       "translation": "Usar o sistema atual"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "Usar sistema atual: {0}"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -158001,6 +157869,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "Sua área de trabalho abrirá um seletor de compartilhamento de tela."
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "Suas visitas anteriores ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "Não foi possível carregar suas visitas anteriores: {0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -161079,10 +160955,6 @@
       "translation": "a colher de carga"
     },
     {
-      "source": "the current system",
-      "translation": "o sistema atual"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "o inicializador da área de trabalho recusou a solicitação."
     },
@@ -163749,10 +163621,6 @@
       "translation": "Правильный тип участка и заголовок позволяют совместить проецируемую карту с руинами или сооружением."
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "Требуется текущая система журнала или найдите предыдущую систему."
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Текущее положение корабля и поверхности необходимо для калибровки смещения его кабины."
     },
@@ -164515,6 +164383,10 @@
     {
       "source": "Add Systems",
       "translation": "Добавить системы"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "Добавьте описание вашего путешествия"
     },
     {
       "source": "Add a destination system",
@@ -166479,10 +166351,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "Начните путешествие, чтобы записать свою следующую экспедицию."
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "Начать экспедицию"
     },
     {
       "source": "Begin journey",
@@ -168513,10 +168381,6 @@
       "translation": "Перед сохранением выберите признанный тип сайта Guardian."
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "Выберите зарегистрированное прибытие в качестве отправной точки."
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "Выберите систему отсчета и материал поверхности."
     },
@@ -168563,6 +168427,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "Выберите систему и нажмите + Добавить. Измените, удалите или измените порядок пунктов назначения ниже."
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "Выберите систему и визит, с которого началось ваше путешествие."
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -168735,6 +168603,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "Выберите шестисекундные сообщения, отображаемые после завершения работы системы FSS. Для синхронизированных сообщений также требуется глобальное наложение пассивных уведомлений в настройках."
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "Выберите визит, с которого началось ваше путешествие."
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -173413,10 +173285,6 @@
       "translation": "История экспедиций, статистика и отчеты"
     },
     {
-      "source": "Expedition name",
-      "translation": "Название экспедиции"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "Экспериментальное обнаружение штанги буровой установки"
     },
@@ -174197,10 +174065,6 @@
       "translation": "Найдите платиновые места"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "Найдите зарегистрированные в системе прибытия, а затем выберите посещение, с которого началось ваше путешествие. Существующие журналы воспроизводятся с момента этого прибытия."
-    },
-    {
       "source": "Find buyers",
       "translation": "Найти покупателей"
     },
@@ -174257,10 +174121,6 @@
       "translation": "Найдите выгодные места для открытых горных работ"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "Найдите зарегистрированные прибытия в {0}."
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "Найдите кольца, рынки и торговцев"
     },
@@ -174285,12 +174145,12 @@
       "translation": "Поиск авианосцев на Raven Colonial..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "Поиск зарегистрированных прибытий в {0}..."
-    },
-    {
       "source": "Finding settings",
       "translation": "Поиск настроек"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "Поиск посещений {0}..."
     },
     {
       "source": "Finds",
@@ -174713,10 +174573,6 @@
       "translation": "Найден {0} кандидат(ы) на гигантов зеленого газа; ни один кандидат не был опубликован."
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "Обнаружены поступления {0}. Выберите визит, с которого началось это путешествие."
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "Найдены профили командира {0} . {1}"
     },
@@ -174741,8 +174597,8 @@
       "translation": "Найдена система(ы), соответствующая {0}, ближайшая первая."
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "Найдено {0} соответствующих систем."
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "Найдено посещений {0}. Выберите визит, с которого началось ваше путешествие."
     },
     {
       "source": "Frame Shift Drive",
@@ -177719,6 +177575,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Не удалось инициализировать данные о поездке: {0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "Описание поездки (необязательно)"
     },
     {
       "source": "Journey details",
@@ -180737,6 +180597,10 @@
       "translation": "имя"
     },
     {
+      "source": "Name this journey",
+      "translation": "Назовите это путешествие"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "Назовите этот поиск, чтобы вы могли возобновить его позже."
     },
@@ -181465,10 +181329,6 @@
       "translation": "Текущий файл журнала недоступен."
     },
     {
-      "source": "No current journal system",
-      "translation": "Нет текущей системы журналов"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "В настоящее время обелиск для отслеживания миссии недоступен."
     },
@@ -181633,10 +181493,6 @@
       "translation": "Соответствующие системы не найдены."
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "Соответствующих систем не обнаружено."
-    },
-    {
       "source": "No messages",
       "translation": "Нет сообщений"
     },
@@ -181693,6 +181549,10 @@
       "translation": "Планируемого объекта Raven нет; выберите макет сборки вручную."
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "Никакие предыдущие посещения не соответствуют {0}. Попробуйте другое имя системы."
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Ни один проект не загружен."
     },
@@ -181711,10 +181571,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "Рядом с сторонником Укрепления или Крепости для проверенных систем продажи не было обнаружено подходящего для посадки тела."
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "В журналах этого командира не было обнаружено никаких записей о прибытии кораблей или авианосцев в {0}."
     },
     {
       "source": "No reference image is available for this entry.",
@@ -182871,10 +182727,6 @@
     {
       "source": "Optional Internal",
       "translation": "Дополнительный внутренний"
-    },
-    {
-      "source": "Optional description",
-      "translation": "Дополнительное описание"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -186369,10 +186221,6 @@
       "translation": "Записано сканирование маяка Guardian в {0}."
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "Зарегистрированные поступления ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "Зафиксирован первый шаг для {0}."
     },
@@ -189285,8 +189133,8 @@
       "translation": "Поиск по событию, командиру, системе, файлу или JSON."
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "Найдите ранее посещенную систему."
+      "source": "Search for a system to see your previous visits.",
+      "translation": "Найдите систему, чтобы увидеть ваши предыдущие посещения."
     },
     {
       "source": "Search near system",
@@ -189565,10 +189413,6 @@
       "translation": "Выберите маркер, чтобы обновить его статус исследования, заголовок реликвии, если это башня реликвий, и материалы компонентов. Необработанные точки, специфичные для Commander, также предоставляют элементы управления углом, расстоянием и поворотом с шагом 0,1."
     },
     {
-      "source": "Select a matching system",
-      "translation": "Выберите подходящую систему"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "Выберите минеральный порог, который нужно удалить."
     },
@@ -189595,10 +189439,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "Выберите станцию ​​или товары на поисковых рынках, чтобы создать свой список покупок."
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "Выберите систему из результатов поиска."
     },
     {
       "source": "Select a threshold group to delete.",
@@ -191857,14 +191697,6 @@
       "translation": "Начать главу"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "Начните с ранее посещенной системы"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "Начать с текущей системы"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Начните здесь, когда состояние командира, системы, тела, груза или наложения не обновляется."
     },
@@ -191939,6 +191771,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "Запуск глобального ввода с клавиатуры..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "Стартовая система"
     },
     {
       "source": "Starting verified package download...",
@@ -195341,10 +195177,6 @@
       "translation": "Не удалось выполнить поиск звездной системы: {0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "Не удалось найти начальные посещения: {0}."
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "Ресурс запуска уже перенесен."
     },
@@ -195395,10 +195227,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "Системные заметки не сохранились: {0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "Не удалось выполнить системный поиск: {0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -196373,6 +196201,10 @@
       "translation": "Введите A, B или G для руин или .site <тип> для любого отображенного макета Стражей."
     },
     {
+      "source": "Type a system name…",
+      "translation": "Введите имя системы…"
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "Тип принимает одно имя. Разделяйте несколько подтипов или вариантов запятыми или точками с запятой. Каждый список соответствует любому из своих имен."
     },
@@ -197235,6 +197067,10 @@
     {
       "source": "Use current system",
       "translation": "Использовать текущую систему"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "Использовать текущую систему: {0}."
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -198731,6 +198567,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "На рабочем столе откроется окно выбора совместного использования экрана."
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "Ваши предыдущие посещения ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "Не удалось загрузить ваши предыдущие посещения: {0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -201809,10 +201653,6 @@
       "translation": "грузовой ковш"
     },
     {
-      "source": "the current system",
-      "translation": "нынешняя система"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "программа запуска рабочего стола отклонила запрос."
     },
@@ -204479,10 +204319,6 @@
       "translation": "正确的场地类型和标题可使投影地图与废墟或结构对齐。"
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "需要当前的日志系统，或者搜索以前的系统。"
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "需要当前的船舶和表面位置来校准其驾驶舱偏移。"
     },
@@ -205245,6 +205081,10 @@
     {
       "source": "Add Systems",
       "translation": "添加系统"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "添加您的旅程的描述"
     },
     {
       "source": "Add a destination system",
@@ -207209,10 +207049,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "开始一段旅程，记录您的下一次探险。"
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "开始探险"
     },
     {
       "source": "Begin journey",
@@ -209243,10 +209079,6 @@
       "translation": "保存前选择一个公认的 Guardian 站点类型。"
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "选择记录的到达作为起点。"
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "选择参考系统和表面材料。"
     },
@@ -209293,6 +209125,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "选择一个系统并选择“+ 添加”。编辑、删除或重新排序下面的目的地。"
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "选择一个系统和您的旅程开始的访问地点。"
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -209465,6 +209301,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "选择 FSS 完成系统后显示的六秒消息。定时消息还需要设置中的全局被动通知覆盖。"
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "选择您旅程开始的地点。"
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -214143,10 +213983,6 @@
       "translation": "探险历史、统计数据和报告"
     },
     {
-      "source": "Expedition name",
-      "translation": "探险队名称"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "实验钻杆检测"
     },
@@ -214927,10 +214763,6 @@
       "translation": "寻找白金点"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "查找系统记录的到达，然后选择您的旅程开始的访问。现有日志将从到达时重播。"
-    },
-    {
       "source": "Find buyers",
       "translation": "寻找买家"
     },
@@ -214987,10 +214819,6 @@
       "translation": "寻找有利可图的露天采矿地点"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "在 {0} 中查找记录的到达。"
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "寻找戒指、市场和交易者"
     },
@@ -215015,12 +214843,12 @@
       "translation": "正在 Raven Colonial 上查找舰队承运人..."
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "在 {0} 中查找记录的到达..."
-    },
-    {
       "source": "Finding settings",
       "translation": "查找设置"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "查找您对 {0} 的访问..."
     },
     {
       "source": "Finds",
@@ -215443,10 +215271,6 @@
       "translation": "找到{0}绿色气体巨星候选者；没有公布任何候选人。"
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "发现 {0} 到达。选择此旅程开始的访问。"
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "找到 {0} 指挥官个人资料。 {1}"
     },
@@ -215471,8 +215295,8 @@
       "translation": "找到 {0} 匹配系统，最近的优先。"
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "找到 {0} 匹配系统。"
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "发现{0}访问。选择您旅程开始的地点。"
     },
     {
       "source": "Frame Shift Drive",
@@ -218449,6 +218273,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "旅程数据无法初始化：{0}"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "旅程描述（可选）"
     },
     {
       "source": "Journey details",
@@ -221467,6 +221295,10 @@
       "translation": "姓名"
     },
     {
+      "source": "Name this journey",
+      "translation": "为这次旅程命名"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "为该搜索命名，以便您稍后可以继续它。"
     },
@@ -222195,10 +222027,6 @@
       "translation": "当前没有可用的日志文件。"
     },
     {
-      "source": "No current journal system",
-      "translation": "目前没有日记系统"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "当前没有方尖碑可用于任务跟踪。"
     },
@@ -222363,10 +222191,6 @@
       "translation": "未找到匹配的系统。"
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "没有找到匹配的系统。"
-    },
-    {
       "source": "No messages",
       "translation": "没有消息"
     },
@@ -222423,6 +222247,10 @@
       "translation": "没有计划中的 Raven 站点可用；手动选择构建布局。"
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "之前的访问没有匹配 {0}。尝试另一个系统名称。"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "没有加载项目。"
     },
@@ -222441,10 +222269,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "在检查的销售系统的强化或要塞支持者周围没有发现合格的可登陆机构。"
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "在该指挥官的日志中没有发现有船舶或航母到达 {0} 的记录。"
     },
     {
       "source": "No reference image is available for this entry.",
@@ -223601,10 +223425,6 @@
     {
       "source": "Optional Internal",
       "translation": "可选内部"
-    },
-    {
-      "source": "Optional description",
-      "translation": "可选描述"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -227099,10 +226919,6 @@
       "translation": "在 {0} 中记录了监护人信标扫描。"
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "到达记录 ({0})"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "记录了 {0} 的第一个脚步声。"
     },
@@ -230015,8 +229831,8 @@
       "translation": "搜索事件、指挥官、系统、文件或 JSON"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "搜索以前访问过的系统。"
+      "source": "Search for a system to see your previous visits.",
+      "translation": "搜索系统以查看您之前的访问情况。"
     },
     {
       "source": "Search near system",
@@ -230295,10 +230111,6 @@
       "translation": "选择一个标记来更新其调查状态、文物标题（如果是文物塔）以及组件材料。特定于指挥官的原始点还以 0.1 的增量显示角度、距离和旋转控件。"
     },
     {
-      "source": "Select a matching system",
-      "translation": "选择匹配系统"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "选择要删除的矿物质阈值。"
     },
@@ -230325,10 +230137,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "在“搜索市场”中选择一个站点或商品来构建您的购物清单。"
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "从搜索结果中选择一个系统。"
     },
     {
       "source": "Select a threshold group to delete.",
@@ -232587,14 +232395,6 @@
       "translation": "开始章节"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "从之前访问过的系统开始"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "从当前系统开始"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "当指挥官、系统、车身、货物或覆盖层状态未更新时从这里开始。"
     },
@@ -232669,6 +232469,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "正在启动全局键盘输入..."
+    },
+    {
+      "source": "Starting system",
+      "translation": "启动系统"
     },
     {
       "source": "Starting verified package download...",
@@ -236071,10 +235875,6 @@
       "translation": "恒星系统查找失败：{0}"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "找不到起始访问：{0}"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "启动资源已经转移。"
     },
@@ -236125,10 +235925,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "系统注释未保存：{0}"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "系统搜索失败：{0}"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -237103,6 +236899,10 @@
       "translation": "输入 A、B 或 G 表示废墟，或输入 .site <type> 表示任何映射的 Guardian 布局。"
     },
     {
+      "source": "Type a system name…",
+      "translation": "输入系统名称..."
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "类型接受一个名称。用逗号或分号分隔多个子类型或变体。每个列表都与其任意名称匹配。"
     },
@@ -237965,6 +237765,10 @@
     {
       "source": "Use current system",
       "translation": "使用当前系统"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "使用当前系统：{0}"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -239461,6 +239265,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "您的桌面将打开一个屏幕共享选择器。"
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "您之前的访问 ({0})"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "无法加载您之前的访问：{0}"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -242539,10 +242351,6 @@
       "translation": "货斗"
     },
     {
-      "source": "the current system",
-      "translation": "当前系统"
-    },
-    {
       "source": "the desktop launcher declined the request.",
       "translation": "桌面启动器拒绝了该请求。"
     },
@@ -245209,10 +245017,6 @@
       "translation": "* A CORRECT SITE TYPE AND HEADING MAKE THE PROJECTED MAP LINE UP WITH THE RUINS OR STRUCTURE. >>>!"
     },
     {
-      "source": "A current journal system is required, or search for a prior system.",
-      "translation": "* A CURRENT JOURNAL SYSTEM IS REQUIRED, OR SEARCH FOR A PRIOR SYSTEM. >>>!"
-    },
-    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "* A CURRENT SHIP AND SURFACE POSITION ARE REQUIRED TO CALIBRATE ITS COCKPIT OFFSET. >>>!"
     },
@@ -245975,6 +245779,10 @@
     {
       "source": "Add Systems",
       "translation": "* ADD SYSTEMS >>>!"
+    },
+    {
+      "source": "Add a description for your journey",
+      "translation": "* ADD A DESCRIPTION FOR YOUR JOURNEY >>>!"
     },
     {
       "source": "Add a destination system",
@@ -247939,10 +247747,6 @@
     {
       "source": "Begin a journey to record your next expedition.",
       "translation": "* BEGIN A JOURNEY TO RECORD YOUR NEXT EXPEDITION. >>>!"
-    },
-    {
-      "source": "Begin an expedition",
-      "translation": "* BEGIN AN EXPEDITION >>>!"
     },
     {
       "source": "Begin journey",
@@ -249973,10 +249777,6 @@
       "translation": "* CHOOSE A RECOGNIZED GUARDIAN SITE TYPE BEFORE SAVING. >>>!"
     },
     {
-      "source": "Choose a recorded arrival as the starting point.",
-      "translation": "* CHOOSE A RECORDED ARRIVAL AS THE STARTING POINT. >>>!"
-    },
-    {
       "source": "Choose a reference system and a surface material.",
       "translation": "* CHOOSE A REFERENCE SYSTEM AND A SURFACE MATERIAL. >>>!"
     },
@@ -250023,6 +249823,10 @@
     {
       "source": "Choose a system and select + Add. Edit, remove, or reorder destinations below.",
       "translation": "* CHOOSE A SYSTEM AND SELECT + ADD. EDIT, REMOVE, OR REORDER DESTINATIONS BELOW. >>>!"
+    },
+    {
+      "source": "Choose a system and the visit where your journey began.",
+      "translation": "* CHOOSE A SYSTEM AND THE VISIT WHERE YOUR JOURNEY BEGAN. >>>!"
     },
     {
       "source": "Choose a system to review its Raven Colonial sites.",
@@ -250195,6 +249999,10 @@
     {
       "source": "Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings.",
       "translation": "* CHOOSE THE SIX-SECOND MESSAGES SHOWN AFTER FSS COMPLETES A SYSTEM. TIMED MESSAGES ALSO REQUIRE THE GLOBAL PASSIVE NOTIFICATION OVERLAY IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Choose the visit where your journey began.",
+      "translation": "* CHOOSE THE VISIT WHERE YOUR JOURNEY BEGAN. >>>!"
     },
     {
       "source": "Choose what happens when you switch windows or change suits.",
@@ -254873,10 +254681,6 @@
       "translation": "* EXPEDITION HISTORY, STATISTICS, AND REPORTS >>>!"
     },
     {
-      "source": "Expedition name",
-      "translation": "* EXPEDITION NAME >>>!"
-    },
-    {
       "source": "Experimental rig bar detection",
       "translation": "* EXPERIMENTAL RIG BAR DETECTION >>>!"
     },
@@ -255657,10 +255461,6 @@
       "translation": "* FIND PLATINUM SPOTS >>>!"
     },
     {
-      "source": "Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-      "translation": "* FIND A SYSTEM'S RECORDED ARRIVALS, THEN CHOOSE THE VISIT WHERE YOUR JOURNEY BEGAN. EXISTING JOURNALS ARE REPLAYED FROM THAT ARRIVAL. >>>!"
-    },
-    {
       "source": "Find buyers",
       "translation": "* FIND BUYERS >>>!"
     },
@@ -255717,10 +255517,6 @@
       "translation": "* FIND PROFITABLE SURFACE MINING LOCATIONS >>>!"
     },
     {
-      "source": "Find recorded arrivals in {0}.",
-      "translation": "* FIND RECORDED ARRIVALS IN {0}. >>>!"
-    },
-    {
       "source": "Find rings, markets and traders",
       "translation": "* FIND RINGS, MARKETS AND TRADERS >>>!"
     },
@@ -255745,12 +255541,12 @@
       "translation": "* FINDING FLEET CARRIERS ON RAVEN COLONIAL... >>>!"
     },
     {
-      "source": "Finding recorded arrivals in {0}...",
-      "translation": "* FINDING RECORDED ARRIVALS IN {0}... >>>!"
-    },
-    {
       "source": "Finding settings",
       "translation": "* FINDING SETTINGS >>>!"
+    },
+    {
+      "source": "Finding your visits to {0}...",
+      "translation": "* FINDING YOUR VISITS TO {0}... >>>!"
     },
     {
       "source": "Finds",
@@ -256173,10 +255969,6 @@
       "translation": "* FOUND {0} GREEN GAS GIANT CANDIDATE(S); NO CANDIDATE WAS PUBLISHED. >>>!"
     },
     {
-      "source": "Found {0} arrivals. Choose the visit where this journey began.",
-      "translation": "* FOUND {0} ARRIVALS. CHOOSE THE VISIT WHERE THIS JOURNEY BEGAN. >>>!"
-    },
-    {
       "source": "Found {0} commander profile(s). {1}",
       "translation": "* FOUND {0} COMMANDER PROFILE(S). {1} >>>!"
     },
@@ -256201,8 +255993,8 @@
       "translation": "* FOUND {0} MATCHING SYSTEM(S), NEAREST FIRST. >>>!"
     },
     {
-      "source": "Found {0} matching systems.",
-      "translation": "* FOUND {0} MATCHING SYSTEMS. >>>!"
+      "source": "Found {0} visits. Choose the visit where your journey began.",
+      "translation": "* FOUND {0} VISITS. CHOOSE THE VISIT WHERE YOUR JOURNEY BEGAN. >>>!"
     },
     {
       "source": "Frame Shift Drive",
@@ -259179,6 +258971,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "* JOURNEY DATA COULD NOT BE INITIALIZED: {0} >>>!"
+    },
+    {
+      "source": "Journey description (optional)",
+      "translation": "* JOURNEY DESCRIPTION (OPTIONAL) >>>!"
     },
     {
       "source": "Journey details",
@@ -262197,6 +261993,10 @@
       "translation": "* NAME >>>!"
     },
     {
+      "source": "Name this journey",
+      "translation": "* NAME THIS JOURNEY >>>!"
+    },
+    {
       "source": "Name this search so you can resume it later.",
       "translation": "* NAME THIS SEARCH SO YOU CAN RESUME IT LATER. >>>!"
     },
@@ -262925,10 +262725,6 @@
       "translation": "* NO CURRENT JOURNAL FILE IS AVAILABLE. >>>!"
     },
     {
-      "source": "No current journal system",
-      "translation": "* NO CURRENT JOURNAL SYSTEM >>>!"
-    },
-    {
       "source": "No current obelisk is available for mission tracking.",
       "translation": "* NO CURRENT OBELISK IS AVAILABLE FOR MISSION TRACKING. >>>!"
     },
@@ -263093,10 +262889,6 @@
       "translation": "* NO MATCHING SYSTEMS FOUND. >>>!"
     },
     {
-      "source": "No matching systems were found.",
-      "translation": "* NO MATCHING SYSTEMS WERE FOUND. >>>!"
-    },
-    {
       "source": "No messages",
       "translation": "* NO MESSAGES >>>!"
     },
@@ -263153,6 +262945,10 @@
       "translation": "* NO PLANNED RAVEN SITE IS AVAILABLE; CHOOSE A BUILD LAYOUT MANUALLY. >>>!"
     },
     {
+      "source": "No previous visits match {0}. Try another system name.",
+      "translation": "* NO PREVIOUS VISITS MATCH {0}. TRY ANOTHER SYSTEM NAME. >>>!"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "* NO PROJECTS LOADED. >>>!"
     },
@@ -263171,10 +262967,6 @@
     {
       "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
       "translation": "* NO QUALIFYING LANDABLE BODY WAS FOUND AROUND A FORTIFIED OR STRONGHOLD SUPPORTER FOR THE SELL SYSTEMS CHECKED. >>>!"
-    },
-    {
-      "source": "No recorded ship or carrier arrivals in {0} were found in this commander's journals.",
-      "translation": "* NO RECORDED SHIP OR CARRIER ARRIVALS IN {0} WERE FOUND IN THIS COMMANDER'S JOURNALS. >>>!"
     },
     {
       "source": "No reference image is available for this entry.",
@@ -264331,10 +264123,6 @@
     {
       "source": "Optional Internal",
       "translation": "* OPTIONAL INTERNAL >>>!"
-    },
-    {
-      "source": "Optional description",
-      "translation": "* OPTIONAL DESCRIPTION >>>!"
     },
     {
       "source": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -267829,10 +267617,6 @@
       "translation": "* RECORDED GUARDIAN BEACON SCAN IN {0}. >>>!"
     },
     {
-      "source": "Recorded arrivals ({0})",
-      "translation": "* RECORDED ARRIVALS ({0}) >>>!"
-    },
-    {
       "source": "Recorded first footfall for {0}.",
       "translation": "* RECORDED FIRST FOOTFALL FOR {0}. >>>!"
     },
@@ -270745,8 +270529,8 @@
       "translation": "* SEARCH EVENT, COMMANDER, SYSTEM, FILE, OR JSON >>>!"
     },
     {
-      "source": "Search for a previously visited system.",
-      "translation": "* SEARCH FOR A PREVIOUSLY VISITED SYSTEM. >>>!"
+      "source": "Search for a system to see your previous visits.",
+      "translation": "* SEARCH FOR A SYSTEM TO SEE YOUR PREVIOUS VISITS. >>>!"
     },
     {
       "source": "Search near system",
@@ -271025,10 +270809,6 @@
       "translation": "* SELECT A MARKER TO UPDATE ITS SURVEY STATUS, RELIC HEADING WHEN IT IS A RELIC TOWER, AND COMPONENT MATERIALS. COMMANDER-SPECIFIC RAW POINTS ALSO EXPOSE ANGLE, DISTANCE, AND ROTATION CONTROLS WITH 0.1 INCREMENTS. >>>!"
     },
     {
-      "source": "Select a matching system",
-      "translation": "* SELECT A MATCHING SYSTEM >>>!"
-    },
-    {
       "source": "Select a mineral threshold to delete.",
       "translation": "* SELECT A MINERAL THRESHOLD TO DELETE. >>>!"
     },
@@ -271055,10 +270835,6 @@
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
       "translation": "* SELECT A STATION OR COMMODITIES IN SEARCH MARKETS TO BUILD YOUR SHOPPINGLIST. >>>!"
-    },
-    {
-      "source": "Select a system from the search results.",
-      "translation": "* SELECT A SYSTEM FROM THE SEARCH RESULTS. >>>!"
     },
     {
       "source": "Select a threshold group to delete.",
@@ -273317,14 +273093,6 @@
       "translation": "* START CHAPTER >>>!"
     },
     {
-      "source": "Start from a previously visited system",
-      "translation": "* START FROM A PREVIOUSLY VISITED SYSTEM >>>!"
-    },
-    {
-      "source": "Start from the current system",
-      "translation": "* START FROM THE CURRENT SYSTEM >>>!"
-    },
-    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "* START HERE WHEN THE COMMANDER, SYSTEM, BODY, CARGO, OR OVERLAY STATE DOES NOT UPDATE. >>>!"
     },
@@ -273399,6 +273167,10 @@
     {
       "source": "Starting global keyboard input...",
       "translation": "* STARTING GLOBAL KEYBOARD INPUT... >>>!"
+    },
+    {
+      "source": "Starting system",
+      "translation": "* STARTING SYSTEM >>>!"
     },
     {
       "source": "Starting verified package download...",
@@ -276801,10 +276573,6 @@
       "translation": "* THE STAR-SYSTEM LOOKUP FAILED: {0} >>>!"
     },
     {
-      "source": "The starting visits could not be found: {0}",
-      "translation": "* THE STARTING VISITS COULD NOT BE FOUND: {0} >>>!"
-    },
-    {
       "source": "The startup resource was already transferred.",
       "translation": "* THE STARTUP RESOURCE WAS ALREADY TRANSFERRED. >>>!"
     },
@@ -276855,10 +276623,6 @@
     {
       "source": "The system notes were not saved: {0}",
       "translation": "* THE SYSTEM NOTES WERE NOT SAVED: {0} >>>!"
-    },
-    {
-      "source": "The system search failed: {0}",
-      "translation": "* THE SYSTEM SEARCH FAILED: {0} >>>!"
     },
     {
       "source": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -277833,6 +277597,10 @@
       "translation": "* TYPE A, B, OR G FOR RUINS, OR .SITE <TYPE> FOR ANY MAPPED GUARDIAN LAYOUT. >>>!"
     },
     {
+      "source": "Type a system name…",
+      "translation": "* TYPE A SYSTEM NAME… >>>!"
+    },
+    {
       "source": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
       "translation": "* TYPE ACCEPTS ONE NAME. SEPARATE MULTIPLE SUBTYPES OR VARIANTS WITH COMMAS OR SEMICOLONS. EACH LIST MATCHES ANY OF ITS NAMES. >>>!"
     },
@@ -278695,6 +278463,10 @@
     {
       "source": "Use current system",
       "translation": "* USE CURRENT SYSTEM >>>!"
+    },
+    {
+      "source": "Use current system: {0}",
+      "translation": "* USE CURRENT SYSTEM: {0} >>>!"
     },
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
@@ -280191,6 +279963,14 @@
     {
       "source": "Your desktop will open a screen-sharing picker.",
       "translation": "* YOUR DESKTOP WILL OPEN A SCREEN-SHARING PICKER. >>>!"
+    },
+    {
+      "source": "Your previous visits ({0})",
+      "translation": "* YOUR PREVIOUS VISITS ({0}) >>>!"
+    },
+    {
+      "source": "Your previous visits could not be loaded: {0}",
+      "translation": "* YOUR PREVIOUS VISITS COULD NOT BE LOADED: {0} >>>!"
     },
     {
       "source": "Your saved platform and overlay calibration are unchanged.",
@@ -283267,10 +283047,6 @@
     {
       "source": "the cargo scoop",
       "translation": "* THE CARGO SCOOP >>>!"
-    },
-    {
-      "source": "the current system",
-      "translation": "* THE CURRENT SYSTEM >>>!"
     },
     {
       "source": "the desktop launcher declined the request.",

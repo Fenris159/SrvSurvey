@@ -682,7 +682,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             SystemNotes = new SystemNotesViewModel(systemNoteStore, systemNotesSettingsStore, journeyService);
             Journey = new JourneyWorkspaceViewModel(
                 journeyService,
-                sharedSystemResolver,
                 systemNoteStore,
                 systemNotesSettingsStore,
                 GetConvertedScreenshotDirectory

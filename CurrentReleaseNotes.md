@@ -10,8 +10,10 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   instead of opening a separate window. The Travel shortcut opens this workspace.
   Archive completed journeys to tuck them away, restore them when needed, or
   delete their saved records while keeping journals, system notes and screenshots.
-- **Journey starting visits:** Find all recorded arrivals at the chosen system
-  and select the exact visit by its UTC date and time. Ship and carrier arrivals
+- **Journey starting visits:** Search by system name with autocomplete, then
+  select a previous visit by its UTC date and time. Choosing a suggestion shows
+  that system's visits directly; manual name searches work offline. Journey name
+  and optional description follow the visit picker. Ship and carrier arrivals
   appear newest first. Starting from an earlier visit includes later returns,
   and copied journal file dates no longer truncate that history.
 - **Journey reports:** Export a completed journey as a portable report folder

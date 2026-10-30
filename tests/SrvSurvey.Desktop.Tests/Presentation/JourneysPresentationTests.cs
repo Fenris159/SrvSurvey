@@ -13,6 +13,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.Theming;
@@ -76,8 +77,10 @@ public sealed class JourneysPresentationTests : IDisposable
         }
     }
 
-    [AvaloniaFact]
-    public async Task AStartingArrivalCanBeChosenInTheRenderedJourneyForm()
+    [AvaloniaTheory]
+    [InlineData(640, true)]
+    [InlineData(1100, false)]
+    public async Task AStartingArrivalCanBeChosenInTheRenderedJourneyForm(int width, bool autocomplete)
     {
         string journals = Path.Combine(directory, "journals");
         Directory.CreateDirectory(journals);
@@ -95,13 +98,11 @@ public sealed class JourneysPresentationTests : IDisposable
         );
         using MainWindowViewModel main = await CreateModelAsync(journals);
         await main.Journey.StartNewJourneyAsync();
-        main.Journey.NewJourneyName = "The earlier visit";
-        await main.Journey.FindStartAsync();
         var view = new JourneysView { DataContext = main.Journey };
         var window = new Window
         {
             Content = view,
-            Width = 1100,
+            Width = width,
             Height = 1000,
         };
         try
@@ -111,6 +112,36 @@ public sealed class JourneysPresentationTests : IDisposable
             {
                 Assert.NotNull(frame);
             }
+            SystemNameEntry entry = view.FindControl<SystemNameEntry>("JourneyStartingSystem")!;
+            Assert.True(entry.IsEffectivelyVisible);
+            var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            main.Journey.PropertyChanged += (_, args) =>
+            {
+                if (
+                    args.PropertyName == nameof(main.Journey.IsBusy)
+                    && !main.Journey.IsBusy
+                    && main.Journey.StartVisits.Count == 3
+                )
+                {
+                    loaded.TrySetResult();
+                }
+            };
+            entry.Text = "Sol";
+            if (autocomplete)
+            {
+                entry.SelectedSystemAddress = 42;
+                entry.RaiseEvent(new RoutedEventArgs(SystemNameEntry.SystemSelectedEvent));
+            }
+            else
+            {
+                Assert.True(entry.FindControl<TextBox>("InputBox")!.Focus());
+                window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            }
+            await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            using (WriteableBitmap? loadedFrame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(loadedFrame);
+            }
             ListBox arrivals = view.FindControl<ListBox>("JourneyStartVisitList")!;
             Button begin = view.FindControl<Button>("BeginJourneyButton")!;
             Assert.True(arrivals.IsEffectivelyVisible);
@@ -119,15 +150,23 @@ public sealed class JourneysPresentationTests : IDisposable
             Assert.False(begin.IsEffectivelyEnabled);
             arrivals.SelectedIndex = 2;
             Assert.Equal("2026-07-01 00:05:00 UTC", main.Journey.SelectedStartVisit!.Arrived);
+            Assert.False(begin.IsEffectivelyEnabled);
+            view.FindControl<TextBox>("NewJourneyNameInput")!.Text = "The earlier visit";
             Assert.True(begin.IsEffectivelyEnabled);
             begin.BringIntoView();
-            using (WriteableBitmap? selected = window.CaptureRenderedFrame())
+            foreach (RavenThemeDefinition theme in RavenThemeCatalog.All)
             {
+                ApplyTheme(window, theme);
+                using WriteableBitmap? selected = window.CaptureRenderedFrame();
                 Assert.NotNull(selected);
                 string? output = Environment.GetEnvironmentVariable("SRVSURVEY_START_VISITS_RENDER_OUTPUT");
                 if (output is not null)
                 {
-                    selected.Save(output, PngBitmapEncoderOptions.Default);
+                    Directory.CreateDirectory(output);
+                    selected.Save(
+                        Path.Combine(output, $"journey-system-search-{width}-{theme.Key}.png"),
+                        PngBitmapEncoderOptions.Default
+                    );
                 }
             }
             var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

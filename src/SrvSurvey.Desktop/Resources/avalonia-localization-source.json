@@ -1657,14 +1657,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A current journal system is required, or search for a prior system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "A current ship and surface position are required to calibrate its cockpit offset.",
     "IsFormat": false,
     "SourceKinds": [
@@ -3193,6 +3185,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Add a description for your journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Add a destination system",
@@ -7127,14 +7127,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
-  },
-  {
-    "Text": "Begin an expedition",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Begin journey",
@@ -11213,14 +11205,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
-    "Text": "Choose a recorded arrival as the starting point.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "Choose a reference system and a surface material.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11315,6 +11299,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Choose a system and the visit where your journey began.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Choose a system to review its Raven Colonial sites.",
@@ -11659,6 +11651,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose the visit where your journey began.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Choose what happens when you switch windows or change suits.",
@@ -21054,14 +21054,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Expedition name",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
     "Text": "Experimental rig bar detection",
     "IsFormat": false,
     "SourceKinds": [
@@ -22627,14 +22619,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Find a system\u0027s recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
     "Text": "Find buyers",
     "IsFormat": false,
     "SourceKinds": [
@@ -22748,14 +22732,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Find recorded arrivals in {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Find rings, markets and traders",
     "IsFormat": false,
     "SourceKinds": [
@@ -22804,20 +22780,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
-    "Text": "Finding recorded arrivals in {0}...",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "Finding settings",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Finding your visits to {0}...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Finds",
@@ -23662,14 +23638,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Found {0} arrivals. Choose the visit where this journey began.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "Found {0} commander profile(s). {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -23718,12 +23686,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Found {0} matching systems.",
+    "Text": "Found {0} visits. Choose the visit where your journey began.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Frame Shift Drive",
@@ -29699,6 +29667,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Journey description (optional)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Journey details",
@@ -35764,6 +35740,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Name this journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Name this search so you can resume it later.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37222,14 +37206,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
   },
   {
-    "Text": "No current journal system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "No current obelisk is available for mission tracking.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37558,14 +37534,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SystemNameEntry.axaml.cs"
   },
   {
-    "Text": "No matching systems were found.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "No messages",
     "IsFormat": false,
     "SourceKinds": [
@@ -37678,6 +37646,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "No previous visits match {0}. Try another system name.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "No projects loaded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37716,14 +37692,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
-    "Text": "No recorded ship or carrier arrivals in {0} were found in this commander\u0027s journals.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "No reference image is available for this entry.",
@@ -40044,14 +40012,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "Optional description",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -47054,14 +47014,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "Recorded arrivals ({0})",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "Recorded first footfall for {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -52903,7 +52855,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Search for a previously visited system.",
+    "Text": "Search for a system to see your previous visits.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -53020,7 +52972,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
     "Text": "Searching from {0}",
@@ -53464,14 +53416,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Select a matching system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
     "Text": "Select a mineral threshold to delete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53526,14 +53470,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
-  },
-  {
-    "Text": "Select a system from the search results.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Select a threshold group to delete.",
@@ -58060,22 +57996,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
-    "Text": "Start from a previously visited system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
-    "Text": "Start from the current system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
     "Text": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58227,6 +58147,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
+  },
+  {
+    "Text": "Starting system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Starting verified package download...",
@@ -65043,14 +64971,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "The starting visits could not be found: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "The startup resource was already transferred.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65153,14 +65073,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
-  },
-  {
-    "Text": "The system search failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -67111,6 +67023,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Type a system name\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
     "IsFormat": false,
     "SourceKinds": [
@@ -68840,6 +68760,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
+  },
+  {
+    "Text": "Use current system: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Use downloaded bio data from Canonn and Spansh",
@@ -71837,6 +71765,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
+  },
+  {
+    "Text": "Your previous visits ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Your previous visits could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Your saved platform and overlay calibration are unchanged.",
@@ -77989,14 +77933,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "the current system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "the desktop launcher declined the request.",

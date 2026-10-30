@@ -7,6 +7,7 @@ public sealed partial class JourneyWorkspaceViewModel
 {
     private IReadOnlyList<JourneyStartVisitViewModel> startVisits = [];
     private JourneyStartVisitViewModel? selectedStartVisit;
+    private long? selectedStartSystemAddress;
     private int startVisitVersion;
 
     // The async search owns and disposes its cancellation source.
@@ -26,7 +27,7 @@ public sealed partial class JourneyWorkspaceViewModel
     }
 
     public bool HasStartVisits => StartVisits.Count > 0;
-    public string StartVisitsHeading => $"Recorded arrivals ({StartVisits.Count:N0})";
+    public string StartVisitsHeading => $"Your previous visits ({StartVisits.Count:N0})";
 
     public JourneyStartVisitViewModel? SelectedStartVisit
     {
@@ -45,7 +46,7 @@ public sealed partial class JourneyWorkspaceViewModel
                 }
                 else if (HasStartVisits)
                 {
-                    StartStatus = "Choose a recorded arrival as the starting point.";
+                    StartStatus = "Choose the visit where your journey began.";
                 }
                 beginJourneyCommand.RaiseCanExecuteChanged();
             }
@@ -66,14 +67,12 @@ public sealed partial class JourneyWorkspaceViewModel
         }
     }
 
-    private void InvalidateStartVisitContext(string? profileKey, long? address)
+    private void InvalidateStartVisitContext(string? profileKey)
     {
-        if (
-            UseCurrentStart && currentSystemAddress != address
-            || !string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase)
-        )
+        if (!string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
         {
             ClearStartVisits();
+            selectedStartSystemAddress = null;
         }
     }
 
@@ -86,14 +85,27 @@ public sealed partial class JourneyWorkspaceViewModel
 
     private bool CanCancelNewJourney() => IsCreating && (!IsBusy || cancelStartVisitSearch is not null);
 
-    public async Task FindStartAsync()
+    public async Task SelectStartingSystemAsync(string? systemName, long? systemAddress)
     {
-        long? address = UseCurrentStart ? currentSystemAddress : SelectedStartSystem?.SystemAddress;
-        string? name = UseCurrentStart ? currentSystemName : SelectedStartSystem?.Name;
-        if (frontierId is null || address is not > 0 || !IsCreating || IsBusy)
+        if (!IsCreating || IsBusy || string.IsNullOrWhiteSpace(systemName))
         {
             return;
         }
+        StartSystemQuery = systemName;
+        selectedStartSystemAddress = systemAddress is > 0 ? systemAddress : null;
+        await FindStartAsync();
+    }
+
+    private Task UseCurrentSystemAsync() => SelectStartingSystemAsync(currentSystemName, currentSystemAddress);
+
+    public async Task FindStartAsync()
+    {
+        if (frontierId is not { } profile || !CanFindStart())
+        {
+            return;
+        }
+        string name = StartSystemQuery.Trim();
+        long? address = selectedStartSystemAddress;
         ClearStartVisits();
         int version = startVisitVersion;
         using var cancellation = new CancellationTokenSource();
@@ -101,13 +113,10 @@ public sealed partial class JourneyWorkspaceViewModel
         try
         {
             IsBusy = true;
-            StartStatus = $"Finding recorded arrivals in {name}...";
-            JourneyJournalSystemVisitsResult result = await journeyService.FindStartVisitsAsync(
-                frontierId,
-                isOdyssey,
-                address.Value,
-                cancellation.Token
-            );
+            StartStatus = $"Finding your visits to {name}...";
+            JourneyJournalSystemVisitsResult result = address is > 0
+                ? await journeyService.FindStartVisitsAsync(profile, isOdyssey, address.Value, cancellation.Token)
+                : await journeyService.FindStartVisitsAsync(profile, isOdyssey, name, cancellation.Token);
             if (version != startVisitVersion || cancellation.IsCancellationRequested)
             {
                 return;
@@ -116,13 +125,13 @@ public sealed partial class JourneyWorkspaceViewModel
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            // A changed system, commander, or closed form invalidated this search.
+            // A changed query, commander, or closed form invalidated this search.
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
             if (version == startVisitVersion)
             {
-                StartStatus = "The starting visits could not be found: " + exception.Message;
+                StartStatus = "Your previous visits could not be loaded: " + exception.Message;
             }
         }
         finally
@@ -141,8 +150,8 @@ public sealed partial class JourneyWorkspaceViewModel
         StartVisits = result.Entries.Select(entry => new JourneyStartVisitViewModel(entry)).ToArray();
         StartStatus =
             StartVisits.Count == 0
-                ? $"No recorded ship or carrier arrivals in {name} were found in this commander's journals."
-                : $"Found {StartVisits.Count:N0} arrivals. Choose the visit where this journey began.";
+                ? $"No previous visits match {name}. Try another system name."
+                : $"Found {StartVisits.Count:N0} visits. Choose the visit where your journey began.";
         if (StartVisits.Count == 1)
         {
             SelectedStartVisit = StartVisits[0];
@@ -156,6 +165,7 @@ public sealed partial class JourneyWorkspaceViewModel
 
 public sealed record JourneyStartVisitViewModel(JourneyJournalSystemEntry Entry)
 {
+    public string SystemName => Entry.System.Name;
     public string Arrived =>
         Entry.Event.Timestamp?.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)
         ?? "Unknown arrival time";

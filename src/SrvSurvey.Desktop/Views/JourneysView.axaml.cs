@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.ViewModels;
@@ -73,19 +74,26 @@ public sealed partial class JourneysView : UserControl
             ? model.SetPreferencesAsync(AlwaysOnTopCheckBox.IsChecked == true, GalacticTimeCheckBox.IsChecked == true)
             : Task.CompletedTask;
 
-    private void CurrentStart_Click(object? sender, RoutedEventArgs args)
+    private async void StartingSystem_Selected(object? sender, RoutedEventArgs args)
     {
-        if (Model is { } model)
+        if (sender is SystemNameEntry entry && Model is { } model)
         {
-            model.UseCurrentStart = true;
+            await model.SelectStartingSystemAsync(entry.Text, entry.SelectedSystemAddress);
         }
     }
 
-    private void PriorStart_Click(object? sender, RoutedEventArgs args)
+    private async void StartingSystem_KeyDown(object? sender, KeyEventArgs args)
     {
-        if (Model is { } model)
+        if (
+            args.Key == Key.Enter
+            && sender is SystemNameEntry entry
+            && Model is { } model
+            && model.FindStartCommand.CanExecute(null)
+        )
         {
-            model.UseCurrentStart = false;
+            args.Handled = true;
+            entry.DismissSuggestions();
+            await model.FindStartAsync();
         }
     }
 

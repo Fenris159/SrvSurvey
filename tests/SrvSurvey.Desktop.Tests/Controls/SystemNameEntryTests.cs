@@ -1,5 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Controls;
@@ -23,6 +25,8 @@ public sealed class SystemNameEntryTests
     {
         var client = new StubClient([new SystemNameSuggestion("Sol", 10477373803, "EDSM")]);
         var control = new SystemNameEntry(client, TimeSpan.Zero);
+        var selections = new List<(string? Name, long? Address)>();
+        control.SystemSelected += (_, _) => selections.Add((control.Text, control.SelectedSystemAddress));
         var window = new Window
         {
             Content = control,
@@ -38,12 +42,13 @@ public sealed class SystemNameEntryTests
             await WaitUntilAsync(() => control.HasSuggestions);
 
             Assert.Equal("1 suggestion from EDSM.", control.Status);
-            Assert.True(control.SelectCurrentSuggestion());
+            window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
 
             Assert.Equal("Sol", control.Text);
             Assert.Equal(10477373803, control.SelectedSystemAddress);
             Assert.False(control.HasSuggestions);
             Assert.Equal("Selected Sol · id64 10477373803.", control.Status);
+            Assert.Equal([("Sol", (long?)10477373803)], selections);
         }
         finally
         {

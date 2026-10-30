@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
-using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -14,7 +13,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private const string Unavailable = "\u2014";
 
     private readonly JourneyService journeyService;
-    private readonly IStarSystemResolver systemResolver;
     private readonly SystemNoteStore noteStore;
     private readonly SystemNotesSettingsStore settingsStore;
     private readonly Func<string, string?> screenshotDirectoryProvider;
@@ -22,7 +20,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand newJourneyCommand;
     private readonly AsyncCommand cancelNewJourneyCommand;
-    private readonly AsyncCommand searchSystemsCommand;
+    private readonly AsyncCommand useCurrentSystemCommand;
     private readonly AsyncCommand findStartCommand;
     private readonly AsyncCommand beginJourneyCommand;
     private readonly AsyncCommand saveCommand;
@@ -63,10 +61,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private bool isCreating;
     private string newJourneyName = string.Empty;
     private string newJourneyDescription = string.Empty;
-    private bool useCurrentStart = true;
     private string startSystemQuery = string.Empty;
-    private IReadOnlyList<JourneyStartSystemViewModel> startSystemResults = [];
-    private JourneyStartSystemViewModel? selectedStartSystem;
     private string startStatus = "Choose where this journey should begin.";
     private bool isConcludePending;
     private bool isReprocessPending;
@@ -77,14 +72,12 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public JourneyWorkspaceViewModel(
         JourneyService journeyService,
-        IStarSystemResolver systemResolver,
         SystemNoteStore noteStore,
         SystemNotesSettingsStore settingsStore,
         Func<string, string?>? screenshotDirectoryProvider = null
     )
     {
         this.journeyService = journeyService ?? throw new ArgumentNullException(nameof(journeyService));
-        this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
         this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.screenshotDirectoryProvider = screenshotDirectoryProvider ?? settingsStore.GetImagesDirectory;
@@ -100,9 +93,9 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(StartNewJourneyAsync, () => HasProfileAndNotBusy() && !HasActiveJourney);
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
-        searchSystemsCommand = new AsyncCommand(
-            SearchSystemsAsync,
-            () => IsCreating && !UseCurrentStart && !string.IsNullOrWhiteSpace(StartSystemQuery) && !IsBusy
+        useCurrentSystemCommand = new AsyncCommand(
+            UseCurrentSystemAsync,
+            () => IsCreating && HasCurrentStartSystem && HasProfileAndNotBusy()
         );
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
         beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
@@ -378,41 +371,9 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         set => SetField(ref newJourneyDescription, value ?? string.Empty);
     }
 
-    public bool UseCurrentStart
-    {
-        get => useCurrentStart;
-        set
-        {
-            if (!SetField(ref useCurrentStart, value))
-            {
-                return;
-            }
+    public bool HasCurrentStartSystem => currentSystemAddress is > 0 && !string.IsNullOrWhiteSpace(currentSystemName);
 
-            ClearStartVisits();
-            OnPropertyChanged(nameof(UsePriorStart));
-            StartStatus = value
-                ? $"Find recorded arrivals in {currentSystemName ?? "the current system"}."
-                : "Search for a previously visited system.";
-            RaiseCommands();
-        }
-    }
-
-    public bool UsePriorStart
-    {
-        get => !UseCurrentStart;
-        set
-        {
-            if (value)
-            {
-                UseCurrentStart = false;
-            }
-        }
-    }
-
-    public string CurrentStartSystem =>
-        currentSystemAddress is > 0
-            ? $"{currentSystemName ?? "Current system"} ({currentSystemAddress})"
-            : "No current journal system";
+    public string CurrentStartSystem => $"Use current system: {currentSystemName}";
 
     public string StartSystemQuery
     {
@@ -421,39 +382,11 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             if (SetField(ref startSystemQuery, value ?? string.Empty))
             {
-                if (UsePriorStart)
-                {
-                    SelectedStartSystem = null;
-                    StartSystemResults = [];
-                    ClearStartVisits();
-                    StartStatus = "Search for a previously visited system.";
-                }
-                searchSystemsCommand.RaiseCanExecuteChanged();
+                selectedStartSystemAddress = null;
+                ClearStartVisits();
+                StartStatus = "Search for a system to see your previous visits.";
+                RaiseCommands();
             }
-        }
-    }
-
-    public IReadOnlyList<JourneyStartSystemViewModel> StartSystemResults
-    {
-        get => startSystemResults;
-        private set => SetField(ref startSystemResults, value);
-    }
-
-    public JourneyStartSystemViewModel? SelectedStartSystem
-    {
-        get => selectedStartSystem;
-        set
-        {
-            if (!SetField(ref selectedStartSystem, value))
-            {
-                return;
-            }
-
-            ClearStartVisits();
-            StartStatus = value is null
-                ? "Select a system from the search results."
-                : $"Find recorded arrivals in {value.Name}.";
-            RaiseCommands();
         }
     }
 
@@ -507,7 +440,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public ICommand CancelNewJourneyCommand => cancelNewJourneyCommand;
 
-    public ICommand SearchSystemsCommand => searchSystemsCommand;
+    public ICommand UseCurrentSystemCommand => useCurrentSystemCommand;
 
     public ICommand FindStartCommand => findStartCommand;
 
@@ -568,7 +501,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             RememberJourneyDraft();
         }
-        InvalidateStartVisitContext(profileKey, nextSystemAddress);
+        InvalidateStartVisitContext(profileKey);
         frontierId = normalizedFrontierId;
         commanderName = nextCommanderName;
         isOdyssey = nextIsOdyssey;
@@ -576,6 +509,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         currentSystemAddress = nextSystemAddress;
         OnPropertyChanged(nameof(HasProfile));
         OnPropertyChanged(nameof(CurrentStartSystem));
+        OnPropertyChanged(nameof(HasCurrentStartSystem));
 
         if (string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
         {
@@ -820,14 +754,10 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         IsCreating = true;
         NewJourneyName = string.Empty;
         NewJourneyDescription = string.Empty;
-        UseCurrentStart = true;
-        StartSystemQuery = currentSystemName ?? string.Empty;
-        StartSystemResults = [];
-        SelectedStartSystem = null;
+        StartSystemQuery = string.Empty;
+        selectedStartSystemAddress = null;
         ClearStartVisits();
-        StartStatus = currentSystemAddress is > 0
-            ? $"Find recorded arrivals in {currentSystemName}."
-            : "A current journal system is required, or search for a prior system.";
+        StartStatus = "Search for a system to see your previous visits.";
         return Task.CompletedTask;
     }
 
@@ -838,52 +768,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return Task.CompletedTask;
     }
 
-    public async Task SearchSystemsAsync()
-    {
-        string query = StartSystemQuery.Trim();
-        int version = contextVersion;
-        try
-        {
-            IsBusy = true;
-            StartStatus = $"Searching for {StartSystemQuery.Trim()}\u2026";
-            IReadOnlyList<StarSystemReference> results = await systemResolver.SearchAsync(query);
-            if (version != contextVersion || !IsCreating || UseCurrentStart || query != StartSystemQuery.Trim())
-            {
-                return;
-            }
-            StartSystemResults = results.Select(system => new JourneyStartSystemViewModel(system)).ToArray();
-            SelectedStartSystem =
-                StartSystemResults.FirstOrDefault(system =>
-                    string.Equals(system.Name, StartSystemQuery.Trim(), StringComparison.OrdinalIgnoreCase)
-                ) ?? (StartSystemResults.Count > 0 ? StartSystemResults[0] : null);
-            StartStatus =
-                StartSystemResults.Count == 0
-                    ? "No matching systems were found."
-                    : $"Found {StartSystemResults.Count:N0} matching systems.";
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StartStatus = "The system search failed: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
-    }
-
-    private bool CanFindStart()
-    {
-        return IsCreating
-            && frontierId is not null
-            && !IsBusy
-            && (UseCurrentStart ? currentSystemAddress is > 0 : SelectedStartSystem is not null);
-    }
+    private bool CanFindStart() => IsCreating && HasProfileAndNotBusy() && !string.IsNullOrWhiteSpace(StartSystemQuery);
 
     public async Task BeginJourneyAsync()
     {
@@ -1365,7 +1250,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand.RaiseCanExecuteChanged();
         newJourneyCommand.RaiseCanExecuteChanged();
         cancelNewJourneyCommand.RaiseCanExecuteChanged();
-        searchSystemsCommand.RaiseCanExecuteChanged();
+        useCurrentSystemCommand.RaiseCanExecuteChanged();
         findStartCommand.RaiseCanExecuteChanged();
         beginJourneyCommand.RaiseCanExecuteChanged();
         saveCommand.RaiseCanExecuteChanged();
@@ -1623,13 +1508,4 @@ public sealed record JourneySystemItemViewModel(
         };
 
     public string Address => Visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture);
-}
-
-public sealed record JourneyStartSystemViewModel(StarSystemReference System)
-{
-    public string Name => System.Name;
-
-    public long SystemAddress => System.SystemAddress;
-
-    public string DisplayName => $"{Name} ({SystemAddress})";
 }

@@ -27,7 +27,7 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
                 {"timestamp":"2026-07-03T00:05:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
                 {"event":"FSDJump","StarSystem":"No timestamp","SystemAddress":42,"StarPos":[0,0,0]}
                 {"timestamp":"2026-07-04T00:05:00Z","event":"FSDJump","StarSystem":"Bad position","SystemAddress":42,"StarPos":[null,0,0]}
-                {"timestamp":"2026-07-05T00:05:00Z","event":"FSDJump","StarSystem":"Wrong address","SystemAddress":43,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-05T00:05:00Z","event":"FSDJump","StarSystem":"Wrong address","SystemAddress":43,"StarPos":[0,0,0],"Description":"Sol"}
                 malformed
                 """
         );
@@ -56,6 +56,16 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         Assert.Equal("CarrierJump", result.Entries[1].Event.EventName);
         Assert.All(result.Entries, entry => Assert.Equal("Sol", entry.System.Name));
         Assert.Single(result.Errors);
+        Assert.Equal(
+            result.Entries.Select(entry => entry.Event.Timestamp),
+            (await reader.FindArrivalsAsync("F123", true, " sOL ")).Entries.Select(entry => entry.Event.Timestamp)
+        );
+        Assert.Equal(
+            result.Entries.Select(entry => entry.Event.Timestamp),
+            (await reader.FindArrivalsAsync("F123", true, "so")).Entries.Select(entry => entry.Event.Timestamp)
+        );
+        Assert.Empty((await reader.FindArrivalsAsync("F123", true, "Unvisited")).Entries);
+        await Assert.ThrowsAsync<ArgumentException>(() => reader.FindArrivalsAsync("F123", true, " "));
         Assert.Equal(
             "Legacy Sol",
             Assert.Single((await reader.FindArrivalsAsync("F123", false, 42)).Entries).System.Name

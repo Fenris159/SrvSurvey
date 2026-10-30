@@ -1,4 +1,3 @@
-using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -16,6 +15,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         await model.StartNewJourneyAsync();
         model.NewJourneyName = "Chosen start";
         Assert.False(model.BeginJourneyCommand.CanExecute(null));
+        model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
         Assert.Equal(3, model.StartVisits.Count);
         Assert.Null(model.SelectedStartVisit);
@@ -34,22 +34,27 @@ public sealed partial class JourneyWorkspaceViewModelTests
     }
 
     [Fact]
-    public async Task ChangingCurrentSystemOrCommanderAndCancelingClearsTheSelectedVisit()
+    public async Task ExplicitSystemSearchSurvivesTravelButNotCommanderChangesOrCancellation()
     {
         await WriteRepeatedVisitsAsync();
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
         model.NewJourneyName = "Chosen start";
+        model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
         model.SelectedStartVisit = model.StartVisits[0];
         JourneyStartVisitViewModel stale = model.SelectedStartVisit;
         await model.UpdateContextAsync("F123", "Drew", true, "Achenar", 99);
+        Assert.Equal(3, model.StartVisits.Count);
+        Assert.Same(stale, model.SelectedStartVisit);
+        Assert.Equal("Sol", model.StartSystemQuery);
+        model.StartSystemQuery = "Achenar";
         Assert.Empty(model.StartVisits);
-        Assert.Null(model.SelectedStartVisit);
         model.SelectedStartVisit = stale;
         Assert.Null(model.SelectedStartVisit);
         Assert.False(model.BeginJourneyCommand.CanExecute(null));
+        model.StartSystemQuery = "Sol";
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.FindStartAsync();
         Assert.Equal(3, model.StartVisits.Count);
@@ -57,6 +62,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.Empty(model.StartVisits);
         Assert.False(model.IsCreating);
         await model.StartNewJourneyAsync();
+        model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
         model.SelectedStartVisit = model.StartVisits[0];
         await model.UpdateContextAsync("F999", "Other", true, "Sol", 42);
@@ -65,19 +71,14 @@ public sealed partial class JourneyWorkspaceViewModelTests
     }
 
     [Fact]
-    public async Task EditingAPriorSystemSearchClearsItsArrivalsAndStartSelection()
+    public async Task SystemNameSearchReturnsVisitsDirectlyAndEditingClearsTheSelection()
     {
         await WriteRepeatedVisitsAsync();
-        JourneyWorkspaceViewModel model = CreateViewModel([
-            new StarSystemReference("Sol", 42, new GalacticCoordinate(0, 0, 0)),
-            new StarSystemReference("Alpha", 43, new GalacticCoordinate(1, 0, 0)),
-        ]);
+        JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Alpha", 43);
         await model.StartNewJourneyAsync();
         model.NewJourneyName = "Earlier expedition";
-        model.UsePriorStart = true;
         model.StartSystemQuery = "Sol";
-        await model.SearchSystemsAsync();
         await model.FindStartAsync();
         Assert.Equal(3, model.StartVisits.Count);
         model.SelectedStartVisit = model.StartVisits[^1];
@@ -85,16 +86,67 @@ public sealed partial class JourneyWorkspaceViewModelTests
         model.StartSystemQuery = "Alpha";
         Assert.Empty(model.StartVisits);
         Assert.Null(model.SelectedStartVisit);
-        Assert.Null(model.SelectedStartSystem);
         Assert.False(model.BeginJourneyCommand.CanExecute(null));
-        await model.SearchSystemsAsync();
         await model.FindStartAsync();
         Assert.Equal(2, model.StartVisits.Count);
         Assert.All(model.StartVisits, visit => Assert.Equal("Alpha", visit.Entry.System.Name));
     }
 
     [Fact]
-    public async Task AChangedStartModeCancelsTheSearchWithoutRestoringItsResults()
+    public async Task AutocompleteSelectionRestrictsMatchesToThatSystemAndHandlesAnUnvisitedSuggestion()
+    {
+        await WriteRepeatedVisitsAsync();
+        await File.AppendAllTextAsync(
+            Path.Combine(JournalDirectory, "Journal.2026-07-01T000000.01.log"),
+            "\n"
+                + """{"timestamp":"2026-07-04T00:05:00Z","event":"FSDJump","StarSystem":"Solati","SystemAddress":99,"StarPos":[2,0,0]}"""
+        );
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Alpha", 43);
+        await model.StartNewJourneyAsync();
+        Assert.Empty(model.StartSystemQuery);
+        Assert.False(model.FindStartCommand.CanExecute(null));
+        model.NewJourneyName = "Alpha";
+        model.NewJourneyDescription = "Alpha";
+        model.StartSystemQuery = " sOL ";
+        await model.FindStartAsync();
+        Assert.Equal(4, model.StartVisits.Count);
+        await model.SelectStartingSystemAsync("Sol", 42);
+        Assert.Equal(3, model.StartVisits.Count);
+        Assert.All(model.StartVisits, visit => Assert.Equal("Sol", visit.SystemName));
+        await model.SelectStartingSystemAsync("Unvisited", 777);
+        Assert.Empty(model.StartVisits);
+        Assert.Null(model.SelectedStartVisit);
+        Assert.Contains("No previous visits match Unvisited", model.StartStatus, StringComparison.Ordinal);
+        Assert.False(model.BeginJourneyCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task CurrentSystemShortcutLoadsItsVisitsAndRequiresAKnownCurrentSystem()
+    {
+        await WriteRepeatedVisitsAsync();
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        Assert.True(model.UseCurrentSystemCommand.CanExecute(null));
+        var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        model.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(model.IsBusy) && !model.IsBusy && model.HasStartVisits)
+            {
+                loaded.TrySetResult();
+            }
+        };
+        model.UseCurrentSystemCommand.Execute(null);
+        await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal("Sol", model.StartSystemQuery);
+        Assert.Equal(3, model.StartVisits.Count);
+        await model.UpdateContextAsync("F123", "Drew", true, null, null);
+        Assert.False(model.UseCurrentSystemCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task AChangedSystemNameCancelsTheSearchWithoutRestoringItsResults()
     {
         await WriteRepeatedVisitsAsync();
         JourneyWorkspaceViewModel model = CreateViewModel();
@@ -104,17 +156,18 @@ public sealed partial class JourneyWorkspaceViewModelTests
         {
             if (
                 args.PropertyName == nameof(model.StartStatus)
-                && model.StartStatus.StartsWith("Finding recorded", StringComparison.Ordinal)
+                && model.StartStatus.StartsWith("Finding your visits", StringComparison.Ordinal)
             )
             {
-                model.UseCurrentStart = false;
+                model.StartSystemQuery = "Alpha";
             }
         };
+        model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
         Assert.False(model.IsBusy);
         Assert.Empty(model.StartVisits);
-        Assert.False(model.UseCurrentStart);
-        Assert.Equal("Search for a previously visited system.", model.StartStatus);
+        Assert.Equal("Alpha", model.StartSystemQuery);
+        Assert.Equal("Search for a system to see your previous visits.", model.StartStatus);
     }
 
     private async Task WriteRepeatedVisitsAsync() =>
