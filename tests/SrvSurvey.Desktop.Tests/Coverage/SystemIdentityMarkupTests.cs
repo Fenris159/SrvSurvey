@@ -28,7 +28,11 @@ public sealed class SystemIdentityMarkupTests
                 == "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields."
         );
         AssertEntry(Load("Views", "GuardianView.axaml"), "{Binding Guardian.OriginSystemName, Mode=TwoWay}");
-        AssertEntry(Load(null, "JourneyWindow.axaml"), "{Binding StartSystemQuery, Mode=TwoWay}");
+        AssertEntry(
+            Load("Views", "JourneysView.axaml"),
+            "{Binding StartSystemQuery, Mode=TwoWay}",
+            "Type a system name…"
+        );
         AssertEntry(Load("Views", "DiagnosticsView.axaml"), "{Binding VisitedStarsCache.SystemName, Mode=TwoWay}");
     }
 
@@ -76,7 +80,7 @@ public sealed class SystemIdentityMarkupTests
             Load("Views", "TravelView.axaml"),
             Load("Views", "ColonizationView.axaml"),
             Load("Views", "ExobiologyView.axaml"),
-            Load(null, "JourneyWindow.axaml"),
+            Load("Views", "JourneysView.axaml"),
             Load(null, "RouteWindow.axaml"),
             Load(null, "SystemNotesWindow.axaml"),
             Load(null, "BiologyPredictionsWindow.axaml"),
@@ -160,14 +164,14 @@ public sealed class SystemIdentityMarkupTests
         Assert.All(documents, document => Assert.DoesNotContain(document.Root!.DescendantsAndSelf(), HasCopyBehavior));
     }
 
-    private static void AssertEntry(XDocument document, string textBinding)
+    private static void AssertEntry(XDocument document, string textBinding, string placeholder = "System name or id64")
     {
         Assert.Contains(
             document.Descendants(),
             element =>
                 element.Name.LocalName == "SystemNameEntry"
                 && element.Attribute("Text")?.Value == textBinding
-                && element.Attribute("PlaceholderText")?.Value == "System name or id64"
+                && element.Attribute("PlaceholderText")?.Value == placeholder
         );
     }
 

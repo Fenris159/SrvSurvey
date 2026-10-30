@@ -10,6 +10,193 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
     );
 
     [Fact]
+    public async Task LatestFsdLookupSkipsCarrierOnlyJournalsAndStopsBeforeOlderFiles()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true) + "\nmalformed old entry"
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-02T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-03T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-03T00:05:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemSearchResult result = await reader.FindLatestFsdJumpAsync("F123", true, 42);
+        Assert.Equal(2, result.Entry!.Event.Timestamp!.Value.Day);
+        Assert.Empty(result.Errors);
+        Assert.Single((await reader.FindArrivalsAsync("F123", true, 42)).Errors);
+    }
+
+    [Fact]
+    public async Task FindsEveryDistinctArrivalByEventDateAndKeepsCommanderAndGameModesSeparate()
+    {
+        const string first = "Journal.2026-07-01T000000.01.log";
+        await WriteJournalAsync(
+            first,
+            new DateTime(2026, 7, 10, 0, 0, 0, DateTimeKind.Utc),
+            Header("F123", true)
+                + "\n"
+                + """
+                {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-02T00:00:00Z","event":"Commander","FID":"F999"}
+                {"timestamp":"2026-07-02T00:05:00Z","event":"FSDJump","StarSystem":"Foreign","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-02T00:06:00Z","event":"Screenshot","foreign":true}
+                {"timestamp":"2026-07-03T00:00:00Z","event":"LoadGame","FID":"F123"}
+                {"timestamp":"2026-07-03T00:05:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"event":"FSDJump","StarSystem":"No timestamp","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-04T00:05:00Z","event":"FSDJump","StarSystem":"Bad position","SystemAddress":42,"StarPos":[null,0,0]}
+                {"timestamp":"2026-07-05T00:05:00Z","event":"FSDJump","StarSystem":"Wrong address","SystemAddress":43,"StarPos":[0,0,0],"Description":"Sol"}
+                malformed
+                """
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-06T000000.01.log",
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            Header("F123", true)
+                + "\n"
+                + """
+                {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-06T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                """
+        );
+        await WriteJournalAsync(
+            "Journal.2026-07-07T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", false)
+                + "\n"
+                + """
+                {"timestamp":"2026-07-07T00:05:00Z","event":"FSDJump","StarSystem":"Legacy Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                """
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemVisitsResult result = await reader.FindArrivalsAsync("F123", true, 42);
+        Assert.Equal([6, 3, 1], result.Entries.Select(entry => entry.Event.Timestamp!.Value.Day));
+        Assert.Equal("CarrierJump", result.Entries[1].Event.EventName);
+        Assert.All(result.Entries, entry => Assert.Equal("Sol", entry.System.Name));
+        Assert.Single(result.Errors);
+        Assert.Equal(
+            result.Entries.Select(entry => entry.Event.Timestamp),
+            (await reader.FindArrivalsAsync("F123", true, " sOL ")).Entries.Select(entry => entry.Event.Timestamp)
+        );
+        Assert.Equal(
+            result.Entries.Select(entry => entry.Event.Timestamp),
+            (await reader.FindArrivalsAsync("F123", true, "so")).Entries.Select(entry => entry.Event.Timestamp)
+        );
+        Assert.Empty((await reader.FindArrivalsAsync("F123", true, "Unvisited")).Entries);
+        await Assert.ThrowsAsync<ArgumentException>(() => reader.FindArrivalsAsync("F123", true, " "));
+        Assert.Equal(
+            "Legacy Sol",
+            Assert.Single((await reader.FindArrivalsAsync("F123", false, 42)).Entries).System.Name
+        );
+        JourneyJournalReadResult replay = await reader.ReadFromAsync(first, "F123", true);
+        Assert.Contains(replay.Events, entry => entry.EventName == "FSDJump" && entry.Timestamp?.Day == 6);
+        Assert.DoesNotContain(replay.Events, entry => entry.Payload.TryGetProperty("foreign", out _));
+        Assert.DoesNotContain(
+            replay.Events,
+            entry =>
+                entry.Payload.TryGetProperty("StarSystem", out System.Text.Json.JsonElement name)
+                && name.GetString() == "Foreign"
+        );
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            reader.FindArrivalsAsync("F123", true, 42, cancellationToken: canceled.Token)
+        );
+    }
+
+    [Fact]
+    public async Task DateCutoffKeepsTheWholeUtcDayAndJournalsSpanningTheBoundary()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-06-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true) + "\nmalformed old line\n" + Event("2026-07-30T23:59:59Z", "Shutdown")
+        );
+        string spanning =
+            Header("F123", true)
+            + "\n"
+            + """
+                {"timestamp":"2026-07-31T23:59:59Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T00:00:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T01:00:00+02:00","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T23:59:59Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                """;
+        // The oversized final record forces a safe full read when the tail starts inside JSON.
+        spanning +=
+            "\n"
+            + "{\"timestamp\":\"2026-08-01T23:59:59Z\",\"event\":\"Screenshot\",\"padding\":\""
+            + new string('x', 20_000)
+            + "\"}";
+        await WriteJournalAsync(
+            "Journal.2026-07-31T000000.01.log",
+            new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            spanning
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-08-02T00:00:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemVisitsResult result = await reader.FindArrivalsAsync(
+            "F123",
+            true,
+            "Sol",
+            new DateOnly(2026, 8, 1)
+        );
+        Assert.Equal([2, 1, 1], result.Entries.Select(entry => entry.Event.Timestamp!.Value.UtcDateTime.Day));
+        Assert.Empty(result.Errors);
+        Assert.Single((await reader.FindArrivalsAsync("F123", true, 42, new DateOnly(2026, 8, 2))).Entries);
+        Assert.Empty((await reader.FindArrivalsAsync("F123", true, "Sol", new DateOnly(2026, 8, 3))).Entries);
+    }
+
+    [Fact]
+    public async Task CurrentLocationUsesTheNewestMatchingLocationIncludingDockedLogins()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-08-01T00:05:00Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0],"Docked":true}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F999", true)
+                + "\n"
+                + """{"timestamp":"2026-08-02T00:05:00Z","event":"Location","StarSystem":"Wrong commander","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemSearchResult result = await reader.FindCurrentLocationAsync("F123", true, 42);
+        Assert.Equal("Location", result.Entry!.Event.EventName);
+        Assert.Equal("Sol", result.Entry.System.Name);
+        Assert.Equal(8, result.Entry.Event.Timestamp!.Value.Month);
+        Assert.Null((await reader.FindCurrentLocationAsync("F123", false, 42)).Entry);
+        Assert.Null((await reader.FindCurrentLocationAsync("F123", true, 99)).Entry);
+    }
+
+    [Fact]
     public async Task FindsLatestMatchingCommanderFsdJump()
     {
         await WriteJournalAsync(

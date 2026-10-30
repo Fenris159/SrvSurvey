@@ -113,12 +113,6 @@ public sealed class ThemeWorkspaceMarkupTests
     public void ColonizationSettingsAndSystemEditorUseStaticPages()
     {
         XDocument colonization = LoadDesktopFile("Views", "ColonizationView.axaml");
-        XElement[] expanders = colonization
-            .Descendants()
-            .Where(element => element.Name.LocalName == "Expander")
-            .ToArray();
-
-        Assert.Empty(expanders);
         XElement settings = Assert.Single(
             colonization.Descendants(),
             element => element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "Settings"
@@ -126,6 +120,10 @@ public sealed class ThemeWorkspaceMarkupTests
         XElement system = Assert.Single(
             colonization.Descendants(),
             element => element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "System Editor"
+        );
+        Assert.DoesNotContain(
+            settings.Descendants().Concat(system.Descendants()),
+            element => element.Name.LocalName == "Expander"
         );
         Assert.Contains(settings.Descendants(), element => element.Attribute("Text")?.Value == "External data consent");
         Assert.Contains(

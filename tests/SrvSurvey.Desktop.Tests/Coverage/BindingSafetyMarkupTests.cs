@@ -14,7 +14,7 @@ public sealed class BindingSafetyMarkupTests
     [Fact]
     public void JourneyDetailsDoNotDereferenceANullSelection()
     {
-        string markup = ReadDesktopMarkup("JourneyWindow.axaml");
+        string markup = ReadDesktopMarkup(Path.Combine("Views", "JourneysView.axaml"));
 
         Assert.Contains("{Binding SelectedSystemName}", markup);
         Assert.Contains("{Binding SelectedSystemAddressText}", markup);

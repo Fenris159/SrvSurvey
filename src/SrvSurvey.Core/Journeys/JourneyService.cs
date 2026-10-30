@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Journeys;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The service is application-scoped and its gate may have in-flight waiters."
 )]
-public sealed class JourneyService
+public sealed partial class JourneyService
 {
     private readonly JourneyStore journeyStore;
     private readonly JourneyJournalHistoryReader historyReader;
@@ -49,6 +49,29 @@ public sealed class JourneyService
         return journeyStore.LoadAllAsync(frontierId, cancellationToken);
     }
 
+    public Task<JourneyJournalSystemVisitsResult> FindStartVisitsAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        DateOnly? onOrAfter = null,
+        CancellationToken cancellationToken = default
+    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemAddress, onOrAfter, cancellationToken);
+
+    public Task<JourneyJournalSystemVisitsResult> FindStartVisitsAsync(
+        string frontierId,
+        bool isOdyssey,
+        string systemName,
+        DateOnly? onOrAfter = null,
+        CancellationToken cancellationToken = default
+    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemName, onOrAfter, cancellationToken);
+
+    public Task<JourneyJournalSystemSearchResult> FindCurrentStartAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        CancellationToken cancellationToken = default
+    ) => historyReader.FindCurrentLocationAsync(frontierId, isOdyssey, systemAddress, cancellationToken);
+
     public Task<JourneyLoadResult> LoadAsync(
         string frontierId,
         string fileName,
@@ -70,7 +93,7 @@ public sealed class JourneyService
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(frontierId, isOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            if (profile.Data is null)
+            if (profile.Data is not { } profileData)
             {
                 activeProcessor = null;
                 return new JourneyServiceResult(
@@ -80,7 +103,7 @@ public sealed class JourneyService
                 );
             }
 
-            string? fileName = profile.Data?.ActiveJourneyFileName;
+            string? fileName = profileData.ActiveJourneyFileName;
             if (string.IsNullOrWhiteSpace(fileName))
             {
                 activeProcessor = null;
@@ -103,9 +126,12 @@ public sealed class JourneyService
             if (!load.Journey.IsActive)
             {
                 activeProcessor = null;
+                await profileStore
+                    .SaveActiveJourneyAsync(frontierId, profileData.CommanderName, isOdyssey, null, cancellationToken)
+                    .ConfigureAwait(false);
                 return new JourneyServiceResult(
                     load.Journey,
-                    ["The commander profile points to a concluded journey."],
+                    ["The commander profile pointed to a concluded journey. Its active reference was cleared."],
                     0
                 );
             }
@@ -126,7 +152,7 @@ public sealed class JourneyService
         ArgumentNullException.ThrowIfNull(request);
         if (request.StartingEntry.Event.Timestamp is null)
         {
-            throw new ArgumentException("The starting FSD jump must have a timestamp.", nameof(request));
+            throw new ArgumentException("The starting location must have a timestamp.", nameof(request));
         }
 
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -227,7 +253,7 @@ public sealed class JourneyService
                 Name = journey.Name.Trim(),
                 Description = journey.Description ?? string.Empty,
             };
-            await journeyStore.SaveAsync(normalized, cancellationToken).ConfigureAwait(false);
+            normalized = await journeyStore.SaveAsync(normalized, cancellationToken).ConfigureAwait(false);
             if (
                 activeProcessor?.Journey.FileName == normalized.FileName
                 && activeProcessor.Journey.FrontierId == normalized.FrontierId
@@ -294,7 +320,10 @@ public sealed class JourneyService
                 ? read.Events.Where(journalEvent => journalEvent.Timestamp is null || journalEvent.Timestamp <= endTime)
                 : read.Events;
             JourneyReplaySummary replay = processor.ApplyCatchUp(events);
-            await journeyStore.SaveAsync(replay.Journey, cancellationToken).ConfigureAwait(false);
+            JourneyDocument saved = await journeyStore
+                .SaveAsync(replay.Journey, cancellationToken)
+                .ConfigureAwait(false);
+            processor.UpdateJourney(saved);
 
             if (
                 activeProcessor?.Journey.FileName == journey.FileName
@@ -305,7 +334,7 @@ public sealed class JourneyService
                 activeIsOdyssey = isOdyssey;
             }
 
-            return new JourneyServiceResult(replay.Journey, read.Errors, replay.ProcessedEventCount);
+            return new JourneyServiceResult(saved, read.Errors, replay.ProcessedEventCount);
         }
         finally
         {
@@ -316,6 +345,7 @@ public sealed class JourneyService
     public async Task<JourneyDocument?> ConcludeActiveAsync(
         string commanderName,
         DateTimeOffset endTime,
+        JourneyDocument? expectedJourney = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -327,12 +357,27 @@ public sealed class JourneyService
                 return null;
             }
 
+            if (
+                expectedJourney is not null
+                && (
+                    !string.Equals(
+                        activeProcessor.Journey.FrontierId,
+                        expectedJourney.FrontierId,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || activeProcessor.Journey.FileName != expectedJourney.FileName
+                )
+            )
+            {
+                return null;
+            }
+
             JourneyDocument concluded = activeProcessor.Journey with { EndTime = endTime };
             await journeyStore.SaveAsync(concluded, cancellationToken).ConfigureAwait(false);
+            activeProcessor = null;
             await profileStore
                 .SaveActiveJourneyAsync(concluded.FrontierId, commanderName, activeIsOdyssey, null, cancellationToken)
                 .ConfigureAwait(false);
-            activeProcessor = null;
             return concluded;
         }
         finally

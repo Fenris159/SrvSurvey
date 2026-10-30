@@ -385,6 +385,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
   },
   {
+    "Text": "1 landing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "1 matching guide entry",
     "IsFormat": false,
     "SourceKinds": [
@@ -401,12 +409,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 note",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "1 organism",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "1 screenshot",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "1 system",
@@ -1633,14 +1657,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "A current journal system is required, or search for a prior system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "A current ship and surface position are required to calibrate its cockpit offset.",
     "IsFormat": false,
     "SourceKinds": [
@@ -2248,14 +2264,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
-  },
-  {
-    "Text": "ACTIVE JOURNEY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "ACTIVE OBELISKS",
@@ -3179,6 +3187,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
+    "Text": "Add a description for your journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Add a destination system",
     "IsFormat": false,
     "SourceKinds": [
@@ -3304,7 +3320,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Add or remove favorite",
@@ -3819,6 +3835,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "All dates",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "All dates and times use UTC.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4106,7 +4130,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SystemNotesWindow.axaml"
   },
   {
     "Text": "Always on top is off.",
@@ -5019,6 +5043,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.SystemCatalog.cs"
+  },
+  {
+    "Text": "Archive ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "Archive journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "Archived {0}. Find it in Archive.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Archon Delaine",
@@ -6142,6 +6190,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Awaiting a visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
     "Text": "Azura Initiative",
     "IsFormat": false,
     "SourceKinds": [
@@ -7073,12 +7129,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
-    "Text": "Begin an expedition",
+    "Text": "Begin a journey to record your next expedition.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Begin journey",
@@ -7086,7 +7142,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Beginning of time",
@@ -7168,14 +7224,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
-  },
-  {
-    "Text": "Bio rewards",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Bio signal radius (organism sample range)",
@@ -7619,6 +7667,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
   },
   {
+    "Text": "Biology base value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Biology body predictions",
     "IsFormat": false,
     "SourceKinds": [
@@ -7691,7 +7747,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Biology {0} scans / {1} CR",
+    "Text": "Biology values use catalog base rewards. Exploration values are estimates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Biology {0} analysed / base value {1} CR",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -7866,6 +7930,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+  },
+  {
+    "Text": "Bodies catalogued",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Bodies scanned",
@@ -8445,14 +8517,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
-  },
-  {
-    "Text": "Browse history, inspect every visited system, and keep the active expedition current.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -9046,14 +9110,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
-  },
-  {
-    "Text": "COMMANDER JOURNEYS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "COMMANDER NOTES",
@@ -11044,6 +11100,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
+    "Text": "Choose a destination for the journey report folder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+  },
+  {
     "Text": "Choose a folder, then save both the JSON detail and CSV summary there.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11068,12 +11132,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
-    "Text": "Choose a journey from the history list or begin a new one.",
+    "Text": "Choose a journey from the list, or begin a new expedition.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Choose a landmark type or subtype. A variant is optional.",
@@ -11099,6 +11163,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose a local folder to save the report safely.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
   },
   {
     "Text": "Choose a monitor and size for game overlays.",
@@ -11267,14 +11339,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
-  },
-  {
-    "Text": "Choose a valid starting system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Choose a valid {0}.",
@@ -11533,20 +11597,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Choose the current system or select a previous visit before beginning the journey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
-  },
-  {
-    "Text": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Choose the live panel and Default or the current vehicle/game mode.",
@@ -11595,6 +11659,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose the visit where your journey began.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Choose what happens when you switch windows or change suits.",
@@ -13240,6 +13312,7 @@
     "Text": "Commanders",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
@@ -13538,6 +13611,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Complete journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Complete or sufficient",
     "IsFormat": false,
     "SourceKinds": [
@@ -13560,6 +13641,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Complete this journey?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Complete this route\u0027s pairing steps, then enable VR overlays.",
@@ -13640,30 +13729,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
-  },
-  {
-    "Text": "Conclude",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "Conclude journey",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "Conclude this journey?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Concluded {0}.",
@@ -14972,6 +15037,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Copying report images and preparing previews...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+  },
+  {
     "Text": "Core",
     "IsFormat": false,
     "SourceKinds": [
@@ -15864,6 +15937,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
+    "Text": "Current system unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Current temperature {0} K is too cold.",
     "IsFormat": true,
     "SourceKinds": [
@@ -16016,6 +16097,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "D4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+  },
+  {
     "Text": "DARK",
     "IsFormat": false,
     "SourceKinds": [
@@ -16078,14 +16167,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayPresentation.axaml"
-  },
-  {
-    "Text": "DESCRIPTION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "DESTINATION",
@@ -16690,6 +16771,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
   },
   {
+    "Text": "Delete journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Delete local raw point",
     "IsFormat": false,
     "SourceKinds": [
@@ -16810,6 +16899,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
+    "Text": "Delete this journey?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Delete this route?",
     "IsFormat": false,
     "SourceKinds": [
@@ -16880,6 +16977,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
+  },
+  {
+    "Text": "Deleted {0}. Journals, notes, and screenshots were kept.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Deleting Nexus on Raven Colonial...",
@@ -17035,6 +17140,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Departure",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "DepartureTime",
     "IsFormat": false,
     "SourceKinds": [
@@ -17082,6 +17195,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Description",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Design-time error",
@@ -17775,14 +17896,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/GuardianOverlaySettingsStore.cs"
   },
   {
-    "Text": "Discard",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "Discard all unexported master-template changes?",
     "IsFormat": false,
     "SourceKinds": [
@@ -17796,7 +17909,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Discard draft",
@@ -18440,7 +18553,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Down",
@@ -20949,20 +21062,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyStatusViewModel.cs"
   },
   {
-    "Text": "Expedition name",
+    "Text": "Expedition history, statistics, and reports",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "Expedition workspace",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Experimental rig bar detection",
@@ -21235,6 +21340,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Export as HTML",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Export backup file",
@@ -22578,14 +22691,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Find last visit",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "Find material traders",
     "IsFormat": false,
     "SourceKinds": [
@@ -22659,20 +22764,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
-    "Text": "Find the last recorded FSD jump into {0}.",
-    "IsFormat": true,
+    "Text": "Find visits",
+    "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Find the most recent FSD jump into {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Find \u2192 Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -22697,6 +22794,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Finding your visits to {0}...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Finds",
@@ -23157,6 +23262,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
+    "Text": "Fleet carrier arrival",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Fleet carrier itinerary",
     "IsFormat": false,
     "SourceKinds": [
@@ -23581,12 +23694,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Found {0} matching systems.",
+    "Text": "Found {0} visits. Choose the visit where your journey began.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Frame Shift Drive",
@@ -24444,14 +24557,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
-  },
-  {
-    "Text": "Galactic time",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Galactic-region PIP outer border",
@@ -27938,7 +28043,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Ignored {0} malformed line(s).",
@@ -29170,14 +29275,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "JOURNEY NAME",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "JSON catalog",
     "IsFormat": false,
     "SourceKinds": [
@@ -29516,6 +29613,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
+    "Text": "Journal touchdowns",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Journal verified",
     "IsFormat": false,
     "SourceKinds": [
@@ -29572,6 +29677,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "Journey description (optional)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Journey details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Journey ended here {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Journey history could not be loaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -29580,15 +29709,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "Journey updated through {0}.",
-    "IsFormat": true,
+    "Text": "Journey name",
+    "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
-    "Text": "Journey window preferences saved.",
+    "Text": "Journey preferences saved.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -29596,7 +29725,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "Journey window preferences were not saved: {0}",
+    "Text": "Journey preferences were not saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Journey report export canceled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+  },
+  {
+    "Text": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+  },
+  {
+    "Text": "Journey updated through {0}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -29612,12 +29765,21 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "Journeys - SrvSurvey",
+    "Text": "Journeys",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Journeys ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -29950,6 +30112,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
+    "Text": "Keep the application on top while viewing Journeys",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29979,7 +30149,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",
@@ -30448,6 +30618,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "Landing sites by visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Landing-pad data unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -30583,14 +30761,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "Last arrived in {0} on {1} ({2}).",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Last docked market",
@@ -30736,6 +30906,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Latest recorded system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Latitude",
@@ -31521,6 +31699,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Load the game or select a commander in Overview to read journey history.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Load theme",
@@ -34451,6 +34637,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Mining delivery",
     "IsFormat": false,
     "SourceKinds": [
@@ -34513,6 +34707,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Mining overlay settings could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.OverlaySettings.cs"
+  },
+  {
+    "Text": "Mining overlay settings could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.OverlaySettings.cs"
   },
   {
     "Text": "Mining overview map",
@@ -34618,6 +34828,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
+    "Text": "MiningOverlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/MiningOverlaySettingsStore.cs"
   },
   {
     "Text": "MiningReferenceCommodities",
@@ -35366,14 +35584,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "NEW JOURNEY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "NEW MAP DRAFT",
     "IsFormat": false,
     "SourceKinds": [
@@ -35536,6 +35746,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Name this journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Name this search so you can resume it later.",
@@ -35968,7 +36186,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "New live events are batched for about 35 seconds. Credit changes are reconstructed from journal transactions and coalesced to Inara\u0027s hourly recommendation, with session-boundary updates.",
@@ -36057,6 +36275,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Newest first. All times are UTC.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Next",
@@ -36404,14 +36630,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/EdsmSettingsViewModel.cs"
   },
   {
-    "Text": "No FSD jump into {0} was found in this commander\u0027s journals.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "No Fleet Carrier",
     "IsFormat": false,
     "SourceKinds": [
@@ -36521,7 +36739,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "No POI catalogue is available.",
@@ -36714,6 +36932,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "No archived journeys. Archive a completed journey to keep it here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "No artifact requirement is recorded.",
@@ -36988,14 +37214,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
   },
   {
-    "Text": "No current journal system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "No current obelisk is available for mission tracking.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37153,15 +37371,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "No journeys have been recorded for this commander.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "No jump scheduled",
@@ -37332,14 +37542,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SystemNameEntry.axaml.cs"
   },
   {
-    "Text": "No matching systems were found.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "No messages",
     "IsFormat": false,
     "SourceKinds": [
@@ -37450,6 +37652,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "No previous visits match {0}. Try another system name.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "No projects loaded.",
@@ -37837,6 +38047,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "No system visits were recorded for this journey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "No systems are available in this boxel.",
     "IsFormat": false,
     "SourceKinds": [
@@ -37851,6 +38069,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "No systems recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "No tags",
@@ -38165,6 +38391,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
+  },
+  {
+    "Text": "Notes on another visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Nothing met the export minimum.",
@@ -39010,7 +39244,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
   },
   {
-    "Text": "Open Journey workspace",
+    "Text": "Open Journeys",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -39296,7 +39530,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
     "Text": "Open images folder",
@@ -39786,14 +40020,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "Optional description",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -41076,7 +41302,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "Overview Map marker-label setting changed for this session but could not be saved: {0}",
@@ -41677,6 +41903,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
+  },
+  {
+    "Text": "Pending",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/MiningOverlaySettingsStore.cs"
   },
   {
     "Text": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -43067,6 +43301,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/BiologyCodexWindowCoordinator.cs"
+  },
+  {
+    "Text": "Preparing the journey report...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
@@ -44601,14 +44843,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
-  },
-  {
-    "Text": "Quick statistics",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
     "Text": "Quick tracker {0} added at the current location.",
@@ -46540,14 +46774,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Reading journals for the last visit to {0}\u2026",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Reading selected journals\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -48323,7 +48549,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Reprocess journal history?",
@@ -48331,7 +48557,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Reprocess journals",
@@ -48339,7 +48565,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Reprocess journals to rebuild this journey\u0027s visit statistics from the saved game history.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Reprocessed {0} journal events.",
@@ -48910,6 +49144,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Restore journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
     "Text": "Restore mining backup (ZIP or JSON; previous data retained)",
     "IsFormat": false,
     "SourceKinds": [
@@ -48980,6 +49222,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Restored {0} to Journeys.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "Restored {0} to its original measured size. Use the top \u2713 to save and close.",
@@ -50596,14 +50846,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "SELECTED SYSTEM",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "SESSION",
     "IsFormat": false,
     "SourceKinds": [
@@ -51382,7 +51624,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Save home system",
@@ -51472,6 +51714,38 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Save or discard changes before refreshing journeys.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Save or discard changes before selecting another journey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Save or discard changes before switching journey lists.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "Save or discard the system notes before selecting another visit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Save or select a bookmark before attaching screenshots.",
@@ -52315,6 +52589,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
+    "Text": "Screenshot \u0027{0}\u0027 could not be decoded.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
+  },
+  {
     "Text": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52433,7 +52715,15 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Screenshots on another visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Screenshots, notifications, stream, and VR",
@@ -52450,7 +52740,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SpanshSearchWindow.axaml"
   },
   {
     "Text": "Search Markets",
@@ -52573,12 +52863,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Search for a previously visited system.",
+    "Text": "Search for a system to see your previous visits.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Search for visits on or after the selected date, or clear it for all dates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Search near system",
@@ -52690,7 +52988,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
     "Text": "Searching from {0}",
@@ -53054,6 +53352,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Select a completed journey and save any changes before exporting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
     "Text": "Select a completed session first.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53126,14 +53432,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Select a matching system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
     "Text": "Select a mineral threshold to delete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53188,14 +53486,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
-  },
-  {
-    "Text": "Select a system from the search results.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Select a threshold group to delete.",
@@ -53397,6 +53687,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Selected outside filters ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
     "Text": "Selected result",
@@ -54353,6 +54651,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Ship arrival",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Ship cargo is paused while multiple Elite windows are running because Cargo.json cannot be attributed safely.",
@@ -57242,14 +57548,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml.cs"
   },
   {
-    "Text": "SrvSurvey-Journey-Design",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml.cs"
-  },
-  {
     "Text": "SrvSurvey-JumpInfo-Overlay-Design",
     "IsFormat": false,
     "SourceKinds": [
@@ -57578,6 +57876,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Stars",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Start Date:",
     "IsFormat": false,
     "SourceKinds": [
@@ -57690,6 +57996,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Start at {0} on {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Start chapter",
     "IsFormat": false,
     "SourceKinds": [
@@ -57698,20 +58012,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
-    "Text": "Start from a previously visited system",
+    "Text": "Start from your current system or choose an earlier visit.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
-  },
-  {
-    "Text": "Start from the current system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
@@ -57865,6 +58171,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/DesktopKeyboardHookSource.cs"
+  },
+  {
+    "Text": "Starting system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Starting verified package download...",
@@ -58051,6 +58365,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
+    "Text": "Statistics",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Statistics settings",
@@ -59448,7 +59770,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "System name:",
@@ -59521,7 +59843,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "System notes - SrvSurvey",
@@ -59538,6 +59860,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "System notes could not be read.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
   },
   {
     "Text": "System notes require a current commander and system.",
@@ -60985,7 +61315,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "The Journey window preferences could not be loaded.",
+    "Text": "The Journey preferences could not be loaded.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -62017,6 +62347,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "The current location could not be found. Load the current journal or choose a previous visit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "The current market is not a Fleet Carrier market.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62086,7 +62424,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "The current-format UI settings did not require import.",
@@ -62729,12 +63067,44 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "The journey could not be deleted: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "The journey could not be moved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
     "Text": "The journey name cannot be blank.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The journey report could not be created: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "The journey report could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
   },
   {
     "Text": "The journey was not concluded: {0}",
@@ -63817,6 +64187,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/ReplayPresentationSnapshotStore.cs"
   },
   {
+    "Text": "The report folder name is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
+  },
+  {
     "Text": "The requested game area is outside the shared Wayland source.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64167,6 +64545,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "The screenshot preview could not be created.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
   },
   {
     "Text": "The screenshot source folder does not exist: {0}",
@@ -64617,14 +65003,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "The starting visit could not be found: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "The startup resource was already transferred.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64727,14 +65105,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
-  },
-  {
-    "Text": "The system search failed: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "The system summary can appear automatically when the system has known Guardian sites.",
@@ -65491,6 +65861,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
   },
   {
+    "Text": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "This platform does not provide a folder picker for exports.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65504,7 +65882,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "This release uses EDDN\u0027s Live upload gateway with production schema references fixed internally.",
@@ -66677,6 +67055,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Type a system name\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Type accepts one name. Separate multiple Subtypes or Variants with commas or semicolons. Each list matches any of its names.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66874,7 +67260,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "UNSCANNED RAM TAH LOGS: 3",
@@ -67022,6 +67408,14 @@
   },
   {
     "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Uncheck a project to remove it from Market Search.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -67268,6 +67662,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Unknown arrival time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Unknown body",
@@ -68295,6 +68697,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use UTC timestamps",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
     "IsFormat": false,
     "SourceKinds": [
@@ -68480,6 +68890,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Use previous visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Use small circles",
     "IsFormat": false,
     "SourceKinds": [
@@ -68574,14 +68992,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Use the most recent visit to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -69446,7 +69856,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Visited-star cache swap/restore is blocked while Elite is running, uses a persistent original backup, validates responses, and rolls back failed activation.",
@@ -69487,6 +69897,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Visits on or after (UTC date)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Vista Genomics",
@@ -70585,7 +71003,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "What to do",
@@ -71373,6 +71791,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "Your current system changed. Begin the journey again to use the new location.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Your current visit will be used automatically.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
     "IsFormat": false,
     "SourceKinds": [
@@ -71387,6 +71821,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
+  },
+  {
+    "Text": "Your previous visits ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Your previous visits could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Your saved platform and overlay calibration are unchanged.",
@@ -74741,6 +75191,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
   },
   {
+    "Text": "images/{0}/{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+  },
+  {
     "Text": "imperial",
     "IsFormat": false,
     "SourceKinds": [
@@ -74899,6 +75357,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "journeys",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "json",
@@ -77525,14 +77991,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "the current system",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "the desktop launcher declined the request.",
     "IsFormat": false,
     "SourceKinds": [
@@ -78574,6 +79032,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "yyyy-MM-dd HH:mm:ss \u0027UTC\u0027",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "zip",
     "IsFormat": false,
     "SourceKinds": [
@@ -79446,6 +79912,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "{0} landings",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0} layout - no blueprint category recorded",
     "IsFormat": true,
     "SourceKinds": [
@@ -79654,6 +80128,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderPreferenceViewModel.cs"
   },
   {
+    "Text": "{0} mapped",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0} mapped deposit{1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -79750,12 +80232,28 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerDefinition.cs"
   },
   {
+    "Text": "{0} new Codex",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0} non-body signals",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "{0} notes",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "{0} now uses global opacity. Use the top \u2713 to save and close.",
@@ -79899,7 +80397,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "{0} other SrvSurvey instances are running. Confirm whether all instances should close before updating.",
@@ -79972,6 +80470,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} recorded visits",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "{0} recorded \u00B7 suffix {1}",
@@ -80062,12 +80568,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "{0} scanned",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0} scans to go \u00B7 each entry is {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "{0} screenshots",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "{0} screenshots attached.",

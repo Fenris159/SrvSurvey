@@ -34,6 +34,7 @@ internal static partial class ProfileSyncPolicy
         "GuardianOverlays",
         "HumanSite",
         "MineMap",
+        "MiningOverlays",
         "Notifications",
         "PulseOverlay",
         "Quests",

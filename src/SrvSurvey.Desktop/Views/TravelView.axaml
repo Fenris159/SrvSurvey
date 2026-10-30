@@ -800,8 +800,8 @@
               <Button Grid.Row="2"
                       Classes="secondary"
                       HorizontalAlignment="Left"
-                      Command="{Binding Journey.OpenWindowCommand}"
-                      Content="Open Journey workspace" />
+                      Command="{Binding Journey.OpenWorkspaceCommand}"
+                      Content="Open Journeys" />
             </Grid>
           </Border>
         </Grid>

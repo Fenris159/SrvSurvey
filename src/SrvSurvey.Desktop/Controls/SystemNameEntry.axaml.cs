@@ -32,6 +32,17 @@ public sealed partial class SystemNameEntry : UserControl
         long?
     >(nameof(SelectedSystemAddress), defaultBindingMode: BindingMode.TwoWay);
 
+    public static readonly RoutedEvent<RoutedEventArgs> SystemSelectedEvent = RoutedEvent.Register<
+        SystemNameEntry,
+        RoutedEventArgs
+    >(nameof(SystemSelected), RoutingStrategies.Bubble);
+
+    public event EventHandler<RoutedEventArgs> SystemSelected
+    {
+        add => AddHandler(SystemSelectedEvent, value);
+        remove => RemoveHandler(SystemSelectedEvent, value);
+    }
+
     public static readonly DirectProperty<SystemNameEntry, IReadOnlyList<SystemNameSuggestion>> SuggestionsProperty =
         AvaloniaProperty.RegisterDirect<SystemNameEntry, IReadOnlyList<SystemNameSuggestion>>(
             nameof(Suggestions),
@@ -318,10 +329,11 @@ public sealed partial class SystemNameEntry : UserControl
         Suggestions = [];
         SelectedIndex = -1;
         Status = $"Selected {selectedSystemName} · " + SystemAddressFormatter.Format(suggestion.SystemAddress) + ".";
+        RaiseEvent(new RoutedEventArgs(SystemSelectedEvent));
         return true;
     }
 
-    private void DismissSuggestions()
+    internal void DismissSuggestions()
     {
         CancelSuggestions();
         Suggestions = [];

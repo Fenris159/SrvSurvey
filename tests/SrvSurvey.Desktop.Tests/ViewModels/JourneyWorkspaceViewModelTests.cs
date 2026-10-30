@@ -7,7 +7,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class JourneyWorkspaceViewModelTests : IDisposable
+public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
@@ -37,16 +37,18 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.Empty(contextNotifications);
 
         await viewModel.StartNewJourneyAsync();
+        viewModel.UsePreviousStart = true;
         viewModel.NewJourneyName = "Across the black";
         viewModel.NewJourneyDescription = "A long expedition";
+        viewModel.StartSystemQuery = "Sol";
         await viewModel.FindStartAsync();
+        Assert.Contains("Start at Sol on", viewModel.StartStatus);
         await viewModel.BeginJourneyAsync();
 
         Assert.True(viewModel.HasActiveJourney);
         Assert.Single(viewModel.Journeys);
         Assert.Equal("Across the black", viewModel.JourneyName);
         Assert.Single(viewModel.VisitedSystems);
-        Assert.Contains("Last arrived in Sol", viewModel.StartStatus);
 
         viewModel.SelectedSystemNotes = "Remember this system";
         viewModel.JourneyDescription = "Updated description";
@@ -73,7 +75,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         await viewModel.ConfirmConcludeAsync();
 
         Assert.False(viewModel.HasActiveJourney);
-        Assert.Equal("COMPLETE", viewModel.SelectedJourney!.State);
+        Assert.Equal("Complete", viewModel.SelectedJourney!.State);
         Assert.Contains("concluded", viewModel.JourneyByline);
     }
 
@@ -87,20 +89,15 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":99,"StarPos":[1,2,3]}
             """
         );
-        JourneyWorkspaceViewModel viewModel = CreateViewModel([
-            new StarSystemReference("Achenar", 99, new GalacticCoordinate(1, 2, 3)),
-        ]);
+        JourneyWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
-        viewModel.UseCurrentStart = false;
+        viewModel.UsePreviousStart = true;
         viewModel.StartSystemQuery = "Achenar";
-
-        await viewModel.SearchSystemsAsync();
         await viewModel.FindStartAsync();
 
-        Assert.Single(viewModel.StartSystemResults);
-        Assert.Equal(99, viewModel.SelectedStartSystem!.SystemAddress);
-        Assert.Contains("Last arrived in Achenar", viewModel.StartStatus);
+        Assert.Equal("Achenar", Assert.Single(viewModel.StartVisits).SystemName);
+        Assert.Contains("Start at Achenar on", viewModel.StartStatus);
         viewModel.CancelNewJourneyCommand.Execute(null);
         Assert.False(viewModel.IsCreating);
     }
@@ -155,7 +152,9 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         JourneyWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
+        viewModel.UsePreviousStart = true;
         viewModel.NewJourneyName = "Journey";
+        viewModel.StartSystemQuery = "Sol";
         await viewModel.FindStartAsync();
         await viewModel.BeginJourneyAsync();
 
@@ -169,7 +168,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.True(settings.Snapshot?.JourneyUseGalacticTime);
     }
 
-    private JourneyWorkspaceViewModel CreateViewModel(IReadOnlyList<StarSystemReference>? searchResults = null)
+    private JourneyWorkspaceViewModel CreateViewModel()
     {
         var noteStore = new SystemNoteStore(DataDirectory);
         var settingsStore = new SystemNotesSettingsStore(DataDirectory);
@@ -180,7 +179,6 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
                 new CommanderProfileStore(DataDirectory),
                 new ExobiologyReferenceCatalog([])
             ),
-            new StubSystemResolver(searchResults ?? []),
             noteStore,
             settingsStore
         );
@@ -208,17 +206,6 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, true);
-        }
-    }
-
-    private sealed class StubSystemResolver(IReadOnlyList<StarSystemReference> results) : IStarSystemResolver
-    {
-        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
-            string query,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(results);
         }
     }
 }

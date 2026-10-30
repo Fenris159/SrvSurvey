@@ -811,6 +811,10 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 : null,
             CancellationToken.None
         );
+        if (screenshotResult.Conversions.Count > 0)
+        {
+            dependencies.Journey.RefreshScreenshotAvailability();
+        }
         dependencies.Notifications.ReportScreenshotResult(
             screenshotResult,
             dependencies.ScreenshotProcessing.AddBanner

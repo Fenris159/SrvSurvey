@@ -54,26 +54,25 @@ public sealed class MiningSessionOverlayPresentationTests
             using WriteableBitmap? initialFrame = window.CaptureRenderedFrame();
             ComboBox sort = view.FindControl<ComboBox>("MiningSessionYieldSortInput")!;
             NumericUpDown limit = view.FindControl<NumericUpDown>("MiningSessionYieldLimitInput")!;
-            Assert.False(sort.IsEffectivelyEnabled);
-            Assert.False(limit.IsEffectivelyEnabled);
-            Assert.False(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
-            Assert.Contains(
-                view.GetVisualDescendants().OfType<TextBlock>(),
-                text => text.IsEffectivelyVisible && text.Text == "Waiting for commander journal data."
-            );
+            Assert.True(sort.IsEffectivelyEnabled);
+            Assert.True(limit.IsEffectivelyEnabled);
+            Assert.True(main.MiningWorkspace.SaveOverlaySettingsCommand.CanExecute(null));
+            sort.SelectedIndex = 1;
+            limit.Value = 8;
+            Assert.Equal(1, main.MiningWorkspace.SessionYieldSortIndex);
+            Assert.Equal(8, main.MiningWorkspace.SessionYieldLimit);
             main.MiningWorkspace.Apply(new(null, [load], status, null, null, null, [], true), context, null, status);
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.True(sort.IsEffectivelyEnabled);
             Assert.True(limit.IsEffectivelyEnabled);
-            Assert.True(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
+            Assert.True(main.MiningWorkspace.SaveOverlaySettingsCommand.CanExecute(null));
             Assert.True(sort.IsEffectivelyVisible);
             Assert.True(limit.IsEffectivelyVisible);
-            Assert.Equal(0, sort.SelectedIndex);
-            Assert.Equal(5, limit.Value);
+            Assert.Equal(1, sort.SelectedIndex);
+            Assert.Equal(8, limit.Value);
             Assert.Equal(1, limit.Increment);
             Assert.True(limit.ShowButtonSpinner);
             Assert.Equal("Right", limit.ButtonSpinnerLocation.ToString());
-            sort.SelectedIndex = 1;
             Button increase = Assert.Single(
                 limit.GetVisualDescendants().OfType<Button>(),
                 button => button.Name == "PART_IncreaseButton"
@@ -83,10 +82,10 @@ public sealed class MiningSessionOverlayPresentationTests
                 button => button.Name == "PART_DecreaseButton"
             );
             increase.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Assert.Equal(6, limit.Value);
-            Assert.Equal(6, main.MiningWorkspace.SessionYieldLimit);
+            Assert.Equal(9, limit.Value);
+            Assert.Equal(9, main.MiningWorkspace.SessionYieldLimit);
             decrease.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Assert.Equal(5, main.MiningWorkspace.SessionYieldLimit);
+            Assert.Equal(8, main.MiningWorkspace.SessionYieldLimit);
             main.MiningWorkspace.SessionYieldLimit = 7;
             Assert.Equal(7, limit.Value);
             MiningPreferences recovered = new MiningStore(main.AppDataPaths.DataDirectory).Load("F1").Settings;

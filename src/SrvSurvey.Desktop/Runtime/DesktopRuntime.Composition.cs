@@ -55,7 +55,6 @@ internal sealed partial class DesktopRuntime
     private MultiGameCommanderOverlayCoordinator? multiGameCommanderOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private ColonizationProjectPreviewWindowCoordinator? colonizationProjectPreviewWindowCoordinator;
-    private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
     private RouteWindowCoordinator? fleetCarrierRouteWindowCoordinator;
     private BiologyPredictionsWindowCoordinator? biologyPredictionsWindowCoordinator;
@@ -316,7 +315,6 @@ internal sealed partial class DesktopRuntime
             viewModel.Colonization,
             mainWindow
         );
-        journeyWindowCoordinator = new JourneyWindowCoordinator(viewModel.Journey, mainWindow);
         routeWindowCoordinator = new RouteWindowCoordinator(viewModel.Route, mainWindow);
         fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(viewModel.FleetCarrierRoute, mainWindow);
         fleetCarrierJumpCountdownCoordinator = new FleetCarrierJumpCountdownCoordinator(viewModel.FleetCarrierRoute);
@@ -966,7 +964,6 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref colonizationWishListOverlayCoordinator);
         DisposeResource(ref systemNotesWindowCoordinator);
         DisposeResource(ref colonizationProjectPreviewWindowCoordinator);
-        DisposeResource(ref journeyWindowCoordinator);
         DisposeResource(ref routeWindowCoordinator);
         DisposeResource(ref fleetCarrierRouteWindowCoordinator);
         DisposeResource(ref fleetCarrierJumpCountdownCoordinator);
