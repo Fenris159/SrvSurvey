@@ -607,7 +607,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 sharedSystemResolver,
                 Bookmarks,
                 externalNetworkClient,
-                firegroups: Firegroups
+                firegroups: Firegroups,
+                options: new()
+                {
+                    OverlaySettings = new MiningOverlaySettingsStore(AppDataPaths.SharedUiSettingsPath),
+                    CommanderId = targetFrontierId ?? AppDataPaths.SettingsFrontierId,
+                }
             );
             MiningWorkspace.UseSessionBindings(InputSettings);
             MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);

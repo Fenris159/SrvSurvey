@@ -10,7 +10,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class MiningWorkspaceViewModelTests
 {
     [Fact]
-    public void CodeRabbitOverlayPreferencesCannotBeEditedWithoutACommander()
+    public void OverlayPreferencesCanBeEditedAndSavedWithoutACommander()
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         try
@@ -23,9 +23,10 @@ public sealed partial class MiningWorkspaceViewModelTests
             workspace.SessionYieldSortIndex = 1;
             workspace.SessionYieldLimit = 9;
             workspace.HideProspectsBelowThreshold = true;
-            Assert.Equal(0, workspace.SessionYieldSortIndex);
-            Assert.Equal(5, workspace.SessionYieldLimit);
-            Assert.False(workspace.HideProspectsBelowThreshold);
+            Assert.Equal(1, workspace.SessionYieldSortIndex);
+            Assert.Equal(9, workspace.SessionYieldLimit);
+            Assert.True(workspace.HideProspectsBelowThreshold);
+            Assert.True(workspace.SaveSettingsCommand.CanExecute(null));
         }
         finally
         {
@@ -79,6 +80,11 @@ public sealed partial class MiningWorkspaceViewModelTests
         Assert.True(workspace.Restore(backup));
         Assert.Equal(3, workspace.SessionYieldLimit);
         Assert.Equal(1, workspace.SessionYieldSortIndex);
+        MiningOverlayPreferences restoredOverlay = new MiningOverlaySettingsStore(
+            Path.Combine(fixture.Directory, "mining", "overlay-settings.json")
+        ).Load("F1", () => new());
+        Assert.Equal(3, restoredOverlay.SessionYieldLimit);
+        Assert.Equal(MiningSessionYieldSort.Finds, restoredOverlay.SessionYieldSort);
 
         fixture.Feed("""{"event":"LoadGame","FID":"F2","Commander":"Other","Ship":"Python"}""");
         Assert.Equal(0, workspace.SessionYieldSortIndex);
@@ -270,7 +276,10 @@ public sealed partial class MiningWorkspaceViewModelTests
                 new Resolver(),
                 new BookmarksViewModel(directory),
                 clock: new Clock(),
-                announcementOutputs: new MiningAnnouncementOutputs(new SpeechRecorder(), new ChimeRecorder())
+                options: new()
+                {
+                    AnnouncementOutputs = new MiningAnnouncementOutputs(new SpeechRecorder(), new ChimeRecorder()),
+                }
             );
             var context = new JournalSessionState();
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };

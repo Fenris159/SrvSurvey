@@ -117,7 +117,7 @@ public sealed partial class MiningWorkspaceViewModelTests
                 new Resolver(),
                 new BookmarksViewModel(directory),
                 clock: new Clock(),
-                announcementOutputs: new MiningAnnouncementOutputs(speech, chime)
+                options: new() { AnnouncementOutputs = new MiningAnnouncementOutputs(speech, chime) }
             );
             var context = new JournalSessionState();
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
@@ -284,7 +284,7 @@ public sealed partial class MiningWorkspaceViewModelTests
                 directory,
                 new Resolver(),
                 new BookmarksViewModel(directory),
-                announcementOutputs: new MiningAnnouncementOutputs(new SpeechRecorder(), chime)
+                options: new() { AnnouncementOutputs = new MiningAnnouncementOutputs(new SpeechRecorder(), chime) }
             );
             Assert.Equal(["Two-tone", "High-low", "Crystal"], vm.ChimeOptions);
             vm.Settings.Chime = "Crystal";
@@ -635,7 +635,7 @@ public sealed partial class MiningWorkspaceViewModelTests
                 directory,
                 new Resolver(),
                 new BookmarksViewModel(directory),
-                announcementOutputs: new MiningAnnouncementOutputs(speech, new ChimeRecorder())
+                options: new() { AnnouncementOutputs = new MiningAnnouncementOutputs(speech, new ChimeRecorder()) }
             );
 
             await vm.LoadVoicesAsync();

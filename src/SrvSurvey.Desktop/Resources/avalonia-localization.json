@@ -17265,6 +17265,14 @@
       "translation": "Bergbaubenachrichtigungen verstecken sich zu Fuß oder an Bord eines SRV. Bei der optionalen Sprachausgabe werden lokal installierte Windows-Stimmen verwendet."
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "Mining-Overlay-Einstellungen konnten nicht geladen werden: {0}"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "Mining-Overlay-Einstellungen konnten nicht gespeichert werden: {0}"
+    },
+    {
       "source": "Mining overview map",
       "translation": "Bergbau-Übersichtskarte"
     },
@@ -17315,6 +17323,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "MiningLinkAnchor"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "MiningOverlays"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -20839,6 +20851,10 @@
     {
       "source": "Peach",
       "translation": "Pfirsich"
+    },
+    {
+      "source": "Pending",
+      "translation": "Ausstehend"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -57883,6 +57899,14 @@
       "translation": "Las notificaciones mineras se esconden a pie o a bordo de un SRV. La voz opcional utiliza voces de Windows instaladas localmente."
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "No se pudo cargar la configuración de superposición de minería: {0}"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "No se pudo guardar la configuración de superposición de minería: {0}"
+    },
+    {
       "source": "Mining overview map",
       "translation": "mapa general de minería"
     },
@@ -57933,6 +57957,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "MineríaEnlaceAncla"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "Superposiciones de minería"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -61457,6 +61485,10 @@
     {
       "source": "Peach",
       "translation": "Durazno"
+    },
+    {
+      "source": "Pending",
+      "translation": "Pendiente"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -98501,6 +98533,14 @@
       "translation": "Les notifications minières se cachent à pied ou à bord d'un SRV. La parole facultative utilise des voix Windows installées localement."
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "Les paramètres de superposition minière n'ont pas pu être chargés : {0}"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "Les paramètres de superposition minière n'ont pas pu être enregistrés : {0}"
+    },
+    {
       "source": "Mining overview map",
       "translation": "carte d'ensemble de l'exploitation minière"
     },
@@ -98551,6 +98591,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "Exploitation minièreLinkAnchor"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "Superpositions minières"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -102075,6 +102119,10 @@
     {
       "source": "Peach",
       "translation": "Pêche"
+    },
+    {
+      "source": "Pending",
+      "translation": "En attente"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -139119,6 +139167,14 @@
       "translation": "As notificações de mineração são ocultadas a pé ou a bordo de um SRV. A fala opcional usa vozes do Windows instaladas localmente."
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "As configurações de sobreposição de mineração não puderam ser carregadas: {0}"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "As configurações de sobreposição de mineração não puderam ser salvas: {0}"
+    },
+    {
       "source": "Mining overview map",
       "translation": "mapa geral de mineração"
     },
@@ -139169,6 +139225,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "MiningLinkAnchor"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "Sobreposições de mineração"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -142693,6 +142753,10 @@
     {
       "source": "Peach",
       "translation": "Pêssego"
+    },
+    {
+      "source": "Pending",
+      "translation": "Pendente"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -179737,6 +179801,14 @@
       "translation": "Уведомления о майнинге скрываются пешком или на борту SRV. Дополнительная речь использует локально установленные голоса Windows."
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "Не удалось загрузить настройки наложения майнинга: {0}."
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "Не удалось сохранить настройки наложения майнинга: {0}."
+    },
+    {
       "source": "Mining overview map",
       "translation": "обзорная карта добычи полезных ископаемых"
     },
@@ -179787,6 +179859,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "МайнингСсылкаЯкорь"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "MiningOverlays"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -183311,6 +183387,10 @@
     {
       "source": "Peach",
       "translation": "Персик"
+    },
+    {
+      "source": "Pending",
+      "translation": "В ожидании"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -220355,6 +220435,14 @@
       "translation": "采矿通知隐藏在步行或 SRV 上。可选语音使用本地安装的 Windows 语音。"
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "无法加载挖掘覆盖设置：{0}"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "无法保存挖掘覆盖设置：{0}"
+    },
+    {
       "source": "Mining overview map",
       "translation": "采矿概况图"
     },
@@ -220405,6 +220493,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "采矿链接锚"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "挖掘覆盖层"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -223929,6 +224021,10 @@
     {
       "source": "Peach",
       "translation": "桃"
+    },
+    {
+      "source": "Pending",
+      "translation": "待办的"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",
@@ -260973,6 +261069,14 @@
       "translation": "* MINING NOTIFICATIONS HIDE ON FOOT OR ABOARD AN SRV. OPTIONAL SPEECH USES LOCALLY INSTALLED WINDOWS VOICES. >>>!"
     },
     {
+      "source": "Mining overlay settings could not be loaded: {0}",
+      "translation": "* MINING OVERLAY SETTINGS COULD NOT BE LOADED: {0} >>>!"
+    },
+    {
+      "source": "Mining overlay settings could not be saved: {0}",
+      "translation": "* MINING OVERLAY SETTINGS COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
       "source": "Mining overview map",
       "translation": "* MINING OVERVIEW MAP >>>!"
     },
@@ -261023,6 +261127,10 @@
     {
       "source": "MiningLinkAnchor",
       "translation": "* MININGLINKANCHOR >>>!"
+    },
+    {
+      "source": "MiningOverlays",
+      "translation": "* MININGOVERLAYS >>>!"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -264547,6 +264655,10 @@
     {
       "source": "Peach",
       "translation": "* PEACH >>>!"
+    },
+    {
+      "source": "Pending",
+      "translation": "* PENDING >>>!"
     },
     {
       "source": "Pending live positions could not be saved: {0} The draft is retained for retry.",

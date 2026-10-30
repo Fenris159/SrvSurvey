@@ -13272,6 +13272,7 @@
     "Text": "Commanders",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
@@ -34652,6 +34653,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Mining overlay settings could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.OverlaySettings.cs"
+  },
+  {
+    "Text": "Mining overlay settings could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.OverlaySettings.cs"
+  },
+  {
     "Text": "Mining overview map",
     "IsFormat": false,
     "SourceKinds": [
@@ -34755,6 +34772,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
+    "Text": "MiningOverlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/MiningOverlaySettingsStore.cs"
   },
   {
     "Text": "MiningReferenceCommodities",
@@ -41822,6 +41847,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
+  },
+  {
+    "Text": "Pending",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/MiningOverlaySettingsStore.cs"
   },
   {
     "Text": "Pending live positions could not be saved: {0} The draft is retained for retry.",
