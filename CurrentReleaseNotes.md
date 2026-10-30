@@ -1,73 +1,87 @@
 # SrvSurvey-XP 2.1.3.0-rc.77.1
 
-This release brings Journeys into Navigation, streamlines colonization project
-selection, and lets mining overlay preferences be edited before the game starts.
-It also includes the RC77 mining, commander, ship and Fleet Carrier improvements.
+This release brings Journeys into Navigation with expedition history, flexible
+starting visits and portable photo reports. Colonization Market Search follows
+your project filters, and mining overlay preferences can be edited with the
+game closed. It also retains the mining, commander, ship and Fleet Carrier fixes
+from RC77.
 
 ## What's changed
 
-- **Journeys workspace:** Browse expedition history directly under Navigation
-  instead of opening a separate window. The Travel shortcut opens this workspace.
-  Archive completed journeys to tuck them away, restore them when needed, or
-  delete their saved records while keeping journals, system notes and screenshots.
-- **Journey starting visits:** Use the current system automatically, including
-  docked/login locations, or choose a previous visit. Historical searches offer
-  an optional date-only cutoff that includes the selected day and skips older
-  journals while retaining files that span that date. Search by system name with autocomplete, then
-  select a previous visit by its UTC date and time. Choosing a suggestion shows
-  that system's visits directly; manual name searches work offline. Journey name
-  and optional description follow the visit picker. Ship and carrier arrivals
-  appear newest first. Starting from an earlier visit includes later returns,
-  and copied journal file dates no longer truncate that history.
-- **Journey reports:** Export a completed journey as a portable report folder
-  with expedition statistics, a route overview, searchable system history and
-  saved notes. Each system includes tiled screenshot previews that enlarge in
-  the browser. The folder contains index.html, full-size images and smaller
-  previews linked with relative paths, so it can be moved or shared together.
-  Expand visit details or print the report to PDF without
-  an internet connection. Large biology and exploration reward totals are retained.
-  Each export creates a new folder, keeping earlier exports intact. The folder
-  appears only after all its files are ready.
-- **Journey readouts:** The redesigned layout keeps the journey library, route
-  summary, visited systems, statistics and editable details together. Visit rows
-  show notes, screenshots and landings, including notes and photos from earlier
-  visits to the same system. Unsaved edits are protected when switching lists
-  or commanders. Keep the application on top while viewing Journeys using the
-  option in journey details.
-  Screenshot lists use the current PNG converter destination and refresh after
-  conversion or a destination change without discarding unsaved notes.
-  Completing or reprocessing a journey keeps its original commander context;
-  late results cannot restore an old readout after a commander change or disconnect.
-- **Colonization Market Search:** Select Projects now follows the system, build
-  status and ordering selected under Projects. Changing those filters keeps the
-  list manageable without clearing previously selected shopping projects.
-  A compact “Selected outside filters” section lets you remove hidden selections,
-  and refreshing projects preserves the selected system filter.
-- **Mining overlay preferences:** Configure overlays with the game closed or
-  before a journal loads. Changes survive restarts, remain separate for each
-  commander, and follow portable backup/restore and sync. If saving fails, edits
-  stay available through journal connection and commander changes for retry.
-  Saving one preference preserves unrelated changes made in another window.
-- **Recent Prospects:** Mining notifications now show asteroid engineering
-  material content as Low, Medium or High instead of a fixed “100% remaining”
-  reading. Mineral percentages remain visible, and missing material content
-  stays hidden, including in recovered sessions.
-- **Mining session overlay:** Choose whether prospecting yields are sorted by
-  average mineral percentage or number of finds. Five minerals appear by
-  default; the result count can be changed with single-step up/down controls
-  in mining overlay settings. Preferences are saved per commander and apply
-  immediately, while session history and reports retain every result. These
-  controls are also available before commander journal data loads.
-- **Owned fleet:** Ship changes produce one consistent CURRENT marker.
-  Journal ship selection and Frontier fleet data now use persistent ship
-  identities, including when an older cache contains conflicting markers.
-  Newly purchased ships also appear while awaiting their Frontier ship ID.
+- **Journeys workspace:** Manage expeditions directly under Navigation instead
+  of opening a separate window. The Travel shortcut opens Journeys. Archive
+  completed journeys to tuck them away, restore them when needed, or delete
+  their saved records after confirmation. Journals, system notes and screenshots
+  stay intact.
+- **Starting a journey:** Choose Use current system to use your current visit
+  automatically, including a docked login. Use previous visit opens system-name
+  autocomplete and a scrolling list of past ship and carrier arrivals with UTC
+  dates and times. Choose the exact visit, then enter the journey name and
+  optional description. Starting from an earlier visit includes later returns
+  to the same system. Manual system-name searches also work offline.
+- **Journey date filters:** Narrow historical searches with an optional calendar
+  date. The selected UTC day is included, with no time entry required. All dates
+  clears the cutoff. Older journals are skipped where possible while files
+  spanning the selected date remain searchable. Copied journal modification
+  dates no longer truncate replayed history. Changing the search, date or
+  commander clears stale visit choices; moving systems during current-start
+  preparation requires beginning again with the new location.
+- **Journey readouts and notes:** The redesigned workspace keeps the library,
+  route summary, visited systems, statistics and editable details together.
+  Visit rows show notes, photos and landings, including activity from earlier
+  visits to the same system. Unsaved edits survive commander changes and are
+  protected when switching history lists. The on-top preference applies while
+  Journeys is selected. Begin and Cancel remain reachable while the creation
+  form scrolls.
+- **Journey screenshots:** Image lists use the PNG converter's current output
+  folder and refresh after conversion or a destination change without discarding
+  unsaved notes. Existing converted images remain available across repeat visits
+  to the same system.
+- **Portable Journey reports:** Export a completed journey into its own folder
+  containing index.html and an images subfolder. Reports include expedition
+  statistics, a route overview, searchable visit history, saved notes and tiled
+  photo previews. Select a tile to enlarge it, browse with arrow keys, close
+  with Escape, or open the original image. Relative links keep the report usable
+  when the whole folder is moved or shared. Full-size images and smaller previews
+  are bundled together; source screenshots stay intact.
+- **Journey report reliability:** Browse reports and print expanded visit details
+  to PDF without an internet connection. Large exploration and biology reward
+  totals are retained. Each export creates a new folder, preserving earlier
+  exports, and publishes it only after its files are ready. Completing or
+  reprocessing a journey keeps its original commander context, so late results
+  cannot restore an old readout or overwrite the new commander's status after a
+  commander change or disconnect.
+- **Colonization Market Search:** Select Projects follows the system, build
+  status and ordering selected under Projects. Filter changes keep the list
+  manageable without clearing chosen shopping projects. A compact Selected
+  outside filters section lets you remove hidden selections, and refreshing
+  projects preserves the selected system filter.
+- **Mining overlay preferences:** Configure overlays before a journal loads or
+  with the game closed. All seven overlay preferences survive restarts, remain
+  separate for each commander, and follow portable backup/restore and sync.
+  Failed edits stay available through journal connection and commander changes
+  for retry. Saving one preference preserves unrelated changes made in another
+  settings window.
+- **Recent Prospects:** Mining notifications show asteroid engineering material
+  content as Low, Medium or High instead of a fixed 100% remaining reading.
+  Mineral percentages remain visible, and missing material content stays hidden,
+  including in recovered sessions.
+- **Mining session overlay:** Sort prospecting yields by average mineral
+  percentage or number of finds. Five minerals appear by default; change the
+  result count with single-step up/down controls in mining overlay settings.
+  Preferences are saved per commander and apply immediately, while session
+  history and reports retain every result. These controls are also available
+  before commander journal data loads.
+- **Owned fleet:** Ship changes produce one consistent CURRENT marker. Journal
+  ship selection and Frontier fleet data use persistent ship identities,
+  including when an older cache contains conflicting markers. Newly purchased
+  ships also appear while awaiting their Frontier ship ID.
 - **Current Ship:** Journal loadouts update the selected ship and its module
-  readout without borrowing another ship's details, and ship totals retain
-  cargo value when journal hull and module values update. Complete engineering
-  updates preserve modules, and removed hangars no longer restore stale launch
-  bays. Switching commanders clears the previous ship's cached readouts,
-  including when the selected account is offline or has no cached profile.
+  readout without borrowing another ship's details. Ship totals retain cargo
+  value when journal hull and module values update. Complete engineering updates
+  preserve modules, and removed hangars no longer restore stale launch bays.
+  Switching commanders clears the previous ship's cached readouts, including
+  when the selected account is offline or has no cached profile.
 - **Commander data freshness:** Reputation, Community Goals and ship data use
   observation timestamps to reconcile journal and Frontier updates. A later
   Frontier fetch takes precedence, while an older request that finishes late
