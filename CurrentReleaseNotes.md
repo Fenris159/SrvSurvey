@@ -1,10 +1,30 @@
-# SrvSurvey-XP 2.1.3.0-rc.77
+# SrvSurvey-XP 2.1.3.0-rc.77.1
 
-This release improves mining overlay readouts and keeps commander, ship and
-Fleet Carrier information consistent as journals and Frontier data update.
+This release brings Journeys into Navigation, streamlines colonization project
+selection, and lets mining overlay preferences be edited before the game starts.
+It also includes the RC77 mining, commander, ship and Fleet Carrier improvements.
 
 ## What's changed
 
+- **Journeys workspace:** Browse expedition history directly under Navigation
+  instead of opening a separate window. The Travel shortcut opens this workspace.
+  Archive completed journeys to tuck them away, restore them when needed, or
+  delete their saved records while keeping journals, system notes and screenshots.
+- **Journey reports:** Export a completed journey as a self-contained HTML report
+  with expedition statistics, a route overview, searchable system history and
+  saved notes. Expand visit details, share the file, or print it to PDF without
+  an internet connection. Large biology and exploration reward totals are retained.
+- **Journey readouts:** The redesigned layout keeps the journey library, route
+  summary, visited systems, statistics and editable details together. Visit rows
+  show notes, screenshots and landings, including notes and photos from earlier
+  visits to the same system. Unsaved edits are protected when switching lists.
+- **Colonization Market Search:** Select Projects now follows the system, build
+  status and ordering selected under Projects. Changing those filters keeps the
+  list manageable without clearing previously selected shopping projects.
+- **Mining overlay preferences:** Configure overlays with the game closed or
+  before a journal loads. Changes survive restarts, remain separate for each
+  commander, and follow portable backup/restore and sync. If saving fails, edits
+  stay available through journal connection and commander changes for retry.
 - **Recent Prospects:** Mining notifications now show asteroid engineering
   material content as Low, Medium or High instead of a fixed “100% remaining”
   reading. Mineral percentages remain visible, and missing material content
@@ -13,8 +33,8 @@ Fleet Carrier information consistent as journals and Frontier data update.
   average mineral percentage or number of finds. Five minerals appear by
   default; the result count can be changed with single-step up/down controls
   in mining overlay settings. Preferences are saved per commander and apply
-  immediately, while session history and reports retain every result. Controls
-  wait for commander data to load so pre-login edits cannot be silently lost.
+  immediately, while session history and reports retain every result. These
+  controls are also available before commander journal data loads.
 - **Owned fleet:** Ship changes produce one consistent CURRENT marker.
   Journal ship selection and Frontier fleet data now use persistent ship
   identities, including when an older cache contains conflicting markers.

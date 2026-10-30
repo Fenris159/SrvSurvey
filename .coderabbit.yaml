@@ -9,6 +9,8 @@ reviews:
     - "!.coderabbit.yaml"
   auto_review:
     enabled: true
+    # Review once on PR creation; further reviews require an explicit request.
+    auto_incremental_review: false
     base_branches:
       - ".*"
     drafts: true
