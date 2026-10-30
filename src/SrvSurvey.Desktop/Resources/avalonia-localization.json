@@ -193,6 +193,10 @@
       "translation": "1 bekannte Art"
     },
     {
+      "source": "1 landing",
+      "translation": "1 Landung"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 passender Guide-Eintrag"
     },
@@ -201,8 +205,16 @@
       "translation": "1 Nichtkörpersignal"
     },
     {
+      "source": "1 note",
+      "translation": "1 Anmerkung"
+    },
+    {
       "source": "1 organism",
       "translation": "1 Organismus"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 Screenshot"
     },
     {
       "source": "1 system",
@@ -19101,6 +19113,10 @@
       "translation": "Hinweise sind verfügbar für {0}."
     },
     {
+      "source": "Notes on another visit",
+      "translation": "Notizen zu einem weiteren Besuch"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "Nichts erfüllte das Exportminimum."
     },
@@ -26243,6 +26259,10 @@
     {
       "source": "Screenshots",
       "translation": "Screenshots"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "Screenshots von einem weiteren Besuch"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -39769,6 +39789,10 @@
       "translation": "{0} landbare Aufbauten für {1}. {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "{0} Landungen"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "{0} Layout – keine Blueprint-Kategorie aufgezeichnet"
     },
@@ -39933,6 +39957,10 @@
       "translation": "{0} Nichtkörpersignale"
     },
     {
+      "source": "{0} notes",
+      "translation": "{0} Notizen"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} verwendet jetzt globale Deckkraft. Mit dem oberen ✓ speichern und schließen."
     },
@@ -40095,6 +40123,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} scannt bis zum Schluss · jeder Eintrag ist {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "{0} Screenshots"
     },
     {
       "source": "{0} screenshots attached.",
@@ -40827,6 +40859,10 @@
       "translation": "1 especie conocida"
     },
     {
+      "source": "1 landing",
+      "translation": "1 rellano"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 entrada de guía coincidente"
     },
@@ -40835,8 +40871,16 @@
       "translation": "1 señal no corporal"
     },
     {
+      "source": "1 note",
+      "translation": "1 nota"
+    },
+    {
       "source": "1 organism",
       "translation": "1 organismo"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 captura de pantalla"
     },
     {
       "source": "1 system",
@@ -59735,6 +59779,10 @@
       "translation": "Las notas están disponibles para {0}."
     },
     {
+      "source": "Notes on another visit",
+      "translation": "Notas sobre otra visita"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "Nada cumplió con el mínimo de exportación."
     },
@@ -66877,6 +66925,10 @@
     {
       "source": "Screenshots",
       "translation": "Capturas de pantalla"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "Capturas de pantalla en otra visita"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -80403,6 +80455,10 @@
       "translation": "{0} carrocerías aterrizables para {1}. {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "Aterrizajes {0}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Diseño {0} - no se registró ninguna categoría de plano"
     },
@@ -80567,6 +80623,10 @@
       "translation": "{0} señales no corporales"
     },
     {
+      "source": "{0} notes",
+      "translation": "Notas {0}"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} ahora usa opacidad global. Utilice la parte superior ✓ para guardar y cerrar."
     },
@@ -80729,6 +80789,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} exploraciones pendientes · cada entrada es {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "Capturas de pantalla de {0}"
     },
     {
       "source": "{0} screenshots attached.",
@@ -81461,6 +81525,10 @@
       "translation": "1 espèce connue"
     },
     {
+      "source": "1 landing",
+      "translation": "1 atterrissage"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 entrée de guide correspondante"
     },
@@ -81469,8 +81537,16 @@
       "translation": "1 signal non corporel"
     },
     {
+      "source": "1 note",
+      "translation": "1 remarque"
+    },
+    {
       "source": "1 organism",
       "translation": "1 organisme"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 capture d'écran"
     },
     {
       "source": "1 system",
@@ -100369,6 +100445,10 @@
       "translation": "Les notes sont disponibles pour {0}."
     },
     {
+      "source": "Notes on another visit",
+      "translation": "Notes sur une autre visite"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "Rien ne répondait au minimum d’exportation."
     },
@@ -107511,6 +107591,10 @@
     {
       "source": "Screenshots",
       "translation": "Captures d'écran"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "Captures d'écran lors d'une autre visite"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -121037,6 +121121,10 @@
       "translation": "Carrosseries atterrissables {0} pour {1}. {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "Atterrissages {0}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Mise en page {0} - aucune catégorie de plan enregistrée"
     },
@@ -121201,6 +121289,10 @@
       "translation": "{0} signaux non corporels"
     },
     {
+      "source": "{0} notes",
+      "translation": "Remarques sur {0}"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} utilise désormais l'opacité globale. Utilisez le haut ✓ pour enregistrer et fermer."
     },
@@ -121363,6 +121455,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} scanne à emporter · chaque entrée est {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "Captures d'écran de {0}"
     },
     {
       "source": "{0} screenshots attached.",
@@ -122095,6 +122191,10 @@
       "translation": "1 espécie conhecida"
     },
     {
+      "source": "1 landing",
+      "translation": "1 pouso"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 entrada de guia correspondente"
     },
@@ -122103,8 +122203,16 @@
       "translation": "1 sinal não corporal"
     },
     {
+      "source": "1 note",
+      "translation": "1 nota"
+    },
+    {
       "source": "1 organism",
       "translation": "1 organismo"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 captura de tela"
     },
     {
       "source": "1 system",
@@ -141003,6 +141111,10 @@
       "translation": "As notas estão disponíveis para {0}."
     },
     {
+      "source": "Notes on another visit",
+      "translation": "Notas sobre outra visita"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "Nada atingiu o mínimo de exportação."
     },
@@ -148145,6 +148257,10 @@
     {
       "source": "Screenshots",
       "translation": "Capturas de tela"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "Capturas de tela em outra visita"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -161671,6 +161787,10 @@
       "translation": "Corpos pousáveis ​​{0} para {1}. {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "Desembarques {0}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Layout {0} - nenhuma categoria de blueprint registrada"
     },
@@ -161835,6 +161955,10 @@
       "translation": "{0} sinais não corporais"
     },
     {
+      "source": "{0} notes",
+      "translation": "Notas {0}"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} agora usa opacidade global. Use o ✓ superior para salvar e fechar."
     },
@@ -161997,6 +162121,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} verifica para ir · cada entrada é {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "Capturas de tela de {0}"
     },
     {
       "source": "{0} screenshots attached.",
@@ -162729,6 +162857,10 @@
       "translation": "1 известный вид"
     },
     {
+      "source": "1 landing",
+      "translation": "1 посадка"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 соответствующая запись в руководстве"
     },
@@ -162737,8 +162869,16 @@
       "translation": "1 сигнал, не являющийся телом"
     },
     {
+      "source": "1 note",
+      "translation": "1 примечание"
+    },
+    {
       "source": "1 organism",
       "translation": "1 организм"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 скриншот"
     },
     {
       "source": "1 system",
@@ -181637,6 +181777,10 @@
       "translation": "Примечания доступны для {0}."
     },
     {
+      "source": "Notes on another visit",
+      "translation": "Заметки о другом визите"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "Ничто не соответствовало экспортному минимуму."
     },
@@ -188779,6 +188923,10 @@
     {
       "source": "Screenshots",
       "translation": "Скриншоты"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "Скриншоты во время другого визита"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -202305,6 +202453,10 @@
       "translation": "Посадочные корпуса {0} для {1}. {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "Посадки {0}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Макет {0} — категория чертежей не записана"
     },
@@ -202469,6 +202621,10 @@
       "translation": "{0} сигналы, не являющиеся телом"
     },
     {
+      "source": "{0} notes",
+      "translation": "{0} примечания"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} теперь использует глобальную непрозрачность. Используйте верхний ✓, чтобы сохранить и закрыть."
     },
@@ -202631,6 +202787,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} сканирует на ходу · каждая запись — {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "Скриншоты {0}"
     },
     {
       "source": "{0} screenshots attached.",
@@ -203363,6 +203523,10 @@
       "translation": "1 已知物种"
     },
     {
+      "source": "1 landing",
+      "translation": "1 次着陆"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "1 个匹配的指南条目"
     },
@@ -203371,8 +203535,16 @@
       "translation": "1 个非身体信号"
     },
     {
+      "source": "1 note",
+      "translation": "1 条注释"
+    },
+    {
       "source": "1 organism",
       "translation": "1 生物体"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "1 截图"
     },
     {
       "source": "1 system",
@@ -222271,6 +222443,10 @@
       "translation": "注释可用于 {0}。"
     },
     {
+      "source": "Notes on another visit",
+      "translation": "另一次访问的注意事项"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "没有任何东西达到出口最低标准。"
     },
@@ -229413,6 +229589,10 @@
     {
       "source": "Screenshots",
       "translation": "截图"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "另一次访问时的屏幕截图"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -242939,6 +243119,10 @@
       "translation": "{0} 适用于 {1} 的可着陆车身。 {2}{3}{4}.{5}"
     },
     {
+      "source": "{0} landings",
+      "translation": "{0} 着陆"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "{0} 布局 - 未记录蓝图类别"
     },
@@ -243103,6 +243287,10 @@
       "translation": "{0} 非身体信号"
     },
     {
+      "source": "{0} notes",
+      "translation": "{0} 注释"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "{0} 现在使用全局不透明度。使用顶部 ✓ 保存并关闭。"
     },
@@ -243265,6 +243453,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "{0} 扫描到·每个条目是 {1}"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "{0} 截图"
     },
     {
       "source": "{0} screenshots attached.",
@@ -243997,6 +244189,10 @@
       "translation": "* 1 KNOWN SPECIES >>>!"
     },
     {
+      "source": "1 landing",
+      "translation": "* 1 LANDING >>>!"
+    },
+    {
       "source": "1 matching guide entry",
       "translation": "* 1 MATCHING GUIDE ENTRY >>>!"
     },
@@ -244005,8 +244201,16 @@
       "translation": "* 1 NON-BODY SIGNAL >>>!"
     },
     {
+      "source": "1 note",
+      "translation": "* 1 NOTE >>>!"
+    },
+    {
       "source": "1 organism",
       "translation": "* 1 ORGANISM >>>!"
+    },
+    {
+      "source": "1 screenshot",
+      "translation": "* 1 SCREENSHOT >>>!"
     },
     {
       "source": "1 system",
@@ -262905,6 +263109,10 @@
       "translation": "* NOTES ARE AVAILABLE FOR {0}. >>>!"
     },
     {
+      "source": "Notes on another visit",
+      "translation": "* NOTES ON ANOTHER VISIT >>>!"
+    },
+    {
       "source": "Nothing met the export minimum.",
       "translation": "* NOTHING MET THE EXPORT MINIMUM. >>>!"
     },
@@ -270047,6 +270255,10 @@
     {
       "source": "Screenshots",
       "translation": "* SCREENSHOTS >>>!"
+    },
+    {
+      "source": "Screenshots on another visit",
+      "translation": "* SCREENSHOTS ON ANOTHER VISIT >>>!"
     },
     {
       "source": "Screenshots, notifications, stream, and VR",
@@ -283573,6 +283785,10 @@
       "translation": "* {0} LANDABLE BODIES FOR {1}. {2}{3}{4}.{5} >>>!"
     },
     {
+      "source": "{0} landings",
+      "translation": "* {0} LANDINGS >>>!"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "* {0} LAYOUT - NO BLUEPRINT CATEGORY RECORDED >>>!"
     },
@@ -283737,6 +283953,10 @@
       "translation": "* {0} NON-BODY SIGNALS >>>!"
     },
     {
+      "source": "{0} notes",
+      "translation": "* {0} NOTES >>>!"
+    },
+    {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
       "translation": "* {0} NOW USES GLOBAL OPACITY. USE THE TOP ✓ TO SAVE AND CLOSE. >>>!"
     },
@@ -283899,6 +284119,10 @@
     {
       "source": "{0} scans to go · each entry is {1}",
       "translation": "* {0} SCANS TO GO · EACH ENTRY IS {1} >>>!"
+    },
+    {
+      "source": "{0} screenshots",
+      "translation": "* {0} SCREENSHOTS >>>!"
     },
     {
       "source": "{0} screenshots attached.",

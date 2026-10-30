@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -11,6 +12,54 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BackupRestoresOfflineMiningPreferencesAndReplacesStaleDestinationValues(bool existingPreferences)
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var destination = new ProfileSyncTestRoot();
+        var defaults = new MiningOverlayPreferences();
+        var sourcePreferences = new MiningOverlaySettingsStore(source.Paths.SharedUiSettingsPath);
+        MiningOverlayPreferences first = defaults with { SessionYieldLimit = 9, HideInSupercruise = false };
+        MiningOverlayPreferences second = defaults with { SessionYieldSort = MiningSessionYieldSort.Finds };
+        sourcePreferences.Save("F123", defaults, first);
+        sourcePreferences.Save("F456", defaults, second);
+        var target = new MiningOverlaySettingsStore(destination.Paths.SharedUiSettingsPath);
+        if (existingPreferences)
+        {
+            target.Save("F123", defaults, defaults with { SessionYieldLimit = 17 });
+        }
+        ProfileSnapshot snapshot = source.Store.Capture();
+        Assert.Contains(snapshot.Portable.Keys, key => key.Contains("/MiningOverlays/", StringComparison.Ordinal));
+        Assert.DoesNotContain(snapshot.Machine.Keys, key => key.Contains("/MiningOverlays/", StringComparison.Ordinal));
+        destination.Store.Apply(snapshot);
+        Assert.Equal(first, target.Load("F123", () => defaults));
+        Assert.Equal(second, target.Load("F456", () => defaults));
+    }
+
+    [Fact]
+    public void BackupRetainsUnassignedMiningEditsUntilTheFirstCommanderConnects()
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var destination = new ProfileSyncTestRoot();
+        var defaults = new MiningOverlayPreferences();
+        new MiningOverlaySettingsStore(source.Paths.SharedUiSettingsPath).Save(
+            null,
+            defaults,
+            defaults with
+            {
+                SessionYieldLimit = 8,
+            }
+        );
+        destination.Store.Apply(source.Store.Capture());
+        var restored = new MiningOverlaySettingsStore(destination.Paths.SharedUiSettingsPath);
+        Assert.Equal(8, restored.Load(null, () => defaults).SessionYieldLimit);
+        MiningOverlayPreferences legacy = defaults with { NotificationSeconds = 45 };
+        Assert.Equal(legacy with { SessionYieldLimit = 8 }, restored.Load("F123", () => legacy));
+        Assert.Equal(defaults, restored.Load("F456", () => defaults));
+    }
+
     [Fact]
     public void CancelDuringRestoreSerializationPreservesThePreviouslyStagedBaseline()
     {

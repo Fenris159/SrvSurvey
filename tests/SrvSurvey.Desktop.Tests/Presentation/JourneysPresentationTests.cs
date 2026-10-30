@@ -52,6 +52,15 @@ public sealed class JourneysPresentationTests : IDisposable
                 Assert.True(view.FindControl<Button>("ExportJourneyHtmlButton")!.IsEffectivelyVisible);
                 Assert.Equal(3, view.FindControl<ListBox>("JourneyVisitList")!.ItemCount);
                 Assert.Equal(1, view.FindControl<ListBox>("JourneyLibraryList")!.ItemCount);
+                Assert.Contains(
+                    view.FindControl<ListBox>("JourneyVisitList")!.GetVisualDescendants().OfType<TextBlock>(),
+                    text =>
+                        text.IsEffectivelyVisible
+                        && text.Text is not null
+                        && text.Text.Contains("2 screenshots", StringComparison.Ordinal)
+                        && text.Text.Contains("1 note", StringComparison.Ordinal)
+                        && text.Text.Contains("2 landings", StringComparison.Ordinal)
+                );
                 Grid readout = view.FindControl<Grid>("JourneyReadout")!;
                 Assert.InRange(readout.Bounds.Width, 1, width);
                 Assert.Equal(width < 900 ? 1 : 0, Grid.GetRow(readout));

@@ -7,6 +7,29 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class JourneyWorkspaceViewModelTests
 {
     [Fact]
+    public async Task VisitSummariesKeepPhotosNotesAndLandingsIncludingActivityFromOtherVisits()
+    {
+        JourneyDocument journey = await SeedHistoricalJourneyAsync(1);
+        JourneySystemVisit first = journey.VisitedSystems[0] with
+        {
+            Counts = JourneyCounts.Empty with { Screenshots = 1, Notes = 2, Touchdowns = 1 },
+        };
+        JourneySystemVisit revisit = first with { Arrived = first.Arrived.AddMinutes(1), Counts = JourneyCounts.Empty };
+        JourneySystemVisit quiet = first with
+        {
+            StarSystem = new("Achenar", 43, new(1, 0, 0)),
+            Arrived = first.Arrived.AddMinutes(2),
+            Counts = JourneyCounts.Empty,
+        };
+        await new JourneyStore(DataDirectory).SaveAsync(journey with { VisitedSystems = [first, revisit, quiet] });
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Equal("1 screenshot, 2 notes, 1 landing", model.VisitedSystems[2].ActivitySummary);
+        Assert.Equal("Screenshots on another visit, Notes on another visit", model.VisitedSystems[1].ActivitySummary);
+        Assert.Empty(model.VisitedSystems[0].ActivitySummary);
+    }
+
+    [Fact]
     public async Task ArchiveRestoreAndConfirmedDeletePersistWithoutRemovingSystemNotes()
     {
         await SeedHistoricalJourneyAsync(1);

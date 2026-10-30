@@ -170,6 +170,74 @@ public sealed partial class MiningWorkspaceViewModelTests
     private static MiningWorkspaceViewModel OfflineWorkspace(string directory, string? commander = null) =>
         new(directory, new Resolver(), new BookmarksViewModel(directory), options: new() { CommanderId = commander });
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("F1")]
+    public void FailedOfflineEditsSurviveJournalConnectionCommanderSwitchAndSaveRetry(string? initialCommander)
+    {
+        using var root = new ProfileSyncTestRoot();
+        var mining = new MiningStore(root.Paths.DataDirectory);
+        var data = new MiningCommanderData();
+        data.Settings.NotificationSeconds = 45;
+        mining.Save("F1", data);
+        string blocked = Path.Combine(root.Paths.ConfigDirectory, "blocked.json");
+        Directory.CreateDirectory(blocked);
+        using var workspace = new MiningWorkspaceViewModel(
+            root.Paths.DataDirectory,
+            new Resolver(),
+            new BookmarksViewModel(root.Paths.DataDirectory),
+            options: new() { CommanderId = initialCommander, OverlaySettings = new MiningOverlaySettingsStore(blocked) }
+        );
+        workspace.SessionYieldLimit = 9;
+        workspace.Settings.HideInSupercruise = false;
+        workspace.SaveSettingsCommand.Execute(null);
+        Assert.Contains("could not be saved", workspace.OverlaySettingsStatus, StringComparison.Ordinal);
+        ConnectMiningCommander(workspace, "F1");
+        Assert.Equal(9, workspace.SessionYieldLimit);
+        Assert.False(workspace.Settings.HideInSupercruise);
+        Assert.Equal(45, workspace.Settings.NotificationSeconds);
+        Assert.True(workspace.HasOverlaySettingsStatus);
+        ConnectMiningCommander(workspace, "F2");
+        Assert.Equal(5, workspace.SessionYieldLimit);
+        Assert.True(workspace.Settings.HideInSupercruise);
+        Assert.True(workspace.HasOverlaySettingsStatus);
+        workspace.SessionYieldLimit = 12;
+        ConnectMiningCommander(workspace, "F1");
+        Assert.Equal(9, workspace.SessionYieldLimit);
+        Assert.False(workspace.Settings.HideInSupercruise);
+        Directory.Delete(blocked);
+        workspace.SaveSettingsCommand.Execute(null);
+        Assert.False(workspace.HasOverlaySettingsStatus);
+        var saved = new MiningOverlaySettingsStore(blocked);
+        Assert.Equal(9, saved.Load("F1", () => new()).SessionYieldLimit);
+        Assert.Equal(12, saved.Load("F2", () => new()).SessionYieldLimit);
+        Assert.Equal(45, saved.Load("F1", () => new()).NotificationSeconds);
+    }
+
+    [Fact]
+    public void FailedEditsRetainAllSevenPreferencesWhenJournalSettingsAreLoaded()
+    {
+        using var root = new ProfileSyncTestRoot();
+        string blocked = Path.Combine(root.Paths.ConfigDirectory, "blocked.json");
+        Directory.CreateDirectory(blocked);
+        using var workspace = new MiningWorkspaceViewModel(
+            root.Paths.DataDirectory,
+            new Resolver(),
+            new BookmarksViewModel(root.Paths.DataDirectory),
+            options: new() { OverlaySettings = new MiningOverlaySettingsStore(blocked) }
+        );
+        var desired = new MiningOverlayPreferences(false, false, 22, 6, true, MiningSessionYieldSort.Finds, 9);
+        desired.ApplyTo(workspace.Settings);
+        workspace.SaveSettingsCommand.Execute(null);
+        ConnectMiningCommander(workspace, "F1");
+        Assert.Equal(desired, MiningOverlayPreferences.From(workspace.Settings));
+        Assert.True(workspace.HasOverlaySettingsStatus);
+        Directory.Delete(blocked);
+        workspace.SaveSettingsCommand.Execute(null);
+        Assert.Equal(desired, new MiningOverlaySettingsStore(blocked).Load("F1", () => new()));
+        Assert.False(workspace.HasOverlaySettingsStatus);
+    }
+
     private static void ConnectMiningCommander(MiningWorkspaceViewModel workspace, string fid)
     {
         JournalEventEnvelope load = MiningMissionFixture.Event(

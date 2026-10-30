@@ -38,6 +38,24 @@ public sealed record MiningOverlayPreferences(
             : MiningSessionYieldSort.AveragePercentage;
         settings.SessionYieldLimit = Math.Clamp(SessionYieldLimit, 1, 100);
     }
+
+    /// <summary>Merges only edited fields so a commander's unrelated preferences remain intact.</summary>
+    public MiningOverlayPreferences WithChangesFrom(MiningOverlayPreferences before, MiningOverlayPreferences after) =>
+        new(
+            before.HideInSupercruise != after.HideInSupercruise ? after.HideInSupercruise : HideInSupercruise,
+            before.OverlaysOnlyDuringSession != after.OverlaysOnlyDuringSession
+                ? after.OverlaysOnlyDuringSession
+                : OverlaysOnlyDuringSession,
+            before.NotificationSeconds != after.NotificationSeconds ? after.NotificationSeconds : NotificationSeconds,
+            before.PersistentProspectSlots != after.PersistentProspectSlots
+                ? after.PersistentProspectSlots
+                : PersistentProspectSlots,
+            before.HideProspectsBelowThreshold != after.HideProspectsBelowThreshold
+                ? after.HideProspectsBelowThreshold
+                : HideProspectsBelowThreshold,
+            before.SessionYieldSort != after.SessionYieldSort ? after.SessionYieldSort : SessionYieldSort,
+            before.SessionYieldLimit != after.SessionYieldLimit ? after.SessionYieldLimit : SessionYieldLimit
+        );
 }
 
 /// <summary>Keeps commander preferences and a patch of edits made before commander detection.</summary>
@@ -47,6 +65,33 @@ public sealed class MiningOverlaySettingsStore(string path)
     private const string Profiles = "Commanders";
     private const string Pending = "Pending";
     private readonly UiSettingsDocumentStore document = new(path);
+
+    /// <summary>Reads preferences without assigning an unidentified draft or writing the settings file.</summary>
+    public MiningOverlayPreferences ReadPreferences(
+        string? commander,
+        Func<MiningOverlayPreferences> fallback,
+        bool includeDraft = true
+    )
+    {
+        commander = string.IsNullOrWhiteSpace(commander) ? null : commander.Trim().ToUpperInvariant();
+        return Read(document.Load(), commander, fallback, includeDraft);
+    }
+
+    /// <summary>Persists a commander snapshot, optionally completing the assignment of an unidentified draft.</summary>
+    public void SaveCommander(string commander, MiningOverlayPreferences preferences, bool assignDraft = false)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commander);
+        commander = commander.Trim().ToUpperInvariant();
+        document.Update(root =>
+        {
+            JsonObject section = GetSection(root);
+            GetProfiles(section)[commander] = Serialize(preferences);
+            if (assignDraft)
+            {
+                section.Remove(Pending);
+            }
+        });
+    }
 
     public MiningOverlayPreferences Load(string? commander, Func<MiningOverlayPreferences> fallback)
     {
@@ -74,14 +119,14 @@ public sealed class MiningOverlaySettingsStore(string path)
         {
             return;
         }
+        if (commander is not null)
+        {
+            SaveCommander(commander, after);
+            return;
+        }
         document.Update(root =>
         {
             JsonObject section = GetSection(root);
-            if (commander is not null)
-            {
-                GetProfiles(section)[commander] = Serialize(after);
-                return;
-            }
             JsonObject previous = Serialize(before);
             JsonObject updated = Serialize(after);
             JsonObject pending = section[Pending] as JsonObject ?? [];
@@ -99,7 +144,8 @@ public sealed class MiningOverlaySettingsStore(string path)
     private static MiningOverlayPreferences Read(
         JsonObject root,
         string? commander,
-        Func<MiningOverlayPreferences> fallback
+        Func<MiningOverlayPreferences> fallback,
+        bool includeDraft = true
     )
     {
         var section = root[Section] as JsonObject;
@@ -108,7 +154,7 @@ public sealed class MiningOverlaySettingsStore(string path)
                 ? profile.Deserialize<MiningOverlayPreferences>() ?? fallback()
                 : fallback();
         JsonObject values = Serialize(saved);
-        if (section?[Pending] is JsonObject pending)
+        if (includeDraft && section?[Pending] is JsonObject pending)
         {
             foreach (string name in values.Select(property => property.Key).ToArray())
             {

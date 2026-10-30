@@ -1553,8 +1553,37 @@ public sealed record JourneySystemItemViewModel(
                 Visit.Counts.DetailedSurfaceScans > 0 ? $"{Visit.Counts.DetailedSurfaceScans:N0} mapped" : "",
                 Visit.Counts.Organisms > 0 ? $"{Visit.Counts.Organisms:N0} organisms" : "",
                 Visit.Counts.NewCodexEntries > 0 ? $"{Visit.Counts.NewCodexEntries:N0} new Codex" : "",
+                ScreenshotSummary,
+                NotesSummary,
+                LandingSummary,
             }.Where(value => value.Length > 0)
         );
+
+    private string ScreenshotSummary =>
+        Visit.Counts.Screenshots switch
+        {
+            > 1 => $"{Visit.Counts.Screenshots:N0} screenshots",
+            1 => "1 screenshot",
+            _ when InterestFlags.Contains('p') => "Screenshots on another visit",
+            _ => "",
+        };
+
+    private string NotesSummary =>
+        Visit.Counts.Notes switch
+        {
+            > 1 => $"{Visit.Counts.Notes:N0} notes",
+            1 => "1 note",
+            _ when InterestFlags.Contains('n') => "Notes on another visit",
+            _ => "",
+        };
+
+    private string LandingSummary =>
+        Visit.Counts.Touchdowns switch
+        {
+            > 1 => $"{Visit.Counts.Touchdowns:N0} landings",
+            1 => "1 landing",
+            _ => "",
+        };
 
     public string Address => Visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture);
 }

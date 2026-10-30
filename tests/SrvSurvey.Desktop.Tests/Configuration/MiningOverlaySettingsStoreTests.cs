@@ -67,6 +67,24 @@ public sealed class MiningOverlaySettingsStoreTests : IDisposable
         Assert.Equal(MiningSessionYieldSort.AveragePercentage, settings.SessionYieldSort);
     }
 
+    [Fact]
+    public void DraftCanBeReadWithoutWritingAndAssignedOnlyAfterTheCommanderSnapshotIsSaved()
+    {
+        string path = Path.Combine(directory, "ui.json");
+        var store = new MiningOverlaySettingsStore(path);
+        var defaults = new MiningOverlayPreferences();
+        store.Save(null, defaults, defaults with { SessionYieldLimit = 9 });
+        string previous = File.ReadAllText(path);
+        MiningOverlayPreferences legacy = defaults with { NotificationSeconds = 45 };
+        MiningOverlayPreferences assigned = store.ReadPreferences(" F1 ", () => legacy);
+        Assert.Equal(legacy with { SessionYieldLimit = 9 }, assigned);
+        Assert.Equal(previous, File.ReadAllText(path));
+        Assert.Equal(defaults, store.ReadPreferences("F2", () => defaults, includeDraft: false));
+        store.SaveCommander(" f1 ", assigned, assignDraft: true);
+        Assert.Equal(assigned, store.Load("F1", () => defaults));
+        Assert.Equal(defaults, store.Load("F2", () => defaults));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))
