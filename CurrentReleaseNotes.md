@@ -13,12 +13,15 @@ Fleet Carrier information consistent as journals and Frontier data update.
   average mineral percentage or number of finds. Five minerals appear by
   default; the result count can be changed with single-step up/down controls
   in mining overlay settings. Preferences are saved per commander and apply
-  immediately, while session history and reports retain every result.
+  immediately, while session history and reports retain every result. Controls
+  wait for commander data to load so pre-login edits cannot be silently lost.
 - **Owned fleet:** Ship changes produce one consistent CURRENT marker.
   Journal ship selection and Frontier fleet data now use persistent ship
   identities, including when an older cache contains conflicting markers.
+  Newly purchased ships also appear while awaiting their Frontier ship ID.
 - **Current Ship:** Journal loadouts update the selected ship and its module
-  readout without borrowing another ship's details. Complete engineering
+  readout without borrowing another ship's details, and ship totals retain
+  cargo value when journal hull and module values update. Complete engineering
   updates preserve modules, and removed hangars no longer restore stale launch
   bays. Switching commanders clears the previous ship's cached readouts,
   including when the selected account is offline or has no cached profile.
@@ -31,3 +34,4 @@ Fleet Carrier information consistent as journals and Frontier data update.
 - **Fleet Carrier jumps:** Personal and squadron carriers keep separate jump
   requests, cancellations and arrival state. Each carrier's readout uses its
   own Frontier refresh time so activity on one cannot replace the other.
+  Records without an observation timestamp cannot replace a tracked jump.

@@ -211,7 +211,7 @@ public sealed class FrontierJournalShipState
             ModulesValue = modules,
             Value =
                 Number(data, "HullValue") is not null || Number(data, "ModulesValue") is not null
-                    ? hull + modules
+                    ? hull + modules + ship.CargoValue
                     : ship.Value,
             HullHealth = Health(data, "HullHealth") ?? ship.HullHealth,
             Modules = fittedModules,

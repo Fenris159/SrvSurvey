@@ -71,7 +71,8 @@ public sealed partial class CommanderProfileViewModel
     {
         if (
             entry.EventName
-            is not ("CarrierJumpRequest" or "CarrierJumpCancelled" or "CarrierJump" or "CarrierLocation")
+                is not ("CarrierJumpRequest" or "CarrierJumpCancelled" or "CarrierJump" or "CarrierLocation")
+            || entry.Timestamp is not { } at
         )
         {
             return false;
@@ -88,7 +89,6 @@ public sealed partial class CommanderProfileViewModel
         {
             return false;
         }
-        DateTimeOffset at = entry.Timestamp ?? now().ToUniversalTime();
         journalCarrierJumps.TryGetValue(id, out JournalCarrierJumpState? previous);
         if (previous is not null && at < previous.UpdatedAt)
         {

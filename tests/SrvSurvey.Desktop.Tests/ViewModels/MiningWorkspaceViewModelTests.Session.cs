@@ -9,6 +9,33 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MiningWorkspaceViewModelTests
 {
+    [Fact]
+    public void CodeRabbitOverlayPreferencesCannotBeEditedWithoutACommander()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var workspace = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory)
+            );
+            workspace.SessionYieldSortIndex = 1;
+            workspace.SessionYieldLimit = 9;
+            workspace.HideProspectsBelowThreshold = true;
+            Assert.Equal(0, workspace.SessionYieldSortIndex);
+            Assert.Equal(5, workspace.SessionYieldLimit);
+            Assert.False(workspace.HideProspectsBelowThreshold);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
     /// <summary>Applies sorting before truncation, updates live, and recovers each commander's overlay choices.</summary>
     [Fact]
     public void SessionOverviewSortAndLimitPersistWithoutTruncatingMiningData()

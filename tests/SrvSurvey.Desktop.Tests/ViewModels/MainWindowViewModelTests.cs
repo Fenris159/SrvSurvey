@@ -5125,7 +5125,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var cancellation = new CancellationTokenSource();
             bool stopAfterPublication = false;
             var publisher = new RecordingEddnPublisher(() =>
             {
@@ -5163,6 +5163,7 @@ public sealed class MainWindowViewModelTests
                 """
             );
             stopAfterPublication = true;
+            cancellation.CancelAfter(TimeSpan.FromSeconds(30));
 
             await viewModel.MonitorAsync(cancellationToken: cancellation.Token);
 

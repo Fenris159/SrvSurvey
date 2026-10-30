@@ -5,6 +5,21 @@ namespace SrvSurvey.Core.Tests.Frontier;
 public sealed partial class FrontierJournalShipStateTests
 {
     [Fact]
+    public void CodeRabbitProjectedShipTotalIncludesRetainedCargoValue()
+    {
+        FrontierAccountSnapshot baseline = Account();
+        FrontierAccountSnapshot cached = baseline with
+        {
+            CurrentShip = baseline.CurrentShip! with { CargoValue = 250 },
+        };
+        var state = new FrontierJournalShipState();
+        state.Apply(Loadout(id: 7));
+        FrontierShipSnapshot ship = state.Project(cached)!;
+        Assert.Equal(5250, ship.Value);
+        Assert.Equal(ship.HullValue + ship.ModulesValue + ship.CargoValue, ship.Value);
+    }
+
+    [Fact]
     public void ReviewRegressionOwnLoadGameEndsAnInterruptedCrewSession()
     {
         var state = new FrontierJournalShipState();

@@ -119,7 +119,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         );
         PauseCommand = new WorkspaceCommand(TogglePause, () => storageAvailable && state.Session.Current is not null);
         StopCommand = new WorkspaceCommand(Stop, () => storageAvailable && state.Session.Current is not null);
-        SaveSettingsCommand = new WorkspaceCommand(SaveSettings);
+        SaveSettingsCommand = new WorkspaceCommand(SaveSettings, () => CanEditOverlaySettings);
         SaveNotesCommand = new WorkspaceCommand(() =>
         {
             if (SelectedSession is { } session)
@@ -308,12 +308,14 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public WorkspaceSortIndicators MissionsSortIndicators => new(missionsSorter.Indicator);
     public WorkspaceSortIndicators RingsSortIndicators => new(ringsSorter.Indicator);
     public MiningPreferences Settings => state.Data.Settings;
+    public bool CanEditOverlaySettings => storageAvailable && commander is not null;
+    public string OverlaySettingsStatus => CanEditOverlaySettings ? string.Empty : Status;
     public int SessionYieldSortIndex
     {
         get => (int)Settings.SessionYieldSort;
         set
         {
-            if (value is < 0 or > 1 || SessionYieldSortIndex == value)
+            if (!CanEditOverlaySettings || value is < 0 or > 1 || SessionYieldSortIndex == value)
             {
                 return;
             }
@@ -329,7 +331,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         set
         {
             int limit = Math.Clamp(value, 1, 100);
-            if (Settings.SessionYieldLimit == limit)
+            if (!CanEditOverlaySettings || Settings.SessionYieldLimit == limit)
             {
                 return;
             }
@@ -344,7 +346,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         get => Settings.HideProspectsBelowThreshold;
         set
         {
-            if (Settings.HideProspectsBelowThreshold == value)
+            if (!CanEditOverlaySettings || Settings.HideProspectsBelowThreshold == value)
             {
                 return;
             }
@@ -526,7 +528,13 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public string Status
     {
         get => status;
-        set => Set(ref status, value);
+        set
+        {
+            if (Set(ref status, value))
+            {
+                Changed(nameof(OverlaySettingsStatus));
+            }
+        }
     }
 
     public void UseCommanderSystem(string? system)
@@ -1504,6 +1512,9 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         Changed(nameof(HideProspectsBelowThreshold));
         Changed(nameof(SessionYieldSortIndex));
         Changed(nameof(SessionYieldLimit));
+        Changed(nameof(CanEditOverlaySettings));
+        Changed(nameof(OverlaySettingsStatus));
+        ((WorkspaceCommand)SaveSettingsCommand).Refresh();
     }
 
     private void RememberPledgedPower(string frontierId, string? commanderName)

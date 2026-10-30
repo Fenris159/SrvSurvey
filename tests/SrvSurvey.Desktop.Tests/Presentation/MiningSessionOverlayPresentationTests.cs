@@ -41,7 +41,6 @@ public sealed class MiningSessionOverlayPresentationTests
         );
         context.Apply(load);
         var status = new EliteStatus { Flags = StatusFlags.InMainShip };
-        main.MiningWorkspace.Apply(new(null, [load], status, null, null, null, [], true), context, null, status);
         var view = new Views.OverlaySettingsView(OverlaySettingsCategory.Mining) { DataContext = main };
         var window = new Window
         {
@@ -52,9 +51,21 @@ public sealed class MiningSessionOverlayPresentationTests
         try
         {
             window.Show();
-            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            using WriteableBitmap? initialFrame = window.CaptureRenderedFrame();
             ComboBox sort = view.FindControl<ComboBox>("MiningSessionYieldSortInput")!;
             NumericUpDown limit = view.FindControl<NumericUpDown>("MiningSessionYieldLimitInput")!;
+            Assert.False(sort.IsEffectivelyEnabled);
+            Assert.False(limit.IsEffectivelyEnabled);
+            Assert.False(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
+            Assert.Contains(
+                view.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.IsEffectivelyVisible && text.Text == "Waiting for commander journal data."
+            );
+            main.MiningWorkspace.Apply(new(null, [load], status, null, null, null, [], true), context, null, status);
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.True(sort.IsEffectivelyEnabled);
+            Assert.True(limit.IsEffectivelyEnabled);
+            Assert.True(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
             Assert.True(sort.IsEffectivelyVisible);
             Assert.True(limit.IsEffectivelyVisible);
             Assert.Equal(0, sort.SelectedIndex);
@@ -101,6 +112,51 @@ public sealed class MiningSessionOverlayPresentationTests
             window.Close();
             main.Dispose();
             Directory.Delete(directory, true);
+        }
+    }
+
+    /// <summary>Renders the journal's material content under recent prospects and omits unknown content.</summary>
+    [AvaloniaTheory]
+    [InlineData("$AsteroidMaterialContent_High;", "Material content: High")]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    public void NotificationsRenderRecentProspectsMaterialContent(string? content, string expected)
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Workspace.StartCommand.Execute(null);
+        using var overlay = new MiningActivityOverlayViewModel(fixture.Workspace, false);
+        string contentField = content is null ? "" : $",\"Content\":\"{content}\"";
+        fixture.Feed(
+            $$"""{"timestamp":"{{fixture.Now.AddSeconds(1):O}}","event":"ProspectedAsteroid","Materials":[{"Name":"Platinum","Proportion":35}]{{contentField}}}"""
+        );
+        var presentation = new MiningActivityOverlayPresentation { DataContext = overlay };
+        var window = new Window { Content = presentation, SizeToContent = SizeToContent.WidthAndHeight };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            TextBlock[] visible = presentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text => text.IsEffectivelyVisible)
+                .ToArray();
+            Assert.Contains(visible, text => text.Text == "RECENT PROSPECTS");
+            if (expected.Length > 0)
+            {
+                Assert.Single(visible, text => text.Text == expected);
+            }
+            else
+            {
+                Assert.DoesNotContain(
+                    visible,
+                    text => text.Text?.StartsWith("Material content:", StringComparison.Ordinal) == true
+                );
+            }
+        }
+        finally
+        {
+            window.Close();
         }
     }
 

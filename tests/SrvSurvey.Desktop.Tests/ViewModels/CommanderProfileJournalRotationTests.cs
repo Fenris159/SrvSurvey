@@ -8,12 +8,15 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
-    /// <summary>Verifies real journal rotation cannot apply a previous commander's pending profile event to the newly selected commander.</summary>
+    /// <summary>Verifies real journal rotation keeps completed and pending profile events attributed to their commander.</summary>
     [AvaloniaTheory]
-    [InlineData("Reputation")]
-    [InlineData("CommunityGoal")]
-    [InlineData("CarrierJumpRequest")]
-    public async Task JournalRotationDoesNotLeakThePreviousCommandersPendingProfileEvent(string eventName)
+    [InlineData("Reputation", false)]
+    [InlineData("Reputation", true)]
+    [InlineData("CommunityGoal", false)]
+    [InlineData("CommunityGoal", true)]
+    [InlineData("CarrierJumpRequest", false)]
+    [InlineData("CarrierJumpRequest", true)]
+    public async Task JournalRotationDoesNotLeakThePreviousCommandersProfileEvent(string eventName, bool completeLine)
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-rotation-{Guid.NewGuid():N}");
         string journals = Path.Combine(root, "journals");
@@ -76,10 +79,22 @@ public sealed partial class CommanderProfileViewModelTests
                         "1970-01-01T00:00:01.0000000+00:00",
                         "2026-10-23T02:00:00Z",
                         StringComparison.Ordinal
-                    )
+                    ) + (completeLine ? "\n" : string.Empty)
             );
             await main.RefreshAsync();
             Assert.Equal("A. Lavigny-Duval", profile.Ranks.Single(rank => rank.Category == "Powerplay").Name);
+            Assert.Equal(
+                completeLine && eventName == "Reputation" ? "85%" : "100%",
+                Assert.Single(profile.CommanderReputation).Score
+            );
+            Assert.Equal(
+                completeLine && eventName == "CommunityGoal" ? "900 contributed" : "250 contributed",
+                Assert.Single(profile.CommunityGoals).PlayerContribution
+            );
+            Assert.Equal(
+                completeLine && eventName == "CarrierJumpRequest" ? "Achenar" : "None plotted",
+                profile.CarrierOperations.Single(row => row.Label == "Current jump").Value
+            );
 
             string secondJournal = Path.Combine(journals, "Journal.2026-10-23T030000.01.log");
             await File.WriteAllTextAsync(

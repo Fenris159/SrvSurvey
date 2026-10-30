@@ -840,14 +840,16 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
             return [];
         }
 
-        long? currentShipId = CurrentShip?.Id;
+        FrontierShipSnapshot? current = CurrentShip;
+        long? currentShipId = current?.Id;
+        bool journalSelection = !ReferenceEquals(current, account.CurrentShip);
         bool currentAssigned = false;
         var rows = new List<FrontierShipRowViewModel>();
         IEnumerable<FrontierShipSnapshot> fleet = account.Ships;
         if (
-            CurrentShip is { Id: not null } current
-            && !ReferenceEquals(current, account.CurrentShip)
-            && !account.Ships.Any(ship => ship.Id == current.Id)
+            journalSelection
+            && current is not null
+            && (currentShipId is null || !account.Ships.Any(ship => ship.Id == currentShipId))
         )
         {
             fleet = fleet.Append(current);
@@ -855,13 +857,13 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
         foreach (FrontierShipSnapshot ship in fleet)
         {
             FrontierShipSnapshot displayed =
-                CurrentShip is { Id: not null } selected && selected.Id == ship.Id ? selected : ship;
+                current is { Id: not null } selected && selected.Id == ship.Id ? selected : ship;
             bool isCurrent =
                 !currentAssigned
                 && (
                     currentShipId is not null
                         ? ship.Id == currentShipId
-                        : ReferenceEquals(CurrentShip, account.CurrentShip) && ship.IsCurrent
+                        : ReferenceEquals(ship, current) || !journalSelection && ship.IsCurrent
                 );
             currentAssigned |= isCurrent;
             rows.Add(
@@ -2122,8 +2124,8 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
         const string prefix = "ship.modules.";
         const string suffix = ".module.name";
         string slotKey = NormalizeLookupKey(item.Slot);
-        return Snapshot
-                ?.CurrentShip?.DataPoints?.FirstOrDefault(point =>
+        return CurrentShip
+                ?.DataPoints?.FirstOrDefault(point =>
                     point.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                     && point.Path.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
                     && NormalizeLookupKey(point.Path[prefix.Length..^suffix.Length]) == slotKey
