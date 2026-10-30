@@ -1,9 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
@@ -13,6 +15,135 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed partial class ColonizationShoppingPresentationTests
 {
+    /// <summary>Market choices share the Projects view while filters leave the shopping selection intact.</summary>
+    [AvaloniaFact]
+    public async Task MarketProjectChoicesFollowProjectFiltersAndRefreshWithoutClearingSelection()
+    {
+        using var http = new HttpClient(
+            new RavenHandler
+            {
+                ActiveProjects =
+                [
+                    new()
+                    {
+                        BuildId = "one",
+                        BuildName = "Sol Build",
+                        SystemName = "Sol",
+                    },
+                    new()
+                    {
+                        BuildId = "two",
+                        BuildName = "Achenar Build",
+                        SystemName = "Achenar",
+                    },
+                    new()
+                    {
+                        BuildId = "complete",
+                        BuildName = "Completed Build",
+                        SystemName = "Sol",
+                        IsComplete = true,
+                    },
+                ],
+                SystemRecord = new()
+                {
+                    Name = "Sol",
+                    SystemAddress = 42,
+                    Architect = "Example Cmdr",
+                    Sites =
+                    [
+                        new()
+                        {
+                            Id = "p",
+                            Name = "Future Port",
+                            BuildType = "asteroid",
+                            Status = ColonizationSystemSiteStatus.Plan,
+                        },
+                    ],
+                },
+            }
+        );
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithExternalNetworkClient(http)
+        );
+        main.Colonization.IsEnabled = true;
+        await main.Colonization.SetCommanderAsync("Example Cmdr");
+        var view = new ColonizationView { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1180,
+            Height = 1000,
+        };
+        try
+        {
+            window.Show();
+            TabControl tabs = view.FindControl<TabControl>("ColonizationTabs")!;
+            ComboBox systems = view.FindControl<ComboBox>("ProjectSystemFilter")!;
+            ComboBox stages = view.FindControl<ComboBox>("ProjectBuildFilter")!;
+            stages.SelectedItem = main.Colonization.ProjectBuildOptions.Single(option =>
+                option.Value == ColonizationProjectBuildFilter.Planning
+            );
+            tabs.SelectedIndex = 1;
+            Assert.Single(RenderMarketProjectChoices(view, window));
+            string[] selected = main.Colonization.MarketSearchWorkspace!.ProjectIds.Order().ToArray();
+
+            tabs.SelectedIndex = 0;
+            stages.SelectedItem = main.Colonization.ProjectBuildOptions.Single(option =>
+                option.Value == ColonizationProjectBuildFilter.Building
+            );
+            tabs.SelectedIndex = 1;
+            Assert.Equal(2, RenderMarketProjectChoices(view, window).Length);
+
+            tabs.SelectedIndex = 0;
+            systems.SelectedItem = main.Colonization.ProjectSystemOptions.Single(option => option.SystemName == "Sol");
+            tabs.SelectedIndex = 1;
+            Assert.Equal("Sol Build", Assert.Single(RenderMarketProjectChoices(view, window)).Content);
+
+            tabs.SelectedIndex = 0;
+            systems.SelectedItem = main.Colonization.ProjectSystemOptions.Single(option =>
+                option.SystemName == "Achenar"
+            );
+            stages.SelectedItem = main.Colonization.ProjectBuildOptions.Single(option =>
+                option.Value == ColonizationProjectBuildFilter.Planning
+            );
+            tabs.SelectedIndex = 1;
+            Assert.Empty(RenderMarketProjectChoices(view, window));
+            Assert.Contains(
+                view.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.IsEffectivelyVisible && text.Text == "No projects match these filters."
+            );
+
+            main.Colonization.ProjectSystemFilter = main.Colonization.ProjectSystemOptions[0];
+            Assert.Single(RenderMarketProjectChoices(view, window));
+            main.Colonization.ProjectBuildFilter = main.Colonization.ProjectBuildOptions[0];
+            Assert.Equal(4, RenderMarketProjectChoices(view, window).Length);
+            main.Colonization.SortProjectsCommand.Execute(nameof(ColonizationProjectRowViewModel.BuildName));
+            await main.Colonization.RefreshAsync();
+            ToggleButton[] refreshed = RenderMarketProjectChoices(view, window);
+            Assert.Equal(
+                main.Colonization.VisibleProjects.Select(row => row.BuildName),
+                refreshed.Select(tag => tag.Content)
+            );
+            Assert.Equal(selected, main.Colonization.MarketSearchWorkspace.ProjectIds.Order());
+            Assert.All(main.Colonization.Projects, row => Assert.True(row.IsShown));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static ToggleButton[] RenderMarketProjectChoices(ColonizationView view, Window window)
+    {
+        using WriteableBitmap? frame = window.CaptureRenderedFrame();
+        Assert.NotNull(frame);
+        return view.FindControl<ItemsControl>("MarketSearchProjects")!
+            .GetVisualDescendants()
+            .OfType<ToggleButton>()
+            .ToArray();
+    }
+
     [AvaloniaTheory]
     [InlineData(820)]
     [InlineData(1180)]

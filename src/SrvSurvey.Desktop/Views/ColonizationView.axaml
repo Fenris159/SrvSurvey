@@ -613,7 +613,7 @@
           <Border Classes="card" Margin="0,0,0,16">
             <StackPanel Spacing="10">
               <TextBlock Classes="card-title" Text="Select Projects" />
-              <ItemsControl x:Name="MarketSearchProjects" ItemsSource="{Binding Colonization.Projects}">
+              <ItemsControl x:Name="MarketSearchProjects" ItemsSource="{Binding Colonization.VisibleProjects}">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:ColonizationProjectRowViewModel">
@@ -624,6 +624,8 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
               <TextBlock Classes="muted" Text="Refresh projects to load available project choices." IsVisible="{Binding Colonization.HasNoProjects}" />
+              <TextBlock Classes="muted" Text="No projects match these filters."
+                         IsVisible="{Binding Colonization.HasNoMatchingProjects}" />
             </StackPanel>
           </Border>
           <ContentControl Grid.Row="1" Content="{Binding Colonization.MarketSearchWorkspace}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
