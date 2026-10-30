@@ -40,13 +40,13 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         viewModel.NewJourneyName = "Across the black";
         viewModel.NewJourneyDescription = "A long expedition";
         await viewModel.FindStartAsync();
+        Assert.Contains("Start at Sol on", viewModel.StartStatus);
         await viewModel.BeginJourneyAsync();
 
         Assert.True(viewModel.HasActiveJourney);
         Assert.Single(viewModel.Journeys);
         Assert.Equal("Across the black", viewModel.JourneyName);
         Assert.Single(viewModel.VisitedSystems);
-        Assert.Contains("Last arrived in Sol", viewModel.StartStatus);
 
         viewModel.SelectedSystemNotes = "Remember this system";
         viewModel.JourneyDescription = "Updated description";
@@ -100,7 +100,7 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
 
         Assert.Single(viewModel.StartSystemResults);
         Assert.Equal(99, viewModel.SelectedStartSystem!.SystemAddress);
-        Assert.Contains("Last arrived in Achenar", viewModel.StartStatus);
+        Assert.Contains("Start at Achenar on", viewModel.StartStatus);
         viewModel.CancelNewJourneyCommand.Execute(null);
         Assert.False(viewModel.IsCreating);
     }

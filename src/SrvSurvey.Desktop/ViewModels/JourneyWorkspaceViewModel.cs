@@ -67,7 +67,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private string startSystemQuery = string.Empty;
     private IReadOnlyList<JourneyStartSystemViewModel> startSystemResults = [];
     private JourneyStartSystemViewModel? selectedStartSystem;
-    private JourneyJournalSystemEntry? startingEntry;
     private string startStatus = "Choose where this journey should begin.";
     private bool isConcludePending;
     private bool isReprocessPending;
@@ -100,16 +99,13 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         openWorkspaceCommand = new AsyncCommand(OpenWorkspaceAsync, CanOpenWorkspace);
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(StartNewJourneyAsync, () => HasProfileAndNotBusy() && !HasActiveJourney);
-        cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, () => IsCreating && !IsBusy);
+        cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
         searchSystemsCommand = new AsyncCommand(
             SearchSystemsAsync,
             () => IsCreating && !UseCurrentStart && !string.IsNullOrWhiteSpace(StartSystemQuery) && !IsBusy
         );
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
-        beginJourneyCommand = new AsyncCommand(
-            BeginJourneyAsync,
-            () => IsCreating && !HasActiveJourney && !string.IsNullOrWhiteSpace(NewJourneyName) && CanFindStart()
-        );
+        beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
         saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy);
         discardCommand = new AsyncCommand(DiscardAsync, () => IsDirty && !IsBusy);
         requestConcludeCommand = new AsyncCommand(RequestConcludeAsync, CanConclude);
@@ -392,10 +388,10 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
-            startingEntry = null;
+            ClearStartVisits();
             OnPropertyChanged(nameof(UsePriorStart));
             StartStatus = value
-                ? $"Use the most recent visit to {currentSystemName ?? "the current system"}."
+                ? $"Find recorded arrivals in {currentSystemName ?? "the current system"}."
                 : "Search for a previously visited system.";
             RaiseCommands();
         }
@@ -425,6 +421,13 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             if (SetField(ref startSystemQuery, value ?? string.Empty))
             {
+                if (UsePriorStart)
+                {
+                    SelectedStartSystem = null;
+                    StartSystemResults = [];
+                    ClearStartVisits();
+                    StartStatus = "Search for a previously visited system.";
+                }
                 searchSystemsCommand.RaiseCanExecuteChanged();
             }
         }
@@ -446,10 +449,10 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
-            startingEntry = null;
+            ClearStartVisits();
             StartStatus = value is null
                 ? "Select a system from the search results."
-                : $"Find the last recorded FSD jump into {value.Name}.";
+                : $"Find recorded arrivals in {value.Name}.";
             RaiseCommands();
         }
     }
@@ -565,6 +568,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             RememberJourneyDraft();
         }
+        InvalidateStartVisitContext(profileKey, nextSystemAddress);
         frontierId = normalizedFrontierId;
         commanderName = nextCommanderName;
         isOdyssey = nextIsOdyssey;
@@ -820,26 +824,33 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         StartSystemQuery = currentSystemName ?? string.Empty;
         StartSystemResults = [];
         SelectedStartSystem = null;
-        startingEntry = null;
+        ClearStartVisits();
         StartStatus = currentSystemAddress is > 0
-            ? $"Find the most recent FSD jump into {currentSystemName}."
+            ? $"Find recorded arrivals in {currentSystemName}."
             : "A current journal system is required, or search for a prior system.";
         return Task.CompletedTask;
     }
 
     private Task CancelNewJourneyAsync()
     {
+        ClearStartVisits();
         IsCreating = false;
         return Task.CompletedTask;
     }
 
     public async Task SearchSystemsAsync()
     {
+        string query = StartSystemQuery.Trim();
+        int version = contextVersion;
         try
         {
             IsBusy = true;
             StartStatus = $"Searching for {StartSystemQuery.Trim()}\u2026";
-            IReadOnlyList<StarSystemReference> results = await systemResolver.SearchAsync(StartSystemQuery.Trim());
+            IReadOnlyList<StarSystemReference> results = await systemResolver.SearchAsync(query);
+            if (version != contextVersion || !IsCreating || UseCurrentStart || query != StartSystemQuery.Trim())
+            {
+                return;
+            }
             StartSystemResults = results.Select(system => new JourneyStartSystemViewModel(system)).ToArray();
             SelectedStartSystem =
                 StartSystemResults.FirstOrDefault(system =>
@@ -852,11 +863,17 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StartStatus = "The system search failed: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StartStatus = "The system search failed: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -868,70 +885,15 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             && (UseCurrentStart ? currentSystemAddress is > 0 : SelectedStartSystem is not null);
     }
 
-    public async Task FindStartAsync()
-    {
-        if (frontierId is null)
-        {
-            return;
-        }
-
-        long? address = UseCurrentStart ? currentSystemAddress : SelectedStartSystem?.SystemAddress;
-        string? name = UseCurrentStart ? currentSystemName : SelectedStartSystem?.Name;
-        if (address is not > 0)
-        {
-            StartStatus = "Choose a valid starting system.";
-            return;
-        }
-
-        try
-        {
-            IsBusy = true;
-            StartStatus = $"Reading journals for the last visit to {name}\u2026";
-            JourneyJournalSystemSearchResult result = await journeyService.FindLatestStartAsync(
-                frontierId,
-                isOdyssey,
-                address.Value
-            );
-            startingEntry = result.Entry;
-            StartStatus = result.Entry is null
-                ? $"No FSD jump into {name} was found in this commander's journals."
-                : $"Last arrived in {result.Entry.System.Name} on "
-                    + $"{FormatTime(result.Entry.Event.Timestamp!.Value)} "
-                    + $"({result.Entry.JournalFileName}).";
-            if (result.Errors.Count > 0)
-            {
-                StartStatus += $" Ignored {result.Errors.Count:N0} malformed journal line(s).";
-            }
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            startingEntry = null;
-            StartStatus = "The starting visit could not be found: " + exception.Message;
-        }
-        finally
-        {
-            IsBusy = false;
-            beginJourneyCommand.RaiseCanExecuteChanged();
-        }
-    }
-
     public async Task BeginJourneyAsync()
     {
-        if (frontierId is null || string.IsNullOrWhiteSpace(NewJourneyName))
+        JourneyJournalSystemEntry? start = SelectedStartVisit?.Entry;
+        if (frontierId is null || start is null || !CanBeginJourney())
         {
+            StartStatus = "Find visits and choose a starting arrival before beginning the journey.";
             return;
         }
-
-        if (startingEntry is null)
-        {
-            await FindStartAsync();
-        }
-
-        if (startingEntry is null)
-        {
-            return;
-        }
-
+        int version = contextVersion;
         try
         {
             IsBusy = true;
@@ -942,11 +904,20 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                     isOdyssey,
                     NewJourneyName,
                     NewJourneyDescription,
-                    startingEntry
+                    start
                 )
             );
+            if (version != contextVersion)
+            {
+                return;
+            }
             IsCreating = false;
+            ClearStartVisits();
             await RefreshCatalogAsync(result.Journey?.FileName);
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage =
                 result.Errors.Count > 0
                     ? string.Join(Environment.NewLine, result.Errors)
@@ -955,11 +926,17 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StartStatus = "The journey was not started: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StartStatus = "The journey was not started: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 

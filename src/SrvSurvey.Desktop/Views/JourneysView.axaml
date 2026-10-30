@@ -238,7 +238,7 @@
               <TextBlock Classes="page-title" FontSize="24" Text="Begin an expedition" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Choose the last visit to a system as the starting point. Existing journals are replayed from there." />
+                         Text="Find a system's recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival." />
             </StackPanel>
 
             <StackPanel Spacing="6">
@@ -255,7 +255,7 @@
                        PlaceholderText="Optional description" />
             </StackPanel>
 
-            <Border Classes="card">
+            <Border Classes="card" IsEnabled="{Binding !IsBusy}">
               <StackPanel Spacing="12">
                 <RadioButton GroupName="JourneyStart"
                              Click="CurrentStart_Click"
@@ -301,8 +301,26 @@
               <Button Grid.Column="1"
                       Classes="secondary"
                       Command="{Binding FindStartCommand}"
-                      Content="Find last visit" />
+                      Content="Find visits" />
             </Grid>
+
+            <StackPanel Spacing="8" IsVisible="{Binding HasStartVisits}">
+              <TextBlock FontWeight="SemiBold" Text="{Binding StartVisitsHeading}" />
+              <TextBlock Classes="muted" Text="Newest first. All times are UTC." />
+              <ListBox x:Name="JourneyStartVisitList" MaxHeight="180"
+                       IsEnabled="{Binding !IsBusy}"
+                       ItemsSource="{Binding StartVisits}"
+                       SelectedItem="{Binding SelectedStartVisit, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:JourneyStartVisitViewModel">
+                    <StackPanel Spacing="3" Margin="4,3">
+                      <TextBlock Text="{Binding Arrived}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding ArrivalType}" Classes="muted" FontSize="12" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
@@ -311,6 +329,7 @@
                       Command="{Binding CancelNewJourneyCommand}"
                       Content="Cancel" />
               <Button Classes="primary"
+                      x:Name="BeginJourneyButton"
                       Command="{Binding BeginJourneyCommand}"
                       Content="Begin journey" />
             </StackPanel>

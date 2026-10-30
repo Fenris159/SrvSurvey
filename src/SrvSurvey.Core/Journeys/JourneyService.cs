@@ -49,6 +49,13 @@ public sealed partial class JourneyService
         return journeyStore.LoadAllAsync(frontierId, cancellationToken);
     }
 
+    public Task<JourneyJournalSystemVisitsResult> FindStartVisitsAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        CancellationToken cancellationToken = default
+    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemAddress, cancellationToken);
+
     public Task<JourneyLoadResult> LoadAsync(
         string frontierId,
         string fileName,

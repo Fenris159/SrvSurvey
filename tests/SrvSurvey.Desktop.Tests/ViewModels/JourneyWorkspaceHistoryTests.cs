@@ -221,6 +221,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
         model.NewJourneyName = "Live expedition";
+        await model.FindStartAsync();
         await model.BeginJourneyAsync();
         model.SelectedJourney = model.Journeys.Single(item => item.Document.FileName == historical.FileName);
         model.JourneyDescription = "Keep this draft";

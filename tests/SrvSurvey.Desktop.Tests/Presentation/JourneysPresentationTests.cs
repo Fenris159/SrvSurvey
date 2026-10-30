@@ -77,6 +77,88 @@ public sealed class JourneysPresentationTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task AStartingArrivalCanBeChosenInTheRenderedJourneyForm()
+    {
+        string journals = Path.Combine(directory, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.2026-07-01T000000.01.log"),
+            """
+            {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","FID":"F123"}
+            {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            {"timestamp":"2026-07-01T00:07:00Z","event":"FSDJump","StarSystem":"Alpha","SystemAddress":43,"StarPos":[1,0,0]}
+            {"timestamp":"2026-07-02T00:05:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            {"timestamp":"2026-07-02T00:07:00Z","event":"FSDJump","StarSystem":"Alpha","SystemAddress":43,"StarPos":[1,0,0]}
+            {"timestamp":"2026-07-03T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """
+        );
+        using MainWindowViewModel main = await CreateModelAsync(journals);
+        await main.Journey.StartNewJourneyAsync();
+        main.Journey.NewJourneyName = "The earlier visit";
+        await main.Journey.FindStartAsync();
+        var view = new JourneysView { DataContext = main.Journey };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1100,
+            Height = 1000,
+        };
+        try
+        {
+            window.Show();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            ListBox arrivals = view.FindControl<ListBox>("JourneyStartVisitList")!;
+            Button begin = view.FindControl<Button>("BeginJourneyButton")!;
+            Assert.True(arrivals.IsEffectivelyVisible);
+            Assert.Equal(3, arrivals.ItemCount);
+            Assert.Equal(-1, arrivals.SelectedIndex);
+            Assert.False(begin.IsEffectivelyEnabled);
+            arrivals.SelectedIndex = 2;
+            Assert.Equal("2026-07-01 00:05:00 UTC", main.Journey.SelectedStartVisit!.Arrived);
+            Assert.True(begin.IsEffectivelyEnabled);
+            begin.BringIntoView();
+            using (WriteableBitmap? selected = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(selected);
+                string? output = Environment.GetEnvironmentVariable("SRVSURVEY_START_VISITS_RENDER_OUTPUT");
+                if (output is not null)
+                {
+                    selected.Save(output, PngBitmapEncoderOptions.Default);
+                }
+            }
+            var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            main.Journey.PropertyChanged += (_, args) =>
+            {
+                if (
+                    args.PropertyName == nameof(main.Journey.IsBusy)
+                    && !main.Journey.IsBusy
+                    && main.Journey.HasActiveJourney
+                )
+                {
+                    completed.TrySetResult();
+                }
+            };
+            Point center = begin
+                .TranslatePoint(new Point(begin.Bounds.Width / 2, begin.Bounds.Height / 2), window)!
+                .Value;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(main.Journey.IsCreating);
+            Assert.Equal(5, main.Journey.VisitedSystems.Count);
+            Assert.Equal(1, main.Journey.VisitedSystems[^1].Visit.Arrived.Day);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task ChangingTheScreenshotDestinationRefreshesFilesWithoutDiscardingJourneyEdits()
     {
         using MainWindowViewModel main = await CreateModelAsync();

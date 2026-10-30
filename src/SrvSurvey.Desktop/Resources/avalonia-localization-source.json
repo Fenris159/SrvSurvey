@@ -11213,6 +11213,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Choose a recorded arrival as the starting point.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Choose a reference system and a surface material.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11339,14 +11347,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyBrushes.cs"
-  },
-  {
-    "Text": "Choose a valid starting system.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Choose a valid {0}.",
@@ -11611,14 +11611,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
-  },
-  {
-    "Text": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Choose the live panel and Default or the current vehicle/game mode.",
@@ -22635,6 +22627,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find a system\u0027s recorded arrivals, then choose the visit where your journey began. Existing journals are replayed from that arrival.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Find buyers",
     "IsFormat": false,
     "SourceKinds": [
@@ -22689,14 +22689,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
-  },
-  {
-    "Text": "Find last visit",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Find material traders",
@@ -22756,6 +22748,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Find recorded arrivals in {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Find rings, markets and traders",
     "IsFormat": false,
     "SourceKinds": [
@@ -22772,16 +22772,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
-    "Text": "Find the last recorded FSD jump into {0}.",
-    "IsFormat": true,
+    "Text": "Find visits",
+    "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
-    "Text": "Find the most recent FSD jump into {0}.",
-    "IsFormat": true,
+    "Text": "Find visits and choose a starting arrival before beginning the journey.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -22802,6 +22802,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
+  },
+  {
+    "Text": "Finding recorded arrivals in {0}...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Finding settings",
@@ -23270,6 +23278,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
+    "Text": "Fleet carrier arrival",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Fleet carrier itinerary",
     "IsFormat": false,
     "SourceKinds": [
@@ -23644,6 +23660,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+  },
+  {
+    "Text": "Found {0} arrivals. Choose the visit where this journey began.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Found {0} commander profile(s). {1}",
@@ -28043,7 +28067,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Ignored {0} malformed line(s).",
@@ -30753,14 +30777,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
-  },
-  {
-    "Text": "Last arrived in {0} on {1} ({2}).",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Last docked market",
@@ -36269,6 +36285,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml"
   },
   {
+    "Text": "Newest first. All times are UTC.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Next",
     "IsFormat": false,
     "SourceKinds": [
@@ -36612,14 +36636,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/EdsmSettingsViewModel.cs"
-  },
-  {
-    "Text": "No FSD jump into {0} was found in this commander\u0027s journals.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "No Fleet Carrier",
@@ -37700,6 +37716,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "No recorded ship or carrier arrivals in {0} were found in this commander\u0027s journals.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "No reference image is available for this entry.",
@@ -46782,14 +46806,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Reading journals for the last visit to {0}\u2026",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Reading selected journals\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -47036,6 +47052,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Recorded arrivals ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Recorded first footfall for {0}.",
@@ -54677,6 +54701,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Ship arrival",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Ship cargo is paused while multiple Elite windows are running because Cargo.json cannot be attributed safely.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58010,6 +58042,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
+  },
+  {
+    "Text": "Start at {0} on {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Start chapter",
@@ -65003,12 +65043,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "The starting visit could not be found: {0}",
+    "Text": "The starting visits could not be found: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "The startup resource was already transferred.",
@@ -67672,6 +67712,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Unknown arrival time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
     "Text": "Unknown body",
     "IsFormat": false,
     "SourceKinds": [
@@ -68984,14 +69032,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Use the most recent visit to {0}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -78998,6 +79038,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "yyyy-MM-dd HH:mm:ss \u0027UTC\u0027",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "zip",
