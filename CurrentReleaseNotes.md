@@ -21,6 +21,8 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   visits to the same system. Unsaved edits are protected when switching lists
   or commanders. Keep the application on top while viewing Journeys using the
   option in journey details.
+  Screenshot lists use the current PNG converter destination and refresh after
+  conversion or a destination change without discarding unsaved notes.
 - **Colonization Market Search:** Select Projects now follows the system, build
   status and ordering selected under Projects. Changing those filters keeps the
   list manageable without clearing previously selected shopping projects.

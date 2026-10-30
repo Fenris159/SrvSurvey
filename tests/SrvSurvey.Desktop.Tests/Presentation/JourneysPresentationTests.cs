@@ -8,7 +8,11 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -23,6 +27,142 @@ public sealed class JourneysPresentationTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-journey-presentation-{Guid.NewGuid():N}"
     );
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task JourneyScreenshotsUseTheCurrentConverterDestination(bool hasLegacyDestination)
+    {
+        using MainWindowViewModel main = await CreateModelAsync();
+        Assert.Equal("Sagittarius A*", main.Journey.SelectedSystemName);
+        if (hasLegacyDestination)
+        {
+            string legacyRoot = Path.Combine(directory, "old-screenshots");
+            string legacyFolder = Path.Combine(legacyRoot, SystemNoteStore.MakeSafeFileName("Sagittarius A*"));
+            Directory.CreateDirectory(legacyFolder);
+            await File.WriteAllTextAsync(Path.Combine(legacyFolder, "old.png"), "old image");
+            await File.WriteAllTextAsync(
+                Path.Combine(main.AppDataPaths.OverlaySettingsDirectory, "settings.json"),
+                System.Text.Json.JsonSerializer.Serialize(new { screenshotTargetFolder = legacyRoot })
+            );
+        }
+        string target = Path.Combine(directory, "current-screenshots");
+        string screenshot = await CreateScreenshotAsync(target);
+        main.ScreenshotProcessing.TargetFolder = target;
+        await main.Journey.RefreshAsync();
+        Assert.Equal([screenshot], main.Journey.ScreenshotFiles);
+        Assert.True(main.Journey.HasImagesDirectory);
+        Assert.True(main.Journey.HasScreenshots);
+        var view = new JourneysView { DataContext = main.Journey };
+        var window = new Window
+        {
+            Content = view,
+            Width = 900,
+            Height = 800,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            ListBox screenshots = view.FindControl<ListBox>("ScreenshotListBox")!;
+            Assert.True(screenshots.IsEffectivelyVisible);
+            Assert.Equal([screenshot], screenshots.Items.Cast<string>());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ChangingTheScreenshotDestinationRefreshesFilesWithoutDiscardingJourneyEdits()
+    {
+        using MainWindowViewModel main = await CreateModelAsync();
+        string firstTarget = Path.Combine(directory, "first-screenshots");
+        await CreateScreenshotAsync(firstTarget);
+        main.ScreenshotProcessing.TargetFolder = firstTarget;
+        await main.Journey.RefreshAsync();
+        main.Journey.SelectedSystemNotes = "Unsaved system notes";
+        main.Journey.JourneyDescription = "Unsaved expedition description";
+        string nextTarget = Path.Combine(directory, "next-screenshots");
+        string nextScreenshot = await CreateScreenshotAsync(nextTarget);
+        main.ScreenshotProcessing.TargetFolder = nextTarget;
+        Assert.Equal([nextScreenshot], main.Journey.ScreenshotFiles);
+        Assert.Equal("Unsaved system notes", main.Journey.SelectedSystemNotes);
+        Assert.Equal("Unsaved expedition description", main.Journey.JourneyDescription);
+        Assert.True(main.Journey.IsDirty);
+        string? openedDirectory = null;
+        main.Journey.SetDirectoryLauncher(folder =>
+        {
+            openedDirectory = folder.FullName;
+            return Task.FromResult(true);
+        });
+        main.Journey.OpenImagesCommand.Execute(null);
+        Assert.Equal(Path.GetDirectoryName(nextScreenshot), openedDirectory);
+        main.ScreenshotProcessing.TargetFolder = Path.Combine(directory, "missing-screenshots");
+        Assert.Empty(main.Journey.ScreenshotFiles);
+        Assert.False(main.Journey.HasImagesDirectory);
+        Assert.False(main.Journey.OpenImagesCommand.CanExecute(null));
+        main.ScreenshotProcessing.TargetFolder = string.Empty;
+        Assert.Empty(main.Journey.ScreenshotFiles);
+        main.ScreenshotProcessing.TargetFolder = "relative-screenshots";
+        Assert.Empty(main.Journey.ScreenshotFiles);
+        Assert.Equal("Unsaved system notes", main.Journey.SelectedSystemNotes);
+    }
+
+    private static async Task<string> CreateScreenshotAsync(string target)
+    {
+        string folder = ScreenshotProcessingService.GetSystemFolderPath(target, "Sagittarius A*");
+        Directory.CreateDirectory(folder);
+        string path = Path.Combine(folder, "Sagittarius A (2026-10-29 140000).png");
+        await File.WriteAllBytesAsync(
+            path,
+            Convert.FromBase64String(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+            )
+        );
+        return path;
+    }
+
+    [AvaloniaFact]
+    public async Task AConvertedScreenshotAppearsWithoutReselectingTheSystemOrDiscardingNotes()
+    {
+        string journals = Path.Combine(directory, "journals");
+        Directory.CreateDirectory(journals);
+        string journalPath = Path.Combine(journals, "Journal.2026-10-29T120000.01.log");
+        await File.WriteAllTextAsync(
+            journalPath,
+            """
+            {"timestamp":"2026-10-29T12:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-10-29T12:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"2026-10-29T12:00:02Z","event":"Location","StarSystem":"Sagittarius A*","SystemAddress":44,"StarPos":[10000,80,12000]}
+
+            """
+        );
+        string target = Path.Combine(directory, "converted-screenshots");
+        var processor = new SavingScreenshotProcessor(() => CreateScreenshotAsync(target));
+        using MainWindowViewModel main = await CreateModelAsync(journals, processor);
+        main.ScreenshotProcessing.TargetFolder = target;
+        main.ScreenshotProcessing.Enabled = true;
+        await main.RefreshAsync();
+        Assert.Empty(main.Journey.ScreenshotFiles);
+        JourneySystemItemViewModel? selected = main.Journey.SelectedSystem;
+        main.Journey.SelectedSystemNotes = "Keep these unsaved notes";
+        await File.AppendAllTextAsync(
+            journalPath,
+            """
+            {"timestamp":"2026-10-29T12:00:03Z","event":"Screenshot","Filename":"new.bmp","System":"Sagittarius A*","Body":"Sagittarius A*"}
+
+            """
+        );
+        await main.RefreshAsync();
+        Assert.Single(main.Journey.ScreenshotFiles);
+        Assert.True(File.Exists(main.Journey.ScreenshotFiles[0]));
+        Assert.Same(selected, main.Journey.SelectedSystem);
+        Assert.Equal("Keep these unsaved notes", main.Journey.SelectedSystemNotes);
+        Assert.True(main.Journey.IsDirty);
+    }
 
     [AvaloniaTheory]
     [InlineData(640)]
@@ -283,11 +423,15 @@ public sealed class JourneysPresentationTests : IDisposable
         }
     }
 
-    private async Task<MainWindowViewModel> CreateModelAsync()
+    private async Task<MainWindowViewModel> CreateModelAsync(
+        string? journals = null,
+        IScreenshotProcessingService? processor = null
+    )
     {
         MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
-            null,
+            journals,
             builder =>
+            {
                 builder.WithAppDataPaths(
                     new(
                         Path.Combine(directory, "config"),
@@ -295,7 +439,12 @@ public sealed class JourneysPresentationTests : IDisposable
                         Path.Combine(directory, "cache"),
                         []
                     )
-                )
+                );
+                if (processor is not null)
+                {
+                    builder.WithScreenshotProcessingService(processor);
+                }
+            }
         );
         var store = new JourneyStore(main.AppDataPaths.DataDirectory);
         DateTimeOffset at = new(2026, 10, 29, 12, 0, 15, TimeSpan.Zero);
@@ -331,6 +480,26 @@ public sealed class JourneysPresentationTests : IDisposable
         await store.SaveAsync(journey);
         await main.Journey.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         return main;
+    }
+
+    private sealed class SavingScreenshotProcessor(Func<Task<string>> saveScreenshot) : IScreenshotProcessingService
+    {
+        public async Task<ScreenshotProcessingResult> ProcessAsync(
+            IReadOnlyList<JournalEventEnvelope> journalEvents,
+            ScreenshotProcessingPreferences preferences,
+            string? commanderName,
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
+            ScreenshotNavigationContext? navigationContext = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!journalEvents.Any(entry => entry.EventName == "Screenshot"))
+            {
+                return ScreenshotProcessingResult.Empty;
+            }
+            string path = await saveScreenshot();
+            return new([new("new.bmp", path, false, null)], []);
+        }
     }
 
     private static void ApplyTheme(Window window, RavenThemeDefinition theme)

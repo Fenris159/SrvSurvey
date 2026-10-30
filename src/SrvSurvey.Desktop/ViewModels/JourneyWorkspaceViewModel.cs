@@ -17,6 +17,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private readonly IStarSystemResolver systemResolver;
     private readonly SystemNoteStore noteStore;
     private readonly SystemNotesSettingsStore settingsStore;
+    private readonly Func<string, string?> screenshotDirectoryProvider;
     private readonly AsyncCommand openWorkspaceCommand;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand newJourneyCommand;
@@ -79,13 +80,15 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         JourneyService journeyService,
         IStarSystemResolver systemResolver,
         SystemNoteStore noteStore,
-        SystemNotesSettingsStore settingsStore
+        SystemNotesSettingsStore settingsStore,
+        Func<string, string?>? screenshotDirectoryProvider = null
     )
     {
         this.journeyService = journeyService ?? throw new ArgumentNullException(nameof(journeyService));
         this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
         this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.screenshotDirectoryProvider = screenshotDirectoryProvider ?? settingsStore.GetImagesDirectory;
         SystemNotesSettingsLoadResult settings = settingsStore.Load();
         alwaysOnTop = settings.Snapshot?.JourneyAlwaysOnTop ?? false;
         useGalacticTime = settings.Snapshot?.JourneyUseGalacticTime ?? false;
@@ -320,6 +323,26 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     public bool HasScreenshots => ScreenshotFiles.Count > 0;
 
     public bool HasImagesDirectory => !string.IsNullOrWhiteSpace(imagesDirectory) && Directory.Exists(imagesDirectory);
+
+    public void RefreshScreenshotAvailability()
+    {
+        try
+        {
+            imagesDirectory =
+                selectedDocument is not null && SelectedSystem is { } selected
+                    ? screenshotDirectoryProvider(selected.Visit.StarSystem.Name)
+                    : null;
+            ScreenshotFiles = GetScreenshotFiles(imagesDirectory);
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            imagesDirectory = null;
+            ScreenshotFiles = [];
+            StatusMessage = "The screenshot folder could not be opened: " + exception.Message;
+        }
+        OnPropertyChanged(nameof(HasImagesDirectory));
+        RaiseCommands();
+    }
 
     public bool IsDirty =>
         selectedDocument is not null
@@ -1278,8 +1301,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 loadedSystemNotes = load.Notes ?? string.Empty;
                 SelectedSystemNotes = loadedSystemNotes;
                 SelectedSystemDetails = CreateSystemDetails(visit);
-                imagesDirectory = settingsStore.GetImagesDirectory(visit.StarSystem.Name);
-                ScreenshotFiles = GetScreenshotFiles(imagesDirectory);
+                RefreshScreenshotAvailability();
             }
             finally
             {

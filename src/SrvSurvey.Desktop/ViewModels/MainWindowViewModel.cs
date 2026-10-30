@@ -684,7 +684,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 journeyService,
                 sharedSystemResolver,
                 systemNoteStore,
-                systemNotesSettingsStore
+                systemNotesSettingsStore,
+                GetConvertedScreenshotDirectory
             );
             var spanshRouteClient = new SpanshRouteClient(externalNetworkClient);
             var spanshPlannerClient = new SpanshPlannerClient(externalNetworkClient);
@@ -4870,12 +4871,18 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         eddnPublisher.SetEnabled(enabled);
     }
 
+    private string? GetConvertedScreenshotDirectory(string systemName) =>
+        Path.IsPathFullyQualified(ScreenshotProcessing.TargetFolder)
+            ? ScreenshotProcessingService.GetSystemFolderPath(ScreenshotProcessing.TargetFolder, systemName)
+            : null;
+
     private void OnScreenshotProcessingChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         Guardian.RefreshAerialGuidance();
         if (eventArgs.PropertyName == nameof(ScreenshotProcessingViewModel.TargetFolder))
         {
             Guardian.RefreshScreenshotAvailability();
+            Journey.RefreshScreenshotAvailability();
         }
     }
 
