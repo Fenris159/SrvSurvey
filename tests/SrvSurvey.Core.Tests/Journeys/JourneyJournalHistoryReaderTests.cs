@@ -82,8 +82,89 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         using var canceled = new CancellationTokenSource();
         await canceled.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            reader.FindArrivalsAsync("F123", true, 42, canceled.Token)
+            reader.FindArrivalsAsync("F123", true, 42, cancellationToken: canceled.Token)
         );
+    }
+
+    [Fact]
+    public async Task DateCutoffKeepsTheWholeUtcDayAndJournalsSpanningTheBoundary()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-06-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true) + "\nmalformed old line\n" + Event("2026-07-30T23:59:59Z", "Shutdown")
+        );
+        string spanning =
+            Header("F123", true)
+            + "\n"
+            + """
+                {"timestamp":"2026-07-31T23:59:59Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T00:00:00Z","event":"CarrierJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T01:00:00+02:00","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                {"timestamp":"2026-08-01T23:59:59Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+                """;
+        // The oversized final record forces a safe full read when the tail starts inside JSON.
+        spanning +=
+            "\n"
+            + "{\"timestamp\":\"2026-08-01T23:59:59Z\",\"event\":\"Screenshot\",\"padding\":\""
+            + new string('x', 20_000)
+            + "\"}";
+        await WriteJournalAsync(
+            "Journal.2026-07-31T000000.01.log",
+            new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            spanning
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-08-02T00:00:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemVisitsResult result = await reader.FindArrivalsAsync(
+            "F123",
+            true,
+            "Sol",
+            new DateOnly(2026, 8, 1)
+        );
+        Assert.Equal([2, 1, 1], result.Entries.Select(entry => entry.Event.Timestamp!.Value.UtcDateTime.Day));
+        Assert.Empty(result.Errors);
+        Assert.Single((await reader.FindArrivalsAsync("F123", true, 42, new DateOnly(2026, 8, 2))).Entries);
+        Assert.Empty((await reader.FindArrivalsAsync("F123", true, "Sol", new DateOnly(2026, 8, 3))).Entries);
+    }
+
+    [Fact]
+    public async Task CurrentLocationUsesTheNewestMatchingLocationIncludingDockedLogins()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-01T000000.01.log",
+            DateTime.UtcNow,
+            Header("F123", true)
+                + "\n"
+                + """{"timestamp":"2026-08-01T00:05:00Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0],"Docked":true}"""
+        );
+        await WriteJournalAsync(
+            "Journal.2026-08-02T000000.01.log",
+            DateTime.UtcNow,
+            Header("F999", true)
+                + "\n"
+                + """{"timestamp":"2026-08-02T00:05:00Z","event":"Location","StarSystem":"Wrong commander","SystemAddress":42,"StarPos":[0,0,0]}"""
+        );
+        var reader = new JourneyJournalHistoryReader(temporaryDirectory);
+        JourneyJournalSystemSearchResult result = await reader.FindCurrentLocationAsync("F123", true, 42);
+        Assert.Equal("Location", result.Entry!.Event.EventName);
+        Assert.Equal("Sol", result.Entry.System.Name);
+        Assert.Equal(8, result.Entry.Event.Timestamp!.Value.Month);
+        Assert.Null((await reader.FindCurrentLocationAsync("F123", false, 42)).Entry);
+        Assert.Null((await reader.FindCurrentLocationAsync("F123", true, 99)).Entry);
     }
 
     [Fact]

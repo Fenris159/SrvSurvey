@@ -111,8 +111,24 @@ public sealed class JourneysPresentationTests : IDisposable
             using (WriteableBitmap? frame = window.CaptureRenderedFrame())
             {
                 Assert.NotNull(frame);
+                string? output = Environment.GetEnvironmentVariable("SRVSURVEY_START_VISITS_RENDER_OUTPUT");
+                if (output is not null)
+                {
+                    Directory.CreateDirectory(output);
+                    frame.Save(
+                        Path.Combine(output, $"journey-current-start-{width}.png"),
+                        PngBitmapEncoderOptions.Default
+                    );
+                }
             }
             SystemNameEntry entry = view.FindControl<SystemNameEntry>("JourneyStartingSystem")!;
+            Assert.True(main.Journey.UseCurrentStart);
+            Assert.False(entry.IsEffectivelyVisible);
+            view.FindControl<RadioButton>("UsePreviousJourneyStart")!.IsChecked = true;
+            using (WriteableBitmap? previous = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(previous);
+            }
             Assert.True(entry.IsEffectivelyVisible);
             var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             main.Journey.PropertyChanged += (_, args) =>
@@ -146,6 +162,22 @@ public sealed class JourneysPresentationTests : IDisposable
             Button begin = view.FindControl<Button>("BeginJourneyButton")!;
             Assert.True(arrivals.IsEffectivelyVisible);
             Assert.Equal(3, arrivals.ItemCount);
+            CalendarDatePicker calendar = view.FindControl<CalendarDatePicker>("JourneyVisitDate")!;
+            Assert.Empty(view.GetVisualDescendants().OfType<TimePicker>());
+            Assert.Equal(CalendarDatePickerFormat.Short, calendar.SelectedDateFormat);
+            await WaitForVisitCountAsync(
+                main.Journey,
+                2,
+                () => calendar.SelectedDate = new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Unspecified)
+            );
+            Assert.All(main.Journey.StartVisits, visit => Assert.True(visit.Entry.Event.Timestamp!.Value.Day >= 2));
+            await WaitForVisitCountAsync(
+                main.Journey,
+                3,
+                () =>
+                    view.FindControl<Button>("ClearJourneyVisitDate")!
+                        .RaiseEvent(new RoutedEventArgs(Button.ClickEvent))
+            );
             Assert.Equal(-1, arrivals.SelectedIndex);
             Assert.False(begin.IsEffectivelyEnabled);
             arrivals.SelectedIndex = 2;
@@ -231,6 +263,28 @@ public sealed class JourneysPresentationTests : IDisposable
         main.ScreenshotProcessing.TargetFolder = "relative-screenshots";
         Assert.Empty(main.Journey.ScreenshotFiles);
         Assert.Equal("Unsaved system notes", main.Journey.SelectedSystemNotes);
+    }
+
+    private static async Task WaitForVisitCountAsync(JourneyWorkspaceViewModel model, int count, Action action)
+    {
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void Changed(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(model.IsBusy) && !model.IsBusy && model.StartVisits.Count == count)
+            {
+                completed.TrySetResult();
+            }
+        }
+        model.PropertyChanged += Changed;
+        try
+        {
+            action();
+            await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        finally
+        {
+            model.PropertyChanged -= Changed;
+        }
     }
 
     private static async Task<string> CreateScreenshotAsync(string target)

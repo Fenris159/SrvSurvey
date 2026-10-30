@@ -231,82 +231,104 @@
               Padding="24"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Center">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Spacing="14">
-            <StackPanel Spacing="4">
-              <TextBlock Classes="page-title" FontSize="24" Text="New journey" />
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Choose a system and the visit where your journey began." />
-            </StackPanel>
+        <Grid RowDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="page-title" FontSize="24" Text="New journey" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                    Text="Start from your current system or choose an earlier visit." />
+              </StackPanel>
 
-            <StackPanel Spacing="8">
-              <TextBlock FontWeight="SemiBold" Text="Starting system" />
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsEnabled="{Binding !IsBusy}">
-                <controls:SystemNameEntry x:Name="JourneyStartingSystem"
-                    Text="{Binding StartSystemQuery, Mode=TwoWay}"
-                    SystemSelected="StartingSystem_Selected"
-                    KeyDown="StartingSystem_KeyDown"
-                    PlaceholderText="Type a system name…" />
-                <Button Grid.Column="1" Classes="secondary"
+              <StackPanel Spacing="10" IsEnabled="{Binding !IsBusy}">
+                <WrapPanel Orientation="Horizontal" ItemSpacing="18" LineSpacing="8">
+                  <RadioButton x:Name="UseCurrentJourneyStart" GroupName="JourneyStartMode"
+                      IsChecked="{Binding UseCurrentStart, Mode=TwoWay}"
+                      IsEnabled="{Binding HasCurrentStartSystem}" Content="Use current system" />
+                  <RadioButton x:Name="UsePreviousJourneyStart" GroupName="JourneyStartMode"
+                      IsChecked="{Binding UsePreviousStart, Mode=TwoWay}" Content="Use previous visit" />
+                </WrapPanel>
+                <TextBlock Text="{Binding CurrentStartSystem}" FontWeight="SemiBold" FontSize="16"
+                    IsVisible="{Binding UseCurrentStart}" />
+              </StackPanel>
+              <StackPanel Spacing="12" IsVisible="{Binding UsePreviousStart}">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="muted" Text="Visits on or after (UTC date)" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsEnabled="{Binding !IsBusy}">
+                    <CalendarDatePicker x:Name="JourneyVisitDate" SelectedDate="{Binding VisitsOnOrAfter, Mode=TwoWay}"
+                        HorizontalAlignment="Stretch"
+                        SelectedDateChanged="VisitsDate_Changed" SelectedDateFormat="Short"
+                        PlaceholderText="All dates" />
+                    <Button x:Name="ClearJourneyVisitDate" Grid.Column="1" Content="All dates" IsVisible="{Binding HasVisitDate}" Click="AllDates_Click" />
+                  </Grid>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                  <TextBlock FontWeight="SemiBold" Text="Starting system" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsEnabled="{Binding !IsBusy}">
+                    <controls:SystemNameEntry x:Name="JourneyStartingSystem"
+                        Text="{Binding StartSystemQuery, Mode=TwoWay}"
+                        SystemSelected="StartingSystem_Selected"
+                        KeyDown="StartingSystem_KeyDown"
+                        PlaceholderText="Type a system name…" />
+                    <Button Grid.Column="1" Classes="secondary"
                         VerticalAlignment="Top"
                         Command="{Binding FindStartCommand}"
                         Content="Find visits" />
-              </Grid>
-              <Button Classes="link" Padding="0" HorizontalAlignment="Left"
-                      IsVisible="{Binding HasCurrentStartSystem}"
-                      Command="{Binding UseCurrentSystemCommand}"
-                      Content="{Binding CurrentStartSystem}" />
+                  </Grid>
+                </StackPanel>
+
+                <StackPanel Spacing="8" IsVisible="{Binding HasStartVisits}">
+                  <TextBlock FontWeight="SemiBold" Text="{Binding StartVisitsHeading}" />
+                  <TextBlock Classes="muted" Text="Newest first. All times are UTC." />
+                  <ListBox x:Name="JourneyStartVisitList" MaxHeight="250"
+                      Classes="journey-list"
+                      Background="{DynamicResource RavenSurfaceBrush}"
+                      BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="1"
+                      IsEnabled="{Binding !IsBusy}"
+                      ItemsSource="{Binding StartVisits}"
+                      SelectedItem="{Binding SelectedStartVisit, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:JourneyStartVisitViewModel">
+                        <StackPanel Spacing="3" Margin="4,3">
+                          <TextBlock Text="{Binding SystemName}" FontWeight="SemiBold" FontSize="15" />
+                          <TextBlock Text="{Binding Arrived}" />
+                          <TextBlock Text="{Binding ArrivalType}" Classes="muted" FontSize="12" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+
+              </StackPanel>
               <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding StartStatus}" />
-            </StackPanel>
 
-            <StackPanel Spacing="8" IsVisible="{Binding HasStartVisits}">
-              <TextBlock FontWeight="SemiBold" Text="{Binding StartVisitsHeading}" />
-              <TextBlock Classes="muted" Text="Newest first. All times are UTC." />
-              <ListBox x:Name="JourneyStartVisitList" MaxHeight="250"
-                       Classes="journey-list"
-                       Background="{DynamicResource RavenSurfaceBrush}"
-                       BorderBrush="{DynamicResource RavenBorderBrush}"
-                       BorderThickness="1"
-                       IsEnabled="{Binding !IsBusy}"
-                       ItemsSource="{Binding StartVisits}"
-                       SelectedItem="{Binding SelectedStartVisit, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
-                  <DataTemplate x:DataType="vm:JourneyStartVisitViewModel">
-                    <StackPanel Spacing="3" Margin="4,3">
-                      <TextBlock Text="{Binding SystemName}" FontWeight="SemiBold" FontSize="15" />
-                      <TextBlock Text="{Binding Arrived}" />
-                      <TextBlock Text="{Binding ArrivalType}" Classes="muted" FontSize="12" />
-                    </StackPanel>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </StackPanel>
+              <StackPanel Spacing="6" IsEnabled="{Binding !IsBusy}">
+                <TextBlock Classes="muted" Text="Journey name" />
+                <TextBox x:Name="NewJourneyNameInput"
+                    Text="{Binding NewJourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PlaceholderText="Name this journey" />
+              </StackPanel>
+              <Expander Header="Journey description (optional)" IsEnabled="{Binding !IsBusy}">
+                <TextBox MinHeight="60" AcceptsReturn="True" TextWrapping="Wrap"
+                    Text="{Binding NewJourneyDescription, Mode=TwoWay}"
+                    PlaceholderText="Add a description for your journey" />
+              </Expander>
 
-            <StackPanel Spacing="6" IsEnabled="{Binding !IsBusy}">
-              <TextBlock Classes="muted" Text="Journey name" />
-              <TextBox x:Name="NewJourneyNameInput"
-                       Text="{Binding NewJourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                       PlaceholderText="Name this journey" />
             </StackPanel>
-            <Expander Header="Journey description (optional)" IsEnabled="{Binding !IsBusy}">
-              <TextBox MinHeight="60" AcceptsReturn="True" TextWrapping="Wrap"
-                       Text="{Binding NewJourneyDescription, Mode=TwoWay}"
-                       PlaceholderText="Add a description for your journey" />
-            </Expander>
-
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Spacing="8">
-              <Button Classes="secondary"
-                      Command="{Binding CancelNewJourneyCommand}"
-                      Content="Cancel" />
-              <Button Classes="primary"
-                      x:Name="BeginJourneyButton"
-                      Command="{Binding BeginJourneyCommand}"
-                      Content="Begin journey" />
-            </StackPanel>
+          </ScrollViewer>
+          <StackPanel Grid.Row="1" Margin="0,16,0,0" Orientation="Horizontal"
+              HorizontalAlignment="Right"
+              Spacing="8">
+            <Button Classes="secondary"
+                Command="{Binding CancelNewJourneyCommand}"
+                Content="Cancel" />
+            <Button Classes="primary"
+                x:Name="BeginJourneyButton"
+                Command="{Binding BeginJourneyCommand}"
+                Content="Begin journey" />
           </StackPanel>
-        </ScrollViewer>
+        </Grid>
       </Border>
     </Grid>
 

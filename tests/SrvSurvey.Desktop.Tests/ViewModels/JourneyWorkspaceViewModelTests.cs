@@ -37,6 +37,7 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         Assert.Empty(contextNotifications);
 
         await viewModel.StartNewJourneyAsync();
+        viewModel.UsePreviousStart = true;
         viewModel.NewJourneyName = "Across the black";
         viewModel.NewJourneyDescription = "A long expedition";
         viewModel.StartSystemQuery = "Sol";
@@ -91,6 +92,7 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         JourneyWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
+        viewModel.UsePreviousStart = true;
         viewModel.StartSystemQuery = "Achenar";
         await viewModel.FindStartAsync();
 
@@ -150,6 +152,7 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         JourneyWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
+        viewModel.UsePreviousStart = true;
         viewModel.NewJourneyName = "Journey";
         viewModel.StartSystemQuery = "Sol";
         await viewModel.FindStartAsync();

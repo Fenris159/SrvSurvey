@@ -20,7 +20,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand newJourneyCommand;
     private readonly AsyncCommand cancelNewJourneyCommand;
-    private readonly AsyncCommand useCurrentSystemCommand;
     private readonly AsyncCommand findStartCommand;
     private readonly AsyncCommand beginJourneyCommand;
     private readonly AsyncCommand saveCommand;
@@ -93,10 +92,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(StartNewJourneyAsync, () => HasProfileAndNotBusy() && !HasActiveJourney);
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
-        useCurrentSystemCommand = new AsyncCommand(
-            UseCurrentSystemAsync,
-            () => IsCreating && HasCurrentStartSystem && HasProfileAndNotBusy()
-        );
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
         beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
         saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy);
@@ -373,7 +368,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasCurrentStartSystem => currentSystemAddress is > 0 && !string.IsNullOrWhiteSpace(currentSystemName);
 
-    public string CurrentStartSystem => $"Use current system: {currentSystemName}";
+    public string CurrentStartSystem => currentSystemName ?? "Current system unavailable";
 
     public string StartSystemQuery
     {
@@ -439,8 +434,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     public ICommand NewJourneyCommand => newJourneyCommand;
 
     public ICommand CancelNewJourneyCommand => cancelNewJourneyCommand;
-
-    public ICommand UseCurrentSystemCommand => useCurrentSystemCommand;
 
     public ICommand FindStartCommand => findStartCommand;
 
@@ -756,8 +749,12 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         NewJourneyDescription = string.Empty;
         StartSystemQuery = string.Empty;
         selectedStartSystemAddress = null;
+        VisitsOnOrAfter = null;
+        UseCurrentStart = HasCurrentStartSystem;
         ClearStartVisits();
-        StartStatus = "Search for a system to see your previous visits.";
+        StartStatus = UseCurrentStart
+            ? "Your current visit will be used automatically."
+            : "Search for a system to see your previous visits.";
         return Task.CompletedTask;
     }
 
@@ -768,30 +765,33 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return Task.CompletedTask;
     }
 
-    private bool CanFindStart() => IsCreating && HasProfileAndNotBusy() && !string.IsNullOrWhiteSpace(StartSystemQuery);
+    private bool CanFindStart() =>
+        IsCreating && UsePreviousStart && HasProfileAndNotBusy() && !string.IsNullOrWhiteSpace(StartSystemQuery);
 
     public async Task BeginJourneyAsync()
     {
-        JourneyJournalSystemEntry? start = SelectedStartVisit?.Entry;
-        if (frontierId is null || start is null || !CanBeginJourney())
+        if (frontierId is null || !CanBeginJourney())
         {
-            StartStatus = "Find visits and choose a starting arrival before beginning the journey.";
+            StartStatus = "Choose the current system or select a previous visit before beginning the journey.";
             return;
         }
-        int version = contextVersion;
+        var context = new JourneyStartContext(
+            new(frontierId, commanderName ?? string.Empty, isOdyssey, NewJourneyName, NewJourneyDescription),
+            UseCurrentStart,
+            currentSystemAddress,
+            SelectedStartVisit?.Entry,
+            contextVersion
+        );
+        int version = context.Version;
         try
         {
             IsBusy = true;
-            JourneyServiceResult result = await journeyService.BeginAsync(
-                new JourneyBeginRequest(
-                    frontierId,
-                    commanderName ?? string.Empty,
-                    isOdyssey,
-                    NewJourneyName,
-                    NewJourneyDescription,
-                    start
-                )
-            );
+            JourneyBeginRequest? request = await PrepareBeginRequestAsync(context);
+            if (request is null)
+            {
+                return;
+            }
+            JourneyServiceResult result = await journeyService.BeginAsync(request);
             if (version != contextVersion)
             {
                 return;
@@ -1250,7 +1250,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand.RaiseCanExecuteChanged();
         newJourneyCommand.RaiseCanExecuteChanged();
         cancelNewJourneyCommand.RaiseCanExecuteChanged();
-        useCurrentSystemCommand.RaiseCanExecuteChanged();
         findStartCommand.RaiseCanExecuteChanged();
         beginJourneyCommand.RaiseCanExecuteChanged();
         saveCommand.RaiseCanExecuteChanged();

@@ -13,6 +13,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.NewJourneyName = "Chosen start";
         Assert.False(model.BeginJourneyCommand.CanExecute(null));
         model.StartSystemQuery = "Sol";
@@ -40,6 +41,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.NewJourneyName = "Chosen start";
         model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
@@ -62,6 +64,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.Empty(model.StartVisits);
         Assert.False(model.IsCreating);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
         model.SelectedStartVisit = model.StartVisits[0];
@@ -77,6 +80,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Alpha", 43);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.NewJourneyName = "Earlier expedition";
         model.StartSystemQuery = "Sol";
         await model.FindStartAsync();
@@ -104,6 +108,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Alpha", 43);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         Assert.Empty(model.StartSystemQuery);
         Assert.False(model.FindStartCommand.CanExecute(null));
         model.NewJourneyName = "Alpha";
@@ -121,28 +126,107 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.False(model.BeginJourneyCommand.CanExecute(null));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CurrentSystemStartsAutomaticallyFromTheLatestLocationWithoutSearching(bool locationOnly)
+    {
+        if (locationOnly)
+        {
+            await WriteJournalAsync(
+                """
+                {"timestamp":"2026-07-03T00:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-07-03T00:00:01Z","event":"Commander","FID":"F123"}
+                {"timestamp":"2026-07-03T00:05:00Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0],"Docked":true}
+                {"timestamp":"2026-07-03T00:06:00Z","event":"Screenshot"}
+                """
+            );
+        }
+        else
+        {
+            await WriteRepeatedVisitsAsync();
+        }
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Current expedition";
+        model.VisitsOnOrAfter = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
+        Assert.True(model.UseCurrentStart);
+        Assert.False(model.FindStartCommand.CanExecute(null));
+        Assert.True(model.BeginJourneyCommand.CanExecute(null));
+        Assert.Empty(model.StartVisits);
+        await model.BeginJourneyAsync();
+        Assert.True(model.HasActiveJourney);
+        Assert.Equal("Sol", model.SelectedSystemName);
+        Assert.Equal(3, Assert.Single(model.VisitedSystems).Visit.Arrived.Day);
+        Assert.Equal(1, model.VisitedSystems[0].Visit.Counts.Screenshots);
+    }
+
     [Fact]
-    public async Task CurrentSystemShortcutLoadsItsVisitsAndRequiresAKnownCurrentSystem()
+    public async Task DateCutoffIsInclusiveAndChangingItClearsTheSelectedVisit()
     {
         await WriteRepeatedVisitsAsync();
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
-        Assert.True(model.UseCurrentSystemCommand.CanExecute(null));
-        var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        model.UsePreviousStart = true;
+        model.NewJourneyName = "Earlier expedition";
+        model.StartSystemQuery = "Sol";
+        model.VisitsOnOrAfter = new DateTime(2026, 7, 2, 15, 30, 0, DateTimeKind.Unspecified);
+        Assert.Equal(new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Unspecified), model.VisitsOnOrAfter);
+        await model.FindStartAsync();
+        Assert.Equal(2, model.StartVisits.Count);
+        model.SelectedStartVisit = model.StartVisits[^1];
+        Assert.Equal(2, model.SelectedStartVisit.Entry.Event.Timestamp!.Value.Day);
+        model.VisitsOnOrAfter = new DateTime(2026, 7, 3, 0, 0, 0, DateTimeKind.Unspecified);
+        Assert.Empty(model.StartVisits);
+        Assert.False(model.BeginJourneyCommand.CanExecute(null));
+        await model.FindStartAsync();
+        Assert.Equal(3, Assert.Single(model.StartVisits).Entry.Event.Timestamp!.Value.Day);
+        model.VisitsOnOrAfter = null;
+        await model.FindStartAsync();
+        Assert.Equal(3, model.StartVisits.Count);
+    }
+
+    [Fact]
+    public async Task CurrentSystemChangingDuringPreparationRequiresANewBegin()
+    {
+        await WriteRepeatedVisitsAsync();
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Current expedition";
+        Task<bool>? changed = null;
         model.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(model.IsBusy) && !model.IsBusy && model.HasStartVisits)
+            if (args.PropertyName == nameof(model.IsBusy) && model.IsBusy && changed is null)
             {
-                loaded.TrySetResult();
+                changed = model.UpdateContextAsync("F123", "Drew", true, "Alpha", 43);
             }
         };
-        model.UseCurrentSystemCommand.Execute(null);
-        await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.Equal("Sol", model.StartSystemQuery);
-        Assert.Equal(3, model.StartVisits.Count);
+        await model.BeginJourneyAsync();
+        Assert.NotNull(changed);
+        await changed;
+        Assert.False(model.HasActiveJourney);
+        Assert.Contains("current system changed", model.StartStatus, StringComparison.Ordinal);
+        Assert.Empty(model.Journeys);
+    }
+
+    [Fact]
+    public async Task CurrentSystemRequiresAKnownLocationAndExplainsMissingJournalHistory()
+    {
+        await WriteRepeatedVisitsAsync();
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Unvisited", 777);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Current expedition";
+        await model.BeginJourneyAsync();
+        Assert.False(model.HasActiveJourney);
+        Assert.Contains("current location could not be found", model.StartStatus, StringComparison.Ordinal);
         await model.UpdateContextAsync("F123", "Drew", true, null, null);
-        Assert.False(model.UseCurrentSystemCommand.CanExecute(null));
+        Assert.False(model.BeginJourneyCommand.CanExecute(null));
+        await model.StartNewJourneyAsync();
+        Assert.True(model.UsePreviousStart);
     }
 
     [Fact]
@@ -152,6 +236,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.PropertyChanged += (_, args) =>
         {
             if (

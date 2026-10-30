@@ -10,7 +10,10 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   instead of opening a separate window. The Travel shortcut opens this workspace.
   Archive completed journeys to tuck them away, restore them when needed, or
   delete their saved records while keeping journals, system notes and screenshots.
-- **Journey starting visits:** Search by system name with autocomplete, then
+- **Journey starting visits:** Use the current system automatically, including
+  docked/login locations, or choose a previous visit. Historical searches offer
+  an optional date-only cutoff that includes the selected day and skips older
+  journals while retaining files that span that date. Search by system name with autocomplete, then
   select a previous visit by its UTC date and time. Choosing a suggestion shows
   that system's visits directly; manual name searches work offline. Journey name
   and optional description follow the visit picker. Ship and carrier arrivals

@@ -27,7 +27,7 @@ public sealed class JourneyJournalHistoryReader
                 frontierId,
                 isOdyssey,
                 systemAddress,
-                cancellationToken
+                cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
         return new(visits.Entries.FirstOrDefault(entry => entry.Event.EventName == "FSDJump"), visits.Errors);
@@ -37,12 +37,14 @@ public sealed class JourneyJournalHistoryReader
         string frontierId,
         bool isOdyssey,
         long systemAddress,
+        DateOnly? onOrAfter = null,
         CancellationToken cancellationToken = default
     ) =>
         FindMatchingArrivalsAsync(
             frontierId,
             isOdyssey,
             system => system.SystemAddress == systemAddress,
+            onOrAfter,
             cancellationToken
         );
 
@@ -50,6 +52,7 @@ public sealed class JourneyJournalHistoryReader
         string frontierId,
         bool isOdyssey,
         string systemName,
+        DateOnly? onOrAfter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -59,6 +62,7 @@ public sealed class JourneyJournalHistoryReader
             frontierId,
             isOdyssey,
             system => system.Name.Contains(query, StringComparison.OrdinalIgnoreCase),
+            onOrAfter,
             cancellationToken
         );
     }
@@ -67,6 +71,7 @@ public sealed class JourneyJournalHistoryReader
         string frontierId,
         bool isOdyssey,
         Func<JourneySystemReference, bool> matches,
+        DateOnly? onOrAfter,
         CancellationToken cancellationToken
     )
     {
@@ -78,9 +83,16 @@ public sealed class JourneyJournalHistoryReader
         foreach (FileInfo file in EnumerateJournalFiles(descending: true))
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (
+                onOrAfter is { } minimum
+                && await EndsBeforeAsync(file, minimum, cancellationToken).ConfigureAwait(false)
+            )
+            {
+                continue;
+            }
             JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
             errors.AddRange(read.Errors);
-            entries.AddRange(MatchingArrivals(read, frontierId, isOdyssey, matches));
+            entries.AddRange(MatchingSystems(read, frontierId, isOdyssey, matches, onOrAfter, includeLocations: false));
         }
 
         return new(
@@ -93,18 +105,21 @@ public sealed class JourneyJournalHistoryReader
         );
     }
 
-    private static IEnumerable<JourneyJournalSystemEntry> MatchingArrivals(
+    private static IEnumerable<JourneyJournalSystemEntry> MatchingSystems(
         JournalFileReadResult read,
         string frontierId,
         bool isOdyssey,
-        Func<JourneySystemReference, bool> matches
+        Func<JourneySystemReference, bool> matches,
+        DateOnly? onOrAfter,
+        bool includeLocations
     )
     {
         foreach (JournalEventEnvelope entry in CommanderEvents(read, frontierId, isOdyssey))
         {
             if (
-                entry.EventName is "FSDJump" or "CarrierJump"
-                && entry.Timestamp is not null
+                IsSystemEvent(entry, includeLocations)
+                && entry.Timestamp is { } timestamp
+                && (onOrAfter is null || DateOnly.FromDateTime(timestamp.UtcDateTime) >= onOrAfter)
                 && TryGetSystemReference(entry.Payload, out JourneySystemReference? system)
                 && matches(system)
             )
@@ -112,6 +127,82 @@ public sealed class JourneyJournalHistoryReader
                 yield return new(read.FileName, entry, system);
             }
         }
+    }
+
+    private static bool IsSystemEvent(JournalEventEnvelope entry, bool includeLocations) =>
+        entry.EventName is "FSDJump" or "CarrierJump" || (includeLocations && entry.EventName == "Location");
+
+    public async Task<JourneyJournalSystemSearchResult> FindCurrentLocationAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        EnsureDirectoryExists();
+        var errors = new List<string>();
+        foreach (FileInfo file in EnumerateJournalFiles(descending: true))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
+            errors.AddRange(read.Errors);
+            JourneyJournalSystemEntry? location = MatchingSystems(
+                    read,
+                    frontierId,
+                    isOdyssey,
+                    system => system.SystemAddress == systemAddress,
+                    null,
+                    includeLocations: true
+                )
+                .OrderByDescending(entry => entry.Event.Timestamp)
+                .FirstOrDefault();
+            if (location is not null)
+            {
+                return new(location, errors);
+            }
+        }
+        return new(null, errors);
+    }
+
+    private static async Task<bool> EndsBeforeAsync(
+        FileInfo file,
+        DateOnly minimum,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            JournalHistoryAnalyzer.TryGetJournalTimestamp(file.Name, out DateTimeOffset opened)
+            && DateOnly.FromDateTime(opened.UtcDateTime) >= minimum
+        )
+        {
+            return false;
+        }
+        await using var stream = new FileStream(
+            file.FullName,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            16 * 1024,
+            FileOptions.Asynchronous
+        );
+        long offset = Math.Max(0, stream.Length - 16 * 1024);
+        stream.Seek(offset, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: offset == 0);
+        string[] lines = (await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false)).Split('\n');
+        // The first line can be a fragment when the read starts partway through the file.
+        for (int index = lines.Length - 1; index >= (offset == 0 ? 0 : 1); index--)
+        {
+            if (
+                JournalEventEnvelope.TryParse(lines[index], out JournalEventEnvelope? entry, out _)
+                && entry?.Timestamp is { } timestamp
+            )
+            {
+                return DateOnly.FromDateTime(timestamp.UtcDateTime) < minimum;
+            }
+        }
+        // A large, incomplete, or undated final record cannot prove that this journal is old.
+        return false;
     }
 
     private static IEnumerable<JournalEventEnvelope> CommanderEvents(

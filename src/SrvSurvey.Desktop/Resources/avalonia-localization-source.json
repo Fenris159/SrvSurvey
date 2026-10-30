@@ -3835,6 +3835,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "All dates",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "All dates and times use UTC.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11301,14 +11309,6 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
-    "Text": "Choose a system and the visit where your journey began.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
     "Text": "Choose a system to review its Raven Colonial sites.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11595,6 +11595,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Choose the current system or select a previous visit before beginning the journey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -15927,6 +15935,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Current system unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Current temperature {0} K is too cold.",
@@ -22754,14 +22770,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
-    "Text": "Find visits and choose a starting arrival before beginning the journey.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Find \u2192 Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -52860,7 +52868,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Search for visits on or after the selected date, or clear it for all dates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Search near system",
@@ -57996,6 +58012,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
+    "Text": "Start from your current system or choose an earlier visit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62321,6 +62345,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "The current location could not be found. Load the current journal or choose a previous visit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "The current market is not a Fleet Carrier market.",
@@ -68762,14 +68794,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
-    "Text": "Use current system: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Use downloaded bio data from Canonn and Spansh",
     "IsFormat": false,
     "SourceKinds": [
@@ -68864,6 +68888,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Use previous visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Use small circles",
@@ -69865,6 +69897,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Visits on or after (UTC date)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Vista Genomics",
@@ -71749,6 +71789,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
+    "Text": "Your current system changed. Begin the journey again to use the new location.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+  },
+  {
+    "Text": "Your current visit will be used automatically.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",

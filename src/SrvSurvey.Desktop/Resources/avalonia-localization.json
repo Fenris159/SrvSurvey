@@ -1917,6 +1917,10 @@
       "translation": "Alle Systeme"
     },
     {
+      "source": "All dates",
+      "translation": "Alle Termine"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Alle Daten und Uhrzeiten verwenden UTC."
     },
@@ -5637,10 +5641,6 @@
       "translation": "Wählen Sie ein System und klicken Sie auf + Hinzufügen. Bearbeiten, entfernen oder ordnen Sie die Ziele unten neu an."
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "Wählen Sie ein System und den Besuch, bei dem Ihre Reise begann."
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "Wählen Sie ein System zur Überprüfung seiner Raven Colonial-Sites aus."
     },
@@ -5783,6 +5783,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Wählen Sie die richtige Vorlage, um eine unbekannte oder falsch identifizierte Site zu reparieren. Geben Sie beide Oberflächenkoordinaten ein oder lassen Sie beide leer, wenn der Ursprung noch nicht bekannt ist."
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "Wählen Sie das aktuelle System oder einen früheren Besuch vor Reiseantritt."
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -7939,6 +7943,10 @@
     {
       "source": "Current system or another location",
       "translation": "Aktuelles System oder ein anderer Standort"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "Aktuelles System nicht verfügbar"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -11339,10 +11347,6 @@
     {
       "source": "Find visits",
       "translation": "Besuche finden"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "Finden Sie Besuche und wählen Sie eine Startankunft, bevor Sie die Reise beginnen."
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -26345,6 +26349,10 @@
       "translation": "Suchen Sie nach einem System, um Ihre vorherigen Besuche anzuzeigen."
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "Suchen Sie nach Besuchen am oder nach dem ausgewählten Datum oder löschen Sie es für alle Daten."
+    },
+    {
       "source": "Search near system",
       "translation": "In der Nähe des Systems suchen"
     },
@@ -28905,6 +28913,10 @@
       "translation": "Kapitel beginnen"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "Beginnen Sie mit Ihrem aktuellen System oder wählen Sie einen früheren Besuch."
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Beginnen Sie hier, wenn der Commander-, System-, Körper-, Fracht- oder Overlay-Status nicht aktualisiert wird."
     },
@@ -31059,6 +31071,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "Der aktuelle Breiten- und Längengrad wurde kopiert."
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "Der aktuelle Standort konnte nicht gefunden werden. Laden Sie das aktuelle Journal oder wählen Sie einen früheren Besuch."
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -34277,10 +34293,6 @@
       "translation": "Aktuelles System verwenden"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "Aktuelles System verwenden: {0}"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Verwenden Sie heruntergeladene Biodaten von Canonn und Spansh"
     },
@@ -34327,6 +34339,10 @@
     {
       "source": "Use origin",
       "translation": "Ursprung verwenden"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "Vorherigen Besuch nutzen"
     },
     {
       "source": "Use small circles",
@@ -34827,6 +34843,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "Der Austausch der besuchten Sterne ist fehlgeschlagen, ohne den ursprünglichen Cache zu ersetzen: {0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "Besuche am oder nach dem (UTC-Datum)"
     },
     {
       "source": "Vista Genomics",
@@ -35767,6 +35787,14 @@
     {
       "source": "Your contribution",
       "translation": "Ihr Beitrag"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "Ihr aktuelles System hat sich geändert. Beginnen Sie die Reise erneut, um den neuen Standort zu nutzen."
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "Es wird automatisch Ihr aktueller Besuch verwendet."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -42615,6 +42643,10 @@
       "translation": "Todos los sistemas"
     },
     {
+      "source": "All dates",
+      "translation": "Todas las fechas"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Todas las fechas y horas utilizan UTC."
     },
@@ -46335,10 +46367,6 @@
       "translation": "Elija un sistema y seleccione + Agregar. Edite, elimine o reordene los destinos a continuación."
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "Elige un sistema y la visita donde comenzó tu viaje."
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "Elija un sistema para revisar sus sitios Raven Colonial."
     },
@@ -46481,6 +46509,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Elija la plantilla correcta para reparar un sitio desconocido o mal identificado. Ingrese ambas coordenadas de superficie o déjelas en blanco si aún no se conoce el origen."
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "Elige el sistema actual o selecciona una visita anterior antes de iniciar el viaje."
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -48637,6 +48669,10 @@
     {
       "source": "Current system or another location",
       "translation": "Sistema actual u otra ubicación"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "Sistema actual no disponible"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -52037,10 +52073,6 @@
     {
       "source": "Find visits",
       "translation": "Buscar visitas"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "Busca visitas y elige una llegada inicial antes de iniciar el viaje."
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -67043,6 +67075,10 @@
       "translation": "Busque un sistema para ver sus visitas anteriores."
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "Busque visitas en la fecha seleccionada o después, o bórrela para todas las fechas."
+    },
+    {
       "source": "Search near system",
       "translation": "Buscar cerca del sistema"
     },
@@ -69603,6 +69639,10 @@
       "translation": "Iniciar capitulo"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "Comience desde su sistema actual o elija una visita anterior."
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Comience aquí cuando el estado del comandante, sistema, carrocería, carga o superposición no se actualice."
     },
@@ -71757,6 +71797,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "Se copiaron la latitud y longitud actuales."
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "No se pudo encontrar la ubicación actual. Cargue la revista actual o elija una visita anterior."
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -74975,10 +75019,6 @@
       "translation": "Usar el sistema actual"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "Usar el sistema actual: {0}"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Utilice datos biográficos descargados de Canonn y Spansh"
     },
@@ -75025,6 +75065,10 @@
     {
       "source": "Use origin",
       "translation": "Usar origen"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "Usar visita anterior"
     },
     {
       "source": "Use small circles",
@@ -75525,6 +75569,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "El intercambio de estrellas visitadas falló sin reemplazar el caché original: {0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "Visitas a partir de (fecha UTC)"
     },
     {
       "source": "Vista Genomics",
@@ -76465,6 +76513,14 @@
     {
       "source": "Your contribution",
       "translation": "Tu contribución"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "Su sistema actual cambió. Comience el viaje nuevamente para utilizar la nueva ubicación."
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "Su visita actual se utilizará automáticamente."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -83313,6 +83369,10 @@
       "translation": "Tous les systèmes"
     },
     {
+      "source": "All dates",
+      "translation": "Toutes les dates"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Toutes les dates et heures utilisent UTC."
     },
@@ -87033,10 +87093,6 @@
       "translation": "Choisissez un système et sélectionnez + Ajouter. Modifiez, supprimez ou réorganisez les destinations ci-dessous."
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "Choisissez un système et la visite où votre voyage a commencé."
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "Choisissez un système pour examiner ses sites Raven Colonial."
     },
@@ -87179,6 +87235,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Choisissez le bon modèle pour réparer un site inconnu ou mal identifié. Entrez les deux coordonnées de la surface ou laissez les deux vides lorsque l'origine n'est pas encore connue."
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "Choisissez le système actuel ou sélectionnez une visite précédente avant de commencer le voyage."
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -89335,6 +89395,10 @@
     {
       "source": "Current system or another location",
       "translation": "Système actuel ou autre emplacement"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "Système actuel indisponible"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -92735,10 +92799,6 @@
     {
       "source": "Find visits",
       "translation": "Trouver des visites"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "Recherchez les visites et choisissez une arrivée de départ avant de commencer le voyage."
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -107741,6 +107801,10 @@
       "translation": "Recherchez un système pour voir vos visites précédentes."
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "Recherchez des visites à ou après la date sélectionnée, ou effacez-la pour toutes les dates."
+    },
+    {
       "source": "Search near system",
       "translation": "Rechercher à proximité du système"
     },
@@ -110301,6 +110365,10 @@
       "translation": "Commencer le chapitre"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "Commencez à partir de votre système actuel ou choisissez une visite antérieure."
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Commencez ici lorsque l'état du commandant, du système, de la carrosserie, de la cargaison ou de la superposition n'est pas mis à jour."
     },
@@ -112455,6 +112523,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "La latitude et la longitude actuelles ont été copiées."
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "L'emplacement actuel est introuvable. Chargez le journal actuel ou choisissez une visite précédente."
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -115673,10 +115745,6 @@
       "translation": "Utiliser le système actuel"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "Utiliser le système actuel : {0}"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Utiliser les données biologiques téléchargées depuis Canonn et Spansh"
     },
@@ -115723,6 +115791,10 @@
     {
       "source": "Use origin",
       "translation": "Utiliser l'origine"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "Utiliser la visite précédente"
     },
     {
       "source": "Use small circles",
@@ -116223,6 +116295,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "L'échange d'étoiles visitées a échoué sans remplacer le cache d'origine : {0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "Visites le ou après le (date UTC)"
     },
     {
       "source": "Vista Genomics",
@@ -117163,6 +117239,14 @@
     {
       "source": "Your contribution",
       "translation": "Votre contribution"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "Votre système actuel a changé. Recommencez le voyage pour utiliser le nouvel emplacement."
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "Votre visite en cours sera utilisée automatiquement."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -124011,6 +124095,10 @@
       "translation": "Todos os sistemas"
     },
     {
+      "source": "All dates",
+      "translation": "Todas as datas"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Todas as datas e horários usam UTC."
     },
@@ -127731,10 +127819,6 @@
       "translation": "Escolha um sistema e selecione + Adicionar. Edite, remova ou reordene os destinos abaixo."
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "Escolha um sistema e a visita onde sua jornada começou."
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "Escolha um sistema para revisar seus sites Raven Colonial."
     },
@@ -127877,6 +127961,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Escolha o modelo correto para reparar um site desconhecido ou identificado incorretamente. Insira ambas as coordenadas da superfície ou deixe-as em branco quando a origem ainda não for conhecida."
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "Escolha o sistema atual ou selecione uma visita anterior antes de iniciar a viagem."
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -130033,6 +130121,10 @@
     {
       "source": "Current system or another location",
       "translation": "Sistema atual ou outro local"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "Sistema atual indisponível"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -133433,10 +133525,6 @@
     {
       "source": "Find visits",
       "translation": "Encontrar visitas"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "Encontre visitas e escolha uma chegada inicial antes de iniciar a viagem."
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -148439,6 +148527,10 @@
       "translation": "Procure um sistema para ver suas visitas anteriores."
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "Pesquise visitas na data selecionada ou após ela ou limpe-a para todas as datas."
+    },
+    {
       "source": "Search near system",
       "translation": "Pesquisar perto do sistema"
     },
@@ -150999,6 +151091,10 @@
       "translation": "Iniciar capítulo"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "Comece pelo seu sistema atual ou escolha uma visita anterior."
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Comece aqui quando o estado do comandante, do sistema, do corpo, da carga ou da sobreposição não for atualizado."
     },
@@ -153153,6 +153249,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "A latitude e longitude atuais foram copiadas."
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "A localização atual não foi encontrada. Carregue o diário atual ou escolha uma visita anterior."
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -156371,10 +156471,6 @@
       "translation": "Usar o sistema atual"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "Usar sistema atual: {0}"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Use dados biográficos baixados de Canonn e Spansh"
     },
@@ -156421,6 +156517,10 @@
     {
       "source": "Use origin",
       "translation": "Usar origem"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "Usar visita anterior"
     },
     {
       "source": "Use small circles",
@@ -156921,6 +157021,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "A troca de estrelas visitadas falhou sem substituir o cache original: {0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "Visitas em ou depois (data UTC)"
     },
     {
       "source": "Vista Genomics",
@@ -157861,6 +157965,14 @@
     {
       "source": "Your contribution",
       "translation": "Sua contribuição"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "Seu sistema atual mudou. Comece a jornada novamente para usar o novo local."
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "Sua visita atual será usada automaticamente."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -164709,6 +164821,10 @@
       "translation": "Все системы"
     },
     {
+      "source": "All dates",
+      "translation": "Все даты"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Все даты и время указаны в формате UTC."
     },
@@ -168429,10 +168545,6 @@
       "translation": "Выберите систему и нажмите + Добавить. Измените, удалите или измените порядок пунктов назначения ниже."
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "Выберите систему и визит, с которого началось ваше путешествие."
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "Выберите систему для просмотра ее сайтов Raven Colonial."
     },
@@ -168575,6 +168687,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Выберите правильный шаблон для восстановления неизвестного или ошибочно идентифицированного сайта. Введите обе координаты поверхности или оставьте обе пустыми, если начало координат еще не известно."
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "Выберите текущую систему или выберите предыдущее посещение перед началом путешествия."
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -170731,6 +170847,10 @@
     {
       "source": "Current system or another location",
       "translation": "Текущая система или другое местоположение"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "Текущая система недоступна"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -174131,10 +174251,6 @@
     {
       "source": "Find visits",
       "translation": "Найти посещения"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "Найдите посещения и выберите начальное прибытие перед началом путешествия."
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -189137,6 +189253,10 @@
       "translation": "Найдите систему, чтобы увидеть ваши предыдущие посещения."
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "Найдите посещения, произошедшие в выбранную дату или после нее, или очистите ее для всех дат."
+    },
+    {
       "source": "Search near system",
       "translation": "Искать рядом с системой"
     },
@@ -191697,6 +191817,10 @@
       "translation": "Начать главу"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "Начните с текущей системы или выберите более ранний визит."
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "Начните здесь, когда состояние командира, системы, тела, груза или наложения не обновляется."
     },
@@ -193851,6 +193975,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "Текущие широта и долгота были скопированы."
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "Текущее местоположение не найдено. Загрузите текущий журнал или выберите предыдущий визит."
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -197069,10 +197197,6 @@
       "translation": "Использовать текущую систему"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "Использовать текущую систему: {0}."
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Использовать загруженные биоданные из Canonn и Spansh"
     },
@@ -197119,6 +197243,10 @@
     {
       "source": "Use origin",
       "translation": "Использовать происхождение"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "Использовать предыдущий визит"
     },
     {
       "source": "Use small circles",
@@ -197619,6 +197747,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "Не удалось выполнить замену посещенных звезд без замены исходного кеша: {0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "Посещения не ранее (дата UTC)"
     },
     {
       "source": "Vista Genomics",
@@ -198559,6 +198691,14 @@
     {
       "source": "Your contribution",
       "translation": "Ваш вклад"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "Ваша текущая система изменилась. Начните путешествие заново, чтобы использовать новое место."
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "Ваш текущий визит будет использован автоматически."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -205407,6 +205547,10 @@
       "translation": "所有星系"
     },
     {
+      "source": "All dates",
+      "translation": "所有日期"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "所有日期和时间均使用 UTC。"
     },
@@ -209127,10 +209271,6 @@
       "translation": "选择一个系统并选择“+ 添加”。编辑、删除或重新排序下面的目的地。"
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "选择一个系统和您的旅程开始的访问地点。"
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "选择一个系统来查看其 Raven Colonial 站点。"
     },
@@ -209273,6 +209413,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "选择正确的模板来修复未知或错误识别的站点。输入两个表面坐标，或者在原点未知时将两者留空。"
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "在开始旅程之前，选择当前系统或选择之前的访问。"
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -211429,6 +211573,10 @@
     {
       "source": "Current system or another location",
       "translation": "当前系统或其他位置"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "当前系统不可用"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -214829,10 +214977,6 @@
     {
       "source": "Find visits",
       "translation": "查找访问"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "在开始旅程之前查找访问并选择出发地点。"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -229835,6 +229979,10 @@
       "translation": "搜索系统以查看您之前的访问情况。"
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "搜索所选日期或之后的访问，或清除所有日期。"
+    },
+    {
       "source": "Search near system",
       "translation": "搜索附近系统"
     },
@@ -232395,6 +232543,10 @@
       "translation": "开始章节"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "从您当前的系统开始或选择更早的访问。"
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "当指挥官、系统、车身、货物或覆盖层状态未更新时从这里开始。"
     },
@@ -234549,6 +234701,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "复制了当前的纬度和经度。"
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "无法找到当前位置。加载当前日志或选择之前的访问。"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -237767,10 +237923,6 @@
       "translation": "使用当前系统"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "使用当前系统：{0}"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "使用从 Canonn 和 Spansh 下载的生物数据"
     },
@@ -237817,6 +237969,10 @@
     {
       "source": "Use origin",
       "translation": "使用产地"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "使用之前的访问"
     },
     {
       "source": "Use small circles",
@@ -238317,6 +238473,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "访问过的星星交换失败，未替换原始缓存：{0}"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "在（UTC 日期）或之后访问"
     },
     {
       "source": "Vista Genomics",
@@ -239257,6 +239417,14 @@
     {
       "source": "Your contribution",
       "translation": "您的贡献"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "您当前的系统已更改。再次开始旅程以使用新位置。"
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "将自动使用您当前的访问。"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -246105,6 +246273,10 @@
       "translation": "* ALL SYSTEMS >>>!"
     },
     {
+      "source": "All dates",
+      "translation": "* ALL DATES >>>!"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "* ALL DATES AND TIMES USE UTC. >>>!"
     },
@@ -249825,10 +249997,6 @@
       "translation": "* CHOOSE A SYSTEM AND SELECT + ADD. EDIT, REMOVE, OR REORDER DESTINATIONS BELOW. >>>!"
     },
     {
-      "source": "Choose a system and the visit where your journey began.",
-      "translation": "* CHOOSE A SYSTEM AND THE VISIT WHERE YOUR JOURNEY BEGAN. >>>!"
-    },
-    {
       "source": "Choose a system to review its Raven Colonial sites.",
       "translation": "* CHOOSE A SYSTEM TO REVIEW ITS RAVEN COLONIAL SITES. >>>!"
     },
@@ -249971,6 +250139,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "* CHOOSE THE CORRECT TEMPLATE TO REPAIR AN UNKNOWN OR MISIDENTIFIED SITE. ENTER BOTH SURFACE COORDINATES, OR LEAVE BOTH BLANK WHEN THE ORIGIN IS NOT YET KNOWN. >>>!"
+    },
+    {
+      "source": "Choose the current system or select a previous visit before beginning the journey.",
+      "translation": "* CHOOSE THE CURRENT SYSTEM OR SELECT A PREVIOUS VISIT BEFORE BEGINNING THE JOURNEY. >>>!"
     },
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -252127,6 +252299,10 @@
     {
       "source": "Current system or another location",
       "translation": "* CURRENT SYSTEM OR ANOTHER LOCATION >>>!"
+    },
+    {
+      "source": "Current system unavailable",
+      "translation": "* CURRENT SYSTEM UNAVAILABLE >>>!"
     },
     {
       "source": "Current temperature {0} K is too cold.",
@@ -255527,10 +255703,6 @@
     {
       "source": "Find visits",
       "translation": "* FIND VISITS >>>!"
-    },
-    {
-      "source": "Find visits and choose a starting arrival before beginning the journey.",
-      "translation": "* FIND VISITS AND CHOOSE A STARTING ARRIVAL BEFORE BEGINNING THE JOURNEY. >>>!"
     },
     {
       "source": "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
@@ -270533,6 +270705,10 @@
       "translation": "* SEARCH FOR A SYSTEM TO SEE YOUR PREVIOUS VISITS. >>>!"
     },
     {
+      "source": "Search for visits on or after the selected date, or clear it for all dates.",
+      "translation": "* SEARCH FOR VISITS ON OR AFTER THE SELECTED DATE, OR CLEAR IT FOR ALL DATES. >>>!"
+    },
+    {
       "source": "Search near system",
       "translation": "* SEARCH NEAR SYSTEM >>>!"
     },
@@ -273093,6 +273269,10 @@
       "translation": "* START CHAPTER >>>!"
     },
     {
+      "source": "Start from your current system or choose an earlier visit.",
+      "translation": "* START FROM YOUR CURRENT SYSTEM OR CHOOSE AN EARLIER VISIT. >>>!"
+    },
+    {
       "source": "Start here when the Commander, system, body, cargo, or overlay state does not update.",
       "translation": "* START HERE WHEN THE COMMANDER, SYSTEM, BODY, CARGO, OR OVERLAY STATE DOES NOT UPDATE. >>>!"
     },
@@ -275247,6 +275427,10 @@
     {
       "source": "The current latitude and longitude were copied.",
       "translation": "* THE CURRENT LATITUDE AND LONGITUDE WERE COPIED. >>>!"
+    },
+    {
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
+      "translation": "* THE CURRENT LOCATION COULD NOT BE FOUND. LOAD THE CURRENT JOURNAL OR CHOOSE A PREVIOUS VISIT. >>>!"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -278465,10 +278649,6 @@
       "translation": "* USE CURRENT SYSTEM >>>!"
     },
     {
-      "source": "Use current system: {0}",
-      "translation": "* USE CURRENT SYSTEM: {0} >>>!"
-    },
-    {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "* USE DOWNLOADED BIO DATA FROM CANONN AND SPANSH >>>!"
     },
@@ -278515,6 +278695,10 @@
     {
       "source": "Use origin",
       "translation": "* USE ORIGIN >>>!"
+    },
+    {
+      "source": "Use previous visit",
+      "translation": "* USE PREVIOUS VISIT >>>!"
     },
     {
       "source": "Use small circles",
@@ -279015,6 +279199,10 @@
     {
       "source": "Visited-stars swap failed without replacing the original cache: {0}",
       "translation": "* VISITED-STARS SWAP FAILED WITHOUT REPLACING THE ORIGINAL CACHE: {0} >>>!"
+    },
+    {
+      "source": "Visits on or after (UTC date)",
+      "translation": "* VISITS ON OR AFTER (UTC DATE) >>>!"
     },
     {
       "source": "Vista Genomics",
@@ -279955,6 +280143,14 @@
     {
       "source": "Your contribution",
       "translation": "* YOUR CONTRIBUTION >>>!"
+    },
+    {
+      "source": "Your current system changed. Begin the journey again to use the new location.",
+      "translation": "* YOUR CURRENT SYSTEM CHANGED. BEGIN THE JOURNEY AGAIN TO USE THE NEW LOCATION. >>>!"
+    },
+    {
+      "source": "Your current visit will be used automatically.",
+      "translation": "* YOUR CURRENT VISIT WILL BE USED AUTOMATICALLY. >>>!"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",

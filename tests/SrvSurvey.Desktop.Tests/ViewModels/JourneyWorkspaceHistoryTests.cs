@@ -220,6 +220,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await model.StartNewJourneyAsync();
+        model.UsePreviousStart = true;
         model.NewJourneyName = "Live expedition";
         model.StartSystemQuery = "Sol";
         await model.FindStartAsync();

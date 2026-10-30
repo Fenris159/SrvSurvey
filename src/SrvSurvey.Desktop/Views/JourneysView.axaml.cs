@@ -82,6 +82,23 @@ public sealed partial class JourneysView : UserControl
         }
     }
 
+    private async void VisitsDate_Changed(object? sender, SelectionChangedEventArgs args)
+    {
+        if (sender is CalendarDatePicker picker && Model is { } model)
+        {
+            model.VisitsOnOrAfter = picker.SelectedDate;
+            if (model.FindStartCommand.CanExecute(null))
+            {
+                await model.FindStartAsync();
+            }
+        }
+    }
+
+    private void AllDates_Click(object? sender, RoutedEventArgs args)
+    {
+        JourneyVisitDate.SelectedDate = null;
+    }
+
     private async void StartingSystem_KeyDown(object? sender, KeyEventArgs args)
     {
         if (

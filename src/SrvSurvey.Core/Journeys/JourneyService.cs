@@ -53,15 +53,24 @@ public sealed partial class JourneyService
         string frontierId,
         bool isOdyssey,
         long systemAddress,
+        DateOnly? onOrAfter = null,
         CancellationToken cancellationToken = default
-    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemAddress, cancellationToken);
+    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemAddress, onOrAfter, cancellationToken);
 
     public Task<JourneyJournalSystemVisitsResult> FindStartVisitsAsync(
         string frontierId,
         bool isOdyssey,
         string systemName,
+        DateOnly? onOrAfter = null,
         CancellationToken cancellationToken = default
-    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemName, cancellationToken);
+    ) => historyReader.FindArrivalsAsync(frontierId, isOdyssey, systemName, onOrAfter, cancellationToken);
+
+    public Task<JourneyJournalSystemSearchResult> FindCurrentStartAsync(
+        string frontierId,
+        bool isOdyssey,
+        long systemAddress,
+        CancellationToken cancellationToken = default
+    ) => historyReader.FindCurrentLocationAsync(frontierId, isOdyssey, systemAddress, cancellationToken);
 
     public Task<JourneyLoadResult> LoadAsync(
         string frontierId,
@@ -143,7 +152,7 @@ public sealed partial class JourneyService
         ArgumentNullException.ThrowIfNull(request);
         if (request.StartingEntry.Event.Timestamp is null)
         {
-            throw new ArgumentException("The starting FSD jump must have a timestamp.", nameof(request));
+            throw new ArgumentException("The starting location must have a timestamp.", nameof(request));
         }
 
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
