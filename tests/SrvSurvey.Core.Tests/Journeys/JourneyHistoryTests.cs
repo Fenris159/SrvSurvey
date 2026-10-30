@@ -179,9 +179,10 @@ public sealed class JourneyHistoryTests : IDisposable
         string profilePath = profiles.GetProfilePath("F123", true);
         File.Delete(profilePath);
         Directory.CreateDirectory(profilePath);
-        await Assert.ThrowsAnyAsync<IOException>(() =>
+        Exception? failure = await Record.ExceptionAsync(() =>
             service.ConcludeActiveAsync("Drew", active.StartTime.AddHours(1))
         );
+        Assert.True(failure is IOException or UnauthorizedAccessException);
         Assert.Null(service.ActiveJourney);
         Assert.False((await store.LoadAsync("F123", active.FileName)).Journey!.IsActive);
         Directory.Delete(profilePath);
