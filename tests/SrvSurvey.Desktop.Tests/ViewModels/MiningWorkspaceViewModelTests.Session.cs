@@ -9,6 +9,90 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MiningWorkspaceViewModelTests
 {
+    [Fact]
+    public void CodeRabbitOverlayPreferencesCannotBeEditedWithoutACommander()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var workspace = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory)
+            );
+            workspace.SessionYieldSortIndex = 1;
+            workspace.SessionYieldLimit = 9;
+            workspace.HideProspectsBelowThreshold = true;
+            Assert.Equal(0, workspace.SessionYieldSortIndex);
+            Assert.Equal(5, workspace.SessionYieldLimit);
+            Assert.False(workspace.HideProspectsBelowThreshold);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    /// <summary>Applies sorting before truncation, updates live, and recovers each commander's overlay choices.</summary>
+    [Fact]
+    public void SessionOverviewSortAndLimitPersistWithoutTruncatingMiningData()
+    {
+        using var fixture = new MiningMissionFixture();
+        MiningWorkspaceViewModel workspace = fixture.Workspace;
+        workspace.StartCommand.Execute(null);
+        using var overview = new MiningSessionOverlayViewModel(workspace);
+        string[] minerals = ["Platinum", "Osmium", "Gold", "Silver", "Palladium", "Praseodymium", "Samarium"];
+        int second = 0;
+        foreach (string mineral in minerals.Concat(["Osmium", "Samarium", "Samarium"]))
+        {
+            int percentage = 70 - Array.IndexOf(minerals, mineral) * 10;
+            fixture.Feed(
+                $$"""{"timestamp":"{{fixture.Now.AddSeconds(++second):O}}","event":"ProspectedAsteroid","Materials":[{"Name":"{{mineral}}","Proportion":{{percentage}}}],"Remaining":100}"""
+            );
+        }
+
+        Assert.Equal(minerals.Take(5), overview.ProspectingYields.Select(row => row.Name));
+        var changed = new List<string?>();
+        overview.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+        workspace.SessionYieldLimit = 3;
+        workspace.SessionYieldSortIndex = 1;
+        Assert.Equal(["Samarium", "Osmium", "Platinum"], overview.ProspectingYields.Select(row => row.Name));
+        Assert.Contains(nameof(MiningSessionOverlayViewModel.ProspectingYields), changed);
+        Assert.Equal(7, workspace.Materials.Count);
+        Assert.Equal(10, workspace.Current!.Prospects.Count);
+        string backup = workspace.Backup();
+
+        workspace.SessionYieldSortIndex = -1;
+        workspace.SessionYieldSortIndex = 2;
+        workspace.SessionYieldSortIndex = 1;
+        Assert.Equal(1, workspace.SessionYieldSortIndex);
+        workspace.SessionYieldLimit = 0;
+        workspace.SessionYieldLimit = 0;
+        Assert.Equal("Samarium", Assert.Single(overview.ProspectingYields).Name);
+        workspace.SessionYieldLimit = 101;
+        workspace.SessionYieldLimit = 101;
+        Assert.Equal(100, workspace.SessionYieldLimit);
+        Assert.Equal(7, overview.ProspectingYields.Count);
+        Assert.True(workspace.Restore(backup));
+        Assert.Equal(3, workspace.SessionYieldLimit);
+        Assert.Equal(1, workspace.SessionYieldSortIndex);
+
+        fixture.Feed("""{"event":"LoadGame","FID":"F2","Commander":"Other","Ship":"Python"}""");
+        Assert.Equal(0, workspace.SessionYieldSortIndex);
+        Assert.Equal(5, workspace.SessionYieldLimit);
+        fixture.Feed("""{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"Python"}""");
+        Assert.Equal(1, workspace.SessionYieldSortIndex);
+        Assert.Equal(3, workspace.SessionYieldLimit);
+        Assert.Equal(["Samarium", "Osmium", "Platinum"], overview.ProspectingYields.Select(row => row.Name));
+        Assert.Equal(7, workspace.Materials.Count);
+        MiningPreferences recovered = new MiningStore(fixture.Directory).Load("F1").Settings;
+        Assert.Equal(MiningSessionYieldSort.Finds, recovered.SessionYieldSort);
+        Assert.Equal(3, recovered.SessionYieldLimit);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

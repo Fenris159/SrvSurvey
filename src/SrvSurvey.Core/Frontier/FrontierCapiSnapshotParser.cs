@@ -239,16 +239,14 @@ public static partial class FrontierCapiSnapshotParser
         JsonElement? currentShipElement = GetObject(root, "ship");
         long? currentShipId = GetInt64(commander, "currentShipId");
         var parsedShips = EnumerateObjects(root, "ships")
-            .Select(
-                (element, index) =>
-                    ParseShip(
-                        element,
-                        currentShipElement,
-                        currentShipId,
-                        index,
-                        GetString(GetObject(root, JsonLastSystem), "name"),
-                        GetString(GetObject(root, JsonLastStarport), "name")
-                    )
+            .Select(element =>
+                ParseShip(
+                    element,
+                    currentShipElement,
+                    currentShipId,
+                    GetString(GetObject(root, JsonLastSystem), "name"),
+                    GetString(GetObject(root, JsonLastStarport), "name")
+                )
             )
             .Where(ship => ship is not null)
             .Cast<FrontierShipSnapshot>()
@@ -259,7 +257,6 @@ public static partial class FrontierCapiSnapshotParser
                 shipElement,
                 currentShipElement,
                 currentShipId,
-                index: -1,
                 GetString(GetObject(root, JsonLastSystem), "name"),
                 GetString(GetObject(root, JsonLastStarport), "name"),
                 forceCurrent: true
@@ -271,7 +268,11 @@ public static partial class FrontierCapiSnapshotParser
             parsedShips.Insert(0, parsedCurrentShip);
         }
 
+        int currentShipIndex = parsedCurrentShip is null
+            ? -1
+            : parsedShips.FindIndex(ship => SameShip(ship, parsedCurrentShip));
         parsedShips = parsedShips
+            .Select((ship, index) => ship with { IsCurrent = index == currentShipIndex })
             .OrderByDescending(ship => ship.IsCurrent)
             .ThenBy(ship => ship.Type, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(ship => ship.Name, StringComparer.CurrentCultureIgnoreCase)
@@ -356,7 +357,6 @@ public static partial class FrontierCapiSnapshotParser
         JsonElement ship,
         JsonElement? currentShip,
         long? currentShipId,
-        int index,
         string fallbackSystem,
         string fallbackStation,
         bool forceCurrent = false
@@ -369,10 +369,9 @@ public static partial class FrontierCapiSnapshotParser
 
         long? id = GetInt64(ship, "id") ?? GetInt64(ship, "shipID");
         long? currentId = currentShip is { } current ? GetInt64(current, "id") ?? GetInt64(current, "shipID") : null;
-        bool isCurrent =
-            forceCurrent
-            || (id is not null && currentId == id)
-            || (currentShipId is not null && (currentShipId == id || currentShipId == index));
+        // The detailed ship is authoritative when CAPI's commander pointer lags a swap.
+        // A persistent ship ID must never be treated as its position in the fleet list.
+        bool isCurrent = forceCurrent || (id is not null && (currentId ?? currentShipId) == id);
         string type = FirstNonEmpty(GetString(ship, JsonLocName), GetString(ship, "name"), "Unknown ship");
         string customName = GetString(ship, "shipName");
         string identifier = GetString(ship, "shipID");

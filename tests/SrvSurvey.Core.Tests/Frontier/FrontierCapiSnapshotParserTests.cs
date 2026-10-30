@@ -4,6 +4,50 @@ namespace SrvSurvey.Core.Tests.Frontier;
 
 public sealed class FrontierCapiSnapshotParserTests
 {
+    /// <summary>A lagging detailed ship must not retain a second current marker after CAPI reports a ship swap.</summary>
+    [Fact]
+    public void ConflictingCapiShipSnapshotsOnlyMarkTheSelectedFleetShipCurrent()
+    {
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
+            """
+            {
+              "commander":{"name":"Test","currentShipId":7},
+              "ship":{"id":8,"name":"python","shipName":"New ship"},
+              "ships":[
+                {"id":7,"name":"cobramkiii","shipName":"Old ship"},
+                {"id":8,"name":"python","shipName":"New ship"}
+              ]
+            }
+            """,
+            null,
+            DateTimeOffset.UnixEpoch
+        );
+
+        Assert.Equal(2, snapshot.Ships.Count);
+        Assert.Equal(8, Assert.Single(snapshot.Ships, ship => ship.IsCurrent).Id);
+        Assert.Equal(8, snapshot.CurrentShip!.Id);
+    }
+
+    /// <summary>Fleet order cannot substitute for a persistent ship ID, with or without a detailed ship response.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CurrentShipIdDoesNotMatchAnotherShipsArrayPosition(bool detailed)
+    {
+        string details = detailed ? "\"ship\":{\"id\":1,\"name\":\"cobramkiii\"}," : "";
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
+            $$"""
+            {"commander":{"name":"Test","currentShipId":1},{{details}}
+             "ships":[{"id":1,"name":"cobramkiii"},{"id":7,"name":"python"}]}
+            """,
+            null,
+            DateTimeOffset.UnixEpoch
+        );
+
+        Assert.Equal(1, Assert.Single(snapshot.Ships, ship => ship.IsCurrent).Id);
+        Assert.Equal(1, snapshot.CurrentShip!.Id);
+    }
+
     /// <summary>Verifies that a legacy zero Powerplay rating is distinct from an explicit unpledged journal status.</summary>
     [Fact]
     public void LegacyZeroPowerRatingDoesNotClaimTheCommanderIsUnpledged()

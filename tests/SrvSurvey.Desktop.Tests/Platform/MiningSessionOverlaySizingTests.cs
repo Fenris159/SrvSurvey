@@ -160,6 +160,7 @@ public sealed class MiningSessionOverlaySizingTests
 
     private static void AddMinerals(MiningMissionFixture fixture)
     {
+        fixture.Workspace.SessionYieldLimit = 100;
         for (int index = 0; index < 20; index++)
         {
             fixture.Feed(

@@ -14,7 +14,7 @@
      <TextBlock Classes="type-title" Foreground="{DynamicResource RavenSuccessBrush}" Text="TARGET FOUND" HorizontalAlignment="Center" />
     </Border>
     <StackPanel IsVisible="{Binding HasProspectReport}" Spacing="4">
-     <TextBlock Classes="overlay-header type-header" Text="ACTIVE PROSPECTORS" />
+     <TextBlock Classes="overlay-header type-header" Text="RECENT PROSPECTS" />
      <ItemsControl ItemsSource="{Binding Prospects}">
       <ItemsControl.ItemTemplate>
        <DataTemplate x:DataType="vm:MiningProspectOverlayRowViewModel">
@@ -33,7 +33,7 @@
              </DataTemplate>
             </ItemsControl.ItemTemplate>
            </ItemsControl>
-           <TextBlock Classes="muted type-detail" Text="{Binding RemainingLabel}" />
+           <TextBlock Classes="muted type-detail" Text="{Binding MaterialContentLabel}" IsVisible="{Binding HasMaterialContent}" TextWrapping="Wrap" />
           </StackPanel>
          </Grid>
         </Border>

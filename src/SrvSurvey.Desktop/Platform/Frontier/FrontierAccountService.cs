@@ -480,7 +480,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
             )
             .ConfigureAwait(false);
         credential = profile.Credential;
-        DateTimeOffset fetchedAt = utcNow();
+        DateTimeOffset fetchedAt = profile.FetchedAt;
         FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
             profile.Content ?? throw new InvalidDataException("Frontier did not return commander profile data."),
             null,
@@ -610,7 +610,14 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            return new OptionalCapiResponse(response.Credential, response.Content, string.Empty, true, true);
+            return new OptionalCapiResponse(
+                response.Credential,
+                response.Content,
+                string.Empty,
+                true,
+                true,
+                response.FetchedAt
+            );
         }
         catch (Exception exception)
             when (exception
@@ -643,6 +650,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
+        fetchedAt = result.FetchedAt ?? fetchedAt;
         previous = IsSameCommander(snapshot, previous) ? previous : null;
         if (!result.Queried)
         {
@@ -743,9 +751,9 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
             CarrierError = string.Empty,
             CommanderReputation = commanderReputation,
             CommanderReputationFetchedAt =
-                snapshot.CommanderReputation?.Count > 0 || endpoint.CommanderReputation.Count > 0
+                endpoint.CommanderReputation.Count > 0
                     ? fetchedAt
-                    : previous?.CommanderReputationFetchedAt,
+                    : snapshot.CommanderReputationFetchedAt ?? previous?.CommanderReputationFetchedAt,
             CarrierEndpointData = endpoint.DataPoints,
         };
     }
@@ -757,6 +765,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
+        fetchedAt = result.FetchedAt ?? fetchedAt;
         previous = IsSameCommander(snapshot, previous) ? previous : null;
         if (!result.Queried)
         {
@@ -860,6 +869,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
+        fetchedAt = result.FetchedAt ?? fetchedAt;
         if (!result.Succeeded)
         {
             return snapshot with
@@ -899,6 +909,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
+        fetchedAt = result.FetchedAt ?? fetchedAt;
         if (!result.Succeeded)
         {
             return snapshot with
@@ -938,6 +949,7 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
+        fetchedAt = result.FetchedAt ?? fetchedAt;
         if (!result.Succeeded)
         {
             return snapshot with
@@ -1118,7 +1130,11 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        HttpResponseMessage response = await SendCapiAsync(endpoint, credential, cancellationToken)
+        (HttpResponseMessage response, DateTimeOffset fetchedAt) = await SendCapiAsync(
+                endpoint,
+                credential,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.UnprocessableEntity)
         {
@@ -1131,14 +1147,14 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            response = await SendCapiAsync(endpoint, credential, cancellationToken).ConfigureAwait(false);
+            (response, fetchedAt) = await SendCapiAsync(endpoint, credential, cancellationToken).ConfigureAwait(false);
         }
 
         using (response)
         {
             if (allowNoContent && response.StatusCode == HttpStatusCode.NoContent)
             {
-                return new CapiResponse(credential, null);
+                return new CapiResponse(credential, null, fetchedAt);
             }
 
             if (!response.IsSuccessStatusCode)
@@ -1170,11 +1186,11 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
 
             string content = await ReadBoundedStringAsync(response.Content, MaximumCapiResponseBytes, cancellationToken)
                 .ConfigureAwait(false);
-            return new CapiResponse(credential, content);
+            return new CapiResponse(credential, content, fetchedAt);
         }
     }
 
-    private async Task<HttpResponseMessage> SendCapiAsync(
+    private async Task<(HttpResponseMessage Response, DateTimeOffset FetchedAt)> SendCapiAsync(
         string endpoint,
         FrontierAccountCredential credential,
         CancellationToken cancellationToken
@@ -1198,10 +1214,14 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
                 credential.AccessToken
             );
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            lastCapiRequestAt = utcNow();
-            return await httpClient
+            // Use the observation's request start, after throttling. A response arriving
+            // later must not overwrite journal changes made while it was in flight.
+            DateTimeOffset fetchedAt = utcNow();
+            lastCapiRequestAt = fetchedAt;
+            HttpResponseMessage response = await httpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
+            return (response, fetchedAt);
         }
         finally
         {
@@ -2185,14 +2205,15 @@ public sealed partial class FrontierAccountService : IFrontierAccountService
         httpClient.Dispose();
     }
 
-    private sealed record CapiResponse(FrontierAccountCredential Credential, string? Content);
+    private sealed record CapiResponse(FrontierAccountCredential Credential, string? Content, DateTimeOffset FetchedAt);
 
     private sealed record OptionalCapiResponse(
         FrontierAccountCredential Credential,
         string? Content,
         string Error,
         bool Queried,
-        bool Succeeded
+        bool Succeeded,
+        DateTimeOffset? FetchedAt = null
     )
     {
         public static OptionalCapiResponse Skipped(FrontierAccountCredential credential) =>

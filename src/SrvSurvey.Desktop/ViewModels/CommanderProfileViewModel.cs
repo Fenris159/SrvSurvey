@@ -12,7 +12,7 @@ using SrvSurvey.Desktop.Platform.Frontier;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposable
+public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, IDisposable
 {
     private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
     private const string UnavailableLabel = "Unavailable";
@@ -136,11 +136,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private DateTimeOffset? journalCommunityGoalsUpdatedAt;
     private string journalCommunityGoalHistoryError = string.Empty;
     private string? journalCarrierJumpCommanderName;
-    private string? journalCarrierId;
-    private string journalCarrierJumpDestination = string.Empty;
-    private DateTimeOffset? journalCarrierJumpDepartureAt;
-    private DateTimeOffset? journalCarrierJumpUpdatedAt;
-    private bool hasJournalCarrierJumpState;
+    private readonly Dictionary<string, JournalCarrierJumpState> journalCarrierJumps = new(StringComparer.Ordinal);
     private string? detectedFrontierId;
     private string? detectedCommanderName;
     private string? activeFrontierId;
@@ -323,20 +319,22 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public FrontierAccountSnapshot? Snapshot
     {
         get => snapshot;
-        private set
-        {
-            if (EqualityComparer<FrontierAccountSnapshot?>.Default.Equals(snapshot, value))
-            {
-                return;
-            }
+        private set => SetSnapshot(value);
+    }
 
-            snapshot = value;
-            ResetSnapshotProjectionCache();
-            RebuildCurrentShipModuleGroups();
-            OnPropertyChanged();
-            RaiseSnapshotProperties();
-            OnPropertyChanged(nameof(CarrierCargoSource));
+    private void SetSnapshot(FrontierAccountSnapshot? value, bool forceProjectionRefresh = false)
+    {
+        if (!forceProjectionRefresh && EqualityComparer<FrontierAccountSnapshot?>.Default.Equals(snapshot, value))
+        {
+            return;
         }
+
+        snapshot = value;
+        ResetSnapshotProjectionCache();
+        RebuildCurrentShipModuleGroups();
+        OnPropertyChanged(nameof(Snapshot));
+        RaiseSnapshotProperties();
+        OnPropertyChanged(nameof(CarrierCargoSource));
     }
 
     public bool HasSnapshot => Snapshot is not null;
@@ -353,7 +351,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string FleetValue => FormatCredits(Snapshot?.FleetValue ?? 0);
 
-    public string FleetCount => $"{Snapshot?.Ships.Count ?? 0:N0} ships";
+    public string FleetCount => $"{Ships.Count:N0} ships";
 
     public string CurrentLocation
     {
@@ -372,7 +370,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         get
         {
-            FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
+            FrontierShipSnapshot? ship = CurrentShip;
             if (ship is null)
             {
                 return "—";
@@ -384,13 +382,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public bool HasCurrentShip => Snapshot?.CurrentShip is not null;
+    public bool HasCurrentShip => CurrentShip is not null;
 
     public string CurrentShipHealth
     {
         get
         {
-            FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
+            FrontierShipSnapshot? ship = CurrentShip;
             if (ship is null)
             {
                 return "Health unavailable";
@@ -567,8 +565,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<FrontierShipModuleRowViewModel> CurrentShipModules =>
         currentShipModuleRows ??=
-            Snapshot
-                ?.CurrentShip?.Modules?.Where(item => !IsLiverySlot(item.Slot))
+            CurrentShip
+                ?.Modules?.Where(item => !IsLiverySlot(item.Slot))
                 .Select(CreateModuleRow)
                 .OrderBy(item => ModuleGroupOrder(item.Group))
                 .ThenBy(item => ModuleSlotOrder(item.Slot))
@@ -580,8 +578,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<FrontierLiveryRowViewModel> CurrentShipLivery =>
         currentShipLiveryRows ??=
-            Snapshot
-                ?.CurrentShip?.Modules?.Where(item => IsLiverySlot(item.Slot))
+            CurrentShip
+                ?.Modules?.Where(item => IsLiverySlot(item.Slot))
                 .Select(item => new FrontierLiveryRowViewModel(
                     FriendlyLiverySlot(item.Slot),
                     FriendlyLiveryName(item, ResolveInternalName(item)),
@@ -592,14 +590,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 .ToArray()
             ?? [];
 
-    public string CurrentShipPaintwork => FormatPercent(Snapshot?.CurrentShip?.Paintwork);
+    public string CurrentShipPaintwork => FormatPercent(CurrentShip?.Paintwork);
 
-    public bool HasCurrentShipLivery => CurrentShipLivery.Count > 0 || Snapshot?.CurrentShip?.Paintwork is not null;
+    public bool HasCurrentShipLivery => CurrentShipLivery.Count > 0 || CurrentShip?.Paintwork is not null;
 
     public IReadOnlyList<FrontierLaunchBayRowViewModel> CurrentShipLaunchBays =>
         currentShipLaunchBayRows ??=
-            Snapshot
-                ?.CurrentShip?.LaunchBays?.Select(item => new FrontierLaunchBayRowViewModel(
+            CurrentShip
+                ?.LaunchBays?.Select(item => new FrontierLaunchBayRowViewModel(
                     item.Slot,
                     item.Vehicle,
                     item.Loadout,
@@ -730,9 +728,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalReputationUpdatedAt = null;
         }
 
-        JournalEventEnvelope? latest = journalEvents.LastOrDefault(journalEvent =>
-            string.Equals(journalEvent.EventName, "Reputation", StringComparison.OrdinalIgnoreCase)
-        );
+        JournalEventEnvelope? latest = journalEvents
+            .Where(entry => string.Equals(entry.EventName, "Reputation", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(entry => entry.Timestamp ?? DateTimeOffset.MinValue)
+            .LastOrDefault();
         if (latest is null)
         {
             if (commanderChanged)
@@ -741,6 +740,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 OnPropertyChanged(nameof(CommanderReputation));
             }
 
+            return;
+        }
+
+        if (journalReputationUpdatedAt is { } prior && (latest.Timestamp ?? DateTimeOffset.MinValue) < prior)
+        {
             return;
         }
 
@@ -757,83 +761,6 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         journalReputationUpdatedAt = latest.Timestamp;
         commanderReputationRows = null;
         OnPropertyChanged(nameof(CommanderReputation));
-    }
-
-    public void UpdateJournalCarrierJump(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
-    {
-        ArgumentNullException.ThrowIfNull(journalEvents);
-        string? normalizedCommander = commanderName?.Trim();
-        bool commanderChanged = !string.Equals(
-            journalCarrierJumpCommanderName,
-            normalizedCommander,
-            StringComparison.OrdinalIgnoreCase
-        );
-        if (commanderChanged)
-        {
-            journalCarrierJumpCommanderName = normalizedCommander;
-            journalCarrierId = null;
-            journalCarrierJumpDestination = string.Empty;
-            journalCarrierJumpDepartureAt = null;
-            journalCarrierJumpUpdatedAt = null;
-            hasJournalCarrierJumpState = false;
-        }
-
-        bool changed = commanderChanged;
-        foreach (JournalEventEnvelope journalEvent in journalEvents)
-        {
-            DateTimeOffset observedAt = journalEvent.Timestamp ?? now().ToUniversalTime();
-            changed |= ApplyJournalCarrierJumpEvent(journalEvent, observedAt);
-        }
-
-        if (changed)
-        {
-            carrierOperationRows = null;
-            OnPropertyChanged(nameof(CarrierOperations));
-        }
-    }
-
-    private bool ApplyJournalCarrierJumpEvent(JournalEventEnvelope journalEvent, DateTimeOffset observedAt)
-    {
-        switch (journalEvent.EventName)
-        {
-            case "CarrierJumpRequest":
-                journalCarrierId = ReadJournalIdentifier(journalEvent.Payload, "CarrierID");
-                journalCarrierJumpDestination = FirstNonEmpty(
-                    ReadJournalString(journalEvent.Payload, "SystemName"),
-                    ReadJournalString(journalEvent.Payload, "StarSystem"),
-                    ReadJournalString(journalEvent.Payload, "Body")
-                );
-                journalCarrierJumpDepartureAt = ReadJournalDateTimeOffset(journalEvent.Payload, "DepartureTime");
-                journalCarrierJumpUpdatedAt = observedAt;
-                hasJournalCarrierJumpState = true;
-                return true;
-            case "CarrierJumpCancelled" when MatchesJournalCarrier(journalEvent.Payload):
-                ClearJournalCarrierJump(observedAt);
-                hasJournalCarrierJumpState = true;
-                return true;
-            case "CarrierJump" when HasMatchingPendingCarrierJump(journalEvent.Payload):
-                ClearJournalCarrierJump(observedAt);
-                return true;
-            case "CarrierLocation"
-                when HasMatchingPendingCarrierJump(journalEvent.Payload)
-                    && (journalCarrierJumpDepartureAt is null || observedAt >= journalCarrierJumpDepartureAt):
-                ClearJournalCarrierJump(observedAt);
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private bool HasMatchingPendingCarrierJump(JsonElement payload) =>
-        hasJournalCarrierJumpState
-        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
-        && MatchesJournalCarrier(payload);
-
-    private void ClearJournalCarrierJump(DateTimeOffset observedAt)
-    {
-        journalCarrierJumpDestination = string.Empty;
-        journalCarrierJumpDepartureAt = null;
-        journalCarrierJumpUpdatedAt = observedAt;
     }
 
     public void UpdateJournalCommunityGoals(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
@@ -873,6 +800,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         bool updated = false;
         foreach (JournalEventEnvelope? goalEvent in goalEvents)
         {
+            if (journalCommunityGoalsUpdatedAt is { } prior && (goalEvent.Timestamp ?? DateTimeOffset.MinValue) < prior)
+            {
+                continue;
+            }
             try
             {
                 IReadOnlyList<FrontierCommunityGoalSnapshot> parsed = FrontierCapiSnapshotParser.ParseCommunityGoals(
@@ -899,18 +830,55 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public IReadOnlyList<FrontierShipRowViewModel> Ships =>
-        shipRows ??=
-            Snapshot
-                ?.Ships.Select(ship => new FrontierShipRowViewModel(
-                    ship.Name,
-                    ship.Type,
-                    JoinLocation(ship.System, ship.Station),
-                    FormatCredits(ship.Value),
-                    ship.IsCurrent ? "CURRENT" : string.Empty
-                ))
-                .ToArray()
-            ?? [];
+    public IReadOnlyList<FrontierShipRowViewModel> Ships => shipRows ??= ReadShipRows();
+
+    /// <summary>Derives one current fleet marker from the selected ship, including caches with stale per-ship flags.</summary>
+    private FrontierShipRowViewModel[] ReadShipRows()
+    {
+        if (Snapshot is not { } account)
+        {
+            return [];
+        }
+
+        FrontierShipSnapshot? current = CurrentShip;
+        long? currentShipId = current?.Id;
+        bool journalSelection = !ReferenceEquals(current, account.CurrentShip);
+        bool currentAssigned = false;
+        var rows = new List<FrontierShipRowViewModel>();
+        IEnumerable<FrontierShipSnapshot> fleet = account.Ships;
+        if (
+            journalSelection
+            && current is not null
+            && (currentShipId is null || !account.Ships.Any(ship => ship.Id == currentShipId))
+        )
+        {
+            fleet = fleet.Append(current);
+        }
+        foreach (FrontierShipSnapshot ship in fleet)
+        {
+            FrontierShipSnapshot displayed =
+                current is { Id: not null } selected && selected.Id == ship.Id ? selected : ship;
+            bool isCurrent =
+                !currentAssigned
+                && (
+                    currentShipId is not null
+                        ? ship.Id == currentShipId
+                        : ReferenceEquals(ship, current) || !journalSelection && ship.IsCurrent
+                );
+            currentAssigned |= isCurrent;
+            rows.Add(
+                new FrontierShipRowViewModel(
+                    displayed.Name,
+                    displayed.Type,
+                    JoinLocation(displayed.System, displayed.Station),
+                    FormatCredits(displayed.Value),
+                    isCurrent ? "CURRENT" : string.Empty
+                )
+            );
+        }
+
+        return rows.ToArray();
+    }
 
     public IReadOnlyList<string> Capabilities => Snapshot?.Capabilities ?? [];
 
@@ -1578,11 +1546,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalCommunityGoalsUpdatedAt = null;
             journalCommunityGoalHistoryError = string.Empty;
             journalCarrierJumpCommanderName = normalizedName;
-            journalCarrierId = null;
-            journalCarrierJumpDestination = string.Empty;
-            journalCarrierJumpDepartureAt = null;
-            journalCarrierJumpUpdatedAt = null;
-            hasJournalCarrierJumpState = false;
+            journalCarrierJumps.Clear();
+            journalShip = new FrontierJournalShipState();
+            SetSnapshot(Snapshot, forceProjectionRefresh: true);
             carrierOperationRows = null;
             OnPropertyChanged(nameof(CarrierOperations));
             UpdateLocalInventory(null, null, isSuppressed: false);
@@ -1651,13 +1617,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         string? normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
         bool identityChanged = !string.Equals(activeFrontierId, normalizedId, StringComparison.OrdinalIgnoreCase);
 
-        if (identityChanged)
-        {
-            Snapshot = null;
-        }
-
         activeFrontierId = normalizedId;
         activeCommanderName = normalizedName;
+        if (identityChanged)
+        {
+            SetSnapshot(null, forceProjectionRefresh: true);
+        }
         accountService.SetActiveCommander(normalizedId, normalizedName);
         OnPropertyChanged(nameof(ActiveCommanderDescription));
         OnPropertyChanged(nameof(CommanderSelectionDescription));
@@ -2159,8 +2124,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         const string prefix = "ship.modules.";
         const string suffix = ".module.name";
         string slotKey = NormalizeLookupKey(item.Slot);
-        return Snapshot
-                ?.CurrentShip?.DataPoints?.FirstOrDefault(point =>
+        return CurrentShip
+                ?.DataPoints?.FirstOrDefault(point =>
                     point.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                     && point.Path.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
                     && NormalizeLookupKey(point.Path[prefix.Length..^suffix.Length]) == slotKey
@@ -2602,7 +2567,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipValueRows()
     {
-        FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
+        FrontierShipSnapshot? ship = CurrentShip;
         return ship is null
             ? []
             :
@@ -2617,7 +2582,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipConditionRows()
     {
-        FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
+        FrontierShipSnapshot? ship = CurrentShip;
         if (ship is null)
         {
             return [];
@@ -2656,64 +2621,6 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         ];
     }
 
-    private string EffectiveCarrierCurrentJump()
-    {
-        if (
-            !hasJournalCarrierJumpState
-            || Snapshot is null
-            || !string.Equals(
-                Snapshot.CommanderName,
-                journalCarrierJumpCommanderName,
-                StringComparison.OrdinalIgnoreCase
-            )
-            || journalCarrierJumpUpdatedAt is null
-            || !CanApplyJournalCarrierJump()
-            || (
-                carrierWorkspaceKind == CarrierWorkspaceKind.Personal
-                && Snapshot.CarrierFetchedAt is { } carrierFetchedAt
-                && journalCarrierJumpUpdatedAt < carrierFetchedAt
-            )
-        )
-        {
-            return NormalizeCurrentJump(Carrier?.CurrentJump);
-        }
-
-        return journalCarrierJumpDestination;
-    }
-
-    private bool CanApplyJournalCarrierJump()
-    {
-        return carrierWorkspaceKind == CarrierWorkspaceKind.Personal
-            || (carrierWorkspaceKind == CarrierWorkspaceKind.Squadron && JournalMatchesSelectedSquadronCarrier());
-    }
-
-    private bool JournalMatchesSelectedSquadronCarrier()
-    {
-        if (string.IsNullOrWhiteSpace(journalCarrierId) || Snapshot?.SquadronCarrier is not { } squadron)
-        {
-            return false;
-        }
-
-        foreach (FrontierDataPointSnapshot point in squadron.DataPoints ?? [])
-        {
-            if (!string.Equals(point.Value, journalCarrierId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (
-                point.Path.EndsWith(".marketId", StringComparison.OrdinalIgnoreCase)
-                || point.Path.EndsWith(".carrierId", StringComparison.OrdinalIgnoreCase)
-                || point.Path.EndsWith(".id", StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()
     {
         FrontierCarrierSnapshot? carrier = Carrier;
@@ -2740,6 +2647,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private void ResetSnapshotProjectionCache()
     {
         rankRows = null;
+        currentShipProjection = null;
         currentShipValueRows = null;
         currentShipConditionRows = null;
         currentShipModuleRows = null;
@@ -3257,17 +3165,6 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
             ? number
             : null;
-    }
-
-    private bool MatchesJournalCarrier(JsonElement payload)
-    {
-        string candidate = FirstNonEmpty(
-            ReadJournalIdentifier(payload, "CarrierID"),
-            ReadJournalIdentifier(payload, "MarketID")
-        );
-        return string.IsNullOrWhiteSpace(journalCarrierId)
-            || string.IsNullOrWhiteSpace(candidate)
-            || string.Equals(journalCarrierId, candidate, StringComparison.Ordinal);
     }
 
     private static string ReadJournalString(JsonElement payload, string name)

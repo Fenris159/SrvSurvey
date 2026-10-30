@@ -9,6 +9,76 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class CommanderProfileViewModelTests
 {
+    /// <summary>Cached current flags cannot survive a refresh as a second marker beside the selected ship.</summary>
+    [Fact]
+    public async Task OwnedFleetRefreshUsesOneCurrentShipDespiteStaleCachedFlags()
+    {
+        FrontierAccountSnapshot cached = CreateSnapshot(DateTimeOffset.UtcNow);
+        FrontierShipSnapshot original = cached.CurrentShip!;
+        FrontierShipSnapshot selected = original with { Id = 8, Name = "New ship", Type = "Python" };
+        FrontierAccountSnapshot refreshed = cached with
+        {
+            CurrentShip = selected,
+            Ships = [original, selected],
+            FetchedAt = cached.FetchedAt.AddMinutes(1),
+        };
+        var account = new StubAccountService(new FrontierAccountState(true, cached, cached.FetchedAt), refreshed);
+        using var model = new CommanderProfileViewModel(account);
+        await model.OpenAsync();
+        Assert.Equal(original.Name, Assert.Single(model.Ships, ship => ship.Status == "CURRENT").Name);
+        IReadOnlyList<FrontierShipRowViewModel> previous = model.Ships;
+
+        await model.RefreshAsync();
+
+        Assert.NotSame(previous, model.Ships);
+        Assert.Equal(2, model.Ships.Count);
+        Assert.Equal("New ship", Assert.Single(model.Ships, ship => ship.Status == "CURRENT").Name);
+        Assert.Equal("New ship · Python", model.CurrentShipDescription);
+        Assert.Same(model.Ships, model.Ships);
+        Assert.True(original.IsCurrent);
+        account.SetState(new FrontierAccountState(true, refreshed, refreshed.FetchedAt));
+        await model.OpenAsync();
+        Assert.Equal("New ship", Assert.Single(model.Ships, ship => ship.Status == "CURRENT").Name);
+    }
+
+    /// <summary>Known IDs override cached flags, while incomplete caches never manufacture multiple current ships.</summary>
+    [Theory]
+    [InlineData(8L, true, false, "Second")]
+    [InlineData(null, true, true, "Surveyor")]
+    [InlineData(null, false, false, null)]
+    [InlineData(999L, true, true, null)]
+    public async Task OwnedFleetCurrentMarkersRespectAvailableShipIdentity(
+        long? currentId,
+        bool firstCurrent,
+        bool secondCurrent,
+        string? expected
+    )
+    {
+        FrontierAccountSnapshot original = CreateSnapshot(DateTimeOffset.UtcNow);
+        FrontierShipSnapshot first = original.CurrentShip! with { IsCurrent = firstCurrent };
+        FrontierShipSnapshot second = first with { Id = 8, Name = "Second", IsCurrent = secondCurrent };
+        FrontierAccountSnapshot cached = original with
+        {
+            CurrentShip = currentId is not null ? second with { Id = currentId } : null,
+            Ships = [first, second],
+        };
+        using var model = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, cached, cached.FetchedAt))
+        );
+        await model.OpenAsync();
+
+        Assert.Equal(2, model.Ships.Count);
+        FrontierShipRowViewModel[] marked = model.Ships.Where(ship => ship.Status == "CURRENT").ToArray();
+        if (expected is null)
+        {
+            Assert.Empty(marked);
+        }
+        else
+        {
+            Assert.Equal(expected, Assert.Single(marked).Name);
+        }
+    }
+
     /// <summary>Verifies every supported pledge resolves to its bundled emblem and assigned color.</summary>
     [Theory]
     [InlineData("Aisling Duval", "aisling-duval", "#0099FF")]

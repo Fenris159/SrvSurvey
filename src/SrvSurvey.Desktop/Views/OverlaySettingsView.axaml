@@ -692,14 +692,38 @@
           <StackPanel Spacing="12">
             <TextBlock Classes="card-title" Text="Ship mining overlays" />
             <TextBlock Classes="muted" Text="Mining notifications, session progress, cargo, and missions appear aboard your main ship. Tracked missions remain visible during collection and return trips, including outside a mining session. Use the panel controls below to show or hide each overlay." TextWrapping="Wrap" />
-            <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
-            <CheckBox Content="Show notifications and cargo only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
-            <TextBlock Text="Notification duration (seconds)" />
-            <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
-            <TextBlock Text="Persistent prospector results" />
-            <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}" Minimum="1" Maximum="8" />
-            <CheckBox Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}" />
-            <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="{Binding MiningWorkspace.OverlaySettingsStatus}"
+                       IsVisible="{Binding !MiningWorkspace.CanEditOverlaySettings}" />
+            <StackPanel Spacing="12" IsEnabled="{Binding MiningWorkspace.CanEditOverlaySettings}">
+              <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
+              <CheckBox Content="Show notifications and cargo only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
+              <TextBlock Text="Notification duration (seconds)" />
+              <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
+              <TextBlock Text="Persistent prospector results" />
+              <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}" Minimum="1" Maximum="8" />
+              <CheckBox Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}" />
+              <Separator />
+              <TextBlock FontWeight="SemiBold" Text="Session overlay" />
+              <WrapPanel>
+                <StackPanel Spacing="6" Margin="0,0,20,8">
+                  <TextBlock Text="Sort prospecting yields by" />
+                  <ComboBox x:Name="MiningSessionYieldSortInput" MinWidth="240"
+                            SelectedIndex="{Binding MiningWorkspace.SessionYieldSortIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="Average mineral percentage" />
+                    <ComboBoxItem Content="Finds" />
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,0,8">
+                  <TextBlock Text="Maximum minerals shown" />
+                  <NumericUpDown x:Name="MiningSessionYieldLimitInput" Width="120" HorizontalAlignment="Left"
+                                 Minimum="1" Maximum="100" Increment="1" FormatString="0"
+                                 ShowButtonSpinner="True" ButtonSpinnerLocation="Right"
+                                 Value="{Binding MiningWorkspace.SessionYieldLimit, Mode=TwoWay}" />
+                </StackPanel>
+              </WrapPanel>
+              <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <Border x:Name="MineMapOverlayCard" Classes="card raised">

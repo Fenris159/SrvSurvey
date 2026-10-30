@@ -5,6 +5,40 @@ namespace SrvSurvey.Core.Tests.Mining;
 public sealed class MiningStoreTests
 {
     [Fact]
+    public void LegacyMiningDataUsesFiveSessionResultsSortedByAverage()
+    {
+        MiningPreferences settings = MiningStore.Parse("""{"SchemaVersion":1}""").Settings;
+        Assert.Equal(MiningSessionYieldSort.AveragePercentage, settings.SessionYieldSort);
+        Assert.Equal(5, settings.SessionYieldLimit);
+    }
+
+    [Theory]
+    [InlineData(MiningSessionYieldSort.AveragePercentage, 1)]
+    [InlineData(MiningSessionYieldSort.Finds, 100)]
+    public void SessionOverlayOptionsRoundTrip(MiningSessionYieldSort sort, int limit)
+    {
+        var data = new MiningCommanderData();
+        data.Settings.SessionYieldSort = sort;
+        data.Settings.SessionYieldLimit = limit;
+        MiningPreferences recovered = MiningStore.Parse(MiningStore.Export(data)).Settings;
+        Assert.Equal(sort, recovered.SessionYieldSort);
+        Assert.Equal(limit, recovered.SessionYieldLimit);
+    }
+
+    [Theory]
+    [InlineData("SessionYieldSort", -1)]
+    [InlineData("SessionYieldSort", 2)]
+    [InlineData("SessionYieldLimit", 0)]
+    [InlineData("SessionYieldLimit", 101)]
+    public void RejectsInvalidSessionOverlayOptions(string property, int value)
+    {
+        string json = System.Text.Json.JsonSerializer.Serialize(
+            new { SchemaVersion = 1, Settings = new Dictionary<string, int> { [property] = value } }
+        );
+        Assert.Throws<System.Text.Json.JsonException>(() => MiningStore.Parse(json));
+    }
+
+    [Fact]
     public void RejectsInvalidRecoveredSessionAndPresetBeforeRestore()
     {
         Assert.Throws<System.Text.Json.JsonException>(() =>

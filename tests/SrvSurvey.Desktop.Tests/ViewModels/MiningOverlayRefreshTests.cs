@@ -6,6 +6,41 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class MiningWorkspaceViewModelTests
 {
+    [Fact]
+    public void ReviewRegressionRecoveredProspectWithoutContentHasNoContentHint()
+    {
+        var row = new MiningProspectOverlayRowViewModel("12:00:00", "Platinum 35%", null, true);
+        Assert.Empty(row.MaterialContentLabel);
+        Assert.False(row.HasMaterialContent);
+    }
+
+    /// <summary>Shows journal material content without presenting scan-time reserve readings as live depletion.</summary>
+    [Theory]
+    [InlineData("$AsteroidMaterialContent_Low;", "Material content: Low")]
+    [InlineData("$AsteroidMaterialContent_Medium;", "Material content: Medium")]
+    [InlineData("$AsteroidMaterialContent_High;", "Material content: High")]
+    [InlineData("Low", "Material content: Low")]
+    [InlineData("Medium", "Material content: Medium")]
+    [InlineData(" High ", "Material content: High")]
+    [InlineData("", "")]
+    [InlineData("Unrecognized", "")]
+    public void ProspectorMaterialContentFlowsFromJournalToOverlay(string content, string expected)
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Workspace.StartCommand.Execute(null);
+        using var overlay = new MiningActivityOverlayViewModel(fixture.Workspace, false);
+        Assert.Empty(overlay.ProspectReport);
+        fixture.Feed(
+            $$"""{"timestamp":"{{fixture.Now.AddSeconds(1):O}}","event":"ProspectedAsteroid","Materials":[{"Name":"Platinum","Proportion":35}],"Content":"{{content}}","Remaining":100}"""
+        );
+
+        MiningProspectOverlayRowViewModel row = Assert.Single(overlay.Prospects);
+        Assert.Equal(expected, row.MaterialContentLabel);
+        Assert.Equal(expected.Length > 0, row.HasMaterialContent);
+        Assert.Equal("Platinum 35.0%", row.Summary);
+        Assert.Equal(expected.Length > 0 ? $"Platinum 35.0% · {expected}" : "Platinum 35.0%", overlay.ProspectReport);
+    }
+
     /// <summary>Projects lowercase journal symbols as capitalized commodity names on the live notification overlay.</summary>
     [Fact]
     public void MiningNotificationsCapitalizeRefinedCommodityNames()

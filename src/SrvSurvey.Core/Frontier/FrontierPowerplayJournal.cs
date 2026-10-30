@@ -133,54 +133,17 @@ public static class FrontierPowerplayJournal
         string? initialCommanderName
     )
     {
-        (string? FrontierId, string? Name) identity = (initialFrontierId, initialCommanderName);
-        foreach (JournalEventEnvelope entry in entries)
-        {
-            if (entry.EventName == "Fileheader")
-            {
-                identity = (null, null);
-            }
-            else if (entry.EventName is "Commander" or "LoadGame")
-            {
-                identity = ReadIdentity(entry, identity);
-            }
-            else if (
-                string.Equals(identity.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
-                && entry.EventName
+        return JournalCommanderEvents
+            .ForCommander(entries, frontierId, initialFrontierId, initialCommanderName)
+            .Where(entry =>
+                entry.EventName
                     is "Powerplay"
                         or JoinEvent
                         or DefectEvent
                         or "PowerplayLeave"
                         or "PowerplayRank"
                         or MeritsEvent
-            )
-            {
-                yield return entry;
-            }
-        }
-    }
-
-    /// <summary>Retains a confirmed FID for the same commander and clears it when a name-only boundary changes identity.</summary>
-    private static (string? FrontierId, string? Name) ReadIdentity(
-        JournalEventEnvelope entry,
-        (string? FrontierId, string? Name) previous
-    )
-    {
-        string? name = Text(entry.Payload, entry.EventName == "Commander" ? "Name" : "Commander");
-        if (entry.Payload.TryGetProperty("FID", out _))
-        {
-            string? frontierId = Text(entry.Payload, "FID");
-            if (name is null && string.Equals(frontierId, previous.FrontierId, StringComparison.OrdinalIgnoreCase))
-            {
-                name = previous.Name;
-            }
-            return (frontierId, name);
-        }
-        if (name is not null && !string.Equals(name, previous.Name, StringComparison.OrdinalIgnoreCase))
-        {
-            return (null, name);
-        }
-        return (previous.FrontierId, name ?? previous.Name);
+            );
     }
 
     /// <summary>Parses daily journal lines and skips malformed records without retaining the full journal.</summary>

@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace SrvSurvey.Core.Ships;
 
 /// <summary>A complete journal loadout, including internals, original engineering and extension fields.</summary>
-public sealed class ShipLoadout
+public sealed partial class ShipLoadout
 {
     private static readonly JsonSerializerOptions ExportOptions = new() { WriteIndented = true };
 

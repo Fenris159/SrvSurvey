@@ -82,7 +82,12 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
         (workspace?.PersistentProspects ?? PreviewProspects).ToArray();
 
     public string ProspectReport =>
-        Prospects.Count > 0 ? $"{Prospects[0].Summary} · Remaining {Prospects[0].Remaining:0.#}%" : "";
+        Prospects.Count > 0
+            ? string.Join(
+                " · ",
+                new[] { Prospects[0].Summary, Prospects[0].MaterialContentLabel }.Where(text => text.Length > 0)
+            )
+            : "";
     public bool HasProspectReport => Prospects.Count > 0;
     public bool HasQualifyingProspect => Prospects.Any(prospect => prospect.Qualifies);
 
@@ -106,17 +111,17 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     ];
     private static readonly MiningProspectOverlayRowViewModel[] PreviewProspects =
     [
-        CreatePreviewProspect("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
-        CreatePreviewProspect("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
+        CreatePreviewProspect("21:14:08", "Platinum 34.8% · Osmium 12.4%", "High", true),
+        CreatePreviewProspect("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", "Medium", false),
     ];
 
     private static MiningProspectOverlayRowViewModel CreatePreviewProspect(
         string time,
         string summary,
-        double remaining,
+        string content,
         bool qualifies
     ) =>
-        new(time, summary, remaining, qualifies)
+        new(time, summary, content, qualifies)
         {
             Materials =
             [

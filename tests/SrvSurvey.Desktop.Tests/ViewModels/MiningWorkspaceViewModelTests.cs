@@ -652,23 +652,21 @@ public sealed partial class MiningWorkspaceViewModelTests
     }
 
     [Fact]
-    public void OverlayRowLabelsAndPreviewProspectsCoverActiveAndDepletedStates()
+    public void OverlayPreviewShowsMaterialContentAlongsideCommodityComposition()
     {
-        var active = new MiningProspectOverlayRowViewModel("12:00", "Platinum 35%", 42.5, true);
-        MiningProspectOverlayRowViewModel depleted = active with { Remaining = 0 };
-        Assert.Equal("42.5% remaining", active.RemainingLabel);
-        Assert.Equal("DEPLETED", depleted.RemainingLabel);
         Assert.Equal("Platinum", new MiningThresholdRowViewModel("platinum", 30).DisplayName);
         Assert.Equal("≥ 30.0%", new MiningThresholdRowViewModel("platinum", 30).MinimumLabel);
 
         using var overlay = new MiningActivityOverlayViewModel(null, false);
         Assert.True(overlay.HasProspectReport);
         Assert.True(overlay.HasQualifyingProspect);
-        Assert.Contains("Remaining", overlay.ProspectReport);
+        Assert.Equal("Platinum 34.8% · Osmium 12.4% · Material content: High", overlay.ProspectReport);
         Assert.Collection(
             overlay.Prospects,
             prospect =>
             {
+                Assert.Equal("Material content: High", prospect.MaterialContentLabel);
+                Assert.True(prospect.HasMaterialContent);
                 Assert.Equal("Platinum 34.8%", prospect.Materials[0].Text);
                 Assert.True(prospect.Materials[0].IsHighlighted);
                 Assert.Equal("Osmium 12.4%", prospect.Materials[1].Text);
@@ -676,6 +674,7 @@ public sealed partial class MiningWorkspaceViewModelTests
             },
             prospect =>
             {
+                Assert.Equal("Material content: Medium", prospect.MaterialContentLabel);
                 Assert.Equal("Platinum 22.1%", prospect.Materials[0].Text);
                 Assert.False(prospect.Materials[0].IsHighlighted);
                 Assert.Equal("Bertrandite 8.5%", prospect.Materials[1].Text);
@@ -884,7 +883,7 @@ public sealed partial class MiningWorkspaceViewModelTests
             Assert.True(vm.ShouldShowNotifications);
             Assert.Equal("Platinum 35.0% · Remaining 100%", vm.CurrentProspectText);
             Assert.True(overlay.HasProspectReport);
-            Assert.Equal(vm.CurrentProspectText, overlay.ProspectReport);
+            Assert.Equal("Platinum 35.0%", overlay.ProspectReport);
         }
         finally
         {
