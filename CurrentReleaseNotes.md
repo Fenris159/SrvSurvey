@@ -36,6 +36,8 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   option in journey details.
   Screenshot lists use the current PNG converter destination and refresh after
   conversion or a destination change without discarding unsaved notes.
+  Completing or reprocessing a journey keeps its original commander context;
+  late results cannot restore an old readout after a commander change or disconnect.
 - **Colonization Market Search:** Select Projects now follows the system, build
   status and ordering selected under Projects. Changing those filters keeps the
   list manageable without clearing previously selected shopping projects.

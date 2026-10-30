@@ -150,13 +150,7 @@ public sealed class MiningOverlaySettingsStore(string path)
             JsonObject previous = Serialize(before);
             JsonObject updated = Serialize(after);
             JsonObject pending = section[Pending] as JsonObject ?? [];
-            foreach ((string name, JsonNode? value) in updated)
-            {
-                if (!JsonNode.DeepEquals(previous[name], value))
-                {
-                    pending[name] = value?.DeepClone();
-                }
-            }
+            ApplyEdits(pending, previous, updated);
             section[Pending] = pending;
         });
     }

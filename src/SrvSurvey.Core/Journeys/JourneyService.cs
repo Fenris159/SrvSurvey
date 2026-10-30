@@ -345,6 +345,7 @@ public sealed partial class JourneyService
     public async Task<JourneyDocument?> ConcludeActiveAsync(
         string commanderName,
         DateTimeOffset endTime,
+        JourneyDocument? expectedJourney = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -352,6 +353,21 @@ public sealed partial class JourneyService
         try
         {
             if (activeProcessor is null)
+            {
+                return null;
+            }
+
+            if (
+                expectedJourney is not null
+                && (
+                    !string.Equals(
+                        activeProcessor.Journey.FrontierId,
+                        expectedJourney.FrontierId,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || activeProcessor.Journey.FileName != expectedJourney.FileName
+                )
+            )
             {
                 return null;
             }

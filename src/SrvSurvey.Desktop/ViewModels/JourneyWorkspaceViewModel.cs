@@ -936,8 +936,10 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private bool CanConclude()
     {
-        return selectedDocument is { IsActive: true }
-            && journeyService.ActiveJourney?.FileName == selectedDocument.FileName
+        return selectedDocument is { IsActive: true } document
+            && journeyService.ActiveJourney is { } active
+            && active.FileName == document.FileName
+            && string.Equals(active.FrontierId, document.FrontierId, StringComparison.OrdinalIgnoreCase)
             && !IsDirty
             && !IsBusy;
     }
@@ -957,13 +959,28 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public async Task ConfirmConcludeAsync()
     {
+        if (!CanConclude() || selectedDocument is not { } document)
+        {
+            return;
+        }
+        int version = contextVersion;
+        string name = commanderName ?? document.CommanderName;
         try
         {
             IsBusy = true;
+            if (version != contextVersion)
+            {
+                return;
+            }
             JourneyDocument? concluded = await journeyService.ConcludeActiveAsync(
-                commanderName ?? selectedDocument?.CommanderName ?? string.Empty,
-                DateTimeOffset.Now
+                name,
+                DateTimeOffset.Now,
+                expectedJourney: document
             );
+            if (version != contextVersion)
+            {
+                return;
+            }
             IsConcludePending = false;
             if (concluded is not null)
             {
@@ -971,16 +988,21 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 UpdateCatalogDocument(concluded);
                 StatusMessage = $"Concluded {concluded.Name}.";
             }
-
             RaiseActiveState();
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The journey was not concluded: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "The journey was not concluded: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -999,15 +1021,24 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public async Task ConfirmReprocessAsync()
     {
-        if (selectedDocument is null)
+        if (selectedDocument is not { } document || IsBusy || IsDirty)
         {
             return;
         }
-
+        int version = contextVersion;
+        bool odyssey = isOdyssey;
         try
         {
             IsBusy = true;
-            JourneyServiceResult result = await journeyService.ReprocessAsync(selectedDocument, isOdyssey);
+            if (version != contextVersion)
+            {
+                return;
+            }
+            JourneyServiceResult result = await journeyService.ReprocessAsync(document, odyssey);
+            if (version != contextVersion)
+            {
+                return;
+            }
             IsReprocessPending = false;
             if (result.Journey is not null)
             {
@@ -1018,16 +1049,21 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                         ? string.Join(Environment.NewLine, result.Errors)
                         : $"Reprocessed {result.ProcessedEventCount:N0} journal events.";
             }
-
             RaiseActiveState();
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The Journey could not be reprocessed: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "The Journey could not be reprocessed: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 

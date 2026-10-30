@@ -191,6 +191,28 @@ public sealed class JourneyServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ConcludeCannotTargetAnotherCommandersJourneyOrADifferentJourney()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            DateTime.UtcNow,
+            BasicJournal("2026-07-01T00:05:00Z")
+        );
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyServiceResult begun = await service.BeginAsync(new("F123", "Drew", true, "Original", "", start.Entry!));
+        JourneyDocument original = begun.Journey!;
+        DateTimeOffset end = original.StartTime.AddHours(1);
+        Assert.Null(await service.ConcludeActiveAsync("Other", end, original with { FrontierId = "F456" }));
+        Assert.Null(await service.ConcludeActiveAsync("Drew", end, original with { FileName = "different" }));
+        Assert.Null(service.ActiveJourney!.EndTime);
+        Assert.Equal("F123", service.ActiveJourney.FrontierId);
+        JourneyDocument? concluded = await service.ConcludeActiveAsync("Drew", end, original);
+        Assert.Equal(end, concluded!.EndTime);
+        Assert.Null(service.ActiveJourney);
+    }
+
+    [Fact]
     public async Task InitializeReportsMalformedCommanderProfile()
     {
         Directory.CreateDirectory(DataDirectory);

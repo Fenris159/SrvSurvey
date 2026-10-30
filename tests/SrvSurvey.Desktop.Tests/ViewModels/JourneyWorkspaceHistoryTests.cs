@@ -7,6 +7,48 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class JourneyWorkspaceViewModelTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FinishingJourneyOperationsCannotRestoreADisconnectedCommandersReadout(bool conclude)
+    {
+        await WriteJournalAsync(
+            """
+            {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """
+        );
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Original commander";
+        await model.BeginJourneyAsync();
+        Assert.True(model.HasActiveJourney);
+        Task<bool>? disconnected = null;
+        model.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(model.IsBusy) && model.IsBusy && disconnected is null)
+            {
+                disconnected = model.UpdateContextAsync(null, null, true, null, null);
+            }
+        };
+        if (conclude)
+        {
+            await model.ConfirmConcludeAsync();
+        }
+        else
+        {
+            await model.ConfirmReprocessAsync();
+        }
+        Assert.NotNull(disconnected);
+        await disconnected;
+        Assert.False(model.HasProfile);
+        Assert.False(model.HasSelectedJourney);
+        Assert.Empty(model.Journeys);
+        Assert.Equal("Waiting for a commander profile.", model.StatusMessage);
+    }
+
     [Fact]
     public async Task ANewerArchiveDecisionDoesNotHideAnUnsavedDraftOnCommanderReturn()
     {
