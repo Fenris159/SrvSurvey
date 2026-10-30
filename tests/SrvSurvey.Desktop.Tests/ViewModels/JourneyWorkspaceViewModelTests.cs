@@ -7,7 +7,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class JourneyWorkspaceViewModelTests : IDisposable
+public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
@@ -73,7 +73,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         await viewModel.ConfirmConcludeAsync();
 
         Assert.False(viewModel.HasActiveJourney);
-        Assert.Equal("COMPLETE", viewModel.SelectedJourney!.State);
+        Assert.Equal("Complete", viewModel.SelectedJourney!.State);
         Assert.Contains("concluded", viewModel.JourneyByline);
     }
 

@@ -16,6 +16,8 @@ public sealed record JourneyDocument(
     IReadOnlyList<JourneySystemVisit> VisitedSystems
 )
 {
+    public bool IsArchived { get; init; }
+
     public bool IsActive => EndTime is null;
 
     public JourneySystemVisit? CurrentSystem => VisitedSystems.LastOrDefault(visit => visit.Departed is null);
@@ -56,8 +58,8 @@ public sealed record JourneyCounts(
     int BodyCount,
     int Screenshots,
     int Notes,
-    int ExobiologyRewards,
-    int ExplorationRewards,
+    long ExobiologyRewards,
+    long ExplorationRewards,
     int Stars
 )
 {

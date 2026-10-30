@@ -52,6 +52,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private const string MineMapNavigationKey = "mine-map";
     private const string ExobiologyNavigationKey = "exobiology";
     private const string TravelNavigationKey = "travel";
+    private const string JourneysNavigationKey = "journeys";
     private const string BoxelNavigationKey = "boxel";
     private const string SearchNavigationKey = "search";
     private const string BookmarksNavigationKey = "bookmarks";
@@ -1002,6 +1003,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 new(ExplorationNavigationKey, "Exploration", "Trip totals and body scans", true),
                 new(ExobiologyNavigationKey, "Exobiology", "Organic scans and unclaimed rewards", true),
                 new(TravelNavigationKey, "Travel", "Ground targets, journeys, and routes", true),
+                new(JourneysNavigationKey, "Journeys", "Expedition history, statistics, and reports"),
                 new(BoxelNavigationKey, "Boxel", "Procedural boxel searches and completion tracking", true),
                 new(SearchNavigationKey, "Search", "Spherical limits and nearby biology"),
                 new(BookmarksNavigationKey, "Bookmarks", "Systems, mining rings, and surface mining maps"),
@@ -1015,6 +1017,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 new("theme", "Theme", "Application and in-game appearance"),
                 new(GuidesNavigationKey, "Guides", "Help documentation and overlay icon glossary"),
             ];
+            Journey.SetWorkspaceOpener(() =>
+            {
+                SelectedNavigation = NavigationItems.Single(item => item.Key == JourneysNavigationKey);
+                return Task.FromResult(true);
+            });
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
             OverviewNavigationItems = NavigationItems
@@ -1024,7 +1031,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 .Where(item => item.Key is ExplorationNavigationKey or ExobiologyNavigationKey or BoxelNavigationKey)
                 .ToArray();
             NavigationWorkspaceItems = NavigationItems
-                .Where(item => item.Key is TravelNavigationKey or SearchNavigationKey or BookmarksNavigationKey)
+                .Where(item =>
+                    item.Key
+                        is TravelNavigationKey
+                            or JourneysNavigationKey
+                            or SearchNavigationKey
+                            or BookmarksNavigationKey
+                )
                 .ToArray();
             ActivityNavigationItems = NavigationItems.Where(IsActivityNavigationItem).ToArray();
             UtilityNavigationItems = new[]
@@ -1564,6 +1577,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public bool IsExobiologySelected => SelectedNavigation?.Key == ExobiologyNavigationKey && !IsProfileSelected;
 
+    public bool IsJourneysSelected => SelectedNavigation?.Key == JourneysNavigationKey && !IsProfileSelected;
+
     public bool IsTravelSelected => SelectedNavigation?.Key == TravelNavigationKey && !IsProfileSelected;
 
     public bool IsBoxelSelected => SelectedNavigation?.Key == BoxelNavigationKey && !IsProfileSelected;
@@ -1689,7 +1704,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         string? group = navigationKey switch
         {
             ExplorationNavigationKey or ExobiologyNavigationKey or BoxelNavigationKey => SurveyNavigationGroup,
-            TravelNavigationKey or SearchNavigationKey or BookmarksNavigationKey => NavigationNavigationGroup,
+            TravelNavigationKey or JourneysNavigationKey or SearchNavigationKey or BookmarksNavigationKey =>
+                NavigationNavigationGroup,
             MiningNavigationKey
             or MineMapNavigationKey
             or GuardianNavigationKey
@@ -1728,6 +1744,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         OnPropertyChanged(nameof(IsBookmarksSelected));
         OnPropertyChanged(nameof(IsExobiologySelected));
         OnPropertyChanged(nameof(IsTravelSelected));
+        OnPropertyChanged(nameof(IsJourneysSelected));
         OnPropertyChanged(nameof(IsBoxelSelected));
         OnPropertyChanged(nameof(IsSearchSelected));
         OnPropertyChanged(nameof(IsGuardianSelected));

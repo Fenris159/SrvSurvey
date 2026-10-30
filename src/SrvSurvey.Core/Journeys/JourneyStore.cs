@@ -10,7 +10,7 @@ namespace SrvSurvey.Core.Journeys;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The store is application-scoped and its semaphore may still have in-flight waiters."
 )]
-public sealed class JourneyStore(string dataDirectory)
+public sealed partial class JourneyStore(string dataDirectory)
 {
     private const string JsonFileExtension = ".json";
     private const string CodexNewPropertyName = "codexNew";
@@ -245,7 +245,10 @@ public sealed class JourneyStore(string dataDirectory)
             GetDateTimeOffset(root, "endTime"),
             GetDateTimeOffset(root, "watermark") ?? startTime,
             visits
-        );
+        )
+        {
+            IsArchived = root["archived"] is JsonValue archived && archived.TryGetValue<bool>(out bool value) && value,
+        };
     }
 
     private static JourneySystemVisit ParseVisit(string path, int index, JsonObject root)
@@ -345,8 +348,8 @@ public sealed class JourneyStore(string dataDirectory)
             GetInt32(root, "bodyCount") ?? 0,
             GetInt32(root, "screenshots") ?? 0,
             GetInt32(root, "notes") ?? 0,
-            GetInt32(root, "rewardBio") ?? 0,
-            GetInt32(root, "rewardExp") ?? 0,
+            GetInt64(root, "rewardBio") ?? 0,
+            GetInt64(root, "rewardExp") ?? 0,
             GetInt32(root, "stars") ?? 0
         );
     }
@@ -362,6 +365,7 @@ public sealed class JourneyStore(string dataDirectory)
         root["commander"] = journey.CommanderName;
         root["name"] = journey.Name;
         root["description"] = journey.Description;
+        root["archived"] = journey.IsArchived;
         root["startingJournal"] = journey.StartingJournal;
         root["startTime"] = journey.StartTime;
         if (journey.EndTime is { } endTime)

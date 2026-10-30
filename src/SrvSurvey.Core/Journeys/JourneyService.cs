@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Journeys;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The service is application-scoped and its gate may have in-flight waiters."
 )]
-public sealed class JourneyService
+public sealed partial class JourneyService
 {
     private readonly JourneyStore journeyStore;
     private readonly JourneyJournalHistoryReader historyReader;
@@ -103,9 +103,12 @@ public sealed class JourneyService
             if (!load.Journey.IsActive)
             {
                 activeProcessor = null;
+                await profileStore
+                    .SaveActiveJourneyAsync(frontierId, load.Journey.CommanderName, isOdyssey, null, cancellationToken)
+                    .ConfigureAwait(false);
                 return new JourneyServiceResult(
                     load.Journey,
-                    ["The commander profile points to a concluded journey."],
+                    ["The commander profile pointed to a concluded journey. Its active reference was cleared."],
                     0
                 );
             }

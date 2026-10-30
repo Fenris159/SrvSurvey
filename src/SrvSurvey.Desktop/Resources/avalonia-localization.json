@@ -1125,10 +1125,6 @@
       "translation": "AKTIVER KOMMANDANT"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "AKTIVE REISE"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "AKTIVE OBELISKEN"
     },
@@ -2509,6 +2505,18 @@
       "translation": "Architektensysteme werden einen Tag lang zwischengespeichert. Refresh Systems aktualisiert die Liste jetzt."
     },
     {
+      "source": "Archive ({0})",
+      "translation": "Archiv ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "Archivreise"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "Archiviert {0}. Finden Sie es im Archiv."
+    },
+    {
       "source": "Archon Delaine",
       "translation": "Archon Delaine"
     },
@@ -3069,6 +3077,10 @@
       "translation": "Vermeiden Sie doppeltes Teilen"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "Ich warte auf Besuch"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "Azura-Initiative"
     },
@@ -3533,6 +3545,10 @@
       "translation": "Träger"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "Beginnen Sie eine Reise, um Ihre nächste Expedition aufzuzeichnen."
+    },
+    {
       "source": "Begin an expedition",
       "translation": "Beginnen Sie eine Expedition"
     },
@@ -3579,10 +3595,6 @@
     {
       "source": "Bindings",
       "translation": "Bindungen"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "Bio-Belohnungen"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -3805,6 +3817,10 @@
       "translation": "Biologiekodex – SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "Biologischer Grundwert"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "Biologische Körpervorhersagen"
     },
@@ -3841,8 +3857,12 @@
       "translation": "Biologiesystem und Vorhersageüberlagerungen"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "Biologie {0} scannt / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "Biologiewerte verwenden Katalogbasisbelohnungen. Bei den Explorationswerten handelt es sich um Schätzungen."
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "Biologie {0} analysiert / Basiswert {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -3927,6 +3947,10 @@
     {
       "source": "Bodies approached",
       "translation": "Leichen näherten sich"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "Leichen katalogisiert"
     },
     {
       "source": "Bodies scanned",
@@ -4215,10 +4239,6 @@
     {
       "source": "Browse Codex",
       "translation": "Durchsuchen Sie Codex"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "Durchsuchen Sie den Verlauf, inspizieren Sie jedes besuchte System und halten Sie die aktive Expedition auf dem neuesten Stand."
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -4515,10 +4535,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "KOMMANDANT ZUERST"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "Kommandantenfahrten"
     },
     {
       "source": "COMMANDER NOTES",
@@ -5521,8 +5537,8 @@
       "translation": "Wählen Sie einen Journalordner aus und fügen Sie ihn dann zur gespeicherten Liste hinzu. Es wird auch eine automatische Erkennung verwendet."
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "Wählen Sie eine Reise aus der Verlaufsliste oder beginnen Sie eine neue."
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "Wählen Sie eine Reise aus der Liste oder beginnen Sie eine neue Expedition."
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -6749,6 +6765,10 @@
       "translation": "Vollständige Autorisierung in Ihrem Browser. SrvSurvey wird diese Seite aktualisieren, wenn Frontier zurückkommt."
     },
     {
+      "source": "Complete journey",
+      "translation": "Komplette Reise"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Vollständig oder ausreichend"
     },
@@ -6759,6 +6779,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "Führen Sie die {0}-Pairing-Schritte aus, während SrvSurvey die Laufzeit überprüft."
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "Diese Reise abschließen?"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -6799,18 +6823,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "Concha Aureolas"
-    },
-    {
-      "source": "Conclude",
-      "translation": "Abschließen"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "Reise abschließen"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "Diese Reise abschließen?"
     },
     {
       "source": "Concluded {0}.",
@@ -8017,10 +8029,6 @@
       "translation": "ABSTIEG"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "BESCHREIBUNG"
-    },
-    {
       "source": "DESTINATION",
       "translation": "ZIEL"
     },
@@ -8321,6 +8329,10 @@
       "translation": "Feuergruppenkonfiguration löschen"
     },
     {
+      "source": "Delete journey",
+      "translation": "Reise löschen"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "Lokalen Rohpunkt löschen"
     },
@@ -8381,6 +8393,10 @@
       "translation": "Die ausgewählte gespeicherte Suche löschen?"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "Diese Reise löschen?"
+    },
+    {
       "source": "Delete this route?",
       "translation": "Diese Route löschen?"
     },
@@ -8415,6 +8431,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "{0} von {1} Cloud-Backups gelöscht. Aktualisieren Sie den Verlauf, bevor Sie es erneut versuchen. {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "{0} gelöscht. Es wurden Tagebücher, Notizen und Screenshots geführt."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -8493,6 +8513,10 @@
       "translation": "Abgeflogen {0}"
     },
     {
+      "source": "Departure",
+      "translation": "Abfahrt"
+    },
+    {
       "source": "DepartureTime",
       "translation": "Abfahrtszeit"
     },
@@ -8515,6 +8539,10 @@
     {
       "source": "Descending order is active.",
       "translation": "Absteigende Reihenfolge ist aktiv."
+    },
+    {
+      "source": "Description",
+      "translation": "Beschreibung"
     },
     {
       "source": "Design-time error",
@@ -8859,10 +8887,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "Deaktivieren Sie RuinsMeasurementGrid"
-    },
-    {
-      "source": "Discard",
-      "translation": "Verwerfen"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -10441,12 +10465,12 @@
       "translation": "Erwarteter Organismusbereich {0} bis {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "Expeditionsname"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "Expeditionsverlauf, Statistiken und Berichte"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "Expeditionsarbeitsbereich"
+      "source": "Expedition name",
+      "translation": "Expeditionsname"
     },
     {
       "source": "Experimental rig bar detection",
@@ -10585,6 +10609,10 @@
       "translation": "Als CSV exportieren"
     },
     {
+      "source": "Export as HTML",
+      "translation": "Als HTML exportieren"
+    },
+    {
       "source": "Export backup file",
       "translation": "Sicherungsdatei exportieren"
     },
@@ -10603,6 +10631,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "Export fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "Reisebericht exportieren"
     },
     {
       "source": "Export mining report",
@@ -12185,10 +12217,6 @@
       "translation": "Galaktische Suchwerkzeuge"
     },
     {
-      "source": "Galactic time",
-      "translation": "Galaktische Zeit"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "Äußere PIP-Grenze der galaktischen Region"
     },
@@ -13203,6 +13231,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "Die HTML-Farbe „{0}“ muss #RRGGBB oder #RRGGBBAA verwenden."
+    },
+    {
+      "source": "HTML report",
+      "translation": "HTML-Bericht"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -14537,10 +14569,6 @@
       "translation": "ZEITSCHRIFTENBERICHTERSTATTUNG"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "REISENAME"
-    },
-    {
       "source": "JSON catalog",
       "translation": "JSON-Katalog"
     },
@@ -14709,6 +14737,10 @@
       "translation": "Journalstatus"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "Journal-Touchdowns"
+    },
+    {
       "source": "Journal verified",
       "translation": "Journal verifiziert"
     },
@@ -14737,28 +14769,52 @@
       "translation": "Reisedaten konnten nicht initialisiert werden: {0}"
     },
     {
+      "source": "Journey details",
+      "translation": "Reisedetails"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "Die Reise endete hier {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "Der Reiseverlauf konnte nicht geladen werden: {0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "Reisename"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "Reisepräferenzen gespeichert."
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "Reisepräferenzen wurden nicht gespeichert: {0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "Der Export des Reiseberichts wurde abgebrochen."
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "Reisebericht exportiert. Öffnen Sie die HTML-Datei in einem Browser, um sie zu lesen, zu teilen oder zu drucken."
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "Reise aktualisiert durch {0}."
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "Einstellungen für das Reisefenster gespeichert."
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "Die Einstellungen für das Reisefenster wurden nicht gespeichert: {0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "Reise {0} ist aktiv und aufgeholt."
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "Reisen - SrvSurvey"
+      "source": "Journeys",
+      "translation": "Reisen"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "Fahrten ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -15173,6 +15229,10 @@
       "translation": "Landeplatz"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "Landeplätze nach Besichtigung"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "Landeplatzdaten nicht verfügbar"
     },
@@ -15315,6 +15375,10 @@
     {
       "source": "Latest parsed state",
       "translation": "Letzter analysierter Zustand"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "Neuestes aufgezeichnetes System"
     },
     {
       "source": "Latitude",
@@ -15707,6 +15771,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Laden Sie den aktiven Commander, bevor Sie einen Raven-API-Schlüssel validieren."
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "Laden Sie das Spiel oder wählen Sie in der Übersicht einen Kommandanten aus, um den Reiseverlauf zu lesen."
     },
     {
       "source": "Load theme",
@@ -17621,10 +17689,6 @@
       "translation": "NEUES GEBÄUDE"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "Neue Reise"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "NEUER KARTENENTWURF"
     },
@@ -18293,6 +18357,10 @@
       "translation": "Für die Auswahl einer neuen Quelle ist kein Neustart der Anwendung erforderlich. Die Erkennung wird angehalten, wenn das Spiel nicht verfügbar ist, und wird fortgesetzt, wenn ein gültiger Spielkontext wiederhergestellt wird."
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "Keine archivierten Fahrten. Archivieren Sie eine abgeschlossene Reise, um sie hier aufzubewahren."
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "Es wird kein Artefaktbedarf erfasst."
     },
@@ -18511,10 +18579,6 @@
     {
       "source": "No journey selected",
       "translation": "Keine Reise ausgewählt"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "Für diesen Kommandanten sind keine Fahrten verzeichnet."
     },
     {
       "source": "No jump scheduled",
@@ -18853,12 +18917,20 @@
       "translation": "Es wurden keine Systemnamen zum Importieren gefunden."
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "Für diese Fahrt wurden keine Systembesuche erfasst."
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "In dieser Box sind keine Systeme verfügbar."
     },
     {
       "source": "No systems matched.",
       "translation": "Es wurden keine Systeme gefunden."
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "Keine Systeme erfasst"
     },
     {
       "source": "No tags",
@@ -19437,8 +19509,8 @@
       "translation": "Öffnen Sie das Guardian Science Corps am Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "Öffnen Sie den Journey-Arbeitsbereich"
+      "source": "Open Journeys",
+      "translation": "Offene Reisen"
     },
     {
       "source": "Open Library",
@@ -21461,6 +21533,10 @@
       "translation": "Der Codex Biology-Bildcache wird vorbereitet..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "Vorbereitung des Reiseberichts..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "Vorbereiten des verifizierten Profilimports. Große Profile auf einer Netzwerkfreigabe können mehrere Minuten dauern; Der Fortschritt wird hier angezeigt."
     },
@@ -22223,10 +22299,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "In der Warteschlange stehende(s) {0}-Staffel-Frachtaktualisierung(en) für Flottenträger, bis die Basislinie des Docks abgeschlossen ist."
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "Schnelle Statistiken"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -24093,6 +24165,10 @@
       "translation": "Journale erneut verarbeiten"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "Verarbeiten Sie Journale erneut, um die Besuchsstatistiken dieser Reise aus dem gespeicherten Spielverlauf neu zu erstellen."
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "{0} Journalereignisse erneut verarbeitet."
     },
@@ -24377,6 +24453,10 @@
       "translation": "Wiederherstellung fehlgeschlagen; Das vorherige Profil wurde wiederhergestellt."
     },
     {
+      "source": "Restore journey",
+      "translation": "Reise wiederherstellen"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "Mining-Backup wiederherstellen (ZIP oder JSON; vorherige Daten bleiben erhalten)"
     },
@@ -24411,6 +24491,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "{0} importierte Kolonisierungsprojekte aus {1}.{2} wiederhergestellt"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "{0} in Journeys wiederhergestellt."
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -25217,10 +25301,6 @@
       "translation": "AUSGEWÄHLTER UMFRAGEPUNKT"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "AUSGEWÄHLTES SYSTEM"
-    },
-    {
       "source": "SESSION",
       "translation": "SITZUNG"
     },
@@ -25651,6 +25731,22 @@
     {
       "source": "Save opacity override",
       "translation": "Überschreibung der Deckkraft speichern"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "Speichern oder verwerfen Sie Änderungen, bevor Sie Fahrten aktualisieren."
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "Speichern oder verwerfen Sie Änderungen, bevor Sie eine andere Reise auswählen."
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "Speichern oder verwerfen Sie Änderungen, bevor Sie die Reiseliste wechseln."
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "Speichern oder verwerfen Sie die Systemnotizen, bevor Sie einen anderen Besuch auswählen."
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -26439,6 +26535,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "Wählen Sie einen Kommandanten aus und bestätigen Sie zunächst die verifizierte Wiederherstellung des historischen Systems."
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "Wählen Sie eine abgeschlossene Reise aus und speichern Sie alle Änderungen vor dem Exportieren."
     },
     {
       "source": "Select a completed session first.",
@@ -28529,10 +28629,6 @@
       "translation": "SrvSurvey-GroundTarget-Overlay-Design"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-Reisedesign"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-Overlay-Design"
     },
@@ -28695,6 +28791,10 @@
     {
       "source": "Starports",
       "translation": "Sternenhäfen"
+    },
+    {
+      "source": "Stars",
+      "translation": "Sterne"
     },
     {
       "source": "Start Date:",
@@ -28931,6 +29031,10 @@
     {
       "source": "Stations",
       "translation": "Stationen"
+    },
+    {
+      "source": "Statistics",
+      "translation": "Statistiken"
     },
     {
       "source": "Statistics settings",
@@ -29673,6 +29777,10 @@
       "translation": "Systemnotizen konnten nicht geladen werden."
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "Systemnotizen konnten nicht gelesen werden."
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "Systemnotizen erfordern einen aktuellen Kommandanten und ein aktuelles System."
     },
@@ -30393,8 +30501,8 @@
       "translation": "Die Reise konnte nicht erneut verarbeitet werden: {0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "Die Einstellungen des Journey-Fensters konnten nicht geladen werden."
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "Die Journey-Einstellungen konnten nicht geladen werden."
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -31265,8 +31373,24 @@
       "translation": "Die durch das Journal unterstützte Entdeckung wurde unverändert gelassen."
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "Die Reise konnte nicht gelöscht werden: {0}"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "Die Reise konnte nicht verschoben werden: {0}"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "Der Reisename darf nicht leer sein."
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "Der Reisebericht konnte nicht erstellt werden: {0}"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "Der Reisebericht konnte nicht gespeichert werden: {0}"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -32643,6 +32767,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "Dieses Overlay-Panel teilt das kombinierte native Overlay-Fenster."
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "Dadurch wird der gespeicherte Fahrtdatensatz dauerhaft gelöscht. Journale, Systemnotizen und Screenshots bleiben verfügbar."
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -34043,6 +34171,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "Verwenden Sie die Verknüpfungen „Track-Standort 1 bis 8“, um wiederverwendbare Oberflächen-Lesezeichen umzuschalten."
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "Verwenden Sie UTC-Zeitstempel"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -37345,6 +37477,10 @@
       "translation": "Reise Reise Station CSV-Export"
     },
     {
+      "source": "journeys",
+      "translation": "Reisen"
+    },
+    {
       "source": "json",
       "translation": "json"
     },
@@ -39721,6 +39857,10 @@
       "translation": "{0} fehlerhafte Profildateien wurden ignoriert."
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} zugeordnet"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "{0} zugeordnete Einzahlung{1}"
     },
@@ -39767,6 +39907,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} muss eine Zahl sein."
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} neuer Kodex"
     },
     {
       "source": "{0} non-body signals",
@@ -39881,6 +40025,10 @@
       "translation": "{0} hat untergeordnete Boxel innerhalb von {1} aufgezeichnet."
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "{0} erfasste Besuche"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} aufgezeichnet · Suffix {1}"
     },
@@ -39923,6 +40071,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} Scan(s)"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} gescannt"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -41591,10 +41743,6 @@
       "translation": "COMANDANTE ACTIVO"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "VIAJE ACTIVO"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ACTIVOS"
     },
@@ -42975,6 +43123,18 @@
       "translation": "Los sistemas Architect se almacenan en caché durante un día. Refresh Systems actualiza la lista ahora."
     },
     {
+      "source": "Archive ({0})",
+      "translation": "Archivo ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "Viaje de archivo"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "Archivado {0}. Encuéntrelo en Archivo."
+    },
+    {
       "source": "Archon Delaine",
       "translation": "Arconte Delaine"
     },
@@ -43535,6 +43695,10 @@
       "translation": "Evite compartir duplicados"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "esperando una visita"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "Iniciativa Azura"
     },
@@ -43999,6 +44163,10 @@
       "translation": "Portador"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "Comienza un viaje para registrar tu próxima expedición."
+    },
+    {
       "source": "Begin an expedition",
       "translation": "comenzar una expedición"
     },
@@ -44045,10 +44213,6 @@
     {
       "source": "Bindings",
       "translation": "Fijaciones"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "Recompensas biológicas"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -44271,6 +44435,10 @@
       "translation": "Códice de biología - SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "Valor base de biología"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "Predicciones del cuerpo de biología."
     },
@@ -44307,8 +44475,12 @@
       "translation": "Sistema de biología y superposiciones de predicción."
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "Biología {0} escaneos / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "Los valores de biología utilizan recompensas basadas en el catálogo. Los valores de exploración son estimaciones."
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "Biología {0} analizado / valor base {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -44393,6 +44565,10 @@
     {
       "source": "Bodies approached",
       "translation": "Cuerpos acercados"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "Cuerpos catalogados"
     },
     {
       "source": "Bodies scanned",
@@ -44681,10 +44857,6 @@
     {
       "source": "Browse Codex",
       "translation": "Explorar el códice"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "Explore el historial, inspeccione todos los sistemas visitados y mantenga actualizada la expedición activa."
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -44981,10 +45153,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "COMANDANTE PRIMERO"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "Viajes del comandante"
     },
     {
       "source": "COMMANDER NOTES",
@@ -45987,8 +46155,8 @@
       "translation": "Elija una carpeta de diario y luego agréguela a la lista guardada. También se utiliza el descubrimiento automático."
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "Elija un viaje de la lista del historial o comience uno nuevo."
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "Elija un viaje de la lista o comience una nueva expedición."
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -47215,6 +47383,10 @@
       "translation": "Autorización completa en su navegador. SrvSurvey actualizará esta página cuando Frontier regrese."
     },
     {
+      "source": "Complete journey",
+      "translation": "viaje completo"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Completo o suficiente"
     },
@@ -47225,6 +47397,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "Complete los pasos de emparejamiento de {0} mientras SrvSurvey verifica el tiempo de ejecución."
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "¿Completar este viaje?"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -47265,18 +47441,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "Concha Aureolas"
-    },
-    {
-      "source": "Conclude",
-      "translation": "Concluir"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "Concluir viaje"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "¿Concluir este viaje?"
     },
     {
       "source": "Concluded {0}.",
@@ -48483,10 +48647,6 @@
       "translation": "DESCENSO"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "DESCRIPCIÓN"
-    },
-    {
       "source": "DESTINATION",
       "translation": "DESTINO"
     },
@@ -48787,6 +48947,10 @@
       "translation": "Eliminar la configuración del grupo de fuego"
     },
     {
+      "source": "Delete journey",
+      "translation": "Eliminar viaje"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "Eliminar punto sin formato local"
     },
@@ -48847,6 +49011,10 @@
       "translation": "¿Eliminar la búsqueda guardada seleccionada?"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "¿Eliminar este viaje?"
+    },
+    {
       "source": "Delete this route?",
       "translation": "¿Eliminar esta ruta?"
     },
@@ -48881,6 +49049,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "Se eliminó {0} de las copias de seguridad en la nube de {1}. Actualiza el historial antes de volver a intentarlo. {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "Eliminado {0}. Se mantuvieron diarios, notas y capturas de pantalla."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -48959,6 +49131,10 @@
       "translation": "Partió {0}"
     },
     {
+      "source": "Departure",
+      "translation": "Partida"
+    },
+    {
       "source": "DepartureTime",
       "translation": "Hora de salida"
     },
@@ -48981,6 +49157,10 @@
     {
       "source": "Descending order is active.",
       "translation": "El orden descendente está activo."
+    },
+    {
+      "source": "Description",
+      "translation": "Descripción"
     },
     {
       "source": "Design-time error",
@@ -49325,10 +49505,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "DesactivarRuinasMediciónCuadrícula"
-    },
-    {
-      "source": "Discard",
-      "translation": "Descartar"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -50907,12 +51083,12 @@
       "translation": "Rango esperado de organismos {0} a {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "Nombre de la expedición"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "Historial, estadísticas e informes de expediciones."
     },
     {
-      "source": "Expedition workspace",
-      "translation": "Espacio de trabajo de expedición"
+      "source": "Expedition name",
+      "translation": "Nombre de la expedición"
     },
     {
       "source": "Experimental rig bar detection",
@@ -51051,6 +51227,10 @@
       "translation": "Exportar como CSV"
     },
     {
+      "source": "Export as HTML",
+      "translation": "Exportar como HTML"
+    },
+    {
       "source": "Export backup file",
       "translation": "Exportar archivo de copia de seguridad"
     },
@@ -51069,6 +51249,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "Error al exportar: {0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "Informe de viaje de exportación"
     },
     {
       "source": "Export mining report",
@@ -52651,10 +52835,6 @@
       "translation": "Herramientas de búsqueda galáctica"
     },
     {
-      "source": "Galactic time",
-      "translation": "tiempo galáctico"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "Borde exterior PIP de la región galáctica"
     },
@@ -53669,6 +53849,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "El color HTML '{0}' debe usar #RRGGBB o #RRGGBBAA."
+    },
+    {
+      "source": "HTML report",
+      "translation": "informe HTML"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -55003,10 +55187,6 @@
       "translation": "COBERTURA DE LA REVISTA"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "NOMBRE DEL VIAJE"
-    },
-    {
       "source": "JSON catalog",
       "translation": "catálogo JSON"
     },
@@ -55175,6 +55355,10 @@
       "translation": "Estado de la revista"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "Anotaciones de diario"
+    },
+    {
       "source": "Journal verified",
       "translation": "Diario verificado"
     },
@@ -55203,28 +55387,52 @@
       "translation": "No se pudieron inicializar los datos del viaje: {0}"
     },
     {
+      "source": "Journey details",
+      "translation": "Detalles del viaje"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "El viaje terminó aquí {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "No se pudo cargar el historial de viaje: {0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "Nombre del viaje"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "Preferencias de viaje guardadas."
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "Las preferencias de viaje no se guardaron: {0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "Exportación del informe de viaje cancelada."
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "Informe de viaje exportado. Abra el archivo HTML en un navegador para leerlo, compartirlo o imprimirlo."
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "Viaje actualizado hasta {0}."
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "Se guardaron las preferencias de la ventana de viaje."
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "Las preferencias de la ventana de viaje no se guardaron: {0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "El viaje {0} está activo y al día."
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "Viajes - SrvSurvey"
+      "source": "Journeys",
+      "translation": "viajes"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "Viajes ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -55639,6 +55847,10 @@
       "translation": "Pista de aterrizaje"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "Sitios de aterrizaje por visita"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "Datos de la plataforma de aterrizaje no disponibles"
     },
@@ -55781,6 +55993,10 @@
     {
       "source": "Latest parsed state",
       "translation": "Último estado analizado"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "Último sistema registrado"
     },
     {
       "source": "Latitude",
@@ -56173,6 +56389,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Cargue el comandante activo antes de validar una clave API de Raven."
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "Carga el juego o selecciona un comandante en Descripción general para leer el historial de viajes."
     },
     {
       "source": "Load theme",
@@ -58087,10 +58307,6 @@
       "translation": "NUEVA CONSTRUCCIÓN"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "nuevo viaje"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "NUEVO BORRADOR DE MAPA"
     },
@@ -58759,6 +58975,10 @@
       "translation": "No es necesario reiniciar la aplicación para elegir una nueva fuente. La detección se detiene cuando el juego no está disponible y se reanuda cuando regresa el contexto válido del juego."
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "No hay viajes archivados. Archive un viaje completo para conservarlo aquí."
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "No se registra ningún requisito de artefacto."
     },
@@ -58977,10 +59197,6 @@
     {
       "source": "No journey selected",
       "translation": "Ningún viaje seleccionado"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "No se han registrado viajes de este comandante."
     },
     {
       "source": "No jump scheduled",
@@ -59319,12 +59535,20 @@
       "translation": "No se encontraron nombres de sistemas para importar."
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "No se registraron visitas al sistema durante este viaje."
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "No hay sistemas disponibles en esta caja."
     },
     {
       "source": "No systems matched.",
       "translation": "Ningún sistema coincide."
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "No hay sistemas registrados"
     },
     {
       "source": "No tags",
@@ -59903,8 +60127,8 @@
       "translation": "Abra Guardian Science Corps en Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "Espacio de trabajo de viaje abierto"
+      "source": "Open Journeys",
+      "translation": "Viajes abiertos"
     },
     {
       "source": "Open Library",
@@ -61927,6 +62151,10 @@
       "translation": "Preparando el caché de imágenes de biología del Codex..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "Preparando el informe de viaje..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "Preparando la importación del perfil verificado. Los perfiles grandes en una red compartida pueden tardar varios minutos; El progreso aparecerá aquí."
     },
@@ -62689,10 +62917,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "Actualización(es) de carga del portaaviones del escuadrón {0} en cola hasta que finalice la línea de base del muelle."
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "Estadísticas rápidas"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -64559,6 +64783,10 @@
       "translation": "Reprocesar diarios"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "Vuelva a procesar los diarios para reconstruir las estadísticas de visitas de este viaje a partir del historial de juegos guardado."
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "Eventos de diario {0} reprocesados."
     },
@@ -64843,6 +65071,10 @@
       "translation": "La restauración falló; el perfil anterior fue restaurado."
     },
     {
+      "source": "Restore journey",
+      "translation": "Restaurar viaje"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "Restaurar la copia de seguridad de minería (ZIP o JSON; se conservan los datos anteriores)"
     },
@@ -64877,6 +65109,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Proyecto(s) de colonización importados {0} restaurados de {1}.{2}"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "Se restauró {0} en Viajes."
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -65683,10 +65919,6 @@
       "translation": "PUNTO DE ENCUESTA SELECCIONADO"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "SISTEMA SELECCIONADO"
-    },
-    {
       "source": "SESSION",
       "translation": "SESIÓN"
     },
@@ -66117,6 +66349,22 @@
     {
       "source": "Save opacity override",
       "translation": "Guardar anulación de opacidad"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "Guarde o descarte los cambios antes de actualizar los viajes."
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "Guarde o descarte los cambios antes de seleccionar otro viaje."
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "Guarde o descarte los cambios antes de cambiar las listas de viajes."
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "Guarde o descarte las notas del sistema antes de seleccionar otra visita."
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -66905,6 +67153,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "Seleccione un comandante y confirme primero la reconstrucción del sistema histórico verificado."
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "Seleccione un viaje completado y guarde los cambios antes de exportarlo."
     },
     {
       "source": "Select a completed session first.",
@@ -68995,10 +69247,6 @@
       "translation": "SrvSurvey-GroundTarget-Overlay-Diseño"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-Viaje-Diseño"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-Overlay-Diseño"
     },
@@ -69161,6 +69409,10 @@
     {
       "source": "Starports",
       "translation": "Puertos estelares"
+    },
+    {
+      "source": "Stars",
+      "translation": "estrellas"
     },
     {
       "source": "Start Date:",
@@ -69397,6 +69649,10 @@
     {
       "source": "Stations",
       "translation": "Estaciones"
+    },
+    {
+      "source": "Statistics",
+      "translation": "Estadística"
     },
     {
       "source": "Statistics settings",
@@ -70139,6 +70395,10 @@
       "translation": "No se pudieron cargar las notas del sistema."
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "No se pudieron leer las notas del sistema."
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "Las notas del sistema requieren un comandante y un sistema actualizados."
     },
@@ -70859,8 +71119,8 @@
       "translation": "No se pudo reprocesar el Journey: {0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "No se pudieron cargar las preferencias de la ventana Journey."
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "No se pudieron cargar las preferencias de Journey."
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -71731,8 +71991,24 @@
       "translation": "El descubrimiento respaldado por la revista se mantuvo sin cambios."
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "No se pudo eliminar el recorrido: {0}"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "El viaje no se pudo mover: {0}"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "El nombre del viaje no puede estar en blanco."
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "No se pudo crear el informe de viaje: {0}"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "No se pudo guardar el informe de viaje: {0}"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -73109,6 +73385,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "Este panel de superposición comparte la ventana de superposición nativa combinada."
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "Esto elimina permanentemente el registro de viaje guardado. Los diarios, las notas del sistema y las capturas de pantalla permanecen disponibles."
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -74509,6 +74789,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "Utilice los accesos directos de Ubicación de seguimiento 1 a 8 para alternar marcadores de superficie reutilizables."
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "Utilice marcas de tiempo UTC"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -77811,6 +78095,10 @@
       "translation": "viaje estación de viaje exportación csv"
     },
     {
+      "source": "journeys",
+      "translation": "viajes"
+    },
+    {
       "source": "json",
       "translation": "json"
     },
@@ -80187,6 +80475,10 @@
       "translation": "{0} archivos de perfil con formato incorrecto fueron ignorados."
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} asignado"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "Depósito mapeado {0}{1}"
     },
@@ -80233,6 +80525,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} debe ser un número."
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} nuevo Códice"
     },
     {
       "source": "{0} non-body signals",
@@ -80347,6 +80643,10 @@
       "translation": "{0} registró cajas secundarias dentro de {1}."
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "{0} visitas registradas"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} registrado · sufijo {1}"
     },
@@ -80389,6 +80689,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} escaneo(s)"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} escaneado"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -82057,10 +82361,6 @@
       "translation": "COMMANDANT ACTIF"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "VOYAGE ACTIF"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "OBÉLISQUES ACTIFS"
     },
@@ -83441,6 +83741,18 @@
       "translation": "Les systèmes d'architecte sont mis en cache pendant une journée. Refresh Systems met à jour la liste maintenant."
     },
     {
+      "source": "Archive ({0})",
+      "translation": "Archiver ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "Parcours d'archives"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "Archivé {0}. Trouvez-le dans les archives."
+    },
+    {
       "source": "Archon Delaine",
       "translation": "Archonte Delaine"
     },
@@ -84001,6 +84313,10 @@
       "translation": "Évitez le partage en double"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "En attente d'une visite"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "Initiative Azura"
     },
@@ -84465,6 +84781,10 @@
       "translation": "Porteur"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "Commencez un voyage pour enregistrer votre prochaine expédition."
+    },
+    {
       "source": "Begin an expedition",
       "translation": "Commencer une expédition"
     },
@@ -84511,10 +84831,6 @@
     {
       "source": "Bindings",
       "translation": "Reliures"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "Récompenses bio"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -84737,6 +85053,10 @@
       "translation": "Codex de biologie - SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "Valeur de base biologique"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "Prédictions du corps biologique"
     },
@@ -84773,8 +85093,12 @@
       "translation": "Système de biologie et superpositions de prédictions"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "Biologie {0} scans / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "Les valeurs de biologie utilisent les récompenses de la base du catalogue. Les valeurs d'exploration sont des estimations."
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "Biologie {0} analysée / valeur de base {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -84859,6 +85183,10 @@
     {
       "source": "Bodies approached",
       "translation": "Des corps approchés"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "Corps catalogués"
     },
     {
       "source": "Bodies scanned",
@@ -85147,10 +85475,6 @@
     {
       "source": "Browse Codex",
       "translation": "Parcourir le Codex"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "Parcourez l'historique, inspectez chaque système visité et tenez à jour l'expédition active."
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -85447,10 +85771,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "LE COMMANDANT EN PREMIER"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "Voyages du commandant"
     },
     {
       "source": "COMMANDER NOTES",
@@ -86453,8 +86773,8 @@
       "translation": "Choisissez un dossier de journal, puis ajoutez-le à la liste enregistrée. La découverte automatique est également utilisée."
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "Choisissez un voyage dans la liste historique ou commencez-en un nouveau."
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "Choisissez un voyage dans la liste ou commencez une nouvelle expédition."
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -87681,6 +88001,10 @@
       "translation": "Autorisation complète dans votre navigateur. SrvSurvey mettra à jour cette page au retour de Frontier."
     },
     {
+      "source": "Complete journey",
+      "translation": "Voyage complet"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Complet ou suffisant"
     },
@@ -87691,6 +88015,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "Terminez les étapes de couplage {0} pendant que SrvSurvey vérifie le temps d'exécution."
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "Terminer ce voyage ?"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -87731,18 +88059,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "Conques dorées"
-    },
-    {
-      "source": "Conclude",
-      "translation": "Conclure"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "Terminer le voyage"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "Conclure ce voyage ?"
     },
     {
       "source": "Concluded {0}.",
@@ -88949,10 +89265,6 @@
       "translation": "DESCENTE"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "DESCRIPTION"
-    },
-    {
       "source": "DESTINATION",
       "translation": "DESTINATION"
     },
@@ -89253,6 +89565,10 @@
       "translation": "Supprimer la configuration du groupe de tir"
     },
     {
+      "source": "Delete journey",
+      "translation": "Supprimer le voyage"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "Supprimer le point brut local"
     },
@@ -89313,6 +89629,10 @@
       "translation": "Supprimer la recherche enregistrée sélectionnée ?"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "Supprimer ce voyage ?"
+    },
+    {
       "source": "Delete this route?",
       "translation": "Supprimer cet itinéraire ?"
     },
@@ -89347,6 +89667,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "Suppression des sauvegardes cloud {0} des {1}. Actualisez l'historique avant de réessayer. {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "{0} supprimé. Des journaux, des notes et des captures d'écran ont été conservés."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -89425,6 +89749,10 @@
       "translation": "Parti {0}"
     },
     {
+      "source": "Departure",
+      "translation": "Départ"
+    },
+    {
       "source": "DepartureTime",
       "translation": "Heure de départ"
     },
@@ -89447,6 +89775,10 @@
     {
       "source": "Descending order is active.",
       "translation": "L'ordre décroissant est actif."
+    },
+    {
+      "source": "Description",
+      "translation": "Description"
     },
     {
       "source": "Design-time error",
@@ -89791,10 +90123,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "Désactiver les ruinesMeasurementGrid"
-    },
-    {
-      "source": "Discard",
-      "translation": "Jeter"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -91373,12 +91701,12 @@
       "translation": "Plage d'organismes attendue {0} à {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "Nom de l'expédition"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "Historique, statistiques et rapports de l'expédition"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "Espace de travail d'expédition"
+      "source": "Expedition name",
+      "translation": "Nom de l'expédition"
     },
     {
       "source": "Experimental rig bar detection",
@@ -91517,6 +91845,10 @@
       "translation": "Exporter au format CSV"
     },
     {
+      "source": "Export as HTML",
+      "translation": "Exporter au format HTML"
+    },
+    {
       "source": "Export backup file",
       "translation": "Exporter le fichier de sauvegarde"
     },
@@ -91535,6 +91867,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "Échec de l'exportation : {0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "Exporter le rapport de parcours"
     },
     {
       "source": "Export mining report",
@@ -93117,10 +93453,6 @@
       "translation": "Outils de recherche galactique"
     },
     {
-      "source": "Galactic time",
-      "translation": "Temps galactique"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "Frontière extérieure du PIP de la région galactique"
     },
@@ -94135,6 +94467,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "La couleur HTML '{0}' doit utiliser #RRGGBB ou #RRGGBBAA."
+    },
+    {
+      "source": "HTML report",
+      "translation": "Rapport HTML"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -95469,10 +95805,6 @@
       "translation": "COUVERTURE DU JOURNAL"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "NOM DU VOYAGE"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Catalogue JSON"
     },
@@ -95641,6 +95973,10 @@
       "translation": "Statut du journal"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "Touchés du journal"
+    },
+    {
       "source": "Journal verified",
       "translation": "Journal vérifié"
     },
@@ -95669,28 +96005,52 @@
       "translation": "Les données du trajet n'ont pas pu être initialisées : {0}"
     },
     {
+      "source": "Journey details",
+      "translation": "Détails du voyage"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "Le voyage s'est terminé ici {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "L'historique du trajet n'a pas pu être chargé : {0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "Nom du voyage"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "Préférences de voyage enregistrées."
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "Les préférences de trajet n'ont pas été enregistrées : {0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "Exportation du rapport de trajet annulée."
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "Rapport de trajet exporté. Ouvrez le fichier HTML dans un navigateur pour le lire, le partager ou l'imprimer."
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "Parcours mis à jour via {0}."
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "Préférences de la fenêtre Journey enregistrées."
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "Les préférences de la fenêtre Journey n'ont pas été enregistrées : {0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "Le parcours {0} est actif et rattrapé."
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "Voyages - SrvSurvey"
+      "source": "Journeys",
+      "translation": "voyages"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "Trajets ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -96105,6 +96465,10 @@
       "translation": "Aire d'atterrissage"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "Sites d'atterrissage par visite"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "Données de l'aire d'atterrissage indisponibles"
     },
@@ -96247,6 +96611,10 @@
     {
       "source": "Latest parsed state",
       "translation": "Dernier état analysé"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "Dernier système enregistré"
     },
     {
       "source": "Latitude",
@@ -96639,6 +97007,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Chargez le commandant actif avant de valider une clé API Raven."
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "Chargez le jeu ou sélectionnez un commandant dans Aperçu pour lire l'historique du voyage."
     },
     {
       "source": "Load theme",
@@ -98553,10 +98925,6 @@
       "translation": "NOUVELLE CONSTRUCTION"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "Nouveau voyage"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "NOUVEAU PROJET DE CARTE"
     },
@@ -99225,6 +99593,10 @@
       "translation": "Aucun redémarrage de l'application n'est nécessaire pour choisir une nouvelle source. La détection s'interrompt lorsque le jeu est indisponible et reprend lorsque le contexte de jeu valide revient."
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "Aucun trajet archivé. Archivez un voyage terminé pour le conserver ici."
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "Aucune exigence en matière d’artefact n’est enregistrée."
     },
@@ -99443,10 +99815,6 @@
     {
       "source": "No journey selected",
       "translation": "Aucun voyage sélectionné"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "Aucun voyage n'a été enregistré pour ce commandant."
     },
     {
       "source": "No jump scheduled",
@@ -99785,12 +100153,20 @@
       "translation": "Aucun nom de système à importer n'a été trouvé."
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "Aucune visite du système n’a été enregistrée pour ce voyage."
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "Aucun système n'est disponible dans cette boîte."
     },
     {
       "source": "No systems matched.",
       "translation": "Aucun système ne correspond."
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "Aucun système enregistré"
     },
     {
       "source": "No tags",
@@ -100369,8 +100745,8 @@
       "translation": "Ouvrir Guardian Science Corps sur Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "Espace de travail Ouvrir Journey"
+      "source": "Open Journeys",
+      "translation": "Voyages ouverts"
     },
     {
       "source": "Open Library",
@@ -102393,6 +102769,10 @@
       "translation": "Préparation du cache d'images de biologie du Codex..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "Préparation du rapport de voyage..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "Préparation de l'importation du profil vérifié. Les profils volumineux sur un partage réseau peuvent prendre plusieurs minutes ; les progrès apparaîtront ici."
     },
@@ -103155,10 +103535,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "Mise en file d'attente des mises à jour du fret du Fleet Carrier de l'escadron {0} jusqu'à la fin de la ligne de base du quai."
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "Statistiques rapides"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -105025,6 +105401,10 @@
       "translation": "Retraiter les journaux"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "Retraitez les journaux pour reconstruire les statistiques de visite de ce voyage à partir de l'historique du jeu enregistré."
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "Événements de journal {0} retraités."
     },
@@ -105309,6 +105689,10 @@
       "translation": "La restauration a échoué ; le profil précédent a été restauré."
     },
     {
+      "source": "Restore journey",
+      "translation": "Restaurer le voyage"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "Restaurer la sauvegarde minière (ZIP ou JSON ; données précédentes conservées)"
     },
@@ -105343,6 +105727,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Projet(s) de colonisation importé(s) {0} restauré(s) à partir de {1}.{2}"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "{0} restauré dans Journeys."
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -106149,10 +106537,6 @@
       "translation": "POINT D'ENQUÊTE SÉLECTIONNÉ"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "SYSTÈME SÉLECTIONNÉ"
-    },
-    {
       "source": "SESSION",
       "translation": "SESSION"
     },
@@ -106583,6 +106967,22 @@
     {
       "source": "Save opacity override",
       "translation": "Enregistrer le remplacement de l'opacité"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "Enregistrez ou supprimez les modifications avant d’actualiser les parcours."
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "Enregistrez ou annulez les modifications avant de sélectionner un autre voyage."
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "Enregistrez ou annulez les modifications avant de changer de liste de voyages."
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "Enregistrez ou supprimez les notes du système avant de sélectionner une autre visite."
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -107371,6 +107771,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "Sélectionnez un commandant et confirmez d’abord la reconstruction historique vérifiée du système."
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "Sélectionnez un parcours terminé et enregistrez toutes les modifications avant de l'exporter."
     },
     {
       "source": "Select a completed session first.",
@@ -109461,10 +109865,6 @@
       "translation": "SrvSurvey-GroundTarget-Overlay-Design"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-Journey-Design"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-Overlay-Design"
     },
@@ -109627,6 +110027,10 @@
     {
       "source": "Starports",
       "translation": "Ports stellaires"
+    },
+    {
+      "source": "Stars",
+      "translation": "Étoiles"
     },
     {
       "source": "Start Date:",
@@ -109863,6 +110267,10 @@
     {
       "source": "Stations",
       "translation": "Gares"
+    },
+    {
+      "source": "Statistics",
+      "translation": "Statistiques"
     },
     {
       "source": "Statistics settings",
@@ -110605,6 +111013,10 @@
       "translation": "Les notes système n'ont pas pu être chargées."
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "Les notes système n'ont pas pu être lues."
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "Les notes système nécessitent un commandant et un système actuels."
     },
@@ -111325,8 +111737,8 @@
       "translation": "Le parcours n'a pas pu être retraité : {0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "Les préférences de la fenêtre Journey n'ont pas pu être chargées."
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "Les préférences Journey n'ont pas pu être chargées."
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -112197,8 +112609,24 @@
       "translation": "La découverte soutenue par un journal est restée inchangée."
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "Le parcours n'a pas pu être supprimé : {0}"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "Le trajet n'a pas pu être déplacé : {0}"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "Le nom du voyage ne peut pas être vide."
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "Le rapport de trajet n'a pas pu être créé : {0}"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "Le rapport de trajet n'a pas pu être enregistré : {0}"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -113575,6 +114003,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "Ce panneau de superposition partage la fenêtre de superposition native combinée."
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "Cela supprime définitivement le dossier de trajet enregistré. Les journaux, les notes système et les captures d'écran restent disponibles."
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -114975,6 +115407,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "Utilisez les raccourcis Suivre les emplacements 1 à 8 pour basculer entre les signets de surface réutilisables."
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "Utiliser les horodatages UTC"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -118277,6 +118713,10 @@
       "translation": "voyage voyage station csv export"
     },
     {
+      "source": "journeys",
+      "translation": "voyages"
+    },
+    {
       "source": "json",
       "translation": "json"
     },
@@ -120653,6 +121093,10 @@
       "translation": "{0} fichier(s) de profil mal formé(s) ont été ignorés."
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} mappé"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "Gisement cartographié {0}{1}"
     },
@@ -120699,6 +121143,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} doit être un nombre."
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} nouveau Codex"
     },
     {
       "source": "{0} non-body signals",
@@ -120813,6 +121261,10 @@
       "translation": "{0} a enregistré des boîtes enfants à l'intérieur de {1}."
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "Visites enregistrées {0}"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} enregistré · suffixe {1}"
     },
@@ -120855,6 +121307,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} analyse(s)"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} scanné"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -122523,10 +122979,6 @@
       "translation": "COMANDANTE ATIVO"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "JORNADA ATIVA"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ATIVOS"
     },
@@ -123907,6 +124359,18 @@
       "translation": "Os sistemas arquitetos são armazenados em cache por um dia. Refresh Systems atualiza a lista agora."
     },
     {
+      "source": "Archive ({0})",
+      "translation": "Arquivo ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "Jornada de arquivo"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "Arquivado {0}. Encontre-o no Arquivo."
+    },
+    {
       "source": "Archon Delaine",
       "translation": "Arconte Delaine"
     },
@@ -124467,6 +124931,10 @@
       "translation": "Evite compartilhamento duplicado"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "Aguardando uma visita"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "Iniciativa Azura"
     },
@@ -124931,6 +125399,10 @@
       "translation": "Portador"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "Comece uma jornada para registrar sua próxima expedição."
+    },
+    {
       "source": "Begin an expedition",
       "translation": "Comece uma expedição"
     },
@@ -124977,10 +125449,6 @@
     {
       "source": "Bindings",
       "translation": "Ligações"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "Recompensas biológicas"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -125203,6 +125671,10 @@
       "translation": "Códice de Biologia - SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "Valor base de biologia"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "Previsões corporais da biologia"
     },
@@ -125239,8 +125711,12 @@
       "translation": "Sistema de biologia e sobreposições de previsão"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "Biologia {0} varreduras / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "Os valores de biologia usam recompensas básicas de catálogo. Os valores de exploração são estimativas."
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "Biologia {0} analisada / valor base {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -125325,6 +125801,10 @@
     {
       "source": "Bodies approached",
       "translation": "Corpos abordados"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "Corpos catalogados"
     },
     {
       "source": "Bodies scanned",
@@ -125613,10 +126093,6 @@
     {
       "source": "Browse Codex",
       "translation": "Navegar no Codex"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "Navegue pelo histórico, inspecione todos os sistemas visitados e mantenha a expedição ativa atualizada."
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -125913,10 +126389,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "COMANDANTE PRIMEIRO"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "Jornadas de comandante"
     },
     {
       "source": "COMMANDER NOTES",
@@ -126919,8 +127391,8 @@
       "translation": "Escolha uma pasta de diário e adicione-a à lista salva. A descoberta automática também é usada."
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "Escolha uma jornada na lista de histórico ou comece uma nova."
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "Escolha uma jornada na lista ou inicie uma nova expedição."
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -128147,6 +128619,10 @@
       "translation": "Autorização completa em seu navegador. SrvSurvey atualizará esta página quando Frontier retornar."
     },
     {
+      "source": "Complete journey",
+      "translation": "Jornada completa"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Completo ou suficiente"
     },
@@ -128157,6 +128633,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "Conclua as etapas de emparelhamento {0} enquanto SrvSurvey verifica o tempo de execução."
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "Concluir esta jornada?"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -128197,18 +128677,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "Concha Auréola"
-    },
-    {
-      "source": "Conclude",
-      "translation": "Concluir"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "Concluir jornada"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "Concluir esta jornada?"
     },
     {
       "source": "Concluded {0}.",
@@ -129415,10 +129883,6 @@
       "translation": "DESCIDA"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "DESCRIÇÃO"
-    },
-    {
       "source": "DESTINATION",
       "translation": "DESTINO"
     },
@@ -129719,6 +130183,10 @@
       "translation": "Excluir configuração do firegroup"
     },
     {
+      "source": "Delete journey",
+      "translation": "Excluir jornada"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "Excluir ponto bruto local"
     },
@@ -129779,6 +130247,10 @@
       "translation": "Excluir a pesquisa salva selecionada?"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "Excluir esta jornada?"
+    },
+    {
       "source": "Delete this route?",
       "translation": "Excluir esta rota?"
     },
@@ -129813,6 +130285,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "{0} excluído dos backups em nuvem {1}. Atualize o histórico antes de tentar novamente. {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "{0} excluído. Diários, notas e capturas de tela foram mantidos."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -129891,6 +130367,10 @@
       "translation": "Partiu {0}"
     },
     {
+      "source": "Departure",
+      "translation": "Partida"
+    },
+    {
       "source": "DepartureTime",
       "translation": "Hora de partida"
     },
@@ -129913,6 +130393,10 @@
     {
       "source": "Descending order is active.",
       "translation": "A ordem decrescente está ativa."
+    },
+    {
+      "source": "Description",
+      "translation": "Descrição"
     },
     {
       "source": "Design-time error",
@@ -130257,10 +130741,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "DesabilitarRuinsMeasurementGrid"
-    },
-    {
-      "source": "Discard",
-      "translation": "Descartar"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -131839,12 +132319,12 @@
       "translation": "Faixa esperada de organismo {0} a {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "Nome da expedição"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "Histórico de expedição, estatísticas e relatórios"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "Espaço de trabalho de expedição"
+      "source": "Expedition name",
+      "translation": "Nome da expedição"
     },
     {
       "source": "Experimental rig bar detection",
@@ -131983,6 +132463,10 @@
       "translation": "Exportar como CSV"
     },
     {
+      "source": "Export as HTML",
+      "translation": "Exportar como HTML"
+    },
+    {
       "source": "Export backup file",
       "translation": "Exportar arquivo de backup"
     },
@@ -132001,6 +132485,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "Falha na exportação: {0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "Exportar relatório de jornada"
     },
     {
       "source": "Export mining report",
@@ -133583,10 +134071,6 @@
       "translation": "Ferramentas de pesquisa galáctica"
     },
     {
-      "source": "Galactic time",
-      "translation": "Hora galáctica"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "Fronteira externa PIP da região galáctica"
     },
@@ -134601,6 +135085,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "A cor HTML '{0}' deve usar #RRGGBB ou #RRGGBBAA."
+    },
+    {
+      "source": "HTML report",
+      "translation": "Relatório HTML"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -135935,10 +136423,6 @@
       "translation": "COBERTURA DO DIÁRIO"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "NOME DA VIAGEM"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Catálogo JSON"
     },
@@ -136107,6 +136591,10 @@
       "translation": "Status do diário"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "Aterrissagens de diário"
+    },
+    {
       "source": "Journal verified",
       "translation": "Diário verificado"
     },
@@ -136135,28 +136623,52 @@
       "translation": "Não foi possível inicializar os dados da viagem: {0}"
     },
     {
+      "source": "Journey details",
+      "translation": "Detalhes da viagem"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "A jornada terminou aqui {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "Não foi possível carregar o histórico de viagem: {0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "Nome da jornada"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "Preferências de viagem salvas."
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "As preferências de viagem não foram salvas: {0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "Exportação do relatório de viagem cancelada."
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "Relatório de viagem exportado. Abra o arquivo HTML em um navegador para lê-lo, compartilhá-lo ou imprimi-lo."
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "Jornada atualizada por meio de {0}."
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "Preferências da janela de viagem salvas."
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "As preferências da janela de viagem não foram salvas: {0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "A jornada {0} está ativa e atualizada."
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "Jornadas - SrvSurvey"
+      "source": "Journeys",
+      "translation": "viagens"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "Jornadas ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -136571,6 +137083,10 @@
       "translation": "Plataforma de pouso"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "Locais de desembarque por visita"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "Dados da plataforma de destino indisponíveis"
     },
@@ -136713,6 +137229,10 @@
     {
       "source": "Latest parsed state",
       "translation": "Último estado analisado"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "Último sistema gravado"
     },
     {
       "source": "Latitude",
@@ -137105,6 +137625,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Carregue o comandante ativo antes de validar uma chave de API Raven."
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "Carregue o jogo ou selecione um comandante na Visão Geral para ler o histórico da jornada."
     },
     {
       "source": "Load theme",
@@ -139019,10 +139543,6 @@
       "translation": "NOVA CONSTRUÇÃO"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "Nova jornada"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "NOVO PROJETO DE MAPA"
     },
@@ -139691,6 +140211,10 @@
       "translation": "Não é necessário reiniciar o aplicativo para escolher uma nova fonte. A detecção é pausada quando o jogo está indisponível e reinicia quando o contexto de jogo válido retorna."
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "Nenhuma jornada arquivada. Arquive uma jornada concluída para mantê-la aqui."
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "Nenhum requisito de artefato é registrado."
     },
@@ -139909,10 +140433,6 @@
     {
       "source": "No journey selected",
       "translation": "Nenhuma viagem selecionada"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "Nenhuma viagem foi registrada para este comandante."
     },
     {
       "source": "No jump scheduled",
@@ -140251,12 +140771,20 @@
       "translation": "Nenhum nome de sistema foi encontrado para importar."
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "Nenhuma visita ao sistema foi registrada para esta jornada."
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "Nenhum sistema está disponível neste boxel."
     },
     {
       "source": "No systems matched.",
       "translation": "Nenhum sistema corresponde."
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "Nenhum sistema registrado"
     },
     {
       "source": "No tags",
@@ -140835,8 +141363,8 @@
       "translation": "Abra Guardian Science Corps em Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "Espaço de trabalho Jornada aberta"
+      "source": "Open Journeys",
+      "translation": "Jornadas Abertas"
     },
     {
       "source": "Open Library",
@@ -142859,6 +143387,10 @@
       "translation": "Preparando o cache de imagens biológicas do Codex..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "Preparando o relatório de viagem..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "Preparando a importação do perfil verificado. Perfis grandes em um compartilhamento de rede podem levar vários minutos; o progresso aparecerá aqui."
     },
@@ -143621,10 +144153,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "Atualizações de carga do Fleet Carrier do esquadrão {0} na fila até que a linha de base da doca termine."
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "Estatísticas rápidas"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -145491,6 +146019,10 @@
       "translation": "Reprocessar diários"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "Reprocesse diários para reconstruir as estatísticas de visita desta jornada a partir do histórico de jogo salvo."
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "Eventos de diário {0} reprocessados."
     },
@@ -145775,6 +146307,10 @@
       "translation": "Falha na restauração; o perfil anterior foi restaurado."
     },
     {
+      "source": "Restore journey",
+      "translation": "Restaurar jornada"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "Restaurar backup de mineração (ZIP ou JSON; dados anteriores retidos)"
     },
@@ -145809,6 +146345,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Projeto(s) de colonização importado {0} restaurado(s) de {1}.{2}"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "{0} restaurado para Jornadas."
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -146615,10 +147155,6 @@
       "translation": "PONTO DE PESQUISA SELECIONADO"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "SISTEMA SELECIONADO"
-    },
-    {
       "source": "SESSION",
       "translation": "SESSÃO"
     },
@@ -147049,6 +147585,22 @@
     {
       "source": "Save opacity override",
       "translation": "Salvar substituição de opacidade"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "Salve ou descarte as alterações antes de atualizar as viagens."
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "Salve ou descarte as alterações antes de selecionar outra viagem."
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "Salve ou descarte as alterações antes de mudar as listas de viagens."
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "Salve ou descarte as notas do sistema antes de selecionar outra visita."
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -147837,6 +148389,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "Selecione um comandante e confirme primeiro a reconstrução do sistema histórico verificado."
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "Selecione uma viagem concluída e salve as alterações antes de exportar."
     },
     {
       "source": "Select a completed session first.",
@@ -149927,10 +150483,6 @@
       "translation": "SrvSurvey-GroundTarget-Overlay-Design"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-Design de jornada"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-Overlay-Design"
     },
@@ -150093,6 +150645,10 @@
     {
       "source": "Starports",
       "translation": "Portos Estelares"
+    },
+    {
+      "source": "Stars",
+      "translation": "Estrelas"
     },
     {
       "source": "Start Date:",
@@ -150329,6 +150885,10 @@
     {
       "source": "Stations",
       "translation": "Estações"
+    },
+    {
+      "source": "Statistics",
+      "translation": "Estatísticas"
     },
     {
       "source": "Statistics settings",
@@ -151071,6 +151631,10 @@
       "translation": "Não foi possível carregar as notas do sistema."
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "Não foi possível ler as notas do sistema."
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "As notas do sistema requerem um comandante e um sistema atuais."
     },
@@ -151791,8 +152355,8 @@
       "translation": "A jornada não pôde ser reprocessada: {0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "As preferências da janela Journey não puderam ser carregadas."
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "As preferências da Jornada não puderam ser carregadas."
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -152663,8 +153227,24 @@
       "translation": "A descoberta apoiada pelo diário permaneceu inalterada."
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "A jornada não pôde ser excluída: {0}"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "A jornada não pôde ser movida: {0}"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "O nome da jornada não pode ficar em branco."
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "Não foi possível criar o relatório de viagem: {0}"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "O relatório de viagem não pôde ser salvo: {0}"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -154041,6 +154621,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "Este painel de sobreposição compartilha a janela de sobreposição nativa combinada."
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "Isso remove permanentemente o registro da viagem salva. Diários, notas do sistema e capturas de tela permanecem disponíveis."
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -155441,6 +156025,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "Use os atalhos Rastrear localização 1 a 8 para alternar marcadores de superfície reutilizáveis."
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "Use carimbos de data/hora UTC"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -158743,6 +159331,10 @@
       "translation": "viagem viagem estação csv exportação"
     },
     {
+      "source": "journeys",
+      "translation": "viagens"
+    },
+    {
       "source": "json",
       "translation": "JSON"
     },
@@ -161119,6 +161711,10 @@
       "translation": "{0} arquivos de perfil malformados foram ignorados."
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} mapeado"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "{0} depósito mapeado{1}"
     },
@@ -161165,6 +161761,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} deve ser um número."
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} novo Códice"
     },
     {
       "source": "{0} non-body signals",
@@ -161279,6 +161879,10 @@
       "translation": "{0} gravou boxels infantis dentro de {1}."
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "{0} visitas registradas"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} registrado · sufixo {1}"
     },
@@ -161321,6 +161925,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} varredura(s)"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} verificado"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -162989,10 +163597,6 @@
       "translation": "АКТИВНЫЙ КОМАНДИР"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "АКТИВНОЕ ПУТЕШЕСТВИЕ"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "АКТИВНЫЕ ОБЕЛИСКИ"
     },
@@ -164373,6 +164977,18 @@
       "translation": "Системы Architect кэшируются на сутки. Refresh Systems сейчас обновляет список."
     },
     {
+      "source": "Archive ({0})",
+      "translation": "Архив ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "Архивное путешествие"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "В архиве {0}. Найдите его в Архиве."
+    },
+    {
       "source": "Archon Delaine",
       "translation": "Архонт Делан"
     },
@@ -164933,6 +165549,10 @@
       "translation": "Избегайте дублирования обмена"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "Ожидание визита"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "Инициатива Азуры"
     },
@@ -165397,6 +166017,10 @@
       "translation": "Носитель"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "Начните путешествие, чтобы записать свою следующую экспедицию."
+    },
+    {
       "source": "Begin an expedition",
       "translation": "Начать экспедицию"
     },
@@ -165443,10 +166067,6 @@
     {
       "source": "Bindings",
       "translation": "Привязки"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "Биологические награды"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -165669,6 +166289,10 @@
       "translation": "Биологический кодекс - SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "Базовое значение биологии"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "Биологические предсказания тела"
     },
@@ -165705,8 +166329,12 @@
       "translation": "Биологическая система и наложения прогнозов"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "Биологические сканы {0} / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "Биологические ценности используют базовые награды каталога. Разведочные значения являются приблизительными."
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "Биология {0} проанализирована/базовое значение {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -165791,6 +166419,10 @@
     {
       "source": "Bodies approached",
       "translation": "Тела приблизились"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "Тела каталогизированы"
     },
     {
       "source": "Bodies scanned",
@@ -166079,10 +166711,6 @@
     {
       "source": "Browse Codex",
       "translation": "Просмотр Кодекса"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "Просматривайте историю, проверяйте каждую посещенную систему и следите за актуальностью активной экспедиции."
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -166379,10 +167007,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "КОМАНДИР ПЕРВЫЙ"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "Командирские путешествия"
     },
     {
       "source": "COMMANDER NOTES",
@@ -167385,8 +168009,8 @@
       "translation": "Выберите папку журнала, затем добавьте ее в список сохраненных. Также используется автоматическое обнаружение."
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "Выберите путешествие из списка истории или начните новое."
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "Выберите путешествие из списка или начните новую экспедицию."
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -168613,6 +169237,10 @@
       "translation": "Полная авторизация в вашем браузере. SrvSurvey обновит эту страницу, когда Frontier вернется."
     },
     {
+      "source": "Complete journey",
+      "translation": "Полное путешествие"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Полное или достаточное"
     },
@@ -168623,6 +169251,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "Выполните действия по сопряжению {0}, пока SrvSurvey проверяет среду выполнения."
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "Завершить это путешествие?"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -168663,18 +169295,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "Конча Ауреолас"
-    },
-    {
-      "source": "Conclude",
-      "translation": "Заключить"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "Завершить путешествие"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "Завершить это путешествие?"
     },
     {
       "source": "Concluded {0}.",
@@ -169881,10 +170501,6 @@
       "translation": "Спуск"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "ОПИСАНИЕ"
-    },
-    {
       "source": "DESTINATION",
       "translation": "НАЗНАЧЕНИЕ"
     },
@@ -170185,6 +170801,10 @@
       "translation": "Удалить конфигурацию огневой группы"
     },
     {
+      "source": "Delete journey",
+      "translation": "Удалить поездку"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "Удалить локальную исходную точку"
     },
@@ -170245,6 +170865,10 @@
       "translation": "Удалить выбранный сохраненный поиск?"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "Удалить это путешествие?"
+    },
+    {
       "source": "Delete this route?",
       "translation": "Удалить этот маршрут?"
     },
@@ -170279,6 +170903,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "Удален {0} из облачных резервных копий {1}. Обновите историю перед повторной попыткой. {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "Удален {0}. Журналы, записи и скриншоты сохранились."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -170357,6 +170985,10 @@
       "translation": "Отбыл {0}"
     },
     {
+      "source": "Departure",
+      "translation": "Отправление"
+    },
+    {
       "source": "DepartureTime",
       "translation": "Время отправления"
     },
@@ -170379,6 +171011,10 @@
     {
       "source": "Descending order is active.",
       "translation": "По убыванию активен."
+    },
+    {
+      "source": "Description",
+      "translation": "Описание"
     },
     {
       "source": "Design-time error",
@@ -170723,10 +171359,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "ОтключитьРуиныИзмерительнаяСетка"
-    },
-    {
-      "source": "Discard",
-      "translation": "Отбросить"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -172305,12 +172937,12 @@
       "translation": "Ожидаемый диапазон организмов от {0} до {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "Название экспедиции"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "История экспедиций, статистика и отчеты"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "Рабочее пространство экспедиции"
+      "source": "Expedition name",
+      "translation": "Название экспедиции"
     },
     {
       "source": "Experimental rig bar detection",
@@ -172449,6 +173081,10 @@
       "translation": "Экспортировать в формате CSV"
     },
     {
+      "source": "Export as HTML",
+      "translation": "Экспортировать как HTML"
+    },
+    {
       "source": "Export backup file",
       "translation": "Экспортировать файл резервной копии"
     },
@@ -172467,6 +173103,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "Не удалось экспортировать: {0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "Отчет об экспортном путешествии"
     },
     {
       "source": "Export mining report",
@@ -174049,10 +174689,6 @@
       "translation": "Инструменты галактического поиска"
     },
     {
-      "source": "Galactic time",
-      "translation": "Галактическое время"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "Внешняя граница PIP галактического региона"
     },
@@ -175067,6 +175703,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "Цвет HTML «{0}» должен использовать #RRGGBB или #RRGGBBAA."
+    },
+    {
+      "source": "HTML report",
+      "translation": "HTML-отчет"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -176401,10 +177041,6 @@
       "translation": "ЖУРНАЛЬНЫЕ ОСВЕЩЕНИЯ"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "НАЗВАНИЕ ПУТЕШЕСТВИЯ"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Каталог JSON"
     },
@@ -176573,6 +177209,10 @@
       "translation": "Статус журнала"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "Тачдауны журнала"
+    },
+    {
       "source": "Journal verified",
       "translation": "Журнал проверен"
     },
@@ -176601,28 +177241,52 @@
       "translation": "Не удалось инициализировать данные о поездке: {0}"
     },
     {
+      "source": "Journey details",
+      "translation": "Детали путешествия"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "Путешествие закончилось здесь {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "Не удалось загрузить историю путешествий: {0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "Название путешествия"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "Настройки путешествия сохранены."
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "Настройки путешествия не сохранены: {0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "Экспорт отчета о поездке отменен."
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "Отчет о поездке экспортирован. Откройте HTML-файл в браузере, чтобы прочитать, поделиться или распечатать его."
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "Путешествие обновлено через {0}."
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "Настройки окна путешествия сохранены."
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "Настройки окна путешествия не были сохранены: {0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "Путешествие {0} активно и завершено."
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "Путешествия - SrvSurvey"
+      "source": "Journeys",
+      "translation": "путешествия"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "Путешествия ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -177037,6 +177701,10 @@
       "translation": "Посадочная площадка"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "Посадочные площадки по посещению"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "Данные о посадочной площадке недоступны."
     },
@@ -177179,6 +177847,10 @@
     {
       "source": "Latest parsed state",
       "translation": "Последнее проанализированное состояние"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "Последняя записанная система"
     },
     {
       "source": "Latitude",
@@ -177571,6 +178243,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Загрузите активный командир перед проверкой ключа API Raven."
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "Загрузите игру или выберите командира в обзоре, чтобы прочитать историю путешествий."
     },
     {
       "source": "Load theme",
@@ -179485,10 +180161,6 @@
       "translation": "НОВОЕ СТРОИТЕЛЬСТВО"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "Новое путешествие"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "НОВЫЙ ПРОЕКТ КАРТЫ"
     },
@@ -180157,6 +180829,10 @@
       "translation": "Для выбора нового источника не требуется перезапуск приложения. Обнаружение приостанавливается, когда игра недоступна, и возобновляется, когда возвращается действительный игровой контекст."
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "Никаких архивных поездок. Заархивируйте завершенное путешествие, чтобы сохранить его здесь."
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "Никаких требований к артефактам не зафиксировано."
     },
@@ -180375,10 +181051,6 @@
     {
       "source": "No journey selected",
       "translation": "Путешествие не выбрано"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "Поездок этого командира не зарегистрировано."
     },
     {
       "source": "No jump scheduled",
@@ -180717,12 +181389,20 @@
       "translation": "Не найдено системных имен для импорта."
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "Для этого путешествия не было зарегистрировано ни одного посещения системы."
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "В этом боксе нет доступных систем."
     },
     {
       "source": "No systems matched.",
       "translation": "Ни одна система не совпала."
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "Ни одна система не зарегистрирована"
     },
     {
       "source": "No tags",
@@ -181301,8 +181981,8 @@
       "translation": "Открытый научный корпус Guardian на Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "Открыть рабочую область «Путешествие»"
+      "source": "Open Journeys",
+      "translation": "Открытые путешествия"
     },
     {
       "source": "Open Library",
@@ -183325,6 +184005,10 @@
       "translation": "Подготовка кэша биологических изображений Кодекса..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "Готовлю отчет о поездке..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "Подготовка импорта проверенного профиля. Создание больших профилей в общей сетевой папке может занять несколько минут; прогресс появится здесь."
     },
@@ -184087,10 +184771,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "Поставлено в очередь обновление груза авианосца эскадрильи {0} до завершения базовой линии дока."
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "Быстрая статистика"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -185957,6 +186637,10 @@
       "translation": "Повторная обработка журналов"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "Обработайте журналы повторно, чтобы восстановить статистику посещений этого путешествия на основе сохраненной истории игр."
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "Повторно обработаны события журнала {0}."
     },
@@ -186241,6 +186925,10 @@
       "translation": "Восстановление не удалось; предыдущий профиль был восстановлен."
     },
     {
+      "source": "Restore journey",
+      "translation": "Восстановить путешествие"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "Восстановление резервной копии майнинга (ZIP или JSON; предыдущие данные сохраняются)"
     },
@@ -186275,6 +186963,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "Восстановлены {0} импортированные проекты колонизации из {1}.{2}."
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "В Journeys восстановлен {0}."
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -187081,10 +187773,6 @@
       "translation": "ВЫБРАННАЯ ТОЧКА ОБСЛЕДОВАНИЯ"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "ВЫБРАННАЯ СИСТЕМА"
-    },
-    {
       "source": "SESSION",
       "translation": "СЕССИЯ"
     },
@@ -187515,6 +188203,22 @@
     {
       "source": "Save opacity override",
       "translation": "Сохранить переопределение непрозрачности"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "Сохраните или отмените изменения перед обновлением поездок."
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "Сохраните или отмените изменения, прежде чем выбирать другое путешествие."
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "Сохраните или отмените изменения перед переключением списков поездок."
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "Сохраните или удалите системные заметки, прежде чем выбрать другое посещение."
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -188303,6 +189007,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "Выберите командира и сначала подтвердите проверенную историческую перестройку системы."
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "Выберите завершенное путешествие и сохраните все изменения перед экспортом."
     },
     {
       "source": "Select a completed session first.",
@@ -190393,10 +191101,6 @@
       "translation": "SrvSurvey-GroundTarget-Overlay-Design"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-Путешествие-Дизайн"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-Overlay-Design"
     },
@@ -190559,6 +191263,10 @@
     {
       "source": "Starports",
       "translation": "Космопорты"
+    },
+    {
+      "source": "Stars",
+      "translation": "Звезды"
     },
     {
       "source": "Start Date:",
@@ -190795,6 +191503,10 @@
     {
       "source": "Stations",
       "translation": "Станции"
+    },
+    {
+      "source": "Statistics",
+      "translation": "Статистика"
     },
     {
       "source": "Statistics settings",
@@ -191537,6 +192249,10 @@
       "translation": "Не удалось загрузить системные заметки."
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "Системные заметки не удалось прочитать."
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "Для системных примечаний требуется текущий командир и система."
     },
@@ -192257,8 +192973,8 @@
       "translation": "Не удалось повторно обработать «Путешествие»: {0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "Не удалось загрузить настройки окна «Путешествие»."
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "Не удалось загрузить настройки Journey."
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -193129,8 +193845,24 @@
       "translation": "Открытие, подкрепленное журналом, осталось неизменным."
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "Не удалось удалить путешествие: {0}."
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "Не удалось переместить путешествие: {0}."
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "Название поездки не может быть пустым."
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "Не удалось создать отчет о поездке: {0}."
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "Не удалось сохранить отчет о поездке: {0}."
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -194507,6 +195239,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "Эта панель наложения использует общее комбинированное окно наложения."
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "При этом сохраненная запись о поездке будет удалена без возможности восстановления. Журналы, системные заметки и снимки экрана остаются доступными."
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -195907,6 +196643,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "Используйте ярлыки отслеживания местоположения с 1 по 8, чтобы переключать многоразовые закладки на поверхности."
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "Используйте временные метки UTC"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -199209,6 +199949,10 @@
       "translation": "Экспорт в CSV станции путешествия"
     },
     {
+      "source": "journeys",
+      "translation": "путешествия"
+    },
+    {
       "source": "json",
       "translation": "JSON"
     },
@@ -201585,6 +202329,10 @@
       "translation": "{0} некорректные файлы профиля были проигнорированы."
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} сопоставлен"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "{0} сопоставленный депозит{1}"
     },
@@ -201631,6 +202379,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} должен быть числом."
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} новый Кодекс"
     },
     {
       "source": "{0} non-body signals",
@@ -201745,6 +202497,10 @@
       "translation": "{0} записал дочерние боксы внутри {1}."
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "{0} зарегистрированных посещений"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} записано · суффикс {1}"
     },
@@ -201787,6 +202543,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} скан(ы)"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} отсканировано"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -203455,10 +204215,6 @@
       "translation": "主动指挥官"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "积极的旅程"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "活动方尖碑"
     },
@@ -204839,6 +205595,18 @@
       "translation": "架构师系统缓存一天。刷新系统现在更新列表。"
     },
     {
+      "source": "Archive ({0})",
+      "translation": "存档 ({0})"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "存档旅程"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "存档 {0}。在存档中找到它。"
+    },
+    {
       "source": "Archon Delaine",
       "translation": "执政官德莱恩"
     },
@@ -205399,6 +206167,10 @@
       "translation": "避免重复共享"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "等待参观"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "阿祖拉倡议"
     },
@@ -205863,6 +206635,10 @@
       "translation": "承载者"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "开始一段旅程，记录您的下一次探险。"
+    },
+    {
       "source": "Begin an expedition",
       "translation": "开始探险"
     },
@@ -205909,10 +206685,6 @@
     {
       "source": "Bindings",
       "translation": "绑定"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "生物奖励"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -206135,6 +206907,10 @@
       "translation": "生物学法典 - SrvSurvey"
     },
     {
+      "source": "Biology base value",
+      "translation": "生物学基础值"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "生物体预测"
     },
@@ -206171,8 +206947,12 @@
       "translation": "生物系统和预测叠加"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "生物学 {0} 扫描 / {1} CR"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "生物学价值使用目录基础奖励。探索值是估计值。"
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "生物学 {0} 分析/基础值 {1} CR"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -206257,6 +207037,10 @@
     {
       "source": "Bodies approached",
       "translation": "尸体接近"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "机构编目"
     },
     {
       "source": "Bodies scanned",
@@ -206545,10 +207329,6 @@
     {
       "source": "Browse Codex",
       "translation": "浏览法典"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "浏览历史记录，检查每个访问过的系统，并保持活动探险最新。"
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -206845,10 +207625,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "指挥官优先"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "指挥官之旅"
     },
     {
       "source": "COMMANDER NOTES",
@@ -207851,8 +208627,8 @@
       "translation": "选择一个日记文件夹，然后将其添加到已保存的列表中。还使用自动发现。"
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "从历史列表中选择旅程或开始新的旅程。"
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "从列表中选择旅程，或开始新的探险。"
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -209079,6 +209855,10 @@
       "translation": "在浏览器中完成授权。 SrvSurvey 将在 Frontier 返回时更新此页面。"
     },
     {
+      "source": "Complete journey",
+      "translation": "完成旅程"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "完整或充分"
     },
@@ -209089,6 +209869,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "完成 {0} 配对步骤，同时 SrvSurvey 检查运行时间。"
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "完成这个旅程吗？"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -209129,18 +209913,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "光环壳"
-    },
-    {
-      "source": "Conclude",
-      "translation": "结论"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "结束旅程"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "结束这次旅程？"
     },
     {
       "source": "Concluded {0}.",
@@ -210347,10 +211119,6 @@
       "translation": "下降"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "描述"
-    },
-    {
       "source": "DESTINATION",
       "translation": "目的地"
     },
@@ -210651,6 +211419,10 @@
       "translation": "删除火组配置"
     },
     {
+      "source": "Delete journey",
+      "translation": "删除旅程"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "删除本地原始点"
     },
@@ -210711,6 +211483,10 @@
       "translation": "删除选定的已保存搜索？"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "删除这个旅程？"
+    },
+    {
       "source": "Delete this route?",
       "translation": "删除这条路线吗？"
     },
@@ -210745,6 +211521,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "删除了 {1} 云备份中的 {0}。重试之前刷新历史记录。 {2}"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "删除了 {0}。日记、笔记和屏幕截图均被保留。"
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -210823,6 +211603,10 @@
       "translation": "离开 {0}"
     },
     {
+      "source": "Departure",
+      "translation": "离开"
+    },
+    {
       "source": "DepartureTime",
       "translation": "出发时间"
     },
@@ -210845,6 +211629,10 @@
     {
       "source": "Descending order is active.",
       "translation": "降序排列处于活动状态。"
+    },
+    {
+      "source": "Description",
+      "translation": "描述"
     },
     {
       "source": "Design-time error",
@@ -211189,10 +211977,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "禁用废墟测量网格"
-    },
-    {
-      "source": "Discard",
-      "translation": "丢弃"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -212771,12 +213555,12 @@
       "translation": "预期生物范围 {0} 到 {1} K"
     },
     {
-      "source": "Expedition name",
-      "translation": "探险队名称"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "探险历史、统计数据和报告"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "探险工作区"
+      "source": "Expedition name",
+      "translation": "探险队名称"
     },
     {
       "source": "Experimental rig bar detection",
@@ -212915,6 +213699,10 @@
       "translation": "导出为 CSV"
     },
     {
+      "source": "Export as HTML",
+      "translation": "导出为 HTML"
+    },
+    {
       "source": "Export backup file",
       "translation": "导出备份文件"
     },
@@ -212933,6 +213721,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "导出失败：{0}"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "出口旅程报告"
     },
     {
       "source": "Export mining report",
@@ -214515,10 +215307,6 @@
       "translation": "银河搜索工具"
     },
     {
-      "source": "Galactic time",
-      "translation": "银河时间"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "银河区域 PIP 外边界"
     },
@@ -215533,6 +216321,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "HTML 颜色“{0}”必须使用#RRGGBB 或#RRGGBBAA。"
+    },
+    {
+      "source": "HTML report",
+      "translation": "HTML报告"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -216867,10 +217659,6 @@
       "translation": "期刊报道"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "旅程名称"
-    },
-    {
       "source": "JSON catalog",
       "translation": "JSON目录"
     },
@@ -217039,6 +217827,10 @@
       "translation": "期刊状态"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "期刊达阵"
+    },
+    {
       "source": "Journal verified",
       "translation": "期刊已验证"
     },
@@ -217067,28 +217859,52 @@
       "translation": "旅程数据无法初始化：{0}"
     },
     {
+      "source": "Journey details",
+      "translation": "旅程详情"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "旅程到此结束 {0}"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "无法加载旅程历史记录：{0}"
+    },
+    {
+      "source": "Journey name",
+      "translation": "旅程名称"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "旅程偏好已保存。"
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "旅程首选项未保存：{0}"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "行程报告导出已取消。"
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "行程报告已导出。在浏览器中打开 HTML 文件以阅读、共享或打印它。"
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "旅程已通过 {0} 更新。"
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "已保存旅程窗口首选项。"
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "旅程窗口首选项未保存：{0}"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "旅程 {0} 处于活动状态并已赶上。"
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "旅程 - SrvSurvey"
+      "source": "Journeys",
+      "translation": "旅程"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "旅程 ({0})"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -217503,6 +218319,10 @@
       "translation": "停机坪"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "通过访问登陆站点"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "着陆场数据不可用"
     },
@@ -217645,6 +218465,10 @@
     {
       "source": "Latest parsed state",
       "translation": "最新解析状态"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "最新记录系统"
     },
     {
       "source": "Latitude",
@@ -218037,6 +218861,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "在验证 Raven API 密钥之前加载活动指挥官。"
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "加载游戏或在概览中选择指挥官来读取旅程历史。"
     },
     {
       "source": "Load theme",
@@ -219951,10 +220779,6 @@
       "translation": "新建筑"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "新征程"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "新地图草稿"
     },
@@ -220623,6 +221447,10 @@
       "translation": "无需重新启动应用程序即可选择新源。当游戏不可用时检测会暂停，并在有效的游戏上下文返回时恢复。"
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "没有存档的旅程。将已完成的旅程存档并保留在此处。"
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "没有记录工件要求。"
     },
@@ -220841,10 +221669,6 @@
     {
       "source": "No journey selected",
       "translation": "未选择旅程"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "没有关于这位指挥官的行程记录。"
     },
     {
       "source": "No jump scheduled",
@@ -221183,12 +222007,20 @@
       "translation": "找不到要导入的系统名称。"
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "本次旅程没有系统访问记录。"
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "此盒子中没有可用的系统。"
     },
     {
       "source": "No systems matched.",
       "translation": "没有匹配的系统。"
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "没有系统记录"
     },
     {
       "source": "No tags",
@@ -221767,8 +222599,8 @@
       "translation": "打开守护者科学军团 Discord"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "打开旅程工作区"
+      "source": "Open Journeys",
+      "translation": "开放旅程"
     },
     {
       "source": "Open Library",
@@ -223791,6 +224623,10 @@
       "translation": "正在准备 Codex 生物图像缓存..."
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "正在准备旅程报告..."
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "准备导入已验证的配置文件。网络共享上的大型配置文件可能需要几分钟的时间；进度将显示在这里。"
     },
@@ -224553,10 +225389,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "将 {0} 中队舰队航母货物更新排队，直到码头基线完成。"
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "快速统计"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -226423,6 +227255,10 @@
       "translation": "重新处理期刊"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "重新处理日志，从保存的游戏历史记录中重建此旅程的访问统计数据。"
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "重新处理了 {0} 日志事件。"
     },
@@ -226707,6 +227543,10 @@
       "translation": "恢复失败；之前的配置文件已恢复。"
     },
     {
+      "source": "Restore journey",
+      "translation": "恢复旅程"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "恢复挖矿备份（ZIP 或 JSON；保留以前的数据）"
     },
@@ -226741,6 +227581,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "恢复了 {0} 从 {1}.{2} 导入的殖民项目"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "将 {0} 恢复到旅程。"
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -227547,10 +228391,6 @@
       "translation": "选定的调查点"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "选定的系统"
-    },
-    {
       "source": "SESSION",
       "translation": "会议"
     },
@@ -227981,6 +228821,22 @@
     {
       "source": "Save opacity override",
       "translation": "保存不透明度覆盖"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "在刷新旅程之前保存或放弃更改。"
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "在选择另一个旅程之前保存或放弃更改。"
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "在切换旅程列表之前保存或放弃更改。"
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "在选择另一次访问之前保存或放弃系统注释。"
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -228769,6 +229625,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "首先选择指挥官并确认已验证的历史系统重建。"
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "选择已完成的旅程并在导出之前保存所有更改。"
     },
     {
       "source": "Select a completed session first.",
@@ -230859,10 +231719,6 @@
       "translation": "SrvSurvey-GroundTarget-覆盖-设计"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "SrvSurvey-旅程设计"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "SrvSurvey-JumpInfo-覆盖-设计"
     },
@@ -231025,6 +231881,10 @@
     {
       "source": "Starports",
       "translation": "星港"
+    },
+    {
+      "source": "Stars",
+      "translation": "星星"
     },
     {
       "source": "Start Date:",
@@ -231261,6 +232121,10 @@
     {
       "source": "Stations",
       "translation": "车站"
+    },
+    {
+      "source": "Statistics",
+      "translation": "统计数据"
     },
     {
       "source": "Statistics settings",
@@ -232003,6 +232867,10 @@
       "translation": "无法加载系统笔记。"
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "无法读取系统注释。"
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "系统注释需要当前的指挥官和系统。"
     },
@@ -232723,8 +233591,8 @@
       "translation": "无法重新处理旅程：{0}"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "无法加载“旅程”窗口首选项。"
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "无法加载旅程首选项。"
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -233595,8 +234463,24 @@
       "translation": "期刊支持的发现保持不变。"
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "旅程无法删除：{0}"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "旅程无法移动：{0}"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "旅程名称不能为空。"
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "无法创建旅程报告：{0}"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "无法保存行程报告：{0}"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -234973,6 +235857,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "该覆盖面板共享组合的本机覆盖窗口。"
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "这将永久删除保存的旅程记录。日志、系统说明和屏幕截图仍然可用。"
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -236373,6 +237261,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "使用轨道位置 1 至 8 快捷方式切换可重复使用的表面书签。"
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "使用 UTC 时间戳"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -239675,6 +240567,10 @@
       "translation": "旅程旅行站csv导出"
     },
     {
+      "source": "journeys",
+      "translation": "旅程"
+    },
+    {
       "source": "json",
       "translation": "json"
     },
@@ -242051,6 +242947,10 @@
       "translation": "{0} 格式错误的配置文件被忽略。"
     },
     {
+      "source": "{0} mapped",
+      "translation": "{0} 映射"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "{0} 映射存款{1}"
     },
@@ -242097,6 +242997,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "{0} 必须是数字。"
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "{0} 新法典"
     },
     {
       "source": "{0} non-body signals",
@@ -242211,6 +243115,10 @@
       "translation": "{0}在{1}内记录了子盒子。"
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "{0} 记录的访问"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "{0} 已记录 · 后缀 {1}"
     },
@@ -242253,6 +243161,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "{0} 扫描"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "{0} 已扫描"
     },
     {
       "source": "{0} scans to go · each entry is {1}",
@@ -243921,10 +244833,6 @@
       "translation": "* ACTIVE COMMANDER >>>!"
     },
     {
-      "source": "ACTIVE JOURNEY",
-      "translation": "* ACTIVE JOURNEY >>>!"
-    },
-    {
       "source": "ACTIVE OBELISKS",
       "translation": "* ACTIVE OBELISKS >>>!"
     },
@@ -245305,6 +246213,18 @@
       "translation": "* ARCHITECT SYSTEMS ARE CACHED FOR A DAY. REFRESH SYSTEMS UPDATES THE LIST NOW. >>>!"
     },
     {
+      "source": "Archive ({0})",
+      "translation": "* ARCHIVE ({0}) >>>!"
+    },
+    {
+      "source": "Archive journey",
+      "translation": "* ARCHIVE JOURNEY >>>!"
+    },
+    {
+      "source": "Archived {0}. Find it in Archive.",
+      "translation": "* ARCHIVED {0}. FIND IT IN ARCHIVE. >>>!"
+    },
+    {
       "source": "Archon Delaine",
       "translation": "* ARCHON DELAINE >>>!"
     },
@@ -245865,6 +246785,10 @@
       "translation": "* AVOID DUPLICATE SHARING >>>!"
     },
     {
+      "source": "Awaiting a visit",
+      "translation": "* AWAITING A VISIT >>>!"
+    },
+    {
       "source": "Azura Initiative",
       "translation": "* AZURA INITIATIVE >>>!"
     },
@@ -246329,6 +247253,10 @@
       "translation": "* BEARER >>>!"
     },
     {
+      "source": "Begin a journey to record your next expedition.",
+      "translation": "* BEGIN A JOURNEY TO RECORD YOUR NEXT EXPEDITION. >>>!"
+    },
+    {
       "source": "Begin an expedition",
       "translation": "* BEGIN AN EXPEDITION >>>!"
     },
@@ -246375,10 +247303,6 @@
     {
       "source": "Bindings",
       "translation": "* BINDINGS >>>!"
-    },
-    {
-      "source": "Bio rewards",
-      "translation": "* BIO REWARDS >>>!"
     },
     {
       "source": "Bio signal radius (organism sample range)",
@@ -246601,6 +247525,10 @@
       "translation": "* BIOLOGY CODEX - SRVSURVEY >>>!"
     },
     {
+      "source": "Biology base value",
+      "translation": "* BIOLOGY BASE VALUE >>>!"
+    },
+    {
       "source": "Biology body predictions",
       "translation": "* BIOLOGY BODY PREDICTIONS >>>!"
     },
@@ -246637,8 +247565,12 @@
       "translation": "* BIOLOGY SYSTEM AND PREDICTION OVERLAYS >>>!"
     },
     {
-      "source": "Biology {0} scans / {1} CR",
-      "translation": "* BIOLOGY {0} SCANS / {1} CR >>>!"
+      "source": "Biology values use catalog base rewards. Exploration values are estimates.",
+      "translation": "* BIOLOGY VALUES USE CATALOG BASE REWARDS. EXPLORATION VALUES ARE ESTIMATES. >>>!"
+    },
+    {
+      "source": "Biology {0} analysed / base value {1} CR",
+      "translation": "* BIOLOGY {0} ANALYSED / BASE VALUE {1} CR >>>!"
     },
     {
       "source": "Biology, Guardian, body and system rows",
@@ -246723,6 +247655,10 @@
     {
       "source": "Bodies approached",
       "translation": "* BODIES APPROACHED >>>!"
+    },
+    {
+      "source": "Bodies catalogued",
+      "translation": "* BODIES CATALOGUED >>>!"
     },
     {
       "source": "Bodies scanned",
@@ -247011,10 +247947,6 @@
     {
       "source": "Browse Codex",
       "translation": "* BROWSE CODEX >>>!"
-    },
-    {
-      "source": "Browse history, inspect every visited system, and keep the active expedition current.",
-      "translation": "* BROWSE HISTORY, INSPECT EVERY VISITED SYSTEM, AND KEEP THE ACTIVE EXPEDITION CURRENT. >>>!"
     },
     {
       "source": "Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system.",
@@ -247311,10 +248243,6 @@
     {
       "source": "COMMANDER FIRST",
       "translation": "* COMMANDER FIRST >>>!"
-    },
-    {
-      "source": "COMMANDER JOURNEYS",
-      "translation": "* COMMANDER JOURNEYS >>>!"
     },
     {
       "source": "COMMANDER NOTES",
@@ -248317,8 +249245,8 @@
       "translation": "* CHOOSE A JOURNAL FOLDER, THEN ADD IT TO THE SAVED LIST. AUTOMATIC DISCOVERY IS ALSO USED. >>>!"
     },
     {
-      "source": "Choose a journey from the history list or begin a new one.",
-      "translation": "* CHOOSE A JOURNEY FROM THE HISTORY LIST OR BEGIN A NEW ONE. >>>!"
+      "source": "Choose a journey from the list, or begin a new expedition.",
+      "translation": "* CHOOSE A JOURNEY FROM THE LIST, OR BEGIN A NEW EXPEDITION. >>>!"
     },
     {
       "source": "Choose a landmark type or subtype. A variant is optional.",
@@ -249545,6 +250473,10 @@
       "translation": "* COMPLETE AUTHORIZATION IN YOUR BROWSER. SRVSURVEY WILL UPDATE THIS PAGE WHEN FRONTIER RETURNS. >>>!"
     },
     {
+      "source": "Complete journey",
+      "translation": "* COMPLETE JOURNEY >>>!"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "* COMPLETE OR SUFFICIENT >>>!"
     },
@@ -249555,6 +250487,10 @@
     {
       "source": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
       "translation": "* COMPLETE THE {0} PAIRING STEPS WHILE SRVSURVEY CHECKS THE RUNTIME. >>>!"
+    },
+    {
+      "source": "Complete this journey?",
+      "translation": "* COMPLETE THIS JOURNEY? >>>!"
     },
     {
       "source": "Complete this route's pairing steps, then enable VR overlays.",
@@ -249595,18 +250531,6 @@
     {
       "source": "Concha Aureolas",
       "translation": "* CONCHA AUREOLAS >>>!"
-    },
-    {
-      "source": "Conclude",
-      "translation": "* CONCLUDE >>>!"
-    },
-    {
-      "source": "Conclude journey",
-      "translation": "* CONCLUDE JOURNEY >>>!"
-    },
-    {
-      "source": "Conclude this journey?",
-      "translation": "* CONCLUDE THIS JOURNEY? >>>!"
     },
     {
       "source": "Concluded {0}.",
@@ -250813,10 +251737,6 @@
       "translation": "* DESCENT >>>!"
     },
     {
-      "source": "DESCRIPTION",
-      "translation": "* DESCRIPTION >>>!"
-    },
-    {
       "source": "DESTINATION",
       "translation": "* DESTINATION >>>!"
     },
@@ -251117,6 +252037,10 @@
       "translation": "* DELETE FIREGROUP CONFIGURATION >>>!"
     },
     {
+      "source": "Delete journey",
+      "translation": "* DELETE JOURNEY >>>!"
+    },
+    {
       "source": "Delete local raw point",
       "translation": "* DELETE LOCAL RAW POINT >>>!"
     },
@@ -251177,6 +252101,10 @@
       "translation": "* DELETE THE SELECTED SAVED SEARCH? >>>!"
     },
     {
+      "source": "Delete this journey?",
+      "translation": "* DELETE THIS JOURNEY? >>>!"
+    },
+    {
       "source": "Delete this route?",
       "translation": "* DELETE THIS ROUTE? >>>!"
     },
@@ -251211,6 +252139,10 @@
     {
       "source": "Deleted {0} of {1} cloud backups. Refresh history before retrying. {2}",
       "translation": "* DELETED {0} OF {1} CLOUD BACKUPS. REFRESH HISTORY BEFORE RETRYING. {2} >>>!"
+    },
+    {
+      "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
+      "translation": "* DELETED {0}. JOURNALS, NOTES, AND SCREENSHOTS WERE KEPT. >>>!"
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -251289,6 +252221,10 @@
       "translation": "* DEPARTED {0} >>>!"
     },
     {
+      "source": "Departure",
+      "translation": "* DEPARTURE >>>!"
+    },
+    {
       "source": "DepartureTime",
       "translation": "* DEPARTURETIME >>>!"
     },
@@ -251311,6 +252247,10 @@
     {
       "source": "Descending order is active.",
       "translation": "* DESCENDING ORDER IS ACTIVE. >>>!"
+    },
+    {
+      "source": "Description",
+      "translation": "* DESCRIPTION >>>!"
     },
     {
       "source": "Design-time error",
@@ -251655,10 +252595,6 @@
     {
       "source": "DisableRuinsMeasurementGrid",
       "translation": "* DISABLERUINSMEASUREMENTGRID >>>!"
-    },
-    {
-      "source": "Discard",
-      "translation": "* DISCARD >>>!"
     },
     {
       "source": "Discard all unexported master-template changes?",
@@ -253237,12 +254173,12 @@
       "translation": "* EXPECTED ORGANISM RANGE {0} TO {1} K >>>!"
     },
     {
-      "source": "Expedition name",
-      "translation": "* EXPEDITION NAME >>>!"
+      "source": "Expedition history, statistics, and reports",
+      "translation": "* EXPEDITION HISTORY, STATISTICS, AND REPORTS >>>!"
     },
     {
-      "source": "Expedition workspace",
-      "translation": "* EXPEDITION WORKSPACE >>>!"
+      "source": "Expedition name",
+      "translation": "* EXPEDITION NAME >>>!"
     },
     {
       "source": "Experimental rig bar detection",
@@ -253381,6 +254317,10 @@
       "translation": "* EXPORT AS CSV >>>!"
     },
     {
+      "source": "Export as HTML",
+      "translation": "* EXPORT AS HTML >>>!"
+    },
+    {
       "source": "Export backup file",
       "translation": "* EXPORT BACKUP FILE >>>!"
     },
@@ -253399,6 +254339,10 @@
     {
       "source": "Export failed: {0}",
       "translation": "* EXPORT FAILED: {0} >>>!"
+    },
+    {
+      "source": "Export journey report",
+      "translation": "* EXPORT JOURNEY REPORT >>>!"
     },
     {
       "source": "Export mining report",
@@ -254981,10 +255925,6 @@
       "translation": "* GALACTIC SEARCH TOOLS >>>!"
     },
     {
-      "source": "Galactic time",
-      "translation": "* GALACTIC TIME >>>!"
-    },
-    {
       "source": "Galactic-region PIP outer border",
       "translation": "* GALACTIC-REGION PIP OUTER BORDER >>>!"
     },
@@ -255999,6 +256939,10 @@
     {
       "source": "HTML colour '{0}' must use #RRGGBB or #RRGGBBAA.",
       "translation": "* HTML COLOUR '{0}' MUST USE #RRGGBB OR #RRGGBBAA. >>>!"
+    },
+    {
+      "source": "HTML report",
+      "translation": "* HTML REPORT >>>!"
     },
     {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
@@ -257333,10 +258277,6 @@
       "translation": "* JOURNAL COVERAGE >>>!"
     },
     {
-      "source": "JOURNEY NAME",
-      "translation": "* JOURNEY NAME >>>!"
-    },
-    {
       "source": "JSON catalog",
       "translation": "* JSON CATALOG >>>!"
     },
@@ -257505,6 +258445,10 @@
       "translation": "* JOURNAL STATUS >>>!"
     },
     {
+      "source": "Journal touchdowns",
+      "translation": "* JOURNAL TOUCHDOWNS >>>!"
+    },
+    {
       "source": "Journal verified",
       "translation": "* JOURNAL VERIFIED >>>!"
     },
@@ -257533,28 +258477,52 @@
       "translation": "* JOURNEY DATA COULD NOT BE INITIALIZED: {0} >>>!"
     },
     {
+      "source": "Journey details",
+      "translation": "* JOURNEY DETAILS >>>!"
+    },
+    {
+      "source": "Journey ended here {0}",
+      "translation": "* JOURNEY ENDED HERE {0} >>>!"
+    },
+    {
       "source": "Journey history could not be loaded: {0}",
       "translation": "* JOURNEY HISTORY COULD NOT BE LOADED: {0} >>>!"
+    },
+    {
+      "source": "Journey name",
+      "translation": "* JOURNEY NAME >>>!"
+    },
+    {
+      "source": "Journey preferences saved.",
+      "translation": "* JOURNEY PREFERENCES SAVED. >>>!"
+    },
+    {
+      "source": "Journey preferences were not saved: {0}",
+      "translation": "* JOURNEY PREFERENCES WERE NOT SAVED: {0} >>>!"
+    },
+    {
+      "source": "Journey report export canceled.",
+      "translation": "* JOURNEY REPORT EXPORT CANCELED. >>>!"
+    },
+    {
+      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
+      "translation": "* JOURNEY REPORT EXPORTED. OPEN THE HTML FILE IN A BROWSER TO READ, SHARE, OR PRINT IT. >>>!"
     },
     {
       "source": "Journey updated through {0}.",
       "translation": "* JOURNEY UPDATED THROUGH {0}. >>>!"
     },
     {
-      "source": "Journey window preferences saved.",
-      "translation": "* JOURNEY WINDOW PREFERENCES SAVED. >>>!"
-    },
-    {
-      "source": "Journey window preferences were not saved: {0}",
-      "translation": "* JOURNEY WINDOW PREFERENCES WERE NOT SAVED: {0} >>>!"
-    },
-    {
       "source": "Journey {0} is active and caught up.",
       "translation": "* JOURNEY {0} IS ACTIVE AND CAUGHT UP. >>>!"
     },
     {
-      "source": "Journeys - SrvSurvey",
-      "translation": "* JOURNEYS - SRVSURVEY >>>!"
+      "source": "Journeys",
+      "translation": "* JOURNEYS >>>!"
+    },
+    {
+      "source": "Journeys ({0})",
+      "translation": "* JOURNEYS ({0}) >>>!"
     },
     {
       "source": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -257969,6 +258937,10 @@
       "translation": "* LANDING PAD >>>!"
     },
     {
+      "source": "Landing sites by visit",
+      "translation": "* LANDING SITES BY VISIT >>>!"
+    },
+    {
       "source": "Landing-pad data unavailable",
       "translation": "* LANDING-PAD DATA UNAVAILABLE >>>!"
     },
@@ -258111,6 +259083,10 @@
     {
       "source": "Latest parsed state",
       "translation": "* LATEST PARSED STATE >>>!"
+    },
+    {
+      "source": "Latest recorded system",
+      "translation": "* LATEST RECORDED SYSTEM >>>!"
     },
     {
       "source": "Latitude",
@@ -258503,6 +259479,10 @@
     {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "* LOAD THE ACTIVE COMMANDER BEFORE VALIDATING A RAVEN API KEY. >>>!"
+    },
+    {
+      "source": "Load the game or select a commander in Overview to read journey history.",
+      "translation": "* LOAD THE GAME OR SELECT A COMMANDER IN OVERVIEW TO READ JOURNEY HISTORY. >>>!"
     },
     {
       "source": "Load theme",
@@ -260417,10 +261397,6 @@
       "translation": "* NEW BUILD >>>!"
     },
     {
-      "source": "NEW JOURNEY",
-      "translation": "* NEW JOURNEY >>>!"
-    },
-    {
       "source": "NEW MAP DRAFT",
       "translation": "* NEW MAP DRAFT >>>!"
     },
@@ -261089,6 +262065,10 @@
       "translation": "* NO APPLICATION RESTART IS NEEDED TO CHOOSE A NEW SOURCE. DETECTION PAUSES WHEN THE GAME IS UNAVAILABLE AND RESUMES WHEN VALID GAME CONTEXT RETURNS. >>>!"
     },
     {
+      "source": "No archived journeys. Archive a completed journey to keep it here.",
+      "translation": "* NO ARCHIVED JOURNEYS. ARCHIVE A COMPLETED JOURNEY TO KEEP IT HERE. >>>!"
+    },
+    {
       "source": "No artifact requirement is recorded.",
       "translation": "* NO ARTIFACT REQUIREMENT IS RECORDED. >>>!"
     },
@@ -261307,10 +262287,6 @@
     {
       "source": "No journey selected",
       "translation": "* NO JOURNEY SELECTED >>>!"
-    },
-    {
-      "source": "No journeys have been recorded for this commander.",
-      "translation": "* NO JOURNEYS HAVE BEEN RECORDED FOR THIS COMMANDER. >>>!"
     },
     {
       "source": "No jump scheduled",
@@ -261649,12 +262625,20 @@
       "translation": "* NO SYSTEM NAMES WERE FOUND TO IMPORT. >>>!"
     },
     {
+      "source": "No system visits were recorded for this journey.",
+      "translation": "* NO SYSTEM VISITS WERE RECORDED FOR THIS JOURNEY. >>>!"
+    },
+    {
       "source": "No systems are available in this boxel.",
       "translation": "* NO SYSTEMS ARE AVAILABLE IN THIS BOXEL. >>>!"
     },
     {
       "source": "No systems matched.",
       "translation": "* NO SYSTEMS MATCHED. >>>!"
+    },
+    {
+      "source": "No systems recorded",
+      "translation": "* NO SYSTEMS RECORDED >>>!"
     },
     {
       "source": "No tags",
@@ -262233,8 +263217,8 @@
       "translation": "* OPEN GUARDIAN SCIENCE CORPS ON DISCORD >>>!"
     },
     {
-      "source": "Open Journey workspace",
-      "translation": "* OPEN JOURNEY WORKSPACE >>>!"
+      "source": "Open Journeys",
+      "translation": "* OPEN JOURNEYS >>>!"
     },
     {
       "source": "Open Library",
@@ -264257,6 +265241,10 @@
       "translation": "* PREPARING THE CODEX BIOLOGY IMAGE CACHE... >>>!"
     },
     {
+      "source": "Preparing the journey report...",
+      "translation": "* PREPARING THE JOURNEY REPORT... >>>!"
+    },
+    {
       "source": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
       "translation": "* PREPARING THE VERIFIED PROFILE IMPORT. LARGE PROFILES ON A NETWORK SHARE CAN TAKE SEVERAL MINUTES; PROGRESS WILL APPEAR HERE. >>>!"
     },
@@ -265019,10 +266007,6 @@
     {
       "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
       "translation": "* QUEUED {0} SQUADRON FLEET CARRIER CARGO UPDATE(S) UNTIL DOCK BASELINE FINISHES. >>>!"
-    },
-    {
-      "source": "Quick statistics",
-      "translation": "* QUICK STATISTICS >>>!"
     },
     {
       "source": "Quick tracker {0} added at the current location.",
@@ -266889,6 +267873,10 @@
       "translation": "* REPROCESS JOURNALS >>>!"
     },
     {
+      "source": "Reprocess journals to rebuild this journey's visit statistics from the saved game history.",
+      "translation": "* REPROCESS JOURNALS TO REBUILD THIS JOURNEY'S VISIT STATISTICS FROM THE SAVED GAME HISTORY. >>>!"
+    },
+    {
       "source": "Reprocessed {0} journal events.",
       "translation": "* REPROCESSED {0} JOURNAL EVENTS. >>>!"
     },
@@ -267173,6 +268161,10 @@
       "translation": "* RESTORE FAILED; THE PREVIOUS PROFILE WAS RESTORED. >>>!"
     },
     {
+      "source": "Restore journey",
+      "translation": "* RESTORE JOURNEY >>>!"
+    },
+    {
       "source": "Restore mining backup (ZIP or JSON; previous data retained)",
       "translation": "* RESTORE MINING BACKUP (ZIP OR JSON; PREVIOUS DATA RETAINED) >>>!"
     },
@@ -267207,6 +268199,10 @@
     {
       "source": "Restored {0} imported colonization project(s) from {1}.{2}",
       "translation": "* RESTORED {0} IMPORTED COLONIZATION PROJECT(S) FROM {1}.{2} >>>!"
+    },
+    {
+      "source": "Restored {0} to Journeys.",
+      "translation": "* RESTORED {0} TO JOURNEYS. >>>!"
     },
     {
       "source": "Restored {0} to its original measured size. Use the top ✓ to save and close.",
@@ -268013,10 +269009,6 @@
       "translation": "* SELECTED SURVEY POINT >>>!"
     },
     {
-      "source": "SELECTED SYSTEM",
-      "translation": "* SELECTED SYSTEM >>>!"
-    },
-    {
       "source": "SESSION",
       "translation": "* SESSION >>>!"
     },
@@ -268447,6 +269439,22 @@
     {
       "source": "Save opacity override",
       "translation": "* SAVE OPACITY OVERRIDE >>>!"
+    },
+    {
+      "source": "Save or discard changes before refreshing journeys.",
+      "translation": "* SAVE OR DISCARD CHANGES BEFORE REFRESHING JOURNEYS. >>>!"
+    },
+    {
+      "source": "Save or discard changes before selecting another journey.",
+      "translation": "* SAVE OR DISCARD CHANGES BEFORE SELECTING ANOTHER JOURNEY. >>>!"
+    },
+    {
+      "source": "Save or discard changes before switching journey lists.",
+      "translation": "* SAVE OR DISCARD CHANGES BEFORE SWITCHING JOURNEY LISTS. >>>!"
+    },
+    {
+      "source": "Save or discard the system notes before selecting another visit.",
+      "translation": "* SAVE OR DISCARD THE SYSTEM NOTES BEFORE SELECTING ANOTHER VISIT. >>>!"
     },
     {
       "source": "Save or select a bookmark before attaching screenshots.",
@@ -269235,6 +270243,10 @@
     {
       "source": "Select a commander and confirm the verified historical system rebuild first.",
       "translation": "* SELECT A COMMANDER AND CONFIRM THE VERIFIED HISTORICAL SYSTEM REBUILD FIRST. >>>!"
+    },
+    {
+      "source": "Select a completed journey and save any changes before exporting.",
+      "translation": "* SELECT A COMPLETED JOURNEY AND SAVE ANY CHANGES BEFORE EXPORTING. >>>!"
     },
     {
       "source": "Select a completed session first.",
@@ -271325,10 +272337,6 @@
       "translation": "* SRVSURVEY-GROUNDTARGET-OVERLAY-DESIGN >>>!"
     },
     {
-      "source": "SrvSurvey-Journey-Design",
-      "translation": "* SRVSURVEY-JOURNEY-DESIGN >>>!"
-    },
-    {
       "source": "SrvSurvey-JumpInfo-Overlay-Design",
       "translation": "* SRVSURVEY-JUMPINFO-OVERLAY-DESIGN >>>!"
     },
@@ -271491,6 +272499,10 @@
     {
       "source": "Starports",
       "translation": "* STARPORTS >>>!"
+    },
+    {
+      "source": "Stars",
+      "translation": "* STARS >>>!"
     },
     {
       "source": "Start Date:",
@@ -271727,6 +272739,10 @@
     {
       "source": "Stations",
       "translation": "* STATIONS >>>!"
+    },
+    {
+      "source": "Statistics",
+      "translation": "* STATISTICS >>>!"
     },
     {
       "source": "Statistics settings",
@@ -272469,6 +273485,10 @@
       "translation": "* SYSTEM NOTES COULD NOT BE LOADED. >>>!"
     },
     {
+      "source": "System notes could not be read.",
+      "translation": "* SYSTEM NOTES COULD NOT BE READ. >>>!"
+    },
+    {
       "source": "System notes require a current commander and system.",
       "translation": "* SYSTEM NOTES REQUIRE A CURRENT COMMANDER AND SYSTEM. >>>!"
     },
@@ -273189,8 +274209,8 @@
       "translation": "* THE JOURNEY COULD NOT BE REPROCESSED: {0} >>>!"
     },
     {
-      "source": "The Journey window preferences could not be loaded.",
-      "translation": "* THE JOURNEY WINDOW PREFERENCES COULD NOT BE LOADED. >>>!"
+      "source": "The Journey preferences could not be loaded.",
+      "translation": "* THE JOURNEY PREFERENCES COULD NOT BE LOADED. >>>!"
     },
     {
       "source": "The Journey workspace requires a commander profile.",
@@ -274061,8 +275081,24 @@
       "translation": "* THE JOURNAL-BACKED DISCOVERY WAS LEFT UNCHANGED. >>>!"
     },
     {
+      "source": "The journey could not be deleted: {0}",
+      "translation": "* THE JOURNEY COULD NOT BE DELETED: {0} >>>!"
+    },
+    {
+      "source": "The journey could not be moved: {0}",
+      "translation": "* THE JOURNEY COULD NOT BE MOVED: {0} >>>!"
+    },
+    {
       "source": "The journey name cannot be blank.",
       "translation": "* THE JOURNEY NAME CANNOT BE BLANK. >>>!"
+    },
+    {
+      "source": "The journey report could not be created: {0}",
+      "translation": "* THE JOURNEY REPORT COULD NOT BE CREATED: {0} >>>!"
+    },
+    {
+      "source": "The journey report could not be saved: {0}",
+      "translation": "* THE JOURNEY REPORT COULD NOT BE SAVED: {0} >>>!"
     },
     {
       "source": "The journey was not concluded: {0}",
@@ -275439,6 +276475,10 @@
     {
       "source": "This overlay panel is sharing the combined native overlay window.",
       "translation": "* THIS OVERLAY PANEL IS SHARING THE COMBINED NATIVE OVERLAY WINDOW. >>>!"
+    },
+    {
+      "source": "This permanently removes the saved journey record. Journals, system notes, and screenshots stay available.",
+      "translation": "* THIS PERMANENTLY REMOVES THE SAVED JOURNEY RECORD. JOURNALS, SYSTEM NOTES, AND SCREENSHOTS STAY AVAILABLE. >>>!"
     },
     {
       "source": "This platform does not provide a folder picker for exports.",
@@ -276839,6 +277879,10 @@
     {
       "source": "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
       "translation": "* USE TRACK LOCATION 1 THROUGH 8 SHORTCUTS TO TOGGLE REUSABLE SURFACE BOOKMARKS. >>>!"
+    },
+    {
+      "source": "Use UTC timestamps",
+      "translation": "* USE UTC TIMESTAMPS >>>!"
     },
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
@@ -280141,6 +281185,10 @@
       "translation": "* JOURNEY TRIP STATION CSV EXPORT >>>!"
     },
     {
+      "source": "journeys",
+      "translation": "* JOURNEYS >>>!"
+    },
+    {
       "source": "json",
       "translation": "* JSON >>>!"
     },
@@ -282517,6 +283565,10 @@
       "translation": "* {0} MALFORMED PROFILE FILE(S) WERE IGNORED. >>>!"
     },
     {
+      "source": "{0} mapped",
+      "translation": "* {0} MAPPED >>>!"
+    },
+    {
       "source": "{0} mapped deposit{1}",
       "translation": "* {0} MAPPED DEPOSIT{1} >>>!"
     },
@@ -282563,6 +283615,10 @@
     {
       "source": "{0} must be a number.",
       "translation": "* {0} MUST BE A NUMBER. >>>!"
+    },
+    {
+      "source": "{0} new Codex",
+      "translation": "* {0} NEW CODEX >>>!"
     },
     {
       "source": "{0} non-body signals",
@@ -282677,6 +283733,10 @@
       "translation": "* {0} RECORDED CHILD BOXELS INSIDE {1}. >>>!"
     },
     {
+      "source": "{0} recorded visits",
+      "translation": "* {0} RECORDED VISITS >>>!"
+    },
+    {
       "source": "{0} recorded · suffix {1}",
       "translation": "* {0} RECORDED · SUFFIX {1} >>>!"
     },
@@ -282719,6 +283779,10 @@
     {
       "source": "{0} scan(s)",
       "translation": "* {0} SCAN(S) >>>!"
+    },
+    {
+      "source": "{0} scanned",
+      "translation": "* {0} SCANNED >>>!"
     },
     {
       "source": "{0} scans to go · each entry is {1}",

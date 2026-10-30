@@ -236,6 +236,7 @@
       <views:MineMapView x:Name="SurfaceMiningWorkspacePage" IsVisible="{Binding IsMineMapSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
+      <Border IsVisible="{Binding IsJourneysSelected}"><views:JourneysView DataContext="{Binding Journey}" /></Border>
       <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />
       <views:SearchView IsVisible="{Binding IsSearchSelected}" />
       <Border IsVisible="{Binding IsBookmarksSelected}"><views:BookmarksView DataContext="{Binding Bookmarks}" /></Border>

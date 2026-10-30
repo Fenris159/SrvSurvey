@@ -9,7 +9,7 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
+public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
 
@@ -17,7 +17,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private readonly IStarSystemResolver systemResolver;
     private readonly SystemNoteStore noteStore;
     private readonly SystemNotesSettingsStore settingsStore;
-    private readonly AsyncCommand openWindowCommand;
+    private readonly AsyncCommand openWorkspaceCommand;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand newJourneyCommand;
     private readonly AsyncCommand cancelNewJourneyCommand;
@@ -39,6 +39,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private string? currentSystemName;
     private long? currentSystemAddress;
     private string? initializedProfileKey;
+    private int contextVersion;
     private bool isBusy;
     private string statusMessage = "Waiting for a commander profile.";
     private IReadOnlyList<JourneyListItemViewModel> journeys = [];
@@ -55,6 +56,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private IReadOnlyList<string> screenshotFiles = [];
     private string? imagesDirectory;
     private bool isApplyingDocument;
+    private bool isUpdatingLibrary;
     private bool suppressSystemLoad;
     private int systemLoadVersion;
     private bool isCreating;
@@ -70,7 +72,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private bool isReprocessPending;
     private bool alwaysOnTop;
     private bool useGalacticTime;
-    private Func<Task<bool>>? windowOpener;
+    private Func<Task<bool>>? workspaceOpener;
     private Func<DirectoryInfo, Task<bool>>? directoryLauncher;
 
     public JourneyWorkspaceViewModel(
@@ -89,11 +91,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         useGalacticTime = settings.Snapshot?.JourneyUseGalacticTime ?? false;
         if (!settings.IsSuccess)
         {
-            statusMessage = settings.Error ?? "The Journey window preferences could not be loaded.";
+            statusMessage = settings.Error ?? "The Journey preferences could not be loaded.";
         }
 
-        openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
-        refreshCommand = new AsyncCommand(RefreshAsync, HasProfileAndNotBusy);
+        openWorkspaceCommand = new AsyncCommand(OpenWorkspaceAsync, CanOpenWorkspace);
+        refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(StartNewJourneyAsync, () => HasProfileAndNotBusy() && !HasActiveJourney);
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, () => IsCreating && !IsBusy);
         searchSystemsCommand = new AsyncCommand(
@@ -129,12 +131,16 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
-    public bool HasActiveJourney => journeyService.ActiveJourney is not null;
+    public bool HasActiveJourney =>
+        journeyService.ActiveJourney is { } active
+        && string.Equals(active.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
 
-    public string ActiveJourneyName => journeyService.ActiveJourney?.Name ?? "No active journey";
+    private JourneyDocument? CurrentActiveJourney => HasActiveJourney ? journeyService.ActiveJourney : null;
+
+    public string ActiveJourneyName => CurrentActiveJourney?.Name ?? "No active journey";
 
     public string ActiveJourneySummary =>
-        journeyService.ActiveJourney is { } active
+        CurrentActiveJourney is { } active
             ? $"{active.VisitedSystems.Count:N0} visits \u2022 set out {FormatTime(active.StartTime)}"
             : "Start a journey to track systems, scans, notes, screenshots, and rewards.";
 
@@ -159,7 +165,13 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     public IReadOnlyList<JourneyListItemViewModel> Journeys
     {
         get => journeys;
-        private set => SetField(ref journeys, value);
+        private set
+        {
+            if (SetField(ref journeys, value))
+            {
+                RaiseLibraryState();
+            }
+        }
     }
 
     public bool HasJourneys => Journeys.Count > 0;
@@ -169,6 +181,16 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         get => selectedJourney;
         set
         {
+            if (isUpdatingLibrary)
+            {
+                return;
+            }
+            if (IsDirty && selectedDocument?.FileName != value?.Document.FileName)
+            {
+                StatusMessage = "Save or discard changes before selecting another journey.";
+                OnPropertyChanged();
+                return;
+            }
             if (!SetField(ref selectedJourney, value))
             {
                 return;
@@ -234,6 +256,12 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         get => selectedSystem;
         set
         {
+            if (!isApplyingDocument && SelectedSystemNotes != loadedSystemNotes)
+            {
+                StatusMessage = "Save or discard the system notes before selecting another visit.";
+                OnPropertyChanged();
+                return;
+            }
             if (!SetField(ref selectedSystem, value))
             {
                 return;
@@ -445,7 +473,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         private set => SetField(ref useGalacticTime, value);
     }
 
-    public ICommand OpenWindowCommand => openWindowCommand;
+    public ICommand OpenWorkspaceCommand => openWorkspaceCommand;
 
     public ICommand RefreshCommand => refreshCommand;
 
@@ -477,10 +505,10 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public ICommand OpenImagesCommand => openImagesCommand;
 
-    public void SetWindowOpener(Func<Task<bool>>? opener)
+    public void SetWorkspaceOpener(Func<Task<bool>>? opener)
     {
-        windowOpener = opener;
-        openWindowCommand.RaiseCanExecuteChanged();
+        workspaceOpener = opener;
+        openWorkspaceCommand.RaiseCanExecuteChanged();
     }
 
     public void SetDirectoryLauncher(Func<DirectoryInfo, Task<bool>>? launcher)
@@ -525,8 +553,20 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
 
         initializedProfileKey = profileKey;
+        int version = ++contextVersion;
+        selectedJourney = null;
+        OnPropertyChanged(nameof(SelectedJourney));
+        ApplyDocument(null);
+        Journeys = [];
+        showArchived = false;
+        OnPropertyChanged(nameof(ShowArchived));
+        IsCreating = false;
+        IsConcludePending = false;
+        IsReprocessPending = false;
+        RaiseLibraryState();
         if (frontierId is null)
         {
+            IsBusy = false;
             ApplyDocument(null);
             Journeys = [];
             OnPropertyChanged(nameof(HasJourneys));
@@ -539,40 +579,62 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             JourneyServiceResult active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
+            if (version != contextVersion)
+            {
+                return true;
+            }
+
             await RefreshCatalogAsync(active.Journey?.FileName);
-            if (active.Errors.Count > 0)
+            if (version != contextVersion)
             {
-                StatusMessage = string.Join(Environment.NewLine, active.Errors);
+                return true;
             }
-            else if (active.Journey is null)
-            {
-                StatusMessage = "No active journey. Browse history or begin a new expedition.";
-            }
-            else if (active.ProcessedEventCount > 0)
-            {
-                StatusMessage = $"Caught up {active.ProcessedEventCount:N0} Journey journal events.";
-            }
-            else
-            {
-                StatusMessage = $"Active journey: {active.Journey.Name}.";
-            }
+
+            SetInitializationStatus(active);
             RaiseActiveState();
             return true;
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "Journey data could not be initialized: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "Journey data could not be initialized: " + exception.Message;
+            }
+
             return true;
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
+        }
+    }
+
+    private void SetInitializationStatus(JourneyServiceResult active)
+    {
+        if (active.Errors.Count > 0)
+        {
+            StatusMessage = string.Join(Environment.NewLine, active.Errors);
+        }
+        else if (active.Journey is null)
+        {
+            StatusMessage = "No active journey. Browse history or begin a new expedition.";
+        }
+        else if (active.ProcessedEventCount > 0)
+        {
+            StatusMessage = $"Caught up {active.ProcessedEventCount:N0} Journey journal events.";
+        }
+        else
+        {
+            StatusMessage = $"Active journey: {active.Journey.Name}.";
         }
     }
 
     public async Task ApplyJournalEventsAsync(IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
-        if (journalEvents.Count == 0 || journeyService.ActiveJourney is null)
+        if (journalEvents.Count == 0 || !HasActiveJourney)
         {
             return;
         }
@@ -602,6 +664,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public Task RefreshAsync()
     {
+        if (IsDirty)
+        {
+            StatusMessage = "Save or discard changes before refreshing journeys.";
+            return Task.CompletedTask;
+        }
         return RefreshCatalogAsync(selectedDocument?.FileName);
     }
 
@@ -620,13 +687,13 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             }
 
             OnPropertyChanged(nameof(ActiveJourneySummary));
-            StatusMessage = "Journey window preferences saved.";
+            StatusMessage = "Journey preferences saved.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
             AlwaysOnTop = previousAlwaysOnTop;
             UseGalacticTime = previousUseGalacticTime;
-            StatusMessage = "Journey window preferences were not saved: " + exception.Message;
+            StatusMessage = "Journey preferences were not saved: " + exception.Message;
         }
     }
 
@@ -635,14 +702,14 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return HasProfile && !IsBusy;
     }
 
-    private bool CanOpenWindow()
+    private bool CanOpenWorkspace()
     {
-        return HasProfile && windowOpener is not null && !IsBusy;
+        return workspaceOpener is not null && !IsBusy;
     }
 
-    private async Task OpenWindowAsync()
+    private async Task OpenWorkspaceAsync()
     {
-        if (windowOpener is null || !await windowOpener())
+        if (workspaceOpener is null || !await workspaceOpener())
         {
             StatusMessage = "The Journey workspace requires a commander profile.";
         }
@@ -655,10 +722,17 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
+        string profile = frontierId;
+        int version = contextVersion;
         try
         {
             IsBusy = true;
-            JourneyCatalogResult result = await journeyService.LoadAllAsync(frontierId);
+            JourneyCatalogResult result = await journeyService.LoadAllAsync(profile);
+            if (version != contextVersion)
+            {
+                return;
+            }
+
             Journeys = result
                 .Journeys.Select(journey => new JourneyListItemViewModel(
                     journey,
@@ -668,11 +742,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 .ToArray();
             OnPropertyChanged(nameof(HasJourneys));
             SelectedJourney =
-                Journeys.FirstOrDefault(item =>
+                VisibleJourneys.FirstOrDefault(item =>
                     string.Equals(item.Document.FileName, preferredFileName, StringComparison.Ordinal)
                 )
-                ?? Journeys.FirstOrDefault(item => item.Document.IsActive)
-                ?? (Journeys.Count > 0 ? Journeys[0] : null);
+                ?? VisibleJourneys.FirstOrDefault(item => item.Document.IsActive)
+                ?? (VisibleJourneys.Count > 0 ? VisibleJourneys[0] : null);
             if (result.Errors.Count > 0)
             {
                 StatusMessage = string.Join(Environment.NewLine, result.Errors);
@@ -690,11 +764,17 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "Journey history could not be loaded: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "Journey history could not be loaded: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -1047,12 +1127,25 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             JourneyName = preserveEdits ? previousName : document?.Name ?? string.Empty;
             JourneyDescription = preserveEdits ? previousDescription : document?.Description ?? string.Empty;
             QuickStatistics = document is null ? [] : CreateStatistics(JourneyStatistics.Calculate(document));
+            primaryStatistics = QuickStatistics.Take(4).ToArray();
+            IReadOnlySet<string> systemsWithPhotos =
+                document
+                    ?.VisitedSystems.Where(visit => visit.Counts.Screenshots > 0)
+                    .Select(visit => visit.StarSystem.Name)
+                    .ToHashSet(StringComparer.Ordinal)
+                ?? [];
+            IReadOnlySet<string> systemsWithNotes =
+                document
+                    ?.VisitedSystems.Where(visit => visit.Counts.Notes > 0)
+                    .Select(visit => visit.StarSystem.Name)
+                    .ToHashSet(StringComparer.Ordinal)
+                ?? [];
             VisitedSystems =
                 document
                     ?.VisitedSystems.OrderByDescending(visit => visit.Arrived)
                     .Select(visit => new JourneySystemItemViewModel(
                         visit,
-                        CreateInterestFlags(document, visit),
+                        CreateInterestFlags(visit, systemsWithPhotos, systemsWithNotes),
                         FormatTime(visit.Arrived),
                         visit.Departed is { } departed ? FormatTime(departed) : "Current"
                     ))
@@ -1087,7 +1180,16 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             isApplyingDocument = false;
         }
 
+        IsDeletePending = false;
         OnPropertyChanged(nameof(HasSelectedJourney));
+        OnPropertyChanged(nameof(PrimaryStatistics));
+        OnPropertyChanged(nameof(SelectedJourneyState));
+        OnPropertyChanged(nameof(HasVisitedSystems));
+        OnPropertyChanged(nameof(RouteOrigin));
+        OnPropertyChanged(nameof(RouteDestination));
+        OnPropertyChanged(nameof(IsCompletedJourney));
+        OnPropertyChanged(nameof(IsSelectedActiveJourney));
+        OnPropertyChanged(nameof(ArchiveButtonText));
         OnPropertyChanged(nameof(JourneyByline));
         OnPropertyChanged(nameof(HasSelectedSystem));
         RaiseDirtyState();
@@ -1196,7 +1298,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                     : item
             )
             .ToArray();
-        selectedJourney = Journeys.FirstOrDefault(item => item.Document.FileName == document.FileName);
+        selectedJourney = VisibleJourneys.FirstOrDefault(item => item.Document.FileName == selectedDocument?.FileName);
         OnPropertyChanged(nameof(SelectedJourney));
         OnPropertyChanged(nameof(HasJourneys));
     }
@@ -1212,15 +1314,17 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private void RaiseDirtyState()
     {
         OnPropertyChanged(nameof(IsDirty));
+        refreshCommand.RaiseCanExecuteChanged();
         saveCommand.RaiseCanExecuteChanged();
         discardCommand.RaiseCanExecuteChanged();
         requestConcludeCommand.RaiseCanExecuteChanged();
         requestReprocessCommand.RaiseCanExecuteChanged();
+        RaiseHistoryCommands();
     }
 
     private void RaiseCommands()
     {
-        openWindowCommand.RaiseCanExecuteChanged();
+        openWorkspaceCommand.RaiseCanExecuteChanged();
         refreshCommand.RaiseCanExecuteChanged();
         newJourneyCommand.RaiseCanExecuteChanged();
         cancelNewJourneyCommand.RaiseCanExecuteChanged();
@@ -1236,6 +1340,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         confirmReprocessCommand.RaiseCanExecuteChanged();
         cancelReprocessCommand.RaiseCanExecuteChanged();
         openImagesCommand.RaiseCanExecuteChanged();
+        RaiseHistoryCommands();
     }
 
     private string FormatTime(DateTimeOffset value)
@@ -1248,13 +1353,19 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private string CreateSystemDetails(JourneySystemVisit visit)
     {
         int bodyCount = Math.Max(0, visit.Counts.BodyCount - visit.Counts.Stars);
+        string departure = visit.Departed switch
+        {
+            { } departed => $"Departed {FormatTime(departed)}",
+            _ when selectedDocument?.EndTime is { } ended => $"Journey ended here {FormatTime(ended)}",
+            _ => "Currently in this system",
+        };
         var lines = new List<string>
         {
             $"Arrived {FormatTime(visit.Arrived)}",
-            visit.Departed is { } departed ? $"Departed {FormatTime(departed)}" : "Currently in this system",
+            departure,
             $"FSS {visit.Counts.BodyScans:N0} of {visit.Counts.BodyCount:N0} bodies; DSS {visit.Counts.DetailedSurfaceScans:N0} of {bodyCount:N0}",
             $"Exploration rewards ~{visit.Counts.ExplorationRewards:N0} CR",
-            $"Biology {visit.Counts.Organisms:N0} scans / {visit.Counts.ExobiologyRewards:N0} CR",
+            $"Biology {visit.Counts.Organisms:N0} analysed / base value {visit.Counts.ExobiologyRewards:N0} CR",
             $"Codex {visit.CodexScanned?.Count ?? 0:N0} scans / {visit.Counts.NewCodexEntries:N0} regional firsts",
             $"Touchdowns {visit.Counts.Touchdowns:N0}; screenshots {visit.Counts.Screenshots:N0}; notes {visit.Counts.Notes:N0}",
         };
@@ -1291,10 +1402,14 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             new("Screenshots", statistics.Counts.Screenshots.ToString("N0", CultureInfo.CurrentCulture)),
             new("Notes", statistics.Counts.Notes.ToString("N0", CultureInfo.CurrentCulture)),
             new("Organisms", statistics.Counts.Organisms.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Bio rewards", $"{statistics.Counts.ExobiologyRewards:N0} CR"),
+            new("Biology base value", $"{statistics.Counts.ExobiologyRewards:N0} CR"),
             new("Exploration rewards", $"~{statistics.Counts.ExplorationRewards:N0} CR"),
             new("Codex scans", statistics.CodexScanCount.ToString("N0", CultureInfo.CurrentCulture)),
             new("New Codex", statistics.Counts.NewCodexEntries.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Stars", statistics.Counts.Stars.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Bodies catalogued", statistics.Counts.BodyCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Landing sites by visit", statistics.LandedBodyCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Journal touchdowns", statistics.Counts.Touchdowns.ToString("N0", CultureInfo.CurrentCulture)),
         };
         values.AddRange(
             statistics.SubCategoryCounts.Select(category => new JourneyStatisticViewModel(
@@ -1305,16 +1420,17 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return values;
     }
 
-    private static string CreateInterestFlags(JourneyDocument journey, JourneySystemVisit visit)
+    private static string CreateInterestFlags(
+        JourneySystemVisit visit,
+        IReadOnlySet<string> systemsWithPhotos,
+        IReadOnlySet<string> systemsWithNotes
+    )
     {
-        IEnumerable<JourneySystemVisit> sameNameVisits = journey.VisitedSystems.Where(candidate =>
-            string.Equals(candidate.StarSystem.Name, visit.StarSystem.Name, StringComparison.Ordinal)
-        );
         string flags = string.Empty;
         flags +=
             visit.Counts.Screenshots > 0
                 ? "P"
-                : (sameNameVisits.Any(candidate => candidate.Counts.Screenshots > 0)) switch
+                : (systemsWithPhotos.Contains(visit.StarSystem.Name)) switch
                 {
                     true => "p",
                     false => string.Empty,
@@ -1323,7 +1439,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         flags +=
             visit.Counts.Notes > 0
                 ? "N"
-                : (sameNameVisits.Any(candidate => candidate.Counts.Notes > 0)) switch
+                : (systemsWithNotes.Contains(visit.StarSystem.Name)) switch
                 {
                     true => "n",
                     false => string.Empty,
@@ -1412,7 +1528,9 @@ public sealed record JourneyListItemViewModel(JourneyDocument Document, string S
     public string Description =>
         string.IsNullOrWhiteSpace(Document.Description) ? "No description" : Document.Description;
 
-    public string State => Document.IsActive ? "ACTIVE" : "COMPLETE";
+    public string State => Document.IsActive ? "Active" : "Complete";
+
+    public string VisitSummary => $"{Document.VisitedSystems.Count:N0} recorded visits";
 }
 
 public sealed record JourneyStatisticViewModel(string Label, string Value);
@@ -1425,6 +1543,18 @@ public sealed record JourneySystemItemViewModel(
 )
 {
     public string Name => Visit.StarSystem.Name;
+
+    public string ActivitySummary =>
+        string.Join(
+            ", ",
+            new[]
+            {
+                Visit.Counts.BodyScans > 0 ? $"{Visit.Counts.BodyScans:N0} scanned" : "",
+                Visit.Counts.DetailedSurfaceScans > 0 ? $"{Visit.Counts.DetailedSurfaceScans:N0} mapped" : "",
+                Visit.Counts.Organisms > 0 ? $"{Visit.Counts.Organisms:N0} organisms" : "",
+                Visit.Counts.NewCodexEntries > 0 ? $"{Visit.Counts.NewCodexEntries:N0} new Codex" : "",
+            }.Where(value => value.Length > 0)
+        );
 
     public string Address => Visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture);
 }

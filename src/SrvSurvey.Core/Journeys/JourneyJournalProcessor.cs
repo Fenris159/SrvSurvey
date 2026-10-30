@@ -426,7 +426,7 @@ public sealed class JourneyJournalProcessor
                 Counts = visit.Counts with
                 {
                     Organisms = checked(visit.Counts.Organisms + 1),
-                    ExobiologyRewards = checked(visit.Counts.ExobiologyRewards + checked((int)reward)),
+                    ExobiologyRewards = checked(visit.Counts.ExobiologyRewards + reward),
                 },
             }
         );

@@ -549,7 +549,7 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
         );
 
-        Assert.Equal(18, viewModel.NavigationItems.Count);
+        Assert.Equal(19, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -558,6 +558,7 @@ public sealed class MainWindowViewModelTests
                 "Exploration",
                 "Exobiology",
                 "Travel",
+                "Journeys",
                 "Boxel",
                 "Search",
                 "Bookmarks",
@@ -599,7 +600,10 @@ public sealed class MainWindowViewModelTests
             ["Exploration", "Exobiology", "Boxel"],
             viewModel.SurveyNavigationItems.Select(item => item.Label)
         );
-        Assert.Equal(["Travel", "Search", "Bookmarks"], viewModel.NavigationWorkspaceItems.Select(item => item.Label));
+        Assert.Equal(
+            ["Travel", "Journeys", "Search", "Bookmarks"],
+            viewModel.NavigationWorkspaceItems.Select(item => item.Label)
+        );
         Assert.Equal(
             ["Mining", "Surface Mining", "Guardian", "Quests", "Colonization"],
             viewModel.ActivityNavigationItems.Select(item => item.Label)
