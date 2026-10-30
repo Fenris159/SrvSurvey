@@ -5537,6 +5537,10 @@
       "translation": "Wählen Sie eine Verbindungsroute, führen Sie die Kopplungsschritte durch und aktivieren Sie dann VR-Overlays."
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "Wählen Sie ein Ziel für den Reiseberichtsordner"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "Wählen Sie einen Ordner und speichern Sie dort sowohl die JSON-Details als auch die CSV-Zusammenfassung."
     },
@@ -7493,6 +7497,10 @@
       "translation": "Kopieren Sie den relevanten Protokollabschnitt, wenn Sie ein Problem melden, einschließlich des ersten Fehlers und des vorangegangenen Vorgangs."
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "Berichtsbilder kopieren und Vorschauen vorbereiten..."
+    },
+    {
       "source": "Core",
       "translation": "Kern"
     },
@@ -8011,6 +8019,10 @@
     {
       "source": "D3",
       "translation": "D3"
+    },
+    {
+      "source": "D4",
+      "translation": "D4"
     },
     {
       "source": "DARK",
@@ -10649,10 +10661,6 @@
       "translation": "Export fehlgeschlagen: {0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "Reisebericht exportieren"
-    },
-    {
       "source": "Export mining report",
       "translation": "Bergbaubericht exportieren"
     },
@@ -13249,10 +13257,6 @@
       "translation": "Die HTML-Farbe „{0}“ muss #RRGGBB oder #RRGGBBAA verwenden."
     },
     {
-      "source": "HTML report",
-      "translation": "HTML-Bericht"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} Inhaltstyp: Text/Plain; charset=utf-8 Inhaltslänge: {1} Verbindung: schließen"
     },
@@ -14813,8 +14817,8 @@
       "translation": "Der Export des Reiseberichts wurde abgebrochen."
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "Reisebericht exportiert. Öffnen Sie die HTML-Datei in einem Browser, um sie zu lesen, zu teilen oder zu drucken."
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "Reisebericht nach {0} exportiert. Öffnen Sie index.html, um es anzuzeigen, und geben Sie den gesamten Ordner frei, um seine Bilder einzuschließen."
     },
     {
       "source": "Journey updated through {0}.",
@@ -26213,6 +26217,10 @@
       "translation": "Screenshot"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "Screenshot „{0}“ konnte nicht dekodiert werden."
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "Die Screenshot-Konvertierung verfügt über eigene Steuerelemente für Quelle, Ziel, Benennung, Banner und Bildeinbettung. Die Benennung mit hoher Auflösung wird anhand der Abmessungen des Elite-Spielclients und nicht anhand des primären Desktops bestimmt."
     },
@@ -31985,6 +31993,10 @@
       "translation": "Die Replay-Overlay-Darstellung verwendet einen nicht unterstützten Maßstab."
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "Der Name des Berichtsordners ist ungültig."
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "Der angeforderte Spielbereich liegt außerhalb der gemeinsamen Wayland-Quelle."
     },
@@ -32159,6 +32171,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "Die Screenshot-Einstellungen wurden für diese Sitzung geändert, konnten jedoch nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "Die Screenshot-Vorschau konnte nicht erstellt werden."
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -37451,6 +37467,10 @@
     {
       "source": "images",
       "translation": "Bilder"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "Bilder/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -46223,6 +46243,10 @@
       "translation": "Elija una ruta de conexión, complete sus pasos de emparejamiento y luego habilite las superposiciones de realidad virtual."
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "Elija un destino para la carpeta del informe de viaje"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "Elija una carpeta y luego guarde allí los detalles JSON y el resumen CSV."
     },
@@ -48179,6 +48203,10 @@
       "translation": "Copie la sección de registro relevante cuando informe un problema, incluido el primer error y la operación que lo precedió."
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "Copiando imágenes de informes y preparando vistas previas..."
+    },
+    {
       "source": "Core",
       "translation": "Centro"
     },
@@ -48697,6 +48725,10 @@
     {
       "source": "D3",
       "translation": "D3"
+    },
+    {
+      "source": "D4",
+      "translation": "D4"
     },
     {
       "source": "DARK",
@@ -51335,10 +51367,6 @@
       "translation": "Error al exportar: {0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "Informe de viaje de exportación"
-    },
-    {
       "source": "Export mining report",
       "translation": "Informe de exportación minera"
     },
@@ -53935,10 +53963,6 @@
       "translation": "El color HTML '{0}' debe usar #RRGGBB o #RRGGBBAA."
     },
     {
-      "source": "HTML report",
-      "translation": "informe HTML"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} Tipo de contenido: texto/sin formato; charset=utf-8 Longitud del contenido: {1} Conexión: cerrar"
     },
@@ -55499,8 +55523,8 @@
       "translation": "Exportación del informe de viaje cancelada."
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "Informe de viaje exportado. Abra el archivo HTML en un navegador para leerlo, compartirlo o imprimirlo."
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "Informe de viaje exportado a {0}. Abra index.html para verlo y comparta la carpeta completa para incluir sus imágenes."
     },
     {
       "source": "Journey updated through {0}.",
@@ -66899,6 +66923,10 @@
       "translation": "Captura de pantalla"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "La captura de pantalla '{0}' no se pudo decodificar."
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "La conversión de capturas de pantalla tiene sus propios controles de origen, destino, denominación, banner e incrustación de imágenes. Los nombres de alta resolución se determinan a partir de las dimensiones del cliente del juego Elite y no del escritorio que sea principal."
     },
@@ -72671,6 +72699,10 @@
       "translation": "La presentación de superposición de repetición utiliza una escala no compatible."
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "El nombre de la carpeta del informe no es válido."
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "El área de juego solicitada está fuera de la fuente compartida de Wayland."
     },
@@ -72845,6 +72877,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "La preferencia de captura de pantalla cambió para esta sesión pero no se pudo guardar: {0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "No se pudo crear la vista previa de la captura de pantalla."
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -78137,6 +78173,10 @@
     {
       "source": "images",
       "translation": "imágenes"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "imágenes/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -86909,6 +86949,10 @@
       "translation": "Choisissez un itinéraire de connexion, effectuez ses étapes de couplage, puis activez les superpositions VR."
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "Choisissez une destination pour le dossier du rapport de trajet"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "Choisissez un dossier, puis enregistrez-y les détails JSON et le résumé CSV."
     },
@@ -88865,6 +88909,10 @@
       "translation": "Copiez la section du journal appropriée lorsque vous signalez un problème, y compris la première erreur et l'opération qui l'a précédée."
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "Copie d'images de rapport et préparation d'aperçus..."
+    },
+    {
       "source": "Core",
       "translation": "Cœur"
     },
@@ -89383,6 +89431,10 @@
     {
       "source": "D3",
       "translation": "D3"
+    },
+    {
+      "source": "D4",
+      "translation": "D4"
     },
     {
       "source": "DARK",
@@ -92021,10 +92073,6 @@
       "translation": "Échec de l'exportation : {0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "Exporter le rapport de parcours"
-    },
-    {
       "source": "Export mining report",
       "translation": "Exporter le rapport minier"
     },
@@ -94621,10 +94669,6 @@
       "translation": "La couleur HTML '{0}' doit utiliser #RRGGBB ou #RRGGBBAA."
     },
     {
-      "source": "HTML report",
-      "translation": "Rapport HTML"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} Type de contenu : texte/plain ; charset=utf-8 Longueur du contenu : {1} Connexion : fermer"
     },
@@ -96185,8 +96229,8 @@
       "translation": "Exportation du rapport de trajet annulée."
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "Rapport de trajet exporté. Ouvrez le fichier HTML dans un navigateur pour le lire, le partager ou l'imprimer."
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "Rapport de parcours exporté vers {0}. Ouvrez index.html pour le visualiser et partagez l'intégralité du dossier pour inclure ses images."
     },
     {
       "source": "Journey updated through {0}.",
@@ -107585,6 +107629,10 @@
       "translation": "Capture d'écran"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "La capture d'écran « {0} » n'a pas pu être décodée."
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "La conversion de capture d'écran possède ses propres contrôles de source, de destination, de dénomination, de bannière et d'intégration d'image. La dénomination haute résolution est déterminée à partir des dimensions du client du jeu Elite plutôt que du bureau principal."
     },
@@ -113357,6 +113405,10 @@
       "translation": "La présentation superposée en rediffusion utilise une échelle non prise en charge."
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "Le nom du dossier de rapports n'est pas valide."
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "La zone de jeu demandée se trouve en dehors de la source Wayland partagée."
     },
@@ -113531,6 +113583,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "La préférence de capture d'écran a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "L'aperçu de la capture d'écran n'a pas pu être créé."
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -118823,6 +118879,10 @@
     {
       "source": "images",
       "translation": "photos"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "images/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -127595,6 +127655,10 @@
       "translation": "Escolha uma rota de conexão, conclua as etapas de emparelhamento e ative as sobreposições de VR."
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "Escolha um destino para a pasta do relatório de viagem"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "Escolha uma pasta e salve os detalhes JSON e o resumo CSV nela."
     },
@@ -129551,6 +129615,10 @@
       "translation": "Copie a seção de log relevante ao relatar um problema, incluindo o primeiro erro e a operação que o precedeu."
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "Copiando imagens de relatórios e preparando visualizações..."
+    },
+    {
       "source": "Core",
       "translation": "Essencial"
     },
@@ -130069,6 +130137,10 @@
     {
       "source": "D3",
       "translation": "D3"
+    },
+    {
+      "source": "D4",
+      "translation": "D4"
     },
     {
       "source": "DARK",
@@ -132707,10 +132779,6 @@
       "translation": "Falha na exportação: {0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "Exportar relatório de jornada"
-    },
-    {
       "source": "Export mining report",
       "translation": "Relatório de mineração de exportação"
     },
@@ -135307,10 +135375,6 @@
       "translation": "A cor HTML '{0}' deve usar #RRGGBB ou #RRGGBBAA."
     },
     {
-      "source": "HTML report",
-      "translation": "Relatório HTML"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} Tipo de conteúdo: texto/sem formatação; charset=utf-8 Conteúdo-Comprimento: {1} Conexão: fechar"
     },
@@ -136871,8 +136935,8 @@
       "translation": "Exportação do relatório de viagem cancelada."
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "Relatório de viagem exportado. Abra o arquivo HTML em um navegador para lê-lo, compartilhá-lo ou imprimi-lo."
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "Relatório de viagem exportado para {0}. Abra index.html para visualizá-lo e compartilhe a pasta inteira para incluir suas imagens."
     },
     {
       "source": "Journey updated through {0}.",
@@ -148271,6 +148335,10 @@
       "translation": "Captura de tela"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "A captura de tela '{0}' não pôde ser decodificada."
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "A conversão de captura de tela tem seus próprios controles de origem, destino, nomenclatura, banner e incorporação de imagem. A nomenclatura de alta resolução é determinada a partir das dimensões do cliente do jogo Elite, e não do desktop principal."
     },
@@ -154043,6 +154111,10 @@
       "translation": "A apresentação de sobreposição de repetição usa uma escala não suportada."
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "O nome da pasta do relatório é inválido."
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "A área de jogo solicitada está fora da fonte compartilhada do Wayland."
     },
@@ -154217,6 +154289,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "A preferência de captura de tela foi alterada para esta sessão, mas não pôde ser salva: {0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "A visualização da captura de tela não pôde ser criada."
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -159509,6 +159585,10 @@
     {
       "source": "images",
       "translation": "imagens"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "imagens/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -168281,6 +168361,10 @@
       "translation": "Выберите маршрут подключения, выполните действия по сопряжению, а затем включите наложения VR."
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "Выберите место для папки отчета о поездке"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "Выберите папку, затем сохраните там сведения в формате JSON и сводку в формате CSV."
     },
@@ -170237,6 +170321,10 @@
       "translation": "Скопируйте соответствующий раздел журнала при сообщении о проблеме, включая первую ошибку и операцию, которая ей предшествовала."
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "Копирование изображений отчета и подготовка предварительного просмотра..."
+    },
+    {
       "source": "Core",
       "translation": "Основной"
     },
@@ -170755,6 +170843,10 @@
     {
       "source": "D3",
       "translation": "Д3"
+    },
+    {
+      "source": "D4",
+      "translation": "Д4"
     },
     {
       "source": "DARK",
@@ -173393,10 +173485,6 @@
       "translation": "Не удалось экспортировать: {0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "Отчет об экспортном путешествии"
-    },
-    {
       "source": "Export mining report",
       "translation": "Экспортный отчет о добыче полезных ископаемых"
     },
@@ -175993,10 +176081,6 @@
       "translation": "Цвет HTML «{0}» должен использовать #RRGGBB или #RRGGBBAA."
     },
     {
-      "source": "HTML report",
-      "translation": "HTML-отчет"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} Тип контента: текстовый/обычный; charset=utf-8 Content-Length: {1} Соединение: закрыть"
     },
@@ -177557,8 +177641,8 @@
       "translation": "Экспорт отчета о поездке отменен."
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "Отчет о поездке экспортирован. Откройте HTML-файл в браузере, чтобы прочитать, поделиться или распечатать его."
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "Отчет о поездке экспортирован в {0}. Откройте index.html, чтобы просмотреть ее, и поделитесь всей папкой, включив в нее изображения."
     },
     {
       "source": "Journey updated through {0}.",
@@ -188957,6 +189041,10 @@
       "translation": "Скриншот"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "Снимок экрана «{0}» не удалось декодировать."
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "Преобразование снимков экрана имеет собственные элементы управления источником, местом назначения, именованием, баннером и встраиванием изображений. Именование в высоком разрешении определяется размерами игрового клиента Elite, а не тем, какой рабочий стол является основным."
     },
@@ -194729,6 +194817,10 @@
       "translation": "В представлении наложения повтора используется неподдерживаемый масштаб."
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "Недопустимое имя папки отчета."
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "Запрошенная игровая зона находится за пределами общего источника Wayland."
     },
@@ -194903,6 +194995,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "Настройки снимков экрана изменились для этого сеанса, но не удалось сохранить: {0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "Не удалось создать предварительный просмотр скриншота."
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -200195,6 +200291,10 @@
     {
       "source": "images",
       "translation": "изображения"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "изображения/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -208967,6 +209067,10 @@
       "translation": "选择连接路由，完成配对步骤，然后启用 VR 叠加。"
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "选择旅程报告文件夹的目的地"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "选择一个文件夹，然后将 JSON 详细信息和 CSV 摘要保存在其中。"
     },
@@ -210923,6 +211027,10 @@
       "translation": "报告问题时复制相关日志部分，包括第一个错误及其之前的操作。"
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "正在复制报告图像并准备预览..."
+    },
+    {
       "source": "Core",
       "translation": "核"
     },
@@ -211441,6 +211549,10 @@
     {
       "source": "D3",
       "translation": "D3"
+    },
+    {
+      "source": "D4",
+      "translation": "D4"
     },
     {
       "source": "DARK",
@@ -214079,10 +214191,6 @@
       "translation": "导出失败：{0}"
     },
     {
-      "source": "Export journey report",
-      "translation": "出口旅程报告"
-    },
-    {
       "source": "Export mining report",
       "translation": "出口采矿报告"
     },
@@ -216679,10 +216787,6 @@
       "translation": "HTML 颜色“{0}”必须使用#RRGGBB 或#RRGGBBAA。"
     },
     {
-      "source": "HTML report",
-      "translation": "HTML报告"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "HTTP/1.1 {0} 内容类型：文本/纯文本； charset=utf-8 内容长度：{1} 连接：关闭"
     },
@@ -218243,8 +218347,8 @@
       "translation": "行程报告导出已取消。"
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "行程报告已导出。在浏览器中打开 HTML 文件以阅读、共享或打印它。"
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "行程报告导出到 {0}。打开index.html查看它，并共享整个文件夹以包含其图像。"
     },
     {
       "source": "Journey updated through {0}.",
@@ -229643,6 +229747,10 @@
       "translation": "截图"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "屏幕截图“{0}”无法解码。"
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "屏幕截图转换有自己的源、目标、命名、横幅和图像嵌入控件。高分辨率命名是根据精英游戏客户端尺寸确定的，而不是根据哪个桌面恰好是主要的。"
     },
@@ -235415,6 +235523,10 @@
       "translation": "重放叠加演示使用了不受支持的比例。"
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "报告文件夹名称无效。"
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "请求的游戏区域位于共享 Wayland 源之外。"
     },
@@ -235589,6 +235701,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "此会话的屏幕截图首选项已更改，但无法保存：{0}"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "无法创建屏幕截图预览。"
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -240881,6 +240997,10 @@
     {
       "source": "images",
       "translation": "图片"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "图片/{0}/{1}"
     },
     {
       "source": "imperial",
@@ -249653,6 +249773,10 @@
       "translation": "* CHOOSE A CONNECTION ROUTE, COMPLETE ITS PAIRING STEPS, THEN ENABLE VR OVERLAYS. >>>!"
     },
     {
+      "source": "Choose a destination for the journey report folder",
+      "translation": "* CHOOSE A DESTINATION FOR THE JOURNEY REPORT FOLDER >>>!"
+    },
+    {
       "source": "Choose a folder, then save both the JSON detail and CSV summary there.",
       "translation": "* CHOOSE A FOLDER, THEN SAVE BOTH THE JSON DETAIL AND CSV SUMMARY THERE. >>>!"
     },
@@ -251609,6 +251733,10 @@
       "translation": "* COPY THE RELEVANT LOG SECTION WHEN REPORTING A PROBLEM, INCLUDING THE FIRST ERROR AND THE OPERATION THAT PRECEDED IT. >>>!"
     },
     {
+      "source": "Copying report images and preparing previews...",
+      "translation": "* COPYING REPORT IMAGES AND PREPARING PREVIEWS... >>>!"
+    },
+    {
       "source": "Core",
       "translation": "* CORE >>>!"
     },
@@ -252127,6 +252255,10 @@
     {
       "source": "D3",
       "translation": "* D3 >>>!"
+    },
+    {
+      "source": "D4",
+      "translation": "* D4 >>>!"
     },
     {
       "source": "DARK",
@@ -254765,10 +254897,6 @@
       "translation": "* EXPORT FAILED: {0} >>>!"
     },
     {
-      "source": "Export journey report",
-      "translation": "* EXPORT JOURNEY REPORT >>>!"
-    },
-    {
       "source": "Export mining report",
       "translation": "* EXPORT MINING REPORT >>>!"
     },
@@ -257365,10 +257493,6 @@
       "translation": "* HTML COLOUR '{0}' MUST USE #RRGGBB OR #RRGGBBAA. >>>!"
     },
     {
-      "source": "HTML report",
-      "translation": "* HTML REPORT >>>!"
-    },
-    {
       "source": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
       "translation": "* HTTP/1.1 {0} CONTENT-TYPE: TEXT/PLAIN; CHARSET=UTF-8 CONTENT-LENGTH: {1} CONNECTION: CLOSE >>>!"
     },
@@ -258929,8 +259053,8 @@
       "translation": "* JOURNEY REPORT EXPORT CANCELED. >>>!"
     },
     {
-      "source": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-      "translation": "* JOURNEY REPORT EXPORTED. OPEN THE HTML FILE IN A BROWSER TO READ, SHARE, OR PRINT IT. >>>!"
+      "source": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+      "translation": "* JOURNEY REPORT EXPORTED TO {0}. OPEN INDEX.HTML TO VIEW IT, AND SHARE THE ENTIRE FOLDER TO INCLUDE ITS IMAGES. >>>!"
     },
     {
       "source": "Journey updated through {0}.",
@@ -270329,6 +270453,10 @@
       "translation": "* SCREENSHOT >>>!"
     },
     {
+      "source": "Screenshot '{0}' could not be decoded.",
+      "translation": "* SCREENSHOT '{0}' COULD NOT BE DECODED. >>>!"
+    },
+    {
       "source": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
       "translation": "* SCREENSHOT CONVERSION HAS ITS OWN SOURCE, DESTINATION, NAMING, BANNER, AND IMAGE-EMBEDDING CONTROLS. HIGH-RESOLUTION NAMING IS DETERMINED FROM THE ELITE GAME CLIENT DIMENSIONS RATHER THAN WHICHEVER DESKTOP HAPPENS TO BE PRIMARY. >>>!"
     },
@@ -276101,6 +276229,10 @@
       "translation": "* THE REPLAY OVERLAY PRESENTATION USES AN UNSUPPORTED SCALE. >>>!"
     },
     {
+      "source": "The report folder name is invalid.",
+      "translation": "* THE REPORT FOLDER NAME IS INVALID. >>>!"
+    },
+    {
       "source": "The requested game area is outside the shared Wayland source.",
       "translation": "* THE REQUESTED GAME AREA IS OUTSIDE THE SHARED WAYLAND SOURCE. >>>!"
     },
@@ -276275,6 +276407,10 @@
     {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "* THE SCREENSHOT PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "The screenshot preview could not be created.",
+      "translation": "* THE SCREENSHOT PREVIEW COULD NOT BE CREATED. >>>!"
     },
     {
       "source": "The screenshot source folder does not exist: {0}",
@@ -281567,6 +281703,10 @@
     {
       "source": "images",
       "translation": "* IMAGES >>>!"
+    },
+    {
+      "source": "images/{0}/{1}",
+      "translation": "* IMAGES/{0}/{1} >>>!"
     },
     {
       "source": "imperial",

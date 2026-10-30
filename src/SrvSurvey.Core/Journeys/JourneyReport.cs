@@ -5,10 +5,14 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
 
-/// <summary>A self-contained expedition report with no network dependencies or local file links.</summary>
+/// <summary>An offline expedition report using portable relative links for its image bundle.</summary>
 public static partial class JourneyReport
 {
-    public static string Html(JourneyDocument journey, IReadOnlyDictionary<long, string>? systemNotes = null)
+    public static string Html(
+        JourneyDocument journey,
+        IReadOnlyDictionary<long, string>? systemNotes = null,
+        IReadOnlyDictionary<long, IReadOnlyList<JourneyReportImage>>? systemImages = null
+    )
     {
         ArgumentNullException.ThrowIfNull(journey);
         if (journey.EndTime is not { } endTime)
@@ -19,12 +23,13 @@ public static partial class JourneyReport
         var html = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">");
         html.Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
             .Append(
-                "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:\">"
+                "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; base-uri 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' file:\">"
             )
             .Append("<title>")
             .Append(E(journey.Name))
             .Append(" — Journey report</title><style>")
             .Append(Styles)
+            .Append(GalleryStyles)
             .Append("</style></head><body><main>");
         html.Append("<header class=\"report-heading\"><p class=\"brand\">SrvSurvey-XP · Expedition report</p><h1>")
             .Append(E(journey.Name))
@@ -78,7 +83,15 @@ public static partial class JourneyReport
         {
             JourneySystemVisit visit = journey.VisitedSystems[index];
             string notes = systemNotes?.GetValueOrDefault(visit.StarSystem.SystemAddress) ?? string.Empty;
-            AppendVisit(html, journey, index, visit, notes, endTime);
+            AppendVisit(
+                html,
+                journey,
+                index,
+                visit,
+                notes,
+                endTime,
+                systemImages?.GetValueOrDefault(visit.StarSystem.SystemAddress)
+            );
         }
         html.Append("</ol>");
         if (journey.VisitedSystems.Count == 0)
@@ -86,9 +99,12 @@ public static partial class JourneyReport
             html.Append("<p class=\"muted\">No system visits were recorded for this journey.</p>");
         }
         html.Append(
-                "</section><footer>Created with SrvSurvey-XP. This file contains the saved journey and its system notes. No connection is needed to read it.</footer></main><script>"
+                "</section><footer>Created with SrvSurvey-XP. Share this whole folder, including images, to keep the journey report portable. No connection is needed to read it.</footer></main>"
             )
+            .Append(ImageViewer)
+            .Append("<script>")
             .Append(Script)
+            .Append(GalleryScript)
             .Append("</script></body></html>");
         return html.ToString();
     }
@@ -99,7 +115,8 @@ public static partial class JourneyReport
         int index,
         JourneySystemVisit visit,
         string notes,
-        DateTimeOffset endTime
+        DateTimeOffset endTime,
+        IReadOnlyList<JourneyReportImage>? images
     )
     {
         double leg = index == 0 ? 0 : journey.VisitedSystems[index - 1].StarSystem.DistanceTo(visit.StarSystem);
@@ -118,7 +135,9 @@ public static partial class JourneyReport
         Readout(html, "Mapped", N(visit.Counts.DetailedSurfaceScans));
         Readout(html, "Organisms", N(visit.Counts.Organisms));
         Readout(html, "New Codex", N(visit.Counts.NewCodexEntries));
-        html.Append("</div><details><summary>Visit details</summary><div class=\"visit-details\"><dl class=\"facts\">");
+        html.Append("</div>");
+        AppendGallery(html, visit.StarSystem.Name, images);
+        html.Append("<details><summary>Visit details</summary><div class=\"visit-details\"><dl class=\"facts\">");
         Fact(html, "System address", visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture));
         GalacticCoordinate position = visit.StarSystem.Position;
         Fact(

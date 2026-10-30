@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using SkiaSharp;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
@@ -116,12 +117,11 @@ public sealed class JourneysPresentationTests : IDisposable
         string folder = ScreenshotProcessingService.GetSystemFolderPath(target, "Sagittarius A*");
         Directory.CreateDirectory(folder);
         string path = Path.Combine(folder, "Sagittarius A (2026-10-29 140000).png");
-        await File.WriteAllBytesAsync(
-            path,
-            Convert.FromBase64String(
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
-            )
-        );
+        using var bitmap = new SKBitmap(800, 450);
+        bitmap.Erase(SKColors.CornflowerBlue);
+        using var image = SKImage.FromBitmap(bitmap);
+        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+        await File.WriteAllBytesAsync(path, data.ToArray());
         return path;
     }
 
@@ -351,15 +351,14 @@ public sealed class JourneysPresentationTests : IDisposable
     {
         using MainWindowViewModel main = await CreateModelAsync();
         var view = new JourneysView { DataContext = main.Journey };
-        string path = Path.Combine(directory, "journey.html");
-        await File.WriteAllTextAsync(path, "Previous report");
         await view.ExportHtmlAsync(options =>
         {
-            Assert.Equal("html", options.DefaultExtension);
-            Assert.EndsWith(".html", options.SuggestedFileName, StringComparison.Ordinal);
-            return Task.FromResult<JourneyReportDestination?>(new(path));
+            Assert.False(options.AllowMultiple);
+            return Task.FromResult<JourneyReportDestination?>(new(directory));
         });
+        string path = Directory.GetFiles(directory, "index.html", SearchOption.AllDirectories).Single();
         Assert.Contains("Expedition report", await File.ReadAllTextAsync(path), StringComparison.Ordinal);
+        Assert.True(Directory.Exists(Path.Combine(Path.GetDirectoryName(path)!, "images")));
         Assert.Contains("report exported", main.Journey.StatusMessage, StringComparison.Ordinal);
         await view.ExportHtmlAsync(_ => Task.FromResult<JourneyReportDestination?>(null));
         await view.ExportHtmlAsync(_ => throw new IOException("Storage unavailable"));
@@ -371,27 +370,50 @@ public sealed class JourneysPresentationTests : IDisposable
         Assert.True(main.Journey.IsDirty);
     }
 
-    [Fact]
-    public async Task FailedReportWriteKeepsThePreviousFileAndRemovesItsStagingFile()
+    [AvaloniaFact]
+    public async Task HtmlExportCapturesSystemImagesAndBundlesThemWithRelativeLinks()
     {
-        Directory.CreateDirectory(directory);
-        string path = Path.Combine(directory, "journey.html");
-        await File.WriteAllTextAsync(path, "Previous report");
-        await Assert.ThrowsAsync<IOException>(() =>
-            JourneysView.SaveReportAtomicallyAsync(
-                path,
-                "New report",
-                async (temporary, _) =>
-                {
-                    await File.WriteAllTextAsync(temporary, "Partial content");
-                    throw new IOException("Storage failed during write");
-                }
-            )
+        using MainWindowViewModel main = await CreateModelAsync();
+        string sourceRoot = Path.Combine(directory, "originals");
+        string original = await CreateScreenshotAsync(sourceRoot);
+        main.ScreenshotProcessing.TargetFolder = sourceRoot;
+        JourneyDocument document = main.Journey.SelectedJourney!.Document;
+        await new JourneyStore(main.AppDataPaths.DataDirectory).SaveAsync(
+            document with
+            {
+                VisitedSystems =
+                [
+                    .. document.VisitedSystems,
+                    document.VisitedSystems[^1] with
+                    {
+                        Arrived = document.StartTime.AddHours(3),
+                    },
+                ],
+            }
         );
-        Assert.Equal("Previous report", await File.ReadAllTextAsync(path));
-        Assert.Equal([path], Directory.GetFiles(directory));
-        await JourneysView.SaveReportAtomicallyAsync(path, "Complete replacement");
-        Assert.Equal("Complete replacement", await File.ReadAllTextAsync(path));
+        await main.Journey.RefreshAsync();
+        JourneyHtmlExport? report = await main.Journey.CreateHtmlReportAsync();
+        Assert.NotNull(report);
+        JourneyReportAsset image = Assert.Single(report.Images);
+        Assert.Equal(original, image.SourcePath);
+        Assert.DoesNotContain(sourceRoot, report.Html, StringComparison.Ordinal);
+        Assert.Contains(image.Image.ImagePath, report.Html, StringComparison.Ordinal);
+        Assert.Equal(2, report.Html.Split("class=\"screenshot-tile\"", StringSplitOptions.None).Length - 1);
+        var view = new JourneysView { DataContext = main.Journey };
+        string exports = Path.Combine(directory, "portable-exports");
+        await view.ExportHtmlAsync(_ => Task.FromResult<JourneyReportDestination?>(new(exports)));
+        string folder = Assert.Single(Directory.GetDirectories(exports));
+        Assert.True(File.Exists(Path.Combine(folder, "index.html")));
+        Assert.True(File.Exists(Path.Combine(folder, image.Image.ImagePath)));
+        Assert.True(File.Exists(Path.Combine(folder, image.Image.PreviewPath)));
+        Assert.True(File.Exists(original));
+        string blocked = Path.Combine(directory, "blocked-export");
+        await File.WriteAllTextAsync(blocked, "A file occupies this destination");
+        await view.ExportHtmlAsync(_ => Task.FromResult<JourneyReportDestination?>(new(blocked)));
+        Assert.Contains("could not be saved", main.Journey.StatusMessage, StringComparison.Ordinal);
+        Assert.False(main.Journey.IsBusy);
+        Assert.True(main.Journey.CanExportReport);
+        Assert.True(File.Exists(Path.Combine(folder, "index.html")));
     }
 
     [AvaloniaFact]

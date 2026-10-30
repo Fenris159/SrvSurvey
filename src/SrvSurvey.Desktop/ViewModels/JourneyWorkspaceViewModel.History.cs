@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -187,6 +188,12 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             IsBusy = true;
             StatusMessage = "Preparing the journey report...";
+            Dictionary<long, string?> imageFolders = CaptureReportImageFolders(document);
+            JourneyReportImages images = await Task.Run(() => CaptureReportImages(imageFolders));
+            if (version != contextVersion)
+            {
+                return null;
+            }
             var notes = new Dictionary<long, string>();
             foreach (
                 JourneySystemReference system in document
@@ -209,12 +216,12 @@ public sealed partial class JourneyWorkspaceViewModel
                 }
                 notes[system.SystemAddress] = result.Notes ?? string.Empty;
             }
-            string html = await Task.Run(() => JourneyReport.Html(document, notes));
+            string html = await Task.Run(() => JourneyReport.Html(document, notes, images.BySystem));
             if (version != contextVersion)
             {
                 return null;
             }
-            return new JourneyHtmlExport($"journey-{document.FileName}.html", html);
+            return new JourneyHtmlExport($"journey-{document.FileName}.html", html, images.Assets);
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -274,5 +281,3 @@ public sealed partial class JourneyWorkspaceViewModel
         OnPropertyChanged(nameof(CanExportReport));
     }
 }
-
-public sealed record JourneyHtmlExport(string FileName, string Html);

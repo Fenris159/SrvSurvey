@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -107,28 +108,29 @@ public sealed partial class JourneysView : UserControl
         {
             await ExportHtmlAsync(async options =>
             {
-                IStorageFile? file = await top.StorageProvider.SaveFilePickerAsync(options);
-                if (file is null)
+                IReadOnlyList<IStorageFolder> folders = await top.StorageProvider.OpenFolderPickerAsync(options);
+                if (folders.Count == 0)
                 {
                     return null;
                 }
+                IStorageFolder folder = folders[0];
                 try
                 {
                     string path =
-                        file.TryGetLocalPath()
+                        folder.TryGetLocalPath()
                         ?? throw new NotSupportedException("Choose a local folder to save the report safely.");
-                    return new JourneyReportDestination(path, file);
+                    return new JourneyReportDestination(path, folder);
                 }
                 catch
                 {
-                    file.Dispose();
+                    folder.Dispose();
                     throw;
                 }
             });
         }
     }
 
-    internal async Task ExportHtmlAsync(Func<FilePickerSaveOptions, Task<JourneyReportDestination?>> openDestination)
+    internal async Task ExportHtmlAsync(Func<FolderPickerOpenOptions, Task<JourneyReportDestination?>> openDestination)
     {
         if (Model is not { } model || !model.CanExportReport)
         {
@@ -144,12 +146,10 @@ public sealed partial class JourneysView : UserControl
             }
 
             JourneyReportDestination? destination = await openDestination(
-                new FilePickerSaveOptions
+                new FolderPickerOpenOptions
                 {
-                    Title = "Export journey report",
-                    SuggestedFileName = report.FileName,
-                    DefaultExtension = "html",
-                    FileTypeChoices = [new FilePickerFileType("HTML report") { Patterns = ["*.html"] }],
+                    Title = "Choose a destination for the journey report folder",
+                    AllowMultiple = false,
                 }
             );
             if (destination is null)
@@ -159,10 +159,7 @@ public sealed partial class JourneysView : UserControl
             }
 
             using IDisposable? owner = destination.Owner;
-            await SaveReportAtomicallyAsync(destination.Path, report.Html);
-            model.SetExportStatus(
-                "Journey report exported. Open the HTML file in a browser to read, share, or print it."
-            );
+            await model.SaveHtmlReportAsync(report, destination.Path);
         }
         catch (Exception exception)
             when (exception
@@ -170,30 +167,10 @@ public sealed partial class JourneysView : UserControl
                         or UnauthorizedAccessException
                         or InvalidOperationException
                         or NotSupportedException
+                        or ArgumentException
             )
         {
             model.SetExportStatus("The journey report could not be saved: " + exception.Message);
-        }
-    }
-
-    internal static async Task SaveReportAtomicallyAsync(
-        string path,
-        string html,
-        Func<string, string, Task>? write = null
-    )
-    {
-        string temporary = path + $".{Guid.NewGuid():N}.tmp";
-        try
-        {
-            await (write is null ? File.WriteAllTextAsync(temporary, html) : write(temporary, html));
-            File.Move(temporary, path, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
         }
     }
 }

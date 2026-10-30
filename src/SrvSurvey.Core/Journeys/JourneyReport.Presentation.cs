@@ -30,9 +30,14 @@ public static partial class JourneyReport
         document.getElementById('expand-visits').addEventListener('change',event=>{
           document.querySelectorAll('.visit details').forEach(detail=>detail.open=event.target.checked);
         });
-        document.getElementById('print-report').addEventListener('click',()=>window.print());
+        document.getElementById('print-report').addEventListener('click',async()=>{
+          const images=[...document.querySelectorAll('.screenshot-tile img')];
+          images.forEach(image=>image.loading='eager');
+          await Promise.all(images.map(image=>image.decode().catch(()=>{})));
+          window.print();
+        });
         let printState=[];
-        window.addEventListener('beforeprint',()=>{printState=[...document.querySelectorAll('details')].map(detail=>[detail,detail.open]);printState.forEach(([detail])=>detail.open=true);});
+        window.addEventListener('beforeprint',()=>{document.querySelectorAll('.screenshot-tile img').forEach(image=>image.loading='eager');printState=[...document.querySelectorAll('details')].map(detail=>[detail,detail.open]);printState.forEach(([detail])=>detail.open=true);});
         window.addEventListener('afterprint',()=>printState.forEach(([detail,open])=>detail.open=open));
         """;
 }

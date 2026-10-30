@@ -11100,6 +11100,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
+    "Text": "Choose a destination for the journey report folder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+  },
+  {
     "Text": "Choose a folder, then save both the JSON detail and CSV summary there.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15029,6 +15037,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Copying report images and preparing previews...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+  },
+  {
     "Text": "Core",
     "IsFormat": false,
     "SourceKinds": [
@@ -16071,6 +16087,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "D4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
   },
   {
     "Text": "DARK",
@@ -21366,14 +21390,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
-    "Text": "Export journey report",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
-  },
-  {
     "Text": "Export mining report",
     "IsFormat": false,
     "SourceKinds": [
@@ -26582,14 +26598,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
   },
   {
-    "Text": "HTML report",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
-  },
-  {
     "Text": "HTTP/1.1 {0} Content-Type: text/plain; charset=utf-8 Content-Length: {1} Connection: close",
     "IsFormat": true,
     "SourceKinds": [
@@ -29725,12 +29733,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
   },
   {
-    "Text": "Journey report exported. Open the HTML file in a browser to read, share, or print it.",
-    "IsFormat": false,
+    "Text": "Journey report exported to {0}. Open index.html to view it, and share the entire folder to include its images.",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
   },
   {
     "Text": "Journey updated through {0}.",
@@ -52597,6 +52605,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
+    "Text": "Screenshot \u0027{0}\u0027 could not be decoded.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
+  },
+  {
     "Text": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
     "IsFormat": false,
     "SourceKinds": [
@@ -63088,7 +63104,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
   },
   {
     "Text": "The journey was not concluded: {0}",
@@ -64171,6 +64187,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/ReplayPresentationSnapshotStore.cs"
   },
   {
+    "Text": "The report folder name is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
+  },
+  {
     "Text": "The requested game area is outside the shared Wayland source.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64521,6 +64545,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "The screenshot preview could not be created.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
   },
   {
     "Text": "The screenshot source folder does not exist: {0}",
@@ -74996,7 +75028,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
   },
   {
     "Text": "http",
@@ -75117,6 +75149,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
+  },
+  {
+    "Text": "images/{0}/{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
   },
   {
     "Text": "imperial",

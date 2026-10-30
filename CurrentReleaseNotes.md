@@ -10,11 +10,15 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   instead of opening a separate window. The Travel shortcut opens this workspace.
   Archive completed journeys to tuck them away, restore them when needed, or
   delete their saved records while keeping journals, system notes and screenshots.
-- **Journey reports:** Export a completed journey as a self-contained HTML report
+- **Journey reports:** Export a completed journey as a portable report folder
   with expedition statistics, a route overview, searchable system history and
-  saved notes. Expand visit details, share the file, or print it to PDF without
+  saved notes. Each system includes tiled screenshot previews that enlarge in
+  the browser. The folder contains index.html, full-size images and smaller
+  previews linked with relative paths, so it can be moved or shared together.
+  Expand visit details or print the report to PDF without
   an internet connection. Large biology and exploration reward totals are retained.
-  Exporting safely replaces an existing report only after the new file is ready.
+  Each export creates a new folder, keeping earlier exports intact. The folder
+  appears only after all its files are ready.
 - **Journey readouts:** The redesigned layout keeps the journey library, route
   summary, visited systems, statistics and editable details together. Visit rows
   show notes, screenshots and landings, including notes and photos from earlier

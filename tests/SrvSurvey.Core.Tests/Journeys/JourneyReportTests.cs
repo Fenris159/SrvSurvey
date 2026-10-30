@@ -5,6 +5,45 @@ namespace SrvSurvey.Core.Tests.Journeys;
 public sealed class JourneyReportTests
 {
     [Fact]
+    public void ScreenshotGalleriesUseRelativePreviewsAndOriginalsForEveryVisitToTheSystem()
+    {
+        string html = JourneyReport.Html(
+            SampleJourney(),
+            systemImages: new Dictionary<long, IReadOnlyList<JourneyReportImage>>
+            {
+                [42] = [new("Earth & sunrise <1>.png", "images/42/0001.png", "images/42/0001-preview.png")],
+            }
+        );
+        Assert.Equal(2, html.Split("class=\"screenshot-tile\"", StringSplitOptions.None).Length - 1);
+        Assert.Contains("href=\"images/42/0001.png\"", html, StringComparison.Ordinal);
+        Assert.Contains("src=\"images/42/0001-preview.png\"", html, StringComparison.Ordinal);
+        Assert.Contains("Earth &amp; sunrise &lt;1&gt;.png", html, StringComparison.Ordinal);
+        Assert.Contains("<dialog id=\"image-viewer\"", html, StringComparison.Ordinal);
+        Assert.Contains("img-src 'self' file:", html, StringComparison.Ordinal);
+        Assert.Contains("Share this whole folder", html, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "class=\"screenshot-tile\"",
+            JourneyReport.Html(SampleJourney()),
+            StringComparison.Ordinal
+        );
+    }
+
+    [Theory]
+    [InlineData("/private/photo.png")]
+    [InlineData("images/../../photo.png")]
+    [InlineData("images/%2e%2e/photo.png")]
+    [InlineData("https://example.org/photo.png")]
+    [InlineData("images/a.png?secret")]
+    [InlineData("images/a.svg")]
+    [InlineData("images\\photo.png")]
+    [InlineData("")]
+    public void ScreenshotLinksCannotEscapeThePortableImageFolder(string path)
+    {
+        Assert.ThrowsAny<ArgumentException>(() => new JourneyReportImage("Screenshot", path, "images/preview.png"));
+        Assert.ThrowsAny<ArgumentException>(() => new JourneyReportImage("Screenshot", "images/original.png", path));
+    }
+
+    [Fact]
     public void PortableReportIncludesEveryStatisticVisitAndRecordedDetail()
     {
         JourneyDocument journey = SampleJourney();

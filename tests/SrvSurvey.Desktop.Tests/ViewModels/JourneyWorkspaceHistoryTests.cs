@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
