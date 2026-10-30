@@ -1,38 +1,33 @@
-# SrvSurvey-XP 2.1.3.0-rc.76
+# SrvSurvey-XP 2.1.3.0-rc.77
 
-This release refreshes the application and commander workspaces, makes overlay
-configuration clearer, and adds exploration privacy, Discord carrier alerts,
-and cargo-confirmed mining totals.
+This release improves mining overlay readouts and keeps commander, ship and
+Fleet Carrier information consistent as journals and Frontier data update.
 
 ## What's changed
 
-- **Application appearance:** A sleek spaceship-inspired design brings clearer
-  typography, spacing and controls to the main window and dialogs while keeping
-  all six theme palettes, existing navigation and custom forms.
-- **Commander workspace:** Commander, current ship, Fleet Carrier, Market,
-  Shipyard and Community Goals views present their information in a clearer
-  reading order with fewer enclosing panels. Debt is shown only when nonzero.
-- **Overlay configuration:** Theme appearance and workspace overlay settings are
-  organized into clearer groups. Five custom brush colors can be selected for
-  overlay editor overrides independently of the application theme.
-- **Overlay sizing and hints:** The spherical search overlay expands and shrinks
-  with its contents while respecting its anchor. Empty hover hints no longer
-  produce blank squares.
-- **Colonization visibility:** Turning off both automatic hiding and Colonization
-  commodities availability keeps the panel hidden, including when starting the
-  game docked. Shortcut toggling remains available, and the settings explanation
-  makes persistent display clearer.
-- **Stealth Mode:** An optional Privacy & sharing setting holds enabled EDDN,
-  Inara, EDAstro and EDSM uploads in persistent queues until a live docking.
-  Reports survive restarts, and discoveries after docking wait for the next
-  docking. Any docking counts, including a Fleet Carrier; Raven API traffic is
-  unaffected. Turning Stealth Mode off resumes retained uploads.
-- **Discord carrier announcements:** Optional webhook settings announce planned
-  jumps, cancellations and confirmed arrivals for personal and squadron Fleet
-  Carriers, with itinerary details and separate notification choices.
-- **Mining session accounting:** Session totals and rates reconcile refinery
-  output with actual ship cargo while excluding limpets, purchases, transfers
-  and other cargo movements. Refinery output after a session ends appears as
-  separate carryover, and incomplete evidence is clearly marked as estimated.
-  Recovery across pauses, journal replay and application restarts preserves
-  accurate counts without counting the same physical record twice.
+- **Recent Prospects:** Mining notifications now show asteroid engineering
+  material content as Low, Medium or High instead of a fixed “100% remaining”
+  reading. Mineral percentages remain visible, and missing material content
+  stays hidden, including in recovered sessions.
+- **Mining session overlay:** Choose whether prospecting yields are sorted by
+  average mineral percentage or number of finds. Five minerals appear by
+  default; the result count can be changed with single-step up/down controls
+  in mining overlay settings. Preferences are saved per commander and apply
+  immediately, while session history and reports retain every result.
+- **Owned fleet:** Ship changes produce one consistent CURRENT marker.
+  Journal ship selection and Frontier fleet data now use persistent ship
+  identities, including when an older cache contains conflicting markers.
+- **Current Ship:** Journal loadouts update the selected ship and its module
+  readout without borrowing another ship's details. Complete engineering
+  updates preserve modules, and removed hangars no longer restore stale launch
+  bays. Switching commanders clears the previous ship's cached readouts,
+  including when the selected account is offline or has no cached profile.
+- **Commander data freshness:** Reputation, Community Goals and ship data use
+  observation timestamps to reconcile journal and Frontier updates. A later
+  Frontier fetch takes precedence, while an older request that finishes late
+  cannot overwrite newer journal data. Mixed journal batches stay attributed
+  to the correct commander, and an interrupted multicrew session no longer
+  blocks own-ship updates after restarting the game.
+- **Fleet Carrier jumps:** Personal and squadron carriers keep separate jump
+  requests, cancellations and arrival state. Each carrier's readout uses its
+  own Frontier refresh time so activity on one cannot replace the other.

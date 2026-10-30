@@ -291,11 +291,13 @@ public sealed partial class FrontierAccountServiceTests
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requests = new List<string>();
+            var requestedAt = new Dictionary<string, DateTimeOffset>();
             using FrontierAccountService service = CreateService(
                 store,
                 request =>
                 {
                     requests.Add(request.RequestUri!.AbsolutePath);
+                    requestedAt[request.RequestUri.AbsolutePath] = now;
                     now = now.AddSeconds(1);
                     return request.RequestUri.AbsolutePath == "/profile"
                         ? Json(
@@ -323,6 +325,12 @@ public sealed partial class FrontierAccountServiceTests
             );
             Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(40));
             Assert.Equal(13, requests.Count);
+            Assert.Equal(requestedAt["/profile"], snapshot.FetchedAt);
+            Assert.Equal(requestedAt["/fleetcarrier"], snapshot.CarrierFetchedAt);
+            Assert.Equal(requestedAt["/squadron"], snapshot.SquadronCarrierFetchedAt);
+            Assert.Equal(requestedAt["/market"], snapshot.MarketFetchedAt);
+            Assert.Equal(requestedAt["/shipyard"], snapshot.ShipyardFetchedAt);
+            Assert.Equal(requestedAt["/communitygoals"], snapshot.CommunityGoalsFetchedAt);
         }
         finally
         {

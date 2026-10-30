@@ -8,6 +8,7 @@ public sealed class MiningSessionOverlayViewModel : WorkspaceObservable, IDispos
 {
     private readonly MiningWorkspaceViewModel? workspace;
     private readonly MiningSession? preview;
+    private IReadOnlyList<MiningMaterialSummary>? prospectingYields;
 
     public MiningSessionOverlayViewModel(MiningWorkspaceViewModel? workspace)
     {
@@ -64,8 +65,27 @@ public sealed class MiningSessionOverlayViewModel : WorkspaceObservable, IDispos
         Session is { } session
             ? $"{session.ProspectorLimpets:N0} prospectors · {session.CollectorLimpets:N0} collectors"
             : string.Empty;
-    public IReadOnlyList<MiningMaterialSummary> ProspectingYields =>
-        Session is { } session ? session.Summarize(workspace?.Settings.Thresholds ?? session.Thresholds) : [];
+    public IReadOnlyList<MiningMaterialSummary> ProspectingYields => prospectingYields ??= ReadProspectingYields();
+
+    /// <summary>Sorts complete session totals before selecting the configured number of overlay rows.</summary>
+    private MiningMaterialSummary[] ReadProspectingYields()
+    {
+        if (Session is not { } session)
+        {
+            return [];
+        }
+
+        IEnumerable<MiningMaterialSummary> yields = session.Summarize(
+            workspace?.Settings.Thresholds ?? session.Thresholds
+        );
+        if (workspace?.Settings.SessionYieldSort == MiningSessionYieldSort.Finds)
+        {
+            yields = yields.OrderByDescending(row => row.Finds).ThenByDescending(row => row.Average);
+        }
+
+        return yields.Take(Math.Clamp(workspace?.Settings.SessionYieldLimit ?? 5, 1, 100)).ToArray();
+    }
+
     public bool HasProspectingYields => ProspectingYields.Count > 0;
     public string Notes => Session?.Notes ?? string.Empty;
     public bool HasNotes => Notes.Length > 0;
@@ -77,6 +97,7 @@ public sealed class MiningSessionOverlayViewModel : WorkspaceObservable, IDispos
             return;
         }
 
+        prospectingYields = null;
         foreach (
             string name in new[]
             {

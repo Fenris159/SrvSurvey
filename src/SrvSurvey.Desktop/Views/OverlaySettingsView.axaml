@@ -699,6 +699,25 @@
             <TextBlock Text="Persistent prospector results" />
             <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}" Minimum="1" Maximum="8" />
             <CheckBox Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}" />
+            <Separator />
+            <TextBlock FontWeight="SemiBold" Text="Session overlay" />
+            <WrapPanel>
+              <StackPanel Spacing="6" Margin="0,0,20,8">
+                <TextBlock Text="Sort prospecting yields by" />
+                <ComboBox x:Name="MiningSessionYieldSortInput" MinWidth="240"
+                          SelectedIndex="{Binding MiningWorkspace.SessionYieldSortIndex, Mode=TwoWay}">
+                  <ComboBoxItem Content="Average mineral percentage" />
+                  <ComboBoxItem Content="Finds" />
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Spacing="6" Margin="0,0,0,8">
+                <TextBlock Text="Maximum minerals shown" />
+                <NumericUpDown x:Name="MiningSessionYieldLimitInput" Width="120" HorizontalAlignment="Left"
+                               Minimum="1" Maximum="100" Increment="1" FormatString="0"
+                               ShowButtonSpinner="True" ButtonSpinnerLocation="Right"
+                               Value="{Binding MiningWorkspace.SessionYieldLimit, Mode=TwoWay}" />
+              </StackPanel>
+            </WrapPanel>
             <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>

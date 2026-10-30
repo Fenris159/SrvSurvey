@@ -2266,14 +2266,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "ACTIVE PROSPECTORS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"
-  },
-  {
     "Text": "ACTIVE SAMPLE",
     "IsFormat": false,
     "SourceKinds": [
@@ -6116,6 +6108,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Average mineral percentage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Average yield",
@@ -10272,7 +10272,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "CarrierJump",
@@ -10288,7 +10288,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "CarrierJumpRequest",
@@ -10296,7 +10296,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "CarrierLocation",
@@ -10304,7 +10304,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "CarrierNextJump",
@@ -10336,7 +10336,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "Carriers to announce",
@@ -16072,14 +16072,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
-    "Text": "DEPLETED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
-  },
-  {
     "Text": "DESCENT",
     "IsFormat": false,
     "SourceKinds": [
@@ -17048,7 +17040,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "Depleted",
@@ -26987,7 +26979,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
   },
   {
     "Text": "High Tech",
@@ -33369,7 +33361,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "MarketId",
@@ -33498,6 +33490,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Material content: High",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Material content: Low",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Material content: Medium",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
@@ -33651,6 +33667,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Maximum minerals shown",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Maximum systems",
@@ -44732,6 +44756,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
   },
   {
+    "Text": "RECENT PROSPECTS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"
+  },
+  {
     "Text": "RECENTLY RECORDED",
     "IsFormat": false,
     "SourceKinds": [
@@ -53633,6 +53665,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Session overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55982,6 +56022,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Sort prospecting yields by",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "SortNeedsAscendingAtCarriers",
     "IsFormat": false,
     "SourceKinds": [
@@ -56399,7 +56447,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
   },
   {
     "Text": "SquadronLogo",
@@ -73949,6 +73997,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "fleetcarrier.id",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+  },
+  {
     "Text": "fleetcarrier/route",
     "IsFormat": false,
     "SourceKinds": [
@@ -80374,14 +80430,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
-    "Text": "{0} \u00B7 Remaining {1}%",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
-  },
-  {
     "Text": "{0} \u00B7 Tier {1}: {2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -80572,14 +80620,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "{0}% remaining",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "{0}.desktop",

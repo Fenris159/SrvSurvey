@@ -4,6 +4,12 @@ using System.Text.Json;
 
 namespace SrvSurvey.Core.Mining;
 
+public enum MiningSessionYieldSort
+{
+    AveragePercentage,
+    Finds,
+}
+
 public sealed record MiningPreferences
 {
     public bool ReceiveCommunityData { get; set; }
@@ -31,6 +37,8 @@ public sealed record MiningPreferences
     public int NotificationSeconds { get; set; } = 15;
     public int PersistentProspectSlots { get; set; } = 4;
     public bool HideProspectsBelowThreshold { get; set; }
+    public MiningSessionYieldSort SessionYieldSort { get; set; }
+    public int SessionYieldLimit { get; set; } = 5;
     public string HomeSystem { get; set; } = "";
     public Dictionary<string, double> Thresholds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<MiningFiregroup> Firegroups { get; set; } = [];
@@ -195,6 +203,8 @@ public sealed class MiningStore(string directory)
             || settings.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
             || settings.ChimeVolume is < 0 or > 100
             || settings.PersistentProspectSlots is < 1 or > 8
+            || !Enum.IsDefined(settings.SessionYieldSort)
+            || settings.SessionYieldLimit is < 1 or > 100
             || settings.Firegroups.Any(g =>
                 g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null
             )

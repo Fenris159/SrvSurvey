@@ -1133,10 +1133,6 @@
       "translation": "AKTIVE OBELISKEN"
     },
     {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "AKTIVE PROSPEKTOREN"
-    },
-    {
       "source": "ACTIVE SAMPLE",
       "translation": "AKTIVE PROBE"
     },
@@ -3055,6 +3051,10 @@
     {
       "source": "Average / Best",
       "translation": "Durchschnittlich / Am besten"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "Durchschnittlicher Mineralanteil"
     },
     {
       "source": "Average yield",
@@ -8011,10 +8011,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "ABFAHRT NACH {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "Erschöpft"
     },
     {
       "source": "DESCENT",
@@ -16693,6 +16689,18 @@
       "translation": "Materialhändler - Kodiert"
     },
     {
+      "source": "Material content: High",
+      "translation": "Materialgehalt: Hoch"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "Materialgehalt: Niedrig"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "Materialgehalt: Mittel"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Materialpunkte können beim schnellen Sammeln zurückbleiben. POI-Markierungen werden pro Siedlung zufällig generiert und stimmen möglicherweise nicht mit den tatsächlichen Standorten überein."
     },
@@ -16767,6 +16775,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "Maximale Entfernung bis zur Ankunft (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "Maximal angezeigte Mineralien"
     },
     {
       "source": "Maximum systems",
@@ -22289,6 +22301,10 @@
       "translation": "BEREIT ZUM SCANNEN"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "LETZTE PROSPEKTIONEN"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "ZULETZT AUFGENOMMEN"
     },
@@ -26729,6 +26745,10 @@
       "translation": "Sitzungsnotizen"
     },
     {
+      "source": "Session overlay",
+      "translation": "Sitzungs-Overlay"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "Die Sitzung zeigt Prospektionsprozentsätze, Kernentdeckungen, Qualitätstreffer, raffinierte Tonnage, Napfschnecken, technische Materialien und Fracht. Bei manuellen Zählkorrekturen bleiben die ursprünglichen Beobachtungen erhalten."
     },
@@ -27899,6 +27919,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "Sortieren Sie die Anforderungen vom kleinsten zum größten, während Sie an FCs angedockt sind"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "Prospektionsergebnisse sortieren nach"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -36869,6 +36893,10 @@
       "translation": "Flottenträger"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "Flottenträger/Route"
     },
@@ -40081,10 +40109,6 @@
       "translation": "{0} · Depot: {1} t · Halten: {2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · Verbleibende {1}%"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Stufe {1}: {2}"
     },
@@ -40179,10 +40203,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0} % von {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "{0}% verbleibend"
     },
     {
       "source": "{0}.desktop",
@@ -41577,10 +41597,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ACTIVOS"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "PROSPECTORES ACTIVOS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -43501,6 +43517,10 @@
     {
       "source": "Average / Best",
       "translation": "Promedio / Mejor"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "Porcentaje medio del mineral"
     },
     {
       "source": "Average yield",
@@ -48457,10 +48477,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "SALIDA HACIA {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "AGOTADO"
     },
     {
       "source": "DESCENT",
@@ -57139,6 +57155,18 @@
       "translation": "Comerciante de materiales - Codificados"
     },
     {
+      "source": "Material content: High",
+      "translation": "Contenido de materiales: Alto"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "Contenido de materiales: Bajo"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "Contenido de materiales: Medio"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Los puntos de material pueden retrasarse al recolectarse rápidamente. Los marcadores de puntos de interés se generan aleatoriamente por asentamiento y es posible que no coincidan con las ubicaciones reales."
     },
@@ -57213,6 +57241,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "Distancia máxima hasta la llegada (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "Número máximo de minerales"
     },
     {
       "source": "Maximum systems",
@@ -62735,6 +62767,10 @@
       "translation": "LISTO PARA ESCANEAR"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "PROSPECCIONES RECIENTES"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "RECIENTEMENTE GRABADO"
     },
@@ -67175,6 +67211,10 @@
       "translation": "Notas de sesión"
     },
     {
+      "source": "Session overlay",
+      "translation": "Superposición de la sesión"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "La sesión muestra porcentajes de prospección, descubrimientos de núcleos, resultados de calidad, tonelaje refinado, lapas, materiales de ingeniería y carga. Las correcciones de recuento manual conservan las observaciones originales."
     },
@@ -68345,6 +68385,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "Ordene las necesidades de menor a mayor mientras está atracado en FC"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "Ordenar resultados de prospección por"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -77315,6 +77359,10 @@
       "translation": "transportista de flota"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "transportista de flota/ruta"
     },
@@ -80527,10 +80575,6 @@
       "translation": "{0} · Depósito: {1} t · Espera: {2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · Restante {1}%"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Nivel {1}: {2}"
     },
@@ -80625,10 +80669,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0}% de {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "{0}% restante"
     },
     {
       "source": "{0}.desktop",
@@ -82023,10 +82063,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBÉLISQUES ACTIFS"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "PROSPECTEURS ACTIFS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -83947,6 +83983,10 @@
     {
       "source": "Average / Best",
       "translation": "Moyen / Meilleur"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "Pourcentage moyen du minerai"
     },
     {
       "source": "Average yield",
@@ -88903,10 +88943,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "DÉPART VERS {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "ÉPUISÉ"
     },
     {
       "source": "DESCENT",
@@ -97585,6 +97621,18 @@
       "translation": "Marchand de matériaux - Encodés"
     },
     {
+      "source": "Material content: High",
+      "translation": "Teneur en matériaux : Élevée"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "Teneur en matériaux : Faible"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "Teneur en matériaux : Moyenne"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Les points de matériaux peuvent être en retard lors d'une collecte rapide. Les marqueurs de POI sont générés aléatoirement par colonie et peuvent ne pas correspondre aux emplacements réels."
     },
@@ -97659,6 +97707,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "Distance maximale jusqu'à l'arrivée (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "Nombre maximal de minerais affichés"
     },
     {
       "source": "Maximum systems",
@@ -103181,6 +103233,10 @@
       "translation": "PRÊT À NUMÉRISER"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "PROSPECTIONS RÉCENTES"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "RÉCEMMENT ENREGISTRÉ"
     },
@@ -107621,6 +107677,10 @@
       "translation": "Notes de séance"
     },
     {
+      "source": "Session overlay",
+      "translation": "Superposition de session"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "La session montre les pourcentages de prospection, les découvertes principales, les résultats de qualité, le tonnage raffiné, les patelles, les matériaux d'ingénierie et la cargaison. Les corrections de comptage manuelles conservent les observations originales."
     },
@@ -108791,6 +108851,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "Trier les besoins du moins au plus grand lorsqu'il est amarré aux FC"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "Trier les résultats de prospection par"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -117761,6 +117825,10 @@
       "translation": "transporteur de flotte"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "flottetransporteur/route"
     },
@@ -120973,10 +121041,6 @@
       "translation": "{0} · Dépôt : {1} t · Réserve : {2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · {1}% restant"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Niveau {1} : {2}"
     },
@@ -121071,10 +121135,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0}% de {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "{0}% restant"
     },
     {
       "source": "{0}.desktop",
@@ -122469,10 +122529,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ATIVOS"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "PROSPECTORES ATIVOS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -124393,6 +124449,10 @@
     {
       "source": "Average / Best",
       "translation": "Média / Melhor"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "Percentual médio do mineral"
     },
     {
       "source": "Average yield",
@@ -129349,10 +129409,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "PARTIDA PARA {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "ESGOTADO"
     },
     {
       "source": "DESCENT",
@@ -138031,6 +138087,18 @@
       "translation": "Comerciante de materiais - Codificados"
     },
     {
+      "source": "Material content: High",
+      "translation": "Teor de materiais: Alto"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "Teor de materiais: Baixo"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "Teor de materiais: Médio"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Os pontos de material podem ficar atrasados durante a coleta rápida. Os marcadores de POI são gerados aleatoriamente por assentamento e podem não corresponder aos locais verdadeiros."
     },
@@ -138105,6 +138173,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "Distância máxima até a chegada (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "Máximo de minerais exibidos"
     },
     {
       "source": "Maximum systems",
@@ -143627,6 +143699,10 @@
       "translation": "PRONTO PARA DIGITALIZAR"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "PROSPECÇÕES RECENTES"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "RECENTEMENTE GRAVADO"
     },
@@ -148067,6 +148143,10 @@
       "translation": "Notas da sessão"
     },
     {
+      "source": "Session overlay",
+      "translation": "Sobreposição da sessão"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "A sessão mostra percentagens de prospecção, descobertas principais, resultados de qualidade, tonelagem refinada, lapas, materiais de engenharia e carga. As correções manuais de contagem retêm as observações originais."
     },
@@ -149237,6 +149317,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "Classifique as necessidades da menor para a maior enquanto estiver ancorado em FCs"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "Ordenar resultados de prospecção por"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -158207,6 +158291,10 @@
       "translation": "transportador de frota"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "transportador/rota"
     },
@@ -161419,10 +161507,6 @@
       "translation": "{0} · Depósito: {1} t · Espera: {2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · {1}% restante"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Camada {1}: {2}"
     },
@@ -161517,10 +161601,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0}% de {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "{0}% restante"
     },
     {
       "source": "{0}.desktop",
@@ -162915,10 +162995,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "АКТИВНЫЕ ОБЕЛИСКИ"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "АКТИВНЫЕ РАЗВЕДЧИКИ"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -164839,6 +164915,10 @@
     {
       "source": "Average / Best",
       "translation": "Средний/Лучший"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "Средняя доля минерала"
     },
     {
       "source": "Average yield",
@@ -169795,10 +169875,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "ОТПРАВЛЕНИЕ В {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "Истощенный"
     },
     {
       "source": "DESCENT",
@@ -178477,6 +178553,18 @@
       "translation": "Торговец материалами — данные"
     },
     {
+      "source": "Material content: High",
+      "translation": "Содержание материалов: Высокое"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "Содержание материалов: Низкое"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "Содержание материалов: Среднее"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "Точки материала могут отставать при быстром сборе. Маркеры POI генерируются случайным образом для каждого поселения и могут не соответствовать реальным местоположениям."
     },
@@ -178551,6 +178639,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "Максимальное расстояние до прибытия (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "Максимум отображаемых минералов"
     },
     {
       "source": "Maximum systems",
@@ -184073,6 +184165,10 @@
       "translation": "ГОТОВ К СКАНИРОВАНИЮ"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "НЕДАВНИЕ СКАНИРОВАНИЯ"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "НЕДАВНО ЗАПИСАННЫЕ"
     },
@@ -188513,6 +188609,10 @@
       "translation": "Примечания к сессии"
     },
     {
+      "source": "Session overlay",
+      "translation": "Оверлей сеанса"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "Сессия показывает процент разведки, основные открытия, качественные результаты, переработанный тоннаж, блюда, инженерные материалы и грузы. Ручные корректировки подсчета сохраняют исходные наблюдения."
     },
@@ -189683,6 +189783,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "Сортировка потребностей от меньшего к большему при пристыковке к FC."
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "Сортировать результаты разведки по"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -198653,6 +198757,10 @@
       "translation": "авианосец"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "авиаперевозчик/маршрут"
     },
@@ -201865,10 +201973,6 @@
       "translation": "{0} · Депо: {1} t · Трюм: {2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · Осталось {1}%"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Уровень {1}: {2}"
     },
@@ -201963,10 +202067,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0}% от {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "Осталось {0}%"
     },
     {
       "source": "{0}.desktop",
@@ -203361,10 +203461,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "活动方尖碑"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "活跃的探矿者"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -205285,6 +205381,10 @@
     {
       "source": "Average / Best",
       "translation": "平均/最佳"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "平均矿物百分比"
     },
     {
       "source": "Average yield",
@@ -210241,10 +210341,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "出发前往 {0}"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "耗尽"
     },
     {
       "source": "DESCENT",
@@ -218923,6 +219019,18 @@
       "translation": "材料商人 - 编码"
     },
     {
+      "source": "Material content: High",
+      "translation": "材料含量：高"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "材料含量：低"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "材料含量：中"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "快速收集时材料点可能会滞后。 POI 标记是根据定居点随机生成的，可能与真实位置不匹配。"
     },
@@ -218997,6 +219105,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "最大到达距离 (LS)"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "最多显示矿物数"
     },
     {
       "source": "Maximum systems",
@@ -224519,6 +224631,10 @@
       "translation": "准备扫描"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "最近探矿结果"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "最近录制的"
     },
@@ -228959,6 +229075,10 @@
       "translation": "会议笔记"
     },
     {
+      "source": "Session overlay",
+      "translation": "采矿会话叠加层"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "会议展示了勘探百分比、核心发现、质量命中、精炼吨位、帽贝、工程材料和货物。手动计数校正保留原始观察结果。"
     },
@@ -230129,6 +230249,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "停靠在 FC 时，按需求从少到多排序"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "勘探结果排序依据"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -239099,6 +239223,10 @@
       "translation": "舰队承运人"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "fleetcarrier.id"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "舰队承运商/航线"
     },
@@ -242311,10 +242439,6 @@
       "translation": "{0} · 仓库：{1} t · 保留：{2} t · {3}{4}"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "{0} · 剩余 {1}%"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · 层 {1}：{2}"
     },
@@ -242409,10 +242533,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "{0}% 的 {1}"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "{0} 剩余%"
     },
     {
       "source": "{0}.desktop",
@@ -243807,10 +243927,6 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "* ACTIVE OBELISKS >>>!"
-    },
-    {
-      "source": "ACTIVE PROSPECTORS",
-      "translation": "* ACTIVE PROSPECTORS >>>!"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -245731,6 +245847,10 @@
     {
       "source": "Average / Best",
       "translation": "* AVERAGE / BEST >>>!"
+    },
+    {
+      "source": "Average mineral percentage",
+      "translation": "* AVERAGE MINERAL PERCENTAGE >>>!"
     },
     {
       "source": "Average yield",
@@ -250687,10 +250807,6 @@
     {
       "source": "DEPARTURE TO {0}",
       "translation": "* DEPARTURE TO {0} >>>!"
-    },
-    {
-      "source": "DEPLETED",
-      "translation": "* DEPLETED >>>!"
     },
     {
       "source": "DESCENT",
@@ -259369,6 +259485,18 @@
       "translation": "* MATERIAL TRADER - ENCODED >>>!"
     },
     {
+      "source": "Material content: High",
+      "translation": "* MATERIAL CONTENT: HIGH >>>!"
+    },
+    {
+      "source": "Material content: Low",
+      "translation": "* MATERIAL CONTENT: LOW >>>!"
+    },
+    {
+      "source": "Material content: Medium",
+      "translation": "* MATERIAL CONTENT: MEDIUM >>>!"
+    },
+    {
       "source": "Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations.",
       "translation": "* MATERIAL DOTS CAN LAG WHEN COLLECTING QUICKLY. POI MARKERS ARE RANDOMLY GENERATED PER SETTLEMENT AND MAY NOT MATCH TRUE LOCATIONS. >>>!"
     },
@@ -259443,6 +259571,10 @@
     {
       "source": "Maximum distance to arrival (LS)",
       "translation": "* MAXIMUM DISTANCE TO ARRIVAL (LS) >>>!"
+    },
+    {
+      "source": "Maximum minerals shown",
+      "translation": "* MAXIMUM MINERALS SHOWN >>>!"
     },
     {
       "source": "Maximum systems",
@@ -264965,6 +265097,10 @@
       "translation": "* READY TO SCAN >>>!"
     },
     {
+      "source": "RECENT PROSPECTS",
+      "translation": "* RECENT PROSPECTS >>>!"
+    },
+    {
       "source": "RECENTLY RECORDED",
       "translation": "* RECENTLY RECORDED >>>!"
     },
@@ -269405,6 +269541,10 @@
       "translation": "* SESSION NOTES >>>!"
     },
     {
+      "source": "Session overlay",
+      "translation": "* SESSION OVERLAY >>>!"
+    },
+    {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
       "translation": "* SESSION SHOWS PROSPECTING PERCENTAGES, CORE DISCOVERIES, QUALITY HITS, REFINED TONNAGE, LIMPETS, ENGINEERING MATERIALS AND CARGO. MANUAL COUNT CORRECTIONS RETAIN THE ORIGINAL OBSERVATIONS. >>>!"
     },
@@ -270575,6 +270715,10 @@
     {
       "source": "Sort needs from least to greatest while docked at FCs",
       "translation": "* SORT NEEDS FROM LEAST TO GREATEST WHILE DOCKED AT FCS >>>!"
+    },
+    {
+      "source": "Sort prospecting yields by",
+      "translation": "* SORT PROSPECTING YIELDS BY >>>!"
     },
     {
       "source": "SortNeedsAscendingAtCarriers",
@@ -279545,6 +279689,10 @@
       "translation": "* FLEET-CARRIER >>>!"
     },
     {
+      "source": "fleetcarrier.id",
+      "translation": "* FLEETCARRIER.ID >>>!"
+    },
+    {
       "source": "fleetcarrier/route",
       "translation": "* FLEETCARRIER/ROUTE >>>!"
     },
@@ -282757,10 +282905,6 @@
       "translation": "* {0} · DEPOT: {1} T · HOLD: {2} T · {3}{4} >>>!"
     },
     {
-      "source": "{0} · Remaining {1}%",
-      "translation": "* {0} · REMAINING {1}% >>>!"
-    },
-    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "* {0} · TIER {1}: {2} >>>!"
     },
@@ -282855,10 +282999,6 @@
     {
       "source": "{0}% of {1}",
       "translation": "* {0}% OF {1} >>>!"
-    },
-    {
-      "source": "{0}% remaining",
-      "translation": "* {0}% REMAINING >>>!"
     },
     {
       "source": "{0}.desktop",
