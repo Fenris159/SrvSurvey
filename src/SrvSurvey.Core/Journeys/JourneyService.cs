@@ -70,7 +70,7 @@ public sealed partial class JourneyService
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(frontierId, isOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            if (profile.Data is null)
+            if (profile.Data is not { } profileData)
             {
                 activeProcessor = null;
                 return new JourneyServiceResult(
@@ -80,7 +80,7 @@ public sealed partial class JourneyService
                 );
             }
 
-            string? fileName = profile.Data?.ActiveJourneyFileName;
+            string? fileName = profileData.ActiveJourneyFileName;
             if (string.IsNullOrWhiteSpace(fileName))
             {
                 activeProcessor = null;
@@ -104,7 +104,7 @@ public sealed partial class JourneyService
             {
                 activeProcessor = null;
                 await profileStore
-                    .SaveActiveJourneyAsync(frontierId, load.Journey.CommanderName, isOdyssey, null, cancellationToken)
+                    .SaveActiveJourneyAsync(frontierId, profileData.CommanderName, isOdyssey, null, cancellationToken)
                     .ConfigureAwait(false);
                 return new JourneyServiceResult(
                     load.Journey,
@@ -230,7 +230,7 @@ public sealed partial class JourneyService
                 Name = journey.Name.Trim(),
                 Description = journey.Description ?? string.Empty,
             };
-            await journeyStore.SaveAsync(normalized, cancellationToken).ConfigureAwait(false);
+            normalized = await journeyStore.SaveAsync(normalized, cancellationToken).ConfigureAwait(false);
             if (
                 activeProcessor?.Journey.FileName == normalized.FileName
                 && activeProcessor.Journey.FrontierId == normalized.FrontierId
@@ -297,7 +297,10 @@ public sealed partial class JourneyService
                 ? read.Events.Where(journalEvent => journalEvent.Timestamp is null || journalEvent.Timestamp <= endTime)
                 : read.Events;
             JourneyReplaySummary replay = processor.ApplyCatchUp(events);
-            await journeyStore.SaveAsync(replay.Journey, cancellationToken).ConfigureAwait(false);
+            JourneyDocument saved = await journeyStore
+                .SaveAsync(replay.Journey, cancellationToken)
+                .ConfigureAwait(false);
+            processor.UpdateJourney(saved);
 
             if (
                 activeProcessor?.Journey.FileName == journey.FileName
@@ -308,7 +311,7 @@ public sealed partial class JourneyService
                 activeIsOdyssey = isOdyssey;
             }
 
-            return new JourneyServiceResult(replay.Journey, read.Errors, replay.ProcessedEventCount);
+            return new JourneyServiceResult(saved, read.Errors, replay.ProcessedEventCount);
         }
         finally
         {
@@ -332,10 +335,10 @@ public sealed partial class JourneyService
 
             JourneyDocument concluded = activeProcessor.Journey with { EndTime = endTime };
             await journeyStore.SaveAsync(concluded, cancellationToken).ConfigureAwait(false);
+            activeProcessor = null;
             await profileStore
                 .SaveActiveJourneyAsync(concluded.FrontierId, commanderName, activeIsOdyssey, null, cancellationToken)
                 .ConfigureAwait(false);
-            activeProcessor = null;
             return concluded;
         }
         finally

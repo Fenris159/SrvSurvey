@@ -56,7 +56,7 @@ public sealed class MiningSessionOverlayPresentationTests
             NumericUpDown limit = view.FindControl<NumericUpDown>("MiningSessionYieldLimitInput")!;
             Assert.True(sort.IsEffectivelyEnabled);
             Assert.True(limit.IsEffectivelyEnabled);
-            Assert.True(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
+            Assert.True(main.MiningWorkspace.SaveOverlaySettingsCommand.CanExecute(null));
             sort.SelectedIndex = 1;
             limit.Value = 8;
             Assert.Equal(1, main.MiningWorkspace.SessionYieldSortIndex);
@@ -65,7 +65,7 @@ public sealed class MiningSessionOverlayPresentationTests
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.True(sort.IsEffectivelyEnabled);
             Assert.True(limit.IsEffectivelyEnabled);
-            Assert.True(main.MiningWorkspace.SaveSettingsCommand.CanExecute(null));
+            Assert.True(main.MiningWorkspace.SaveOverlaySettingsCommand.CanExecute(null));
             Assert.True(sort.IsEffectivelyVisible);
             Assert.True(limit.IsEffectivelyVisible);
             Assert.Equal(1, sort.SelectedIndex);

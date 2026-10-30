@@ -86,6 +86,7 @@ public sealed partial class ColonizationViewModel
                         ? [current]
                         : []
                 )
+                .Concat(projectSystemFilter.SystemName is { } selected ? [selected] : [])
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .Select(name => new ColonizationProjectSystemOption(name, name.Length == 0 ? "Unknown system" : name)),
@@ -134,6 +135,7 @@ public sealed partial class ColonizationViewModel
         );
         OnPropertyChanged(nameof(VisibleProjects));
         OnPropertyChanged(nameof(HasNoMatchingProjects));
+        RaiseHiddenShoppingSelections();
     }
 }
 

@@ -196,6 +196,7 @@
                   <StackPanel Spacing="6"><TextBlock Text="Description" /><TextBox MinHeight="120" AcceptsReturn="True" TextWrapping="Wrap"
                         Text="{Binding JourneyDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="What is this expedition for?" /></StackPanel>
                   <CheckBox x:Name="GalacticTimeCheckBox" IsChecked="{Binding UseGalacticTime, Mode=OneWay}" Click="Preferences_Click" Content="Use UTC timestamps" />
+                  <CheckBox x:Name="AlwaysOnTopCheckBox" IsChecked="{Binding AlwaysOnTop, Mode=OneWay}" Click="Preferences_Click" Content="Keep the application on top while viewing Journeys" />
                   <TextBlock Classes="muted" TextWrapping="Wrap" Text="Reprocess journals to rebuild this journey's visit statistics from the saved game history." />
                   <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding RequestReprocessCommand}" Content="Reprocess journals" />
                 </StackPanel>
@@ -380,7 +381,7 @@
           <TextBlock Classes="muted" TextWrapping="Wrap" Text="This permanently removes the saved journey record. Journals, system notes, and screenshots stay available." />
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
             <Button Classes="secondary" Command="{Binding CancelDeleteCommand}" Content="Cancel" />
-            <Button Classes="primary" Command="{Binding ConfirmDeleteCommand}" Content="Delete journey" />
+            <Button x:Name="ConfirmDeleteJourneyButton" Classes="primary" Command="{Binding ConfirmDeleteCommand}" Content="Delete journey" />
           </StackPanel>
         </StackPanel>
       </Border>

@@ -14,17 +14,23 @@ It also includes the RC77 mining, commander, ship and Fleet Carrier improvements
   with expedition statistics, a route overview, searchable system history and
   saved notes. Expand visit details, share the file, or print it to PDF without
   an internet connection. Large biology and exploration reward totals are retained.
+  Exporting safely replaces an existing report only after the new file is ready.
 - **Journey readouts:** The redesigned layout keeps the journey library, route
   summary, visited systems, statistics and editable details together. Visit rows
   show notes, screenshots and landings, including notes and photos from earlier
-  visits to the same system. Unsaved edits are protected when switching lists.
+  visits to the same system. Unsaved edits are protected when switching lists
+  or commanders. Keep the application on top while viewing Journeys using the
+  option in journey details.
 - **Colonization Market Search:** Select Projects now follows the system, build
   status and ordering selected under Projects. Changing those filters keeps the
   list manageable without clearing previously selected shopping projects.
+  A compact “Selected outside filters” section lets you remove hidden selections,
+  and refreshing projects preserves the selected system filter.
 - **Mining overlay preferences:** Configure overlays with the game closed or
   before a journal loads. Changes survive restarts, remain separate for each
   commander, and follow portable backup/restore and sync. If saving fails, edits
   stay available through journal connection and commander changes for retry.
+  Saving one preference preserves unrelated changes made in another window.
 - **Recent Prospects:** Mining notifications now show asteroid engineering
   material content as Low, Medium or High instead of a fixed “100% remaining”
   reading. Mineral percentages remain visible, and missing material content

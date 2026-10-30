@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         xmlns:views="using:SrvSurvey.Desktop.Views"
+        xmlns:converters="using:Avalonia.Data.Converters"
         x:Class="SrvSurvey.Desktop.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d"
@@ -16,6 +17,12 @@
         MinHeight="600"
         Icon="/Assets/logo.ico"
         Title="SrvSurvey-XP">
+  <Window.Topmost>
+    <MultiBinding Converter="{x:Static converters:BoolConverters.And}">
+      <Binding Path="IsJourneysSelected" />
+      <Binding Path="Journey.AlwaysOnTop" />
+    </MultiBinding>
+  </Window.Topmost>
   <Window.Resources>
     <DataTemplate x:Key="NavigationRowTemplate"
                   x:DataType="vm:NavigationItemViewModel">

@@ -127,7 +127,7 @@ public sealed partial class JourneyStore(string dataDirectory)
         return journey;
     }
 
-    public async Task SaveAsync(JourneyDocument journey, CancellationToken cancellationToken = default)
+    public async Task<JourneyDocument> SaveAsync(JourneyDocument journey, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journey);
         ValidateFolderName(journey.FrontierId, nameof(journey));
@@ -151,7 +151,15 @@ public sealed partial class JourneyStore(string dataDirectory)
                 root = [];
             }
 
-            await WriteJourneyAsync(path, root, journey, cancellationToken).ConfigureAwait(false);
+            JourneyDocument saved = journey with
+            {
+                IsArchived =
+                    root["archived"] is JsonValue archived && archived.TryGetValue<bool>(out bool value)
+                        ? value
+                        : journey.IsArchived,
+            };
+            await WriteJourneyAsync(path, root, saved, cancellationToken).ConfigureAwait(false);
+            return saved;
         }
         finally
         {

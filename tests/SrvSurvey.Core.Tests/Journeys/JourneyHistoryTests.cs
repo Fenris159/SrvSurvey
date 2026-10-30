@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
 
@@ -164,6 +165,79 @@ public sealed class JourneyHistoryTests : IDisposable
     private JourneyService Service(JourneyStore store) =>
         new(store, new(directory), new CommanderProfileStore(directory), new ExobiologyReferenceCatalog([]));
 
+    [Fact]
+    public async Task FailedProfileCleanupCannotKeepRecordingOrRecreateADeletedJourney()
+    {
+        var store = new JourneyStore(directory);
+        JourneyDocument active = await CreateAsync(store, 1, false);
+        await WriteStartJournalAsync();
+        var profiles = new CommanderProfileStore(directory);
+        await profiles.SaveActiveJourneyAsync("F123", "Drew", true, active.FileName);
+        JourneyService service = Service(store);
+        await service.InitializeActiveAsync("F123", true);
+        Assert.NotNull(service.ActiveJourney);
+        string profilePath = profiles.GetProfilePath("F123", true);
+        File.Delete(profilePath);
+        Directory.CreateDirectory(profilePath);
+        await Assert.ThrowsAnyAsync<IOException>(() =>
+            service.ConcludeActiveAsync("Drew", active.StartTime.AddHours(1))
+        );
+        Assert.Null(service.ActiveJourney);
+        Assert.False((await store.LoadAsync("F123", active.FileName)).Journey!.IsActive);
+        Directory.Delete(profilePath);
+        await profiles.SaveActiveJourneyAsync("F123", "Drew", true, active.FileName);
+        await service.DeleteAsync("F123", active.FileName);
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"timestamp":"2026-10-30T10:00:00Z","event":"Screenshot"}""",
+                out JournalEventEnvelope? entry,
+                out _
+            )
+        );
+        Assert.Equal(0, (await service.ApplyLiveAsync([entry!])).ProcessedEventCount);
+        Assert.False(File.Exists(active.FilePath));
+    }
+
+    [Fact]
+    public async Task OrdinarySaveCannotUndoANewerArchiveDecision()
+    {
+        var store = new JourneyStore(directory);
+        JourneyDocument stale = await CreateAsync(store, 1, true);
+        await WriteStartJournalAsync();
+        await store.SetArchivedAsync("F123", stale.FileName, true);
+        await store.SaveAsync(stale with { Description = "Updated description" });
+        JourneyDocument saved = (await store.LoadAsync("F123", stale.FileName)).Journey!;
+        Assert.True(saved.IsArchived);
+        Assert.Equal("Updated description", saved.Description);
+        Assert.True((await Service(store).SaveAsync(stale)).IsArchived);
+        Assert.True((await Service(store).ReprocessAsync(stale, true)).Journey!.IsArchived);
+    }
+
+    [Fact]
+    public async Task DeleteClearsOnlyMatchingActiveReferencesInBothGalaxyProfiles()
+    {
+        var store = new JourneyStore(directory);
+        JourneyDocument completed = await CreateAsync(store, 1, true);
+        var profiles = new CommanderProfileStore(directory);
+        await profiles.SaveActiveJourneyAsync("F123", "Current name", true, completed.FileName);
+        await profiles.SaveActiveJourneyAsync("F123", "Current name", false, "another-expedition");
+        await Service(store).DeleteAsync("F123", completed.FileName);
+        Assert.False(File.Exists(completed.FilePath));
+        Assert.Null((await profiles.LoadAsync("F123", true)).Data!.ActiveJourneyFileName);
+        Assert.Equal("another-expedition", (await profiles.LoadAsync("F123", false)).Data!.ActiveJourneyFileName);
+    }
+
+    [Fact]
+    public async Task ClearingAConcludedJourneyKeepsTheCurrentCommanderName()
+    {
+        var store = new JourneyStore(directory);
+        JourneyDocument completed = await CreateAsync(store, 1, true);
+        var profiles = new CommanderProfileStore(directory);
+        await profiles.SaveActiveJourneyAsync("F123", "Renamed commander", true, completed.FileName);
+        await Service(store).InitializeActiveAsync("F123", true);
+        Assert.Equal("Renamed commander", (await profiles.LoadAsync("F123", true)).Data!.CommanderName);
+    }
+
     private static async Task<JourneyDocument> CreateAsync(JourneyStore store, int second, bool complete)
     {
         DateTimeOffset at = DateTimeOffset.UnixEpoch.AddSeconds(second);
@@ -177,6 +251,15 @@ public sealed class JourneyHistoryTests : IDisposable
         }
         return journey;
     }
+
+    private Task WriteStartJournalAsync() =>
+        File.WriteAllTextAsync(
+            Path.Combine(directory, "Journal.test.log"),
+            """
+            {"timestamp":"1970-01-01T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"1970-01-01T00:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
+            """
+        );
 
     public void Dispose()
     {

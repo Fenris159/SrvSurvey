@@ -1,7 +1,8 @@
-using System.Text;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -170,6 +171,34 @@ public sealed class JourneysPresentationTests : IDisposable
                 .Single(button => Equals(button.Content, main.Journey.JourneysLabel));
             current.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.False(main.Journey.ShowArchived);
+            string journeyPath = main.Journey.SelectedJourney!.Document.FilePath;
+            main.Journey.RequestDeleteCommand.Execute(null);
+            using (WriteableBitmap? confirmation = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(confirmation);
+            }
+            Button confirm = view.FindControl<Button>("ConfirmDeleteJourneyButton")!;
+            Assert.Same(main.Journey.ConfirmDeleteCommand, confirm.Command);
+            var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            main.Journey.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(main.Journey.IsBusy) && !main.Journey.IsBusy)
+                {
+                    completed.TrySetResult();
+                }
+            };
+            Point center = confirm
+                .TranslatePoint(new Point(confirm.Bounds.Width / 2, confirm.Bounds.Height / 2), window)!
+                .Value;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            using (WriteableBitmap? deleted = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(deleted);
+            }
+            Assert.False(File.Exists(journeyPath));
+            Assert.Equal(0, view.FindControl<ListBox>("JourneyLibraryList")!.ItemCount);
         }
         finally
         {
@@ -182,14 +211,15 @@ public sealed class JourneysPresentationTests : IDisposable
     {
         using MainWindowViewModel main = await CreateModelAsync();
         var view = new JourneysView { DataContext = main.Journey };
-        using var contents = new MemoryStream();
+        string path = Path.Combine(directory, "journey.html");
+        await File.WriteAllTextAsync(path, "Previous report");
         await view.ExportHtmlAsync(options =>
         {
             Assert.Equal("html", options.DefaultExtension);
             Assert.EndsWith(".html", options.SuggestedFileName, StringComparison.Ordinal);
-            return Task.FromResult<JourneyReportDestination?>(new(contents));
+            return Task.FromResult<JourneyReportDestination?>(new(path));
         });
-        Assert.Contains("Expedition report", Encoding.UTF8.GetString(contents.ToArray()), StringComparison.Ordinal);
+        Assert.Contains("Expedition report", await File.ReadAllTextAsync(path), StringComparison.Ordinal);
         Assert.Contains("report exported", main.Journey.StatusMessage, StringComparison.Ordinal);
         await view.ExportHtmlAsync(_ => Task.FromResult<JourneyReportDestination?>(null));
         await view.ExportHtmlAsync(_ => throw new IOException("Storage unavailable"));
@@ -199,6 +229,58 @@ public sealed class JourneysPresentationTests : IDisposable
             throw new InvalidOperationException("Picker should not open for unsaved edits")
         );
         Assert.True(main.Journey.IsDirty);
+    }
+
+    [Fact]
+    public async Task FailedReportWriteKeepsThePreviousFileAndRemovesItsStagingFile()
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "journey.html");
+        await File.WriteAllTextAsync(path, "Previous report");
+        await Assert.ThrowsAsync<IOException>(() =>
+            JourneysView.SaveReportAtomicallyAsync(
+                path,
+                "New report",
+                async (temporary, _) =>
+                {
+                    await File.WriteAllTextAsync(temporary, "Partial content");
+                    throw new IOException("Storage failed during write");
+                }
+            )
+        );
+        Assert.Equal("Previous report", await File.ReadAllTextAsync(path));
+        Assert.Equal([path], Directory.GetFiles(directory));
+        await JourneysView.SaveReportAtomicallyAsync(path, "Complete replacement");
+        Assert.Equal("Complete replacement", await File.ReadAllTextAsync(path));
+    }
+
+    [AvaloniaFact]
+    public async Task JourneyTopmostPreferenceAppliesOnlyWhileItsWorkspaceIsSelected()
+    {
+        using MainWindowViewModel main = await CreateModelAsync();
+        var window = new MainWindow { DataContext = main };
+        try
+        {
+            window.Show();
+            main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "journeys");
+            await main.Journey.SetPreferencesAsync(true, false);
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Assert.True(window.Topmost);
+            main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "travel");
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Assert.False(window.Topmost);
+        }
+        finally
+        {
+            window.DataContext = null;
+            window.Close();
+        }
     }
 
     private async Task<MainWindowViewModel> CreateModelAsync()

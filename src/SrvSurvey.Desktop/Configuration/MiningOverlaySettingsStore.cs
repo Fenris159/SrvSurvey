@@ -30,7 +30,7 @@ public sealed record MiningOverlayPreferences(
     {
         settings.HideInSupercruise = HideInSupercruise;
         settings.OverlaysOnlyDuringSession = OverlaysOnlyDuringSession;
-        settings.NotificationSeconds = NotificationSeconds;
+        settings.NotificationSeconds = Math.Clamp(NotificationSeconds, 3, 120);
         settings.PersistentProspectSlots = Math.Clamp(PersistentProspectSlots, 1, 8);
         settings.HideProspectsBelowThreshold = HideProspectsBelowThreshold;
         settings.SessionYieldSort = Enum.IsDefined(SessionYieldSort)
@@ -78,19 +78,39 @@ public sealed class MiningOverlaySettingsStore(string path)
     }
 
     /// <summary>Persists a commander snapshot, optionally completing the assignment of an unidentified draft.</summary>
-    public void SaveCommander(string commander, MiningOverlayPreferences preferences, bool assignDraft = false)
+    public MiningOverlayPreferences SaveCommander(
+        string commander,
+        MiningOverlayPreferences before,
+        MiningOverlayPreferences after,
+        bool assignDraft = false,
+        bool replaceSnapshot = false
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commander);
         commander = commander.Trim().ToUpperInvariant();
+        MiningOverlayPreferences result = after;
         document.Update(root =>
         {
             JsonObject section = GetSection(root);
-            GetProfiles(section)[commander] = Serialize(preferences);
+            JsonObject profiles = GetProfiles(section);
+            JsonObject previous = Serialize(before);
+            JsonObject updated = Serialize(after);
+            JsonObject values = replaceSnapshot
+                ? updated.DeepClone().AsObject()
+                : (profiles[commander] as JsonObject)?.DeepClone().AsObject() ?? [];
+            ApplyEdits(values, previous, updated);
             if (assignDraft)
             {
+                if (!replaceSnapshot && section[Pending] is JsonObject pending)
+                {
+                    MergeDraftEdits(values, previous, updated, pending);
+                }
                 section.Remove(Pending);
             }
+            profiles[commander] = values;
+            result = Read(root, commander, () => before, includeDraft: false);
         });
+        return result;
     }
 
     public MiningOverlayPreferences Load(string? commander, Func<MiningOverlayPreferences> fallback)
@@ -121,7 +141,7 @@ public sealed class MiningOverlaySettingsStore(string path)
         }
         if (commander is not null)
         {
-            SaveCommander(commander, after);
+            SaveCommander(commander, before, after);
             return;
         }
         document.Update(root =>
@@ -149,22 +169,60 @@ public sealed class MiningOverlaySettingsStore(string path)
     )
     {
         var section = root[Section] as JsonObject;
-        MiningOverlayPreferences saved =
-            commander is not null && (section?[Profiles] as JsonObject)?[commander] is JsonObject profile
-                ? profile.Deserialize<MiningOverlayPreferences>() ?? fallback()
-                : fallback();
-        JsonObject values = Serialize(saved);
+        JsonObject? profile = commander is not null
+            ? (section?[Profiles] as JsonObject)?[commander] as JsonObject
+            : null;
+        JsonObject defaults = Serialize(new());
+        JsonObject values =
+            profile is not null && defaults.All(property => profile.ContainsKey(property.Key))
+                ? profile.DeepClone().AsObject()
+                : Serialize(fallback());
+        ApplyFields(values, profile);
         if (includeDraft && section?[Pending] is JsonObject pending)
         {
-            foreach (string name in values.Select(property => property.Key).ToArray())
+            ApplyFields(values, pending);
+        }
+        return values.Deserialize<MiningOverlayPreferences>() ?? fallback();
+    }
+
+    private static void ApplyFields(JsonObject values, JsonObject? patch)
+    {
+        if (patch is null)
+        {
+            return;
+        }
+        foreach (string name in values.Select(property => property.Key).ToArray())
+        {
+            if (patch.TryGetPropertyValue(name, out JsonNode? value))
             {
-                if (pending.TryGetPropertyValue(name, out JsonNode? value))
-                {
-                    values[name] = value?.DeepClone();
-                }
+                values[name] = value?.DeepClone();
             }
         }
-        return values.Deserialize<MiningOverlayPreferences>() ?? saved;
+    }
+
+    private static void ApplyEdits(JsonObject values, JsonObject previous, JsonObject updated)
+    {
+        foreach ((string name, JsonNode? value) in updated)
+        {
+            if (!JsonNode.DeepEquals(previous[name], value))
+            {
+                values[name] = value?.DeepClone();
+            }
+        }
+    }
+
+    private static void MergeDraftEdits(JsonObject values, JsonObject previous, JsonObject updated, JsonObject pending)
+    {
+        foreach ((string name, JsonNode? value) in pending)
+        {
+            if (
+                updated.ContainsKey(name)
+                && (JsonNode.DeepEquals(previous[name], updated[name]) || !JsonNode.DeepEquals(previous[name], value))
+            )
+            {
+                values[name] = value?.DeepClone();
+            }
+        }
     }
 
     private static JsonObject GetSection(JsonObject root)

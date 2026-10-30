@@ -113,7 +113,7 @@ public sealed partial class ColonizationViewModelTests
     }
 
     [Fact]
-    public async Task ProjectFiltersSurviveRefreshAndResetMissingSystemsAndCommanderChanges()
+    public async Task ProjectFiltersSurviveRefreshIncludingMissingSystemsAndResetForCommanderChanges()
     {
         StubRavenColonialClient client = ProjectFilterClient();
         using ColonizationViewModel model = Create(client);
@@ -128,7 +128,8 @@ public sealed partial class ColonizationViewModelTests
         client.Workspace = client.Workspace with { Projects = [client.Workspace.Projects[0]] };
         client.PlanningSystems!["Remote Colony"] = FilterPlanningSystem("Remote Colony", 47) with { Sites = [] };
         await model.RefreshAsync();
-        Assert.Null(model.ProjectSystemFilter.SystemName);
+        Assert.Equal("Remote Colony", model.ProjectSystemFilter.SystemName);
+        Assert.Contains(model.ProjectSystemOptions, option => option.SystemName == "Remote Colony");
         Assert.Equal(ColonizationProjectBuildFilter.Planning, model.ProjectBuildFilter.Value);
         Assert.True(model.HasNoMatchingProjects);
         await model.SetCommanderAsync("Other Cmdr");

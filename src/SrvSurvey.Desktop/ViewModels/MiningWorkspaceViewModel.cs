@@ -131,7 +131,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         );
         PauseCommand = new WorkspaceCommand(TogglePause, () => storageAvailable && state.Session.Current is not null);
         StopCommand = new WorkspaceCommand(Stop, () => storageAvailable && state.Session.Current is not null);
-        SaveSettingsCommand = new WorkspaceCommand(SaveSettings);
+        SaveSettingsCommand = new WorkspaceCommand(SaveSettings, CanSaveMiningSettings);
+        SaveOverlaySettingsCommand = new WorkspaceCommand(SaveOverlaySettings);
         SaveNotesCommand = new WorkspaceCommand(() =>
         {
             if (SelectedSession is { } session)
@@ -299,6 +300,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public ICommand PauseCommand { get; }
     public ICommand StopCommand { get; }
     public ICommand SaveSettingsCommand { get; }
+    public ICommand SaveOverlaySettingsCommand { get; }
     public ICommand SaveNotesCommand { get; }
     public ICommand BookmarkRingCommand { get; }
     public ICommand MissionHotspotsCommand { get; }
@@ -333,7 +335,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
             Settings.SessionYieldSort = (MiningSessionYieldSort)value;
             Changed(nameof(SessionYieldSortIndex));
-            SaveSettings();
+            SaveOverlaySettings();
         }
     }
     public int SessionYieldLimit
@@ -349,7 +351,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
             Settings.SessionYieldLimit = limit;
             Changed(nameof(SessionYieldLimit));
-            SaveSettings();
+            SaveOverlaySettings();
         }
     }
     public bool HideProspectsBelowThreshold
@@ -364,7 +366,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
             Settings.HideProspectsBelowThreshold = value;
             Changed(nameof(HideProspectsBelowThreshold));
-            SaveSettings();
+            SaveOverlaySettings();
         }
     }
     public double RefineryTons
@@ -718,10 +720,16 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 state.Session.Pause(clock.GetUtcNow());
                 Save();
             }
+            if (update.IsAwaitingCommanderIdentity && overlayCommander is not null)
+            {
+                SaveOverlayPreferences();
+                overlayCommander = null;
+                lastOverlayPreferences = MiningOverlayPreferences.From(Settings);
+            }
             Refresh();
             return;
         }
-        bool commanderChanged = commander != context.FrontierId;
+        bool commanderChanged = commander != context.FrontierId || overlayCommander != context.FrontierId;
         if (commanderChanged)
         {
             Load(context.FrontierId!, context.CommanderName);
@@ -1460,7 +1468,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
     public bool Restore(string json)
     {
-        if (!storageAvailable || commander is null)
+        if (!CanSaveMiningSettings())
         {
             return false;
         }
@@ -1471,14 +1479,16 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             PauseRecoveredSession();
             Search.LoadOptions(Settings.SearchOptions);
             community.SetEnabled(Settings.ReceiveCommunityData);
-            SaveOverlayPreferences();
+            bool overlaySaved = SaveOverlayPreferences(replaceSnapshot: true);
             Changed(nameof(Settings));
             Changed(nameof(HideProspectsBelowThreshold));
             Changed(nameof(SessionYieldSortIndex));
             Changed(nameof(SessionYieldLimit));
             Refresh();
-            Status = "Mining backup restored. Previous data retained in the backup folder.";
-            return true;
+            Status = overlaySaved
+                ? "Mining backup restored. Previous data retained in the backup folder."
+                : "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.";
+            return overlaySaved;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -1599,12 +1609,29 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
 
     private void SaveSettings()
     {
+        if (!CanSaveMiningSettings())
+        {
+            return;
+        }
         Settings.SearchOptions = Search.SaveOptions();
         community.SetEnabled(Settings.ReceiveCommunityData);
         SaveOverlayPreferences();
         Save();
         Refresh();
     }
+
+    private void SaveOverlaySettings()
+    {
+        SaveOverlayPreferences();
+        if (CanSaveMiningSettings())
+        {
+            Save();
+        }
+        Refresh();
+    }
+
+    [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(commander))]
+    private bool CanSaveMiningSettings() => storageAvailable && commander is not null && overlayCommander == commander;
 
     private void CacheRing(MiningRing ring)
     {
@@ -1748,7 +1775,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             Changed(name);
         }
 
-        foreach (ICommand? command in new[] { StartCommand, PauseCommand, StopCommand })
+        foreach (ICommand? command in new[] { StartCommand, PauseCommand, StopCommand, SaveSettingsCommand })
         {
             ((WorkspaceCommand)command).Refresh();
         }

@@ -537,6 +537,11 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             return false;
         }
 
+        string? profileKey = normalizedFrontierId is null ? null : $"{normalizedFrontierId}|{nextIsOdyssey}";
+        if (!string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
+        {
+            RememberJourneyDraft();
+        }
         frontierId = normalizedFrontierId;
         commanderName = nextCommanderName;
         isOdyssey = nextIsOdyssey;
@@ -545,7 +550,6 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasProfile));
         OnPropertyChanged(nameof(CurrentStartSystem));
 
-        string? profileKey = frontierId is null ? null : $"{frontierId}|{isOdyssey}";
         if (string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
         {
             RaiseCommands();
@@ -584,13 +588,19 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 return true;
             }
 
-            await RefreshCatalogAsync(active.Journey?.FileName);
+            string? preferredFile = PreferredJourneyFile(profileKey, active.Journey?.FileName);
+            await RefreshCatalogAsync(preferredFile);
             if (version != contextVersion)
             {
                 return true;
             }
 
             SetInitializationStatus(active);
+            if (profileKey is not null)
+            {
+                IsBusy = true;
+                await RestoreJourneyDraftAsync(profileKey, version);
+            }
             RaiseActiveState();
             return true;
         }
@@ -946,6 +956,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         (long Address, DateTimeOffset Arrived)? selectedIdentity = SelectedSystem is { } system
             ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived)
             : ((long Address, DateTimeOffset Arrived)?)null;
+        int version = contextVersion;
         try
         {
             IsBusy = true;
@@ -956,30 +967,18 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                     Description = JourneyDescription,
                 }
             );
-            if (
-                SelectedSystem is { } selected
-                && !string.Equals(SelectedSystemNotes, loadedSystemNotes, StringComparison.Ordinal)
-            )
+            if (version != contextVersion)
             {
-                await noteStore.SaveAsync(
-                    new SystemNoteContext(
-                        saved.FrontierId,
-                        saved.CommanderName,
-                        selected.Visit.StarSystem.Name,
-                        selected.Visit.StarSystem.SystemAddress,
-                        selected.Visit.StarSystem.Position
-                    ),
-                    SelectedSystemNotes
-                );
-                await journeyService.IncrementNoteCountAsync(selected.Visit.StarSystem.SystemAddress);
-                loadedSystemNotes = SelectedSystemNotes;
-                if (journeyService.ActiveJourney?.FileName == saved.FileName)
-                {
-                    saved = journeyService.ActiveJourney;
-                }
+                return;
+            }
+            saved = await SaveSelectedSystemNotesAsync(saved, version);
+            if (version != contextVersion)
+            {
+                return;
             }
 
             ApplyDocument(saved, preferredSystem: selectedIdentity);
+            ClearJourneyDraft();
             UpdateCatalogDocument(saved);
             StatusMessage = $"Saved {saved.Name}.";
             RaiseDirtyState();
@@ -987,18 +986,57 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "Journey changes were not fully saved: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "Journey changes were not fully saved: " + exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
         }
+    }
+
+    private async Task<JourneyDocument> SaveSelectedSystemNotesAsync(JourneyDocument saved, int version)
+    {
+        if (
+            SelectedSystem is not { } selected
+            || string.Equals(SelectedSystemNotes, loadedSystemNotes, StringComparison.Ordinal)
+        )
+        {
+            return saved;
+        }
+        await noteStore.SaveAsync(
+            new SystemNoteContext(
+                saved.FrontierId,
+                saved.CommanderName,
+                selected.Visit.StarSystem.Name,
+                selected.Visit.StarSystem.SystemAddress,
+                selected.Visit.StarSystem.Position
+            ),
+            SelectedSystemNotes
+        );
+        if (version != contextVersion)
+        {
+            return saved;
+        }
+        await journeyService.IncrementNoteCountAsync(selected.Visit.StarSystem.SystemAddress);
+        if (version != contextVersion)
+        {
+            return saved;
+        }
+        loadedSystemNotes = SelectedSystemNotes;
+        return journeyService.ActiveJourney?.FileName == saved.FileName ? journeyService.ActiveJourney : saved;
     }
 
     public Task DiscardAsync()
     {
         if (selectedDocument is not null)
         {
+            ClearJourneyDraft();
             ApplyDocument(
                 selectedDocument,
                 preferredSystem: SelectedSystem is { } system
@@ -1128,17 +1166,17 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             JourneyDescription = preserveEdits ? previousDescription : document?.Description ?? string.Empty;
             QuickStatistics = document is null ? [] : CreateStatistics(JourneyStatistics.Calculate(document));
             primaryStatistics = QuickStatistics.Take(4).ToArray();
-            IReadOnlySet<string> systemsWithPhotos =
+            IReadOnlySet<long> systemsWithPhotos =
                 document
                     ?.VisitedSystems.Where(visit => visit.Counts.Screenshots > 0)
-                    .Select(visit => visit.StarSystem.Name)
-                    .ToHashSet(StringComparer.Ordinal)
+                    .Select(visit => visit.StarSystem.SystemAddress)
+                    .ToHashSet()
                 ?? [];
-            IReadOnlySet<string> systemsWithNotes =
+            IReadOnlySet<long> systemsWithNotes =
                 document
                     ?.VisitedSystems.Where(visit => visit.Counts.Notes > 0)
-                    .Select(visit => visit.StarSystem.Name)
-                    .ToHashSet(StringComparer.Ordinal)
+                    .Select(visit => visit.StarSystem.SystemAddress)
+                    .ToHashSet()
                 ?? [];
             VisitedSystems =
                 document
@@ -1422,15 +1460,15 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private static string CreateInterestFlags(
         JourneySystemVisit visit,
-        IReadOnlySet<string> systemsWithPhotos,
-        IReadOnlySet<string> systemsWithNotes
+        IReadOnlySet<long> systemsWithPhotos,
+        IReadOnlySet<long> systemsWithNotes
     )
     {
         string flags = string.Empty;
         flags +=
             visit.Counts.Screenshots > 0
                 ? "P"
-                : (systemsWithPhotos.Contains(visit.StarSystem.Name)) switch
+                : (systemsWithPhotos.Contains(visit.StarSystem.SystemAddress)) switch
                 {
                     true => "p",
                     false => string.Empty,
@@ -1439,7 +1477,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         flags +=
             visit.Counts.Notes > 0
                 ? "N"
-                : (systemsWithNotes.Contains(visit.StarSystem.Name)) switch
+                : (systemsWithNotes.Contains(visit.StarSystem.SystemAddress)) switch
                 {
                     true => "n",
                     false => string.Empty,

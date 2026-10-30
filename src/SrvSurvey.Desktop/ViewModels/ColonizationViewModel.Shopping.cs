@@ -27,6 +27,22 @@ public sealed partial class ColonizationViewModel
 
     public ColonizationShoppingViewModel? MarketSearchWorkspace => shoppingWorkspace;
 
+    private IReadOnlyList<ColonizationProjectRowViewModel> hiddenShoppingSelections = [];
+    public IReadOnlyList<ColonizationProjectRowViewModel> HiddenShoppingSelections => hiddenShoppingSelections;
+
+    public bool HasHiddenShoppingSelections => HiddenShoppingSelections.Count > 0;
+    public string HiddenShoppingSelectionsLabel => $"Selected outside filters ({HiddenShoppingSelections.Count:N0})";
+
+    private void RaiseHiddenShoppingSelections()
+    {
+        hiddenShoppingSelections = Projects
+            .Where(row => row.IsShoppingSelected && !VisibleProjects.Contains(row))
+            .ToArray();
+        OnPropertyChanged(nameof(HiddenShoppingSelections));
+        OnPropertyChanged(nameof(HasHiddenShoppingSelections));
+        OnPropertyChanged(nameof(HiddenShoppingSelectionsLabel));
+    }
+
     private int selectedWorkspaceTabIndex;
 
     public int SelectedWorkspaceTabIndex
@@ -347,6 +363,7 @@ public sealed partial class ColonizationViewModel
             }
 
             SaveShoppingSelection();
+            RaiseHiddenShoppingSelections();
             OnPropertyChanged(nameof(CanSearchMarkets));
             searchMarketsCommand.Refresh();
         }

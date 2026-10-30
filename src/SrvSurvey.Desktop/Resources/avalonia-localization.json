@@ -5565,6 +5565,10 @@
       "translation": "Wählen Sie ein lokales Hintergrundbild aus und passen Sie dessen X-, Y- und Skalierungswerte an, während Sie die Vorschau auf derselben Karte überprüfen."
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "Wählen Sie einen lokalen Ordner, um den Bericht sicher zu speichern."
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "Wählen Sie einen Monitor und eine Größe für Spiel-Overlays."
     },
@@ -14993,6 +14997,10 @@
       "translation": "System behalten"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "Behalten Sie die Anwendung im Vordergrund, während Sie Journeys ansehen"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "Lassen Sie das vollständige Sechs-Kreis-Layout sichtbar. Der Blick auf den freien Kopf wird nicht als Panel-Fokus gemeldet; Wegschauen, geringe Helligkeit, undurchsichtige Fenster und teilweise Balken können zu unsicheren Messwerten führen."
     },
@@ -17243,6 +17251,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "Mining-Daten konnten nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "Mining-Daten wurden wiederhergestellt, aber Overlay-Einstellungen konnten nicht gespeichert werden. Erneut versuchen. Mining-Overlay-Einstellungen speichern."
     },
     {
       "source": "Mining delivery",
@@ -26749,6 +26761,10 @@
       "translation": "Ausgewählte Karte"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "Ausgewählte Außenfilter ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "Ausgewähltes Ergebnis"
     },
@@ -33575,6 +33591,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Deaktivieren Sie „Anzeigen“ für jedes Projekt, das dem ausgewählten System und Build-Status entspricht."
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "Deaktivieren Sie ein Projekt, um es aus der Marktsuche zu entfernen."
     },
     {
       "source": "Unclaimed biology",
@@ -46231,6 +46251,10 @@
       "translation": "Elija una imagen de fondo local y ajuste sus valores X, Y y escala mientras revisa la vista previa en el mismo mapa."
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "Elija una carpeta local para guardar el informe de forma segura."
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "Elija un monitor y un tamaño para las superposiciones de juegos."
     },
@@ -55659,6 +55683,10 @@
       "translation": "Mantener el sistema"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "Mantenga la aplicación en primer plano mientras visualiza Journeys"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "Mantenga visible el diseño completo de seis círculos. La mirada libre con la cabeza no se informa como foco del panel; Mirar hacia otro lado, el bajo brillo, las ventanas que oscurecen y las rejas parciales pueden producir lecturas inciertas."
     },
@@ -57909,6 +57937,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "No se pudieron guardar los datos de minería: {0}"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "Se restauraron los datos de minería, pero no se pudieron guardar las preferencias de superposición. Reintentar Guardar la configuración de superposición de minería."
     },
     {
       "source": "Mining delivery",
@@ -67415,6 +67447,10 @@
       "translation": "Mapa seleccionado"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "Filtros exteriores seleccionados ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "Resultado seleccionado"
     },
@@ -74241,6 +74277,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Desmarque Mostrar para cada proyecto que coincida con el sistema seleccionado y el estado de compilación."
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "Desmarque un proyecto para eliminarlo de Market Search."
     },
     {
       "source": "Unclaimed biology",
@@ -86897,6 +86937,10 @@
       "translation": "Choisissez une image d'arrière-plan locale et ajustez ses valeurs X, Y et d'échelle tout en examinant l'aperçu sur la même carte."
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "Choisissez un dossier local pour enregistrer le rapport en toute sécurité."
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "Choisissez un moniteur et une taille pour les superpositions de jeu."
     },
@@ -96325,6 +96369,10 @@
       "translation": "Conserver le système"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "Gardez l'application au premier plan lors de la visualisation des voyages"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "Gardez la disposition complète en six cercles visible. Le regard libre sur la tête n’est pas signalé comme focus du panneau ; en détournant le regard, une faible luminosité, des fenêtres obscurcissantes et des barres partielles peuvent produire des lectures incertaines."
     },
@@ -98575,6 +98623,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "Les données d'exploration de données n'ont pas pu être enregistrées : {0}"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "Données d'exploration de données restaurées, mais les préférences de superposition n'ont pas pu être enregistrées. Réessayez Enregistrez les paramètres de superposition minière."
     },
     {
       "source": "Mining delivery",
@@ -108081,6 +108133,10 @@
       "translation": "Carte sélectionnée"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "Filtres extérieurs sélectionnés ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "Résultat sélectionné"
     },
@@ -114907,6 +114963,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Décochez Afficher pour chaque projet correspondant au système sélectionné et à l'état de construction."
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "Décochez un projet pour le supprimer de Market Search."
     },
     {
       "source": "Unclaimed biology",
@@ -127563,6 +127623,10 @@
       "translation": "Escolha uma imagem de plano de fundo local e ajuste seus valores X, Y e escala enquanto revisa a visualização no mesmo mapa."
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "Escolha uma pasta local para salvar o relatório com segurança."
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "Escolha um monitor e tamanho para sobreposições de jogo."
     },
@@ -136991,6 +137055,10 @@
       "translation": "Mantenha o sistema"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "Mantenha o aplicativo no topo enquanto visualiza as Jornadas"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "Mantenha o layout completo de seis círculos visível. A aparência livre da cabeça não é relatada como foco do painel; desviar o olhar, baixo brilho, janelas obscurecidas e barras parciais podem produzir leituras incertas."
     },
@@ -139241,6 +139309,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "Não foi possível salvar os dados de mineração: {0}"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "Os dados de mineração foram restaurados, mas as preferências de sobreposição não puderam ser salvas. Tente novamente Salvar configurações de sobreposição de mineração."
     },
     {
       "source": "Mining delivery",
@@ -148747,6 +148819,10 @@
       "translation": "Mapa selecionado"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "Filtros externos selecionados ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "Resultado selecionado"
     },
@@ -155573,6 +155649,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Desmarque Mostrar para cada projeto que corresponda ao sistema selecionado e ao status de construção."
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "Desmarque um projeto para removê-lo do Market Search."
     },
     {
       "source": "Unclaimed biology",
@@ -168229,6 +168309,10 @@
       "translation": "Выберите локальное фоновое изображение и настройте его значения X, Y и масштаб, просматривая предварительный просмотр на той же карте."
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "Выберите локальную папку для безопасного сохранения отчета."
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "Выберите монитор и размер для игровых наложений."
     },
@@ -177657,6 +177741,10 @@
       "translation": "Сохранить систему"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "Держите приложение сверху при просмотре Путешествий"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "Держите на виду всю компоновку из шести кругов. Свободный взгляд головы не считается фокусом панели; взгляд в сторону, низкая яркость, затемняющие окна и неполные полосы могут привести к неверным показаниям."
     },
@@ -179907,6 +179995,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "Не удалось сохранить данные майнинга: {0}."
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "Данные майнинга восстановлены, но настройки наложения не удалось сохранить. Повторить попытку. Сохраните настройки наложения майнинга."
     },
     {
       "source": "Mining delivery",
@@ -189413,6 +189505,10 @@
       "translation": "Выбранная карта"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "Выбранные внешние фильтры ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "Выбранный результат"
     },
@@ -196239,6 +196335,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "Снимите флажок «Показывать для каждого проекта, соответствующего выбранной системе и статусу сборки»."
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "Снимите флажок с проекта, чтобы удалить его из поиска рынка."
     },
     {
       "source": "Unclaimed biology",
@@ -208895,6 +208995,10 @@
       "translation": "选择本地背景图像并调整其 X、Y 和比例值，同时在同一地图上查看预览。"
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "选择本地文件夹以安全地保存报告。"
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "选择游戏叠加层的显示器和尺寸。"
     },
@@ -218323,6 +218427,10 @@
       "translation": "保留系统"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "查看旅程时将应用程序保持在顶部"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "保持完整的六圈布局可见。自由头部外观不报告为面板焦点；向别处看、低亮度、模糊的窗口和部分条形可能会产生不确定的读数。"
     },
@@ -220573,6 +220681,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "挖矿数据无法保存：{0}"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "挖掘数据已恢复，但无法保存叠加首选项。重试保存挖掘覆盖设置。"
     },
     {
       "source": "Mining delivery",
@@ -230079,6 +230191,10 @@
       "translation": "选定的地图"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "选定的外部滤波器 ({0})"
+    },
+    {
       "source": "Selected result",
       "translation": "选定的结果"
     },
@@ -236905,6 +237021,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "取消选中与所选系统和构建状态匹配的每个项目的“显示”。"
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "取消选中项目可将其从市场搜索中删除。"
     },
     {
       "source": "Unclaimed biology",
@@ -249561,6 +249681,10 @@
       "translation": "* CHOOSE A LOCAL BACKGROUND IMAGE AND ADJUST ITS X, Y, AND SCALE VALUES WHILE REVIEWING THE PREVIEW ON THE SAME MAP. >>>!"
     },
     {
+      "source": "Choose a local folder to save the report safely.",
+      "translation": "* CHOOSE A LOCAL FOLDER TO SAVE THE REPORT SAFELY. >>>!"
+    },
+    {
       "source": "Choose a monitor and size for game overlays.",
       "translation": "* CHOOSE A MONITOR AND SIZE FOR GAME OVERLAYS. >>>!"
     },
@@ -258989,6 +259113,10 @@
       "translation": "* KEEP SYSTEM >>>!"
     },
     {
+      "source": "Keep the application on top while viewing Journeys",
+      "translation": "* KEEP THE APPLICATION ON TOP WHILE VIEWING JOURNEYS >>>!"
+    },
+    {
       "source": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
       "translation": "* KEEP THE FULL SIX-CIRCLE LAYOUT VISIBLE. FREE HEAD LOOK IS NOT REPORTED AS PANEL FOCUS; LOOKING AWAY, LOW BRIGHTNESS, OBSCURING WINDOWS, AND PARTIAL BARS CAN PRODUCE UNCERTAIN READINGS. >>>!"
     },
@@ -261239,6 +261367,10 @@
     {
       "source": "Mining data could not be saved: {0}",
       "translation": "* MINING DATA COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+      "translation": "* MINING DATA RESTORED, BUT OVERLAY PREFERENCES COULD NOT BE SAVED. RETRY SAVE MINING OVERLAY SETTINGS. >>>!"
     },
     {
       "source": "Mining delivery",
@@ -270745,6 +270877,10 @@
       "translation": "* SELECTED MAP >>>!"
     },
     {
+      "source": "Selected outside filters ({0})",
+      "translation": "* SELECTED OUTSIDE FILTERS ({0}) >>>!"
+    },
+    {
       "source": "Selected result",
       "translation": "* SELECTED RESULT >>>!"
     },
@@ -277571,6 +277707,10 @@
     {
       "source": "Uncheck Show for every project matching the selected system and build status.",
       "translation": "* UNCHECK SHOW FOR EVERY PROJECT MATCHING THE SELECTED SYSTEM AND BUILD STATUS. >>>!"
+    },
+    {
+      "source": "Uncheck a project to remove it from Market Search.",
+      "translation": "* UNCHECK A PROJECT TO REMOVE IT FROM MARKET SEARCH. >>>!"
     },
     {
       "source": "Unclaimed biology",

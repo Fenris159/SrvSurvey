@@ -25,7 +25,9 @@ public sealed partial class JourneysView : UserControl
         if (DesktopExternalEffectPolicy.IsAllowed)
         {
             Model?.SetDirectoryLauncher(directory =>
-                TopLevel.GetTopLevel(this)!.Launcher.LaunchDirectoryInfoAsync(directory)
+                TopLevel.GetTopLevel(this) is { } top
+                    ? top.Launcher.LaunchDirectoryInfoAsync(directory)
+                    : Task.FromResult(false)
             );
         }
     }
@@ -67,7 +69,7 @@ public sealed partial class JourneysView : UserControl
 
     internal Task SavePreferencesAsync() =>
         Model is { } model
-            ? model.SetPreferencesAsync(model.AlwaysOnTop, GalacticTimeCheckBox.IsChecked == true)
+            ? model.SetPreferencesAsync(AlwaysOnTopCheckBox.IsChecked == true, GalacticTimeCheckBox.IsChecked == true)
             : Task.CompletedTask;
 
     private void CurrentStart_Click(object? sender, RoutedEventArgs args)
@@ -112,7 +114,10 @@ public sealed partial class JourneysView : UserControl
                 }
                 try
                 {
-                    return new JourneyReportDestination(await file.OpenWriteAsync(), file);
+                    string path =
+                        file.TryGetLocalPath()
+                        ?? throw new NotSupportedException("Choose a local folder to save the report safely.");
+                    return new JourneyReportDestination(path, file);
                 }
                 catch
                 {
@@ -154,14 +159,7 @@ public sealed partial class JourneysView : UserControl
             }
 
             using IDisposable? owner = destination.Owner;
-            await using Stream stream = destination.Stream;
-            if (stream.CanSeek)
-            {
-                stream.SetLength(0);
-                stream.Position = 0;
-            }
-            await using var writer = new StreamWriter(stream);
-            await writer.WriteAsync(report.Html);
+            await SaveReportAtomicallyAsync(destination.Path, report.Html);
             model.SetExportStatus(
                 "Journey report exported. Open the HTML file in a browser to read, share, or print it."
             );
@@ -177,6 +175,27 @@ public sealed partial class JourneysView : UserControl
             model.SetExportStatus("The journey report could not be saved: " + exception.Message);
         }
     }
+
+    internal static async Task SaveReportAtomicallyAsync(
+        string path,
+        string html,
+        Func<string, string, Task>? write = null
+    )
+    {
+        string temporary = path + $".{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await (write is null ? File.WriteAllTextAsync(temporary, html) : write(temporary, html));
+            File.Move(temporary, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
+    }
 }
 
-internal sealed record JourneyReportDestination(Stream Stream, IDisposable? Owner = null);
+internal sealed record JourneyReportDestination(string Path, IDisposable? Owner = null);

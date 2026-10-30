@@ -722,7 +722,7 @@
                                  Value="{Binding MiningWorkspace.SessionYieldLimit, Mode=TwoWay}" />
                 </StackPanel>
               </WrapPanel>
-              <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
+              <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveOverlaySettingsCommand}" HorizontalAlignment="Left" />
             </StackPanel>
           </StackPanel>
         </Border>

@@ -7,6 +7,71 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class JourneyWorkspaceViewModelTests
 {
     [Fact]
+    public async Task ANewerArchiveDecisionDoesNotHideAnUnsavedDraftOnCommanderReturn()
+    {
+        JourneyDocument document = await SeedHistoricalJourneyAsync(1);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        model.JourneyDescription = "Draft description";
+        await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        await new JourneyStore(DataDirectory).SetArchivedAsync("F123", document.FileName, true);
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.True(model.ShowArchived);
+        Assert.Equal("Draft description", model.JourneyDescription);
+        Assert.True(model.IsDirty);
+    }
+
+    [Fact]
+    public async Task ReturningToAJourneyPreservesNewerUneditedFieldsAndDoesNotReviveRevertedNotes()
+    {
+        JourneyDocument journey = await SeedHistoricalJourneyAsync(1);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        model.SelectedSystemNotes = "Draft notes";
+        await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        await new JourneyStore(DataDirectory).SaveAsync(
+            journey with
+            {
+                Name = "Newer name",
+                Description = "Newer description",
+            }
+        );
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Equal("Newer name", model.JourneyName);
+        Assert.Equal("Newer description", model.JourneyDescription);
+        Assert.Equal("Draft notes", model.SelectedSystemNotes);
+        model.SelectedSystemNotes = "";
+        Assert.False(model.IsDirty);
+        await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Empty(model.SelectedSystemNotes);
+        Assert.False(model.IsDirty);
+    }
+
+    [Fact]
+    public async Task CommanderSwitchRetainsUnsavedJourneyMetadataAndSystemNotes()
+    {
+        await SeedHistoricalJourneyAsync(1);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        model.JourneyName = "Unsaved name";
+        model.JourneyDescription = "Unsaved description";
+        model.SelectedSystemNotes = "Unsaved system notes";
+        await model.UpdateContextAsync("F456", "Other commander", true, "Sol", 42);
+        Assert.False(model.HasSelectedJourney);
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Equal("Unsaved name", model.JourneyName);
+        Assert.Equal("Unsaved description", model.JourneyDescription);
+        Assert.Equal("Unsaved system notes", model.SelectedSystemNotes);
+        Assert.True(model.IsDirty);
+        await model.SaveAsync();
+        await model.UpdateContextAsync("F456", "Other commander", true, "Sol", 42);
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Equal("Unsaved name", model.JourneyName);
+        Assert.False(model.IsDirty);
+    }
+
+    [Fact]
     public async Task VisitSummariesKeepPhotosNotesAndLandingsIncludingActivityFromOtherVisits()
     {
         JourneyDocument journey = await SeedHistoricalJourneyAsync(1);
@@ -17,7 +82,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneySystemVisit revisit = first with { Arrived = first.Arrived.AddMinutes(1), Counts = JourneyCounts.Empty };
         JourneySystemVisit quiet = first with
         {
-            StarSystem = new("Achenar", 43, new(1, 0, 0)),
+            StarSystem = new("Sol", 43, new(1, 0, 0)),
             Arrived = first.Arrived.AddMinutes(2),
             Counts = JourneyCounts.Empty,
         };

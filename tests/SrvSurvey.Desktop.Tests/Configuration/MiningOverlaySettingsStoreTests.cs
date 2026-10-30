@@ -6,6 +6,31 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 
 public sealed class MiningOverlaySettingsStoreTests : IDisposable
 {
+    [Fact]
+    public void AssigningADraftRetainsChangesWrittenAfterTheRead()
+    {
+        var store = new MiningOverlaySettingsStore(Path.Combine(directory, "ui.json"));
+        var defaults = new MiningOverlayPreferences();
+        store.Save(null, defaults, defaults with { SessionYieldLimit = 9 });
+        MiningOverlayPreferences stale = store.ReadPreferences("F1", () => defaults);
+        store.Save(null, defaults, defaults with { SessionYieldLimit = 11 });
+        store.SaveCommander("F1", stale, stale, assignDraft: true);
+        Assert.Equal(11, store.Load("F1", () => defaults).SessionYieldLimit);
+        Assert.Equal(defaults, store.Load("F2", () => defaults));
+    }
+
+    [Fact]
+    public void SavingOneFieldDoesNotOverwriteAnUnrelatedConcurrentPreference()
+    {
+        var store = new MiningOverlaySettingsStore(Path.Combine(directory, "ui.json"));
+        var original = new MiningOverlayPreferences();
+        store.SaveCommander("F1", original, original with { NotificationSeconds = 45 });
+        store.SaveCommander("F1", original, original with { SessionYieldLimit = 9 });
+        MiningOverlayPreferences saved = store.Load("F1", () => original);
+        Assert.Equal(45, saved.NotificationSeconds);
+        Assert.Equal(9, saved.SessionYieldLimit);
+    }
+
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-mining-overlay-settings-{Guid.NewGuid():N}"
@@ -67,6 +92,17 @@ public sealed class MiningOverlaySettingsStoreTests : IDisposable
         Assert.Equal(MiningSessionYieldSort.AveragePercentage, settings.SessionYieldSort);
     }
 
+    [Theory]
+    [InlineData(0, 3)]
+    [InlineData(999, 120)]
+    public void ImportedNotificationDurationIsClampedToTheEditorRange(int stored, int expected)
+    {
+        var preferences = new MiningOverlayPreferences(NotificationSeconds: stored);
+        var settings = new MiningPreferences();
+        preferences.ApplyTo(settings);
+        Assert.Equal(expected, settings.NotificationSeconds);
+    }
+
     [Fact]
     public void DraftCanBeReadWithoutWritingAndAssignedOnlyAfterTheCommanderSnapshotIsSaved()
     {
@@ -80,8 +116,8 @@ public sealed class MiningOverlaySettingsStoreTests : IDisposable
         Assert.Equal(legacy with { SessionYieldLimit = 9 }, assigned);
         Assert.Equal(previous, File.ReadAllText(path));
         Assert.Equal(defaults, store.ReadPreferences("F2", () => defaults, includeDraft: false));
-        store.SaveCommander(" f1 ", assigned, assignDraft: true);
-        Assert.Equal(assigned, store.Load("F1", () => defaults));
+        store.SaveCommander(" f1 ", assigned, assigned, assignDraft: true);
+        Assert.Equal(assigned, store.Load("F1", () => legacy));
         Assert.Equal(defaults, store.Load("F2", () => defaults));
     }
 

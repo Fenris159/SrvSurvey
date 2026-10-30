@@ -131,6 +131,8 @@ public sealed class JourneyReportTests
         Assert.Contains("id=\"visit-2100\"", html, StringComparison.Ordinal);
         Assert.Contains("System 2099", html, StringComparison.Ordinal);
         Assert.Contains("2,100 visits", html, StringComparison.Ordinal);
+        string points = html.Split("class=\"route-path\" points=\"", StringSplitOptions.None)[1].Split('"')[0];
+        Assert.Equal(701, points.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
     }
 
     internal static JourneyDocument SampleJourney()

@@ -26,7 +26,9 @@ public sealed partial class MiningWorkspaceViewModelTests
             Assert.Equal(1, workspace.SessionYieldSortIndex);
             Assert.Equal(9, workspace.SessionYieldLimit);
             Assert.True(workspace.HideProspectsBelowThreshold);
-            Assert.True(workspace.SaveSettingsCommand.CanExecute(null));
+            Assert.True(workspace.SaveOverlaySettingsCommand.CanExecute(null));
+            Assert.False(workspace.SaveSettingsCommand.CanExecute(null));
+            workspace.SaveOverlaySettingsCommand.Execute(null);
         }
         finally
         {

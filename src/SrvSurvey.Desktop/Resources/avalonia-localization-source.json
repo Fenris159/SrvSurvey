@@ -11157,6 +11157,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose a local folder to save the report safely.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml.cs"
+  },
+  {
     "Text": "Choose a monitor and size for game overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30088,6 +30096,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
+    "Text": "Keep the application on top while viewing Journeys",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34607,6 +34623,14 @@
   {
     "Text": "Mining data could not be saved: {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Mining data restored, but overlay preferences could not be saved. Retry Save mining overlay settings.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -53673,6 +53697,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "Selected outside filters ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
+  },
+  {
     "Text": "Selected result",
     "IsFormat": false,
     "SourceKinds": [
@@ -67352,6 +67384,14 @@
   },
   {
     "Text": "Uncheck Show for every project matching the selected system and build status.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Uncheck a project to remove it from Market Search.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"

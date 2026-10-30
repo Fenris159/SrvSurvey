@@ -49,7 +49,15 @@ public sealed partial class MiningWorkspaceViewModel
             }
             if (pending is not null || assignDraft || current != saved)
             {
-                pendingOverlayEdits[key] = new(saved, current, assignDraft || pending?.AssignDraft == true);
+                MiningOverlayPreferences baseline = pending is null
+                    ? saved
+                    : current.WithChangesFrom(pending.After, pending.Before);
+                pendingOverlayEdits[key] = new(
+                    baseline,
+                    current,
+                    assignDraft || pending?.AssignDraft == true,
+                    pending?.ReplaceSnapshot == true
+                );
             }
             current.ApplyTo(Settings);
             lastOverlayPreferences = saved;
@@ -61,18 +69,19 @@ public sealed partial class MiningWorkspaceViewModel
         }
     }
 
-    private void SaveOverlayPreferences()
+    private bool SaveOverlayPreferences(bool replaceSnapshot = false)
     {
         string key = overlayCommander ?? string.Empty;
         var current = MiningOverlayPreferences.From(Settings);
-        if (current != lastOverlayPreferences || pendingOverlayEdits.ContainsKey(key))
+        if (replaceSnapshot || current != lastOverlayPreferences || pendingOverlayEdits.ContainsKey(key))
         {
             pendingOverlayEdits[key] = pendingOverlayEdits.TryGetValue(key, out PendingOverlayEdit? prior)
                 ? prior with
                 {
                     After = current,
+                    ReplaceSnapshot = replaceSnapshot || prior.ReplaceSnapshot,
                 }
-                : new(lastOverlayPreferences, current, false);
+                : new(lastOverlayPreferences, current, false, replaceSnapshot);
         }
         string? failure = null;
         foreach ((string commanderKey, PendingOverlayEdit edit) in pendingOverlayEdits.ToArray())
@@ -85,7 +94,19 @@ public sealed partial class MiningWorkspaceViewModel
                 }
                 else
                 {
-                    overlaySettings.SaveCommander(commanderKey, edit.After, edit.AssignDraft);
+                    MiningOverlayPreferences persisted = overlaySettings.SaveCommander(
+                        commanderKey,
+                        edit.Before,
+                        edit.After,
+                        edit.AssignDraft,
+                        edit.ReplaceSnapshot
+                    );
+                    if (commanderKey.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        persisted.ApplyTo(Settings);
+                        current = MiningOverlayPreferences.From(Settings);
+                        Changed(nameof(Settings));
+                    }
                 }
                 pendingOverlayEdits.Remove(commanderKey);
                 if (commanderKey.Equals(key, StringComparison.OrdinalIgnoreCase))
@@ -103,6 +124,7 @@ public sealed partial class MiningWorkspaceViewModel
             }
         }
         OverlaySettingsStatus = failure ?? string.Empty;
+        return failure is null;
     }
 
     private MiningOverlayPreferences ReadOverlayPreferences(
@@ -111,6 +133,10 @@ public sealed partial class MiningWorkspaceViewModel
     )
     {
         assignDraft = false;
+        if (commander is null)
+        {
+            return overlaySettings.ReadPreferences(overlayCommander, fallback);
+        }
         if (
             pendingDraftCommander is not null
             && !pendingDraftCommander.Equals(overlayCommander, StringComparison.OrdinalIgnoreCase)
@@ -125,15 +151,17 @@ public sealed partial class MiningWorkspaceViewModel
         catch (Exception exception)
             when (overlayCommander is not null && exception is IOException or UnauthorizedAccessException)
         {
+            MiningOverlayPreferences result = overlaySettings.ReadPreferences(overlayCommander, fallback);
             assignDraft = true;
             pendingDraftCommander = overlayCommander;
-            return overlaySettings.ReadPreferences(overlayCommander, fallback);
+            return result;
         }
     }
 
     private sealed record PendingOverlayEdit(
         MiningOverlayPreferences Before,
         MiningOverlayPreferences After,
-        bool AssignDraft
+        bool AssignDraft,
+        bool ReplaceSnapshot = false
     );
 }
