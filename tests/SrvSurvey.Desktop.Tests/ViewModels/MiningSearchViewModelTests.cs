@@ -7,6 +7,102 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MiningSearchViewModelTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedPowerplaySearchSurvivesSystemJump(bool forceIncludeReference)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-jump-" + Guid.NewGuid());
+        try
+        {
+            using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(new HttpClient(handler)),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            )
+            {
+                PledgedPower = "Archon Delaine",
+                Objective = "Acquire",
+                Mineral = "Any",
+                ForceIncludeReference = forceIncludeReference,
+            };
+            model.ConfigureResultCache(new MiningSearchResultCache(directory));
+            model.UpdateCurrentLocation("Sol");
+            await model.SearchSystemsAsync();
+
+            AcquireResultRowViewModel result = Assert.Single(model.AcquireRows);
+            string status = model.Status;
+            model.UpdateCurrentLocation("Wille");
+
+            Assert.Same(result, Assert.Single(model.AcquireRows));
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal(status, model.Status);
+
+            model.ResetPowerplay();
+            Assert.Empty(model.AcquireRows);
+            Assert.Equal("Wille", model.Reference);
+            model.UpdateCurrentLocation("Lave");
+            Assert.Equal("Lave", model.Reference);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedPlanetaryPowerplaySearchSurvivesSystemJump(bool forceIncludeReference)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-jump-" + Guid.NewGuid());
+        try
+        {
+            using var handler = new PlanetaryFilterHandler { MultipleSellSystems = true };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(new HttpClient(handler)),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            )
+            {
+                PledgedPower = "Aisling Duval",
+                Objective = "Reinforce",
+                ForceIncludeReference = forceIncludeReference,
+            };
+            model.ConfigureResultCache(new MiningSearchResultCache(directory));
+            model.UpdateCurrentLocation("Sol");
+            model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+            model.MineralChips.Add("Monazite");
+            await model.SearchSystemsAsync();
+
+            SurfaceSellRowViewModel result = Assert.Single(model.PlanetarySearch.Rows);
+            string status = model.Status;
+            int bodyRequests = handler.BodyReferences.Count;
+            model.UpdateCurrentLocation("Wille");
+
+            Assert.Same(result, Assert.Single(model.PlanetarySearch.Rows));
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal("Sol", model.PlanetarySearch.Reference);
+            Assert.Equal(status, model.Status);
+            Assert.Equal(bodyRequests, handler.BodyReferences.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
     [Fact]
     public void PowerplaySearchRowsReturnFromDiskWithoutAProviderRequest()
     {

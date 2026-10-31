@@ -667,6 +667,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public Task SearchAsync(CancellationToken cancellationToken = default)
     {
         SurfaceSellSearchRequest request = SearchRequest();
+        if (!string.IsNullOrWhiteSpace(request.Reference))
+        {
+            // A journal arrival must not change this search's reference or cached-result identity.
+            session.Reference.Pin();
+        }
         bool defaultDistanceSort = DefaultSellDistanceSort;
         return session.RunAsync(
             async token =>
