@@ -51,15 +51,15 @@ public sealed class OverlayThemeResourcesTests
                 Brushes = OverlayTypographyBrushes.Default.With(role, brushKey),
             };
             OverlayTypographyResources.Apply(root, scale);
-            Assert.Equal(Colors.Red, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Red, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             Assert.Equal(17, text.FontSize);
             window.Resources[$"LegacyTheme.{brushKey}"] = Brushes.Green;
             OverlayTypographyResources.Apply(root, scale);
-            Assert.Equal(Colors.Green, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Green, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             OverlayTypographyResources.Apply(root, scale with { Brushes = scale.Brushes.With(role, "unknown") });
-            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Blue, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             OverlayTypographyResources.Apply(root, OverlayTypographyScale.Default);
-            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Blue, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
         }
         finally
         {
