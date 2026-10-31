@@ -14,6 +14,8 @@ public sealed partial class JourneyStore(string dataDirectory)
 {
     private const string JsonFileExtension = ".json";
     private const string CodexNewPropertyName = "codexNew";
+    private const int CurrentSchemaVersion = 1;
+    private const string VisitedSystemsPropertyName = "visitedSystems";
 
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
@@ -110,11 +112,20 @@ public sealed partial class JourneyStore(string dataDirectory)
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (File.Exists(path))
+            JourneyLoadResult existing = await LoadPathAsync(request.FrontierId, path, cancellationToken)
+                .ConfigureAwait(false);
+            if (existing.Journey is not null)
             {
                 throw new InvalidOperationException(
                     "A journey already starts at that journal event: " + Path.GetFileName(path)
                 );
+            }
+            if (existing.Exists)
+            {
+                // Keep unavailable records in place, even when a new start uses the same journal event.
+                fileName += "_recovered_" + Guid.NewGuid().ToString("N");
+                path = Path.Combine(GetJourneyDirectory(request.FrontierId), fileName + JsonFileExtension);
+                journey = journey with { FileName = fileName, FilePath = path };
             }
 
             await WriteJourneyAsync(path, [], journey, cancellationToken).ConfigureAwait(false);
@@ -137,19 +148,12 @@ public sealed partial class JourneyStore(string dataDirectory)
         try
         {
             JsonObject root;
-            if (File.Exists(path))
+            JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+            if (readResult.Exists && readResult.Root is null)
             {
-                JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
-                root =
-                    readResult.Root
-                    ?? throw new InvalidDataException(
-                        "The journey file is malformed and was not overwritten: " + readResult.Error
-                    );
+                throw new InvalidDataException("The journey file was not overwritten: " + readResult.Error);
             }
-            else
-            {
-                root = [];
-            }
+            root = readResult.Root ?? [];
 
             JourneyDocument saved = journey with
             {
@@ -200,15 +204,10 @@ public sealed partial class JourneyStore(string dataDirectory)
         CancellationToken cancellationToken
     )
     {
-        if (!File.Exists(path))
-        {
-            return new JourneyLoadResult(path, false, null, null);
-        }
-
         JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         if (readResult.Root is null)
         {
-            return new JourneyLoadResult(path, true, null, readResult.Error);
+            return new JourneyLoadResult(path, readResult.Exists, null, readResult.Error);
         }
 
         try
@@ -223,12 +222,22 @@ public sealed partial class JourneyStore(string dataDirectory)
 
     private static JourneyDocument ParseJourney(string frontierId, string path, JsonObject root)
     {
+        GetSchemaVersion(root, path);
+        string owner = GetString(root, "fid") ?? frontierId;
+        if (!string.Equals(owner, frontierId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException($"The journey {path} belongs to another commander.");
+        }
         string fileName = Path.GetFileNameWithoutExtension(path);
         DateTimeOffset startTime =
             GetDateTimeOffset(root, "startTime")
             ?? throw new InvalidDataException($"The journey {path} has no valid startTime.");
         var visits = new List<JourneySystemVisit>();
-        if (root["visitedSystems"] is JsonArray visitedSystems)
+        if (root[VisitedSystemsPropertyName] is not null and not JsonArray)
+        {
+            throw new InvalidDataException($"The journey {path} has invalid visitedSystems.");
+        }
+        if (root[VisitedSystemsPropertyName] is JsonArray visitedSystems)
         {
             for (int index = 0; index < visitedSystems.Count; index++)
             {
@@ -244,11 +253,11 @@ public sealed partial class JourneyStore(string dataDirectory)
         return new JourneyDocument(
             fileName,
             path,
-            GetString(root, "fid") ?? frontierId,
+            owner,
             GetString(root, "commander") ?? string.Empty,
             GetString(root, "name") ?? fileName,
             GetString(root, "description") ?? string.Empty,
-            GetString(root, "startingJournal") ?? string.Empty,
+            PortableFileName(GetString(root, "startingJournal") ?? string.Empty),
             startTime,
             GetDateTimeOffset(root, "endTime"),
             GetDateTimeOffset(root, "watermark") ?? startTime,
@@ -369,12 +378,17 @@ public sealed partial class JourneyStore(string dataDirectory)
         CancellationToken cancellationToken
     )
     {
+        if (GetSchemaVersion(root, path) == 0 && root.Count > 0)
+        {
+            await BackUpLegacyJourneyAsync(path, cancellationToken).ConfigureAwait(false);
+        }
+        root["schemaVersion"] = CurrentSchemaVersion;
         root["fid"] = journey.FrontierId;
         root["commander"] = journey.CommanderName;
         root["name"] = journey.Name;
         root["description"] = journey.Description;
         root["archived"] = journey.IsArchived;
-        root["startingJournal"] = journey.StartingJournal;
+        root["startingJournal"] = PortableFileName(journey.StartingJournal);
         root["startTime"] = journey.StartTime;
         if (journey.EndTime is { } endTime)
         {
@@ -386,7 +400,10 @@ public sealed partial class JourneyStore(string dataDirectory)
         }
 
         root["watermark"] = journey.Watermark;
-        root["visitedSystems"] = MergeVisits(root["visitedSystems"] as JsonArray, journey.VisitedSystems);
+        root[VisitedSystemsPropertyName] = MergeVisits(
+            root[VisitedSystemsPropertyName] as JsonArray,
+            journey.VisitedSystems
+        );
         await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
     }
 
@@ -708,6 +725,10 @@ public sealed partial class JourneyStore(string dataDirectory)
                 ? new JsonObjectReadResult(root, null)
                 : new JsonObjectReadResult(null, $"{path} does not contain a JSON object.");
         }
+        catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return new JsonObjectReadResult(null, null, Exists: false);
+        }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return new JsonObjectReadResult(null, $"Could not read {path}: {exception.Message}");
@@ -753,5 +774,5 @@ public sealed partial class JourneyStore(string dataDirectory)
 
     private sealed record ExistingVisit(int Index, JsonObject? Root, string? Identity);
 
-    private sealed record JsonObjectReadResult(JsonObject? Root, string? Error);
+    private sealed record JsonObjectReadResult(JsonObject? Root, string? Error, bool Exists = true);
 }

@@ -11933,6 +11933,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
+    "Text": "Clear the unavailable journey\u0027s active selection to start another. Its saved file will be kept.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Clear unavailable journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Clear unclaimed",
     "IsFormat": false,
     "SourceKinds": [
@@ -29670,6 +29686,14 @@
   },
   {
     "Text": "Journey data could not be initialized: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Journey data could not be refreshed: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -49312,6 +49336,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
   },
   {
+    "Text": "Resume journey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "Resume paused quest",
     "IsFormat": false,
     "SourceKinds": [
@@ -61819,6 +61851,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "The active journey selection could not be cleared: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+  },
+  {
+    "Text": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+  },
+  {
     "Text": "The active settlement changed, so its unexported authoring draft was discarded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64435,6 +64483,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
+    "Text": "The saved journey could not be resumed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+  },
+  {
     "Text": "The saved overlay theme state was not deleted: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -65233,6 +65289,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The unavailable journey\u0027s active selection was cleared. Its saved file was kept. You can begin a new journey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
   },
   {
     "Text": "The unhealthy replacement process did not exit for rollback.",

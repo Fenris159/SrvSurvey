@@ -79,6 +79,58 @@ public sealed class MainWindowJourneyJournalTests : IDisposable
         Assert.Equal(1, Assert.Single(model.Journey.VisitedSystems).Visit.Counts.Screenshots);
     }
 
+    [Fact]
+    public async Task FreshStartupWithNullAndAbsentReferencesInTwoProfilesCanStartAJourney()
+    {
+        string journals = Path.Combine(directory, "journals");
+        string data = Path.Combine(directory, "data");
+        Directory.CreateDirectory(journals);
+        Directory.CreateDirectory(data);
+        await File.WriteAllTextAsync(
+            Path.Combine(data, TestFrontierId + "-live.json"),
+            $$"""
+            {"fid":"{{TestFrontierId}}","commander":"Current","isOdyssey":true,"activeJourney":null}
+            """
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(data, "F999-live.json"),
+            """
+            {"fid":"F999","commander":"Other","isOdyssey":true}
+            """
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.2026-10-30T160000.01.log"),
+            """
+            {"timestamp":"2026-10-30T16:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-10-30T16:00:01Z","event":"Commander","Name":"Other","FID":"F999"}
+            {"timestamp":"2026-10-30T16:00:02Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """ + "\n"
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.2026-10-30T170000.01.log"),
+            $$"""
+            {"timestamp":"2026-10-30T17:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-10-30T17:00:01Z","event":"Commander","Name":"Current","FID":"{{TestFrontierId}}"}
+            {"timestamp":"2026-10-30T17:00:02Z","event":"LoadGame","Commander":"Current","FID":"{{TestFrontierId}}","Ship":"CobraMkIII"}
+            {"timestamp":"2026-10-30T17:00:03Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """ + "\n"
+        );
+        var paths = new AppDataPaths(Path.Combine(directory, "config"), data, Path.Combine(directory, "cache"), []);
+        new JournalSettingsStore(paths.SharedUiSettingsPath).Save(new(journals));
+        await using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(paths).WithTargetFrontierId(TestFrontierId)
+        );
+        await model.RefreshAsync();
+        Assert.Empty(model.Journey.Journeys);
+        Assert.False(model.Journey.HasActiveJourney);
+        await model.Journey.StartNewJourneyAsync();
+        model.Journey.NewJourneyName = "Fresh start";
+        await model.Journey.BeginJourneyAsync();
+        Assert.True(model.Journey.HasActiveJourney, model.Journey.StartStatus);
+        Assert.Equal("Fresh start", model.Journey.JourneyName);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))
