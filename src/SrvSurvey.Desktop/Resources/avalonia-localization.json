@@ -13973,10 +13973,6 @@
       "translation": "{0} ungültige zwischengespeicherte Elemente ignoriert."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "{0} fehlerhafte Journalzeile(n) ignoriert."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} fehlerhafte Zeile(n) ignoriert."
     },
@@ -14731,6 +14727,10 @@
     {
       "source": "Journal pulse",
       "translation": "Journal-Puls"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Warnung(en) zum Lesen des Journals: {0}. {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -31073,8 +31073,8 @@
       "translation": "Der aktuelle Breiten- und Längengrad wurde kopiert."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "Der aktuelle Standort konnte nicht gefunden werden. Laden Sie das aktuelle Journal oder wählen Sie einen früheren Besuch."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "Der aktuelle Standort konnte nicht gefunden werden. Laden Sie das aktuelle Journal oder wählen Sie einen früheren Besuch.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -54699,10 +54699,6 @@
       "translation": "Se ignoraron {0} elementos almacenados en caché no válidos."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Se ignoraron {0} líneas de diario con formato incorrecto."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "Se ignoraron {0} líneas con formato incorrecto."
     },
@@ -55457,6 +55453,10 @@
     {
       "source": "Journal pulse",
       "translation": "Pulso diario"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Advertencias de lectura del diario: {0}. {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -71799,8 +71799,8 @@
       "translation": "Se copiaron la latitud y longitud actuales."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "No se pudo encontrar la ubicación actual. Cargue la revista actual o elija una visita anterior."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "No se pudo encontrar la ubicación actual. Cargue la revista actual o elija una visita anterior.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -95425,10 +95425,6 @@
       "translation": "{0} élément(s) mis en cache non valide(s) ignoré(s)."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "{0} ligne(s) de journal mal formée(s) ignorée(s)."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} ligne(s) malformée(s) ignorée(s)."
     },
@@ -96183,6 +96179,10 @@
     {
       "source": "Journal pulse",
       "translation": "Pouls du journal"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Avertissement(s) de lecture du journal : {0}. {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -112525,8 +112525,8 @@
       "translation": "La latitude et la longitude actuelles ont été copiées."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "L'emplacement actuel est introuvable. Chargez le journal actuel ou choisissez une visite précédente."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "L'emplacement actuel est introuvable. Chargez le journal actuel ou choisissez une visite précédente.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -136151,10 +136151,6 @@
       "translation": "Ignorados {0} itens inválidos em cache."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Ignoradas {0} linha(s) de diário malformadas."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} linhas malformadas ignoradas."
     },
@@ -136909,6 +136905,10 @@
     {
       "source": "Journal pulse",
       "translation": "Pulso do diário"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Aviso(s) de leitura de diário: {0}. {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -153251,8 +153251,8 @@
       "translation": "A latitude e longitude atuais foram copiadas."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "A localização atual não foi encontrada. Carregue o diário atual ou escolha uma visita anterior."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "A localização atual não foi encontrada. Carregue o diário atual ou escolha uma visita anterior.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -176877,10 +176877,6 @@
       "translation": "Игнорируются {0} недопустимые кэшированные элементы."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Игнорируются {0} некорректные строки журнала."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "Игнорируются {0} неверные строки."
     },
@@ -177635,6 +177631,10 @@
     {
       "source": "Journal pulse",
       "translation": "Журнал пульса"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Предупреждения о прочтении журнала: {0}. {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -193977,8 +193977,8 @@
       "translation": "Текущие широта и долгота были скопированы."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "Текущее местоположение не найдено. Загрузите текущий журнал или выберите предыдущий визит."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "Текущее местоположение не найдено. Загрузите текущий журнал или выберите предыдущее посещение.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -217603,10 +217603,6 @@
       "translation": "忽略了 {0} 无效的缓存项目。"
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "忽略了 {0} 格式错误的日志行。"
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "忽略了 {0} 格式错误的行。"
     },
@@ -218361,6 +218357,10 @@
     {
       "source": "Journal pulse",
       "translation": "期刊脉搏"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "日志读取警告：{0}。 {1}"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -234703,8 +234703,8 @@
       "translation": "复制了当前的纬度和经度。"
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "无法找到当前位置。加载当前日志或选择之前的访问。"
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "无法找到当前位置。加载当前日志或选择以前的访问。{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -258329,10 +258329,6 @@
       "translation": "* IGNORED {0} INVALID CACHED ITEM(S). >>>!"
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "* IGNORED {0} MALFORMED JOURNAL LINE(S). >>>!"
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "* IGNORED {0} MALFORMED LINE(S). >>>!"
     },
@@ -259087,6 +259083,10 @@
     {
       "source": "Journal pulse",
       "translation": "* JOURNAL PULSE >>>!"
+    },
+    {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "* JOURNAL READ WARNING(S): {0}. {1} >>>!"
     },
     {
       "source": "Journal scan context is not loaded.",
@@ -275429,8 +275429,8 @@
       "translation": "* THE CURRENT LATITUDE AND LONGITUDE WERE COPIED. >>>!"
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "* THE CURRENT LOCATION COULD NOT BE FOUND. LOAD THE CURRENT JOURNAL OR CHOOSE A PREVIOUS VISIT. >>>!"
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "* THE CURRENT LOCATION COULD NOT BE FOUND. LOAD THE CURRENT JOURNAL OR CHOOSE A PREVIOUS VISIT.{0} >>>!"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",

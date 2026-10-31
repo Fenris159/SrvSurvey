@@ -48,8 +48,8 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private JourneySystemItemViewModel? selectedSystem;
     private string journeyName = string.Empty;
     private string journeyDescription = string.Empty;
-    private string selectedSystemNotes = string.Empty;
-    private string loadedSystemNotes = string.Empty;
+    private SystemNoteDraft systemNotes = new(string.Empty, string.Empty);
+    private Task selectedSystemLoad = Task.CompletedTask;
     private string selectedSystemDetails = string.Empty;
     private IReadOnlyList<string> screenshotFiles = [];
     private string? imagesDirectory;
@@ -246,7 +246,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         get => selectedSystem;
         set
         {
-            if (!isApplyingDocument && SelectedSystemNotes != loadedSystemNotes)
+            if (!isApplyingDocument && systemNotes.IsDirty)
             {
                 StatusMessage = "Save or discard the system notes before selecting another visit.";
                 OnPropertyChanged();
@@ -259,7 +259,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
             if (!suppressSystemLoad)
             {
-                _ = LoadSelectedSystemAsync(value);
+                selectedSystemLoad = LoadSelectedSystemAsync(value);
             }
 
             OnPropertyChanged(nameof(SelectedSystemName));
@@ -279,10 +279,19 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public string SelectedSystemNotes
     {
-        get => selectedSystemNotes;
+        get => systemNotes.Text;
         set
         {
-            if (SetField(ref selectedSystemNotes, value ?? string.Empty) && !isApplyingDocument)
+            if (
+                SetField(
+                    ref systemNotes,
+                    systemNotes with
+                    {
+                        Text = value ?? string.Empty,
+                    },
+                    nameof(SelectedSystemNotes)
+                ) && !isApplyingDocument
+            )
             {
                 RaiseDirtyState();
             }
@@ -336,7 +345,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         && (
             !string.Equals(JourneyName, selectedDocument.Name, StringComparison.Ordinal)
             || !string.Equals(JourneyDescription, selectedDocument.Description, StringComparison.Ordinal)
-            || !string.Equals(SelectedSystemNotes, loadedSystemNotes, StringComparison.Ordinal)
+            || systemNotes.IsDirty
         );
 
     public bool IsCreating
@@ -714,6 +723,11 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 )
                 ?? VisibleJourneys.FirstOrDefault(item => item.Document.IsActive)
                 ?? (VisibleJourneys.Count > 0 ? VisibleJourneys[0] : null);
+            await selectedSystemLoad;
+            if (version != contextVersion)
+            {
+                return;
+            }
             if (result.Errors.Count > 0)
             {
                 StatusMessage = string.Join(Environment.NewLine, result.Errors);
@@ -890,10 +904,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private async Task<JourneyDocument> SaveSelectedSystemNotesAsync(JourneyDocument saved, int version)
     {
-        if (
-            SelectedSystem is not { } selected
-            || string.Equals(SelectedSystemNotes, loadedSystemNotes, StringComparison.Ordinal)
-        )
+        if (SelectedSystem is not { } selected || !systemNotes.IsDirty)
         {
             return saved;
         }
@@ -916,7 +927,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             return saved;
         }
-        loadedSystemNotes = SelectedSystemNotes;
+        systemNotes = systemNotes with { Loaded = systemNotes.Text };
         return journeyService.ActiveJourney?.FileName == saved.FileName ? journeyService.ActiveJourney : saved;
     }
 
@@ -925,7 +936,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         if (selectedDocument is not null)
         {
             ClearJourneyDraft();
-            SelectedSystemNotes = loadedSystemNotes;
+            SelectedSystemNotes = systemNotes.Loaded;
             ApplyDocument(
                 selectedDocument,
                 preferredSystem: SelectedSystem is { } system
@@ -1159,6 +1170,17 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         RaiseCommands();
     }
 
+    private void ApplyLoadedSystemNotes(string notes)
+    {
+        systemNotes = new SystemNoteDraft(notes, notes);
+        OnPropertyChanged(nameof(SelectedSystemNotes));
+    }
+
+    private sealed record SystemNoteDraft(string Loaded, string Text)
+    {
+        public bool IsDirty => !string.Equals(Loaded, Text, StringComparison.Ordinal);
+    }
+
     private async Task LoadSelectedSystemAsync(JourneySystemItemViewModel? item)
     {
         int version = ++systemLoadVersion;
@@ -1167,8 +1189,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             isApplyingDocument = true;
             try
             {
-                loadedSystemNotes = string.Empty;
-                SelectedSystemNotes = string.Empty;
+                ApplyLoadedSystemNotes(string.Empty);
                 SelectedSystemDetails = string.Empty;
                 ScreenshotFiles = [];
                 imagesDirectory = null;
@@ -1200,8 +1221,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             isApplyingDocument = true;
             try
             {
-                loadedSystemNotes = load.Notes ?? string.Empty;
-                SelectedSystemNotes = loadedSystemNotes;
+                ApplyLoadedSystemNotes(load.Notes ?? string.Empty);
                 SelectedSystemDetails = CreateSystemDetails(visit);
                 RefreshScreenshotAvailability();
             }

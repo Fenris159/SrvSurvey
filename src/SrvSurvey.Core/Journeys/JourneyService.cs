@@ -313,8 +313,12 @@ public sealed partial class JourneyService
         {
             JourneyDocument reset = journey with { Watermark = journey.StartTime, VisitedSystems = [] };
             JourneyJournalReadResult read = await historyReader
-                .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, cancellationToken)
+                .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, reset.StartTime, cancellationToken)
                 .ConfigureAwait(false);
+            if (!read.IsComplete)
+            {
+                return new JourneyServiceResult(journey, read.Errors, 0);
+            }
             var processor = new JourneyJournalProcessor(reset, exobiologyCatalog, isOdyssey);
             IEnumerable<JournalEventEnvelope> events = journey.EndTime is { } endTime
                 ? read.Events.Where(journalEvent => journalEvent.Timestamp is null || journalEvent.Timestamp <= endTime)
@@ -393,19 +397,110 @@ public sealed partial class JourneyService
     )
     {
         JourneyJournalReadResult read = await historyReader
-            .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, cancellationToken)
+            .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, journey.StartTime, cancellationToken)
             .ConfigureAwait(false);
-        var processor = new JourneyJournalProcessor(journey, exobiologyCatalog, isOdyssey);
-        JourneyReplaySummary replay = processor.ApplyCatchUp(read.Events);
-        if (replay.ProcessedEventCount > 0)
+        (JourneyJournalProcessor processor, bool rebuilt) = CreateCatchUpProcessor(journey, read, isOdyssey);
+        int processed = read.Events.Count(entry => entry.Timestamp > journey.Watermark);
+        if (rebuilt || processed > 0)
         {
-            await journeyStore.SaveAsync(replay.Journey, cancellationToken).ConfigureAwait(false);
+            await journeyStore.SaveAsync(processor.Journey, cancellationToken).ConfigureAwait(false);
         }
 
         activeProcessor = processor;
         activeIsOdyssey = isOdyssey;
-        return new JourneyServiceResult(replay.Journey, read.Errors, replay.ProcessedEventCount);
+        return new JourneyServiceResult(processor.Journey, read.Errors, processed);
     }
+
+    private (JourneyJournalProcessor Processor, bool Rebuilt) CreateCatchUpProcessor(
+        JourneyDocument journey,
+        JourneyJournalReadResult read,
+        bool isOdyssey
+    )
+    {
+        if (read.IsComplete)
+        {
+            var rebuilt = new JourneyJournalProcessor(
+                journey with
+                {
+                    Watermark = journey.StartTime,
+                    VisitedSystems = [],
+                },
+                exobiologyCatalog,
+                isOdyssey
+            );
+            rebuilt.ApplyCatchUp(read.Events);
+            if (CoversSavedActivity(journey, rebuilt.Journey))
+            {
+                var notes = journey.VisitedSystems.ToDictionary(
+                    visit => (visit.StarSystem.SystemAddress, visit.Arrived),
+                    visit => visit.Counts.Notes
+                );
+                rebuilt.UpdateJourney(
+                    rebuilt.Journey with
+                    {
+                        VisitedSystems = rebuilt
+                            .Journey.VisitedSystems.Select(visit =>
+                                visit with
+                                {
+                                    Counts = visit.Counts with
+                                    {
+                                        Notes = notes.GetValueOrDefault(
+                                            (visit.StarSystem.SystemAddress, visit.Arrived)
+                                        ),
+                                    },
+                                }
+                            )
+                            .ToArray(),
+                    }
+                );
+                return (rebuilt, true);
+            }
+        }
+        // Missing history must not erase activity that was already saved. Continue from the watermark instead.
+        var incremental = new JourneyJournalProcessor(journey, exobiologyCatalog, isOdyssey);
+        incremental.ApplyCatchUp(read.Events);
+        return (incremental, false);
+    }
+
+    private static bool CoversSavedActivity(JourneyDocument saved, JourneyDocument rebuilt)
+    {
+        var visits = rebuilt.VisitedSystems.ToDictionary(visit => (visit.StarSystem.SystemAddress, visit.Arrived));
+        return rebuilt.Watermark >= saved.Watermark
+            && saved.VisitedSystems.All(visit =>
+                visits.TryGetValue((visit.StarSystem.SystemAddress, visit.Arrived), out JourneySystemVisit? replacement)
+                && CoversVisit(visit, replacement)
+            );
+    }
+
+    private static bool CoversVisit(JourneySystemVisit saved, JourneySystemVisit rebuilt) =>
+        CoversCounts(saved.Counts, rebuilt.Counts)
+        && CoversDictionary(saved.LandedOn, rebuilt.LandedOn)
+        && CoversDictionary(saved.SubCategories, rebuilt.SubCategories)
+        && CoversDictionary(saved.SurfaceSignals, rebuilt.SurfaceSignals)
+        && CoversDictionary(saved.FssSignals, rebuilt.FssSignals)
+        && CoversSet(saved.CodexScanned, rebuilt.CodexScanned)
+        && CoversSet(saved.BodiesScanned, rebuilt.BodiesScanned)
+        && CoversSet(saved.CodexNew, rebuilt.CodexNew);
+
+    private static bool CoversDictionary(
+        IReadOnlyDictionary<string, int>? saved,
+        IReadOnlyDictionary<string, int>? rebuilt
+    ) => saved is null || saved.All(pair => rebuilt?.GetValueOrDefault(pair.Key) >= pair.Value);
+
+    private static bool CoversSet<T>(IReadOnlySet<T>? saved, IReadOnlySet<T>? rebuilt) =>
+        saved is null || (rebuilt is not null && saved.IsSubsetOf(rebuilt));
+
+    private static bool CoversCounts(JourneyCounts saved, JourneyCounts rebuilt) =>
+        rebuilt.BodyScans >= saved.BodyScans
+        && rebuilt.DetailedSurfaceScans >= saved.DetailedSurfaceScans
+        && rebuilt.NewCodexEntries >= saved.NewCodexEntries
+        && rebuilt.Organisms >= saved.Organisms
+        && rebuilt.Touchdowns >= saved.Touchdowns
+        && rebuilt.BodyCount >= saved.BodyCount
+        && rebuilt.Screenshots >= saved.Screenshots
+        && rebuilt.ExobiologyRewards >= saved.ExobiologyRewards
+        && rebuilt.ExplorationRewards >= saved.ExplorationRewards
+        && rebuilt.Stars >= saved.Stars;
 }
 
 public sealed record JourneyBeginRequest(

@@ -17,7 +17,7 @@ public sealed partial class JourneyWorkspaceViewModel
                 selectedDocument.FileName,
                 JourneyName != selectedDocument.Name ? JourneyName : null,
                 JourneyDescription != selectedDocument.Description ? JourneyDescription : null,
-                SelectedSystemNotes != loadedSystemNotes ? SelectedSystemNotes : null,
+                systemNotes.IsDirty ? SelectedSystemNotes : null,
                 SelectedSystem is { } system ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived) : null,
                 ShowArchived
             );

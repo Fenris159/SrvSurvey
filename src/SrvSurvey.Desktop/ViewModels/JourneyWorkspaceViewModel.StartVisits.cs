@@ -204,6 +204,7 @@ public sealed partial class JourneyWorkspaceViewModel
     {
         JourneyJournalSystemEntry? entry = context.Entry;
         JourneyStartDraft draft = context.Draft;
+        IReadOnlyList<string> errors = [];
         if (context.UseCurrent && context.SystemAddress is { } address)
         {
             JourneyJournalSystemSearchResult current = await journeyService.FindCurrentStartAsync(
@@ -212,6 +213,7 @@ public sealed partial class JourneyWorkspaceViewModel
                 address
             );
             entry = current.Entry;
+            errors = current.Errors;
         }
         if (context.Version != contextVersion)
         {
@@ -225,7 +227,8 @@ public sealed partial class JourneyWorkspaceViewModel
         if (entry is null)
         {
             StartStatus =
-                "The current location could not be found. Load the current journal or choose a previous visit.";
+                "The current location could not be found. Load the current journal or choose a previous visit."
+                + FormatJournalWarnings(errors);
             return null;
         }
         return new(draft.FrontierId, draft.CommanderName, draft.IsOdyssey, draft.Name, draft.Description, entry);
@@ -260,9 +263,12 @@ public sealed partial class JourneyWorkspaceViewModel
         }
         if (result.Errors.Count > 0)
         {
-            StartStatus += $" Ignored {result.Errors.Count:N0} malformed journal line(s).";
+            StartStatus += FormatJournalWarnings(result.Errors);
         }
     }
+
+    private static string FormatJournalWarnings(IReadOnlyList<string> errors) =>
+        errors.Count == 0 ? string.Empty : $" Journal read warning(s): {errors.Count:N0}. {errors[0]}";
 }
 
 public sealed record JourneyStartVisitViewModel(JourneyJournalSystemEntry Entry)

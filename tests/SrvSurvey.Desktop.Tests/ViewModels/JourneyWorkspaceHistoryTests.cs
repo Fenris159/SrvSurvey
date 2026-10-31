@@ -188,6 +188,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         Assert.Equal(2, model.VisibleJourneys.Count);
+        Assert.Equal("A saved field note", model.SelectedSystemNotes);
         Assert.True(model.CanExportReport);
         JourneyHtmlExport report = Assert.IsType<JourneyHtmlExport>(await model.CreateHtmlReportAsync());
         Assert.Contains("A saved field note", report.Html, StringComparison.Ordinal);
